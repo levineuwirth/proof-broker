@@ -1,0 +1,154 @@
+{
+  "ir_version": "1.0",
+  "source_system": { "name": "lean", "version": "4.13.0" },
+  "tier": "structural",
+
+  "logic_classification": {
+    "order": "higher_order",
+    "features_used": [
+      "universal_quantification_over_first_order",
+      "function_quantification",
+      "predicate_argument",
+      "equality_at_function_type"
+    ],
+    "first_order_fragment": "none",
+    "decidable_theory": null
+  },
+
+  "goal": {
+    "shell": {
+      "node": "App",
+      "symbol": "P",
+      "type_args": [],
+      "args": [
+        {
+          "node": "App",
+          "symbol": "Function.comp",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "g" },
+            { "node": "Var", "name": "g" }
+          ]
+        }
+      ]
+    }
+  },
+
+  "context": {
+    "type_vars": [],
+    "free_vars": [
+      { "name": "f", "type": "Nat -> Nat" },
+      { "name": "g", "type": "Nat -> Nat" },
+      { "name": "P", "type": "(Nat -> Nat) -> Prop" }
+    ],
+    "hypotheses": [
+      {
+        "name": "h1",
+        "shell": {
+          "node": "Forall",
+          "var": "h",
+          "type": "Nat -> Nat",
+          "body": {
+            "node": "Implies",
+            "antecedent": {
+              "node": "App", "symbol": "P", "type_args": [],
+              "args": [ { "node": "Var", "name": "h" } ]
+            },
+            "consequent": {
+              "node": "App", "symbol": "P", "type_args": [],
+              "args": [
+                {
+                  "node": "App", "symbol": "Function.comp", "type_args": [],
+                  "args": [
+                    { "node": "Var", "name": "h" },
+                    { "node": "Var", "name": "h" }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "h2",
+        "shell": {
+          "node": "App", "symbol": "P", "type_args": [],
+          "args": [ { "node": "Var", "name": "f" } ]
+        }
+      },
+      {
+        "name": "h3",
+        "shell": {
+          "node": "Eq",
+          "type": "Nat -> Nat",
+          "left": { "node": "Var", "name": "f" },
+          "right": { "node": "Var", "name": "g" }
+        }
+      }
+    ]
+  },
+
+  "type_metadata": {},
+
+  "definitional_metadata": {
+    "Function.comp": {
+      "kind": "defined_function",
+      "abstract_signature": "{A B C : Type} -> (B -> C) -> (A -> B) -> (A -> C)",
+      "definitional_equation": {
+        "node": "Forall",
+        "var": "f1",
+        "type": "Nat -> Nat",
+        "body": {
+          "node": "Forall",
+          "var": "g1",
+          "type": "Nat -> Nat",
+          "body": {
+            "node": "Eq",
+            "type": "Nat -> Nat",
+            "left": {
+              "node": "App", "symbol": "Function.comp", "type_args": [],
+              "args": [
+                { "node": "Var", "name": "f1" },
+                { "node": "Var", "name": "g1" }
+              ]
+            },
+            "right": {
+              "node": "Lambda",
+              "binders": [ { "var": "a", "type": "Nat" } ],
+              "body": {
+                "node": "App", "symbol": "f1", "type_args": [],
+                "args": [
+                  {
+                    "node": "App", "symbol": "g1", "type_args": [],
+                    "args": [ { "node": "Var", "name": "a" } ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "concept_tag": "function_composition"
+    }
+  },
+
+  "library_provenance": {
+    "Function.comp": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Function",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000020"
+    }
+  },
+
+  "user_directives": {
+    "preferred_backend": null,
+    "tier_preference": ["3", "2", "0"],
+    "rewriter_preferences": {
+      "enable_quotient_elimination": false,
+      "enable_definition_unfolding": ["function_composition"],
+      "disable_passes": []
+    },
+    "budget": { "wall_time_ms": 30000, "memory_mb": 4096 }
+  }
+}

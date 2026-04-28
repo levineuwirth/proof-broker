@@ -1,0 +1,2427 @@
+\documentclass[11pt,letterpaper]{article}
+
+% --- Packages ---
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyvrb}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage[font=small,labelfont=bf]{caption}
+
+% --- Hyperref setup ---
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  citecolor=blue!50!black,
+  pdftitle={A Proof Brokerage Architecture: Specification v1.0},
+  pdfauthor={Specification working draft}
+}
+
+% --- Listings setup for code/JSON/IR ---
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\definecolor{codekw}{rgb}{0.0,0.0,0.55}
+\definecolor{codestr}{rgb}{0.55,0.0,0.0}
+\definecolor{codecomment}{rgb}{0.25,0.45,0.25}
+
+\lstdefinelanguage{json}{
+  basicstyle=\ttfamily\footnotesize,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!20},
+  backgroundcolor=\color{codebg},
+  literate=
+   *{0}{{{\color{codestr}0}}}{1}
+    {1}{{{\color{codestr}1}}}{1}
+    {2}{{{\color{codestr}2}}}{1}
+    {3}{{{\color{codestr}3}}}{1}
+    {4}{{{\color{codestr}4}}}{1}
+    {5}{{{\color{codestr}5}}}{1}
+    {6}{{{\color{codestr}6}}}{1}
+    {7}{{{\color{codestr}7}}}{1}
+    {8}{{{\color{codestr}8}}}{1}
+    {9}{{{\color{codestr}9}}}{1}
+    {:}{{{\color{codekw}{:}}}}{1}
+    {,}{{{\color{codekw}{,}}}}{1}
+    {\{}{{{\color{codekw}{\{}}}}{1}
+    {\}}{{{\color{codekw}{\}}}}}{1}
+    {[}{{{\color{codekw}{[}}}}{1}
+    {]}{{{\color{codekw}{]}}}}{1},
+}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\footnotesize,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!20},
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{codekw}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestr},
+  morekeywords={example,theorem,lemma,def,by,fun,if,then,else,let,in,
+                 match,with,variable,instance,class,structure,inductive,
+                 abbrev,private,axiom,opaque,partial,unsafe,
+                 Type,Prop,Sort,fixes,assumes,shows,proof,qed},
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]",
+}
+
+\lstdefinestyle{plain}{
+  basicstyle=\ttfamily\footnotesize,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!20},
+  backgroundcolor=\color{codebg},
+}
+
+% --- Theorem-like environments ---
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{requirement}{Requirement}[section]
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{rationale}{Rationale}
+
+% --- Section formatting ---
+\titleformat{\section}[hang]
+  {\normalfont\Large\bfseries}
+  {\thesection}{0.6em}{}
+\titleformat{\subsection}[hang]
+  {\normalfont\large\bfseries}
+  {\thesubsection}{0.6em}{}
+
+% --- Title ---
+\title{
+  \vspace{-1cm}
+  \textbf{A Proof Brokerage Architecture}\\[0.3em]
+  \large{Specification v1.0 (working draft)}\\[0.3em]
+  \normalsize{An interchange and dispatch layer for proof assistants and automated reasoning backends}
+}
+\author{}
+\date{Working draft — \today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+% Global sloppiness for breaking long \texttt{...} runs
+\sloppy
+\emergencystretch=3em
+
+\begin{abstract}
+\noindent
+This document specifies an architecture for a system that brokers proof obligations
+between an interactive proof assistant (the \emph{home system}) and a
+heterogeneous collection of automated reasoning \emph{backends}, including SMT
+solvers, automated theorem provers (ATPs), other interactive theorem provers
+(ITPs), and large-language-model (LLM) provers. The system is structured as a
+three-stage pipeline: serialization of a proof obligation into a backend-independent
+intermediate representation (IR); a configurable rewriting phase that performs
+target-independent IR transformations; and per-backend adapters that refine the
+rewritten IR into backend-native input. Returned proofs are encoded as
+tiered \emph{certificates} whose verification produces home-system proof terms
+through a combination of native witness checking, hint-based reconstruction,
+trace replay, and (optionally) LLM-assisted translation. The architecture
+deliberately preserves the home system's kernel as the trusted base for all
+tiers except an explicit oracle tier; LLMs and other proposers are accepted only
+through kernel-checked outputs. This document specifies the IR, the certificate
+format, the dispatch protocol, the verifier, and the reconstruction layer in
+sufficient detail to support a v1 implementation targeting Lean~4 as primary
+home system, with Rocq (Coq) as an architectural probe.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction and motivation}
+\label{sec:intro}
+
+\subsection{Problem statement}
+
+Modern interactive proof assistants (Lean~4, Rocq, Isabelle, Agda, and others)
+each ship with their own foundational kernel, library ecosystem, tactic
+language, and automation tooling. A proof of a given theorem in one system
+is generally not transferable to another: foundational differences (dependent
+type theory vs.\ classical higher-order logic), library divergence
+(\texttt{mathlib} vs.\ Isabelle's AFP vs.\ \texttt{mathcomp}), and tactic-language
+incompatibilities make cross-system interchange difficult in principle and
+prohibitive in practice.
+
+Separately, the landscape of automated reasoning tools available to proof
+assistant users is uneven. SMT solvers (Z3, CVC5) are powerful for arithmetic,
+bitvector, and array reasoning but require careful integration to be sound.
+Automated theorem provers (Vampire, E, SPASS) are excellent for first-order
+logic with equality. LLM-based proof generation tools have become viable
+proposers for goals where traditional automation struggles. Each of these
+classes has different input formats, different output formats, different
+notions of what constitutes a proof, and different relationships to the
+foundational logic of the host proof assistant.
+
+The status quo is that each home system maintains its own tactical bridges to
+each backend it cares about. Lean has its own SMT integration; Rocq has
+SMTCoq; Isabelle has \texttt{sledgehammer}. These bridges are excellent within
+their scope but they are not interoperable: a bridge built for Isabelle does
+not directly help a Lean user, and vice versa. The engineering effort to
+maintain $N \times M$ bridges between $N$ home systems and $M$ backends grows
+quadratically.
+
+\subsection{Goals}
+
+This document specifies an architecture intended to:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Provide a single interchange format and dispatch pipeline through
+        which proof obligations from any participating home system can be
+        routed to any participating backend.
+  \item Preserve the trusted base of each home system: backends propose,
+        the home system's kernel disposes. Soundness is never delegated.
+  \item Acknowledge and exploit the heterogeneity of backends rather than
+        forcing them into a single mold. Different backends consume different
+        translations of the same goal; the architecture accommodates this.
+  \item Accommodate LLM-based provers as first-class backends without
+        compromising soundness.
+  \item Surface dispatch behavior, success rates, and failure modes to the
+        user with sufficient granularity that fluent use of the system is
+        learnable.
+\end{enumerate}
+
+\subsection{Non-goals}
+
+This document does \emph{not} specify:
+
+\begin{itemize}[leftmargin=2em]
+  \item A universal foundational logic into which all home systems embed.
+        Prior work on logical frameworks (notably Dedukti) explores this
+        direction; the present architecture is orthogonal and complementary.
+  \item Library-level translation between home systems (porting
+        \texttt{mathlib} to Rocq, etc.). This is treated as a separate problem.
+  \item Automatic translation of arbitrary tactic scripts between home
+        systems. The unit of dispatch is a subgoal, not a tactic script.
+\end{itemize}
+
+\subsection{Architectural framing}
+
+The system is conceived as a \emph{proof brokerage}: a market of provers
+competing to discharge obligations issued by a home system. The metaphor is
+deliberate. The user retains agency over which backends they employ and on
+what terms. The dispatcher operates as an intermediary, not a black box.
+Failed dispatches are first-class events with structured diagnostics, and
+backend performance is observable through a session-level dashboard.
+
+The architecture rejects two simpler designs. First, a single
+backend-independent IR consumed uniformly by all backends (the LLVM analogy)
+fails because backends have genuinely incompatible input requirements: a
+goal involving a typeclass-quantified type cannot be simultaneously
+specialized to linear arithmetic for an SMT solver and axiomatized
+abstractly for an ATP. Second, a per-(home-system, backend) translator
+matrix fails on engineering grounds: it grows quadratically and produces no
+reusable infrastructure.
+
+The chosen design is a three-stage pipeline:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Serialization.} The home system produces a single,
+        backend-independent IR document that records the goal's structure
+        plus enough metadata for adapters to perform target-specific
+        refinements.
+  \item \textbf{IR rewriting.} A configurable pipeline of target-independent
+        IR-to-IR transformations simplifies the document. Quotient elimination,
+        definition unfolding, and propositional simplification are examples.
+        The pipeline is configured per dispatch, with adapters declaring
+        their preferred preprocessing.
+  \item \textbf{Adapter refinement.} A backend-specific adapter consumes
+        the rewritten IR and produces the backend's native input. The
+        adapter records its refinement choices in a \emph{refinement record}
+        attached to any returned certificate.
+\end{enumerate}
+
+This is structurally analogous to a modern compiler pipeline (source $\to$
+IR $\to$ target-independent passes $\to$ target-dependent lowering $\to$
+machine code). The key adaptation is that \emph{certificates flow back}:
+the proof returned by the backend must be lifted, through the inverse of
+adapter refinement and IR rewriting, into a home-system proof term.
+
+\subsection{Document structure}
+
+Section~\ref{sec:scope} fixes the scope and milestones for v1. Section~\ref{sec:overview}
+gives the architectural overview with diagrams. Section~\ref{sec:ir} specifies the
+intermediate representation in detail. Section~\ref{sec:rewriting} specifies the
+IR rewriting layer. Section~\ref{sec:certificates} specifies the certificate format
+and the tiered verification semantics. Section~\ref{sec:dispatch} specifies the
+dispatch protocol. Section~\ref{sec:verifier} specifies the certificate verifier.
+Section~\ref{sec:reconstruction} specifies the reconstruction layer.
+Section~\ref{sec:llm} discusses LLM integration points. Section~\ref{sec:itp-itp}
+discusses ITP-to-ITP dispatch and its restrictions in v1. Section~\ref{sec:examples}
+walks through three worked examples end-to-end. Appendix~\ref{app:registry}
+specifies the shared registry of recognized patterns. Appendix~\ref{app:open}
+lists open questions deferred to v2 or beyond.
+
+\section{Scope and milestones for v1}
+\label{sec:scope}
+
+\subsection{Home systems}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Lean~4 (primary).} Full integration: serializer, all enabled
+        verifier tiers, all reconstruction strategies, build-time integration,
+        and the session dashboard.
+  \item \textbf{Rocq (architectural probe).} IR serializer and Tier~0 plus
+        Tier~1 verifiers only. No Tier~2 or Tier~3 reconstruction, no LLM
+        strategies, no build-time integration. The Rocq integration exists
+        to validate that the IR and protocol are not Lean-shaped, and to
+        round-trip simple obligations. Production-quality Rocq integration
+        is a v2 milestone.
+\end{itemize}
+
+\subsection{Backend categories}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{SMT.} Initial target: CVC5 (with Alethe proof output). The
+        adapter exposes hooks for Z3 and other SMT-LIB-2 conformant solvers.
+  \item \textbf{ATP.} Initial target: Vampire (with TPTP proof output).
+        The adapter exposes hooks for E and other TPTP-conformant provers.
+  \item \textbf{LLM provers.} A generic LLM-prover adapter that accepts a
+        configured model endpoint and produces tactic scripts in the home
+        system's language. Examples: DeepSeek-Prover-class systems,
+        general-purpose LLMs prompted appropriately.
+  \item \textbf{ITPs (restricted).} ITP-to-ITP dispatch is supported with
+        Tier~0 (oracle, with explicit trust opt-in) or Tier~2 (lemma list)
+        only. See Section~\ref{sec:itp-itp}.
+\end{itemize}
+
+\subsection{Tiers supported in v1}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Tier~0 (oracle).} Supported, gated behind explicit
+        per-project trust configuration.
+  \item \textbf{Tier~1 (witness).} Supported for: linear arithmetic
+        (Farkas certificates), propositional satisfiability (assignments
+        and unsat cores). Other witness kinds deferred.
+  \item \textbf{Tier~2 (lemma list).} Supported as a \emph{fallback tier};
+        framing and demotion clause described in Section~\ref{sec:certificates}.
+  \item \textbf{Tier~3 (proof trace).} Supported for Alethe (CVC5) and
+        TPTP-FOF/THF (Vampire). Strategy stack includes symbolic replay,
+        cross-system tactic translation, and optional LLM-assisted
+        reconstruction. Other formats deferred.
+  \item \textbf{Tier~4 (foundational certificate).} Reserved; not
+        implemented in v1.
+\end{itemize}
+
+\subsection{Out of scope for v1}
+
+\begin{itemize}[leftmargin=2em]
+  \item Production-quality Rocq integration (deferred to v2).
+  \item Tier~3 reconstruction for backend formats other than Alethe and
+        TPTP.
+  \item Tier~4 foundational certificates and the associated logical
+        framework embedding work.
+  \item ML-driven premise selection (symbol-based selection only in v1).
+  \item Speculative dispatch with predictive caching across user edits.
+  \item Library-level translation and porting.
+  \item Conversion metadata (definitional equality conventions, normalization
+        regime). The v1 IR assumes terms are presented in a fully
+        $\beta$-$\eta$-normalized form; goals depending on non-normalized
+        distinctions are not supported in v1.
+\end{itemize}
+
+\section{Architectural overview}
+\label{sec:overview}
+
+\subsection{Components}
+
+The system comprises seven major components, illustrated in
+Figure~\ref{fig:overview}.
+
+\begin{figure}[h]
+\centering
+\small
+\begin{verbatim}
+   +-----------------+
+   |   Home System   |  Lean 4 (primary) | Rocq (probe)
+   |     Plugin      |  - serializer
+   |                 |  - reconstruction layer
+   +--------+--------+  - dashboard
+            |
+            v
+   +-----------------+
+   |   IR Document   |  general, backend-independent
+   +--------+--------+
+            |
+            v
+   +-----------------+
+   |   IR Rewriter   |  configurable per-dispatch pipeline
+   |                 |  - quotient elimination, unfolding,
+   +--------+--------+    propositional simplification, ...
+            |
+            v
+   +-----------------+
+   |   Dispatcher    |  capability matching, backend selection
+   +--------+--------+
+            |
+            v
+   +-----------------+
+   | Backend Adapter |  per-backend refinement, native input,
+   |                 |  refinement record generation
+   +--------+--------+
+            |
+            v
+   +-----------------+      +-----------------+
+   |  Backend (CVC5, |----->|  Certificate    |
+   |  Vampire, LLM,  |      |     (with       |
+   |   Isabelle)     |      |  refinement     |
+   +-----------------+      |    record)      |
+                            +--------+--------+
+                                     |
+                                     v
+                            +-----------------+
+                            |   Certificate   |
+                            |    Verifier     |
+                            +--------+--------+
+                                     |
+                                     v
+                            +-----------------+
+                            | Reconstruction  |
+                            |     Layer       |  (back to home system)
+                            +-----------------+
+\end{verbatim}
+\caption{High-level architectural overview. The forward pipeline (top to
+bottom) takes a home-system proof state to a backend-native input. The
+return pipeline (bottom-right back to the home system) verifies the
+returned certificate and reconstructs a home-system proof term.}
+\label{fig:overview}
+\end{figure}
+
+\begin{description}
+  \item[Home System Plugin.] A tactic and metaprogram extension installed
+        in the home system. Exposes the \texttt{dispatch} family of tactics,
+        serializes proof state into IR, and consumes verifier outputs to
+        produce home-system proof terms. Per-home-system; the Lean and Rocq
+        plugins are distinct artifacts but share the IR schema.
+  \item[IR Rewriter.] A configurable pipeline of IR-to-IR passes operating
+        on the general IR. Each pass is target-independent; the choice of
+        passes is configured per dispatch, typically driven by adapter
+        preferences. Implemented as a shared library callable from any
+        component.
+  \item[Dispatcher.] Decides which backend(s) to invoke based on goal
+        classification, backend capabilities, user directives, and
+        historical performance. Coordinates parallel speculative dispatch
+        when configured.
+  \item[Backend Adapter.] Per-backend translator from rewritten IR to
+        backend-native input. Generates a refinement record describing its
+        translation choices. Receives the backend's output and packages it
+        as a certificate.
+  \item[Certificate Verifier.] Tier-dispatched verification of returned
+        certificates. Produces home-system proof terms or structured
+        rejection reasons.
+  \item[Reconstruction Layer.] Lifts verified certificates through the
+        inverse of adapter refinement and IR rewriting to produce a proof
+        term of the original home-system goal type.
+  \item[Certificate Cache.] Project-local store keyed on goal hash plus
+        dispatch context plus backend identity. Invalidated on backend
+        version change or referenced-lemma content hash change.
+\end{description}
+
+\subsection{Soundness story}
+
+The trusted base for Tiers 1, 2, and 3 is the home system's kernel.
+Witnesses, reconstruction outputs, and replayed traces are all packaged as
+home-system proof terms before being accepted; the kernel re-checks every
+such term. No backend, LLM, or external service is in the trusted base for
+these tiers.
+
+Tier~0 (oracle) is the sole exception: it expands the trusted base to
+include the named backend's kernel, and is gated behind explicit per-project
+trust configuration. Tier~0 is intended for cases where the user has made
+an informed trust decision, such as accepting an Isabelle-proved lemma
+during cross-ITP dispatch.
+
+LLMs participate only as proposers. An LLM-generated tactic script is
+accepted iff the home system's kernel accepts it; an LLM-translated proof
+trace is likewise kernel-checked. The architecture provides no mechanism
+by which LLM output bypasses kernel verification.
+
+\subsection{Two paths through the system}
+
+\paragraph{Slow path (interactive).} The user invokes a \texttt{dispatch}
+tactic. The plugin serializes the proof state, runs the IR rewriter, hands
+off to the dispatcher, awaits a result, and (on success) inserts the
+reconstructed proof term. UI feedback is provided asynchronously: the
+tactic call shows a pending indicator until the dispatch resolves, with
+per-backend timing visible in the dashboard. Typical latency: 1--30
+seconds.
+
+\paragraph{Build path.} On project compilation, dispatch calls re-run with
+longer timeout budgets and persistent caching. The build-time path is the
+source of truth for CI: a project's CI passes iff every dispatch call
+produces a kernel-checked proof term within budget. Cached certificates
+from prior interactive runs are consulted before re-dispatch.
+
+\section{The Intermediate Representation}
+\label{sec:ir}
+
+\subsection{Design principles}
+
+The IR is the document produced by the home-system serializer and consumed
+by the IR rewriter and (after rewriting) by backend adapters. It is
+designed to satisfy the following principles:
+
+\begin{description}
+  \item[Backend-independence.] The IR is produced once, before backend
+        selection. The same IR document is, in principle, consumable by
+        any compatible backend.
+  \item[Bounded metadata categories.] The IR's metadata is organized into
+        four categories (logic classification, type metadata, definitional
+        metadata, library provenance). New language features extend the
+        \emph{content} of these categories but do not introduce new
+        categories.
+  \item[Self-describing.] Every IR document declares its schema version,
+        its source system, and its context tier. Consumers can
+        validate compatibility statically.
+  \item[Round-trippable.] Every translation choice made by the serializer
+        is recorded with sufficient information that reconstruction can
+        invert it. The IR is not lossy with respect to the home-system
+        proof state.
+  \item[No source-system-specific structure.] The IR records abstract
+        signatures and shape descriptors, not Lean-specific instance
+        resolution traces or Rocq-specific canonical structure data.
+\end{description}
+
+\subsection{Top-level structure}
+
+An IR document is a JSON value with the following top-level fields. (Binary
+serialization via CBOR is the recommended production format; JSON is the
+canonical specification format.)
+
+\begin{lstlisting}[language=json]
+{
+  "ir_version": "1.0",
+  "source_system": { "name": "lean", "version": "4.x.y" },
+  "tier": "structural",
+  "logic_classification": <LogicClassification>,
+  "goal": <Goal>,
+  "context": <Context>,
+  "type_metadata": { "<type-id>": <TypeMetadata>, ... },
+  "definitional_metadata": { "<symbol-id>": <DefinitionalMetadata>, ... },
+  "library_provenance": { "<entity-name>": <Provenance>, ... },
+  "user_directives": <UserDirectives>
+}
+\end{lstlisting}
+
+The \texttt{tier} field takes values \texttt{"goal"}, \texttt{"structural"},
+or \texttt{"rich"}, controlling how much context is included
+(see Section~\ref{sec:ir-tiers}).
+
+\subsection{Logic classification}
+\label{sec:ir-logic}
+
+The \texttt{logic\_classification} field tells dispatchers and adapters
+what kind of logical content the goal contains, so that
+incompatible backends can be filtered out before invocation.
+
+\begin{lstlisting}[language=json]
+{
+  "order": "first_order" | "higher_order" | "dependent",
+  "features_used": [ <feature-tag>, ... ],
+  "first_order_fragment": <fragment-id> | "none",
+  "decidable_theory": <theory-id> | null
+}
+\end{lstlisting}
+
+The \texttt{order} field is the highest order of quantification appearing
+in the goal or its hypotheses. The \texttt{features\_used} list draws on
+the registry (Appendix~\ref{app:registry}) of recognized logical features:
+\texttt{function\_quantification}, \texttt{predicate\_argument},
+\texttt{equality\_in\_quotient\_type}, \texttt{induction\_recursion}, and
+others. The \texttt{first\_order\_fragment} field, when present, names a
+decidable or semi-decidable fragment that contains the goal: \texttt{LIA},
+\texttt{LRA}, \texttt{NIA}, \texttt{BV}, \texttt{UF}, \texttt{UFLIA}, etc.,
+or \texttt{"none"} if no such fragment applies. The
+\texttt{decidable\_theory} field, when set, asserts that the goal lies in
+a particular decidable theory; backends may use this to dispatch directly
+to a decision procedure.
+
+\begin{requirement}[Logic classification soundness]
+The serializer must not assign a \texttt{first\_order\_fragment} narrower
+than the actual fragment of the goal. False classification of a
+higher-order goal as first-order is a soundness-relevant bug; backends
+relying on the classification may produce certificates that fail to lift
+back. Conservative over-approximation (claiming a wider fragment than
+necessary) is acceptable but may reduce dispatch effectiveness.
+\end{requirement}
+
+\subsection{The goal and the shell calculus}
+\label{sec:ir-shell}
+
+The \texttt{goal} field encodes the proposition to be proved as a
+\emph{shell term} together with optional \emph{payloads}.
+
+\begin{lstlisting}[language=json]
+{
+  "shell": <ShellTerm>,
+  "payloads": { "<payload-id>": <SourceTerm>, ... }
+}
+\end{lstlisting}
+
+The shell calculus is a logic-agnostic typed term calculus designed to
+admit faithful translation from any participating home system's
+proposition language. It is not a foundational logic; it is a structural
+representation. The grammar of shell terms is:
+
+\begin{align*}
+\textit{ShellTerm} ::= \;\;& \textsf{Forall}(\textit{var}, \textit{type}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{Exists}(\textit{var}, \textit{type}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{Lambda}(\textit{binders}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{Implies}(\textit{ShellTerm}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{And}(\textit{ShellTerm}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{Or}(\textit{ShellTerm}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{Not}(\textit{ShellTerm}) \\
+                       \mid \;& \textsf{Eq}(\textit{type}, \textit{ShellTerm}, \textit{ShellTerm}) \\
+                       \mid \;& \textsf{App}(\textit{symbol}, \textit{type-args}, \textit{args}) \\
+                       \mid \;& \textsf{Var}(\textit{name}) \\
+                       \mid \;& \textsf{Const}(\textit{name}) \\
+                       \mid \;& \textsf{NumLit}(\textit{value}) \\
+                       \mid \;& \textsf{Opaque}(\textit{payload-id})
+\end{align*}
+
+The \textsf{Eq} constructor carries the type at which equality is
+asserted, because equality in dependent type theory is type-indexed.
+The \textsf{App} constructor takes type arguments separately from term
+arguments, supporting polymorphic and higher-kinded application without
+encoding type abstraction in the shell.
+
+The \textsf{Opaque} constructor is the escape hatch. Any source-language
+construct that cannot be expressed in the shell (inductive type
+eliminators with complex motives, dependent pattern matches, etc.) is
+encapsulated as an opaque payload with a fresh identifier; the original
+source term is recorded under that identifier in the \texttt{payloads}
+field. Backends that understand the source system's term language may
+unpack opaque payloads; backends that do not treat them as
+uninterpreted constants of an inferred type.
+
+\begin{remark}
+The shell deliberately does \emph{not} encode bound-variable conventions
+(de~Bruijn indices vs.\ named variables), eta-conversion behavior, or
+universe levels in any but the most superficial way. These are
+home-system concerns that the IR avoids committing to. Where
+universe-polymorphism information is needed (rare in v1), it is recorded
+in type metadata, not in the shell.
+\end{remark}
+
+\subsection{Context and tiers}
+\label{sec:ir-tiers}
+
+The \texttt{context} field encodes hypotheses and free variables. Three
+context tiers control the information included.
+
+\paragraph{Tier ``goal''.} Only the proposition. No hypotheses, no free
+variables. Used when the goal is self-contained.
+
+\paragraph{Tier ``structural''.} Hypotheses translated as shell terms,
+free variables typed via references to type metadata, but no library
+lemmas. Default for most ATP and SMT dispatches.
+
+\paragraph{Tier ``rich''.} Structural context plus a curated library
+slice. Lemmas in the slice are themselves shell terms with provenance.
+For v1, the slice is constructed by:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Symbol-based premise selection.} Lemmas whose
+        statements share head symbols (or close generalizations) with
+        the goal are included automatically.
+  \item \textbf{Manual augmentation.} Lemmas explicitly cited via the
+        \texttt{using} clause of the dispatch tactic are included
+        unconditionally.
+  \item \textbf{No transitive closure.} Only lemma statements are
+        included; their proofs and dependencies are not recursively
+        translated.
+  \item \textbf{Dropped lemmas are reported.} Lemmas whose statements
+        cannot be translated under the structural shell are omitted from
+        the slice with a diagnostic, not silently retained.
+\end{itemize}
+
+ML-driven premise selection is deferred to v2.
+
+\subsection{Type metadata}
+\label{sec:ir-type-metadata}
+
+For every type appearing in the goal or context that is not a primitive
+of the shell, the \texttt{type\_metadata} field records information
+sufficient for adapters to reason about that type abstractly. The
+schema is:
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "primitive" | "type_variable" | "type_constructor_application",
+  ... (kind-specific fields) ...
+}
+\end{lstlisting}
+
+\subsubsection{Kind: \texttt{primitive}}
+
+For known primitive types (\texttt{Nat}, \texttt{Int}, \texttt{Bool}, \texttt{String}, etc.):
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "primitive",
+  "name": "Int",
+  "theory_tags": ["arithmetic", "ring", "linearly_ordered"]
+}
+\end{lstlisting}
+
+The \texttt{theory\_tags} draw from the registry; they are how
+adapters recognize that a type is suitable for a particular backend
+theory.
+
+\subsubsection{Kind: \texttt{type\_variable}}
+
+For type variables introduced by the proof state (e.g., a polymorphic
+goal):
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "type_variable",
+  "name": "<alpha-id>",
+  "kind_class": "Type",
+  "instances": [
+    {
+      "instance_name": "<inst-id>",
+      "class": {
+        "name": "LinearOrderedCommRing",
+        "library": "mathlib",
+        "library_version": "4.x.y",
+        "content_hash": "sha256:..."
+      },
+      "abstract_signature": <AbstractSignature>,
+      "abstract_axioms": [ <AxiomShape>, ... ],
+      "theory_classification_tags": [ <tag>, ... ]
+    }
+  ]
+}
+\end{lstlisting}
+
+The \texttt{abstract\_signature} describes the operations of the
+typeclass without committing to home-system-specific resolution. The
+\texttt{abstract\_axioms} use shape descriptors from the registry
+(see Appendix~\ref{app:registry}, Section~\ref{app:axiom-shapes}). The
+\texttt{theory\_classification\_tags} record valid embeddings into
+backend theories: e.g., \texttt{embeds\_into:Int\_for\_universal\_LIA}
+asserts that universal LIA sentences valid over $\mathbb{Z}$ are valid
+over any instance of this class.
+
+\begin{requirement}[Theory tag soundness]
+A \texttt{theory\_classification\_tag} must correspond to a verified
+embedding. The serializer is responsible for issuing only tags that the
+home system can justify with an embedding lemma in its library; the
+lemma reference is recorded in library provenance. Spurious tags are
+soundness-relevant bugs.
+\end{requirement}
+
+\subsubsection{Kind: \texttt{type\_constructor\_application}}
+
+For types built by a non-primitive type former (quotient, inductive,
+sigma, refinement, higher-inductive):
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "type_constructor_application",
+  "constructor": {
+    "name": "<constructor-id>",
+    "construction_kind":
+      "quotient" | "inductive" | "sigma" | "refinement" | "higher_inductive",
+    ... (construction-kind-specific fields) ...
+  },
+  "arguments": [ <ShellTerm>, ... ]
+}
+\end{lstlisting}
+
+For \texttt{construction\_kind: "quotient"}, the constructor block
+includes \texttt{underlying\_type}, \texttt{equivalence\_relation}
+(with shell rendering and proof of equivalence), an
+\texttt{elimination\_principle} (the induction rule), and an
+\texttt{equality\_principle} (the soundness rule, e.g., \texttt{Quot.sound}).
+
+For \texttt{construction\_kind: "inductive"}, the constructor block
+includes a list of \texttt{constructors} (each with a name, type
+schema, and recursive position annotations) and an
+\texttt{elimination\_principle} describing the recursor.
+
+Other construction kinds follow analogous patterns.
+
+\subsection{Definitional metadata}
+\label{sec:ir-defn-metadata}
+
+For every defined symbol appearing in the goal or context that is not a
+shell primitive, the \texttt{definitional\_metadata} field records
+information sufficient for adapters to reason about that symbol. The
+schema is:
+
+\begin{lstlisting}[language=json]
+{
+  "kind":
+    "primitive_arithmetic" | "typeclass_method" | "defined_function" |
+    "lifted_to_quotient" | "constructor" | "eliminator",
+  ... (kind-specific fields) ...
+}
+\end{lstlisting}
+
+\subsubsection{Kind: \texttt{primitive\_arithmetic}}
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "primitive_arithmetic",
+  "abstract_signature": "Int -> Int -> Int",
+  "theory_tag": "LIA:plus"
+}
+\end{lstlisting}
+
+\subsubsection{Kind: \texttt{typeclass\_method}}
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "typeclass_method",
+  "method_name": "HAdd.hAdd",
+  "host_class": "<class-id>",
+  "abstract_role": "addition" | "ordering" | "literal_inclusion" | ...,
+  "specialization_targets": [
+    { "theory": "LIA", "operator": "+" },
+    { "theory": "LRA", "operator": "+" }
+  ]
+}
+\end{lstlisting}
+
+\subsubsection{Kind: \texttt{defined\_function}}
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "defined_function",
+  "abstract_signature": "(B -> C) -> (A -> B) -> (A -> C)",
+  "definitional_equation": <ShellTerm>,
+  "extensional_axiom": <ShellTerm>,
+  "concept_tag": "function_composition"
+}
+\end{lstlisting}
+
+The \texttt{definitional\_equation} expresses the function's defining
+rewrite in shell form, suitable for unfolding by the IR rewriter or
+adapter. The \texttt{concept\_tag}, when present, ties the symbol to a
+concept in the registry, allowing adapters to recognize standard
+mathematical operations across home systems.
+
+\subsubsection{Kind: \texttt{lifted\_to\_quotient}}
+
+\begin{lstlisting}[language=json]
+{
+  "kind": "lifted_to_quotient",
+  "host_type": "<type-id>",
+  "underlying_function": {
+    "name": "Int.add",
+    "shell": <ShellTerm>
+  },
+  "lifting_obligation": {
+    "shape": "respects_relation",
+    "discharged_at": "definition_site"
+  }
+}
+\end{lstlisting}
+
+The IR rewriter's \emph{quotient elimination} pass uses this metadata to
+replace lifted-function applications with applications of the underlying
+function under quotient introduction, when this transformation is
+beneficial for the target backend.
+
+\subsubsection{Other kinds}
+
+\texttt{constructor} and \texttt{eliminator} kinds record information for
+inductive type constructors and recursors respectively. Their schemas
+parallel \texttt{lifted\_to\_quotient} and are described in
+Appendix~\ref{app:registry}.
+
+\subsection{Library provenance}
+
+\begin{lstlisting}[language=json]
+{
+  "<entity-name>": {
+    "library": "mathlib",
+    "version": "4.x.y",
+    "module_path": "Mathlib.Algebra.Order.Ring.Defs",
+    "content_hash": "sha256:..."
+  }
+}
+\end{lstlisting}
+
+Provenance is recorded for every named entity (typeclass, defined
+function, lemma) referenced from the IR. The reconstruction layer uses
+the content hash to validate that the home system has the expected
+version of each entity available before consuming a certificate; a hash
+mismatch invalidates the certificate.
+
+\subsection{User directives}
+
+\begin{lstlisting}[language=json]
+{
+  "preferred_backend": "cvc5" | "vampire" | "llm" | null,
+  "tier_preference": ["1", "3", "2", "0"],
+  "rewriter_preferences": {
+    "enable_quotient_elimination": true,
+    "enable_definition_unfolding": ["function_composition", ...],
+    "disable_passes": [...]
+  },
+  "budget": { "wall_time_ms": 30000, "memory_mb": 4096 }
+}
+\end{lstlisting}
+
+User directives capture preferences supplied through the dispatch
+tactic's named arguments (Section~\ref{sec:dispatch}).
+
+\subsection{Translation discipline}
+\label{sec:ir-discipline}
+
+The home-system serializer is bound by the following discipline:
+
+\begin{requirement}[No unjustified specialization]
+The serializer must not assign a \texttt{theory\_classification\_tag} or
+generate a \texttt{specialization\_targets} entry without a corresponding
+verified embedding lemma in the home system's library, recorded in
+provenance.
+\end{requirement}
+
+\begin{requirement}[Conservative classification]
+When in doubt, the serializer assigns a wider logic classification, a
+broader fragment, or fewer theory tags. False positives in
+classification are soundness-relevant; false negatives merely reduce
+effectiveness.
+\end{requirement}
+
+\begin{requirement}[Round-trip information sufficiency]
+For any IR document the serializer produces, the metadata must be
+sufficient that any home-system proof term claiming the document's
+\texttt{goal} (in shell form) can be lifted by the reconstruction layer
+to a home-system proof term of the original proof state's goal type.
+\end{requirement}
+
+This last requirement is the core soundness obligation of the
+home-system plugin and is the contract under which all other
+architecture components operate.
+
+\section{The IR rewriting layer}
+\label{sec:rewriting}
+
+\subsection{Purpose and architecture}
+
+The IR rewriting layer performs target-independent transformations on
+IR documents. Its purpose is to factor out simplifications that are
+useful across multiple backends, so that adapters do not redundantly
+implement the same logic. Examples of such transformations:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Quotient elimination.} A goal stated as an equality in a
+        quotient type is reduced to a goal at the underlying type using
+        the elimination and equality principles, when the metadata
+        permits.
+  \item \textbf{Definition unfolding.} Specific defined functions are
+        replaced with their definitional equations, exposing the
+        underlying mathematical content. Unfolding is selective: not all
+        definitions should be unfolded, and some are unfolded only for
+        certain backends.
+  \item \textbf{Propositional simplification.} Boolean simplifications
+        ($P \wedge \top \leadsto P$, $P \vee \neg P \leadsto \top$, etc.)
+        and trivial restructuring.
+  \item \textbf{Equality saturation.} Bounded equality reasoning to
+        canonicalize terms before backend dispatch.
+  \item \textbf{Quantifier prenexing.} Moving quantifiers outward,
+        useful for backends that prefer prenex normal form.
+  \item \textbf{Skolemization.} Eliminating existentials by introducing
+        fresh function symbols.
+\end{itemize}
+
+Each rewrite is implemented as a \emph{pass}: a function from IR
+documents to IR documents that preserves logical equivalence (modulo
+the soundness conditions documented for each pass). Passes are
+composed into pipelines.
+
+\subsection{Pass interface}
+
+A pass is specified by:
+
+\begin{lstlisting}[language=json]
+{
+  "name": "<pass-name>",
+  "version": "1.0",
+  "preconditions": [ <precondition>, ... ],
+  "postconditions": [ <postcondition>, ... ],
+  "soundness_obligation": "<text-or-reference>",
+  "configuration_schema": <ConfigSchema>
+}
+\end{lstlisting}
+
+Preconditions name properties an IR document must satisfy for the pass
+to be applicable; postconditions name properties the output is
+guaranteed to satisfy. The soundness obligation states what makes the
+pass logically valid (typically a one-line statement of the form ``the
+output IR is provable iff the input IR is provable, given certain
+metadata is correct'').
+
+\begin{requirement}[Pass soundness preservation]
+Every pass must preserve provability of the goal. If the input IR
+encodes a goal $G$ in context $\Gamma$, the output IR must encode a goal
+$G'$ in context $\Gamma'$ such that $\Gamma \vdash G$ if and only if
+$\Gamma' \vdash G'$, in the home system's foundational logic.
+\end{requirement}
+
+\subsection{Configurability}
+
+The rewriting pipeline is configured per dispatch. Configuration is
+determined by, in priority order: (a) explicit user directives in the
+IR document; (b) adapter preferences declared by the dispatching
+backend; (c) project-level defaults; (d) global defaults.
+
+\begin{lstlisting}[language=json]
+{
+  "pipeline": [
+    { "pass": "definition_unfolding",
+      "config": { "concepts": ["function_composition"] } },
+    { "pass": "quotient_elimination",
+      "config": { "aggressive": false } },
+    { "pass": "propositional_simplification" }
+  ],
+  "stop_on_failure": false,
+  "timeout_per_pass_ms": 1000
+}
+\end{lstlisting}
+
+\subsection{The default pipeline}
+
+The default rewriting pipeline for v1, applied when no specific
+configuration is provided:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \texttt{propositional\_simplification}: minimal, removes trivial
+        constructs.
+  \item \texttt{definition\_unfolding}: only for symbols whose
+        \texttt{definitional\_metadata} declares \texttt{concept\_tag} from
+        a registered ``always-unfold-for-dispatch'' list (function
+        composition, identity, etc.).
+  \item No quotient elimination by default; adapters that benefit from it
+        opt in via their preferences.
+  \item No prenexing or Skolemization by default; SMT and ATP adapters
+        opt in.
+\end{enumerate}
+
+\subsection{Backend adapter preferences}
+
+Each backend adapter declares a preferred rewriting pipeline that is
+applied before the adapter consumes the IR. Examples:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{CVC5 adapter.} Prefers quotient elimination (when
+        applicable), aggressive definition unfolding for arithmetic
+        operations, propositional simplification, and Skolemization.
+  \item \textbf{Vampire adapter.} Prefers prenex normal form,
+        Skolemization, and selective definition unfolding (preserving
+        symbols that benefit from FOL axiomatization rather than
+        unfolding).
+  \item \textbf{LLM adapter.} Prefers minimal rewriting; the LLM
+        consumes goals close to source syntax.
+  \item \textbf{ITP adapter (e.g., Isabelle).} Prefers minimal rewriting;
+        the target ITP performs its own normalization.
+\end{itemize}
+
+When parallel speculative dispatch is configured (multiple backends in
+parallel), each backend receives an IR rewritten according to its own
+preferences. The cost is duplicated rewriting work; the benefit is that
+each backend sees the IR in its preferred form.
+
+\subsection{Recording rewrites for reconstruction}
+
+Each pass that runs records a \emph{rewrite trace entry} attached to the
+IR document. The trace is consulted during reconstruction to invert the
+rewriting and lift backend proofs back to the original goal. A trace
+entry has the form:
+
+\begin{lstlisting}[language=json]
+{
+  "pass": "quotient_elimination",
+  "version": "1.0",
+  "before_hash": "sha256:...",
+  "after_hash": "sha256:...",
+  "inversion_data": <pass-specific>
+}
+\end{lstlisting}
+
+The \texttt{inversion\_data} field carries information sufficient to
+construct the lifting from the rewritten goal back to the original. For
+quotient elimination, this includes the introduction points of the
+elimination principle and the witnesses to the equivalence-relation
+respect conditions; the reconstruction layer uses these to wrap a
+proof of the underlying-type goal in the appropriate
+\texttt{Quot.ind}/\texttt{Quot.sound} structure.
+
+\begin{requirement}[Trace completeness]
+For every rewrite pass that runs, sufficient inversion data must be
+recorded that the pass can be inverted by the reconstruction layer
+without re-consulting the source proof state. The reconstruction layer
+operates against the rewrite trace and the certificate, not against the
+home system's elaborator.
+\end{requirement}
+
+\subsection{Failure modes}
+
+Passes can fail in two ways: (a) preconditions not satisfied, in which
+case the pass is skipped; (b) internal pass logic raises an error, in
+which case the pipeline either aborts or continues per configuration.
+A failed pass does not invalidate previous passes' outputs; the IR
+document carries the trace up to the point of failure, and the
+dispatcher can either invoke the adapter on the partial output or
+abandon the dispatch.
+
+\begin{remark}
+The IR rewriter is a shared library callable from any component. The
+home system plugin invokes it before dispatch; backend adapters may
+invoke it again with their preferences; the verifier may invoke
+inversion-related queries during reconstruction. Centralizing rewriting
+logic in a shared library, rather than duplicating it per adapter, is
+the architectural commitment that makes Position~3 of the design
+debate (general IR plus per-backend refinement) work in practice.
+\end{remark}
+
+\section{The certificate format}
+\label{sec:certificates}
+
+\subsection{Purpose}
+
+A certificate is the artifact produced by a backend adapter on
+successful dispatch. It contains the information needed to verify that
+the dispatched goal was proved and to reconstruct a home-system proof
+term. Certificates are organized into \emph{tiers} based on the strength
+of evidence they provide.
+
+\subsection{Envelope}
+
+Every certificate, regardless of tier, has the following envelope:
+
+\begin{lstlisting}[language=json]
+{
+  "cert_version": "1.0",
+  "tier": 0 | 1 | 2 | 3 | 4,
+  "format": "<format-id>",
+  "goal": <Goal>,
+  "dispatch_context_hash": "sha256:...",
+  "rewrite_trace_hash": "sha256:...",
+  "backend": {
+    "name": "cvc5",
+    "version": "1.2.0",
+    "config_hash": "sha256:..."
+  },
+  "resources": {
+    "wall_time_ms": 1234,
+    "memory_peak_kb": 56789,
+    "budget_consumed": 0.7
+  },
+  "refinement_record": <RefinementRecord>,
+  "payload": <TierPayload>
+}
+\end{lstlisting}
+
+The \texttt{goal} field carries the goal in its rewritten form (post-IR-rewriter,
+post-adapter-refinement). The \texttt{dispatch\_context\_hash} and
+\texttt{rewrite\_trace\_hash} let the verifier confirm that the certificate
+addresses the question that was asked, and that the rewrite trace is
+available for inversion.
+
+The \texttt{refinement\_record} field captures the adapter's
+translation choices, described next.
+
+\subsection{Refinement records}
+\label{sec:refinement-records}
+
+A refinement record is a structured description of what the backend
+adapter did to translate the (rewritten) IR into backend-native input.
+It is what the reconstruction layer uses to lift the backend's proof
+back through the adapter's translation.
+
+\begin{lstlisting}[language=json]
+{
+  "adapter": "<adapter-id>",
+  "adapter_version": "1.0",
+  "specializations": [
+    {
+      "kind": "type_specialization" | "method_specialization" |
+              "axiomatization" | "definition_unfolding" |
+              "logic_encoding" | "rendering",
+      "source": "<source-form>",
+      "target": "<target-form>",
+      "justification": "<reference-to-metadata-or-tag>",
+      "soundness_witness": "<lemma-reference>"
+    },
+    ...
+  ],
+  "fragment": "LIA" | "LRA" | "FOL" | "HOL" | ...,
+  "auxiliary": <adapter-specific>
+}
+\end{lstlisting}
+
+Each \texttt{specialization} entry records one translation decision made
+by the adapter. The \texttt{kind} field categorizes the decision:
+
+\begin{description}
+  \item[\texttt{type\_specialization}.] A type variable or abstract type
+        was replaced with a concrete backend-supported type
+        (e.g., $\alpha \to \mathbb{Z}$ via an embedding lemma).
+  \item[\texttt{method\_specialization}.] A typeclass method or
+        polymorphic operator was specialized to a backend-native
+        operator (e.g., \texttt{HAdd.hAdd} $\to$ SMT-LIB \texttt{+}).
+  \item[\texttt{axiomatization}.] A typeclass instance or defined symbol
+        was encoded as an uninterpreted symbol with explicit axioms.
+  \item[\texttt{definition\_unfolding}.] A defined symbol was unfolded
+        using its definitional equation.
+  \item[\texttt{logic\_encoding}.] The shell-level logic was encoded
+        into a backend-specific logical formalism (e.g., higher-order
+        shell into TPTP-THF with combinators).
+  \item[\texttt{rendering}.] For LLM and ITP adapters, the goal was
+        rendered as source-language syntax.
+\end{description}
+
+\begin{requirement}[Refinement record completeness]
+Every adapter decision that affects the form of the goal as seen by the
+backend must be recorded in the refinement record. Decisions that the
+reconstruction layer cannot recover from the record are soundness-relevant:
+they prevent lifting the backend's proof back to the original goal.
+\end{requirement}
+
+\subsection{Tier 0: Oracle}
+
+\begin{lstlisting}[language=json]
+"payload": {
+  "claim": "proved",
+  "backend_attestation": "<optional-signed-claim>"
+}
+\end{lstlisting}
+
+\paragraph{Verifier behavior.} Consult the project's trust policy.
+Accept iff the backend is on the project's explicit Tier~0 trust list
+and the trust policy permits Tier~0 acceptance for goals matching this
+shape and library context.
+
+\paragraph{Trust expansion.} Accepting a Tier~0 certificate expands the
+trusted base to include the named backend's kernel. The home-system
+plugin must surface this to the user at the time of acceptance, not
+silently.
+
+\paragraph{Use cases.} Rapid prototyping, ITP-to-ITP dispatch where
+no usable proof artifact exists, and cases where the user has
+deliberately opted into trusting a particular backend for a particular
+class of goals.
+
+\subsection{Tier 1: Witness}
+
+\begin{lstlisting}[language=json]
+"payload": {
+  "witness_kind":
+    "farkas" | "sat_assignment" | "sat_unsat_core" |
+    "polynomial_positivstellensatz" | ...,
+  "witness_data": <kind-specific>,
+  "checking_recipe": "<reference-to-home-system-checker>"
+}
+\end{lstlisting}
+
+\paragraph{Verifier behavior.} Run the home-system witness checker on
+the witness data. The checker is a small, audited home-system tactic
+that produces a kernel-checkable proof term directly from the witness.
+Success requires no LLM and no probabilistic step.
+
+\paragraph{Trust expansion.} None. The witness checker is part of the
+home system; the kernel re-checks its output.
+
+\paragraph{Witness kinds supported in v1.}
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{farkas}: a Farkas certificate for linear arithmetic.
+        Witness data is a list of nonnegative coefficients on
+        hypotheses summing to a contradiction for $\neg G$.
+  \item \texttt{sat\_assignment}: a satisfying assignment for a
+        propositional formula. Witness data is a variable-to-Boolean map.
+  \item \texttt{sat\_unsat\_core}: a minimal unsatisfiable subset for a
+        propositional formula. Witness data is a list of clause indices.
+\end{itemize}
+
+Other witness kinds (Positivstellensatz for nonlinear arithmetic, model
+checking witnesses, etc.) are deferred.
+
+\subsection{Tier 2: Lemma list / reconstruction hint (fallback)}
+\label{sec:tier2}
+
+\begin{lstlisting}[language=json]
+"payload": {
+  "lemmas_used": [
+    { "name": "<lemma-name>",
+      "library": "mathlib",
+      "version": "4.x.y",
+      "content_hash": "sha256:..." },
+    ...
+  ],
+  "strategy_hint":
+    "aesop" | "auto" | "simp_arith" | "smt_reconstruct" | ...,
+  "structural_hint": <optional-ordering-or-shape>
+}
+\end{lstlisting}
+
+\paragraph{Status: fallback tier.} Tier~2 is selected when the backend
+cannot produce a structured proof trace, or when no enabled Tier~3
+strategy can consume the trace.
+
+\paragraph{Verifier behavior.} Invoke the home system's reconstruction
+tactic with the listed lemmas as hints. Success iff the tactic produces
+a kernel-checkable term within the reconstruction budget.
+
+\paragraph{Soundness vs.\ completeness.}
+
+\begin{itemize}[leftmargin=2em]
+  \item \emph{Sound.} Every accepted Tier~2 certificate corresponds to a
+        kernel-checked home-system proof term. Reconstruction never
+        extends the trusted base.
+  \item \emph{Probabilistically complete.} Reconstruction can fail even
+        when the originating backend succeeded. The success-rate gap
+        between ``backend found a proof'' and ``home system reconstructed
+        it from the lemma list'' is real and well-documented in
+        \texttt{sledgehammer}-class systems. This gap is the price of
+        Tier~2's flexibility.
+\end{itemize}
+
+\paragraph{UX commitments.}
+
+\begin{itemize}[leftmargin=2em]
+  \item Successful Tier~2 dispatches are labeled in the dashboard as
+        \texttt{reconstructed (probabilistic)}, not \texttt{verified}.
+  \item The dashboard tracks per-backend, per-goal-shape Tier~2
+        reconstruction success rates over a rolling window.
+  \item Tier~2 reconstruction failure messages distinguish ``backend
+        did not produce a usable lemma list'' from ``lemma list
+        produced but home system reconstruction failed''.
+\end{itemize}
+
+\paragraph{Demotion clause.} If implementation reveals that the
+home-system reconstruction success rate from external lemma hints is
+significantly worse than the Isabelle/\texttt{sledgehammer} baseline,
+Tier~2 is to be demoted to a v1.5 milestone and v1 ships with Tiers
+0, 1, 3 only.
+
+\subsection{Tier 3: Proof trace}
+
+\begin{lstlisting}[language=json]
+"payload": {
+  "trace_format": "alethe-2024" | "tstp-fof" | "tstp-thf" |
+                  "lean-tactic-script" | "lfsc" | ...,
+  "trace_data": <format-specific>,
+  "trace_dialect_features": [ <feature>, ... ],
+  "trace_annotations": <optional-natural-language>
+}
+\end{lstlisting}
+
+\paragraph{Verifier behavior: strategy stack.} Tier~3 verification
+proceeds through a strategy stack, in order, until one succeeds:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Native symbolic checker.} If the home system has a
+        checker for this trace format (e.g., an Alethe-to-Lean trace
+        replayer for Lean), use it. The checker consumes the trace and
+        produces a home-system proof term step by step.
+  \item \textbf{Cross-system replay.} Translate the trace into
+        home-system tactics via a hand-written translation table for
+        the format's rules. The resulting tactic script is run by the
+        home-system and the kernel checks its output.
+  \item \textbf{LLM-assisted reconstruction.} The trace, the goal, and
+        any \texttt{trace\_annotations} are presented to a configured
+        LLM with instructions to produce a home-system proof script.
+        The script is kernel-checked. Failure is silent and proceeds to
+        the next strategy.
+  \item \textbf{Lemma extraction fallback.} If the trace can be summarized
+        as a lemma list (e.g., the names of axioms used), produce a
+        synthetic Tier~2 certificate from those names and re-verify at
+        Tier~2.
+\end{enumerate}
+
+The user (or project configuration) controls which strategies are
+enabled. LLM strategies are off by default in environments with no LLM
+endpoint configured.
+
+\paragraph{Trust expansion.} None. Each strategy produces a
+home-system proof term that the kernel re-checks. LLM-proposed scripts
+are sound iff the kernel accepts them.
+
+\paragraph{Trace formats supported in v1.}
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{alethe-2024}: SMT proof format produced by CVC5.
+        Symbolic replay implemented for Lean.
+  \item \texttt{tstp-fof}, \texttt{tstp-thf}: TPTP proof formats produced
+        by Vampire. Symbolic replay implemented partially; LLM-assisted
+        reconstruction available as fallback.
+  \item \texttt{lean-tactic-script}: when the backend is an LLM-prover
+        targeting Lean directly, the trace is the proposed script.
+        Verified by running the script and checking the kernel result.
+\end{itemize}
+
+\subsection{Tier 4: Foundational certificate (reserved)}
+
+Tier~4 certificates carry proofs in a foundational logical framework
+(e.g., $\lambda\Pi$-calculus modulo) that the home system's kernel
+accepts after a foundational embedding. Not implemented in v1.
+
+\section{The dispatch protocol}
+\label{sec:dispatch}
+
+\subsection{Modes of dispatch}
+
+The system distinguishes three modes of operation:
+
+\paragraph{Fast path.} Native home-system automation (Lean's
+\texttt{simp}, \texttt{aesop}, \texttt{decide}; Rocq's \texttt{auto},
+\texttt{lia}, etc.) is unaffected by the brokerage. The brokerage is
+invoked only via explicit \texttt{dispatch}-family tactics. Fast path
+operates at sub-second latency; it is part of the home system, not
+this specification.
+
+\paragraph{Slow path (interactive).} The user invokes a
+\texttt{dispatch} tactic. The plugin serializes the proof state, runs
+the IR rewriter, hands off to the dispatcher, and awaits a result.
+Results return asynchronously when possible: the IDE shows a pending
+indicator on the tactic call until the dispatch resolves. State
+versioning ensures that stale results do not get applied to mutated
+proofs. Typical timeout: 10--60 seconds.
+
+\paragraph{Build path.} On project compilation, dispatch calls re-run
+with longer budgets and persistent caching. The build path is the
+source of truth for CI; a project's CI passes iff every dispatch call
+produces a kernel-checked proof term within budget. Cached certificates
+from prior interactive runs are consulted before re-dispatch.
+
+\subsection{The dispatch tactic API (Lean 4)}
+
+\begin{lstlisting}[style=lean]
+-- Generic dispatch with default strategy
+example : 2 + 2 = 4 := by dispatch
+
+-- Targeted dispatch
+example : ... := by dispatch_smt (timeout := 10) (backend := cvc5)
+example : ... := by dispatch_atp (backend := vampire)
+example : ... := by dispatch_llm (model := default)
+
+-- Dispatch with hints
+example : ... := by
+  dispatch (using := [Nat.succ_pos, foo_lemma])
+           (tier := structural)
+           (rewrite := default)
+\end{lstlisting}
+
+The Rocq API mirrors this via a \texttt{Dispatch} tactic with named
+arguments; the surface syntax differs but the semantics are identical.
+
+\subsection{Dispatch decision logic}
+
+For v1, the dispatcher uses a rule-based decision procedure:
+
+\begin{enumerate}[leftmargin=2em]
+  \item If the user named a backend, use that one (after capability
+        check).
+  \item Otherwise, classify the goal by its
+        \texttt{logic\_classification}:
+        \begin{itemize}
+          \item Pure linear arithmetic: SMT, prefer Tier~1 if a
+                witness is feasible.
+          \item First-order with equality, no arithmetic: ATP.
+          \item Higher-order: ATP with HOL extensions, or LLM, or
+                ITP if configured.
+          \item Mixed: speculative parallel dispatch to top-2
+                candidates.
+        \end{itemize}
+  \item Apply the project's preferences and exclusions (e.g., ``no LLM
+        on this project'', ``prefer Z3 over CVC5'').
+\end{enumerate}
+
+A learned dispatcher is a v2 concern; v1 prioritizes predictability.
+
+\subsection{Capability matching}
+\label{sec:capability-matching}
+
+Each backend adapter declares its capabilities as a structured manifest:
+
+\begin{lstlisting}[language=json]
+{
+  "adapter": "cvc5",
+  "logic_fragments": ["LIA", "LRA", "BV", "UF", "UFLIA", "UFLRA"],
+  "type_constructions": ["primitive", "type_variable_via_specialization"],
+  "max_order": "first_order",
+  "tiers_produced": [1, 3],
+  "trace_formats_produced": ["alethe-2024"],
+  "preferred_rewrite_pipeline": [...]
+}
+\end{lstlisting}
+
+Before invoking an adapter, the dispatcher checks the goal's
+\texttt{logic\_classification} and the metadata-recorded type
+constructions against the adapter's manifest. Mismatches cause the
+dispatcher to skip the backend with reason
+\texttt{logic\_out\_of\_fragment} or \texttt{type\_construction\_not\_supported}.
+
+\subsection{Concurrent dispatch}
+
+When the dispatcher chooses parallel speculative dispatch, multiple
+adapters are invoked concurrently with the same (rewritten) IR. Result
+handling policy:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{First valid certificate wins by default.} The first
+        backend to return a certificate that the verifier accepts wins;
+        other backends are cancelled.
+  \item \textbf{Tier preference within a grace window.} If a higher-tier
+        certificate (preferring Tier~1 over Tier~3 over Tier~2 over
+        Tier~0) returns within a configured grace window after a
+        first success, the higher-tier certificate is preferred.
+        Default grace window: 2 seconds.
+  \item \textbf{User override.} The user can specify
+        \texttt{tier\_preference} in directives to force a different
+        ordering.
+\end{itemize}
+
+\subsection{Failure handling}
+
+\paragraph{Backend timeout.} Returns an \texttt{unknown} certificate
+(envelope only, with \texttt{reason: "timeout"}). The dispatcher does
+not silently fall through to another backend unless speculative dispatch
+was configured.
+
+\paragraph{Backend error.} Returns an \texttt{error} certificate with
+backend-specific diagnostics. The user sees a clear message; the
+dashboard records the error.
+
+\paragraph{Verifier rejection.} The certificate is logged with
+rejection reason; the dispatch is reported as failed. Speculative
+parallel dispatches continue to run; a rejected certificate from one
+backend does not affect others.
+
+\paragraph{Reconstruction failure.} Reported per-strategy in the
+strategy stack. The user sees a breakdown (e.g., ``Alethe-to-Lean
+replay failed at step 47; LLM reconstruction also failed; falling
+back to lemma extraction succeeded'').
+
+\subsection{The dashboard}
+
+The dashboard is a session-level UI element that surfaces dispatch
+behavior over time. It tracks:
+
+\begin{itemize}[leftmargin=2em]
+  \item Per-call breakdown: which backends were invoked, which tiers
+        were produced, which strategies succeeded, what timings were
+        observed.
+  \item Aggregate statistics: per-backend success rates over the
+        session and the project, per-goal-shape Tier~2 reconstruction
+        rates, LLM strategy success rates.
+  \item Failure analysis: common failure modes, suggested remedies
+        (e.g., ``Goals involving \texttt{LinearOrderedField} are
+        succeeding 80\% on Z3 but 20\% on CVC5; consider
+        \texttt{(backend := z3)}'').
+\end{itemize}
+
+The dashboard is the primary mechanism by which users develop
+calibrated intuitions about dispatch behavior. Without it, the
+brokerage operates as a black box; with it, the user has visibility
+into the prover marketplace.
+
+\section{The certificate verifier}
+\label{sec:verifier}
+
+\subsection{Architecture}
+
+The verifier is a tier-dispatched function with per-tier modules. Each
+module implements the following interface:
+
+\begin{lstlisting}[style=plain]
+trait TierVerifier {
+  fn verify(
+    cert: &Certificate,
+    ir: &IR,
+    rewrite_trace: &RewriteTrace
+  ) -> VerificationResult;
+}
+
+enum VerificationResult {
+  Verified(HomeSystemProofTerm),
+  Rejected(RejectionReason),
+  Indeterminate(IndeterminateReason),
+}
+\end{lstlisting}
+
+A \texttt{Verified} result includes a home-system proof term of type
+matching the (rewritten) goal. The \texttt{Rejected} variant carries a
+structured rejection reason consumable by the dashboard.
+\texttt{Indeterminate} is reserved for Tier~0 with pending trust
+configuration.
+
+\subsection{Pre-tier envelope verification}
+
+Before tier-specific verification:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Validate the envelope schema and version.
+  \item Confirm \texttt{dispatch\_context\_hash} matches the actual
+        IR document hash.
+  \item Confirm \texttt{rewrite\_trace\_hash} matches the actual
+        trace hash.
+  \item Confirm the backend identity is recognized and not blocklisted.
+  \item Validate library provenance: every referenced lemma's content
+        hash matches a lemma available in the home system.
+\end{enumerate}
+
+Any failure here results in \texttt{Rejected} with reason
+\texttt{envelope\_invalid}.
+
+\subsection{Tier-specific verification}
+
+\paragraph{Tier 0.} Consult trust policy. If accepted, produce a
+proof term constructed via the home system's
+\texttt{external\_oracle\_certificate} mechanism (which records the
+trust expansion and the backend attestation in the proof term itself,
+making the trust visible in any downstream consumer of the term).
+
+\paragraph{Tier 1.} Dispatch to a per-witness-kind checker:
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{farkas}: verify nonnegativity and arithmetic
+        contradiction; produce a Lean/Rocq term using the home system's
+        Farkas-witness lemma.
+  \item \texttt{sat\_assignment}: evaluate the formula under the
+        assignment; produce a term using the appropriate evaluation
+        lemma.
+  \item \texttt{sat\_unsat\_core}: run home-system propositional
+        decision procedure on the core; produce a term.
+\end{itemize}
+
+Witness checkers are small, audited home-system tactics. Their
+implementations are part of the home-system plugin.
+
+\paragraph{Tier 2.} Invoke the home-system reconstruction tactic
+indicated by \texttt{strategy\_hint}, with \texttt{lemmas\_used} as
+hints, within the configured budget. Success iff the tactic produces
+a kernel-checkable term.
+
+\paragraph{Tier 3.} Invoke the strategy stack
+(Section~\ref{sec:certificates}). Each strategy attempt is bounded by
+a per-strategy timeout. Successful strategies short-circuit the stack;
+failures fall through.
+
+\subsection{Lifting (the inverse of refinement)}
+\label{sec:lifting}
+
+After tier-specific verification produces a proof term of the
+\emph{rewritten} goal, the verifier hands off to the lifting phase.
+Lifting inverts:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Adapter refinement (using the certificate's
+        \texttt{refinement\_record}).
+  \item IR rewriting (using the rewrite trace).
+\end{enumerate}
+
+The output is a proof term of the \emph{original} home-system goal.
+
+\paragraph{Adapter refinement inversion.} For each entry in the
+\texttt{refinement\_record}'s \texttt{specializations} list, lifting
+applies the inverse:
+
+\begin{description}
+  \item[\texttt{type\_specialization}.] Apply the named soundness
+        witness (an embedding lemma) to lift the proof from the
+        specialized type to the original type variable.
+  \item[\texttt{method\_specialization}.] Replace the specialized
+        operator with the typeclass method, using instance resolution.
+  \item[\texttt{axiomatization}.] Discharge the introduced axioms
+        using the home system's instance proofs.
+  \item[\texttt{definition\_unfolding}.] Re-fold the definition
+        (typically a no-op since unfolding preserves provability and
+        the home system's elaborator handles the equivalence).
+  \item[\texttt{logic\_encoding}.] Decode the encoding using a
+        home-system decoder for that encoding family.
+  \item[\texttt{rendering}.] No inversion needed; rendering is
+        used only by adapters whose output is already in the home
+        system's native syntax (LLM and ITP adapters).
+\end{description}
+
+\paragraph{IR rewrite inversion.} For each entry in the rewrite trace
+(in reverse order), the corresponding pass's \texttt{inversion\_data}
+is consulted to construct a wrapping that converts the proof of the
+post-pass goal into a proof of the pre-pass goal.
+
+\paragraph{Failure mode.} Lifting can fail when refinement record or
+rewrite trace data is incomplete or inconsistent (a soundness-relevant
+serializer or rewriter bug). On lifting failure, the verification
+result is \texttt{Rejected} with reason \texttt{lifting\_failed} and
+the partial proof term is discarded. The dispatcher does not retry
+with the same backend; it reports the failure to the dashboard with
+sufficient detail for offline diagnosis.
+
+\subsection{Caching}
+
+Successful certificates (post-lifting) are cached. The cache key is:
+
+\[
+(\textrm{goal\_hash}, \textrm{dispatch\_context\_hash}, \textrm{rewrite\_trace\_hash}, \textrm{backend\_id}, \textrm{backend\_version})
+\]
+
+Cache invalidation triggers:
+
+\begin{itemize}[leftmargin=2em]
+  \item Backend version change.
+  \item Any referenced lemma's content hash change (detected via
+        provenance hashes).
+  \item Home system version change (defensive, conservative).
+  \item Manual invalidation via dispatcher command.
+\end{itemize}
+
+Cache storage is project-local by default
+(\texttt{.proof-broker-cache/} in the project root), with optional
+shared-cache configurations for team or CI use.
+
+\section{The reconstruction layer}
+\label{sec:reconstruction}
+
+\subsection{Per-home-system responsibilities}
+
+Each home system's plugin provides:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Serializer.} \texttt{LocalProofState $\to$ IR}. Subject
+        to the translation discipline (Section~\ref{sec:ir-discipline}).
+  \item \textbf{Deserializer for verifier outputs.}
+        \texttt{HomeSystemProofTerm $\to$ LocalTactic}. Inserts the
+        verified proof term into the user's proof.
+  \item \textbf{Translation tables.} Source-language types and symbols
+        to IR shell entries, with provenance.
+  \item \textbf{Witness checkers.} Per-witness-kind home-system tactics
+        for Tier~1 verification.
+  \item \textbf{Reconstruction tactics.} Lemma-hint consumers for
+        Tier~2 verification (\texttt{aesop}-with-hints,
+        \texttt{simp\_arith}-with-hints, etc.).
+  \item \textbf{Trace consumers.} Per-format implementations for
+        Tier~3 verification (Alethe replayer, TPTP replayer, etc.).
+        Optional; missing consumers cause Tier~3 to fall back to
+        LLM-assisted reconstruction or lemma extraction.
+\end{enumerate}
+
+\subsection{The translation contract}
+
+The home-system plugin is bound by:
+
+\begin{requirement}[Soundness contract]
+For every IR document $D$ the serializer produces, and every
+home-system proof term $\pi$ claiming $D$'s \texttt{goal} (in
+shell form) under the rewriting and refinement records associated
+with $D$, the lifting procedure must produce a home-system proof term
+$\pi'$ such that the kernel accepts $\pi'$ at the type of the original
+proof state's goal.
+\end{requirement}
+
+This is the central soundness obligation. Every other component
+operates under the assumption that the home-system plugin satisfies
+it. Failures of this contract are soundness bugs, not capability
+limitations.
+
+\subsection{Insertion into the proof}
+
+Once lifting produces a proof term of the original goal type, the
+plugin inserts it into the user's proof. For interactive use, this
+manifests as the dispatch tactic succeeding and the goal being
+discharged. For build-time use, the term is recorded in the cache and
+re-used on next compilation.
+
+\subsection{Reporting reconstruction in the proof term}
+
+Where the home system's proof term language permits, the inserted term
+is annotated with metadata indicating that it was produced by
+dispatch. Examples:
+
+\begin{itemize}[leftmargin=2em]
+  \item For Lean 4, an inserted term may be wrapped in a
+        \texttt{Proof.byDispatch} annotation that records the backend
+        identity, tier, and certificate hash. This is invisible to the
+        kernel but visible to project tooling.
+  \item For terms accepted at Tier~0, the wrapping is mandatory and
+        records the trust expansion explicitly.
+\end{itemize}
+
+This annotation is for auditability: a project team can run a tool to
+list every dispatched proof in the codebase and the backends that
+produced them.
+
+\section{LLM integration points}
+\label{sec:llm}
+
+LLMs appear as first-class participants in three places, each gated by
+configuration. In all cases, LLMs are proposers; the home system's
+kernel is the disposer.
+
+\subsection{LLM-as-backend}
+
+A configured LLM endpoint is registered as a backend with its own
+adapter. The adapter:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Renders the IR as source-language syntax (Lean 4 surface
+        syntax for the Lean home system, Rocq syntax for Rocq).
+  \item Sends the rendering to the LLM endpoint with a prompt template
+        instructing the model to produce a tactic proof.
+  \item Receives the tactic proof and packages it as a Tier~3
+        certificate with \texttt{trace\_format: "lean-tactic-script"}
+        (or analogous for Rocq).
+  \item Records its rendering choices in a refinement record with
+        \texttt{kind: rendering}.
+\end{enumerate}
+
+The verifier processes the certificate by running the tactic script in
+the home system. The kernel re-checks the resulting proof term.
+
+\subsection{LLM-assisted Tier~3 reconstruction}
+
+When a Tier~3 certificate from an SMT or ATP backend has a trace in a
+format the home system cannot replay symbolically, the LLM-assisted
+strategy may be tried:
+
+\begin{enumerate}[leftmargin=2em]
+  \item The trace, the goal, and any \texttt{trace\_annotations} are
+        formatted into a prompt.
+  \item The prompt asks the LLM to translate the trace into a
+        home-system tactic proof.
+  \item The resulting tactic proof is run and kernel-checked.
+\end{enumerate}
+
+This strategy is sound because the kernel checks the result; an LLM
+that hallucinates simply produces a script that fails to type-check.
+
+\subsection{LLM-assisted premise selection (deferred)}
+
+For Tier ``rich'' context, an LLM can propose lemma slices that go
+beyond symbol-based selection. Affects only what the backend sees;
+does not affect soundness because the backend's certificate is still
+kernel-checked. \emph{Deferred to v2.}
+
+\subsection{Configuration}
+
+LLM use is configured at the project level:
+
+\begin{lstlisting}[language=json]
+{
+  "llm": {
+    "enabled": true,
+    "endpoint": "https://...",
+    "model_identity": "<provider>/<model>/<version>",
+    "max_tokens": 4096,
+    "temperature": 0.0,
+    "use_for": ["backend", "tier3_reconstruction"]
+  }
+}
+\end{lstlisting}
+
+LLM strategies are off by default in environments without LLM
+configuration; their absence is not a failure mode.
+
+\subsection{Cache invalidation for LLM strategies}
+
+Cached certificates produced via LLM strategies are keyed in part on
+\texttt{model\_identity}. Any reported model change invalidates
+prior LLM-strategy cache entries. The home system additionally
+re-verifies (kernel re-checks) cached LLM-reconstructed certificates
+on load, even when model identity matches, as a defense against silent
+model drift between cached identity reports.
+
+\section{ITP-to-ITP dispatch}
+\label{sec:itp-itp}
+
+\subsection{The asymmetry}
+
+Dispatch from one ITP to another (e.g., a Lean goal shipped to Isabelle
+for proof) is qualitatively different from dispatch to SMT/ATP/LLM
+backends. The asymmetry arises because the artifact returned by an ITP
+is itself a foundational proof in another foundational logic, not a
+backend-neutral proof artifact. Translating, say, an Isar proof to a
+Lean proof term requires either:
+
+\begin{enumerate}[leftmargin=2em]
+  \item A foundational embedding from one logic to the other (the
+        Tier~4 / Dedukti-style approach).
+  \item Trusting the source ITP as an oracle (Tier~0).
+  \item Reducing the proof to a lemma list and reconstructing in the
+        target (Tier~2).
+\end{enumerate}
+
+For v1, options 2 and 3 are supported; option 1 is out of scope.
+
+\subsection{Tier~0 ITP-to-ITP dispatch}
+
+A configured ITP backend may be invoked at Tier~0 with explicit per-project
+trust opt-in. The dispatcher renders the goal in the target ITP's
+syntax (using the LLM-style rendering machinery), invokes the target
+in batch mode (e.g., \texttt{isabelle build}), and accepts a
+``proof succeeded'' result as a Tier~0 certificate. The trust expansion
+is explicit and recorded in the proof term.
+
+\subsection{Tier~2 ITP-to-ITP dispatch}
+
+Many ITPs can report which lemmas were used in a proof: Isabelle's
+\texttt{sledgehammer} returns proofs as \texttt{by (metis lemma1
+lemma2)} and similar. The ITP adapter extracts this lemma list and
+packages it as a Tier~2 certificate. Reconstruction in the home system
+proceeds as for any Tier~2 certificate.
+
+\paragraph{Limitation.} Tier~2 ITP-to-ITP dispatch only works when the
+lemmas used are either: (a) hypotheses available in the home system's
+local context, or (b) lemmas with cross-system equivalents identified
+by content hash. Library lemmas without cross-system equivalents
+cannot be used; the certificate is rejected with reason
+\texttt{lemma\_not\_available\_in\_home\_system}.
+
+\subsection{Future work}
+
+Full Tier~3 reconstruction across ITPs (translating Isar proofs to
+Lean tactic scripts symbolically) is a research problem deferred to
+v2 or beyond. Tier~4 foundational interchange is explicitly
+out of scope for the brokerage and best pursued by complementary
+projects (Dedukti, Logipedia).
+
+\section{Worked examples}
+\label{sec:examples}
+
+This section walks through three end-to-end dispatch examples,
+illustrating how the architecture handles increasingly demanding
+cases. Each example exercises different parts of the IR's metadata
+machinery.
+
+\subsection{Example 1: Linear arithmetic over a typeclass}
+\label{sec:example1}
+
+\paragraph{Source goal (Lean 4).}
+
+\begin{lstlisting}[style=lean]
+variable {alpha : Type*} [LinearOrderedCommRing alpha]
+
+example (n m : alpha) (h1 : n + m = 10) (h2 : 0 <= n) (h3 : 0 <= m) :
+    n <= 10 := by
+  dispatch_smt
+\end{lstlisting}
+
+\paragraph{Walkthrough.}
+
+\begin{enumerate}[leftmargin=2em]
+  \item The serializer produces an IR document. Logic classification:
+        \texttt{first\_order}, fragment \texttt{none-without-specialization}
+        but with a \texttt{specialization\_targets} entry on the
+        instance metadata pointing to LIA via the
+        \texttt{embeds\_into:Int\_for\_universal\_LIA} tag.
+  \item The dispatcher routes to the CVC5 adapter based on user
+        directive (\texttt{dispatch\_smt}).
+  \item The IR rewriter runs CVC5's preferred pipeline:
+        propositional simplification, no quotient elimination needed,
+        no aggressive unfolding (the operations are already at the
+        typeclass-method level the adapter expects).
+  \item The CVC5 adapter inspects the rewritten IR. The instance
+        metadata's theory tag justifies type specialization
+        $\alpha \to \mathbb{Z}$. The adapter records this in a
+        refinement record.
+  \item The adapter emits SMT-LIB:
+        \begin{lstlisting}[style=plain]
+(set-logic LIA)
+(declare-const n Int)
+(declare-const m Int)
+(assert (= (+ n m) 10))
+(assert (<= 0 n))
+(assert (<= 0 m))
+(assert (not (<= n 10)))
+(check-sat)
+(get-proof)
+        \end{lstlisting}
+  \item CVC5 returns \texttt{unsat} with an Alethe proof trace.
+  \item The adapter packages the result as a Tier~3 certificate with
+        the Alethe trace and the refinement record (recording the
+        $\alpha \to \mathbb{Z}$ specialization with soundness witness
+        \texttt{linear\_ordered\_comm\_ring\_lia\_embedding}).
+  \item The verifier replays the Alethe trace against Lean's
+        \texttt{Int} arithmetic, producing a Lean proof term of
+        $\forall n\ m : \mathbb{Z}, n + m = 10 \to 0 \leq n \to 0 \leq m \to n \leq 10$.
+  \item The lifting phase applies the embedding witness lemma to
+        transport this proof to the typeclass-quantified version, then
+        instantiates at the user's specific $\alpha$. The result is a
+        Lean proof term of the original goal.
+  \item The plugin inserts the term, the goal closes.
+\end{enumerate}
+
+\paragraph{Spec components exercised.} Type metadata (typeclass instance
+with abstract signature, axioms, theory tags); definitional metadata
+(typeclass methods); refinement record (\texttt{type\_specialization} and
+\texttt{method\_specialization}); Tier~3 with symbolic Alethe replay;
+lifting via embedding witness.
+
+\subsection{Example 2: Higher-order goal with function composition}
+\label{sec:example2}
+
+\paragraph{Source goal (Lean 4).}
+
+\begin{lstlisting}[style=lean]
+example (f g : Nat -> Nat) (P : (Nat -> Nat) -> Prop)
+    (h1 : forall h : Nat -> Nat, P h -> P (h .. h))
+    (h2 : P f)
+    (h3 : f = g) :
+    P (g .. g) := by
+  dispatch
+\end{lstlisting}
+
+(Here \texttt{..} stands for function composition; in real Lean
+syntax this would be the dot-circle operator.)
+
+\paragraph{Walkthrough.}
+
+\begin{enumerate}[leftmargin=2em]
+  \item The serializer produces an IR document with logic classification:
+        \texttt{higher\_order}, features \texttt{function\_quantification}
+        and \texttt{predicate\_argument}, no first-order fragment.
+  \item Definitional metadata for \texttt{Function.comp} carries kind
+        \texttt{defined\_function}, definitional equation, and
+        \texttt{concept\_tag: function\_composition}.
+  \item The dispatcher's capability matching excludes CVC5 (max\_order
+        first\_order) and Z3 by default. Candidates: Vampire-HOL,
+        LLM-prover.
+  \item Speculative parallel dispatch is configured. Both adapters run.
+  \item The Vampire-HOL adapter applies its preferred rewriting:
+        definition unfolding for \texttt{function\_composition} (using
+        the definitional equation from the metadata). The adapter
+        emits TPTP-THF and invokes Vampire.
+  \item The LLM adapter renders the goal as Lean syntax and queries the
+        configured LLM endpoint for a tactic proof.
+  \item In a typical run, the LLM returns
+        \texttt{subst h3; exact h1 f h2} (or similar) within ~2 seconds.
+        The verifier runs this in Lean; the kernel accepts the
+        resulting term. Tier~3 certificate, format
+        \texttt{lean-tactic-script}.
+  \item Vampire's run, meanwhile, may take longer; the dispatcher's
+        ``first valid certificate wins by default'' policy accepts the
+        LLM result and cancels Vampire.
+  \item No lifting is needed: the LLM adapter's refinement record
+        contains only a \texttt{rendering} entry, which has no
+        inversion. The proof term is the original goal type directly.
+\end{enumerate}
+
+\paragraph{Spec components exercised.} Logic classification (higher-order);
+definitional metadata for defined functions; capability matching
+(filtering out first-order-only backends); concurrent dispatch; LLM-as-backend
+with kernel-checked output; trivial lifting (rendering is non-invertible
+because no inversion is needed).
+
+\subsection{Example 3: Quotient-type goal reduced to underlying type}
+\label{sec:example3}
+
+\paragraph{Source goal (Lean 4).}
+
+\begin{lstlisting}[style=lean]
+def myRel (n : Nat) : Int -> Int -> Prop := fun a b => n divides (a - b)
+def MyZMod (n : Nat) : Type := Quot (myRel n)
+def addMyZMod (n : Nat) : MyZMod n -> MyZMod n -> MyZMod n :=
+  Quot.lift2 (fun a b => Quot.mk _ (a + b)) (...)
+
+example (n : Nat) (hn : 0 < n) (x y z : MyZMod n) :
+    addMyZMod n (addMyZMod n x y) z =
+    addMyZMod n x (addMyZMod n y z) := by
+  dispatch_smt
+\end{lstlisting}
+
+\paragraph{Walkthrough.}
+
+\begin{enumerate}[leftmargin=2em]
+  \item The serializer produces an IR document with type metadata for
+        \texttt{MyZMod n} (kind \texttt{type\_constructor\_application},
+        construction kind \texttt{quotient}, with
+        \texttt{underlying\_type} $= \mathbb{Z}$, equivalence relation
+        \texttt{myRel n}, elimination and equality principles).
+        Definitional metadata for \texttt{addMyZMod} (kind
+        \texttt{lifted\_to\_quotient}, underlying function
+        \texttt{Int.add}).
+  \item The dispatcher routes to CVC5.
+  \item CVC5's preferred rewriting pipeline includes
+        \texttt{quotient\_elimination}. The pass:
+        \begin{itemize}
+          \item Recognizes that the goal is an equality in
+                \texttt{MyZMod n}.
+          \item Applies the elimination principle three times
+                (introducing representatives $a$, $b$, $c$).
+          \item Applies the equality principle, reducing the goal to
+                \texttt{myRel n ((a + b) + c) (a + (b + c))}.
+          \item Unfolds \texttt{myRel n} using its definitional equation
+                from definitional metadata.
+          \item Records inversion data: the introduction points, the
+                equivalence proofs needed to wrap the resulting proof.
+        \end{itemize}
+        After the pass, the goal is
+        \texttt{n divides (((a + b) + c) - (a + (b + c)))}, which
+        simplifies to \texttt{n divides 0}.
+  \item Propositional simplification reduces this further; the result
+        is in CVC5's reach.
+  \item CVC5 returns an Alethe proof of \texttt{n divides 0}.
+  \item The verifier replays the Alethe trace, producing a Lean proof
+        of the underlying-type goal.
+  \item Lifting first inverts the adapter refinement (definition unfolding,
+        nothing else), then walks the rewrite trace in reverse: the
+        \texttt{quotient\_elimination} pass's inversion data is consulted
+        to wrap the proof in the appropriate \texttt{Quot.ind} and
+        \texttt{Quot.sound} structure.
+  \item The result is a Lean proof of the original quotient-type goal.
+        The plugin inserts the term.
+\end{enumerate}
+
+\paragraph{Spec components exercised.} Type metadata for type
+constructions (quotients); definitional metadata for lifted functions;
+the IR rewriting layer with quotient elimination; rewrite trace and
+lifting through trace inversion; tier~3 with symbolic replay; the
+combined effect of rewriter inversion plus refinement inversion.
+
+\subsection{What these examples establish}
+
+The three examples taken together exercise every major architectural
+component:
+
+\begin{itemize}[leftmargin=2em]
+  \item Each of the four metadata categories (logic classification, type
+        metadata, definitional metadata, library provenance) appears
+        in at least two examples.
+  \item Each tier supported in v1 (1, 2, 3) is exercised; Tier~0 is
+        used in ITP-to-ITP scenarios outside these examples.
+  \item Three different backends (CVC5, LLM-prover, and via capability
+        matching, the absence of fit for Z3) are exercised.
+  \item The IR rewriting layer is exercised both with no rewrites
+        (Example~2) and with non-trivial rewrites and inversion
+        (Example~3).
+  \item Lifting is exercised through type specialization (Example~1),
+        rendering (Example~2, trivially), and rewrite-trace inversion
+        (Example~3).
+\end{itemize}
+
+These examples are not exhaustive but they are believed to be
+representative of the cases the v1 implementation must handle. The
+spec authors recommend that any prototype implementation begin by
+making these three examples work end-to-end before generalizing.
+
+\appendix
+
+\section{Registry of recognized patterns}
+\label{app:registry}
+
+The architecture relies on a shared registry of recognized patterns
+that the IR's metadata refers to. The registry is itself a
+specification artifact, separate from but coordinated with the IR
+schema. This appendix describes its initial content for v1.
+
+\subsection{Logical features}
+\label{app:logic-features}
+
+The \texttt{features\_used} list in
+\texttt{logic\_classification} draws from:
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{universal\_quantification\_over\_first\_order}
+  \item \texttt{existential\_quantification\_over\_first\_order}
+  \item \texttt{function\_quantification}
+  \item \texttt{predicate\_argument}
+  \item \texttt{equality\_at\_first\_order\_type}
+  \item \texttt{equality\_at\_function\_type}
+  \item \texttt{equality\_in\_quotient\_type}
+  \item \texttt{equality\_in\_inductive\_type}
+  \item \texttt{induction\_recursion}
+  \item \texttt{dependent\_pair}
+  \item \texttt{dependent\_function}
+  \item \texttt{universe\_polymorphism}
+\end{itemize}
+
+\subsection{First-order fragments}
+\label{app:fragments}
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{LIA}: linear integer arithmetic
+  \item \texttt{LRA}: linear real arithmetic
+  \item \texttt{NIA}: nonlinear integer arithmetic
+  \item \texttt{NRA}: nonlinear real arithmetic
+  \item \texttt{BV}: bitvectors
+  \item \texttt{UF}: uninterpreted functions with equality
+  \item \texttt{UFLIA}, \texttt{UFLRA}: combined theories
+  \item \texttt{ARRAY}: theory of arrays
+  \item \texttt{FOL}: pure first-order logic with equality
+  \item \texttt{HOL}: higher-order logic with equality
+\end{itemize}
+
+\subsection{Theory tags for type metadata}
+\label{app:theory-tags}
+
+Theory tags assert that universal sentences in a particular fragment
+valid over a model are valid over instances of the type. Common tags:
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{embeds\_into:Int\_for\_universal\_LIA}
+  \item \texttt{embeds\_into:Rat\_for\_universal\_LRA}
+  \item \texttt{embeds\_into:Real\_for\_universal\_LRA}
+  \item \texttt{embeds\_into:BV32\_for\_universal\_BV}
+  \item \texttt{is:finite}
+  \item \texttt{is:decidable\_equality}
+  \item \texttt{is:linearly\_ordered}
+  \item \texttt{is:well\_founded}
+\end{itemize}
+
+\subsection{Axiom shape descriptors}
+\label{app:axiom-shapes}
+
+Used in \texttt{abstract\_axioms} entries for typeclasses. Each
+descriptor is a string-encoded pattern that adapters can
+expand into concrete axioms in their target logic.
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{associativity:OP}: $\forall x, y, z.\ (x \cdot y) \cdot z = x \cdot (y \cdot z)$
+  \item \texttt{commutativity:OP}: $\forall x, y.\ x \cdot y = y \cdot x$
+  \item \texttt{identity\_left:OP:E}: $\forall x.\ e \cdot x = x$
+  \item \texttt{identity\_right:OP:E}: $\forall x.\ x \cdot e = x$
+  \item \texttt{inverse:OP:INV:E}: $\forall x.\ x \cdot \mathrm{inv}(x) = e$
+  \item \texttt{distributivity\_left:OP1:OP2}:
+        $\forall x, y, z.\ x \cdot (y + z) = x \cdot y + x \cdot z$
+  \item \texttt{reflexivity:R}: $\forall x.\ x \mathrel{R} x$
+  \item \texttt{transitivity:R}: $\forall x, y, z.\ x \mathrel{R} y \to y \mathrel{R} z \to x \mathrel{R} z$
+  \item \texttt{symmetry:R}: $\forall x, y.\ x \mathrel{R} y \to y \mathrel{R} x$
+  \item \texttt{antisymmetry:R}: $\forall x, y.\ x \mathrel{R} y \to y \mathrel{R} x \to x = y$
+  \item \texttt{totality:R}: $\forall x, y.\ x \mathrel{R} y \vee y \mathrel{R} x$
+  \item \texttt{monotonicity\_in\_arg:OP:R:N}: $\forall \vec{x}, y, z.\ y \mathrel{R} z \to \mathrm{op}(\dots, y \text{ at } N, \dots) \mathrel{R} \mathrm{op}(\dots, z \text{ at } N, \dots)$
+  \item \texttt{positivity\_preservation:OP}: positive multiplication and similar
+\end{itemize}
+
+The registry is extensible; adapters may report unrecognized shapes
+and the IR can fall back to providing explicit axiom statements in
+shell form. Adding a new shape descriptor requires registry
+maintainers to ensure that all participating adapters either
+recognize it or use the explicit-axiom fallback.
+
+\subsection{Concept tags for definitional metadata}
+\label{app:concepts}
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{function\_composition}
+  \item \texttt{function\_identity}
+  \item \texttt{function\_application}
+  \item \texttt{integer\_addition}, \texttt{integer\_multiplication},
+        \texttt{integer\_subtraction}, \texttt{integer\_negation},
+        \texttt{integer\_modulo}, \texttt{integer\_division}
+  \item \texttt{boolean\_and}, \texttt{boolean\_or}, \texttt{boolean\_not}
+  \item \texttt{set\_membership}, \texttt{set\_union}, \texttt{set\_intersection}
+  \item \texttt{list\_cons}, \texttt{list\_nil}, \texttt{list\_append},
+        \texttt{list\_length}
+\end{itemize}
+
+The concept tags allow adapters to recognize standard mathematical
+operations across home systems. Lean's \texttt{List.cons} and Rocq's
+\texttt{cons} both carry \texttt{concept\_tag: list\_cons}, so an
+adapter that knows about lists can handle both uniformly.
+
+\subsection{Construction kinds for type metadata}
+\label{app:construction-kinds}
+
+For \texttt{type\_constructor\_application}:
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{quotient}: see Example~3 (Section~\ref{sec:example3})
+  \item \texttt{inductive}: ADT-like type with named constructors
+  \item \texttt{coinductive}: dual of inductive, with destructors
+  \item \texttt{sigma}: dependent pair $\Sigma x : A.\ B(x)$
+  \item \texttt{pi}: dependent function $\Pi x : A.\ B(x)$ (rare in
+        v1; usually appears in shell-level \texttt{Forall})
+  \item \texttt{refinement}: $\{x : A \mid P(x)\}$
+  \item \texttt{higher\_inductive}: HIT with point and path constructors
+        (deferred to v2 for production support; metadata schema reserved)
+\end{itemize}
+
+\subsection{Adapter capability vocabulary}
+\label{app:adapter-caps}
+
+For backend adapter capability manifests:
+
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{logic\_fragments}: from Section~\ref{app:fragments}.
+  \item \texttt{type\_constructions}: which \texttt{construction\_kind}
+        values the adapter handles, plus pseudo-values such as
+        \texttt{type\_variable\_via\_specialization} (handles type
+        variables only when a specialization is recorded).
+  \item \texttt{max\_order}: \texttt{first\_order} or \texttt{higher\_order}.
+  \item \texttt{tiers\_produced}: which certificate tiers the adapter
+        can produce.
+  \item \texttt{trace\_formats\_produced}: which trace formats the
+        adapter emits at Tier~3.
+\end{itemize}
+
+\subsection{Maintenance}
+
+The registry is versioned alongside the IR schema. Adding entries is a
+non-breaking change; removing or renaming entries is breaking and
+requires schema-version increments. The registry source of truth is
+maintained as a separate document with cross-references from this
+specification.
+
+\section{Open questions and deferred work}
+\label{app:open}
+
+The following items are explicitly deferred or unresolved at the time
+of this v1.0 specification.
+
+\subsection{Resolved during specification development}
+
+\begin{itemize}[leftmargin=2em]
+  \item \emph{Tier~2 in v1?} Resolved: yes, framed as a fallback tier
+        with explicit probabilistic-soundness language and dashboard
+        surfacing (Section~\ref{sec:tier2}).
+  \item \emph{Lean + Rocq scope?} Resolved: Lean 4 primary, Rocq as
+        architectural probe with Tier~0+1 only
+        (Section~\ref{sec:scope}).
+  \item \emph{Rich context overcommitment?} Resolved: rich context
+        narrowed to symbol-based selection plus manual augmentation
+        plus provenance, no transitive closure
+        (Section~\ref{sec:ir-tiers}).
+  \item \emph{Per-backend serialization vs.\ general IR?} Resolved:
+        general IR plus per-backend adapter refinement, with
+        configurable IR rewriting between (Sections~\ref{sec:overview},
+        \ref{sec:rewriting}).
+  \item \emph{Metadata category convergence?} Resolved: four bounded
+        categories (logic classification, type metadata, definitional
+        metadata, library provenance) with conversion metadata
+        deferred to v2.
+\end{itemize}
+
+\subsection{Open for v1 implementation}
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Translation hints for typeclass-heavy contexts beyond
+        the worked example.} The architecture has been validated
+        against three worked examples (Section~\ref{sec:examples}). Real
+        usage will surface typeclass configurations not anticipated by
+        these examples. The specification authors recommend that the
+        v1 implementation track translation-hints failures in the
+        dashboard with sufficient detail to drive registry extensions.
+  \item \textbf{Binary serialization format.} JSON is the canonical
+        format for this specification. Production deployments should
+        migrate to a binary format (CBOR or Protocol Buffers) for
+        performance. The choice is deferred to implementation; the
+        binary format must round-trip with JSON to preserve the
+        canonical specification semantics.
+  \item \textbf{Cache invalidation under home-system updates.} The
+        current scheme keys on referenced lemma content hashes plus
+        backend versions. Home-system kernel updates may change
+        definitional unfolding behavior in subtle ways that don't show
+        up in lemma hashes. The conservative defense is to invalidate
+        on any home-system version change; a more refined scheme can
+        be introduced if conservative invalidation proves too expensive.
+  \item \textbf{Concurrent dispatch policy refinement.} The default
+        ``first valid certificate wins, with a 2-second grace window
+        for higher tiers'' is a starting point. Real usage data will
+        reveal whether a different policy (e.g., always wait for
+        higher-tier certificates, or never wait) is preferable. The
+        configuration mechanism allows experimentation.
+  \item \textbf{LLM model identity and drift.} The defense against
+        silent model drift is mandatory re-verification on cache load
+        for LLM-strategy certificates. This is conservative and
+        expensive. Whether a less expensive approach (verification
+        only on cache miss with explicit identity comparison) is
+        acceptable depends on operational experience with model
+        endpoints.
+  \item \textbf{Opaque payload visibility in dispatch UX.} When a goal
+        contains payloads opaque to the chosen backend, the user
+        should be informed that whole portions of the goal are being
+        treated as uninterpreted. The current spec calls for diagnostic
+        breakdowns in the dispatch UX but does not fully specify the
+        UI; this is left to home-system plugin implementations.
+  \item \textbf{Tier 3 trace richness for multi-strategy
+        reconstruction.} The optional \texttt{trace\_annotations} field
+        allows backends to provide natural-language commentary on
+        proof traces, which can help LLM-assisted reconstruction.
+        Whether to require backends to provide this when feasible
+        (vs.\ leaving it optional) is unresolved; the v1 spec leaves
+        it optional.
+\end{enumerate}
+
+\subsection{Deferred to v2}
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Production-quality Rocq integration.} The architectural
+        probe in v1 validates that the IR is not Lean-shaped; v2 must
+        bring Rocq up to feature parity with Lean.
+  \item \textbf{Tier~4 foundational certificates.} Requires committing
+        to a foundational embedding target (likely $\lambda\Pi$-modulo
+        / Dedukti) and building per-home-system embeddings. A research
+        project complementary to but separable from the brokerage.
+  \item \textbf{ML-driven premise selection.} For Tier ``rich''
+        context. Requires premise-selection model training, evaluation
+        infrastructure, and integration with the IR rewriter as a
+        pluggable selection module.
+  \item \textbf{Conversion metadata.} For goals depending on
+        non-normalized term distinctions, an explicit conversion
+        metadata category is required as the fifth IR metadata
+        category.
+  \item \textbf{Full Tier~3 cross-ITP reconstruction.} Translating
+        proof artifacts from one ITP to another at Tier~3. Currently
+        constrained to Tier~0 (oracle) and Tier~2 (lemma list) for
+        ITP-to-ITP dispatch.
+  \item \textbf{Higher inductive types.} Construction kind reserved;
+        production support requires more design work on the
+        path-constructor metadata.
+  \item \textbf{Mutual recursion in definitional metadata.} The schema
+        currently treats each defined symbol independently. Symbols
+        defined in mutual blocks need cross-references, deferred.
+\end{enumerate}
+
+\section{Glossary}
+\label{app:glossary}
+
+\begin{description}
+  \item[Adapter.] Per-backend component that consumes (rewritten) IR
+        and produces backend-native input; produces a refinement
+        record with returned certificates.
+  \item[Backend.] An automated reasoning system: SMT solver, ATP,
+        LLM-prover, or another ITP, capable of attempting to discharge
+        a proof obligation.
+  \item[Certificate.] The artifact returned by a backend adapter on
+        successful dispatch, organized into tiers.
+  \item[Dispatch.] The process of routing a proof obligation from a
+        home system through the brokerage to a backend.
+  \item[Home system.] An interactive proof assistant that uses the
+        brokerage. Lean 4 (primary) or Rocq (probe) in v1.
+  \item[IR.] Intermediate Representation: the backend-independent
+        document describing a proof obligation.
+  \item[Lifting.] The process of converting a proof of the rewritten,
+        refined goal back to a proof of the original goal, using
+        rewrite trace and refinement record.
+  \item[Refinement record.] A structured description of an adapter's
+        translation choices, attached to the certificate.
+  \item[Rewrite trace.] A log of IR-to-IR transformations performed by
+        the rewriting layer, used for inversion during lifting.
+  \item[Shell.] The logic-agnostic typed term calculus used in IR
+        documents.
+  \item[Tier.] Classification of certificates by strength of evidence
+        (0: oracle, 1: witness, 2: lemma list, 3: trace, 4:
+        foundational).
+\end{description}
+
+\end{document}

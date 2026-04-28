@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.dev/schemas/v1.0/common.schema.json",
+  "title": "Proof Broker shared types (spec v1.0)",
+  "description": "Definitions shared across IR, certificate, refinement record, manifest, and trace schemas. Field names follow the spec; the JSON encoding of the shell calculus is described under $defs/ShellTerm.",
+
+  "$defs": {
+    "ContentHash": {
+      "type": "string",
+      "description": "Content hash, currently always a hex SHA-256 prefixed with 'sha256:'.",
+      "pattern": "^sha256:[a-fA-F0-9]{64}$"
+    },
+
+    "SymbolName": {
+      "type": "string",
+      "description": "Identifier for a constant, function, lemma, instance, etc. Convention: '<library>.<module-path>.<name>' or a flat opaque id; not parsed by the broker.",
+      "minLength": 1
+    },
+
+    "TypeRef": {
+      "type": "string",
+      "description": "Reference to a type. Either (a) a well-known shell-primitive name (Int, Nat, Bool, String, Prop, Type, Real, Rat, Bitvec(n)) or (b) a key into the IR's type_metadata map. The IR rewriter and adapters resolve the name against type_metadata.",
+      "minLength": 1
+    },
+
+    "VarName": {
+      "type": "string",
+      "description": "Bound or free variable name in the shell.",
+      "minLength": 1
+    },
+
+    "ShellTerm": {
+      "description": "A shell-calculus term. Tagged union by the 'node' field, mirroring the grammar in spec §4.4. The shell is logic-agnostic and structural; it does not commit to bound-variable conventions, eta behavior, or universe levels.",
+      "oneOf": [
+        { "$ref": "#/$defs/Shell_Forall" },
+        { "$ref": "#/$defs/Shell_Exists" },
+        { "$ref": "#/$defs/Shell_Lambda" },
+        { "$ref": "#/$defs/Shell_Implies" },
+        { "$ref": "#/$defs/Shell_And" },
+        { "$ref": "#/$defs/Shell_Or" },
+        { "$ref": "#/$defs/Shell_Not" },
+        { "$ref": "#/$defs/Shell_Eq" },
+        { "$ref": "#/$defs/Shell_App" },
+        { "$ref": "#/$defs/Shell_Var" },
+        { "$ref": "#/$defs/Shell_Const" },
+        { "$ref": "#/$defs/Shell_NumLit" },
+        { "$ref": "#/$defs/Shell_Opaque" }
+      ]
+    },
+
+    "Shell_Forall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "var", "type", "body"],
+      "properties": {
+        "node": { "const": "Forall" },
+        "var": { "$ref": "#/$defs/VarName" },
+        "type": { "$ref": "#/$defs/TypeRef" },
+        "body": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_Exists": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "var", "type", "body"],
+      "properties": {
+        "node": { "const": "Exists" },
+        "var": { "$ref": "#/$defs/VarName" },
+        "type": { "$ref": "#/$defs/TypeRef" },
+        "body": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_Lambda": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "binders", "body"],
+      "properties": {
+        "node": { "const": "Lambda" },
+        "binders": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["var", "type"],
+            "properties": {
+              "var": { "$ref": "#/$defs/VarName" },
+              "type": { "$ref": "#/$defs/TypeRef" }
+            }
+          }
+        },
+        "body": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_Implies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "antecedent", "consequent"],
+      "properties": {
+        "node": { "const": "Implies" },
+        "antecedent": { "$ref": "#/$defs/ShellTerm" },
+        "consequent": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_And": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "left", "right"],
+      "properties": {
+        "node": { "const": "And" },
+        "left": { "$ref": "#/$defs/ShellTerm" },
+        "right": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_Or": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "left", "right"],
+      "properties": {
+        "node": { "const": "Or" },
+        "left": { "$ref": "#/$defs/ShellTerm" },
+        "right": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_Not": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "operand"],
+      "properties": {
+        "node": { "const": "Not" },
+        "operand": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_Eq": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "type", "left", "right"],
+      "properties": {
+        "node": { "const": "Eq" },
+        "type": { "$ref": "#/$defs/TypeRef" },
+        "left": { "$ref": "#/$defs/ShellTerm" },
+        "right": { "$ref": "#/$defs/ShellTerm" }
+      }
+    },
+
+    "Shell_App": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "symbol", "args"],
+      "properties": {
+        "node": { "const": "App" },
+        "symbol": { "$ref": "#/$defs/SymbolName" },
+        "type_args": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TypeRef" }
+        },
+        "args": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ShellTerm" }
+        }
+      }
+    },
+
+    "Shell_Var": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "name"],
+      "properties": {
+        "node": { "const": "Var" },
+        "name": { "$ref": "#/$defs/VarName" }
+      }
+    },
+
+    "Shell_Const": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "name"],
+      "properties": {
+        "node": { "const": "Const" },
+        "name": { "$ref": "#/$defs/SymbolName" }
+      }
+    },
+
+    "Shell_NumLit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "value", "type"],
+      "properties": {
+        "node": { "const": "NumLit" },
+        "value": {
+          "type": "string",
+          "description": "Decimal numeric literal as a string, to avoid IEEE-754 precision loss for integer/rational literals.",
+          "pattern": "^-?(0|[1-9][0-9]*)(/[1-9][0-9]*)?(\\.[0-9]+)?([eE][-+]?[0-9]+)?$"
+        },
+        "type": { "$ref": "#/$defs/TypeRef" }
+      }
+    },
+
+    "Shell_Opaque": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "payload_id"],
+      "properties": {
+        "node": { "const": "Opaque" },
+        "payload_id": {
+          "type": "string",
+          "description": "Key into the goal's payloads map; the original source term is recorded there.",
+          "minLength": 1
+        }
+      }
+    },
+
+    "Provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["library", "version", "content_hash"],
+      "properties": {
+        "library": {
+          "type": "string",
+          "description": "Library identifier, e.g. 'mathlib', 'stdlib', 'project-local'.",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "description": "Library version string."
+        },
+        "module_path": {
+          "type": "string",
+          "description": "Optional dotted module path locating the entity within the library."
+        },
+        "content_hash": { "$ref": "#/$defs/ContentHash" }
+      }
+    },
+
+    "Goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shell"],
+      "description": "Goal as carried in IR documents and certificate envelopes (spec §4.4, §6.2). Shell term plus optional payloads map.",
+      "properties": {
+        "shell": { "$ref": "#/$defs/ShellTerm" },
+        "payloads": {
+          "type": "object",
+          "description": "Map from payload-id to home-system source term. Source terms are opaque to the broker; their interpretation is left to home systems and adapters that understand the source language.",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "BackendIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "config_hash"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Backend identity, e.g. 'cvc5', 'vampire', 'llm:provider/model/version', 'isabelle'.",
+          "minLength": 1
+        },
+        "version": { "type": "string", "minLength": 1 },
+        "config_hash": { "$ref": "#/$defs/ContentHash" }
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "trace_version": "1.0",
+  "initial_ir_hash": "sha256:000000000000000000000000000000000000000000000000000000000e300000",
+  "final_ir_hash":   "sha256:000000000000000000000000000000000000000000000000000000000e300003",
+
+  "configuration": {
+    "pipeline": [
+      { "pass": "quotient_elimination", "config": { "aggressive": false } },
+      { "pass": "definition_unfolding",
+        "config": { "concepts": ["integer_modulo", "integer_subtraction"] } },
+      { "pass": "propositional_simplification" }
+    ],
+    "stop_on_failure": true,
+    "timeout_per_pass_ms": 5000
+  },
+
+  "entries": [
+    {
+      "pass": "quotient_elimination",
+      "version": "1.0",
+      "before_hash": "sha256:000000000000000000000000000000000000000000000000000000000e300000",
+      "after_hash":  "sha256:000000000000000000000000000000000000000000000000000000000e300001",
+      "configuration": { "aggressive": false },
+      "outcome": "applied",
+      "inversion_data": {
+        "introductions": [
+          { "var": "a", "underlying_type": "Int", "of_quotient_var": "x" },
+          { "var": "b", "underlying_type": "Int", "of_quotient_var": "y" },
+          { "var": "c", "underlying_type": "Int", "of_quotient_var": "z" }
+        ],
+        "quotient_type": "MyZMod_n",
+        "elimination_principle": "MyZMod.ind",
+        "equality_principle": "MyZMod.sound",
+        "respects_witnesses": [
+          "addMyZMod.respects_myRel"
+        ]
+      }
+    },
+    {
+      "pass": "definition_unfolding",
+      "version": "1.0",
+      "before_hash": "sha256:000000000000000000000000000000000000000000000000000000000e300001",
+      "after_hash":  "sha256:000000000000000000000000000000000000000000000000000000000e300002",
+      "configuration": { "concepts": ["integer_modulo", "integer_subtraction"] },
+      "outcome": "applied",
+      "inversion_data": {
+        "unfolded_symbols": [
+          { "symbol": "myRel",     "via": "definitional_equation" },
+          { "symbol": "Int.divides","via": "definitional_equation" }
+        ]
+      }
+    },
+    {
+      "pass": "propositional_simplification",
+      "version": "1.0",
+      "before_hash": "sha256:000000000000000000000000000000000000000000000000000000000e300002",
+      "after_hash":  "sha256:000000000000000000000000000000000000000000000000000000000e300003",
+      "outcome": "applied",
+      "inversion_data": {
+        "simplifications": [
+          { "rule": "And_True_left", "site": "goal" }
+        ]
+      }
+    }
+  ]
+}

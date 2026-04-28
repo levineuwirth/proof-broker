@@ -1,0 +1,303 @@
+{
+  "ir_version": "1.0",
+  "source_system": { "name": "lean", "version": "4.13.0" },
+  "tier": "structural",
+
+  "logic_classification": {
+    "order": "first_order",
+    "features_used": [
+      "universal_quantification_over_first_order",
+      "equality_in_quotient_type"
+    ],
+    "first_order_fragment": "none",
+    "decidable_theory": null
+  },
+
+  "goal": {
+    "shell": {
+      "node": "Eq",
+      "type": "MyZMod_n",
+      "left": {
+        "node": "App", "symbol": "addMyZMod", "type_args": [],
+        "args": [
+          { "node": "Var", "name": "n" },
+          {
+            "node": "App", "symbol": "addMyZMod", "type_args": [],
+            "args": [
+              { "node": "Var", "name": "n" },
+              { "node": "Var", "name": "x" },
+              { "node": "Var", "name": "y" }
+            ]
+          },
+          { "node": "Var", "name": "z" }
+        ]
+      },
+      "right": {
+        "node": "App", "symbol": "addMyZMod", "type_args": [],
+        "args": [
+          { "node": "Var", "name": "n" },
+          { "node": "Var", "name": "x" },
+          {
+            "node": "App", "symbol": "addMyZMod", "type_args": [],
+            "args": [
+              { "node": "Var", "name": "n" },
+              { "node": "Var", "name": "y" },
+              { "node": "Var", "name": "z" }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "context": {
+    "type_vars": [],
+    "free_vars": [
+      { "name": "n", "type": "Nat" },
+      { "name": "x", "type": "MyZMod_n" },
+      { "name": "y", "type": "MyZMod_n" },
+      { "name": "z", "type": "MyZMod_n" }
+    ],
+    "hypotheses": [
+      {
+        "name": "hn",
+        "shell": {
+          "node": "App", "symbol": "LT.lt", "type_args": [],
+          "args": [
+            { "node": "NumLit", "value": "0", "type": "Nat" },
+            { "node": "Var", "name": "n" }
+          ]
+        }
+      }
+    ]
+  },
+
+  "type_metadata": {
+    "MyZMod_n": {
+      "kind": "type_constructor_application",
+      "constructor": {
+        "name": "MyZMod",
+        "construction_kind": "quotient",
+        "underlying_type": "Int",
+        "equivalence_relation": {
+          "shell": {
+            "node": "Lambda",
+            "binders": [
+              { "var": "a", "type": "Int" },
+              { "var": "b", "type": "Int" }
+            ],
+            "body": {
+              "node": "App", "symbol": "myRel", "type_args": [],
+              "args": [
+                { "node": "Var", "name": "n" },
+                { "node": "Var", "name": "a" },
+                { "node": "Var", "name": "b" }
+              ]
+            }
+          },
+          "equivalence_proof": "myRel.equivalence"
+        },
+        "elimination_principle": "MyZMod.ind",
+        "equality_principle": "MyZMod.sound"
+      },
+      "arguments": [
+        { "node": "Var", "name": "n" }
+      ]
+    }
+  },
+
+  "definitional_metadata": {
+    "myRel": {
+      "kind": "defined_function",
+      "abstract_signature": "Nat -> Int -> Int -> Prop",
+      "definitional_equation": {
+        "node": "Forall", "var": "n1", "type": "Nat",
+        "body": {
+          "node": "Forall", "var": "a", "type": "Int",
+          "body": {
+            "node": "Forall", "var": "b", "type": "Int",
+            "body": {
+              "node": "Eq",
+              "type": "Prop",
+              "left": {
+                "node": "App", "symbol": "myRel", "type_args": [],
+                "args": [
+                  { "node": "Var", "name": "n1" },
+                  { "node": "Var", "name": "a" },
+                  { "node": "Var", "name": "b" }
+                ]
+              },
+              "right": {
+                "node": "App", "symbol": "Int.divides", "type_args": [],
+                "args": [
+                  { "node": "Var", "name": "n1" },
+                  {
+                    "node": "App", "symbol": "Int.sub", "type_args": [],
+                    "args": [
+                      { "node": "Var", "name": "a" },
+                      { "node": "Var", "name": "b" }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "concept_tag": "integer_modulo"
+    },
+
+    "addMyZMod": {
+      "kind": "lifted_to_quotient",
+      "host_type": "MyZMod_n",
+      "underlying_function": {
+        "name": "Int.add",
+        "shell": { "node": "Const", "name": "Int.add" }
+      },
+      "lifting_obligation": {
+        "shape": "respects_relation",
+        "discharged_at": "definition_site",
+        "witness": "addMyZMod.respects_myRel"
+      }
+    },
+
+    "Int.add": {
+      "kind": "primitive_arithmetic",
+      "abstract_signature": "Int -> Int -> Int",
+      "theory_tag": "LIA:plus"
+    },
+
+    "Int.sub": {
+      "kind": "primitive_arithmetic",
+      "abstract_signature": "Int -> Int -> Int",
+      "theory_tag": "LIA:sub"
+    },
+
+    "Int.divides": {
+      "kind": "defined_function",
+      "abstract_signature": "Nat -> Int -> Prop",
+      "definitional_equation": {
+        "node": "Forall", "var": "n2", "type": "Nat",
+        "body": {
+          "node": "Forall", "var": "k", "type": "Int",
+          "body": {
+            "node": "Eq",
+            "type": "Prop",
+            "left": {
+              "node": "App", "symbol": "Int.divides", "type_args": [],
+              "args": [
+                { "node": "Var", "name": "n2" },
+                { "node": "Var", "name": "k" }
+              ]
+            },
+            "right": {
+              "node": "Exists", "var": "q", "type": "Int",
+              "body": {
+                "node": "Eq",
+                "type": "Int",
+                "left": { "node": "Var", "name": "k" },
+                "right": {
+                  "node": "App", "symbol": "Int.mul", "type_args": [],
+                  "args": [
+                    { "node": "Var", "name": "n2" },
+                    { "node": "Var", "name": "q" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "LT.lt": {
+      "kind": "typeclass_method",
+      "method_name": "LT.lt",
+      "host_class": "LT",
+      "abstract_role": "ordering",
+      "specialization_targets": [
+        { "theory": "LIA", "operator": "<" }
+      ]
+    }
+  },
+
+  "library_provenance": {
+    "MyZMod": {
+      "library": "project-local",
+      "version": "0.1",
+      "module_path": "Project.MyZMod",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000030"
+    },
+    "myRel": {
+      "library": "project-local",
+      "version": "0.1",
+      "module_path": "Project.MyZMod",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000031"
+    },
+    "myRel.equivalence": {
+      "library": "project-local",
+      "version": "0.1",
+      "module_path": "Project.MyZMod",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000032"
+    },
+    "MyZMod.ind": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Quot",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000033"
+    },
+    "MyZMod.sound": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Quot",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000034"
+    },
+    "addMyZMod": {
+      "library": "project-local",
+      "version": "0.1",
+      "module_path": "Project.MyZMod",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000035"
+    },
+    "addMyZMod.respects_myRel": {
+      "library": "project-local",
+      "version": "0.1",
+      "module_path": "Project.MyZMod",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000036"
+    },
+    "Int.add": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Data.Int.Basic",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000037"
+    },
+    "Int.sub": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Data.Int.Basic",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000038"
+    },
+    "Int.divides": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Data.Int.Basic",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000039"
+    },
+    "LT.lt": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:000000000000000000000000000000000000000000000000000000000000003a"
+    }
+  },
+
+  "user_directives": {
+    "preferred_backend": "cvc5",
+    "tier_preference": ["1", "3", "2"],
+    "rewriter_preferences": {
+      "enable_quotient_elimination": true,
+      "enable_definition_unfolding": ["function_composition", "integer_modulo"],
+      "disable_passes": []
+    },
+    "budget": { "wall_time_ms": 30000, "memory_mb": 4096 }
+  }
+}

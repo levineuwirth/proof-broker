@@ -1,0 +1,590 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.dev/schemas/v1.0/ir.schema.json",
+  "title": "Proof Broker IR document (spec v1.0 §4)",
+  "description": "Intermediate Representation of a proof goal produced by a home-system serializer. Tracks spec v1.0 §4 (top-level structure, logic classification, shell calculus, context tiers, type metadata, definitional metadata, library provenance, user directives).",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ir_version",
+    "source_system",
+    "tier",
+    "logic_classification",
+    "goal",
+    "context"
+  ],
+
+  "properties": {
+    "ir_version": {
+      "const": "1.0"
+    },
+
+    "source_system": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Home-system identifier, e.g. 'lean', 'rocq'.",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "description": "Home-system version string.",
+          "minLength": 1
+        }
+      }
+    },
+
+    "tier": {
+      "enum": ["goal", "structural", "rich"],
+      "description": "Context tier (spec §4.5). 'goal' = proposition only; 'structural' = +typed hypotheses; 'rich' = +symbol-based premise selection +manual lemmas."
+    },
+
+    "logic_classification": { "$ref": "#/$defs/LogicClassification" },
+
+    "goal": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/Goal" },
+
+    "context": { "$ref": "#/$defs/Context" },
+
+    "type_metadata": {
+      "type": "object",
+      "description": "Map from type-id (as referenced in shell terms) to TypeMetadata. Required entry for every non-primitive type appearing in the goal or context.",
+      "additionalProperties": { "$ref": "#/$defs/TypeMetadata" }
+    },
+
+    "definitional_metadata": {
+      "type": "object",
+      "description": "Map from symbol-id to DefinitionalMetadata. Required entry for every defined symbol (typeclass method, defined function, constructor, etc.) appearing in the goal or context that is not a shell primitive.",
+      "additionalProperties": { "$ref": "#/$defs/DefinitionalMetadata" }
+    },
+
+    "library_provenance": {
+      "type": "object",
+      "description": "Map from entity-name to Provenance for every named library entity referenced from the IR. Used by the verifier to confirm hash compatibility before consuming a certificate.",
+      "additionalProperties": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/Provenance" }
+    },
+
+    "user_directives": { "$ref": "#/$defs/UserDirectives" }
+  },
+
+  "$defs": {
+    "LogicClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "features_used", "first_order_fragment", "decidable_theory"],
+      "properties": {
+        "order": {
+          "enum": ["first_order", "higher_order", "dependent"],
+          "description": "Highest order of quantification appearing anywhere in the goal or context."
+        },
+        "features_used": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Feature tag drawn from the registry's logical features list."
+          }
+        },
+        "first_order_fragment": {
+          "type": "string",
+          "description": "Fragment id (LIA, LRA, NIA, NRA, BV, UF, UFLIA, UFLRA, ARRAY, FOL, HOL), or 'none' if no decidable/semi-decidable fragment applies. Soundness obligation: never narrower than reality.",
+          "minLength": 1
+        },
+        "decidable_theory": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 }
+          ],
+          "description": "Theory id asserting goal lies in a decidable theory; null if not asserted."
+        }
+      }
+    },
+
+    "Context": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Context content, gated by the document's 'tier' field. Required to be empty for tier='goal'; required to be present for tier='structural'/'rich'.",
+      "properties": {
+        "type_vars": {
+          "type": "array",
+          "description": "Free type-variable names; each must have a corresponding type_metadata entry of kind 'type_variable'.",
+          "items": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/VarName" }
+        },
+        "free_vars": {
+          "type": "array",
+          "description": "Free term variables in the goal/hypotheses, typed by reference to type_metadata. The serializer lists every Var(name) appearing in the shell that is not bound by a Forall/Exists/Lambda.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/VarName" },
+              "type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" }
+            }
+          }
+        },
+        "hypotheses": {
+          "type": "array",
+          "description": "Typed hypotheses available in the local context.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "shell"],
+            "properties": {
+              "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/VarName" },
+              "shell": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" }
+            }
+          }
+        },
+        "library_slice": {
+          "type": "array",
+          "description": "Curated library lemmas (Tier 'rich' only). Each lemma is a shell term plus the entity name that ties it to library_provenance.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entity_name", "shell"],
+            "properties": {
+              "entity_name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+              "shell": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" },
+              "selection_reason": {
+                "enum": ["symbol_overlap", "manual", "selection_dropped_with_diagnostic"],
+                "description": "Why this lemma is in the slice (or, for the dropped case, that it was selected but couldn't be translated under the structural shell)."
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "TypeMetadata": {
+      "oneOf": [
+        { "$ref": "#/$defs/TypeMetadata_Primitive" },
+        { "$ref": "#/$defs/TypeMetadata_TypeVariable" },
+        { "$ref": "#/$defs/TypeMetadata_TypeConstructorApplication" }
+      ]
+    },
+
+    "TypeMetadata_Primitive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name"],
+      "properties": {
+        "kind": { "const": "primitive" },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Primitive type name, e.g. 'Int', 'Nat', 'Bool', 'String', 'Real'."
+        },
+        "theory_tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Theory tags drawn from the registry, e.g. 'arithmetic', 'ring', 'linearly_ordered'."
+        }
+      }
+    },
+
+    "TypeMetadata_TypeVariable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "kind_class", "instances"],
+      "properties": {
+        "kind": { "const": "type_variable" },
+        "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/VarName" },
+        "kind_class": {
+          "type": "string",
+          "description": "Sort/kind of the variable, e.g. 'Type', 'Type 0'.",
+          "minLength": 1
+        },
+        "instances": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Instance" }
+        }
+      }
+    },
+
+    "Instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance_name", "class"],
+      "description": "A typeclass instance available on the type variable. The abstract_signature/abstract_axioms describe the class without committing to home-system-specific resolution; theory_classification_tags assert verified embeddings.",
+      "properties": {
+        "instance_name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+        "class": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "library", "library_version", "content_hash"],
+          "properties": {
+            "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+            "library": { "type": "string", "minLength": 1 },
+            "library_version": { "type": "string", "minLength": 1 },
+            "content_hash": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash" }
+          }
+        },
+        "abstract_signature": { "$ref": "#/$defs/AbstractSignature" },
+        "abstract_axioms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AxiomShape" }
+        },
+        "theory_classification_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Embedding-style tag, e.g. 'embeds_into:Int_for_universal_LIA'. Soundness obligation: must be backed by a verified embedding lemma in library_provenance."
+          }
+        }
+      }
+    },
+
+    "AbstractSignature": {
+      "description": "Abstract description of a typeclass's operations. v1 form: a list of named operations with arity expressed via type names referencing the host type variable as 'self'.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operations"],
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "method", "arity", "result"],
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "Abstract role of the operation, e.g. 'addition', 'multiplication', 'ordering', 'equality', 'literal_inclusion'.",
+                "minLength": 1
+              },
+              "method": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+              "arity": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "Argument type expressed as 'self', a TypeRef, or 'Prop'.",
+                  "minLength": 1
+                }
+              },
+              "result": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Result type, expressed as 'self', a TypeRef, or 'Prop'."
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "AxiomShape": {
+      "description": "Either a registry-defined shape descriptor string (e.g. 'associativity:HAdd.hAdd', 'monotonicity_in_arg:HAdd.hAdd:LE.le:1'), or an explicit fallback carrying a shell-form axiom.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shape", "axiom"],
+          "properties": {
+            "shape": { "const": "explicit" },
+            "axiom": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" }
+          }
+        }
+      ]
+    },
+
+    "TypeMetadata_TypeConstructorApplication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "constructor", "arguments"],
+      "properties": {
+        "kind": { "const": "type_constructor_application" },
+        "constructor": { "$ref": "#/$defs/TypeConstructor" },
+        "arguments": {
+          "type": "array",
+          "description": "Shell-term arguments to the type constructor (e.g., the parameter 'n' in 'MyZMod n').",
+          "items": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" }
+        }
+      }
+    },
+
+    "TypeConstructor": {
+      "type": "object",
+      "required": ["name", "construction_kind"],
+      "properties": {
+        "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+        "construction_kind": {
+          "enum": [
+            "quotient",
+            "inductive",
+            "coinductive",
+            "sigma",
+            "pi",
+            "refinement",
+            "higher_inductive"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "construction_kind": { "const": "quotient" } } },
+          "then": {
+            "required": [
+              "underlying_type",
+              "equivalence_relation",
+              "elimination_principle",
+              "equality_principle"
+            ],
+            "properties": {
+              "underlying_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" },
+              "equivalence_relation": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["shell", "equivalence_proof"],
+                "properties": {
+                  "shell": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" },
+                  "equivalence_proof": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" }
+                }
+              },
+              "elimination_principle": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+              "equality_principle": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "construction_kind": { "const": "inductive" } } },
+          "then": {
+            "required": ["constructors", "elimination_principle"],
+            "properties": {
+              "constructors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "type_schema"],
+                  "properties": {
+                    "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+                    "type_schema": {
+                      "type": "string",
+                      "description": "Constructor type, surface form (e.g. 'Nat -> List A -> List A').",
+                      "minLength": 1
+                    },
+                    "recursive_positions": {
+                      "type": "array",
+                      "items": { "type": "integer", "minimum": 0 },
+                      "description": "Indices of arguments that are recursive occurrences of the inductive type."
+                    }
+                  }
+                }
+              },
+              "elimination_principle": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "construction_kind": { "const": "refinement" } } },
+          "then": {
+            "required": ["base_type", "predicate"],
+            "properties": {
+              "base_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" },
+              "predicate": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "construction_kind": { "const": "sigma" } } },
+          "then": {
+            "required": ["base_type", "fibre_type"],
+            "properties": {
+              "base_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" },
+              "fibre_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" }
+            }
+          }
+        }
+      ]
+    },
+
+    "DefinitionalMetadata": {
+      "oneOf": [
+        { "$ref": "#/$defs/Defn_PrimitiveArithmetic" },
+        { "$ref": "#/$defs/Defn_TypeclassMethod" },
+        { "$ref": "#/$defs/Defn_DefinedFunction" },
+        { "$ref": "#/$defs/Defn_LiftedToQuotient" },
+        { "$ref": "#/$defs/Defn_Constructor" },
+        { "$ref": "#/$defs/Defn_Eliminator" }
+      ]
+    },
+
+    "Defn_PrimitiveArithmetic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "abstract_signature", "theory_tag"],
+      "properties": {
+        "kind": { "const": "primitive_arithmetic" },
+        "abstract_signature": { "type": "string", "minLength": 1 },
+        "theory_tag": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tag of the form '<fragment>:<operator>', e.g. 'LIA:plus'."
+        }
+      }
+    },
+
+    "Defn_TypeclassMethod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "method_name", "host_class", "abstract_role"],
+      "properties": {
+        "kind": { "const": "typeclass_method" },
+        "method_name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+        "host_class": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+        "abstract_role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Abstract role, e.g. 'addition', 'ordering', 'literal_inclusion'."
+        },
+        "specialization_targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["theory", "operator"],
+            "properties": {
+              "theory": { "type": "string", "minLength": 1 },
+              "operator": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+
+    "Defn_DefinedFunction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "abstract_signature", "definitional_equation"],
+      "properties": {
+        "kind": { "const": "defined_function" },
+        "abstract_signature": { "type": "string", "minLength": 1 },
+        "definitional_equation": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" },
+        "extensional_axiom": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" },
+        "concept_tag": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concept tag from the registry's concept-tags list (e.g. 'function_composition')."
+        }
+      }
+    },
+
+    "Defn_LiftedToQuotient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "host_type", "underlying_function", "lifting_obligation"],
+      "properties": {
+        "kind": { "const": "lifted_to_quotient" },
+        "host_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" },
+        "underlying_function": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "shell"],
+          "properties": {
+            "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+            "shell": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" }
+          }
+        },
+        "lifting_obligation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shape", "discharged_at"],
+          "properties": {
+            "shape": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Obligation shape, e.g. 'respects_relation'."
+            },
+            "discharged_at": {
+              "enum": ["definition_site", "use_site"]
+            },
+            "witness": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" }
+          }
+        }
+      }
+    },
+
+    "Defn_Constructor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "host_type", "type_schema"],
+      "properties": {
+        "kind": { "const": "constructor" },
+        "host_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" },
+        "type_schema": { "type": "string", "minLength": 1 },
+        "recursive_positions": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+
+    "Defn_Eliminator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "host_type", "motive_arity"],
+      "properties": {
+        "kind": { "const": "eliminator" },
+        "host_type": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/TypeRef" },
+        "motive_arity": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Arity of the motive (number of arguments before the target)."
+        },
+        "method_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+
+    "UserDirectives": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preferred_backend": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 }
+          ]
+        },
+        "tier_preference": {
+          "type": "array",
+          "items": {
+            "enum": ["0", "1", "2", "3", "4"]
+          },
+          "uniqueItems": true
+        },
+        "rewriter_preferences": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enable_quotient_elimination": { "type": "boolean" },
+            "enable_definition_unfolding": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "disable_passes": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "wall_time_ms": { "type": "integer", "minimum": 0 },
+            "memory_mb": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}

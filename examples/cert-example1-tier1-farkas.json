@@ -1,0 +1,74 @@
+{
+  "cert_version": "1.0",
+  "tier": 1,
+  "format": "farkas",
+
+  "goal": {
+    "shell": {
+      "node": "App", "symbol": "LE.le", "type_args": [],
+      "args": [
+        { "node": "Var", "name": "n" },
+        { "node": "NumLit", "value": "10", "type": "Int" }
+      ]
+    }
+  },
+
+  "dispatch_context_hash": "sha256:00000000000000000000000000000000000000000000000000000000abc00100",
+  "rewrite_trace_hash":    "sha256:00000000000000000000000000000000000000000000000000000000abc00101",
+
+  "backend": {
+    "name": "cvc5",
+    "version": "1.2.0",
+    "config_hash": "sha256:00000000000000000000000000000000000000000000000000000000abc00102"
+  },
+
+  "resources": {
+    "wall_time_ms": 87,
+    "memory_peak_kb": 12480,
+    "budget_consumed": 0.009
+  },
+
+  "refinement_record": {
+    "adapter": "cvc5",
+    "adapter_version": "1.0",
+    "specializations": [
+      {
+        "kind": "type_specialization",
+        "source": "alpha",
+        "target": "Int",
+        "justification": "embeds_into:Int_for_universal_LIA",
+        "soundness_witness": "linear_ordered_comm_ring_lia_embedding"
+      },
+      {
+        "kind": "method_specialization",
+        "source": "HAdd.hAdd",
+        "target": "+",
+        "justification": "specialization_targets[LIA]",
+        "soundness_witness": "linear_ordered_comm_ring_lia_embedding"
+      },
+      {
+        "kind": "method_specialization",
+        "source": "LE.le",
+        "target": "<=",
+        "justification": "specialization_targets[LIA]",
+        "soundness_witness": "linear_ordered_comm_ring_lia_embedding"
+      }
+    ],
+    "fragment": "LIA",
+    "auxiliary": {
+      "smtlib_logic": "QF_LIA"
+    }
+  },
+
+  "payload": {
+    "witness_kind": "farkas",
+    "witness_data": {
+      "coefficients": [
+        { "hypothesis": "h1",          "coefficient": "1" },
+        { "hypothesis": "h3",          "coefficient": "1" },
+        { "hypothesis": "neg_goal",    "coefficient": "1" }
+      ]
+    },
+    "checking_recipe": "lean.farkas_check"
+  }
+}

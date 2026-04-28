@@ -1,0 +1,199 @@
+{
+  "ir_version": "1.0",
+  "source_system": { "name": "lean", "version": "4.13.0" },
+  "tier": "structural",
+
+  "logic_classification": {
+    "order": "first_order",
+    "features_used": [
+      "universal_quantification_over_first_order",
+      "equality_at_first_order_type"
+    ],
+    "first_order_fragment": "none",
+    "decidable_theory": null
+  },
+
+  "goal": {
+    "shell": {
+      "node": "App",
+      "symbol": "LE.le",
+      "type_args": [],
+      "args": [
+        { "node": "Var", "name": "n" },
+        { "node": "NumLit", "value": "10", "type": "alpha" }
+      ]
+    }
+  },
+
+  "context": {
+    "type_vars": ["alpha"],
+    "free_vars": [
+      { "name": "n", "type": "alpha" },
+      { "name": "m", "type": "alpha" }
+    ],
+    "hypotheses": [
+      {
+        "name": "h1",
+        "shell": {
+          "node": "Eq",
+          "type": "alpha",
+          "left": {
+            "node": "App", "symbol": "HAdd.hAdd", "type_args": [],
+            "args": [
+              { "node": "Var", "name": "n" },
+              { "node": "Var", "name": "m" }
+            ]
+          },
+          "right": { "node": "NumLit", "value": "10", "type": "alpha" }
+        }
+      },
+      {
+        "name": "h2",
+        "shell": {
+          "node": "App", "symbol": "LE.le", "type_args": [],
+          "args": [
+            { "node": "NumLit", "value": "0", "type": "alpha" },
+            { "node": "Var", "name": "n" }
+          ]
+        }
+      },
+      {
+        "name": "h3",
+        "shell": {
+          "node": "App", "symbol": "LE.le", "type_args": [],
+          "args": [
+            { "node": "NumLit", "value": "0", "type": "alpha" },
+            { "node": "Var", "name": "m" }
+          ]
+        }
+      }
+    ]
+  },
+
+  "type_metadata": {
+    "alpha": {
+      "kind": "type_variable",
+      "name": "alpha",
+      "kind_class": "Type",
+      "instances": [
+        {
+          "instance_name": "inst_LinearOrderedCommRing_alpha",
+          "class": {
+            "name": "LinearOrderedCommRing",
+            "library": "mathlib",
+            "library_version": "4.13.0",
+            "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+          },
+          "abstract_signature": {
+            "operations": [
+              { "role": "addition",          "method": "HAdd.hAdd",  "arity": ["self", "self"], "result": "self" },
+              { "role": "multiplication",    "method": "HMul.hMul",  "arity": ["self", "self"], "result": "self" },
+              { "role": "negation",          "method": "Neg.neg",    "arity": ["self"],         "result": "self" },
+              { "role": "literal_inclusion", "method": "OfNat.ofNat","arity": ["Nat"],          "result": "self" },
+              { "role": "ordering",          "method": "LE.le",      "arity": ["self", "self"], "result": "Prop" }
+            ]
+          },
+          "abstract_axioms": [
+            "associativity:HAdd.hAdd",
+            "commutativity:HAdd.hAdd",
+            "identity_left:HAdd.hAdd:Zero",
+            "inverse:HAdd.hAdd:Neg.neg:Zero",
+            "associativity:HMul.hMul",
+            "commutativity:HMul.hMul",
+            "identity_left:HMul.hMul:One",
+            "distributivity_left:HMul.hMul:HAdd.hAdd",
+            "reflexivity:LE.le",
+            "transitivity:LE.le",
+            "antisymmetry:LE.le",
+            "totality:LE.le",
+            "monotonicity_in_arg:HAdd.hAdd:LE.le:0",
+            "monotonicity_in_arg:HAdd.hAdd:LE.le:1",
+            "positivity_preservation:HMul.hMul"
+          ],
+          "theory_classification_tags": [
+            "embeds_into:Int_for_universal_LIA",
+            "is:linearly_ordered",
+            "is:decidable_equality"
+          ]
+        }
+      ]
+    }
+  },
+
+  "definitional_metadata": {
+    "HAdd.hAdd": {
+      "kind": "typeclass_method",
+      "method_name": "HAdd.hAdd",
+      "host_class": "HAdd",
+      "abstract_role": "addition",
+      "specialization_targets": [
+        { "theory": "LIA", "operator": "+" },
+        { "theory": "LRA", "operator": "+" }
+      ]
+    },
+    "LE.le": {
+      "kind": "typeclass_method",
+      "method_name": "LE.le",
+      "host_class": "LE",
+      "abstract_role": "ordering",
+      "specialization_targets": [
+        { "theory": "LIA", "operator": "<=" },
+        { "theory": "LRA", "operator": "<=" }
+      ]
+    },
+    "OfNat.ofNat": {
+      "kind": "typeclass_method",
+      "method_name": "OfNat.ofNat",
+      "host_class": "OfNat",
+      "abstract_role": "literal_inclusion",
+      "specialization_targets": [
+        { "theory": "LIA", "operator": "literal" },
+        { "theory": "LRA", "operator": "literal" }
+      ]
+    }
+  },
+
+  "library_provenance": {
+    "LinearOrderedCommRing": {
+      "library": "mathlib",
+      "version": "4.13.0",
+      "module_path": "Mathlib.Algebra.Order.Ring.Defs",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+    },
+    "linear_ordered_comm_ring_lia_embedding": {
+      "library": "mathlib",
+      "version": "4.13.0",
+      "module_path": "Mathlib.Algebra.Order.Ring.Lemmas",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+    },
+    "HAdd.hAdd": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000010"
+    },
+    "LE.le": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000011"
+    },
+    "OfNat.ofNat": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000012"
+    }
+  },
+
+  "user_directives": {
+    "preferred_backend": "cvc5",
+    "tier_preference": ["1", "3", "2"],
+    "rewriter_preferences": {
+      "enable_quotient_elimination": false,
+      "enable_definition_unfolding": [],
+      "disable_passes": []
+    },
+    "budget": { "wall_time_ms": 10000, "memory_mb": 4096 }
+  }
+}

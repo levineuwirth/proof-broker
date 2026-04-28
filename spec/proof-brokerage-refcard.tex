@@ -1,0 +1,492 @@
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[margin=0.75in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{microtype}
+\usepackage{parskip}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  pdftitle={Proof Brokerage: Reference Card v1.0}
+}
+
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\definecolor{codekw}{rgb}{0.0,0.0,0.55}
+
+\lstdefinelanguage{json}{
+  basicstyle=\ttfamily\scriptsize,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  framesep=2pt,
+  rulecolor=\color{black!20},
+  backgroundcolor=\color{codebg},
+}
+
+\lstdefinestyle{plain}{
+  basicstyle=\ttfamily\scriptsize,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  framesep=2pt,
+  rulecolor=\color{black!20},
+  backgroundcolor=\color{codebg},
+}
+
+\titleformat{\section}[hang]{\normalfont\large\bfseries}{\thesection}{0.5em}{}
+\titlespacing{\section}{0pt}{0.8em}{0.3em}
+\titleformat{\subsection}[hang]{\normalfont\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing{\subsection}{0pt}{0.5em}{0.2em}
+
+\setlist{nosep,leftmargin=1.5em}
+
+\title{\vspace{-1.5cm}\textbf{Proof Brokerage: Reference Card}\\[0.2em]
+       \large Spec v1.0 quick reference}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\sloppy
+\emergencystretch=3em
+
+\hrule
+\vspace{0.5em}
+
+\noindent
+This card summarizes schemas, field names, tier semantics, and the
+capability vocabulary defined in the v1.0 specification. Read alongside
+the spec; this document does not motivate, only enumerates.
+
+\section{Pipeline at a glance}
+
+\begin{center}
+\small
+\fbox{Source} $\to$ \fbox{IR} $\to$ \fbox{Rewriter} $\to$ \fbox{Dispatcher} $\to$ \fbox{Adapter} $\to$ \fbox{Backend}
+\end{center}
+
+\noindent
+Backend response flows back: \fbox{Certificate} $\to$ \fbox{Verifier} $\to$ \fbox{Lifting} $\to$ \fbox{Home-system proof term}
+
+\begin{multicols}{2}
+
+\section{IR document (top level)}
+
+\begin{lstlisting}[language=json]
+{
+  "ir_version": "1.0",
+  "source_system": { "name", "version" },
+  "tier": "goal" | "structural" | "rich",
+  "logic_classification": ...,
+  "goal": { "shell", "payloads" },
+  "context": { "type_vars", "hypotheses" },
+  "type_metadata": { ... },
+  "definitional_metadata": { ... },
+  "library_provenance": { ... },
+  "user_directives": ...
+}
+\end{lstlisting}
+
+\section{Logic classification}
+
+\begin{lstlisting}[language=json]
+{
+  "order":
+    "first_order" | "higher_order" | "dependent",
+  "features_used": [ <feature-tag>, ... ],
+  "first_order_fragment":
+    <fragment-id> | "none",
+  "decidable_theory":
+    <theory-id> | null
+}
+\end{lstlisting}
+
+\textbf{Soundness:} Never under-classify (don't claim narrower fragment
+than reality). Conservative over-classification is acceptable.
+
+\section{Shell calculus}
+
+\begin{lstlisting}[style=plain]
+ShellTerm ::=
+  | Forall(var, type, ShellTerm)
+  | Exists(var, type, ShellTerm)
+  | Lambda(binders, ShellTerm)
+  | Implies(t1, t2)
+  | And(t1, t2) | Or(t1, t2) | Not(t)
+  | Eq(type, t1, t2)
+  | App(symbol, type-args, args)
+  | Var(name) | Const(name)
+  | NumLit(value)
+  | Opaque(payload-id)
+\end{lstlisting}
+
+\section{Context tiers}
+
+\begin{description}
+  \item[\texttt{goal}] proposition only
+  \item[\texttt{structural}] +typed hypotheses
+  \item[\texttt{rich}] +symbol-based premise selection +manual lemmas
+\end{description}
+
+V1: no transitive closure; no ML selection.
+
+\section{Type metadata kinds}
+
+\begin{description}
+  \item[\texttt{primitive}] known type with theory tags
+  \item[\texttt{type\_variable}] +instances list
+  \item[\texttt{type\_constructor\_application}] +construction\_kind
+\end{description}
+
+\textbf{Construction kinds:} \texttt{quotient}, \texttt{inductive},
+\texttt{coinductive}, \texttt{sigma}, \texttt{pi}, \texttt{refinement},
+\texttt{higher\_inductive} (v2).
+
+\section{Definitional metadata kinds}
+
+\texttt{primitive\_arithmetic} \textbar{}
+\texttt{typeclass\_method} \textbar{}
+\texttt{defined\_function} \textbar{}
+\texttt{lifted\_to\_quotient} \textbar{}
+\texttt{constructor} \textbar{}
+\texttt{eliminator}.
+
+\columnbreak
+
+\section{Certificate envelope}
+
+\begin{lstlisting}[language=json]
+{
+  "cert_version": "1.0",
+  "tier": 0|1|2|3|4,
+  "format": "<format-id>",
+  "goal": <Goal>,
+  "dispatch_context_hash": "sha256:...",
+  "rewrite_trace_hash": "sha256:...",
+  "backend": { "name", "version",
+               "config_hash" },
+  "resources": { "wall_time_ms",
+                 "memory_peak_kb",
+                 "budget_consumed" },
+  "refinement_record": ...,
+  "payload": <TierPayload>
+}
+\end{lstlisting}
+
+\section{Tier semantics}
+
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Tier & Verifier work & Trust expansion \\
+\midrule
+0 & policy lookup & full backend \\
+1 & witness check & none \\
+2 & reconstruct & none (kernel) \\
+3 & strategy stack & none (kernel) \\
+4 & foundational & embedding only \\
+\bottomrule
+\end{tabular}
+
+\section{Tier payloads}
+
+\textbf{Tier 0:} \texttt{\{claim, backend\_attestation\}}.
+
+\textbf{Tier 1:} \texttt{\{witness\_kind, witness\_data, checking\_recipe\}}.
+Kinds: \texttt{farkas}, \texttt{sat\_assignment},
+\texttt{sat\_unsat\_core}, \texttt{polynomial\_positivstellensatz}.
+
+\textbf{Tier 2:} \texttt{\{lemmas\_used, strategy\_hint, structural\_hint\}}.
+Fallback tier; probabilistic completeness.
+
+\textbf{Tier 3:} \texttt{\{trace\_format, trace\_data,
+trace\_dialect\_features, trace\_annotations\}}. Strategy stack:
+native checker $\to$ cross-system replay $\to$ LLM-assisted $\to$ lemma extraction.
+
+\section{Refinement record}
+
+\begin{lstlisting}[language=json]
+{
+  "adapter": "<adapter-id>",
+  "adapter_version": "1.0",
+  "specializations": [
+    { "kind": <SpecKind>,
+      "source", "target",
+      "justification",
+      "soundness_witness" },
+    ...
+  ],
+  "fragment": <fragment-id>,
+  "auxiliary": ...
+}
+\end{lstlisting}
+
+\textbf{Specialization kinds:}
+\texttt{type\_specialization},
+\texttt{method\_specialization},
+\texttt{axiomatization},
+\texttt{definition\_unfolding},
+\texttt{logic\_encoding},
+\texttt{rendering}.
+
+\section{Adapter capability manifest}
+
+\begin{lstlisting}[language=json]
+{
+  "adapter": "<id>",
+  "logic_fragments": [...],
+  "type_constructions": [...],
+  "max_order":
+    "first_order" | "higher_order",
+  "tiers_produced": [...],
+  "trace_formats_produced": [...],
+  "preferred_rewrite_pipeline": [...]
+}
+\end{lstlisting}
+
+\end{multicols}
+
+\section{Logic fragment vocabulary}
+
+\noindent
+\textbf{Arithmetic:} \texttt{LIA}, \texttt{LRA}, \texttt{NIA}, \texttt{NRA}.
+\quad
+\textbf{Theory:} \texttt{BV}, \texttt{UF}, \texttt{UFLIA}, \texttt{UFLRA}, \texttt{ARRAY}.
+\quad
+\textbf{Generic:} \texttt{FOL}, \texttt{HOL}.
+
+\section{Theory tags}
+
+\noindent
+\texttt{embeds\_into:Int\_for\_universal\_LIA},
+\texttt{embeds\_into:Rat\_for\_universal\_LRA},
+\texttt{embeds\_into:Real\_for\_universal\_LRA},
+\texttt{embeds\_into:BV32\_for\_universal\_BV},
+\texttt{is:finite},
+\texttt{is:decidable\_equality},
+\texttt{is:linearly\_ordered},
+\texttt{is:well\_founded}.
+
+\section{Axiom shape descriptors}
+
+\noindent
+\textbf{Algebraic:} \texttt{associativity:OP},
+\texttt{commutativity:OP},
+\texttt{identity\_left:OP:E},
+\texttt{identity\_right:OP:E},
+\texttt{inverse:OP:INV:E},
+\texttt{distributivity\_left:OP1:OP2}.
+\quad
+\textbf{Relational:} \texttt{reflexivity:R},
+\texttt{transitivity:R},
+\texttt{symmetry:R},
+\texttt{antisymmetry:R},
+\texttt{totality:R}.
+\quad
+\textbf{Mixed:} \texttt{monotonicity\_in\_arg:OP:R:N},
+\texttt{positivity\_preservation:OP}.
+
+\section{Logical features}
+
+\noindent
+\texttt{universal\_quantification\_over\_first\_order},
+\texttt{existential\_quantification\_over\_first\_order},
+\texttt{function\_quantification},
+\texttt{predicate\_argument},
+\texttt{equality\_at\_first\_order\_type},
+\texttt{equality\_at\_function\_type},
+\texttt{equality\_in\_quotient\_type},
+\texttt{equality\_in\_inductive\_type},
+\texttt{induction\_recursion},
+\texttt{dependent\_pair},
+\texttt{dependent\_function},
+\texttt{universe\_polymorphism}.
+
+\section{Concept tags (selected)}
+
+\noindent
+\textbf{Functions:} \texttt{function\_composition},
+\texttt{function\_identity}, \texttt{function\_application}.
+\quad
+\textbf{Arithmetic:} \texttt{integer\_addition},
+\texttt{integer\_multiplication}, \texttt{integer\_subtraction},
+\texttt{integer\_negation}, \texttt{integer\_modulo},
+\texttt{integer\_division}.
+\quad
+\textbf{Boolean:} \texttt{boolean\_and},
+\texttt{boolean\_or}, \texttt{boolean\_not}.
+\quad
+\textbf{Sets / lists:} \texttt{set\_membership},
+\texttt{set\_union}, \texttt{set\_intersection},
+\texttt{list\_cons}, \texttt{list\_nil},
+\texttt{list\_append}, \texttt{list\_length}.
+
+\begin{multicols}{2}
+
+\section{Dispatch tactic API (Lean 4)}
+
+\begin{lstlisting}[style=plain]
+-- generic
+by dispatch
+
+-- targeted
+by dispatch_smt (timeout := 10)
+                (backend := cvc5)
+by dispatch_atp (backend := vampire)
+by dispatch_llm (model := default)
+
+-- with hints
+by dispatch
+   (using := [foo, bar])
+   (tier := structural)
+   (rewrite := default)
+\end{lstlisting}
+
+\section{User directives}
+
+\begin{lstlisting}[language=json]
+{
+  "preferred_backend":
+    "cvc5" | "vampire" | "llm" | null,
+  "tier_preference": ["1","3","2","0"],
+  "rewriter_preferences": {
+    "enable_quotient_elimination": true,
+    "enable_definition_unfolding":
+      ["function_composition", ...],
+    "disable_passes": [...]
+  },
+  "budget":
+    { "wall_time_ms": 30000,
+      "memory_mb": 4096 }
+}
+\end{lstlisting}
+
+\section{Rewrite pass interface}
+
+\begin{lstlisting}[language=json]
+{
+  "name", "version",
+  "preconditions": [...],
+  "postconditions": [...],
+  "soundness_obligation": "...",
+  "configuration_schema": ...
+}
+\end{lstlisting}
+
+\textbf{Soundness:} pass output provable iff input provable.
+
+\textbf{Recorded for inversion:}
+\texttt{\{pass, version, before\_hash, after\_hash, inversion\_data\}}.
+
+\section{Rewriting passes (v1)}
+
+\noindent\texttt{propositional\_simplification} (default on),
+\texttt{definition\_unfolding} (selective by concept tag),
+\texttt{quotient\_elimination},
+\texttt{equality\_saturation},
+\texttt{quantifier\_prenexing},
+\texttt{skolemization}.
+
+\section{Verifier pre-tier checks}
+
+\begin{enumerate}
+  \item Envelope schema and version valid.
+  \item \texttt{dispatch\_context\_hash} matches IR.
+  \item \texttt{rewrite\_trace\_hash} matches trace.
+  \item Backend recognized, not blocklisted.
+  \item Library provenance hashes match home system.
+\end{enumerate}
+
+Any failure $\Rightarrow$ \texttt{Rejected(envelope\_invalid)}.
+
+\section{Lifting phase}
+
+Inverts in this order:
+\begin{enumerate}
+  \item Refinement record specializations (in reverse).
+  \item Rewrite trace passes (in reverse).
+\end{enumerate}
+
+Output: home-system proof term of original goal.
+Failure $\Rightarrow$ \texttt{Rejected(lifting\_failed)}.
+
+\section{Cache key}
+
+\begin{lstlisting}[style=plain]
+(goal_hash,
+ dispatch_context_hash,
+ rewrite_trace_hash,
+ backend_id,
+ backend_version)
+\end{lstlisting}
+
+\textbf{Invalidate on:} backend version change, lemma content hash
+change, home-system version change, manual.
+
+\section{Dispatch failure modes}
+
+\begin{description}
+  \item[backend timeout] \texttt{unknown}, reason \texttt{timeout}
+  \item[backend error] \texttt{error}, with diagnostic
+  \item[verifier reject] logged with reason; speculative dispatches continue
+  \item[reconstruction fail] per-strategy report
+  \item[lifting fail] dispatch failed; no retry on same backend
+\end{description}
+
+\section{Tier-1 witness kinds (v1)}
+
+\begin{description}
+  \item[\texttt{farkas}] nonneg coefficients to LIA contradiction
+  \item[\texttt{sat\_assignment}] variable-to-Boolean map
+  \item[\texttt{sat\_unsat\_core}] minimal unsat clause subset
+\end{description}
+
+\section{Tier-3 trace formats (v1)}
+
+\begin{description}
+  \item[\texttt{alethe-2024}] CVC5 SMT proof (Lean replayer)
+  \item[\texttt{tstp-fof}] Vampire FOL proof
+  \item[\texttt{tstp-thf}] Vampire higher-order proof
+  \item[\texttt{lean-tactic-script}] LLM-prover output
+\end{description}
+
+\section{Soundness invariants}
+
+\begin{enumerate}
+  \item Tier 1, 2, 3, 4 never expand trusted base; kernel re-checks every produced term.
+  \item Tier 0 expands trust to backend; explicit per-project opt-in required.
+  \item LLMs only propose; kernel disposes.
+  \item Theory tags require verified embedding lemmas.
+  \item Refinement records must be invertible.
+  \item Rewrite passes preserve provability.
+\end{enumerate}
+
+\end{multicols}
+
+\section{V1 scope checklist}
+
+\noindent
+\textbf{Home systems:} Lean 4 (full), Rocq (Tier 0+1 probe).
+\quad
+\textbf{Backends:} CVC5 (SMT), Vampire (ATP), generic LLM, ITP-via-Tier-0/2.
+\quad
+\textbf{Tiers:} 0 (gated), 1 (Farkas + SAT), 2 (fallback, demotable), 3 (Alethe + TPTP).
+\quad
+\textbf{Rewriting:} configurable pipeline, default = propositional simplification + selective unfolding.
+\quad
+\textbf{Excluded from v1:} Tier 4, ML premise selection, conversion metadata, full Rocq, HITs, mutual recursion in defn metadata, cross-ITP Tier 3.
+
+\end{document}

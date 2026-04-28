@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.dev/schemas/v1.0/certificate.schema.json",
+  "title": "Proof Broker certificate envelope (spec v1.0 §6)",
+  "description": "Envelope produced by a backend adapter on successful dispatch. Contains tier-tagged payload; verifier dispatches by tier. Tier 4 is reserved (not implemented in v1).",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cert_version",
+    "tier",
+    "format",
+    "goal",
+    "dispatch_context_hash",
+    "rewrite_trace_hash",
+    "backend",
+    "resources",
+    "refinement_record",
+    "payload"
+  ],
+
+  "properties": {
+    "cert_version": { "const": "1.0" },
+
+    "tier": {
+      "enum": [0, 1, 2, 3, 4],
+      "description": "Certificate tier. 0 = oracle (trust), 1 = witness (audited check), 2 = lemma list (probabilistic reconstruction), 3 = proof trace (strategy stack), 4 = foundational (reserved)."
+    },
+
+    "format": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Format identifier within the tier, e.g. 'farkas', 'sat_assignment', 'alethe-2024', 'tstp-fof', 'tstp-thf', 'lean-tactic-script'."
+    },
+
+    "goal": {
+      "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/Goal",
+      "description": "Goal in its rewritten, post-refinement form (what the backend was asked to discharge)."
+    },
+
+    "dispatch_context_hash": {
+      "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash",
+      "description": "Hash of the IR document the adapter consumed."
+    },
+
+    "rewrite_trace_hash": {
+      "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash",
+      "description": "Hash of the rewrite trace that took the original IR to the IR the adapter consumed."
+    },
+
+    "backend": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/BackendIdentity" },
+
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_time_ms", "memory_peak_kb"],
+      "properties": {
+        "wall_time_ms": { "type": "integer", "minimum": 0 },
+        "memory_peak_kb": { "type": "integer", "minimum": 0 },
+        "budget_consumed": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fraction of the configured budget consumed."
+        }
+      }
+    },
+
+    "refinement_record": {
+      "$ref": "https://proof-broker.dev/schemas/v1.0/refinement-record.schema.json"
+    },
+
+    "payload": {
+      "description": "Tier-specific payload. Discriminated by the certificate's tier field via the if/then rules below."
+    }
+  },
+
+  "allOf": [
+    {
+      "if": { "properties": { "tier": { "const": 0 } } },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/Payload_Tier0" } } }
+    },
+    {
+      "if": { "properties": { "tier": { "const": 1 } } },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/Payload_Tier1" } } }
+    },
+    {
+      "if": { "properties": { "tier": { "const": 2 } } },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/Payload_Tier2" } } }
+    },
+    {
+      "if": { "properties": { "tier": { "const": 3 } } },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/Payload_Tier3" } } }
+    },
+    {
+      "if": { "properties": { "tier": { "const": 4 } } },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/Payload_Tier4" } } }
+    }
+  ],
+
+  "$defs": {
+    "Payload_Tier0": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim"],
+      "properties": {
+        "claim": { "const": "proved" },
+        "backend_attestation": {
+          "type": "string",
+          "description": "Optional signed claim from the backend, opaque to the verifier (verifier only checks trust policy)."
+        }
+      }
+    },
+
+    "Payload_Tier1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["witness_kind", "witness_data", "checking_recipe"],
+      "properties": {
+        "witness_kind": {
+          "enum": [
+            "farkas",
+            "sat_assignment",
+            "sat_unsat_core",
+            "polynomial_positivstellensatz"
+          ]
+        },
+        "witness_data": {
+          "description": "Kind-specific witness. Discriminated by witness_kind below."
+        },
+        "checking_recipe": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reference to the home-system checker tactic (e.g. 'lean.farkas_check')."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "witness_kind": { "const": "farkas" } } },
+          "then": {
+            "properties": {
+              "witness_data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["coefficients"],
+                "properties": {
+                  "coefficients": {
+                    "type": "array",
+                    "description": "Per-hypothesis nonnegative coefficient (decimal as string for exactness). Sum over coefficient*hypothesis must yield a contradiction for the negation of the goal.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["hypothesis", "coefficient"],
+                      "properties": {
+                        "hypothesis": { "type": "string", "minLength": 1 },
+                        "coefficient": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "witness_kind": { "const": "sat_assignment" } } },
+          "then": {
+            "properties": {
+              "witness_data": {
+                "type": "object",
+                "additionalProperties": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "witness_kind": { "const": "sat_unsat_core" } } },
+          "then": {
+            "properties": {
+              "witness_data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["core_clause_indices"],
+                "properties": {
+                  "core_clause_indices": {
+                    "type": "array",
+                    "items": { "type": "integer", "minimum": 0 },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "Payload_Tier2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lemmas_used", "strategy_hint"],
+      "properties": {
+        "lemmas_used": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "library", "version", "content_hash"],
+            "properties": {
+              "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+              "library": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 },
+              "content_hash": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash" }
+            }
+          }
+        },
+        "strategy_hint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Home-system reconstruction tactic to use (e.g. 'aesop', 'auto', 'simp_arith', 'smt_reconstruct')."
+        },
+        "structural_hint": {
+          "description": "Optional ordering/shape hint for reconstruction; format is strategy-specific."
+        }
+      }
+    },
+
+    "Payload_Tier3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_format", "trace_data"],
+      "properties": {
+        "trace_format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Trace format id, e.g. 'alethe-2024', 'tstp-fof', 'tstp-thf', 'lean-tactic-script', 'lfsc'."
+        },
+        "trace_data": {
+          "description": "Format-specific trace. The verifier's strategy stack consumes this."
+        },
+        "trace_dialect_features": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Dialect features present in trace_data; lets the verifier check it has a replayer for the actual dialect produced."
+        },
+        "trace_annotations": {
+          "type": "string",
+          "description": "Optional natural-language commentary on the trace. Helps LLM-assisted reconstruction."
+        }
+      }
+    },
+
+    "Payload_Tier4": {
+      "type": "object",
+      "description": "Reserved. Not implemented in v1.",
+      "additionalProperties": true
+    }
+  }
+}

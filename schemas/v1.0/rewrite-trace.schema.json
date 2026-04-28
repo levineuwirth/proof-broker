@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.dev/schemas/v1.0/rewrite-trace.schema.json",
+  "title": "Proof Broker rewrite trace (spec v1.0 §5.6)",
+  "description": "Ordered log of IR-to-IR transformations performed by the rewriter. Consumed in reverse during lifting to invert each pass back through to the original goal. Trace completeness is a soundness obligation on each pass.",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trace_version", "initial_ir_hash", "final_ir_hash", "entries"],
+
+  "properties": {
+    "trace_version": { "const": "1.0" },
+
+    "initial_ir_hash": {
+      "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash",
+      "description": "Hash of the IR document before any rewriting (the serializer's output)."
+    },
+    "final_ir_hash": {
+      "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash",
+      "description": "Hash of the IR document after the last successful pass; matches the certificate's dispatch_context_hash."
+    },
+
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/TraceEntry" }
+    },
+
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Pipeline configuration this trace was produced under (mirrors spec §5.3).",
+      "properties": {
+        "pipeline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pass"],
+            "properties": {
+              "pass": { "type": "string", "minLength": 1 },
+              "config": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "stop_on_failure": { "type": "boolean" },
+        "timeout_per_pass_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  },
+
+  "$defs": {
+    "TraceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass", "version", "before_hash", "after_hash"],
+      "properties": {
+        "pass": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pass name (e.g. 'propositional_simplification', 'definition_unfolding', 'quotient_elimination', 'equality_saturation', 'quantifier_prenexing', 'skolemization')."
+        },
+        "version": { "type": "string", "minLength": 1 },
+        "before_hash": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash" },
+        "after_hash": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash" },
+        "configuration": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Pass configuration as supplied (subset of the pass's configuration_schema)."
+        },
+        "inversion_data": {
+          "description": "Pass-specific data sufficient for the lifting phase to invert this rewrite without consulting the source proof state. Trace-completeness obligation: every pass must record enough here that its inversion is purely local."
+        },
+        "outcome": {
+          "enum": ["applied", "skipped_preconditions", "no_op", "failed"],
+          "description": "Outcome of running the pass. 'no_op' means preconditions met but no changes were made; 'failed' means an internal pass error occurred (and after_hash equals before_hash)."
+        },
+        "diagnostics": {
+          "type": "string",
+          "description": "Optional human-readable note (e.g. why a pass was skipped or why it errored)."
+        }
+      }
+    }
+  }
+}

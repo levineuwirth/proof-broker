@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.dev/schemas/v1.0/adapter-manifest.schema.json",
+  "title": "Proof Broker adapter capability manifest (spec v1.0 §7.4, App. A.7)",
+  "description": "Declared capabilities of a backend adapter. The dispatcher matches goal classification against this manifest before invoking the adapter (failures yield 'logic_out_of_fragment' / 'type_construction_not_supported').",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "adapter",
+    "adapter_version",
+    "logic_fragments",
+    "type_constructions",
+    "max_order",
+    "tiers_produced"
+  ],
+
+  "properties": {
+    "manifest_version": { "const": "1.0" },
+
+    "adapter": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Adapter identifier; matches the 'adapter' field on emitted refinement records."
+    },
+    "adapter_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "backends_supported": {
+      "type": "array",
+      "description": "Backend identities this adapter targets (e.g. ['cvc5'], ['vampire-hol', 'vampire-fol']). Optional; defaults to [adapter].",
+      "items": { "type": "string", "minLength": 1 }
+    },
+
+    "logic_fragments": {
+      "type": "array",
+      "description": "Fragment ids the adapter can dispatch into. Drawn from the registry's first-order fragments list plus 'FOL'/'HOL'.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+
+    "type_constructions": {
+      "type": "array",
+      "description": "Construction kinds the adapter handles, plus pseudo-values such as 'type_variable_via_specialization' (handles type variables only when a specialization is recorded).",
+      "items": {
+        "anyOf": [
+          { "enum": ["primitive", "type_variable_via_specialization"] },
+          {
+            "enum": [
+              "quotient",
+              "inductive",
+              "coinductive",
+              "sigma",
+              "pi",
+              "refinement",
+              "higher_inductive"
+            ]
+          }
+        ]
+      },
+      "uniqueItems": true
+    },
+
+    "max_order": {
+      "enum": ["first_order", "higher_order"],
+      "description": "Highest order of quantification the adapter handles."
+    },
+
+    "tiers_produced": {
+      "type": "array",
+      "items": { "enum": [0, 1, 2, 3, 4] },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+
+    "trace_formats_produced": {
+      "type": "array",
+      "description": "Trace format ids the adapter emits at Tier 3 (e.g. 'alethe-2024', 'tstp-fof', 'tstp-thf', 'lean-tactic-script', 'lfsc'). Required iff tiers_produced contains 3.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+
+    "witness_kinds_produced": {
+      "type": "array",
+      "description": "Witness kinds the adapter emits at Tier 1 (e.g. 'farkas', 'sat_assignment', 'sat_unsat_core'). Required iff tiers_produced contains 1.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+
+    "preferred_rewrite_pipeline": {
+      "type": "array",
+      "description": "Pipeline the adapter wants applied to the IR before consumption (spec §5.4).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pass"],
+        "properties": {
+          "pass": { "type": "string", "minLength": 1 },
+          "config": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+
+    "concurrency": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Hints for the dispatcher's concurrent-dispatch policy.",
+      "properties": {
+        "supports_cancellation": { "type": "boolean" },
+        "expected_latency_ms": { "type": "integer", "minimum": 0 },
+        "max_parallel_invocations": { "type": "integer", "minimum": 1 }
+      }
+    }
+  },
+
+  "allOf": [
+    {
+      "if": { "properties": { "tiers_produced": { "contains": { "const": 1 } } } },
+      "then": { "required": ["witness_kinds_produced"] }
+    },
+    {
+      "if": { "properties": { "tiers_produced": { "contains": { "const": 3 } } } },
+      "then": { "required": ["trace_formats_produced"] }
+    }
+  ]
+}

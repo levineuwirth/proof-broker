@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.dev/schemas/v1.0/refinement-record.schema.json",
+  "title": "Proof Broker refinement record (spec v1.0 §6.3)",
+  "description": "A structured description of an adapter's translation choices when refining an IR document into backend-native input. The lifting phase consumes the refinement record (in reverse) to lift backend proofs back through the adapter's translation. Soundness obligation: every adapter decision affecting goal form must be recorded; un-recordable decisions are unsound.",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adapter", "adapter_version", "specializations", "fragment"],
+
+  "properties": {
+    "adapter": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Adapter identifier, e.g. 'cvc5', 'vampire', 'llm-prover', 'isabelle'."
+    },
+    "adapter_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "specializations": {
+      "type": "array",
+      "description": "Ordered list of translation decisions made by the adapter. Inversion processes them in reverse order during lifting.",
+      "items": { "$ref": "#/$defs/Specialization" }
+    },
+    "fragment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Logic fragment the adapter targeted (e.g. 'LIA', 'LRA', 'FOL', 'HOL'). Fragment ids drawn from the registry."
+    },
+    "auxiliary": {
+      "description": "Adapter-specific auxiliary data (e.g. SMT-LIB script header, TPTP role assignments). Opaque to the broker; consulted only by the originating adapter's inversion logic.",
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+
+  "$defs": {
+    "Specialization": {
+      "type": "object",
+      "required": ["kind", "source", "target"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "type_specialization",
+            "method_specialization",
+            "axiomatization",
+            "definition_unfolding",
+            "logic_encoding",
+            "rendering"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pre-specialization form (a type-id, symbol-id, or other reference depending on kind)."
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Post-specialization form, in backend-native vocabulary."
+        },
+        "justification": {
+          "type": "string",
+          "description": "Reference to metadata or registry tag that justified the decision (e.g. 'embeds_into:Int_for_universal_LIA')."
+        },
+        "soundness_witness": {
+          "type": "string",
+          "description": "Reference to a verified embedding lemma or instance proof in library_provenance. Required for type_specialization, method_specialization, axiomatization."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": ["type_specialization", "method_specialization", "axiomatization"]
+              }
+            }
+          },
+          "then": {
+            "required": ["soundness_witness", "justification"]
+          }
+        }
+      ]
+    }
+  }
+}

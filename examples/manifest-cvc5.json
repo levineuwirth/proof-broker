@@ -1,0 +1,35 @@
+{
+  "manifest_version": "1.0",
+  "adapter": "cvc5",
+  "adapter_version": "1.0",
+  "backends_supported": ["cvc5"],
+
+  "logic_fragments": ["LIA", "LRA", "BV", "UF", "UFLIA", "UFLRA", "ARRAY"],
+
+  "type_constructions": [
+    "primitive",
+    "type_variable_via_specialization"
+  ],
+
+  "max_order": "first_order",
+
+  "tiers_produced": [1, 3],
+
+  "trace_formats_produced": ["alethe-2024"],
+
+  "witness_kinds_produced": ["farkas", "sat_assignment", "sat_unsat_core"],
+
+  "preferred_rewrite_pipeline": [
+    { "pass": "definition_unfolding",
+      "config": { "concepts": ["integer_addition", "integer_subtraction", "integer_negation", "integer_multiplication"] } },
+    { "pass": "quotient_elimination", "config": { "aggressive": false } },
+    { "pass": "propositional_simplification" },
+    { "pass": "skolemization" }
+  ],
+
+  "concurrency": {
+    "supports_cancellation": true,
+    "expected_latency_ms": 500,
+    "max_parallel_invocations": 4
+  }
+}

@@ -1,0 +1,599 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  pdftitle={Proof Brokerage: Implementation Roadmap}
+}
+
+\definecolor{phasecolor}{rgb}{0.1, 0.3, 0.6}
+\definecolor{riskhigh}{rgb}{0.7, 0.1, 0.1}
+\definecolor{riskmed}{rgb}{0.7, 0.5, 0.1}
+\definecolor{risklow}{rgb}{0.1, 0.5, 0.1}
+
+\titleformat{\section}[hang]{\normalfont\Large\bfseries\color{phasecolor}}{\thesection}{0.6em}{}
+\titleformat{\subsection}[hang]{\normalfont\large\bfseries}{\thesubsection}{0.6em}{}
+
+\newcommand{\highrisk}{\textcolor{riskhigh}{\textbf{HIGH}}}
+\newcommand{\medrisk}{\textcolor{riskmed}{\textbf{MED}}}
+\newcommand{\lowrisk}{\textcolor{risklow}{\textbf{LOW}}}
+
+\title{
+  \vspace{-1cm}
+  \textbf{Proof Brokerage: Implementation Roadmap}\\[0.3em]
+  \large{From spec v1.0 to working v1 system}
+}
+\author{}
+\date{Working draft --- companion to spec v1.0}
+
+\begin{document}
+\maketitle
+
+\sloppy
+\emergencystretch=3em
+
+\begin{abstract}
+\noindent
+This document is the implementation companion to the Proof Brokerage
+Architecture Specification v1.0. It sequences the engineering work into
+phases, identifies dependencies between components, surfaces the highest
+risks, and provides milestone-level deliverables. It is explicitly a
+\emph{plan}, not a contract: the sequencing reflects what the
+specification authors believe is the right order to build, and is
+expected to be revised as implementation surfaces information not
+available at design time.
+
+The roadmap targets a 12--18 month timeline to a working v1 system.
+Critical-path components (the IR, the Lean plugin, CVC5 integration)
+are front-loaded; lower-priority work (Rocq probe, LLM integration, the
+dashboard) is deferred until the critical path validates. The roadmap
+does not address staffing or organizational structure, which are
+project-specific.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Roadmap philosophy}
+
+The architecture has many components. Implementing them in the wrong
+order risks substantial wasted work. Two principles drive the
+sequencing:
+
+\paragraph{Validate the IR before building on it.} The IR is the
+load-bearing artifact of the architecture; if it has design flaws, every
+downstream component built against it has to be revised. The earliest
+phases focus on validating the IR with one home system and one backend,
+end-to-end, before adding more.
+
+\paragraph{Defer LLM and dashboard work until the symbolic core works.}
+Both LLM integration and the dashboard are genuinely valuable, but they
+can be added once the symbolic-only core is operational. Building them
+in parallel risks the LLM components masking weaknesses in the symbolic
+path that we'd rather know about early.
+
+The roadmap is structured as five phases. Phases are sequential at the
+component level; within a phase, components can be developed in
+parallel where dependencies permit.
+
+\section{Phase summary}
+
+\begin{tabularx}{\textwidth}{@{}llXr@{}}
+\toprule
+\textbf{Phase} & \textbf{Codename} & \textbf{Outcome} & \textbf{Est.\ duration} \\
+\midrule
+0 & Foundations  & Repository, schemas, tooling                             & 1 month \\
+1 & Skeleton     & End-to-end Tier 1 dispatch, Lean + CVC5, simplest goals  & 3 months \\
+2 & Core         & Tier 3 with Alethe; full IR rewriter; metadata richness  & 4 months \\
+3 & Breadth      & Vampire (ATP) + LLM-as-backend; concurrent dispatch       & 3 months \\
+4 & Probe        & Rocq architectural probe (Tier 0+1)                      & 2 months \\
+5 & Polish       & Dashboard, build path, caching, Tier 2 framing           & 2 months \\
+\bottomrule
+\end{tabularx}
+
+\bigskip
+
+Total estimated duration: 15 months. Phase 5 may overlap with Phase 4
+where independent.
+
+\section{Phase 0: Foundations}
+\label{sec:phase0}
+
+\paragraph{Goal.} Establish the repository structure, the canonical
+schemas, the development tooling, and the cross-component testing
+harness. Nothing in this phase produces a working dispatch; everything
+in this phase is prerequisite to phases that do.
+
+\subsection{Deliverables}
+
+\begin{enumerate}
+  \item \textbf{Schema repository.} JSON-Schema definitions for the IR
+        document, the certificate envelope, the refinement record, the
+        adapter capability manifest, and the rewrite trace. Versioned
+        from v1.0; CI validates that schema changes don't break
+        round-trip with sample documents.
+  \item \textbf{Registry document.} The patterns registry (logic
+        features, fragments, theory tags, axiom shape descriptors,
+        concept tags, construction kinds) as a versioned data file.
+        Initial population from spec Appendix A. Maintenance process
+        documented.
+  \item \textbf{Reference IR documents.} Hand-written IR documents for
+        the three worked examples in spec Section 12. These are the
+        canonical test inputs that all components must handle.
+  \item \textbf{Cross-language SDK skeleton.} Language bindings for
+        Lean (in Lean), for Rocq (in OCaml), and a reference
+        implementation library (in Rust or OCaml) shared by
+        adapters. Decided in this phase, not before.
+  \item \textbf{Continuous integration.} Build and test pipelines for
+        all components, with fast cycle times.
+\end{enumerate}
+
+\subsection{Risks}
+
+\begin{itemize}
+  \item \medrisk\ Choice of implementation language for the shared
+        library affects integration complexity for the home-system
+        plugins. Recommendation: Rust for the shared library, with
+        explicit FFI for Lean (via Lean's C interface) and for OCaml
+        (via standard FFI). The cost of getting this wrong is rework
+        in Phase 1.
+  \item \lowrisk\ Schema drift between hand-written reference IRs
+        and serializer outputs once the latter exists. Mitigation:
+        treat reference IRs as canonical; serializers are validated
+        against them.
+\end{itemize}
+
+\subsection{Exit criteria}
+
+Schemas validate on all reference documents. Registry is populated and
+documented. SDK skeleton compiles in all target languages. CI is green.
+
+\section{Phase 1: Skeleton}
+\label{sec:phase1}
+
+\paragraph{Goal.} Working end-to-end dispatch from Lean 4 to CVC5 for
+the simplest possible goal class: pure linear arithmetic, no
+typeclasses, no quotients, no higher-order. Tier 1 (Farkas) only.
+This phase is about validating that the architecture's pipeline works
+at all; capability is intentionally minimal.
+
+\subsection{Deliverables}
+
+\begin{enumerate}
+  \item \textbf{Lean plugin (minimal).} A \texttt{dispatch} tactic that
+        serializes a proof state into the IR, restricted to goals of the
+        form $\forall \vec{x} : \mathbb{Z}, P_1 \wedge \cdots \wedge P_n
+        \to Q$ where each $P_i, Q$ is a linear arithmetic predicate.
+        Other goals are rejected with a clear ``not yet supported''
+        message.
+  \item \textbf{IR rewriter (minimal).} Propositional simplification
+        only. No quotient elimination, no unfolding.
+  \item \textbf{Dispatcher (minimal).} Single backend, no capability
+        matching, no concurrency.
+  \item \textbf{CVC5 adapter (minimal).} Translates LIA shell into
+        SMT-LIB. Receives unsat result. \emph{Does not yet consume
+        Alethe traces}; produces a Tier 1 (Farkas) certificate by
+        running CVC5 with the appropriate options.
+  \item \textbf{Tier 1 verifier (Farkas).} Lean tactic that consumes a
+        Farkas certificate and produces a kernel-checked proof term.
+  \item \textbf{Lifting (trivial).} For Phase 1 goals, refinement
+        records contain only \texttt{type\_specialization} from $\alpha$
+        to $\mathbb{Z}$ (or none, for goals already over $\mathbb{Z}$),
+        and lifting is mechanical.
+\end{enumerate}
+
+\subsection{Risks}
+
+\begin{itemize}
+  \item \highrisk\ The translation hints schema may be insufficient even
+        for this restricted case. \emph{This is the single highest risk
+        in the roadmap.} The worked examples in spec Section 12 are
+        believed sufficient, but real Lean code will surface
+        configurations not anticipated. Mitigation: budget 50\% of Phase
+        1 time for IR/spec revision based on what the implementation
+        surfaces. Treat the spec as a draft until Phase 1 completes.
+  \item \medrisk\ Farkas certificate extraction from CVC5 may have
+        format quirks. CVC5's certificate output has evolved; the
+        adapter must handle the current version with explicit version
+        guards.
+  \item \medrisk\ Lean's metaprogramming API for accessing proof state
+        is rich but intricate. The serializer is the most complex piece
+        of the Lean plugin.
+\end{itemize}
+
+\subsection{Exit criteria}
+
+The three worked examples from spec Section 12, restricted to the
+LIA case (Example 1 with $\alpha = \mathbb{Z}$ explicitly), dispatch
+end-to-end and produce kernel-checked proof terms. The Lean plugin
+rejects out-of-scope goals with clear messages. Performance is acceptable
+for interactive use (sub-10-second total dispatch latency on the
+example goals).
+
+\subsection{Spec revision checkpoint}
+
+At Phase 1 exit, conduct an explicit specification review based on
+implementation findings. Document any deviations from spec v1.0 and
+update the spec to v1.1 if warranted. Phase 2 builds on the revised
+spec, not on v1.0.
+
+\section{Phase 2: Core}
+\label{sec:phase2}
+
+\paragraph{Goal.} Bring the IR and verifier to full v1 capability for
+Lean and CVC5: typeclass-quantified goals, quotient types, the IR
+rewriter with quotient elimination, Tier 3 with Alethe traces, full
+lifting machinery.
+
+\subsection{Deliverables}
+
+\begin{enumerate}
+  \item \textbf{Type metadata: full schema implementation.} The
+        serializer produces type metadata for primitive types, type
+        variables (with instances), and type constructor applications
+        (quotient, inductive, sigma, refinement). Other construction
+        kinds remain placeholder.
+  \item \textbf{Definitional metadata: full schema implementation.} All
+        kinds defined in the spec are implemented in the serializer.
+  \item \textbf{Theory tag soundness mechanism.} The serializer
+        validates theory tags against verified embedding lemmas. The
+        registry is consulted at serialization time; tags without
+        backing lemmas in the home system are dropped.
+  \item \textbf{IR rewriter passes.} \texttt{quotient\_elimination},
+        \texttt{definition\_unfolding} (selective by concept tag),
+        \texttt{equality\_saturation}, \texttt{quantifier\_prenexing},
+        \texttt{skolemization}. Each with rewrite trace recording for
+        inversion.
+  \item \textbf{CVC5 adapter: full.} Produces Tier 3 certificates with
+        Alethe traces. Refinement records include all specialization
+        kinds.
+  \item \textbf{Alethe-to-Lean replayer.} Symbolic Tier 3 verifier
+        that consumes Alethe traces and produces Lean proof terms.
+        This is a substantial sub-project.
+  \item \textbf{Lifting: full machinery.} Inverts refinement records
+        and rewrite traces in the right order, handles all
+        specialization kinds, handles all rewrite passes.
+  \item \textbf{Capability matching.} Dispatcher consults adapter
+        manifests against goal classification.
+\end{enumerate}
+
+\subsection{Risks}
+
+\begin{itemize}
+  \item \highrisk\ The Alethe-to-Lean replayer is itself a research-grade
+        engineering project. Existing work (e.g., on Alethe-to-Isabelle)
+        provides a starting point but cannot be transferred wholesale.
+        Mitigation: scope the initial replayer to support only the
+        Alethe rules CVC5 actually emits for the v1 backend
+        configuration; expand coverage incrementally.
+  \item \highrisk\ Rewrite trace inversion for \texttt{quotient\_elimination}
+        is non-trivial. Getting it wrong produces silent unsoundness or
+        loud lifting failures. Mitigation: extensive property-based
+        testing on the inversion (round-trip: original goal $\to$
+        rewritten $\to$ certificate $\to$ lifted = original goal).
+  \item \medrisk\ Theory tag soundness validation requires a registry of
+        verified embedding lemmas in mathlib. Some tags will need new
+        lemmas to be proved. Estimate: 5--10 lemmas in mathlib, each a
+        small but non-trivial proof.
+  \item \medrisk\ Definitional metadata for typeclass methods has
+        subtleties around instance resolution that are easy to get
+        wrong. Phase 1's findings should inform this.
+\end{itemize}
+
+\subsection{Exit criteria}
+
+All three worked examples from spec Section 12 dispatch end-to-end with
+full capability. Performance is acceptable for interactive use on
+representative real-world Lean goals (sub-30-second total dispatch
+latency for typical mathlib-style goals). The Alethe replayer's coverage
+is documented; goals outside coverage fall through to LLM-assisted
+reconstruction (which is not yet implemented; in Phase 2 they fail).
+
+\section{Phase 3: Breadth}
+\label{sec:phase3}
+
+\paragraph{Goal.} Add Vampire (ATP) and a generic LLM-as-backend
+adapter. Implement concurrent dispatch. The architecture's heterogeneity
+claims are validated only when multiple backends with different
+characteristics are dispatching the same goal.
+
+\subsection{Deliverables}
+
+\begin{enumerate}
+  \item \textbf{Vampire adapter.} TPTP-FOF and TPTP-THF input
+        production. Refinement records with \texttt{axiomatization}
+        specializations. Capability manifest declares first-order and
+        higher-order coverage.
+  \item \textbf{TPTP-to-Lean replayer.} Symbolic Tier 3 verifier for
+        TPTP-FOF traces. May initially have lower coverage than Alethe;
+        documented gaps fall through to LLM strategy.
+  \item \textbf{LLM-as-backend adapter.} Renders IR as Lean surface
+        syntax, prompts a configured LLM endpoint, packages the
+        returned tactic script as a Tier 3 certificate.
+  \item \textbf{LLM-assisted Tier 3 reconstruction strategy.} For
+        certificates whose traces cannot be replayed symbolically, a
+        configured LLM is asked to translate. Kernel-checked.
+  \item \textbf{Concurrent dispatch.} Multiple backends in parallel,
+        first-valid-wins with grace window for higher tiers, cancellation
+        on success.
+  \item \textbf{Adapter capability matching: refined.} Filtering and
+        prioritization based on goal classification, with fallback
+        chains.
+\end{enumerate}
+
+\subsection{Risks}
+
+\begin{itemize}
+  \item \medrisk\ Vampire-HOL's higher-order capabilities are powerful
+        but uneven. Some higher-order goals will succeed in Vampire
+        but fail to replay; this is acceptable for v1 but should be
+        tracked.
+  \item \medrisk\ LLM endpoint latency, cost, and availability are
+        operational concerns that don't show up in Phase 2. The first
+        real LLM use will surface practical issues (rate limiting,
+        timeout calibration, prompt engineering).
+  \item \medrisk\ The grace-window policy for higher-tier certificates
+        in concurrent dispatch may need tuning. Default is 2 seconds
+        but real workloads may want different defaults.
+  \item \lowrisk\ Generic LLM prompts may underperform compared to
+        specialized prover models (DeepSeek-Prover etc.). Mitigation:
+        the LLM adapter accepts model identity as configuration; users
+        can configure specialized models if available.
+\end{itemize}
+
+\subsection{Exit criteria}
+
+A goal involving function composition (worked example 2) succeeds via
+LLM-as-backend with sub-5-second latency and via Vampire-HOL within
+30 seconds. Concurrent dispatch demonstrably picks the faster
+successful backend. The dashboard (Phase 5) is not yet implemented;
+diagnostics are command-line only.
+
+\section{Phase 4: Probe}
+\label{sec:phase4}
+
+\paragraph{Goal.} Implement the Rocq architectural probe. The probe
+validates that the IR is not Lean-shaped and that the protocol works
+across home systems. Production-quality Rocq integration is a v2
+goal; the probe is intentionally minimal.
+
+\subsection{Deliverables}
+
+\begin{enumerate}
+  \item \textbf{Rocq plugin (probe scope).} A \texttt{Dispatch} tactic
+        that serializes Rocq proof state into the IR. Coverage: the
+        same goal class as Lean Phase 1 (LIA only, Tier 1) plus
+        Phase 2 capability for the worked-example category.
+  \item \textbf{Tier 0 verifier (Rocq).} Trust-policy lookup, oracle
+        certificate acceptance with explicit trust expansion.
+  \item \textbf{Tier 1 verifier (Rocq).} Farkas certificate consumption
+        producing kernel-checked Rocq proof terms.
+  \item \textbf{IR shape validation.} Run the Phase 2 reference IRs
+        produced by the Lean serializer through the Rocq deserializer.
+        Run the Phase 2 reference IRs produced by the Rocq serializer
+        through the Lean adapter pipeline. Both directions must
+        succeed (modulo Rocq probe scope restrictions). This is the
+        validation that the IR is not Lean-shaped.
+\end{enumerate}
+
+\subsection{Risks}
+
+\begin{itemize}
+  \item \highrisk\ Rocq's typeclass system (canonical structures,
+        type classes, Hint Cut, etc.) is genuinely different from
+        Lean 4's. The IR may need extension. Mitigation: this is
+        \emph{the} validation step for Position 3 of the architecture
+        debate. If it fails badly, the architecture itself is wrong
+        and Phases 2--3 may need partial revision.
+  \item \medrisk\ Rocq's plugin development model (OCaml, MetaCoq,
+        Ltac2) is more conservative than Lean's. Engineering effort
+        per feature is meaningfully higher.
+  \item \medrisk\ Cross-system reference IR validation will surface
+        discrepancies that don't show up when each home system uses
+        its own serializer. Some discrepancies will be benign
+        (different but equivalent representations); others will reveal
+        real schema gaps.
+\end{itemize}
+
+\subsection{Exit criteria}
+
+Rocq probe dispatches simple LIA and worked-example-2-style goals
+end-to-end. Cross-system IR round-trips for at least the three worked
+examples succeed (with documented exceptions for cases the probe
+explicitly does not support). Schema gaps discovered during this phase
+are documented for v2 resolution.
+
+\subsection{Spec revision checkpoint}
+
+If Rocq probe finds material schema gaps, conduct another spec review.
+This is the architectural-validation milestone. The spec moves to v1.2
+or v2.0 depending on the severity of revisions.
+
+\section{Phase 5: Polish}
+\label{sec:phase5}
+
+\paragraph{Goal.} Complete the user-facing experience: the dashboard,
+the build path, the certificate cache, and Tier 2 with its UX
+commitments. These are the components that turn a working pipeline
+into a usable system.
+
+\subsection{Deliverables}
+
+\begin{enumerate}
+  \item \textbf{Tier 2 implementation.} Lemma list extraction from
+        backends that don't produce traces; reconstruction via Lean's
+        \texttt{aesop} and \texttt{simp\_arith} with hints; structured
+        failure reporting.
+  \item \textbf{Tier 2 UX commitments.} Distinct labeling
+        (\texttt{reconstructed (probabilistic)}); per-backend, per-goal-shape
+        success rate tracking.
+  \item \textbf{The dashboard.} Session and project-level dispatch
+        history; per-backend, per-tier, per-goal-shape statistics;
+        failure analysis with suggested remedies.
+  \item \textbf{Build path integration.} Dispatch calls re-run at build
+        time with persistent caching. CI integration documented.
+  \item \textbf{Certificate cache: full.} Project-local store with all
+        invalidation rules; optional shared-cache configuration.
+  \item \textbf{Documentation and tutorials.} User-facing documentation,
+        worked examples, troubleshooting guide.
+\end{enumerate}
+
+\subsection{Risks}
+
+\begin{itemize}
+  \item \medrisk\ The Tier 2 demotion clause may trigger. If Lean's
+        \texttt{aesop}-with-hints reconstruction success rate is
+        substantially worse than \texttt{sledgehammer}'s baseline, Tier 2
+        is demoted to v1.5 and Phase 5 ships without it.
+  \item \medrisk\ Dashboard design decisions are user-facing and may
+        require iteration. Initial dashboard should be functional but
+        may be redesigned based on early-user feedback.
+  \item \lowrisk\ Build-path integration may surface issues with
+        long-running CI dispatch (LLM costs in CI, especially). Project
+        configuration for CI-friendly dispatch (no LLM, longer ATP
+        budgets) addresses most of this.
+\end{itemize}
+
+\subsection{Exit criteria}
+
+The system is usable for real Lean development. A medium-sized mathlib
+file with several dispatch calls compiles in CI within reasonable
+time. The dashboard provides actionable feedback to users. Tier 2
+either works at acceptable rates or has been formally demoted with
+documentation.
+
+\section{Cross-phase concerns}
+
+\subsection{Soundness audit cadence}
+
+The architecture has explicit soundness requirements (translation
+discipline, refinement record completeness, rewrite pass soundness
+preservation, theory tag soundness). These should be audited at the
+end of each phase by someone other than the implementer of the
+component being audited. The audit is informal but documented;
+findings are tracked.
+
+\subsection{Performance budgets}
+
+Initial performance budgets, to be revised as data accumulates:
+
+\begin{itemize}
+  \item Slow-path dispatch (interactive): 30 seconds total budget,
+        soft target 5 seconds for typical goals.
+  \item Build-path dispatch: 5 minutes total budget per call,
+        soft target 30 seconds for typical goals.
+  \item IR serialization: under 100ms for typical goals.
+  \item IR rewriting: under 1 second for typical goals; pass-level
+        timeouts at 5 seconds.
+  \item Lifting: under 1 second for typical goals.
+\end{itemize}
+
+Budgets that are routinely exceeded should be diagnosed; budgets that
+are routinely met by large margins should be tightened.
+
+\subsection{Test coverage strategy}
+
+\begin{itemize}
+  \item \textbf{Unit tests} for each component: schema validation,
+        per-pass rewrite correctness, per-strategy verifier behavior.
+  \item \textbf{Integration tests} for each (home system, backend, tier)
+        combination: end-to-end dispatch on canonical goals.
+  \item \textbf{Property tests} for round-trip invariants: serialize $\to$
+        deserialize, rewrite $\to$ invert, dispatch $\to$ lift.
+  \item \textbf{Regression tests} on real-world goals: a curated set
+        of mathlib-style goals that the system has historically handled
+        correctly. Any regression here is a release blocker.
+\end{itemize}
+
+\subsection{Versioning policy}
+
+\begin{itemize}
+  \item Spec versions follow semantic versioning. Breaking changes to
+        IR schema or certificate format require major version bumps.
+  \item The IR \texttt{ir\_version} field and certificate
+        \texttt{cert\_version} field track the spec version they
+        conform to. Components reject documents with incompatible
+        versions.
+  \item The patterns registry has its own version, separate from the
+        spec. Adding patterns is non-breaking; removing or renaming
+        patterns requires a registry version bump.
+\end{itemize}
+
+\subsection{Risk register summary}
+
+\begin{tabularx}{\textwidth}{@{}llXl@{}}
+\toprule
+\textbf{Phase} & \textbf{Risk} & \textbf{Description} & \textbf{Severity} \\
+\midrule
+1 & Spec gaps & Translation hints insufficient for real Lean code & \highrisk \\
+1 & Format quirks & CVC5 certificate format version drift & \medrisk \\
+1 & Lean API & Metaprogramming complexity for serializer & \medrisk \\
+2 & Replayer scope & Alethe-to-Lean coverage substantial work & \highrisk \\
+2 & Inversion bugs & Quotient elimination inversion correctness & \highrisk \\
+2 & Embedding lemmas & New mathlib lemmas needed for theory tags & \medrisk \\
+3 & LLM ops & Endpoint latency, cost, availability surface late & \medrisk \\
+3 & Tuning & Concurrent dispatch grace window calibration & \medrisk \\
+4 & Schema fit & Rocq surfaces IR gaps & \highrisk \\
+4 & Plugin cost & Rocq plugin engineering effort & \medrisk \\
+5 & Tier 2 rate & Reconstruction success rate triggers demotion & \medrisk \\
+\bottomrule
+\end{tabularx}
+
+\section{What this roadmap does not address}
+
+This roadmap is a technical sequencing document. It does not address:
+
+\begin{itemize}
+  \item \textbf{Staffing.} Phase durations assume a small team
+        (3--5 engineers) with relevant expertise. Different team sizes
+        and skill mixes will require different sequencing.
+  \item \textbf{Funding and sustainability.} The architecture is a
+        long-term commitment; funding to maintain it across home-system
+        and backend version evolution is required.
+  \item \textbf{Community engagement.} The Lean and Rocq communities
+        will need to be brought along; their feedback should drive
+        registry maintenance and prioritization. Community engagement
+        process is not specified.
+  \item \textbf{Productionization.} Hosted vs.\ self-hosted deployment,
+        SLA, security review --- all out of scope for this roadmap.
+\end{itemize}
+
+\section{Decision points and revision triggers}
+
+The roadmap has three explicit decision points where progress should
+be reassessed:
+
+\paragraph{Phase 1 exit.} Has the IR/spec held up under real implementation?
+If yes, proceed to Phase 2. If no, revise spec to v1.1 and re-plan
+Phase 2 against the revised spec.
+
+\paragraph{Phase 4 exit.} Did the Rocq probe validate the architecture?
+If yes, the architecture is genuinely cross-system and v2 work on
+production Rocq integration is sound. If no, the architecture has
+Lean-shaped assumptions that need to be re-evaluated --- this could
+require significant re-work.
+
+\paragraph{Phase 5 exit / pre-release.} Does the system meet usability
+goals? Tier 2 demotion clause, dashboard quality, and CI integration
+are the primary gates. A failed pre-release gate triggers a v1.5
+focused on the failing area before declaring v1.0 complete.
+
+Beyond these explicit decision points, ongoing assessment of risk
+items in the risk register may trigger re-planning at any point.
+The roadmap is a plan, not a contract.
+
+\end{document}
