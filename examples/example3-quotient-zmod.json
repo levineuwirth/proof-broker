@@ -173,6 +173,12 @@
       "theory_tag": "LIA:sub"
     },
 
+    "Int.mul": {
+      "kind": "primitive_arithmetic",
+      "abstract_signature": "Int -> Int -> Int",
+      "theory_tag": "LIA:mul"
+    },
+
     "Int.divides": {
       "kind": "defined_function",
       "abstract_signature": "Nat -> Int -> Prop",
@@ -275,6 +281,12 @@
       "version": "4.13.0",
       "module_path": "Init.Data.Int.Basic",
       "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000038"
+    },
+    "Int.mul": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Data.Int.Basic",
+      "content_hash": "sha256:000000000000000000000000000000000000000000000000000000000000003b"
     },
     "Int.divides": {
       "library": "lean-stdlib",

@@ -58,14 +58,24 @@ def schema_for(name: str) -> str | None:
 
 def main() -> int:
     schemas, registry = load_schemas()
-    validators = {
-        name: Draft202012Validator(schema, registry=registry)
-        for name, (sid, schema) in schemas.items()
-    }
 
     failed = 0
     print(f"Loaded {len(schemas)} schemas: {sorted(schemas)}")
     print()
+
+    for name, (sid, schema) in schemas.items():
+        try:
+            Draft202012Validator.check_schema(schema)
+            print(f"OK   schemas/v1.0/{name} (meta-schema)")
+        except Exception as e:
+            print(f"FAIL schemas/v1.0/{name}: {e}")
+            failed += 1
+    print()
+
+    validators = {
+        name: Draft202012Validator(schema, registry=registry)
+        for name, (sid, schema) in schemas.items()
+    }
 
     for example in sorted(EXAMPLES.glob("*.json")):
         schema_name = schema_for(example.name)
