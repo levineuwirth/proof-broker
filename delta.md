@@ -126,6 +126,15 @@ investment is sunk. If the spike takes more than two weeks or surfaces
 architectural surprises, the language choice should be reconsidered
 (see §5 condition 6).
 
+**Spike outcome (recorded post-completion).** The spike landed
+end-to-end on all three IR fixtures with parse-and-compare equality,
+typed error propagation, and stable memory across 10⁵ iterations.
+Measured per-call marshaling cost is ~54 µs on x86-64 Linux — small
+enough that it does not move the §2.2 +20–30% estimate. Full
+calibration table and toolchain notes live in
+`sdk/FFI_CONVENTIONS.md` ("Phase-0 spike outcome"). §5 condition 6
+did not trigger.
+
 **New Phase 0 deliverable: distribution bundle scaffold for Lean.**
 Under Rust, the shared library would have been a single static binary
 with no runtime requirements on the Lean side. Under OCaml, the Lean

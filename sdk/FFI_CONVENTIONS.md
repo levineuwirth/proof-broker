@@ -5,11 +5,17 @@ Phase-0 FFI spike (delta.md §2.1) and downstream Phase 1+ work.
 
 ## Wire format
 
-JSON during FFI bring-up; CBOR later, behind a single
-`Codec.to_wire` / `Codec.of_wire` toggle. JSON is debuggable and
-inspectable — eyes on the wire is irreplaceable while the shim itself is
-under development. The codec abstracts the choice so that the switch-over
-to CBOR is a single point of change once the shim is stable.
+**JSON locked for v1.** CBOR sits behind a single
+`Codec.to_wire` / `Codec.of_wire` toggle but does not get switched
+on until profiling shows FFI marshaling at ≥10% of dispatch wall time
+on representative workloads. Below that threshold, JSON's diagnostic
+affordances — cat-able fixtures, readable CI logs, eyeball-debuggable
+error envelopes — outweigh wire-size and parse-cost wins. The
+Phase-0 spike measured ~54 µs/call, well below any plausible trigger.
+
+The codec abstraction means the eventual switch is a single point of
+change. The trigger is a measurable bar so the "should we move to
+CBOR yet" discussion does not recur every six months.
 
 The IR document is the canonical example; the same convention applies to
 certificates, refinement records, traces, and every other artifact that
@@ -42,6 +48,79 @@ the Lean side treats unknown `kind` as a generic failure.
 Do not return bare values from any shim entry point. Even one-result
 functions wrap in `{"status": "ok", "payload": <result>}` so the calling
 convention is uniform across the boundary.
+
+**Forward compatibility.** Envelope consumers must access fields by
+name (e.g., `Json.getObjVal? "payload"`), never by structurally
+pattern-matching the whole object. New optional fields (`trace_entry`,
+`metadata`, ...) can then be added to `payload` or `error` without
+breaking existing decoders. The Lean-side decoder in
+`lean-bridge/Main.lean` follows this convention; treat it as the
+reference shape for any new envelope consumer.
+
+## Method dispatch
+
+One C ABI entry point ever:
+
+```c
+int pb_ffi_call(const char *method,
+                const char *json_input,
+                char **out);
+```
+
+Method names are strings carried in the first argument; payloads are
+JSON in the second; the output buffer always carries the standard
+envelope. New OCaml-side operations land by registering a callback
+under a fresh method name and adding a typed Lean-side wrapper; the
+C ABI does not grow with the OCaml API.
+
+Rationale: per-method named C entry points (e.g.,
+`pb_ffi_quotient_eliminate`, `pb_ffi_propositional_simplify`) become a
+per-method tax — every new pass requires coordinated changes across
+three files in two languages. The dispatcher trades C-level static
+typing (which the C compiler cannot meaningfully enforce on
+JSON-shaped payloads anyway) for an ABI that does not grow. The
+Lean-side typed wrappers preserve everything a Lean caller actually
+wants from typing:
+
+```lean
+namespace ProofBroker
+
+@[extern "pb_ffi_call"]
+private opaque pbCall (method : @& String) (input : @& String) : String
+
+def quotientEliminate (ir : IR) : IO IR := ...
+def propositionalSimplify (ir : IR) : IO IR := ...
+
+end ProofBroker
+```
+
+Each typed wrapper handles its own envelope decoding and error
+propagation; callers see typed `IO` actions, never the raw envelope.
+
+**Unknown method.** If `method` is not registered on the OCaml side,
+the dispatcher returns the standard error envelope with a distinct
+`kind`:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "kind": "unknown_method",
+    "message": "<method-name>"
+  }
+}
+```
+
+The distinct `kind` lets callers separate "method exists but rejected
+the input" (`decode_error`, `validation_error`, ...) from "method not
+in this build" (`unknown_method`); the latter typically signals SDK
+↔ Lean-bridge version skew.
+
+**Migration note.** The Phase-0 spike's `pb_ffi_roundtrip_ir` landed
+as a named entry point before this convention was locked. It is the
+lone exception; future ops land through the dispatcher, and
+`pb_ffi_roundtrip_ir` will be folded into it when the second op
+lands.
 
 ## Comparison protocol
 
@@ -91,11 +170,57 @@ diagnostic path that later wants it.
 
 ## What's not yet decided
 
-- The exact set of shim entry points. The Phase-0 spike will start with
-  one (round-trip a single IR document) and grow incrementally.
 - Whether the shim is stateful (holding e.g. a parsed registry) or
   stateless (each call re-loads). Decision belongs to whoever writes
   the shim; constraints from this document apply either way.
 - The Lean-side error type that `{"status": "error", ...}` envelopes
   decode into. Probably an inductive matching this document's `kind`
   values, with a catch-all for forward compatibility.
+
+## Phase-0 spike outcome
+
+The Phase-0 round-trip spike landed end-to-end. The full chain
+(Lean → C glue → OCaml → C glue → Lean, with parse-and-compare
+normalization at the Lean end) round-trips all three IR fixtures with
+structural equality, and the error path surfaces decode failures as
+typed `kind` values in the envelope.
+
+Measured cost on x86-64 Linux, OCaml 5.4.1, Lean 4.30.0-rc2:
+
+| Metric                              | Result                          |
+|-------------------------------------|---------------------------------|
+| Per-call cost (parse + decode + encode + serialize, small IR) | ~54 µs |
+| RSS after warmup, held over 100k iterations                   | 5.7 MB stable, no growth |
+| Decode-error propagation                                      | typed `kind="decode_error"` reaches Lean |
+| JSON-parse-error propagation                                  | typed `kind="json_parse_error"` reaches Lean |
+
+Implication for the §2.2 +20–30% Lean-plugin estimate (delta.md): the
+band stays as standing estimate; Phase 0 came in at the low end of it.
+The estimate's load-bearing concern was always boundary-design
+durability across diverse ops — whether the FFI surface holds up as
+new methods, new error kinds, and new envelope payloads land — not
+the marshaling code volume itself. The marshaling code is small and
+now front-loaded, so the meaningful Phase 1 recalibration happens at
+mid-checkpoint, when we know what fraction of total Lean-plugin effort
+the FFI machinery represents across a real distribution of ops.
+
+The §5 condition-6 off-ramp does not trigger. The lone wrinkle (lld +
+glibc; see Toolchain notes below) is operational rather than
+architectural — a one-line link-flag tweak, not a packaging restructure.
+
+### Toolchain notes
+
+- Lean 4.30's bundled lld defaults to `--no-allow-shlib-undefined`,
+  which rejects linking against `proof_broker_ffi.so`'s transitive
+  glibc symbol references on systems where the lld bundles an older
+  glibc than the system's libc was built against. The lake build
+  passes `-Wl,--allow-shlib-undefined`; runtime resolution by the
+  dynamic loader is unaffected. If a future Lean release ships a
+  different bundled toolchain or this becomes a portability problem,
+  revisit by either rebuilding the OCaml side against the older
+  glibc or switching the Lean build to use the system toolchain.
+- The shim is loaded via `$ORIGIN`-relative rpath in the Lean
+  executable so the test self-resolves the `.so` without
+  `LD_LIBRARY_PATH`. Production distribution will need a different
+  story (per §2.1 distribution-bundle scaffold), but for development
+  this keeps the layout obvious.

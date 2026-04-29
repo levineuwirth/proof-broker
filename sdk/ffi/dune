@@ -1,0 +1,18 @@
+; OCaml + C shim shared object for the Phase-0 FFI spike.
+;
+; Produces proof_broker_ffi.so (under _build/default/sdk/ffi/) containing:
+;   - The OCaml runtime
+;   - The proof_broker library and its yojson dependency
+;   - The Callback.register-ing top-level code in proof_broker_ffi.ml
+;   - The C shim (pb_ffi_* entry points) from proof_broker_shim.c
+;
+; Downstream consumers (Lean via @[extern], the C smoke test) link against
+; this single .so and call the C ABI declared in proof_broker_shim.h.
+
+(executable
+ (name proof_broker_ffi)
+ (modes (native shared_object))
+ (libraries proof_broker yojson)
+ (foreign_stubs
+  (language c)
+  (names proof_broker_shim)))

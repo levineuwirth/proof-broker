@@ -59,3 +59,40 @@ jobs:
 
       - name: Cross-tool agreement (OCaml round-trip → Python validator)
         run: python tools/test_cross_tool.py
+
+      - name: FFI shim smoke test (C ↔ OCaml)
+        run: bash sdk/ffi/test/run.sh
+
+  lean-bridge:
+    runs-on: ubuntu-latest
+    needs: sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      # Rebuild the OCaml shim because artifacts don't carry between jobs;
+      # cheap because the dune cache hits and the OCaml part is small.
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.4"
+          dune-cache: true
+
+      - name: Install SDK deps
+        run: opam install -y --deps-only --with-test ./sdk
+
+      - name: Build SDK shared object
+        run: opam exec -- dune build --root=sdk
+
+      - name: Install elan (Lean toolchain manager)
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          chmod +x elan-init.sh
+          ./elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Build Lean bridge (auto-installs toolchain via lean-toolchain)
+        working-directory: lean-bridge
+        run: lake build
+
+      - name: Run Lean ↔ C ↔ OCaml round-trip
+        working-directory: lean-bridge
+        run: lake exe roundtripTest

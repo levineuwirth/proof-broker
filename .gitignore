@@ -17,3 +17,7 @@ build/
 dist/
 _build/
 *.install
+
+.lake/
+lakefile.olean
+lake-manifest.json
