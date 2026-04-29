@@ -1,0 +1,3 @@
+(executable
+ (name round_trip_cli)
+ (libraries proof_broker yojson))

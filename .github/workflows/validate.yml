@@ -25,3 +25,37 @@ jobs:
 
       - name: Run cross-document soundness checks
         run: python tools/check.py
+
+      - name: Run cross-doc checker negative tests
+        run: python tools/test_check.py
+
+  sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.4"
+          dune-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+
+      - name: Install Python validator deps
+        run: pip install -r tools/requirements.txt
+
+      - name: Install SDK deps
+        run: opam install -y --deps-only --with-test ./sdk
+
+      - name: Build SDK
+        run: opam exec -- dune build --root=sdk
+
+      - name: Run SDK tests
+        run: opam exec -- dune runtest --root=sdk
+
+      - name: Cross-tool agreement (OCaml round-trip → Python validator)
+        run: python tools/test_cross_tool.py

@@ -1,0 +1,7 @@
+(test
+ (name test_round_trip)
+ (libraries proof_broker yojson alcotest))
+
+; The reference IR fixtures are in repo/examples, outside the sdk/ dune
+; workspace. The test resolves them at runtime relative to its build
+; directory rather than declaring them as dune deps.
