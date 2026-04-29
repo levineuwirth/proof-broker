@@ -1,11 +1,12 @@
 /*
  * test_shim.c — C-side smoke test for the OCaml↔C boundary.
  *
- * Exercises four properties of proof_broker_shim:
- *   T1  Happy path: round-trip a real IR fixture and observe a status=ok
- *       envelope whose payload preserves at least the ir_version marker.
- *       Structural equality is the Lean side's job (parse-and-compare per
- *       sdk/FFI_CONVENTIONS.md); here we just confirm the bytes flow.
+ * Exercises five properties of proof_broker_shim:
+ *   T1  Happy path: round-trip a real IR fixture via the "roundtrip_ir"
+ *       method and observe a status=ok envelope whose payload preserves
+ *       at least the ir_version marker. Structural equality is the Lean
+ *       side's job (parse-and-compare per sdk/FFI_CONVENTIONS.md); here
+ *       we just confirm the bytes flow.
  *   T2  Lexical garbage triggers status=error / kind=json_parse_error.
  *   T3  Well-formed JSON missing required IR fields triggers
  *       status=error / kind=decode_error (Codec.of_json's domain).
@@ -14,6 +15,10 @@
  *       or a use-after-free that surfaces as a crash. Memory growth is
  *       meant to be checked externally (e.g., with `time` / RSS sampling
  *       in the CI invocation); here we just need the loop to complete.
+ *   T5  Calling an unregistered method surfaces as an
+ *       envelope with kind="unknown_method" and the method name in
+ *       message — the dispatcher's only synthetic envelope, and the
+ *       reason the C ABI's first argument is a method string at all.
  */
 
 #include "../proof_broker_shim.h"
@@ -59,9 +64,9 @@ int main(int argc, char **argv) {
     /* ---- T1: round-trip a real IR fixture --------------------------- */
     char *input = slurp(argv[1]);
     char *out = NULL;
-    int rc = pb_ffi_roundtrip_ir(input, &out);
+    int rc = pb_ffi_call("roundtrip_ir", input, &out);
     if (rc != 0) {
-        fprintf(stderr, "T1 pb_ffi_roundtrip_ir rc=%d\n", rc);
+        fprintf(stderr, "T1 pb_ffi_call rc=%d\n", rc);
         return 1;
     }
     must_contain(out, "\"status\":\"ok\"",       "T1 status");
@@ -73,9 +78,9 @@ int main(int argc, char **argv) {
 
     /* ---- T2: lexical garbage -> json_parse_error -------------------- */
     out = NULL;
-    rc = pb_ffi_roundtrip_ir("{not json", &out);
+    rc = pb_ffi_call("roundtrip_ir", "{not json", &out);
     if (rc != 0) {
-        fprintf(stderr, "T2 pb_ffi_roundtrip_ir rc=%d\n", rc);
+        fprintf(stderr, "T2 pb_ffi_call rc=%d\n", rc);
         return 1;
     }
     must_contain(out, "\"status\":\"error\"",          "T2 status");
@@ -85,9 +90,9 @@ int main(int argc, char **argv) {
 
     /* ---- T3: missing IR fields -> decode_error ---------------------- */
     out = NULL;
-    rc = pb_ffi_roundtrip_ir("{\"foo\":42}", &out);
+    rc = pb_ffi_call("roundtrip_ir", "{\"foo\":42}", &out);
     if (rc != 0) {
-        fprintf(stderr, "T3 pb_ffi_roundtrip_ir rc=%d\n", rc);
+        fprintf(stderr, "T3 pb_ffi_call rc=%d\n", rc);
         return 1;
     }
     must_contain(out, "\"status\":\"error\"",      "T3 status");
@@ -100,7 +105,7 @@ int main(int argc, char **argv) {
     const int N = 100000;
     for (int i = 0; i < N; ++i) {
         out = NULL;
-        rc = pb_ffi_roundtrip_ir(input, &out);
+        rc = pb_ffi_call("roundtrip_ir", input, &out);
         if (rc != 0) {
             fprintf(stderr, "T4 iter=%d rc=%d\n", i, rc);
             return 1;
@@ -109,6 +114,19 @@ int main(int argc, char **argv) {
     }
     free(input);
     fprintf(stderr, "OK T4: %d round-trips completed cleanly\n", N);
+
+    /* ---- T5: unknown method -> kind=unknown_method ------------------ */
+    out = NULL;
+    rc = pb_ffi_call("does_not_exist", "{}", &out);
+    if (rc != 0) {
+        fprintf(stderr, "T5 pb_ffi_call rc=%d\n", rc);
+        return 1;
+    }
+    must_contain(out, "\"status\":\"error\"",          "T5 status");
+    must_contain(out, "\"kind\":\"unknown_method\"",   "T5 kind");
+    must_contain(out, "\"message\":\"does_not_exist\"", "T5 message echoes method");
+    pb_ffi_free(out);
+    fprintf(stderr, "OK T5: unknown method yields status=error/unknown_method\n");
 
     return 0;
 }

@@ -1,24 +1,90 @@
 /-
-Lean-side surface for the Phase-0 FFI spike.
+Lean-side surface for the proof_broker FFI boundary.
 
-`pbRoundtripIr` ships a JSON-encoded IR document through the OCaml
-codec and back, returning the FFI envelope as a JSON string. The
-envelope shape is locked in `sdk/FFI_CONVENTIONS.md`.
+One low-level extern (`pbCall`) routes every dispatch through the
+generic `pb_ffi_call` C entry point per `sdk/FFI_CONVENTIONS.md`.
+Typed wrappers (`roundtripIR`, etc.) sit on top, decoding the
+envelope into a typed `Except FfiError α` so callers never
+hand-parse status/kind themselves.
+
+Adding a new op: register it in `sdk/ffi/proof_broker_ffi.ml` under
+a fresh method name and add a `def myOp ... := decodeEnvelope (pbCall
+"my_op" input)` here. Neither the C ABI nor the C glue grows.
 -/
+
+import Lean.Data.Json
 
 namespace ProofBroker
 
-/-- Round-trip a JSON IR document through OCaml's `Codec.of_json`
-    and `Codec.to_json`. Returns the FFI envelope JSON:
+open Lean (Json)
 
-      `{"status":"ok","payload":...}`           on success
-      `{"status":"error","error":{"kind":...}}` on failure
+/-- Typed FFI error matching the `kind` taxonomy in
+    `sdk/FFI_CONVENTIONS.md`. The `.other` constructor is the
+    forward-compatibility escape hatch: envelope kinds added on the
+    OCaml side that this Lean version doesn't know about decode into
+    `.other` rather than rejecting the envelope, so a newer Lean ↔
+    older shim (or vice versa) still surfaces actionable diagnostics. -/
+inductive FfiError where
+  | jsonParseError (message : String)
+  | decodeError (message : String) (site : Option String)
+  | unknownMethod (method : String)
+  | shimFailure (rc : Int) (message : String)
+  | other (kind : String) (message : String)
+deriving Repr
 
-    Three possible `kind` values today:
-    * `"json_parse_error"` — input not lexically JSON
-    * `"decode_error"`     — JSON, but not a well-typed IR
-    * `"shim_failure"`     — C shim itself failed (allocator, etc.) -/
-@[extern "pb_lean_roundtrip_ir"]
-opaque pbRoundtripIr (input : @& String) : String
+/-- Low-level extern: pass a method name and a JSON input string,
+    receive an FFI envelope JSON string. Always returns a parseable
+    envelope; per-method success/failure is encoded in the envelope's
+    `status` and `error.kind` fields. The C glue layer synthesizes a
+    `kind="shim_failure"` envelope on its own (sub-OCaml) failures so
+    the contract that this function returns a valid envelope holds
+    even when the runtime can't be reached. -/
+@[extern "pb_lean_call"]
+opaque pbCall (method : @& String) (input : @& String) : String
+
+/-- Decode an FFI envelope string into a typed result. On `status=ok`,
+    returns the payload as `Json`; on `status=error`, returns the
+    typed `FfiError` matching the envelope's `kind`.
+
+    Envelopes that fail to parse, or that have a malformed shape, fall
+    through to `FfiError.other "envelope_parse_error"` — this is the
+    failure mode where the contract above (always-parseable envelope)
+    has been violated, and is treated as a genuine shim bug rather
+    than a normal error path. -/
+def decodeEnvelope (envelopeStr : String) : Except FfiError Json := do
+  let envelope ← match Json.parse envelopeStr with
+    | .ok j => pure j
+    | .error e => throw (.other "envelope_parse_error" e)
+  match envelope.getObjValAs? String "status" with
+  | .ok "ok" =>
+    match envelope.getObjVal? "payload" with
+    | .ok p => pure p
+    | .error e => throw (.other "envelope_parse_error" s!"missing payload: {e}")
+  | .ok "error" =>
+    let errObj ← match envelope.getObjVal? "error" with
+      | .ok j => pure j
+      | .error e => throw (.other "envelope_parse_error" s!"missing error: {e}")
+    let kind ← match errObj.getObjValAs? String "kind" with
+      | .ok k => pure k
+      | .error e => throw (.other "envelope_parse_error" s!"missing error.kind: {e}")
+    let message := (errObj.getObjValAs? String "message").toOption.getD ""
+    throw <| match kind with
+      | "json_parse_error" => .jsonParseError message
+      | "decode_error" =>
+        let site := (errObj.getObjValAs? String "site").toOption
+        .decodeError message site
+      | "unknown_method" => .unknownMethod message
+      | "shim_failure" =>
+        let rc := (errObj.getObjValAs? Int "rc").toOption.getD 0
+        .shimFailure rc message
+      | k => .other k message
+  | .ok status => throw (.other "envelope_parse_error" s!"unexpected status: {status}")
+  | .error e => throw (.other "envelope_parse_error" s!"missing status: {e}")
+
+/-- Round-trip a JSON IR document through OCaml's `Codec.of_json` and
+    `Codec.to_json`. Returns the payload `Json` on success, or a typed
+    `FfiError` matching the envelope. -/
+def roundtripIR (input : String) : Except FfiError Json :=
+  decodeEnvelope (pbCall "roundtrip_ir" input)
 
 end ProofBroker

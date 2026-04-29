@@ -1,12 +1,11 @@
 /*
- * proof_broker_shim.h — C ABI for the Phase-0 FFI spike.
+ * proof_broker_shim.h — C ABI for the proof_broker FFI boundary.
  *
- * Stable C surface that downstream callers (Lean via @[extern], C tests,
- * eventually a Rocq probe via direct linkage) bind to. Internals delegate
- * to OCaml callbacks registered in proof_broker_ffi.ml.
- *
- * Envelope shape, multi-return convention, and parse-and-compare protocol
- * live in sdk/FFI_CONVENTIONS.md.
+ * One entry point ever: pb_ffi_call dispatches to a method named in
+ * its first argument. New OCaml-side operations land by registering
+ * a fresh method name in proof_broker_ffi.ml; the C ABI does not grow
+ * with the OCaml API. Rationale, error-kind taxonomy, and envelope
+ * shape are locked in sdk/FFI_CONVENTIONS.md.
  */
 
 #ifndef PROOF_BROKER_SHIM_H
@@ -29,25 +28,32 @@ extern "C" {
 int pb_ffi_init(char **argv);
 
 /*
- * Round-trip an IR document through OCaml's Codec.of_json / Codec.to_json.
+ * Dispatch a method call through the OCaml dispatcher.
  *
- * input : NUL-terminated UTF-8 JSON string carrying an IR document.
- * out   : on return, set to a malloc'd NUL-terminated UTF-8 JSON string
- *         carrying the FFI envelope. Caller must release with pb_ffi_free.
- *         Set even on logical (decode) errors — those surface as
- *         {"status":"error", "error":{"kind":"decode_error", ...}}.
+ * method      : NUL-terminated UTF-8 method name (e.g. "roundtrip_ir").
+ * json_input  : NUL-terminated UTF-8 JSON string carrying the method's
+ *               input. The handler decides the schema; the dispatcher
+ *               does not look at it.
+ * out         : on return, set to a malloc'd NUL-terminated UTF-8 JSON
+ *               string carrying the FFI envelope. Caller must release
+ *               with pb_ffi_free. Set even on logical errors — those
+ *               surface as {"status":"error", ...} envelopes with a
+ *               typed kind.
  *
  * Return codes:
- *    0  marshaling succeeded; *out holds the envelope.
- *   -1  bad arguments (NULL input or out).
+ *    0  dispatch succeeded; *out holds the envelope.
+ *   -1  bad arguments (NULL method, json_input, or out).
  *   -2  callback table not initialized (pb_ffi_init was not called, or
- *       OCaml runtime did not register the named value).
- *   -3  OCaml callback escaped its try/with and raised an unhandled
+ *       OCaml runtime did not register pb_dispatch_call).
+ *   -3  OCaml dispatcher escaped its try/with and raised an unhandled
  *       exception. Should never happen if proof_broker_ffi.ml is
  *       well-formed; report as a bug.
  *   -4  out-of-memory while copying the result.
+ *
+ * Unknown methods are not rc=-1; they surface as normal envelopes with
+ * kind="unknown_method", per FFI_CONVENTIONS.md.
  */
-int pb_ffi_roundtrip_ir(const char *input, char **out);
+int pb_ffi_call(const char *method, const char *json_input, char **out);
 
 /* Release a buffer produced by a pb_ffi_* call. NULL is allowed. */
 void pb_ffi_free(char *p);

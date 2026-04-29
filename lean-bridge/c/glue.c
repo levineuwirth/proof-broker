@@ -1,11 +1,14 @@
 /*
- * glue.c — Lean ↔ C ABI adapter for the Phase-0 FFI spike.
+ * glue.c — Lean ↔ C ABI adapter for the proof_broker FFI boundary.
  *
  * Translates Lean's lean_object* String calling convention to the plain
  * (const char *, char **) ABI of proof_broker_shim.h. Owns the runtime
  * initialization (idempotent in the shim) and the malloc'd buffer
  * lifecycle: copies the shim's output into a Lean string, then frees the
  * shim's buffer before returning.
+ *
+ * One Lean extern: `pb_lean_call`, mirroring the OCaml dispatcher's
+ * single C entry point. New ops do not require new glue functions.
  *
  * Forward-declares the shim prototypes inline rather than including
  * proof_broker_shim.h so that Lake's compile invocation only needs
@@ -18,12 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Mirrors sdk/ffi/proof_broker_shim.h. Kept in lockstep manually for
- * the Phase-0 spike — if either signature drifts, the linker's still
- * happy but behavior breaks at runtime, so treat changes there as
- * coupled. */
+/* Mirrors sdk/ffi/proof_broker_shim.h. Kept in lockstep manually —
+ * if either signature drifts, the linker's still happy but behavior
+ * breaks at runtime, so treat changes there as coupled. */
 extern int  pb_ffi_init(char **argv);
-extern int  pb_ffi_roundtrip_ir(const char *input, char **out);
+extern int  pb_ffi_call(const char *method, const char *json_input, char **out);
 extern void pb_ffi_free(char *p);
 
 static int g_inited = 0;
@@ -38,27 +40,28 @@ static void ensure_inited(void) {
 
 /* Synthetic envelope returned when the shim itself fails (rc != 0).
  * Kept separate from the OCaml-produced envelopes so the kind tag
- * makes it obvious the failure is below the OCaml callback. */
+ * makes it obvious the failure is below the OCaml dispatcher. */
 static lean_obj_res mk_shim_failure_envelope(int rc) {
     char buf[128];
     int n = snprintf(buf, sizeof(buf),
-        "{\"status\":\"error\",\"error\":{\"kind\":\"shim_failure\",\"rc\":%d}}",
-        rc);
+        "{\"status\":\"error\",\"error\":{\"kind\":\"shim_failure\",\"message\":\"shim returned rc=%d\",\"rc\":%d}}",
+        rc, rc);
     if (n < 0 || (size_t)n >= sizeof(buf)) {
-        return lean_mk_string("{\"status\":\"error\",\"error\":{\"kind\":\"shim_failure\"}}");
+        return lean_mk_string("{\"status\":\"error\",\"error\":{\"kind\":\"shim_failure\",\"message\":\"shim failed\"}}");
     }
     return lean_mk_string(buf);
 }
 
-LEAN_EXPORT lean_obj_res pb_lean_roundtrip_ir(b_lean_obj_arg input_obj) {
+LEAN_EXPORT lean_obj_res pb_lean_call(b_lean_obj_arg method_obj, b_lean_obj_arg input_obj) {
     ensure_inited();
 
     /* lean_string_cstr returns a NUL-terminated UTF-8 buffer owned by
      * the Lean object; valid for the duration of this call. */
-    const char *input = lean_string_cstr(input_obj);
+    const char *method = lean_string_cstr(method_obj);
+    const char *input  = lean_string_cstr(input_obj);
 
     char *out = NULL;
-    int rc = pb_ffi_roundtrip_ir(input, &out);
+    int rc = pb_ffi_call(method, input, &out);
     if (rc != 0 || out == NULL) {
         return mk_shim_failure_envelope(rc);
     }

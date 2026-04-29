@@ -1,12 +1,14 @@
 /-
 End-to-end FFI round-trip test.
 
-Reads `examples/example1-lia-typeclass.json` from the repo root,
-ships it through `pbRoundtripIr` (Lean → C glue → OCaml shim → C
-glue → Lean), parses both sides as `Lean.Json`, normalizes
-(recursive key sort) per `sdk/FFI_CONVENTIONS.md`, and asserts
-structural equality of the round-tripped payload against the
-original.
+Exercises the typed Lean surface from `ProofBroker.Bridge`:
+  * Three IR fixtures round-trip through `roundtripIR`, with the
+    decoded `Json` payload structurally equal to the original after
+    normalization (recursive key sort, per `sdk/FFI_CONVENTIONS.md`).
+  * Lexical garbage surfaces as `FfiError.jsonParseError`.
+  * Calling an unknown method surfaces as `FfiError.unknownMethod`,
+    proving the dispatcher's only synthetic envelope decodes through
+    the typed Lean surface end-to-end.
 
 Exits 0 on success, 1 on any failure path.
 -/
@@ -15,6 +17,7 @@ import ProofBroker
 import Lean.Data.Json
 
 open Lean (Json)
+open ProofBroker (FfiError pbCall roundtripIR decodeEnvelope)
 
 /-- Recursive key sort: makes object equality order-insensitive,
     matching the OCaml-side `Codec.normalize`. -/
@@ -42,44 +45,39 @@ def runRoundTrip (rootDir : System.FilePath) (fixture : String) : IO Unit := do
     | .ok j => pure j
     | .error e => fail s!"{fixture}: could not parse fixture: {e}"
 
-  let envelopeStr := ProofBroker.pbRoundtripIr input
-  let envelope ← match Json.parse envelopeStr with
-    | .ok j => pure j
-    | .error e => fail s!"{fixture}: could not parse envelope: {e}\nraw: {envelopeStr}"
-
-  match envelope.getObjValAs? String "status" with
-  | .ok "ok" => pure ()
-  | .ok other => fail s!"{fixture}: envelope status = {other}, expected ok\nenvelope: {envelopeStr}"
-  | .error e => fail s!"{fixture}: missing status: {e}\nenvelope: {envelopeStr}"
-
-  let payload ← match envelope.getObjVal? "payload" with
-    | .ok j => pure j
-    | .error e => fail s!"{fixture}: missing payload: {e}"
+  let payload ← match roundtripIR input with
+    | .ok p => pure p
+    | .error e => fail s!"{fixture}: roundtripIR returned error: {repr e}"
 
   if normalize payload == normalize original then
     IO.println s!"OK Lean ↔ C ↔ OCaml round-trip: {fixture} structurally identical after normalization"
   else
     fail s!"{fixture}: round-trip differs structurally\noriginal: {(normalize original).pretty 2}\npayload:  {(normalize payload).pretty 2}"
 
-def runErrorPath : IO Unit := do
-  let envelopeStr := ProofBroker.pbRoundtripIr "{not json"
-  let envelope ← match Json.parse envelopeStr with
-    | .ok j => pure j
-    | .error e => fail s!"error envelope unparseable: {e}\nraw: {envelopeStr}"
-  match envelope.getObjValAs? String "status" with
-  | .ok "error" => pure ()
-  | other => fail s!"expected error status, got {repr other}\nenvelope: {envelopeStr}"
-  let kind ← match envelope.getObjVal? "error" >>= (·.getObjValAs? String "kind") with
-    | .ok k => pure k
-    | .error e => fail s!"missing error.kind: {e}"
-  if kind == "json_parse_error" then
-    IO.println s!"OK error propagation: malformed JSON surfaces as kind={kind}"
-  else
-    fail s!"unexpected error kind: {kind}"
+def runJsonParseErrorPath : IO Unit := do
+  match roundtripIR "{not json" with
+  | .ok _ => fail "expected error on lexical garbage, got ok"
+  | .error (.jsonParseError _) =>
+    IO.println "OK error propagation: malformed JSON surfaces as FfiError.jsonParseError"
+  | .error e =>
+    fail s!"expected FfiError.jsonParseError, got {repr e}"
+
+def runUnknownMethodPath : IO Unit := do
+  let envelopeStr := pbCall "does_not_exist" "{}"
+  match decodeEnvelope envelopeStr with
+  | .ok _ => fail "expected error on unknown method, got ok"
+  | .error (.unknownMethod m) =>
+    if m == "does_not_exist" then
+      IO.println s!"OK dispatcher: unknown method surfaces as FfiError.unknownMethod \"{m}\""
+    else
+      fail s!"unknownMethod carried wrong name: {m}"
+  | .error e =>
+    fail s!"expected FfiError.unknownMethod, got {repr e}"
 
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
   for fixture in fixtures do
     runRoundTrip rootDir fixture
-  runErrorPath
+  runJsonParseErrorPath
+  runUnknownMethodPath

@@ -1,9 +1,9 @@
 /*
- * proof_broker_shim.c — bridge from C ABI to registered OCaml callbacks.
+ * proof_broker_shim.c — bridge from C ABI to the OCaml dispatcher.
  *
  * Discipline:
  *   - CAMLparam/CAMLlocal/CAMLreturn around any OCaml allocation
- *     (caml_copy_string, caml_callback_exn). String reads (String_val,
+ *     (caml_copy_string, caml_callback2_exn). String reads (String_val,
  *     caml_string_length) before the next allocation are safe without
  *     re-rooting because the value is held in a CAMLlocal slot.
  *   - caml_named_value returns a stable GC root, no rooting needed.
@@ -29,26 +29,27 @@ int pb_ffi_init(char **argv) {
     /* dune's (modes shared_object) emits a .so whose entry point is
      * caml_startup; calling it from any thread that wants to invoke
      * OCaml callbacks runs all module initializers, including the
-     * Callback.register calls in proof_broker_ffi.ml. */
+     * Callback.register call in proof_broker_ffi.ml. */
     caml_startup(argv);
     g_initialized = 1;
     return 0;
 }
 
-int pb_ffi_roundtrip_ir(const char *input, char **out) {
-    if (!input || !out) return -1;
+int pb_ffi_call(const char *method, const char *json_input, char **out) {
+    if (!method || !json_input || !out) return -1;
 
     static const value *closure = NULL;
     if (closure == NULL) {
-        closure = caml_named_value("pb_roundtrip_ir");
+        closure = caml_named_value("pb_dispatch_call");
         if (closure == NULL) return -2;
     }
 
     CAMLparam0();
-    CAMLlocal2(v_in, v_out);
+    CAMLlocal3(v_method, v_input, v_out);
 
-    v_in = caml_copy_string(input);
-    v_out = caml_callback_exn(*closure, v_in);
+    v_method = caml_copy_string(method);
+    v_input = caml_copy_string(json_input);
+    v_out = caml_callback2_exn(*closure, v_method, v_input);
     if (Is_exception_result(v_out)) {
         CAMLreturnT(int, -3);
     }

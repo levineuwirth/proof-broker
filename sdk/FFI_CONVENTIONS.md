@@ -85,17 +85,24 @@ wants from typing:
 ```lean
 namespace ProofBroker
 
-@[extern "pb_ffi_call"]
+-- pb_lean_call is the Lean-side C glue that adapts Lean's lean_object*
+-- string ABI to the shim's plain-C `pb_ffi_call` ABI; see
+-- lean-bridge/c/glue.c. The dispatcher rationale applies to the C
+-- ABI underneath, not to this Lean-facing symbol.
+@[extern "pb_lean_call"]
 private opaque pbCall (method : @& String) (input : @& String) : String
 
-def quotientEliminate (ir : IR) : IO IR := ...
-def propositionalSimplify (ir : IR) : IO IR := ...
+def quotientEliminate (ir : IR) : Except FfiError IR := ...
+def propositionalSimplify (ir : IR) : Except FfiError IR := ...
 
 end ProofBroker
 ```
 
 Each typed wrapper handles its own envelope decoding and error
-propagation; callers see typed `IO` actions, never the raw envelope.
+propagation; callers see typed results plus a typed `FfiError`
+inductive (one constructor per `kind` value, plus a forward-compat
+`.other` catch-all), never the raw envelope. See
+`lean-bridge/ProofBroker/Bridge.lean` for the reference shape.
 
 **Unknown method.** If `method` is not registered on the OCaml side,
 the dispatcher returns the standard error envelope with a distinct
@@ -115,12 +122,6 @@ The distinct `kind` lets callers separate "method exists but rejected
 the input" (`decode_error`, `validation_error`, ...) from "method not
 in this build" (`unknown_method`); the latter typically signals SDK
 ↔ Lean-bridge version skew.
-
-**Migration note.** The Phase-0 spike's `pb_ffi_roundtrip_ir` landed
-as a named entry point before this convention was locked. It is the
-lone exception; future ops land through the dispatcher, and
-`pb_ffi_roundtrip_ir` will be folded into it when the second op
-lands.
 
 ## Comparison protocol
 
