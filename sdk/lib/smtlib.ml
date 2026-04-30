@@ -1,0 +1,261 @@
+(** SMT-LIB v2.6 serializer for the LIA fragment.
+
+    Converts an [Ir.t] into an SMT-LIB script that asks an SMT
+    solver whether the goal is *provable* — concretely, whether
+    [hypotheses ∧ ¬goal] is unsatisfiable. The script ends with
+    [(check-sat)] and the convention is that [unsat] from the
+    solver means the original goal holds.
+
+    Scope. LIA only:
+    * Sorts: [Int], [Real], [Bool], [Prop] (mapped to SMT-LIB
+      [Int]/[Real]/[Bool]/[Bool]).
+    * Boolean connectives: [And], [Or], [Not], [Implies], [Eq] at
+      [Bool/Prop], constants [True]/[False].
+    * Arithmetic: [HAdd.hAdd]/[Int.add]/[Add.add]/[+],
+      [HSub.hSub]/[Int.sub]/[Sub.sub]/[-],
+      [HMul.hMul]/[Int.mul]/[Mul.mul]/[*]
+      (linear use only — at least one arg constant),
+      [Neg.neg]/[Int.neg], [LE.le]/[<=], [LT.lt]/[<],
+      [GE.ge]/[>=], [GT.gt]/[>], [Eq] at [Int/Real].
+    * Variables: [Var { name }] becomes a bare identifier; free
+      vars are declared via [(declare-const name sort)] using the
+      type tags in [ir.context.free_vars].
+    * Numeric literals: [Num_lit { value }] emits the number
+      verbatim, with negative literals wrapped as [(- N)] per
+      SMT-LIB grammar.
+
+    Out of scope. Quantifiers ([Forall]/[Exists]),
+    [Lambda]/[Opaque], type-class methods that haven't been
+    refined to primitives ([HAdd.hAdd] is accepted but indicates
+    pre-refinement IR — adapter callers usually want a refined
+    IR), bitvector/string/array sorts, uninterpreted functions.
+
+    Refinement record. The serializer reports which method
+    specializations it applied — e.g., [HAdd.hAdd] → [+] — so the
+    adapter can record them in the certificate's
+    [refinement_record]. The reporting is a side channel
+    ([emitted_specializations]); the script string itself does not
+    encode the original symbol names. *)
+
+type error =
+  | Unsupported_node of { node : string; detail : string }
+  | Unsupported_symbol of { symbol : string; detail : string }
+  | Unsupported_type of { ty : string; site : string }
+  | Bad_arity of { symbol : string; expected : int; got : int }
+  | Bad_literal of { value : string; ty : string }
+
+let kind_of_error = function
+  | Unsupported_node _ -> "unsupported_node"
+  | Unsupported_symbol _ -> "unsupported_symbol"
+  | Unsupported_type _ -> "unsupported_type"
+  | Bad_arity _ -> "bad_arity"
+  | Bad_literal _ -> "bad_literal"
+
+let detail_of_error = function
+  | Unsupported_node { node; detail } ->
+    Printf.sprintf "%s: %s" node detail
+  | Unsupported_symbol { symbol; detail } ->
+    Printf.sprintf "%s: %s" symbol detail
+  | Unsupported_type { ty; site } ->
+    Printf.sprintf "%s at %s" ty site
+  | Bad_arity { symbol; expected; got } ->
+    Printf.sprintf "%s expects %d args, got %d" symbol expected got
+  | Bad_literal { value; ty } ->
+    Printf.sprintf "%s does not parse as %s" value ty
+
+(* --- type mapping ---------------------------------------------------- *)
+
+let sort_of_type_ref ~site (t : Ir.type_ref) : (string, error) result =
+  match t with
+  | "Int" -> Ok "Int"
+  | "Real" -> Ok "Real"
+  | "Bool" | "Prop" -> Ok "Bool"
+  | other -> Error (Unsupported_type { ty = other; site })
+
+(* --- specialization side-channel ------------------------------------- *)
+
+(** A method specialization the serializer applied: ["HAdd.hAdd"] →
+    ["+"], etc. Reported once per distinct [(source, target)] pair
+    in encounter order so the adapter can construct a
+    [Refinement_record] without duplication. *)
+type specialization = { source : string; target : string }
+
+let add_spec (specs : specialization list ref) src tgt =
+  let pair = { source = src; target = tgt } in
+  if not (List.exists (fun s -> s.source = src && s.target = tgt) !specs)
+  then specs := !specs @ [ pair ]
+
+(* --- term emission --------------------------------------------------- *)
+
+(** Map a shell-symbol to its SMT-LIB primitive. Booleans go through
+    a separate path (the IR uses [App] for arithmetic predicates but
+    structural variants for [And]/[Or]/etc.), so this table is
+    arithmetic-and-relational only. Returns the SMT-LIB primitive
+    plus the "source" name to record in the specialization log. *)
+let arith_target = function
+  | "HAdd.hAdd" | "Int.add" | "Add.add" | "+" -> Some ("+", "HAdd.hAdd")
+  | "HSub.hSub" | "Int.sub" | "Sub.sub" | "-" -> Some ("-", "HSub.hSub")
+  | "HMul.hMul" | "Int.mul" | "Mul.mul" | "*" -> Some ("*", "HMul.hMul")
+  | "Neg.neg" | "Int.neg" -> Some ("-", "Neg.neg")
+  | "LE.le" | "<=" -> Some ("<=", "LE.le")
+  | "LT.lt" | "<"  -> Some ("<", "LT.lt")
+  | "GE.ge" | ">=" -> Some (">=", "GE.ge")
+  | "GT.gt" | ">"  -> Some (">", "GT.gt")
+  | _ -> None
+
+(** Format a numeric literal value string into SMT-LIB grammar.
+    SMT-LIB's [<numeral>] is a non-negative decimal sequence; a
+    negative number like [-3] is the application [(- 3)]. *)
+let format_numeric ~(ty : string) (value : string) : (string, error) result =
+  let ok = match ty with
+    | "Int" -> (try ignore (int_of_string value); true with _ -> false)
+    | "Real" ->
+      (* allow [N] or [N.M] or [N/M] — SMT-LIB also has [(/  N M)] *)
+      (try ignore (float_of_string value); true with _ -> false)
+    | _ -> false
+  in
+  if not ok then Error (Bad_literal { value; ty })
+  else if String.length value > 0 && value.[0] = '-' then
+    let mag = String.sub value 1 (String.length value - 1) in
+    Ok (Printf.sprintf "(- %s)" mag)
+  else Ok value
+
+let rec emit_term ~specs (t : Ir.shell_term) : (string, error) result =
+  match t with
+  | Var { name } -> Ok name
+  | Const { name = "True" } -> Ok "true"
+  | Const { name = "False" } -> Ok "false"
+  | Const { name } ->
+    Error (Unsupported_node {
+      node = "Const";
+      detail = Printf.sprintf "constant %s has no SMT-LIB mapping" name;
+    })
+  | Num_lit { value; ty } -> format_numeric ~ty value
+  | And { left; right } -> emit_bin_op ~specs "and" left right
+  | Or  { left; right } -> emit_bin_op ~specs "or"  left right
+  | Implies { antecedent; consequent } ->
+    emit_bin_op ~specs "=>" antecedent consequent
+  | Not { operand } ->
+    let ( let* ) = Result.bind in
+    let* o = emit_term ~specs operand in
+    Ok (Printf.sprintf "(not %s)" o)
+  | Eq { left; right; _ } ->
+    emit_bin_op ~specs "=" left right
+  | App { symbol; args; _ } -> emit_app ~specs symbol args
+  | Forall _ ->
+    Error (Unsupported_node {
+      node = "Forall";
+      detail = "quantifiers not supported in Phase 2.1";
+    })
+  | Exists _ ->
+    Error (Unsupported_node {
+      node = "Exists";
+      detail = "quantifiers not supported in Phase 2.1";
+    })
+  | Lambda _ ->
+    Error (Unsupported_node {
+      node = "Lambda";
+      detail = "lambdas not supported";
+    })
+  | Opaque _ ->
+    Error (Unsupported_node {
+      node = "Opaque";
+      detail = "opaque payloads not supported";
+    })
+
+and emit_bin_op ~specs op a b =
+  let ( let* ) = Result.bind in
+  let* sa = emit_term ~specs a in
+  let* sb = emit_term ~specs b in
+  Ok (Printf.sprintf "(%s %s %s)" op sa sb)
+
+and emit_app ~specs symbol args =
+  match arith_target symbol with
+  | None ->
+    Error (Unsupported_symbol {
+      symbol;
+      detail = "no SMT-LIB mapping; expected refined LIA primitive \
+                or one of the recognized typeclass methods";
+    })
+  | Some (target, source) ->
+    add_spec specs source target;
+    let ( let* ) = Result.bind in
+    (match symbol, args with
+     | ("Neg.neg" | "Int.neg"), [ a ] ->
+       let* sa = emit_term ~specs a in
+       Ok (Printf.sprintf "(- %s)" sa)
+     | _, [ a; b ] ->
+       let* sa = emit_term ~specs a in
+       let* sb = emit_term ~specs b in
+       Ok (Printf.sprintf "(%s %s %s)" target sa sb)
+     | _, args ->
+       let n = List.length args in
+       let expected =
+         match symbol with
+         | "Neg.neg" | "Int.neg" -> 1
+         | _ -> 2
+       in
+       Error (Bad_arity { symbol; expected; got = n }))
+
+(* --- script assembly ------------------------------------------------- *)
+
+(** The result of serializing an [Ir.t]: the SMT-LIB script body
+    (without [(check-sat)]/[(exit)] — those are appended by the
+    adapter), plus the list of specializations applied. *)
+type script = {
+  body : string;
+  specializations : specialization list;
+  logic : string;
+}
+
+(** Choose an SMT-LIB logic from the cert's free-var sorts. With
+    only [Int] vars and the LIA arithmetic vocabulary we use
+    [QF_LIA]; with quantifiers it would be [LIA]. We're QF-only in
+    Phase 2.1. *)
+let pick_logic (free_vars : Ir.free_var list) : string =
+  let has_real =
+    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real") free_vars
+  in
+  if has_real then "QF_LRA" else "QF_LIA"
+
+(** Assemble the SMT-LIB script. Order:
+    1. [(set-logic ...)] — picked from free-var sorts.
+    2. [(declare-const v sort)] for each free var.
+    3. [(assert h)] for each hypothesis.
+    4. [(assert (not goal))]
+    The closing [(check-sat)] is appended by the adapter so it can
+    add solver-specific directives in between. *)
+let emit (ir : Ir.t) : (script, error) result =
+  let ( let* ) = Result.bind in
+  let specs = ref [] in
+  let logic = pick_logic ir.context.free_vars in
+  let buf = Buffer.create 256 in
+  Buffer.add_string buf (Printf.sprintf "(set-logic %s)\n" logic);
+  let* () =
+    let rec emit_decls = function
+      | [] -> Ok ()
+      | (fv : Ir.free_var) :: rest ->
+        let* sort = sort_of_type_ref ~site:("free_var:" ^ fv.name) fv.ty in
+        Buffer.add_string buf
+          (Printf.sprintf "(declare-const %s %s)\n" fv.name sort);
+        emit_decls rest
+    in
+    emit_decls ir.context.free_vars
+  in
+  let* () =
+    let rec emit_hyps = function
+      | [] -> Ok ()
+      | (h : Ir.hypothesis) :: rest ->
+        let* s = emit_term ~specs h.shell in
+        Buffer.add_string buf (Printf.sprintf "(assert %s)\n" s);
+        emit_hyps rest
+    in
+    emit_hyps ir.context.hypotheses
+  in
+  let* g = emit_term ~specs ir.goal.shell in
+  Buffer.add_string buf (Printf.sprintf "(assert (not %s))\n" g);
+  Ok {
+    body = Buffer.contents buf;
+    specializations = !specs;
+    logic;
+  }

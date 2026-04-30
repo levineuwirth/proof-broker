@@ -1,0 +1,33 @@
+{
+  "manifest_version": "1.0",
+  "adapter": "cvc4",
+  "adapter_version": "1.8",
+  "backends_supported": ["cvc4"],
+
+  "logic_fragments": ["LIA", "LRA"],
+
+  "type_constructions": [
+    "primitive",
+    "type_variable_via_specialization"
+  ],
+
+  "max_order": "first_order",
+
+  "tiers_produced": [0],
+
+  "trace_formats_produced": [],
+
+  "witness_kinds_produced": [],
+
+  "preferred_rewrite_pipeline": [
+    { "pass": "definition_unfolding",
+      "config": { "concepts": ["integer_addition", "integer_subtraction", "integer_negation", "integer_multiplication"] } },
+    { "pass": "propositional_simplification" }
+  ],
+
+  "concurrency": {
+    "supports_cancellation": false,
+    "expected_latency_ms": 200,
+    "max_parallel_invocations": 1
+  }
+}

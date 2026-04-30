@@ -269,6 +269,75 @@ let run_pipeline (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [dispatch_to_adapter] takes a wrapped input of shape
+     {"adapter": "cvc4", "ir": <IR>}
+   and returns
+     {"ok": true,  "cert": <Certificate>}              on success, or
+     {"ok": false, "failure": {"kind": ..., "detail": ...}}  on adapter failure.
+
+   The ok=false case is used when the adapter itself ran but didn't
+   produce a cert (sat returned, unknown returned, solver crashed,
+   IR couldn't be serialized to SMT-LIB). Genuine plumbing errors
+   (input couldn't be parsed) still go through the error envelope.
+
+   Adapter registry. Phase 2.1 ships cvc4 only; the registry is
+   built-in (no manifest-driven loading yet). Adding adapters is
+   a one-line change. *)
+let adapter_registry : (string, Proof_broker.Adapter.t) Hashtbl.t =
+  let r = Hashtbl.create 4 in
+  Hashtbl.replace r "cvc4" Proof_broker.Adapter_cvc4.adapter;
+  r
+
+let dispatch_to_adapter (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let adapter_name = match List.assoc_opt "adapter" pairs with
+      | Some (`String s) -> s
+      | _ ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing or non-string field: adapter", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: ir", j))
+    in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    match Hashtbl.find_opt adapter_registry adapter_name with
+    | None ->
+      let payload = `Assoc [
+        "ok", `Bool false;
+        "failure", `Assoc [
+          "kind", `String "adapter_not_found";
+          "detail", `String adapter_name;
+        ];
+      ] in
+      envelope_ok payload
+    | Some adapter ->
+      (match adapter.dispatch ir with
+       | Cert cert ->
+         envelope_ok (`Assoc [
+           "ok", `Bool true;
+           "cert", Proof_broker.Certificate.to_json cert;
+         ])
+       | Failed failure ->
+         envelope_ok (`Assoc [
+           "ok", `Bool false;
+           "failure", Proof_broker.Adapter.failure_to_json failure;
+         ]))
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
@@ -285,4 +354,5 @@ let () =
   register_method "run_pipeline" run_pipeline;
   register_method "match_adapters" match_adapters;
   register_method "verify_certificate" verify_certificate;
+  register_method "dispatch_to_adapter" dispatch_to_adapter;
   Callback.register "pb_dispatch_call" dispatch

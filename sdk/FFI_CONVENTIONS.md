@@ -100,9 +100,21 @@ Inputs that need to carry more than just an IR — `run_pipeline`
 (`{"ir": <Ir.t>, "config": <PipelineConfig>?}`), `match_adapters`
 (`{"ir": <Ir.t>, "manifests": [<Manifest>, ...]}`),
 `verify_certificate` (`{"cert": <Certificate>, "ir": <Ir.t>,
-"trace": <Trace.t>?}`) — follow the same envelope-style convention on
-the input side: an object with named fields, optional fields omitted
+"trace": <Trace.t>?}`), `dispatch_to_adapter` (`{"adapter": "<name>",
+"ir": <Ir.t>}`) — follow the same envelope-style convention on the
+input side: an object with named fields, optional fields omitted
 (never `null`).
+
+**Adapter dispatch.** `dispatch_to_adapter` returns a two-shape
+payload: on success `{"ok": true, "cert": <Certificate>}`, on adapter
+failure `{"ok": false, "failure": {"kind": ..., "detail": ...}}`. The
+distinction matters: a `Failed` outcome (sat returned, unknown
+returned, solver crash, IR couldn't be serialized to SMT-LIB) is the
+adapter doing its job and reporting an honest negative result, not a
+plumbing error. Plumbing errors (input couldn't be parsed) still go
+through the standard error envelope. Failure kinds: `sat_returned`,
+`unknown_returned`, `timeout`, `solver_error`, `parse_error`,
+`unsupported_ir`, `adapter_not_found`.
 
 Rationale: typed-error home; no FFI out-params; adding new return fields
 is non-breaking. Adding a new error `kind` is also non-breaking provided

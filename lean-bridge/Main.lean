@@ -26,9 +26,10 @@ import Lean.Data.Json
 open Lean (Json)
 open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding
                   quotientElimination runPipeline runMatchAdapters
-                  runVerifyCertificate
+                  runVerifyCertificate runDispatchToAdapter
                   decodeEnvelope PipelineConfig PassStep MatchReason MatchResults
-                  CertReason CertVerification)
+                  CertReason CertVerification
+                  DispatchResult DispatchFailure)
 open ProofBroker.IR (IR ShellTerm normalize)
 open ProofBroker.Trace (Entry Outcome Document)
 
@@ -571,6 +572,87 @@ def runFarkasVerificationFlow : IO Unit := do
   | other =>
     fail s!"expected farkasNotContradictory, got {repr other}"
 
+/-- Probe whether cvc4 is available; the dispatch flow needs the
+    binary on PATH and we want CI without cvc4 to stay green. -/
+def cvc4Available : IO Bool := do
+  let exit ← IO.Process.run {
+    cmd := "sh", args := #["-c", "which cvc4 > /dev/null 2>&1"], stdin := .null
+  } |>.toBaseIO
+  return exit.toOption.isSome
+
+/-- End-to-end Phase 2.1 cvc4 dispatch across the FFI: build the
+    example1 LIA IR, hand it to `runDispatchToAdapter "cvc4" ...`,
+    expect a Tier 0 oracle cert addressing the same IR. Then feed
+    the cert back to `runVerifyCertificate` and confirm the
+    envelope verifies (with `tierCheckDeferred` on Tier 0). Then
+    a satisfiable goal returns `.failed .satReturned`. Skipped
+    cleanly if cvc4 isn't on PATH. -/
+def runDispatchToCvc4Flow : IO Unit := do
+  unless ← cvc4Available do
+    IO.println "[skip] cvc4 not on PATH; skipping dispatch flow"
+    return
+  let n : ShellTerm := .var "n"
+  let m : ShellTerm := .var "m"
+  let ten : ShellTerm := .numLit "10" "Int"
+  let zero : ShellTerm := .numLit "0" "Int"
+  let n_plus_m : ShellTerm := .app "Int.add" [] [n, m]
+  let h1 : ShellTerm := .eq "Int" n_plus_m ten
+  let h3 : ShellTerm := .app "LE.le" [] [zero, m]
+  let goal : ShellTerm := .app "LE.le" [] [n, ten]
+  let irBase := mkTestIR goal
+  let ir : IR := { irBase with
+    context := {
+      typeVars := [], freeVars := [
+        { name := "n", ty := "Int" },
+        { name := "m", ty := "Int" }
+      ],
+      hypotheses := [
+        { name := "h1", shell := h1 },
+        { name := "h3", shell := h3 }
+      ],
+      librarySlice := none
+    }
+  }
+  let res ← match runDispatchToAdapter "cvc4" ir with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchToAdapter (provable goal): {repr e}"
+  let certJ ← match res with
+    | .cert j => pure j
+    | .failed f => fail s!"expected .cert on provable goal, got .failed {repr f}"
+  let tier := (certJ.getObjValAs? Int "tier").toOption.getD (-1)
+  unless tier == 0 do
+    fail s!"expected tier=0, got {tier}"
+  let backend := (certJ.getObjVal? "backend" |>.bind (·.getObjValAs? String "name")).toOption.getD ""
+  unless backend == "cvc4" do
+    fail s!"expected backend=cvc4, got {backend}"
+  IO.println "OK dispatch_to_adapter: cvc4 minted Tier 0 oracle cert on provable LIA goal"
+  -- Round-trip the cert through verify_certificate to confirm the
+  -- envelope addresses our IR.
+  let verif ← match runVerifyCertificate certJ ir with
+    | .ok v => pure v
+    | .error e => fail s!"runVerifyCertificate on minted cert: {repr e}"
+  unless verif.ok do
+    fail s!"expected ok=true on minted cert verification; reason={repr verif.reason}"
+  match verif.reason with
+  | .tierCheckDeferred _ =>
+    IO.println "OK verify_certificate: Tier 0 cvc4 cert envelope-verifies (tier soundness deferred)"
+  | other =>
+    fail s!"expected tierCheckDeferred, got {repr other}"
+  -- Satisfiable goal: no hypotheses, ⊢ n <= 10. n=11 satisfies ¬G.
+  let irOpen : IR := { mkTestIR goal with
+    context := {
+      typeVars := [], freeVars := [{ name := "n", ty := "Int" }],
+      hypotheses := [], librarySlice := none
+    }
+  }
+  let res2 ← match runDispatchToAdapter "cvc4" irOpen with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchToAdapter (sat goal): {repr e}"
+  match res2 with
+  | .failed .satReturned =>
+    IO.println "OK dispatch_to_adapter: cvc4 reports satReturned on non-provable goal"
+  | other => fail s!"expected .failed .satReturned, got {repr other}"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -591,3 +673,4 @@ def main : IO Unit := do
   runMatchAdaptersOnFixtures rootDir
   runVerifyCertificateFlow
   runFarkasVerificationFlow
+  runDispatchToCvc4Flow

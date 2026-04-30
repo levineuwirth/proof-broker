@@ -1,4 +1,4 @@
 (library
  (name proof_broker)
  (public_name proof_broker)
- (libraries yojson digestif.c))
+ (libraries yojson digestif.c unix))

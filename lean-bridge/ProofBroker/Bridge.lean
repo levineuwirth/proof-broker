@@ -345,6 +345,78 @@ def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := non
     | .error _ => .error (.decodeError "missing 'reason'" none)
   return { ok, reason := parseCertReason reasonJ }
 
+/-- Adapter dispatch failure (spec §7). Mirrors OCaml's
+    `Adapter.failure`. `satReturned` means the solver said the
+    negated goal is satisfiable — the home-system goal is *not*
+    provable. `unknownReturned` is timeout or incompleteness on
+    the fragment; the broker may try another adapter. The other
+    variants are operational issues. New OCaml-side failure kinds
+    decode into `otherDispatchFailure`. -/
+inductive DispatchFailure where
+  | satReturned
+  | unknownReturned
+  | timeout
+  | solverError (detail : String)
+  | parseError (detail : String)
+  | unsupportedIr (detail : String)
+  | adapterNotFound (detail : String)
+  | otherDispatchFailure (kind : String) (detail : String)
+deriving Repr, Inhabited
+
+/-- Outcome of `runDispatchToAdapter`. Either the adapter minted a
+    certificate (returned as raw JSON since there is no Lean-side
+    Certificate ADT yet) or it failed with a typed reason. -/
+inductive DispatchResult where
+  | cert (certJson : Json)
+  | failed (failure : DispatchFailure)
+deriving Inhabited
+
+instance : Repr DispatchResult where
+  reprPrec r _ := match r with
+    | .cert _ => "DispatchResult.cert <cert>"
+    | .failed f => s!"DispatchResult.failed ({repr f})"
+
+private def parseDispatchFailure (j : Json) : DispatchFailure :=
+  let kind := (j.getObjValAs? String "kind").toOption.getD ""
+  let detail := (j.getObjValAs? String "detail").toOption.getD ""
+  match kind with
+  | "sat_returned" => .satReturned
+  | "unknown_returned" => .unknownReturned
+  | "timeout" => .timeout
+  | "solver_error" => .solverError detail
+  | "parse_error" => .parseError detail
+  | "unsupported_ir" => .unsupportedIr detail
+  | "adapter_not_found" => .adapterNotFound detail
+  | k => .otherDispatchFailure k detail
+
+/-- Adapter invocation across the FFI (spec §7, Phase 2.1).
+    Hand the broker an IR and the name of an adapter it knows
+    about; the broker serializes to SMT-LIB, spawns the solver,
+    and either mints a `Certificate` (returned as raw JSON) or
+    surfaces a typed failure. The cert can be re-submitted to
+    `runVerifyCertificate` to confirm the envelope addresses the
+    same IR.
+
+    Phase 2.1 supports `cvc4` only and only mints Tier 0 oracle
+    certs; proof-tier minting (Tier 1 / Tier 3) is deferred. -/
+def runDispatchToAdapter (adapter : String) (ir : IR)
+    : Except FfiError DispatchResult := do
+  let input := Json.mkObj [
+    ("adapter", .str adapter),
+    ("ir", ProofBroker.IR.IR.toJson ir)
+  ]
+  let payload ← decodeEnvelope (pbCall "dispatch_to_adapter" input.compress)
+  let ok := (payload.getObjValAs? Bool "ok").toOption.getD false
+  if ok then
+    match payload.getObjVal? "cert" with
+    | .ok j => pure (.cert j)
+    | .error e => .error (.decodeError s!"missing 'cert': {e}" none)
+  else
+    let failJ ← match payload.getObjVal? "failure" with
+      | .ok v => pure v
+      | .error _ => .error (.decodeError "missing 'failure'" none)
+    pure (.failed (parseDispatchFailure failJ))
+
 /-- Submit an IR + a list of manifest JSON values to the dispatcher's
     capability-matching layer (spec §7.4). Returns the partition of
     adapters into matches / rejections. The manifests are caller-
