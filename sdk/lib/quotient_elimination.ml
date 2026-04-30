@@ -50,135 +50,19 @@
     substitution only rewrites symbol slots), goals not in equality
     form. Such IRs run through this pass and produce an [Applied] or
     [No_op] entry over the parts the pass does recognize, leaving
-    other parts untouched. *)
+    other parts untouched.
 
-module SS = Set.Make (String)
-module SM = Map.Make (String)
+    Metadata sourcing. Type and definitional metadata are read
+    through the typed [Type_metadata] / [Definitional_metadata]
+    modules so this pass does not field-fish into the JSON
+    pass-through directly. *)
 
-(* --- type-metadata reader -------------------------------------------- *)
-
-(** Information harvested from [type_metadata[qtype]] for a single
-    quotient type. [equivalence_relation_lambda] is the body lambda
-    parsed back into [Ir.shell_term]; [equivalence_proof],
-    [elimination_principle], [equality_principle] are name strings
-    consumed only by the inversion data. *)
-type quotient_info = {
-  qtype : string;
-  underlying_type : string;
-  equivalence_relation_lambda : Ir.shell_term;
-  equivalence_proof : string;
-  elimination_principle : string;
-  equality_principle : string;
-}
-
-let json_string_field (j : Yojson.Safe.t) (k : string) : string option =
-  match j with
-  | `Assoc pairs ->
-    (match List.assoc_opt k pairs with
-     | Some (`String s) -> Some s
-     | _ -> None)
-  | _ -> None
-
-let json_field (j : Yojson.Safe.t) (k : string) : Yojson.Safe.t option =
-  match j with
-  | `Assoc pairs -> List.assoc_opt k pairs
-  | _ -> None
-
-(** Parse a single [type_metadata] entry into a [quotient_info] iff it
-    declares construction_kind = "quotient" with all the required
-    fields. Anything off-shape returns [None] — the pass silently
-    skips, never raises. *)
-let parse_quotient_info (qtype : string) (meta : Yojson.Safe.t)
-  : quotient_info option =
-  match json_string_field meta "kind" with
-  | Some "type_constructor_application" ->
-    (match json_field meta "constructor" with
-     | Some ctor ->
-       (match json_string_field ctor "construction_kind" with
-        | Some "quotient" ->
-          let underlying = json_string_field ctor "underlying_type" in
-          let elim = json_string_field ctor "elimination_principle" in
-          let equality = json_string_field ctor "equality_principle" in
-          let eqv = json_field ctor "equivalence_relation" in
-          (match underlying, elim, equality, eqv with
-           | Some u, Some e, Some q, Some eqv_obj ->
-             let proof = json_string_field eqv_obj "equivalence_proof" in
-             let shell =
-               match json_field eqv_obj "shell" with
-               | Some s ->
-                 (try Some (Codec.shell_of_json s)
-                  with Codec.Decode_error _ -> None)
-               | None -> None
-             in
-             (match shell, proof with
-              | Some lam, Some pr ->
-                Some {
-                  qtype;
-                  underlying_type = u;
-                  equivalence_relation_lambda = lam;
-                  equivalence_proof = pr;
-                  elimination_principle = e;
-                  equality_principle = q;
-                }
-              | _ -> None)
-           | _ -> None)
-        | _ -> None)
-     | None -> None)
-  | _ -> None
-
-(** Build [qtype_name -> quotient_info] from [ir.type_metadata]. Only
-    entries that fully parse are included; everything else is dropped
-    silently. *)
-let collect_quotient_types (ir : Ir.t) : quotient_info SM.t =
-  List.fold_left
-    (fun acc (name, meta) ->
-      match parse_quotient_info name meta with
-      | Some qi -> SM.add name qi acc
-      | None -> acc)
-    SM.empty ir.type_metadata
-
-(* --- definitional-metadata reader for lifted_to_quotient ------------- *)
-
-(** Information for a single lifted-to-quotient symbol. The lifting
-    witness is the proof that the underlying function respects the
-    relation; the lifting layer needs it to invert the unfolding. *)
-type lifted_info = {
-  lifted_symbol : string;
-  underlying_symbol : string;
-  lifting_witness : string option;  (* "witness" field is optional in v1
-                                       fixtures; we treat absence as
-                                       "no witness recorded". *)
-}
-
-let parse_lifted_info (lifted : string) (meta : Yojson.Safe.t)
-  : lifted_info option =
-  match json_string_field meta "kind" with
-  | Some "lifted_to_quotient" ->
-    (match json_field meta "underlying_function" with
-     | Some uf ->
-       (match json_string_field uf "name" with
-        | Some name ->
-          let witness =
-            match json_field meta "lifting_obligation" with
-            | Some lo -> json_string_field lo "witness"
-            | None -> None
-          in
-          Some {
-            lifted_symbol = lifted;
-            underlying_symbol = name;
-            lifting_witness = witness;
-          }
-        | None -> None)
-     | None -> None)
-  | _ -> None
-
-let collect_lifted_symbols (ir : Ir.t) : lifted_info SM.t =
-  List.fold_left
-    (fun acc (name, meta) ->
-      match parse_lifted_info name meta with
-      | Some li -> SM.add name li acc
-      | None -> acc)
-    SM.empty ir.definitional_metadata
+(* The typed metadata modules each define their own [Map.Make(String)]
+   under the name [SM]; we use them qualified ([Type_metadata.SM.find_opt]
+   etc.) rather than aliasing locally because each functor application
+   is a distinct generative type. *)
+module Tm = Type_metadata
+module Dm = Definitional_metadata
 
 (* --- inversion-data accumulators ------------------------------------- *)
 
@@ -215,10 +99,11 @@ let new_acc () : acc =
 
 (* --- type rewriting on free_vars / binders --------------------------- *)
 
-let rewrite_type (qtypes : quotient_info SM.t) (ty : Ir.type_ref)
-  : Ir.type_ref =
-  match SM.find_opt ty qtypes with
-  | Some qi -> qi.underlying_type
+let rewrite_type
+    (qtypes : Tm.quotient_constructor Tm.SM.t)
+    (ty : Ir.type_ref) : Ir.type_ref =
+  match Tm.SM.find_opt ty qtypes with
+  | Some qc -> qc.underlying_type
   | None -> ty
 
 (** Beta-reduce a 2-arg equivalence relation lambda applied to
@@ -246,8 +131,8 @@ let beta_reduce_relation (relation : Ir.shell_term)
     underlying substitutions and [Eq]-at-quotient → relation
     rewrites applied. *)
 let rec rewrite_shell
-    ~(qtypes : quotient_info SM.t)
-    ~(lifted : lifted_info SM.t)
+    ~(qtypes : Tm.quotient_constructor Tm.SM.t)
+    ~(lifted : Dm.lifted_to_quotient Dm.SM.t)
     ~(site : string)
     ~(acc : acc)
     (t : Ir.shell_term) : Ir.shell_term =
@@ -289,15 +174,17 @@ let rec rewrite_shell
   | Eq { ty; left; right } ->
     let left' = rewrite_shell ~qtypes ~lifted ~site ~acc left in
     let right' = rewrite_shell ~qtypes ~lifted ~site ~acc right in
-    (match SM.find_opt ty qtypes with
-     | Some qi ->
-       (match beta_reduce_relation qi.equivalence_relation_lambda left' right' with
+    (match Tm.SM.find_opt ty qtypes with
+     | Some qc ->
+       (match
+          beta_reduce_relation qc.equivalence_relation.shell left' right'
+        with
         | Some t' ->
           acc.equality_reductions <- {
             er_site = site;
             er_from_type = ty;
-            er_equality_principle = qi.equality_principle;
-            er_equivalence_proof = qi.equivalence_proof;
+            er_equality_principle = qc.equality_principle;
+            er_equivalence_proof = qc.equivalence_relation.equivalence_proof;
           } :: acc.equality_reductions;
           t'
         | None ->
@@ -310,16 +197,16 @@ let rec rewrite_shell
     let args' =
       List.map (rewrite_shell ~qtypes ~lifted ~site ~acc) args
     in
-    (match SM.find_opt symbol lifted with
+    (match Dm.SM.find_opt symbol lifted with
      | Some li ->
        acc.lifted_unfoldings <- {
          lu_site = site;
          lu_lifted = symbol;
-         lu_underlying = li.underlying_symbol;
+         lu_underlying = li.underlying_function_name;
          lu_witness = li.lifting_witness;
        } :: acc.lifted_unfoldings;
        App {
-         symbol = li.underlying_symbol;
+         symbol = li.underlying_function_name;
          type_args;
          args = args';
        }
@@ -407,8 +294,8 @@ let run (ir : Ir.t) : result =
       };
     }
   else
-    let qtypes = collect_quotient_types ir in
-    let lifted = collect_lifted_symbols ir in
+    let qtypes = Tm.quotient_constructors ir in
+    let lifted = Dm.lifted_symbols ir in
     let acc = new_acc () in
 
     (* Free vars: rewrite types and record an elimination per
@@ -416,16 +303,16 @@ let run (ir : Ir.t) : result =
     let free_vars' =
       List.map
         (fun (fv : Ir.free_var) ->
-          match SM.find_opt fv.ty qtypes with
-          | Some qi ->
+          match Tm.SM.find_opt fv.ty qtypes with
+          | Some qc ->
             acc.eliminations <- {
               e_var = fv.name;
               e_from_type = fv.ty;
-              e_to_type = qi.underlying_type;
-              e_elimination_principle = qi.elimination_principle;
-              e_equivalence_proof = qi.equivalence_proof;
+              e_to_type = qc.underlying_type;
+              e_elimination_principle = qc.elimination_principle;
+              e_equivalence_proof = qc.equivalence_relation.equivalence_proof;
             } :: acc.eliminations;
-            ({ fv with ty = qi.underlying_type } : Ir.free_var)
+            ({ fv with ty = qc.underlying_type } : Ir.free_var)
           | None -> fv)
         ir.context.free_vars
     in

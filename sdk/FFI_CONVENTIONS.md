@@ -148,15 +148,37 @@ when round-trip equality tests cross the boundary.
 
 ## Pass-through metadata
 
-`type_metadata` and `definitional_metadata` are JSON pass-through in the
-OCaml IR until proper ADTs land in Phase 1+. The codec round-trips them
-faithfully because it does not look at the values.
+`type_metadata` and `definitional_metadata` are stored as JSON
+pass-through in `Ir.t` (the wire form), but the OCaml side now carries
+typed decoder modules — `Type_metadata` and `Definitional_metadata` —
+that classify each entry into a typed variant on demand. Passes consume
+the typed view (`find_quotient`, `find_defined_function`,
+`find_lifted_to_quotient`, etc.) rather than field-fishing into the
+JSON directly.
 
-**Do not add OCaml-side validation logic for these maps in the
-meantime.** Any such logic would be rewritten when the ADTs arrive.
-The Python `tools/check.py` validator is the single source of truth
-for these maps until the ADTs land. When that migration happens, plan
-to *move* validation rather than duplicate it across the two languages.
+The wire form remains JSON because:
+* unknown `kind` values round-trip losslessly through `OtherKind`
+  variants — forward-compatible with schema extensions;
+* the codec doesn't have to grow when a new kind is added;
+* the Python validator continues to operate on the JSON form.
+
+**Promotion criteria** (recorded so future authors know when to add
+typed coverage for a new kind): a `kind` graduates from `OtherKind` to
+its own variant when at least one OCaml-side consumer (a pass, an
+adapter, a verifier component) needs to read its fields. Adding the
+variant does not require a wire-format change.
+
+The Lean side keeps `typeMetadata` / `definitionalMetadata` as
+`Json` pass-through in `IR.lean` because no Lean-side consumer reads
+their fields yet; when one appears, mirror the OCaml typed decoders
+into Lean modules under the same names.
+
+The Python `tools/check.py` validator remains authoritative for
+schema-level rules (required fields, kind-discriminator legality,
+cross-document references). The OCaml typed decoders silently drop
+off-shape entries rather than reporting them; that's a deliberate
+division of responsibility — the validator catches structural bugs,
+the typed decoders give consumers structured access.
 
 ## Decode errors at the FFI boundary
 

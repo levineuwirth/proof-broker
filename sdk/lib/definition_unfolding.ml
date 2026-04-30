@@ -22,38 +22,12 @@
 
 module SS = Set.Make (String)
 
-(* --- DefinitionalMetadata field readers ------------------------------ *)
-
-let json_string_field (j : Yojson.Safe.t) (key : string) : string option =
-  match j with
-  | `Assoc pairs ->
-    (match List.assoc_opt key pairs with
-     | Some (`String s) -> Some s
-     | _ -> None)
-  | _ -> None
-
-let json_field (j : Yojson.Safe.t) (key : string) : Yojson.Safe.t option =
-  match j with
-  | `Assoc pairs -> List.assoc_opt key pairs
-  | _ -> None
-
-(** [unfoldable_equation_opt meta] returns the parsed definitional
-    equation (a shell term) iff [meta]'s kind is ["defined_function"]
-    and the [definitional_equation] field is present and well-formed.
-    Anything off-shape returns [None] — the pass falls back to "no
-    unfold" rather than failing. *)
-let unfoldable_equation_opt (meta : Yojson.Safe.t) : Ir.shell_term option =
-  match json_string_field meta "kind" with
-  | Some "defined_function" ->
-    (match json_field meta "definitional_equation" with
-     | None -> None
-     | Some eq ->
-       (try Some (Codec.shell_of_json eq)
-        with Codec.Decode_error _ -> None))
-  | _ -> None
-
-let concept_tag_opt (meta : Yojson.Safe.t) : string option =
-  json_string_field meta "concept_tag"
+(* DefinitionalMetadata is read through the typed
+   [Definitional_metadata] module rather than via inline JSON
+   field-fishing. The typed view exposes [definitional_equation] as
+   an [Ir.shell_term] and [concept_tag] as [string option] up
+   front, so this pass only consumes structured values. *)
+module Dm = Definitional_metadata
 
 (* --- Equation parsing ------------------------------------------------- *)
 
@@ -126,25 +100,25 @@ let rec referenced_in_app_position (params : SS.t) (t : Ir.shell_term) : SS.t =
     SS.union here (union (List.map (referenced_in_app_position params) args))
   | Var _ | Const _ | Num_lit _ | Opaque _ -> SS.empty
 
-(** [try_unfold_app concept_tags defn_meta app] attempts to unfold
-    one [App] node. Returns [Some (rewritten_term, symbol)] when the
-    unfold proceeded, [None] otherwise (no metadata, wrong kind,
+(** [try_unfold_app concept_tags defns app] attempts to unfold one
+    [App] node against the typed map of [defined_function] entries.
+    Returns [Some (rewritten_term, symbol)] when the unfold
+    proceeded, [None] otherwise (no metadata, kind mismatch,
     concept_tag not enabled, equation off-shape, or higher-order
     args needed). *)
 let try_unfold_app
       (concept_tags : SS.t)
-      (defn_meta : (string * Yojson.Safe.t) list)
+      (defns : Dm.defined_function Dm.SM.t)
       (use : Ir.shell_term)
   : (Ir.shell_term * string) option =
   match use with
   | App { symbol; type_args = _; args } ->
     let ( let* ) = Option.bind in
-    let* meta = List.assoc_opt symbol defn_meta in
-    let* tag = concept_tag_opt meta in
+    let* (df : Dm.defined_function) = Dm.SM.find_opt symbol defns in
+    let* tag = df.concept_tag in
     if not (SS.mem tag concept_tags) then None
     else
-      let* eq = unfoldable_equation_opt meta in
-      let* params, body = parse_equation eq symbol in
+      let* params, body = parse_equation df.definitional_equation symbol in
       if List.length params <> List.length args then None
       else
         let app_pos = referenced_in_app_position (SS.of_list params) body in
@@ -172,10 +146,10 @@ let try_unfold_app
 
 let rec unfold_step
           (concept_tags : SS.t)
-          (defn_meta : (string * Yojson.Safe.t) list)
+          (defns : Dm.defined_function Dm.SM.t)
           (t : Ir.shell_term)
   : Ir.shell_term * string list =
-  let go = unfold_step concept_tags defn_meta in
+  let go = unfold_step concept_tags defns in
   let go_list ts =
     let pairs = List.map go ts in
     List.map fst pairs, List.concat_map snd pairs
@@ -213,7 +187,7 @@ let rec unfold_step
   | App { symbol; type_args; args } ->
     let args', child_rs = go_list args in
     let here = Ir.App { symbol; type_args; args = args' } in
-    (match try_unfold_app concept_tags defn_meta here with
+    (match try_unfold_app concept_tags defns here with
      | None -> with_acc here child_rs
      | Some (replaced, sym) -> (replaced, child_rs @ [ sym ]))
   | Var _ | Const _ | Num_lit _ | Opaque _ -> (t, [])
@@ -222,7 +196,7 @@ let fixpoint_iteration_cap = 64
 
 let unfold_to_fixpoint
       (concept_tags : SS.t)
-      (defn_meta : (string * Yojson.Safe.t) list)
+      (defns : Dm.defined_function Dm.SM.t)
       (t : Ir.shell_term)
   : Ir.shell_term * string list =
   let rec loop t acc i =
@@ -230,7 +204,7 @@ let unfold_to_fixpoint
       failwith "definition_unfolding: fixpoint cap exceeded — \
                 possible mutually recursive definitional equations"
     else
-      let t', rs = unfold_step concept_tags defn_meta t in
+      let t', rs = unfold_step concept_tags defns t in
       if rs = [] then t, acc
       else loop t' (acc @ rs) (i + 1)
   in
@@ -267,8 +241,8 @@ type result = {
 let run (ir : Ir.t) : result =
   let before_hash = Hash.sha256_of_json (Codec.to_json ir) in
   let concept_tags = configured_concept_tags ir in
-  let defn_meta = ir.definitional_metadata in
-  let unfold_at site t = unfold_to_fixpoint concept_tags defn_meta t |> fun (t', rs) ->
+  let defns = Dm.defined_functions ir in
+  let unfold_at site t = unfold_to_fixpoint concept_tags defns t |> fun (t', rs) ->
                          t', inversion_entries site rs in
   let goal_shell, goal_inv = unfold_at "goal" ir.goal.shell in
   let new_goal : Ir.goal = { ir.goal with shell = goal_shell } in
