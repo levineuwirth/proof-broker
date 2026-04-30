@@ -13,10 +13,12 @@ a fresh method name and add a `def myOp ... := decodeEnvelope (pbCall
 -/
 
 import Lean.Data.Json
+import ProofBroker.IR
 
 namespace ProofBroker
 
 open Lean (Json)
+open ProofBroker.IR (IR)
 
 /-- Typed FFI error matching the `kind` taxonomy in
     `sdk/FFI_CONVENTIONS.md`. The `.other` constructor is the
@@ -81,10 +83,22 @@ def decodeEnvelope (envelopeStr : String) : Except FfiError Json := do
   | .ok status => throw (.other "envelope_parse_error" s!"unexpected status: {status}")
   | .error e => throw (.other "envelope_parse_error" s!"missing status: {e}")
 
-/-- Round-trip a JSON IR document through OCaml's `Codec.of_json` and
-    `Codec.to_json`. Returns the payload `Json` on success, or a typed
-    `FfiError` matching the envelope. -/
-def roundtripIR (input : String) : Except FfiError Json :=
-  decodeEnvelope (pbCall "roundtrip_ir" input)
+/-- Round-trip a typed IR document through OCaml's `Codec.of_json`
+    and `Codec.to_json`. Serializes the IR, ships it through `pbCall`,
+    decodes the envelope, and re-decodes the payload back into a
+    typed IR. Codec failures on either end surface as
+    `FfiError.decodeError` so callers see a single uniform error
+    surface for both transport and shape failures.
+
+    For raw-JSON callers (debugging, ops that don't have a typed
+    Lean ADT yet), drop down one level: `decodeEnvelope (pbCall
+    "roundtrip_ir" str)` returns the payload as `Json`. -/
+def roundtripIR (ir : IR) : Except FfiError IR := do
+  let inputStr := (ProofBroker.IR.IR.toJson ir).compress
+  let payload ← decodeEnvelope (pbCall "roundtrip_ir" inputStr)
+  match ProofBroker.IR.IR.fromJson? payload with
+  | .ok ir' => .ok ir'
+  | .error msg =>
+    .error (.decodeError s!"failed to decode round-trip payload: {msg}" none)
 
 end ProofBroker
