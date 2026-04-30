@@ -1,7 +1,7 @@
 (tests
  (names test_round_trip test_propositional_simplify test_definition_unfolding
         test_quotient_elimination test_metadata test_manifest
-        test_certificate test_pipeline)
+        test_certificate test_pipeline test_linear_arith test_farkas)
  (libraries proof_broker yojson alcotest str))
 
 ; test_round_trip resolves the reference IR fixtures (in repo/examples,

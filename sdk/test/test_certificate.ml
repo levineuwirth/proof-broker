@@ -263,6 +263,156 @@ let test_envelope_with_trace_rejects_wrong_trace_hash () =
     Alcotest.fail (Printf.sprintf "expected Hash_mismatch on trace, got %s"
                      (Verifier.kind_of_reason other))
 
+(* --- end-to-end Verifier.verify (envelope + tier-specific) ---------- *)
+
+(** Build the example1 IR shape: hypotheses [h1: n + m = 10,
+    h3: 0 <= m] and goal [n <= 10]. Mirrors the linguistic shape of
+    [examples/example1-lia-typeclass.json] but uses [Int] for the
+    numeric type so the type-tag ambiguity isn't a factor here —
+    the linearizer ignores types anyway. *)
+let example1_ir () =
+  let n = Ir.Var { name = "n" } in
+  let m = Ir.Var { name = "m" } in
+  let ten = Ir.Num_lit { value = "10"; ty = "Int" } in
+  let zero_lit = Ir.Num_lit { value = "0"; ty = "Int" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Eq {
+      ty = "Int";
+      left = App { symbol = "Int.add"; type_args = []; args = [ n; m ] };
+      right = ten;
+    };
+  } in
+  let h3 : Ir.hypothesis = {
+    name = "h3";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ zero_lit; m ] };
+  } in
+  let goal_shell = Ir.App {
+    symbol = "LE.le"; type_args = []; args = [ n; ten ];
+  } in
+  let ir = make_ir goal_shell in
+  { ir with context =
+    { ir.context with
+      free_vars = [ { name = "n"; ty = "Int" }; { name = "m"; ty = "Int" } ];
+      hypotheses = [ h1; h3 ];
+    }
+  }
+
+let example1_witness () : Yojson.Safe.t =
+  `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "h1"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h3"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+    ];
+  ]
+
+let test_verify_envelope_plus_farkas () =
+  let ir = example1_ir () in
+  let cert = make_cert_for_ir ir
+    ~payload:(Tier1_witness {
+      witness_kind = Farkas;
+      witness_data = example1_witness ();
+      checking_recipe = "lean.farkas_check";
+    }) ()
+  in
+  match Verifier.verify cert ir with
+  | Verified_farkas -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "expected Verified_farkas, got %s (%s)"
+                     (Verifier.kind_of_reason other)
+                     (Verifier.detail_of_reason other))
+
+let test_verify_failed_envelope_short_circuits_before_farkas () =
+  let ir = example1_ir () in
+  let cert = make_cert_for_ir ir
+    ~payload:(Tier1_witness {
+      witness_kind = Farkas;
+      witness_data = example1_witness ();
+      checking_recipe = "lean.farkas_check";
+    }) ()
+  in
+  let bad_cert = { cert with cert_version = "0.9" } in
+  match Verifier.verify bad_cert ir with
+  | Cert_version_mismatch _ -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf
+                     "expected Cert_version_mismatch (envelope short-circuits), got %s"
+                     (Verifier.kind_of_reason other))
+
+let test_verify_farkas_unknown_hypothesis () =
+  let ir = example1_ir () in
+  let bad_witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "h99"; "coefficient", `String "1" ];
+    ];
+  ] in
+  let cert = make_cert_for_ir ir
+    ~payload:(Tier1_witness {
+      witness_kind = Farkas;
+      witness_data = bad_witness;
+      checking_recipe = "lean.farkas_check";
+    }) ()
+  in
+  match Verifier.verify cert ir with
+  | Farkas_unknown_hypothesis { hypothesis = "h99" } -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "expected Farkas_unknown_hypothesis, got %s"
+                     (Verifier.kind_of_reason other))
+
+let test_verify_tier_check_deferred_for_tier0 () =
+  let ir = example1_ir () in
+  let cert = make_cert_for_ir ir
+    ~tier:0
+    ~payload:(Tier0_oracle {
+      claim = "proved";
+      backend_attestation = None;
+    }) ()
+  in
+  match Verifier.verify cert ir with
+  | Tier_check_deferred { tier = 0 } -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "expected Tier_check_deferred(0), got %s"
+                     (Verifier.kind_of_reason other))
+
+let test_verify_unsupported_witness_kind () =
+  let ir = example1_ir () in
+  let cert = make_cert_for_ir ir
+    ~payload:(Tier1_witness {
+      witness_kind = Sat_assignment;
+      witness_data = `Assoc [];
+      checking_recipe = "lean.sat_check";
+    }) ()
+  in
+  match Verifier.verify cert ir with
+  | Unsupported_witness_kind { kind = "sat_assignment" } -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "expected Unsupported_witness_kind, got %s"
+                     (Verifier.kind_of_reason other))
+
+(** End-to-end on the fixture pair: read the cert + IR, override the
+    cert's placeholder dispatch_context_hash to the IR's actual hash,
+    verify. The fixture cert exists in the repo as a documentation
+    artifact with placeholder hashes, so this test does the
+    reattribution step that a real broker would have done at the
+    moment the cert was minted. *)
+let test_verify_fixture_pair () =
+  let ir_raw = load_json
+    (Filename.concat (fixture_dir ()) "example1-lia-typeclass.json") in
+  let cert_raw = load_json
+    (Filename.concat (fixture_dir ()) "cert-example1-tier1-farkas.json") in
+  let ir = Codec.of_json ir_raw in
+  let cert = Certificate.of_json cert_raw in
+  let real_hash = Hash.sha256_of_json (Codec.to_json ir) in
+  let cert' = { cert with dispatch_context_hash = real_hash } in
+  match Verifier.verify cert' ir with
+  | Verified_farkas -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf
+                     "expected Verified_farkas on fixture pair, got %s (%s)"
+                     (Verifier.kind_of_reason other)
+                     (Verifier.detail_of_reason other))
+
 let () =
   Alcotest.run "certificate" [
     "refinement_record", [
@@ -289,5 +439,19 @@ let () =
         `Quick test_envelope_with_trace_passes_when_hashes_agree;
       Alcotest.test_case "trace hash mismatch detected"
         `Quick test_envelope_with_trace_rejects_wrong_trace_hash;
+    ];
+    "verify (envelope + tier)", [
+      Alcotest.test_case "envelope + Farkas verifies on example1 shape"
+        `Quick test_verify_envelope_plus_farkas;
+      Alcotest.test_case "envelope failure short-circuits before Farkas"
+        `Quick test_verify_failed_envelope_short_circuits_before_farkas;
+      Alcotest.test_case "Farkas unknown hypothesis surfaces"
+        `Quick test_verify_farkas_unknown_hypothesis;
+      Alcotest.test_case "tier 0 falls through to deferred"
+        `Quick test_verify_tier_check_deferred_for_tier0;
+      Alcotest.test_case "unsupported witness kind surfaces"
+        `Quick test_verify_unsupported_witness_kind;
+      Alcotest.test_case "fixture pair (with hash override) verifies"
+        `Quick test_verify_fixture_pair;
     ];
   ]

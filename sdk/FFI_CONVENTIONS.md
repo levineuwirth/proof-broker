@@ -79,16 +79,22 @@ same `{ok, reason: {kind, detail?}}` pattern:
   } }
 ```
 
-`reason.kind` is one of `verified_envelope`, `hash_mismatch`,
-`tier_payload_mismatch`, `cert_version_mismatch`. New reason kinds
-land in the Lean wrapper's `otherCertReason` variant. Importantly,
-`verify_certificate` only runs the *envelope* check (well-formedness,
-tier/payload match, hash agreement against the IR/trace the cert
-claims to address). Tier-specific soundness verification (Farkas
-arithmetic, Alethe replay, lemma-list reconstruction) is deferred —
-when those land, expect additional methods (`verify_farkas`, etc.)
-returning their own typed reason taxonomies, not an extension of
-this method's response.
+`reason.kind` covers two layers, gated on what `verify_certificate`
+checked. The envelope layer's kinds are `verified_envelope`,
+`hash_mismatch`, `tier_payload_mismatch`, `cert_version_mismatch`.
+When envelope checks pass and the cert is Tier 1 / `farkas`, an
+arithmetic Farkas verifier runs and the kind graduates to
+`verified_farkas` (success) or one of the Farkas-specific failure
+kinds: `farkas_unknown_hypothesis`, `farkas_nonlinear`,
+`farkas_bad_coefficient`, `farkas_negative_coefficient`,
+`farkas_not_contradictory`, `farkas_malformed_witness`. For Tiers
+0/2/3 (and Tier 1 witness kinds beyond Farkas), the envelope check
+passes through and the reason is `tier_check_deferred` /
+`unsupported_witness_kind` — `ok` is `true` in those cases, signalling
+"envelope verified, soundness not checked". Strict consumers should
+gate on `reason.kind in {verified_envelope, verified_farkas}` rather
+than `ok` alone. New reason kinds land in the Lean wrapper's
+`otherCertReason` variant.
 
 Inputs that need to carry more than just an IR — `run_pipeline`
 (`{"ir": <Ir.t>, "config": <PipelineConfig>?}`), `match_adapters`

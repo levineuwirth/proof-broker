@@ -433,9 +433,13 @@ def buildSyntheticTier1Cert (irHash : String) (goal : Json)
 
 /-- End-to-end certificate verification across the FFI: build a
     synthetic IR, harvest its canonical hash via an empty pipeline
-    run, build a cert against that hash, verify it (expect
-    `verifiedEnvelope`), then mutate the hash and verify again
-    (expect `hashMismatch`). -/
+    run, build a cert against that hash, verify it. The synthetic
+    cert references a hypothesis `h0` not present in the IR, so the
+    Farkas verifier rejects with `farkasUnknownHypothesis` after
+    envelope checks pass — exercising both that the FFI surface
+    propagates Farkas-tier failures and that the typed Lean ADT
+    has the matching constructor. Hash mutation then surfaces
+    `hashMismatch` from the envelope layer, before Farkas runs. -/
 def runVerifyCertificateFlow : IO Unit := do
   let ir := mkTestIR (.var "p")
   let emptyConfig : PipelineConfig := {
@@ -450,13 +454,13 @@ def runVerifyCertificateFlow : IO Unit := do
   let res ← match runVerifyCertificate goodCert ir with
     | .ok r => pure r
     | .error e => fail s!"runVerifyCertificate (good): {repr e}"
-  unless res.ok do
-    fail s!"expected ok=true on matching hash; reason={repr res.reason}"
+  if res.ok then
+    fail s!"expected ok=false on h0-absent IR; reason={repr res.reason}"
   match res.reason with
-  | .verifiedEnvelope =>
-    IO.println "OK verify_certificate: envelope verified on matching hash"
+  | .farkasUnknownHypothesis _ =>
+    IO.println "OK verify_certificate: envelope passes, Farkas rejects unknown hypothesis"
   | other =>
-    fail s!"expected verifiedEnvelope, got {repr other}"
+    fail s!"expected farkasUnknownHypothesis, got {repr other}"
   let badHash := s!"sha256:{String.ofList (List.replicate 64 '1')}"
   let badCert := buildSyntheticTier1Cert irHash goalJson (overrideHash := some badHash)
   let res2 ← match runVerifyCertificate badCert ir with
@@ -469,6 +473,103 @@ def runVerifyCertificateFlow : IO Unit := do
     IO.println "OK verify_certificate: hash_mismatch surfaces typed reason"
   | other =>
     fail s!"expected hashMismatch, got {repr other}"
+
+/-- End-to-end Tier 1 Farkas verification across the FFI on a real
+    LIA goal. Build an IR with hypotheses [h1: n + m = 10,
+    h3: 0 <= m] and goal [n <= 10], then a Farkas certificate with
+    coefficients [h1=1, h3=1, neg_goal=1] — the same structure as
+    the spec's worked example (cert-example1-tier1-farkas.json).
+    The weighted sum simplifies to constant 1 over the LIA +1 trick
+    on `neg_goal`, so the verifier returns `verifiedFarkas`. Then
+    flip the certificate to coefficients [h1=1] alone and confirm
+    the verifier rejects with `farkasNotContradictory`. -/
+def runFarkasVerificationFlow : IO Unit := do
+  -- IR: n + m = 10, 0 <= m, ⊢ n <= 10
+  let n : ShellTerm := .var "n"
+  let m : ShellTerm := .var "m"
+  let ten : ShellTerm := .numLit "10" "Int"
+  let zero : ShellTerm := .numLit "0" "Int"
+  let n_plus_m : ShellTerm := .app "Int.add" [] [n, m]
+  let h1 : ShellTerm := .eq "Int" n_plus_m ten
+  let h3 : ShellTerm := .app "LE.le" [] [zero, m]
+  let goal : ShellTerm := .app "LE.le" [] [n, ten]
+  let irBase := mkTestIR goal
+  let ir : IR := { irBase with
+    context := {
+      typeVars := [], freeVars := [
+        { name := "n", ty := "Int" },
+        { name := "m", ty := "Int" }
+      ],
+      hypotheses := [
+        { name := "h1", shell := h1 },
+        { name := "h3", shell := h3 }
+      ],
+      librarySlice := none
+    }
+  }
+  let emptyConfig : PipelineConfig := {
+    pipeline := [], stopOnFailure := false, timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir emptyConfig with
+    | .ok pair => pure pair
+    | .error e => fail s!"pipeline run for hash failed: {repr e}"
+  let irHash := doc.initialIrHash
+  let goalJson := ProofBroker.IR.Goal.toJson ir.goal
+  let mkCert (coefs : Array Json) : Json :=
+    Json.mkObj [
+      ("cert_version", .str "1.0"),
+      ("tier", .num 1),
+      ("format", .str "farkas"),
+      ("goal", goalJson),
+      ("dispatch_context_hash", .str irHash),
+      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+      ("backend", Json.mkObj [
+        ("name", .str "synthetic"),
+        ("version", .str "0.0"),
+        ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
+      ]),
+      ("resources", Json.mkObj [
+        ("wall_time_ms", .num 1),
+        ("memory_peak_kb", .num 1)
+      ]),
+      ("refinement_record", Json.mkObj [
+        ("adapter", .str "synthetic"),
+        ("adapter_version", .str "0.0"),
+        ("specializations", Json.arr #[]),
+        ("fragment", .str "LIA")
+      ]),
+      ("payload", Json.mkObj [
+        ("witness_kind", .str "farkas"),
+        ("witness_data", Json.mkObj [("coefficients", Json.arr coefs)]),
+        ("checking_recipe", .str "lean.farkas_check")
+      ])
+    ]
+  let coef (h : String) (c : String) : Json :=
+    Json.mkObj [("hypothesis", .str h), ("coefficient", .str c)]
+  -- Good cert: h1=1, h3=1, neg_goal=1 ⇒ residual = 1 ⇒ verifiedFarkas
+  let goodCert := mkCert #[coef "h1" "1", coef "h3" "1", coef "neg_goal" "1"]
+  let res ← match runVerifyCertificate goodCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Farkas good): {repr e}"
+  unless res.ok do
+    fail s!"expected ok=true on valid Farkas cert; reason={repr res.reason}"
+  match res.reason with
+  | .verifiedFarkas =>
+    IO.println "OK verify_certificate: Tier 1 Farkas arithmetic verified end-to-end"
+  | other =>
+    fail s!"expected verifiedFarkas, got {repr other}"
+  -- Bad cert: only h1=1 ⇒ residual = n + m - 10 (not constant) ⇒ farkasNotContradictory
+  let badCert := mkCert #[coef "h1" "1"]
+  let res2 ← match runVerifyCertificate badCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Farkas bad): {repr e}"
+  if res2.ok then
+    fail s!"expected ok=false on insufficient Farkas cert; reason={repr res2.reason}"
+  match res2.reason with
+  | .farkasNotContradictory _ =>
+    IO.println "OK verify_certificate: Farkas non-contradictory residual surfaced"
+  | other =>
+    fail s!"expected farkasNotContradictory, got {repr other}"
 
 def main : IO Unit := do
   let cwd ← IO.currentDir
@@ -489,3 +590,4 @@ def main : IO Unit := do
   runPipelineStopOnFailure
   runMatchAdaptersOnFixtures rootDir
   runVerifyCertificateFlow
+  runFarkasVerificationFlow

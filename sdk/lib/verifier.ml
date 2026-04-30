@@ -1,14 +1,11 @@
-(** Pre-tier envelope verification (spec v1.0 §8.2).
+(** Certificate verification (spec v1.0 §8.2).
 
-    Given a [Certificate.t] and the artifacts it claims to address
-    (the [Ir.t] the adapter consumed and, optionally, the
-    [Trace.t] of rewrites that produced it), this module checks
-    that the certificate is internally well-formed and that it
-    refers to *those* artifacts. It does NOT run tier-specific
-    soundness checks: the verifier returns [Verified_envelope]
-    when the envelope is consistent, leaving tier-specific
-    verification (Farkas arithmetic, Alethe replay, lemma-list
-    reconstruction, ...) to downstream layers.
+    Two layers. [envelope_check] does the structural audit only:
+    [cert_version] in scope, payload tier matches envelope tier,
+    [dispatch_context_hash] matches the IR the cert claims to
+    address, and (when supplied) [rewrite_trace_hash] matches the
+    trace. [verify] runs envelope checks and then dispatches to a
+    tier-specific soundness verifier when one is implemented.
 
     Hash discipline. The certificate's [dispatch_context_hash]
     must equal [Hash.sha256_of_json (Codec.to_json ir)] —
@@ -19,25 +16,27 @@
     are produced against an unrewritten IR, in which case there
     is no trace to hash).
 
-    Soundness scope. A [Verified_envelope] result asserts that
-    the certificate's structure is well-formed and that its
-    dispatch identifiers match the artifacts the broker has on
-    file. It does NOT assert that the goal stated in the cert
-    is provable. The tier-specific verifiers (deferred:
-    [verify_farkas], [verify_alethe], etc.) are responsible for
-    soundness; this module is a precondition for invoking them.
+    Tier-specific verification implemented. Tier 1 [farkas]
+    witnesses are checked by [Farkas.verify]: hypotheses (and
+    the negated goal under the LIA +1 trick) are linearized,
+    weighted by the cert's coefficients, and the residual is
+    inspected for a strictly-positive constant. Other Tier 1
+    witness kinds (sat_assignment, sat_unsat_core,
+    polynomial_positivstellensatz) and Tiers 0/2/3 fall through
+    to [Tier_check_deferred] / [Unsupported_witness_kind] —
+    [verify] succeeds at the envelope level only for those.
 
-    Tier 1 / Farkas note. Real Farkas verification requires
-    parsing the IR's hypotheses and the goal-negation into
-    rational linear forms, then summing them under the
-    certificate's coefficients. That cuts across the LIA-specific
-    arithmetic vocabulary in the shell calculus and is deferred to
-    a follow-up milestone; for now the witness payload is
-    accepted at the structural level (well-formed, coefficients
-    parse as nonnegative rationals) without the arithmetic check. *)
+    Trust scope. A [Verified_envelope] result asserts envelope
+    well-formedness only — the cert is *addressed* to the right
+    IR, but its claim of provability is not checked. A
+    [Verified_farkas] result extends that with the arithmetic
+    soundness check: the weighted sum of the cert's coefficients
+    really is a contradiction over the IR's hypotheses, modulo
+    the linearization vocabulary [Farkas] recognizes. *)
 
 type reason =
   | Verified_envelope
+  | Verified_farkas
   | Hash_mismatch of {
       field : string;
       expected : string;
@@ -48,17 +47,35 @@ type reason =
       payload_tier : int;
     }
   | Cert_version_mismatch of { got : string }
+  | Farkas_unknown_hypothesis of { hypothesis : string }
+  | Farkas_nonlinear of { hypothesis : string; detail : string }
+  | Farkas_bad_coefficient of { hypothesis : string; raw : string }
+  | Farkas_negative_coefficient of { hypothesis : string; value : string }
+  | Farkas_not_contradictory of { residual : string }
+  | Farkas_malformed_witness of { detail : string }
+  | Unsupported_witness_kind of { kind : string }
+  | Tier_check_deferred of { tier : int }
   | Other of { kind : string; detail : string }
 
 let kind_of_reason = function
   | Verified_envelope -> "verified_envelope"
+  | Verified_farkas -> "verified_farkas"
   | Hash_mismatch _ -> "hash_mismatch"
   | Tier_payload_mismatch _ -> "tier_payload_mismatch"
   | Cert_version_mismatch _ -> "cert_version_mismatch"
+  | Farkas_unknown_hypothesis _ -> "farkas_unknown_hypothesis"
+  | Farkas_nonlinear _ -> "farkas_nonlinear"
+  | Farkas_bad_coefficient _ -> "farkas_bad_coefficient"
+  | Farkas_negative_coefficient _ -> "farkas_negative_coefficient"
+  | Farkas_not_contradictory _ -> "farkas_not_contradictory"
+  | Farkas_malformed_witness _ -> "farkas_malformed_witness"
+  | Unsupported_witness_kind _ -> "unsupported_witness_kind"
+  | Tier_check_deferred _ -> "tier_check_deferred"
   | Other { kind; _ } -> kind
 
 let detail_of_reason = function
   | Verified_envelope -> ""
+  | Verified_farkas -> ""
   | Hash_mismatch { field; expected; got } ->
     Printf.sprintf "%s: expected %s, got %s" field expected got
   | Tier_payload_mismatch { envelope_tier; payload_tier } ->
@@ -66,6 +83,27 @@ let detail_of_reason = function
       envelope_tier payload_tier
   | Cert_version_mismatch { got } ->
     Printf.sprintf "expected cert_version=1.0, got %s" got
+  | Farkas_unknown_hypothesis { hypothesis } ->
+    Printf.sprintf "hypothesis %s not found in IR (and not the reserved \
+                    name neg_goal)" hypothesis
+  | Farkas_nonlinear { hypothesis; detail } ->
+    Printf.sprintf "%s: %s" hypothesis detail
+  | Farkas_bad_coefficient { hypothesis; raw } ->
+    Printf.sprintf "%s: could not parse coefficient %s as rational"
+      hypothesis raw
+  | Farkas_negative_coefficient { hypothesis; value } ->
+    Printf.sprintf "%s: coefficient %s is negative on an inequality \
+                    (Farkas requires nonneg here)" hypothesis value
+  | Farkas_not_contradictory { residual } ->
+    Printf.sprintf "weighted sum is %s, not a strictly-positive constant"
+      residual
+  | Farkas_malformed_witness { detail } -> detail
+  | Unsupported_witness_kind { kind } ->
+    Printf.sprintf "tier-specific verifier not implemented for \
+                    witness_kind=%s" kind
+  | Tier_check_deferred { tier } ->
+    Printf.sprintf "tier-%d soundness check not implemented \
+                    (envelope verified)" tier
   | Other { detail; _ } -> detail
 
 let reason_to_json (r : reason) : Yojson.Safe.t =
@@ -147,3 +185,43 @@ let envelope_check
           (match check_rewrite_trace_hash cert tr with
            | Some r -> r
            | None -> Verified_envelope)
+
+(** Map a [Farkas.verdict] to the verifier's [reason] taxonomy. The
+    [Verified] case becomes [Verified_farkas] (envelope + arithmetic);
+    each failure variant gets its own reason kind so callers can
+    distinguish "wrong shape" from "wrong sum" from "wrong sign". *)
+let reason_of_farkas (v : Farkas.verdict) : reason =
+  match v with
+  | Verified -> Verified_farkas
+  | Unknown_hypothesis { hypothesis } ->
+    Farkas_unknown_hypothesis { hypothesis }
+  | Nonlinear { hypothesis; detail } ->
+    Farkas_nonlinear { hypothesis; detail }
+  | Bad_coefficient { hypothesis; raw } ->
+    Farkas_bad_coefficient { hypothesis; raw }
+  | Negative_coefficient { hypothesis; value } ->
+    Farkas_negative_coefficient { hypothesis; value }
+  | Not_contradictory { residual } ->
+    Farkas_not_contradictory { residual }
+  | Malformed_witness { detail } ->
+    Farkas_malformed_witness { detail }
+
+(** Full verification: envelope checks then tier-specific. Tier 1
+    [farkas] dispatches to [Farkas.verify]; any other tier or
+    witness kind without an implemented verifier surfaces as
+    [Tier_check_deferred] or [Unsupported_witness_kind]. *)
+let verify
+      ?(trace : Trace.t option = None)
+      (cert : Certificate.t)
+      (ir : Ir.t) : reason =
+  match envelope_check ~trace cert ir with
+  | Verified_envelope ->
+    (match cert.payload with
+     | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
+       reason_of_farkas (Farkas.verify ir witness_data)
+     | Tier1_witness { witness_kind; _ } ->
+       Unsupported_witness_kind {
+         kind = Certificate.witness_kind_to_string witness_kind;
+       }
+     | _ -> Tier_check_deferred { tier = cert.tier })
+  | r -> r

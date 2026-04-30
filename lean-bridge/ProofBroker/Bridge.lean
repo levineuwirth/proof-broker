@@ -264,16 +264,28 @@ private def parseReason (j : Json) : MatchReason :=
   | k => .otherReason k detail
 
 /-- Result of `runVerifyCertificate`. Mirrors OCaml's
-    `Verifier.reason`. The `verifiedEnvelope` constructor is the
-    success case; the others are the four failure modes the
-    envelope check distinguishes. New OCaml-side reason kinds
-    decode into `otherCertReason` rather than failing the
-    envelope. -/
+    `Verifier.reason`, covering both layers: envelope checks
+    (`verifiedEnvelope`, `hashMismatch`, `tierPayloadMismatch`,
+    `certVersionMismatch`) and Tier 1 / Farkas arithmetic checks
+    (`verifiedFarkas` plus `farkas*` failure variants). For tiers
+    without a soundness verifier, OCaml emits `tierCheckDeferred` /
+    `unsupportedWitnessKind`; the cert's envelope was verified but
+    nothing further. New reason kinds the OCaml side adds in the
+    future decode into `otherCertReason`. -/
 inductive CertReason where
   | verifiedEnvelope
+  | verifiedFarkas
   | hashMismatch (detail : String)
   | tierPayloadMismatch (detail : String)
   | certVersionMismatch (detail : String)
+  | farkasUnknownHypothesis (detail : String)
+  | farkasNonlinear (detail : String)
+  | farkasBadCoefficient (detail : String)
+  | farkasNegativeCoefficient (detail : String)
+  | farkasNotContradictory (detail : String)
+  | farkasMalformedWitness (detail : String)
+  | unsupportedWitnessKind (detail : String)
+  | tierCheckDeferred (detail : String)
   | otherCertReason (kind : String) (detail : String)
 deriving Repr, Inhabited
 
@@ -287,18 +299,31 @@ private def parseCertReason (j : Json) : CertReason :=
   let detail := (j.getObjValAs? String "detail").toOption.getD ""
   match kind with
   | "verified_envelope" => .verifiedEnvelope
+  | "verified_farkas" => .verifiedFarkas
   | "hash_mismatch" => .hashMismatch detail
   | "tier_payload_mismatch" => .tierPayloadMismatch detail
   | "cert_version_mismatch" => .certVersionMismatch detail
+  | "farkas_unknown_hypothesis" => .farkasUnknownHypothesis detail
+  | "farkas_nonlinear" => .farkasNonlinear detail
+  | "farkas_bad_coefficient" => .farkasBadCoefficient detail
+  | "farkas_negative_coefficient" => .farkasNegativeCoefficient detail
+  | "farkas_not_contradictory" => .farkasNotContradictory detail
+  | "farkas_malformed_witness" => .farkasMalformedWitness detail
+  | "unsupported_witness_kind" => .unsupportedWitnessKind detail
+  | "tier_check_deferred" => .tierCheckDeferred detail
   | k => .otherCertReason k detail
 
-/-- Pre-tier envelope verification (spec §8.2). Submit a
-    certificate, the IR it claims to address, and (optionally) the
-    rewrite trace that produced that IR; the dispatcher returns
-    a structured pass/fail result. Tier-specific soundness checks
-    are NOT run by this entry point — `verifiedEnvelope` only
-    asserts that the envelope is well-formed and addresses
-    the right artifacts.
+/-- Certificate verification (spec §8.2). Submit a certificate,
+    the IR it claims to address, and (optionally) the rewrite trace
+    that produced that IR; the dispatcher runs envelope checks
+    (well-formedness, tier/payload match, hash agreement) and then
+    dispatches to a tier-specific soundness verifier where one
+    exists. Today: Tier 1 / Farkas certs go through real arithmetic
+    verification (returning `verifiedFarkas` / `farkas*`
+    diagnostics); other tiers fall through to `tierCheckDeferred`,
+    other Tier 1 witness kinds to `unsupportedWitnessKind`. Strict
+    consumers should treat only `verifiedEnvelope` and
+    `verifiedFarkas` as proof of soundness.
 
     Certificates are caller-supplied JSON because there's no
     Lean-side `Certificate` ADT yet — consistent with the
