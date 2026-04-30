@@ -24,8 +24,9 @@ import ProofBroker
 import Lean.Data.Json
 
 open Lean (Json)
-open ProofBroker (FfiError pbCall roundtripIR decodeEnvelope)
-open ProofBroker.IR (IR normalize)
+open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify decodeEnvelope)
+open ProofBroker.IR (IR ShellTerm normalize)
+open ProofBroker.Trace (Entry Outcome)
 
 def fail (msg : String) : IO α := do
   IO.eprintln s!"FAIL: {msg}"
@@ -84,6 +85,80 @@ def runLeanCodecRejectsBadIr : IO Unit := do
   | .error msg =>
     IO.println s!"OK Lean codec: ill-formed IR rejected with: {msg}"
 
+/-- Construct a minimal-scaffolding IR with a given goal shell. The
+    schema's required fields are filled with trivial defaults; only
+    `goal.shell` varies across cases. Used for end-to-end pass tests
+    where the interesting structure is in the goal, not the
+    surrounding metadata. -/
+def mkTestIR (shell : ShellTerm) : IR :=
+  {
+    irVersion := "1.0",
+    sourceSystem := { name := "test", version := "0.0" },
+    tier := "goal",
+    logicClassification := {
+      order := "first_order",
+      featuresUsed := [],
+      firstOrderFragment := "FOL",
+      decidableTheory := none
+    },
+    goal := { shell, payloads := none },
+    context := {
+      typeVars := [], freeVars := [], hypotheses := [], librarySlice := none
+    },
+    typeMetadata := [],
+    definitionalMetadata := [],
+    libraryProvenance := [],
+    userDirectives := none
+  }
+
+def runPropositionalSimplifyApplied : IO Unit := do
+  -- (True ∧ p) — should simplify to p with rule And_True_left.
+  let ir := mkTestIR (.and_ (.const "True") (.var "p"))
+  let (irOut, entry) ← match propositionalSimplify ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"propositionalSimplify returned error: {repr e}"
+  unless entry.pass == "propositional_simplification" do
+    fail s!"unexpected pass name: {entry.pass}"
+  unless entry.outcome == some .applied do
+    fail s!"expected outcome=applied, got {repr entry.outcome}"
+  match irOut.goal.shell with
+  | .var "p" => pure ()
+  | other => fail s!"goal not collapsed to (Var p), got {(ProofBroker.IR.ShellTerm.toJson other).compress}"
+  -- Inspect inversion_data: should record exactly one
+  -- {"rule":"And_True_left","site":"goal"}.
+  let inv ← match entry.inversionData with
+    | some j => pure j
+    | none => fail "inversion_data missing"
+  let simps ← match inv.getObjVal? "simplifications" with
+    | .ok j => pure j
+    | .error e => fail s!"missing simplifications: {e}"
+  let arr ← match simps.getArr? with
+    | .ok a => pure a
+    | .error e => fail s!"simplifications not an array: {e}"
+  unless arr.size == 1 do
+    fail s!"expected 1 simplification, got {arr.size}"
+  let firstRule := (arr[0]!.getObjValAs? String "rule").toOption.getD ""
+  let firstSite := (arr[0]!.getObjValAs? String "site").toOption.getD ""
+  unless firstRule == "And_True_left" do
+    fail s!"expected rule=And_True_left, got {firstRule}"
+  unless firstSite == "goal" do
+    fail s!"expected site=goal, got {firstSite}"
+  unless entry.beforeHash != entry.afterHash do
+    fail "expected before_hash != after_hash on applied pass"
+  IO.println s!"OK propositional_simplify: (True ∧ p) ↝ p, rule And_True_left at goal"
+
+def runPropositionalSimplifyNoOp : IO Unit := do
+  -- (Var p) has no rewritable structure: outcome=noOp, hashes equal.
+  let ir := mkTestIR (.var "p")
+  let (_, entry) ← match propositionalSimplify ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"propositionalSimplify returned error: {repr e}"
+  unless entry.outcome == some .noOp do
+    fail s!"expected outcome=noOp, got {repr entry.outcome}"
+  unless entry.beforeHash == entry.afterHash do
+    fail "expected before_hash == after_hash on no-op"
+  IO.println "OK propositional_simplify: no-op preserves hash and reports outcome=noOp"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -92,3 +167,5 @@ def main : IO Unit := do
   runJsonParseErrorPath
   runUnknownMethodPath
   runLeanCodecRejectsBadIr
+  runPropositionalSimplifyApplied
+  runPropositionalSimplifyNoOp

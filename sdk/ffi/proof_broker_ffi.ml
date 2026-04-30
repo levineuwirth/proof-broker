@@ -49,6 +49,26 @@ let roundtrip_ir (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* Multi-return envelope: [propositional_simplify : Ir.t -> Ir.t *
+   trace_entry] carries both results in [payload] under named keys
+   per [sdk/FFI_CONVENTIONS.md] §Multi-return envelope. *)
+let propositional_simplify (input : string) : string =
+  try
+    let j = from_string input in
+    let ir = Proof_broker.Codec.of_json j in
+    let result = Proof_broker.Propositional_simplify.run ir in
+    let payload = `Assoc [
+      "ir", Proof_broker.Codec.to_json result.ir;
+      "trace_entry", Proof_broker.Trace.entry_to_json result.trace;
+    ] in
+    envelope_ok payload
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
@@ -59,4 +79,5 @@ let dispatch (method_name : string) (input : string) : string =
 
 let () =
   register_method "roundtrip_ir" roundtrip_ir;
+  register_method "propositional_simplify" propositional_simplify;
   Callback.register "pb_dispatch_call" dispatch

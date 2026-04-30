@@ -1,7 +1,10 @@
-(test
- (name test_round_trip)
+(tests
+ (names test_round_trip test_propositional_simplify)
  (libraries proof_broker yojson alcotest))
 
-; The reference IR fixtures are in repo/examples, outside the sdk/ dune
-; workspace. The test resolves them at runtime relative to its build
+; test_round_trip resolves the reference IR fixtures (in repo/examples,
+; outside the sdk/ dune workspace) at runtime relative to its build
 ; directory rather than declaring them as dune deps.
+;
+; test_propositional_simplify works on synthetic IR fragments built
+; in-process and needs no fixture access.

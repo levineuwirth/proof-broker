@@ -14,11 +14,13 @@ a fresh method name and add a `def myOp ... := decodeEnvelope (pbCall
 
 import Lean.Data.Json
 import ProofBroker.IR
+import ProofBroker.Trace
 
 namespace ProofBroker
 
 open Lean (Json)
 open ProofBroker.IR (IR)
+open ProofBroker.Trace (Entry)
 
 /-- Typed FFI error matching the `kind` taxonomy in
     `sdk/FFI_CONVENTIONS.md`. The `.other` constructor is the
@@ -100,5 +102,34 @@ def roundtripIR (ir : IR) : Except FfiError IR := do
   | .ok ir' => .ok ir'
   | .error msg =>
     .error (.decodeError s!"failed to decode round-trip payload: {msg}" none)
+
+/-- Decode a multi-return payload of shape
+    `{"ir": <IR>, "trace_entry": <TraceEntry>}` per FFI_CONVENTIONS.md
+    §Multi-return envelope. Both fields are accessed by name; new
+    optional fields land non-breakingly. -/
+private def decodeIrAndTrace (payload : Json) : Except FfiError (IR × Entry) := do
+  let irJ ← match payload.getObjVal? "ir" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'ir' in payload" none)
+  let traceJ ← match payload.getObjVal? "trace_entry" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'trace_entry' in payload" none)
+  let ir ← match ProofBroker.IR.IR.fromJson? irJ with
+    | .ok ir => pure ir
+    | .error e => .error (.decodeError s!"decoding 'ir': {e}" none)
+  let entry ← match Entry.fromJson? traceJ with
+    | .ok e => pure e
+    | .error e => .error (.decodeError s!"decoding 'trace_entry': {e}" none)
+  return (ir, entry)
+
+/-- Run the propositional-simplification pass on `ir`. Returns the
+    rewritten IR paired with a trace entry that records each rule
+    applied (in `inversion_data.simplifications`). The trace's
+    `outcome` is `.applied` when at least one rule fired and `.noOp`
+    otherwise. -/
+def propositionalSimplify (ir : IR) : Except FfiError (IR × Entry) := do
+  let inputStr := (ProofBroker.IR.IR.toJson ir).compress
+  let payload ← decodeEnvelope (pbCall "propositional_simplify" inputStr)
+  decodeIrAndTrace payload
 
 end ProofBroker
