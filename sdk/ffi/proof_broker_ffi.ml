@@ -69,6 +69,27 @@ let propositional_simplify (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* Same multi-return envelope shape as [propositional_simplify].
+   Configuration is read from the IR's [user_directives.
+   rewriter_preferences.enable_definition_unfolding] field rather
+   than passed as a separate dispatcher arg. *)
+let definition_unfolding (input : string) : string =
+  try
+    let j = from_string input in
+    let ir = Proof_broker.Codec.of_json j in
+    let result = Proof_broker.Definition_unfolding.run ir in
+    let payload = `Assoc [
+      "ir", Proof_broker.Codec.to_json result.ir;
+      "trace_entry", Proof_broker.Trace.entry_to_json result.trace;
+    ] in
+    envelope_ok payload
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
@@ -80,4 +101,5 @@ let dispatch (method_name : string) (input : string) : string =
 let () =
   register_method "roundtrip_ir" roundtrip_ir;
   register_method "propositional_simplify" propositional_simplify;
+  register_method "definition_unfolding" definition_unfolding;
   Callback.register "pb_dispatch_call" dispatch

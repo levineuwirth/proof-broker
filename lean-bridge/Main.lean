@@ -24,7 +24,7 @@ import ProofBroker
 import Lean.Data.Json
 
 open Lean (Json)
-open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify decodeEnvelope)
+open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding decodeEnvelope)
 open ProofBroker.IR (IR ShellTerm normalize)
 open ProofBroker.Trace (Entry Outcome)
 
@@ -159,6 +159,55 @@ def runPropositionalSimplifyNoOp : IO Unit := do
     fail "expected before_hash == after_hash on no-op"
   IO.println "OK propositional_simplify: no-op preserves hash and reports outcome=noOp"
 
+/-- Exercise definition_unfolding on the example2 fixture. The
+    fixture has user_directives.enable_definition_unfolding set to
+    ["function_composition"] and a Function.comp entry in
+    definitional_metadata, so the pass should report
+    outcome=applied and emit at least one unfolded_symbols entry. -/
+def runDefinitionUnfoldingOnFixture (rootDir : System.FilePath) : IO Unit := do
+  let path := rootDir / "examples" / "example2-function-composition.json"
+  let raw ← IO.FS.readFile path
+  let ir ← match IR.fromJsonString raw with
+    | .ok ir => pure ir
+    | .error e => fail s!"could not parse example2 fixture: {e}"
+  let (_, entry) ← match definitionUnfolding ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"definitionUnfolding returned error: {repr e}"
+  unless entry.pass == "definition_unfolding" do
+    fail s!"unexpected pass name: {entry.pass}"
+  unless entry.outcome == some .applied do
+    fail s!"expected outcome=applied on Function.comp fixture, got {repr entry.outcome}"
+  let inv ← match entry.inversionData with
+    | some j => pure j
+    | none => fail "inversion_data missing"
+  let unfolded ← match inv.getObjVal? "unfolded_symbols" with
+    | .ok j => pure j
+    | .error e => fail s!"missing unfolded_symbols: {e}"
+  let arr ← match unfolded.getArr? with
+    | .ok a => pure a
+    | .error e => fail s!"unfolded_symbols not an array: {e}"
+  unless arr.size >= 1 do
+    fail s!"expected at least 1 unfolded symbol, got {arr.size}"
+  let firstSym := (arr[0]!.getObjValAs? String "symbol").toOption.getD ""
+  let firstVia := (arr[0]!.getObjValAs? String "via").toOption.getD ""
+  unless firstVia == "definitional_equation" do
+    fail s!"expected via=definitional_equation, got {firstVia}"
+  IO.println s!"OK definition_unfolding: example2 unfolded {arr.size} symbol(s) including {firstSym} via definitional_equation"
+
+/-- Pass-skipping path: an IR without enable_definition_unfolding
+    should land on outcome=skippedPreconditions, leaving the IR
+    untouched. -/
+def runDefinitionUnfoldingSkipped : IO Unit := do
+  let ir := mkTestIR (.var "p")  -- mkTestIR sets userDirectives := none
+  let (_, entry) ← match definitionUnfolding ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"definitionUnfolding returned error: {repr e}"
+  unless entry.outcome == some .skippedPreconditions do
+    fail s!"expected outcome=skippedPreconditions, got {repr entry.outcome}"
+  unless entry.beforeHash == entry.afterHash do
+    fail "expected before_hash == after_hash on skipped pass"
+  IO.println "OK definition_unfolding: empty config yields outcome=skippedPreconditions"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -169,3 +218,5 @@ def main : IO Unit := do
   runLeanCodecRejectsBadIr
   runPropositionalSimplifyApplied
   runPropositionalSimplifyNoOp
+  runDefinitionUnfoldingOnFixture rootDir
+  runDefinitionUnfoldingSkipped

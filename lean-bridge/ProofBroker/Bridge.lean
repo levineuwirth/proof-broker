@@ -132,4 +132,16 @@ def propositionalSimplify (ir : IR) : Except FfiError (IR × Entry) := do
   let payload ← decodeEnvelope (pbCall "propositional_simplify" inputStr)
   decodeIrAndTrace payload
 
+/-- Run the definition-unfolding pass on `ir`. Configuration is read
+    from `ir.userDirectives.rewriterPreferences.enableDefinitionUnfolding`
+    (a list of concept_tags); symbols whose definitional_metadata
+    declares a matching `concept_tag` are unfolded against their
+    `definitional_equation`. Trace's `outcome` is `.skippedPreconditions`
+    when the config list is empty, `.applied` when at least one symbol
+    was unfolded, `.noOp` otherwise. -/
+def definitionUnfolding (ir : IR) : Except FfiError (IR × Entry) := do
+  let inputStr := (ProofBroker.IR.IR.toJson ir).compress
+  let payload ← decodeEnvelope (pbCall "definition_unfolding" inputStr)
+  decodeIrAndTrace payload
+
 end ProofBroker

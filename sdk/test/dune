@@ -1,5 +1,5 @@
 (tests
- (names test_round_trip test_propositional_simplify)
+ (names test_round_trip test_propositional_simplify test_definition_unfolding)
  (libraries proof_broker yojson alcotest))
 
 ; test_round_trip resolves the reference IR fixtures (in repo/examples,
