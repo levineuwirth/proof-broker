@@ -20,7 +20,49 @@ namespace ProofBroker
 
 open Lean (Json)
 open ProofBroker.IR (IR)
-open ProofBroker.Trace (Entry)
+open ProofBroker.Trace (Entry Document)
+
+/-- One step in a pipeline configuration (spec v1.0 §5.3). The
+    `config` field is JSON pass-through; the schema is permissive. -/
+structure PassStep where
+  pass : String
+  config : Option Json := none
+deriving Inhabited
+
+def PassStep.toJson (s : PassStep) : Json :=
+  let fields : List (String × Json) := [("pass", .str s.pass)]
+  let fields := match s.config with
+    | none => fields
+    | some c => fields ++ [("config", c)]
+  Json.mkObj fields
+
+/-- Pipeline configuration mirroring `sdk/lib/pipeline.ml`'s `config`. -/
+structure PipelineConfig where
+  pipeline : List PassStep
+  stopOnFailure : Bool := false
+  timeoutPerPassMs : Option Int := none
+deriving Inhabited
+
+def PipelineConfig.toJson (c : PipelineConfig) : Json :=
+  let fields : List (String × Json) := [
+    ("pipeline", Json.arr (c.pipeline.map PassStep.toJson).toArray),
+    ("stop_on_failure", .bool c.stopOnFailure)
+  ]
+  let fields := match c.timeoutPerPassMs with
+    | none => fields
+    | some t => fields ++ [("timeout_per_pass_ms", .num t)]
+  Json.mkObj fields
+
+/-- Default pipeline (spec v1.0 §5.4): propositional simplification
+    then definition unfolding. Matches OCaml `Pipeline.default_config`. -/
+def PipelineConfig.default : PipelineConfig := {
+  pipeline := [
+    { pass := "propositional_simplification" },
+    { pass := "definition_unfolding" }
+  ],
+  stopOnFailure := false,
+  timeoutPerPassMs := none
+}
 
 /-- Typed FFI error matching the `kind` taxonomy in
     `sdk/FFI_CONVENTIONS.md`. The `.other` constructor is the
@@ -143,5 +185,38 @@ def definitionUnfolding (ir : IR) : Except FfiError (IR × Entry) := do
   let inputStr := (ProofBroker.IR.IR.toJson ir).compress
   let payload ← decodeEnvelope (pbCall "definition_unfolding" inputStr)
   decodeIrAndTrace payload
+
+/-- Decode the pipeline-payload shape `{"ir": <IR>, "trace": <Document>}`
+    as defined in `sdk/lib/pipeline.ml`. -/
+private def decodeIrAndTraceDocument (payload : Json) : Except FfiError (IR × Document) := do
+  let irJ ← match payload.getObjVal? "ir" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'ir' in payload" none)
+  let traceJ ← match payload.getObjVal? "trace" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'trace' in payload" none)
+  let ir ← match ProofBroker.IR.IR.fromJson? irJ with
+    | .ok ir => pure ir
+    | .error e => .error (.decodeError s!"decoding 'ir': {e}" none)
+  let doc ← match Document.fromJson? traceJ with
+    | .ok d => pure d
+    | .error e => .error (.decodeError s!"decoding 'trace': {e}" none)
+  return (ir, doc)
+
+/-- Run a configured pipeline of rewriter passes. Returns the final
+    rewritten IR paired with a `Trace.Document` whose `entries` records
+    one entry per attempted pass, with `initial_ir_hash` and
+    `final_ir_hash` bracketing the chain. Failures inside a pass
+    surface as `Outcome.failed` entries; `stopOnFailure := true`
+    halts the chain after a failure, otherwise the next pass runs on
+    the pre-failure IR. -/
+def runPipeline (ir : IR) (config : PipelineConfig := PipelineConfig.default)
+    : Except FfiError (IR × Document) := do
+  let input := Json.mkObj [
+    ("ir", ProofBroker.IR.IR.toJson ir),
+    ("config", PipelineConfig.toJson config)
+  ]
+  let payload ← decodeEnvelope (pbCall "run_pipeline" input.compress)
+  decodeIrAndTraceDocument payload
 
 end ProofBroker

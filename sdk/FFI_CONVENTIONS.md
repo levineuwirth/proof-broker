@@ -41,6 +41,18 @@ in `payload`:
 { "status": "ok", "payload": { "ir": <Ir.t>, "trace_entry": <TraceEntry> } }
 ```
 
+The pipeline driver (`run_pipeline`) uses the same shape with the
+single-entry replaced by a full trace document under key `trace`:
+
+```json
+{ "status": "ok", "payload": { "ir": <Ir.t>, "trace": <Trace.Document> } }
+```
+
+Inputs that need to carry more than just an IR — currently
+`run_pipeline`, which takes `{"ir": <Ir.t>, "config": <PipelineConfig>?}` —
+follow the same envelope-style convention on the input side: an object
+with named fields, optional fields omitted (never `null`).
+
 Rationale: typed-error home; no FFI out-params; adding new return fields
 is non-breaking. Adding a new error `kind` is also non-breaking provided
 the Lean side treats unknown `kind` as a generic failure.

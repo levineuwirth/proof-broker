@@ -90,6 +90,44 @@ let definition_unfolding (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [run_pipeline] takes a wrapped input of shape
+     {"ir": <IR>, "config": <PipelineConfig>?}
+   so the IR and the pipeline config travel together through the
+   single string slot the dispatcher exposes. Missing [config] falls
+   back to [Pipeline.default_config] (spec §5.4). The payload mirrors
+   the multi-return shape of the per-pass methods, with the
+   single-entry [trace_entry] replaced by the pipeline-level
+   [Trace.t] document under key [trace]. *)
+let run_pipeline (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error ("expected object", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error ("missing field: ir", j))
+    in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    let config = match List.assoc_opt "config" pairs with
+      | None -> Proof_broker.Pipeline.default_config
+      | Some c -> Proof_broker.Pipeline.config_of_json c
+    in
+    let final_ir, trace = Proof_broker.Pipeline.run config ir in
+    let payload = `Assoc [
+      "ir", Proof_broker.Codec.to_json final_ir;
+      "trace", Proof_broker.Trace.to_json trace;
+    ] in
+    envelope_ok payload
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
@@ -102,4 +140,5 @@ let () =
   register_method "roundtrip_ir" roundtrip_ir;
   register_method "propositional_simplify" propositional_simplify;
   register_method "definition_unfolding" definition_unfolding;
+  register_method "run_pipeline" run_pipeline;
   Callback.register "pb_dispatch_call" dispatch

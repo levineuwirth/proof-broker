@@ -6,10 +6,9 @@
     [inversion_data] sufficient for the lifting layer to invert the
     rewrite without consulting the source proof state.
 
-    [Trace.t] (the full document) is not yet defined here — the
-    rewriter currently produces single entries per FFI call and the
-    pipeline-level trace document is assembled later. The single-entry
-    type is the load-bearing one for §2.1's multi-return envelope. *)
+    [Trace.t] (this module) aggregates entries across a pipeline
+    invocation, plus the pipeline configuration and the initial/final
+    IR hashes that bracket the rewrite chain. *)
 
 type outcome =
   | Applied
@@ -100,4 +99,54 @@ let entry_of_json (j : Yojson.Safe.t) : entry =
                    | Some (`String s) -> Some s
                    | Some other -> raise (Codec.Decode_error
                                             ("expected string at diagnostics", other)));
+  }
+
+(** Pipeline-level trace document (spec v1.0 §5.6, schema
+    [schemas/v1.0/rewrite-trace.schema.json]). Aggregates the entries
+    produced by [Pipeline.run] together with the pipeline configuration
+    actually used and the initial/final IR hashes. *)
+type t = {
+  trace_version : string;
+  initial_ir_hash : string;
+  final_ir_hash : string;
+  entries : entry list;
+  configuration : Yojson.Safe.t option;
+}
+
+let to_json (tr : t) : Yojson.Safe.t =
+  let fields = [
+    "trace_version", `String tr.trace_version;
+    "initial_ir_hash", `String tr.initial_ir_hash;
+    "final_ir_hash", `String tr.final_ir_hash;
+    "entries", `List (List.map entry_to_json tr.entries);
+  ] in
+  let fields = match tr.configuration with
+    | None -> fields
+    | Some c -> fields @ [ "configuration", c ]
+  in
+  `Assoc fields
+
+let of_json (j : Yojson.Safe.t) : t =
+  let p = match j with
+    | `Assoc pairs -> pairs
+    | _ -> raise (Codec.Decode_error ("expected object", j))
+  in
+  let str_field k = match List.assoc k p with
+    | `String s -> s
+    | other -> raise (Codec.Decode_error ("expected string at " ^ k, other))
+    | exception Not_found ->
+      raise (Codec.Decode_error ("missing field: " ^ k, j))
+  in
+  let entries = match List.assoc "entries" p with
+    | `List xs -> List.map entry_of_json xs
+    | other -> raise (Codec.Decode_error ("expected array at entries", other))
+    | exception Not_found ->
+      raise (Codec.Decode_error ("missing field: entries", j))
+  in
+  {
+    trace_version = str_field "trace_version";
+    initial_ir_hash = str_field "initial_ir_hash";
+    final_ir_hash = str_field "final_ir_hash";
+    entries;
+    configuration = List.assoc_opt "configuration" p;
   }

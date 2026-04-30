@@ -1,10 +1,13 @@
 (tests
- (names test_round_trip test_propositional_simplify test_definition_unfolding)
- (libraries proof_broker yojson alcotest))
+ (names test_round_trip test_propositional_simplify test_definition_unfolding
+        test_pipeline)
+ (libraries proof_broker yojson alcotest str))
 
 ; test_round_trip resolves the reference IR fixtures (in repo/examples,
 ; outside the sdk/ dune workspace) at runtime relative to its build
 ; directory rather than declaring them as dune deps.
 ;
-; test_propositional_simplify works on synthetic IR fragments built
-; in-process and needs no fixture access.
+; test_propositional_simplify and test_pipeline work on synthetic IR
+; fragments built in-process and need no fixture access.
+;
+; [str] is added for [test_pipeline]'s diagnostic-substring check.

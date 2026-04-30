@@ -101,4 +101,45 @@ def Entry.fromJson? (j : Json) : Except String Entry := do
 instance : ToJson Entry := ⟨Entry.toJson⟩
 instance : FromJson Entry := ⟨Entry.fromJson?⟩
 
+/-- Pipeline-level trace document (spec v1.0 §5.6). Mirrors
+    `sdk/lib/trace.ml`'s `t` type and the schema's top-level shape.
+    `configuration` is JSON pass-through: the schema constrains its
+    inner shape, but a typed Lean ADT for it is overkill until a Lean
+    caller needs to build pipelines from typed config rather than
+    receive them as opaque payloads. -/
+structure Document where
+  traceVersion : String
+  initialIrHash : String
+  finalIrHash : String
+  entries : List Entry
+  configuration : Option Json
+deriving Inhabited
+
+def Document.toJson (d : Document) : Json :=
+  let fields : List (String × Json) := [
+    ("trace_version", .str d.traceVersion),
+    ("initial_ir_hash", .str d.initialIrHash),
+    ("final_ir_hash", .str d.finalIrHash),
+    ("entries", Json.arr (d.entries.map Entry.toJson).toArray)
+  ]
+  let fields := match d.configuration with
+    | none => fields
+    | some c => fields ++ [("configuration", c)]
+  Json.mkObj fields
+
+def Document.fromJson? (j : Json) : Except String Document := do
+  let entriesJ ← j.getObjVal? "entries"
+  let entriesArr ← entriesJ.getArr?
+  let entries ← entriesArr.toList.mapM Entry.fromJson?
+  return {
+    traceVersion := ← getReqStr j "trace_version",
+    initialIrHash := ← getReqStr j "initial_ir_hash",
+    finalIrHash := ← getReqStr j "final_ir_hash",
+    entries,
+    configuration := getOpt j "configuration"
+  }
+
+instance : ToJson Document := ⟨Document.toJson⟩
+instance : FromJson Document := ⟨Document.fromJson?⟩
+
 end ProofBroker.Trace

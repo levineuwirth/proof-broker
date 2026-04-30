@@ -24,9 +24,10 @@ import ProofBroker
 import Lean.Data.Json
 
 open Lean (Json)
-open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding decodeEnvelope)
+open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding
+                  runPipeline decodeEnvelope PipelineConfig PassStep)
 open ProofBroker.IR (IR ShellTerm normalize)
-open ProofBroker.Trace (Entry Outcome)
+open ProofBroker.Trace (Entry Outcome Document)
 
 def fail (msg : String) : IO α := do
   IO.eprintln s!"FAIL: {msg}"
@@ -208,6 +209,80 @@ def runDefinitionUnfoldingSkipped : IO Unit := do
     fail "expected before_hash == after_hash on skipped pass"
   IO.println "OK definition_unfolding: empty config yields outcome=skippedPreconditions"
 
+/-- End-to-end test of the pipeline driver: a two-pass run on
+    `(True ∧ p)` should produce a Trace.Document with two entries
+    (propositional_simplification, definition_unfolding) whose hashes
+    chain (entries[0].after == entries[1].before) and bracket
+    initial/final. -/
+def runPipelineTwoPassChain : IO Unit := do
+  let ir := mkTestIR (.and_ (.const "True") (.var "p"))
+  let config : PipelineConfig := {
+    pipeline := [
+      { pass := "propositional_simplification" },
+      { pass := "definition_unfolding" }
+    ],
+    stopOnFailure := false,
+    timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir config with
+    | .ok pair => pure pair
+    | .error e => fail s!"runPipeline returned error: {repr e}"
+  unless doc.traceVersion == "1.0" do
+    fail s!"unexpected trace_version: {doc.traceVersion}"
+  unless doc.entries.length == 2 do
+    fail s!"expected 2 entries, got {doc.entries.length}"
+  let e0 := doc.entries[0]!
+  let e1 := doc.entries[1]!
+  unless e0.pass == "propositional_simplification" do
+    fail s!"expected first pass propositional_simplification, got {e0.pass}"
+  unless e1.pass == "definition_unfolding" do
+    fail s!"expected second pass definition_unfolding, got {e1.pass}"
+  unless e0.afterHash == e1.beforeHash do
+    fail "hash chain broken: entries[0].after_hash != entries[1].before_hash"
+  unless doc.initialIrHash == e0.beforeHash do
+    fail "initial_ir_hash != entries[0].before_hash"
+  unless doc.finalIrHash == e1.afterHash do
+    fail "final_ir_hash != entries[1].after_hash"
+  IO.println s!"OK pipeline: 2-pass chain produced linked Trace.Document with {doc.entries.length} entries"
+
+/-- Default-pipeline path: calling `runPipeline` without a config
+    should use `PipelineConfig.default` (propositional then unfolding,
+    matching spec §5.4). The trace's configuration field round-trips
+    the OCaml-side default. -/
+def runPipelineDefault : IO Unit := do
+  let ir := mkTestIR (.var "p")
+  let (_, doc) ← match runPipeline ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"runPipeline (default) error: {repr e}"
+  unless doc.entries.length == 2 do
+    fail s!"default pipeline should produce 2 entries, got {doc.entries.length}"
+  unless doc.initialIrHash == doc.finalIrHash do
+    fail "no-op IR through default pipeline should leave hashes equal"
+  IO.println "OK pipeline: default config wires propositional + definition_unfolding"
+
+/-- Stop-on-failure path: an unknown pass at position 0 with
+    `stopOnFailure := true` halts the chain after a single
+    `Outcome.failed` entry. -/
+def runPipelineStopOnFailure : IO Unit := do
+  let ir := mkTestIR (.var "p")
+  let config : PipelineConfig := {
+    pipeline := [
+      { pass := "no_such_pass" },
+      { pass := "propositional_simplification" }
+    ],
+    stopOnFailure := true,
+    timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir config with
+    | .ok pair => pure pair
+    | .error e => fail s!"runPipeline returned error: {repr e}"
+  unless doc.entries.length == 1 do
+    fail s!"stop_on_failure should halt after 1 entry, got {doc.entries.length}"
+  let e := doc.entries[0]!
+  unless e.outcome == some .failed do
+    fail s!"expected outcome=failed for unknown pass, got {repr e.outcome}"
+  IO.println "OK pipeline: stop_on_failure halts after Failed entry"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -220,3 +295,6 @@ def main : IO Unit := do
   runPropositionalSimplifyNoOp
   runDefinitionUnfoldingOnFixture rootDir
   runDefinitionUnfoldingSkipped
+  runPipelineTwoPassChain
+  runPipelineDefault
+  runPipelineStopOnFailure
