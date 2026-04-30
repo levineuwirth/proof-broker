@@ -112,6 +112,61 @@ let definition_unfolding (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [verify_certificate] takes
+     {"cert": <Certificate>, "ir": <Ir>, "trace": <Trace.t>?}
+   and returns
+     {"ok": <bool>, "reason": {"kind": "...", "detail": "..."}}.
+
+   [ok] is true iff [Verifier.envelope_check] returns
+   [Verified_envelope]; the structured [reason] always tells the
+   caller what was checked (or what failed). Tier-specific
+   verification is not run here — see [Verifier] for the
+   envelope/soundness scope split. *)
+let verify_certificate (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let cert_json = match List.assoc_opt "cert" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: cert", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: ir", j))
+    in
+    let cert = Proof_broker.Certificate.of_json cert_json in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    let trace = match List.assoc_opt "trace" pairs with
+      | None -> None
+      | Some t -> Some (Proof_broker.Trace.of_json t)
+    in
+    let reason =
+      Proof_broker.Verifier.envelope_check ~trace cert ir
+    in
+    let ok = match reason with
+      | Verified_envelope -> true
+      | _ -> false
+    in
+    let payload = `Assoc [
+      "ok", `Bool ok;
+      "reason", Proof_broker.Verifier.reason_to_json reason;
+    ] in
+    envelope_ok payload
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* [match_adapters] takes a wrapped input of shape
      {"ir": <IR>, "manifests": [<Manifest>, ...]}
    and returns
@@ -225,4 +280,5 @@ let () =
   register_method "quotient_elimination" quotient_elimination;
   register_method "run_pipeline" run_pipeline;
   register_method "match_adapters" match_adapters;
+  register_method "verify_certificate" verify_certificate;
   Callback.register "pb_dispatch_call" dispatch

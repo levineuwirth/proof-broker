@@ -68,11 +68,35 @@ the string. New reason kinds added on the OCaml side decode into a
 forward-compat `otherReason` variant on the Lean side rather than
 failing the envelope.
 
-Inputs that need to carry more than just an IR — currently
-`run_pipeline` (`{"ir": <Ir.t>, "config": <PipelineConfig>?}`) and
-`match_adapters` (`{"ir": <Ir.t>, "manifests": [<Manifest>, ...]}`) —
-follow the same envelope-style convention on the input side: an object
-with named fields, optional fields omitted (never `null`).
+The certificate envelope verifier (`verify_certificate`) follows the
+same `{ok, reason: {kind, detail?}}` pattern:
+
+```json
+{ "status": "ok",
+  "payload": {
+    "ok": true,
+    "reason": { "kind": "verified_envelope" }
+  } }
+```
+
+`reason.kind` is one of `verified_envelope`, `hash_mismatch`,
+`tier_payload_mismatch`, `cert_version_mismatch`. New reason kinds
+land in the Lean wrapper's `otherCertReason` variant. Importantly,
+`verify_certificate` only runs the *envelope* check (well-formedness,
+tier/payload match, hash agreement against the IR/trace the cert
+claims to address). Tier-specific soundness verification (Farkas
+arithmetic, Alethe replay, lemma-list reconstruction) is deferred —
+when those land, expect additional methods (`verify_farkas`, etc.)
+returning their own typed reason taxonomies, not an extension of
+this method's response.
+
+Inputs that need to carry more than just an IR — `run_pipeline`
+(`{"ir": <Ir.t>, "config": <PipelineConfig>?}`), `match_adapters`
+(`{"ir": <Ir.t>, "manifests": [<Manifest>, ...]}`),
+`verify_certificate` (`{"cert": <Certificate>, "ir": <Ir.t>,
+"trace": <Trace.t>?}`) — follow the same envelope-style convention on
+the input side: an object with named fields, optional fields omitted
+(never `null`).
 
 Rationale: typed-error home; no FFI out-params; adding new return fields
 is non-breaking. Adding a new error `kind` is also non-breaking provided
@@ -202,6 +226,14 @@ opaque `Json` values and only decodes the structured *response*
 to read manifest fields directly (e.g., a Lean tactic that filters
 manifests before submitting), graduate to a typed Lean `Manifest`
 ADT then.
+
+Certificates extend the same pattern: the OCaml-side `Certificate` /
+`Refinement_record` ADTs carry the typed envelope and per-tier
+discriminated payload; the Lean-side `runVerifyCertificate` accepts
+certificates as `Json` and decodes only the structured verification
+result. The graduation criterion holds — when a Lean tactic needs
+to introspect cert fields (e.g., extract the goal for display),
+mirror the typed ADT into Lean.
 
 The Python `tools/check.py` validator remains authoritative for
 schema-level rules (required fields, kind-discriminator legality,

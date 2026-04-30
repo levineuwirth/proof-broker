@@ -263,6 +263,63 @@ private def parseReason (j : Json) : MatchReason :=
   | "type_construction_not_supported" => .typeConstructionNotSupported detail
   | k => .otherReason k detail
 
+/-- Result of `runVerifyCertificate`. Mirrors OCaml's
+    `Verifier.reason`. The `verifiedEnvelope` constructor is the
+    success case; the others are the four failure modes the
+    envelope check distinguishes. New OCaml-side reason kinds
+    decode into `otherCertReason` rather than failing the
+    envelope. -/
+inductive CertReason where
+  | verifiedEnvelope
+  | hashMismatch (detail : String)
+  | tierPayloadMismatch (detail : String)
+  | certVersionMismatch (detail : String)
+  | otherCertReason (kind : String) (detail : String)
+deriving Repr, Inhabited
+
+structure CertVerification where
+  ok : Bool
+  reason : CertReason
+deriving Inhabited
+
+private def parseCertReason (j : Json) : CertReason :=
+  let kind := (j.getObjValAs? String "kind").toOption.getD ""
+  let detail := (j.getObjValAs? String "detail").toOption.getD ""
+  match kind with
+  | "verified_envelope" => .verifiedEnvelope
+  | "hash_mismatch" => .hashMismatch detail
+  | "tier_payload_mismatch" => .tierPayloadMismatch detail
+  | "cert_version_mismatch" => .certVersionMismatch detail
+  | k => .otherCertReason k detail
+
+/-- Pre-tier envelope verification (spec §8.2). Submit a
+    certificate, the IR it claims to address, and (optionally) the
+    rewrite trace that produced that IR; the dispatcher returns
+    a structured pass/fail result. Tier-specific soundness checks
+    are NOT run by this entry point — `verifiedEnvelope` only
+    asserts that the envelope is well-formed and addresses
+    the right artifacts.
+
+    Certificates are caller-supplied JSON because there's no
+    Lean-side `Certificate` ADT yet — consistent with the
+    pass-through stance for adapter manifests. -/
+def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := none)
+    : Except FfiError CertVerification := do
+  let baseFields : List (String × Json) := [
+    ("cert", cert),
+    ("ir", ProofBroker.IR.IR.toJson ir)
+  ]
+  let fields := match trace with
+    | none => baseFields
+    | some d => baseFields ++ [("trace", Document.toJson d)]
+  let input := Json.mkObj fields
+  let payload ← decodeEnvelope (pbCall "verify_certificate" input.compress)
+  let ok := (payload.getObjValAs? Bool "ok").toOption.getD false
+  let reasonJ ← match payload.getObjVal? "reason" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'reason'" none)
+  return { ok, reason := parseCertReason reasonJ }
+
 /-- Submit an IR + a list of manifest JSON values to the dispatcher's
     capability-matching layer (spec §7.4). Returns the partition of
     adapters into matches / rejections. The manifests are caller-

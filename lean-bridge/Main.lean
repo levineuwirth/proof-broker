@@ -26,7 +26,9 @@ import Lean.Data.Json
 open Lean (Json)
 open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding
                   quotientElimination runPipeline runMatchAdapters
-                  decodeEnvelope PipelineConfig PassStep MatchReason MatchResults)
+                  runVerifyCertificate
+                  decodeEnvelope PipelineConfig PassStep MatchReason MatchResults
+                  CertReason CertVerification)
 open ProofBroker.IR (IR ShellTerm normalize)
 open ProofBroker.Trace (Entry Outcome Document)
 
@@ -383,6 +385,91 @@ def runMatchAdaptersOnFixtures (rootDir : System.FilePath) : IO Unit := do
   | other =>
     fail s!"expected single typeConstructionNotSupported rejection; got {other.length} entries"
 
+/-- Build a synthetic certificate JSON addressing `ir`. The hash
+    is supplied by the caller (typically harvested from an empty
+    `runPipeline` invocation, which exposes the canonical IR hash
+    via `Trace.Document.initialIrHash`). The cert is Tier 1 / Farkas
+    with a single dummy coefficient — enough structure to exercise
+    the envelope verifier; the actual Farkas arithmetic check is
+    deferred per OCaml-side `Verifier` notes. -/
+def buildSyntheticTier1Cert (irHash : String) (goal : Json)
+    (overrideHash : Option String := none) : Json :=
+  let cert_ctx_hash := overrideHash.getD irHash
+  Json.mkObj [
+    ("cert_version", .str "1.0"),
+    ("tier", .num 1),
+    ("format", .str "farkas"),
+    ("goal", goal),
+    ("dispatch_context_hash", .str cert_ctx_hash),
+    ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+    ("backend", Json.mkObj [
+      ("name", .str "synthetic"),
+      ("version", .str "0.0"),
+      ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
+    ]),
+    ("resources", Json.mkObj [
+      ("wall_time_ms", .num 1),
+      ("memory_peak_kb", .num 1)
+    ]),
+    ("refinement_record", Json.mkObj [
+      ("adapter", .str "synthetic"),
+      ("adapter_version", .str "0.0"),
+      ("specializations", Json.arr #[]),
+      ("fragment", .str "FOL")
+    ]),
+    ("payload", Json.mkObj [
+      ("witness_kind", .str "farkas"),
+      ("witness_data", Json.mkObj [
+        ("coefficients", Json.arr #[
+          Json.mkObj [
+            ("hypothesis", .str "h0"),
+            ("coefficient", .str "1")
+          ]
+        ])
+      ]),
+      ("checking_recipe", .str "lean.farkas_check")
+    ])
+  ]
+
+/-- End-to-end certificate verification across the FFI: build a
+    synthetic IR, harvest its canonical hash via an empty pipeline
+    run, build a cert against that hash, verify it (expect
+    `verifiedEnvelope`), then mutate the hash and verify again
+    (expect `hashMismatch`). -/
+def runVerifyCertificateFlow : IO Unit := do
+  let ir := mkTestIR (.var "p")
+  let emptyConfig : PipelineConfig := {
+    pipeline := [], stopOnFailure := false, timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir emptyConfig with
+    | .ok pair => pure pair
+    | .error e => fail s!"pipeline run for hash failed: {repr e}"
+  let irHash := doc.initialIrHash
+  let goalJson := ProofBroker.IR.Goal.toJson ir.goal
+  let goodCert := buildSyntheticTier1Cert irHash goalJson
+  let res ← match runVerifyCertificate goodCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (good): {repr e}"
+  unless res.ok do
+    fail s!"expected ok=true on matching hash; reason={repr res.reason}"
+  match res.reason with
+  | .verifiedEnvelope =>
+    IO.println "OK verify_certificate: envelope verified on matching hash"
+  | other =>
+    fail s!"expected verifiedEnvelope, got {repr other}"
+  let badHash := s!"sha256:{String.ofList (List.replicate 64 '1')}"
+  let badCert := buildSyntheticTier1Cert irHash goalJson (overrideHash := some badHash)
+  let res2 ← match runVerifyCertificate badCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (bad): {repr e}"
+  if res2.ok then
+    fail "expected ok=false on hash mismatch"
+  match res2.reason with
+  | .hashMismatch _ =>
+    IO.println "OK verify_certificate: hash_mismatch surfaces typed reason"
+  | other =>
+    fail s!"expected hashMismatch, got {repr other}"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -401,3 +488,4 @@ def main : IO Unit := do
   runPipelineDefault
   runPipelineStopOnFailure
   runMatchAdaptersOnFixtures rootDir
+  runVerifyCertificateFlow
