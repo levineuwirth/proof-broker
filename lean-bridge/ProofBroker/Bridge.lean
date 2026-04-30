@@ -417,6 +417,69 @@ def runDispatchToAdapter (adapter : String) (ir : IR)
       | .error _ => .error (.decodeError "missing 'failure'" none)
     pure (.failed (parseDispatchFailure failJ))
 
+/-- One per-manifest outcome from `runDispatchBroker`. Mirrors
+    OCaml's [Dispatch.attempt_outcome]. Note: when [.succeeded],
+    the cert isn't duplicated here — it lives at the top level of
+    [BrokerResult]. -/
+inductive AttemptOutcome where
+  | skipped (reason : MatchReason)
+  | noImplementation
+  | failed (failure : DispatchFailure)
+  | succeeded
+deriving Repr, Inhabited
+
+structure Attempt where
+  adapter : String
+  outcome : AttemptOutcome
+deriving Repr, Inhabited
+
+/-- Result of `runDispatchBroker`. [cert] is the first successful
+    cert (as JSON, since there's no Lean-side Certificate ADT yet)
+    or [none] if no adapter succeeded. [attempts] is the per-manifest
+    outcome log in input order; in stop-on-success mode (the FFI
+    default), the list ends at the first [.succeeded] attempt. -/
+structure BrokerResult where
+  cert : Option Json
+  attempts : List Attempt
+deriving Inhabited
+
+private def parseAttempt (j : Json) : Attempt :=
+  let adapter := (j.getObjValAs? String "adapter").toOption.getD ""
+  let outcomeKind := (j.getObjValAs? String "outcome").toOption.getD ""
+  let outcome : AttemptOutcome := match outcomeKind with
+    | "skipped" =>
+      let r := (j.getObjVal? "reason").toOption.getD .null
+      .skipped (parseReason r)
+    | "no_implementation" => .noImplementation
+    | "failed" =>
+      let f := (j.getObjVal? "failure").toOption.getD .null
+      .failed (parseDispatchFailure f)
+    | "succeeded" => .succeeded
+    | _ => .noImplementation
+  { adapter, outcome }
+
+/-- Multi-adapter broker dispatch (spec §7). Hand the broker an IR
+    plus an ordered list of manifest JSON values; the broker
+    consults each manifest's capabilities, dispatches to the first
+    eligible adapter that succeeds, and returns the cert (if any)
+    plus the per-manifest attempt log. -/
+def runDispatchBroker (ir : IR) (manifests : List Json)
+    : Except FfiError BrokerResult := do
+  let input := Json.mkObj [
+    ("ir", ProofBroker.IR.IR.toJson ir),
+    ("manifests", Json.arr manifests.toArray)
+  ]
+  let payload ← decodeEnvelope (pbCall "dispatch_broker" input.compress)
+  let cert := (payload.getObjVal? "cert").toOption
+  let attemptsJ ← match payload.getObjVal? "attempts" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'attempts'" none)
+  let arr ← match attemptsJ.getArr? with
+    | .ok a => pure a
+    | .error e => .error (.decodeError s!"attempts not array: {e}" none)
+  let attempts := arr.toList.map parseAttempt
+  return { cert, attempts }
+
 /-- Submit an IR + a list of manifest JSON values to the dispatcher's
     capability-matching layer (spec §7.4). Returns the partition of
     adapters into matches / rejections. The manifests are caller-

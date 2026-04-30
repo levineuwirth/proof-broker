@@ -338,6 +338,68 @@ let dispatch_to_adapter (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [dispatch_broker] takes a wrapped input of shape
+     {"ir": <IR>, "manifests": [<Manifest>, ...]}
+   and returns
+     {"cert": <Certificate>?, "attempts": [<attempt>, ...]}
+   under [payload]. The [cert] field is omitted when no adapter
+   succeeded. [attempts] always lists the per-manifest outcomes
+   in input order, with kind ∈ {skipped, no_implementation, failed,
+   succeeded}; the rich detail is under [reason] (skipped) or
+   [failure] (failed). The cert is at the top level (not duplicated
+   inside [attempts]).
+
+   Ordering. The broker tries manifests in input order and stops
+   at the first cert. Callers should sort by their preference
+   (latency, tier, user policy) before submitting. *)
+let dispatch_broker (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: ir", j))
+    in
+    let manifests_json = match List.assoc_opt "manifests" pairs with
+      | Some (`List xs) -> xs
+      | Some other ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("expected array at manifests", other))
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: manifests", j))
+    in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    let manifests =
+      List.map Proof_broker.Manifest.of_json manifests_json
+    in
+    let result =
+      Proof_broker.Dispatch.run
+        ~manifests ~adapters:adapter_registry ir
+    in
+    let cert_field = match result.cert with
+      | None -> []
+      | Some c -> [ "cert", Proof_broker.Certificate.to_json c ]
+    in
+    let payload = `Assoc (cert_field @ [
+      "attempts",
+      `List (List.map Proof_broker.Dispatch.attempt_to_json
+               result.attempts);
+    ]) in
+    envelope_ok payload
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
@@ -355,4 +417,5 @@ let () =
   register_method "match_adapters" match_adapters;
   register_method "verify_certificate" verify_certificate;
   register_method "dispatch_to_adapter" dispatch_to_adapter;
+  register_method "dispatch_broker" dispatch_broker;
   Callback.register "pb_dispatch_call" dispatch

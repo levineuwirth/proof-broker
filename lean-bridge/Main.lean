@@ -26,10 +26,11 @@ import Lean.Data.Json
 open Lean (Json)
 open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding
                   quotientElimination runPipeline runMatchAdapters
-                  runVerifyCertificate runDispatchToAdapter
+                  runVerifyCertificate runDispatchToAdapter runDispatchBroker
                   decodeEnvelope PipelineConfig PassStep MatchReason MatchResults
                   CertReason CertVerification
-                  DispatchResult DispatchFailure)
+                  DispatchResult DispatchFailure
+                  BrokerResult Attempt AttemptOutcome)
 open ProofBroker.IR (IR ShellTerm normalize)
 open ProofBroker.Trace (Entry Outcome Document)
 
@@ -698,6 +699,60 @@ def runRefinementDispatchFlow (rootDir : System.FilePath) : IO Unit := do
     fail s!"expected HAdd.hAdd or LE.le; sources={sources}"
   IO.println s!"OK refinement+dispatch: example1 typeclass IR refined to LIA, cvc4 minted cert with {arr.size} refinement specs"
 
+/-- End-to-end multi-adapter dispatch (spec §7). Hands the broker
+    the typeclass-shaped example1 IR plus two manifests in priority
+    order: a fake BV-only manifest first (capability mismatch on
+    LIA), then the real cvc4 manifest. Expectation: bv-fake is
+    skipped via logicOutOfFragment, cvc4 mints the cert, attempts
+    list reflects both outcomes in order. -/
+def runDispatchBrokerFlow (rootDir : System.FilePath) : IO Unit := do
+  unless ← cvc4Available do
+    IO.println "[skip] cvc4 not on PATH; skipping broker dispatch flow"
+    return
+  let cvc4ManifestRaw ← IO.FS.readFile (rootDir / "examples" / "manifest-cvc4.json")
+  let cvc4Manifest ← match Json.parse cvc4ManifestRaw with
+    | .ok j => pure j
+    | .error e => fail s!"could not parse cvc4 manifest: {e}"
+  let bvFakeManifest := Json.mkObj [
+    ("manifest_version", .str "1.0"),
+    ("adapter", .str "bv-fake"),
+    ("adapter_version", .str "0.0"),
+    ("logic_fragments", Json.arr #[.str "BV"]),
+    ("type_constructions", Json.arr #[.str "primitive"]),
+    ("max_order", .str "first_order"),
+    ("tiers_produced", Json.arr #[.num 0])
+  ]
+  let path := rootDir / "examples" / "example1-lia-typeclass.json"
+  let raw ← IO.FS.readFile path
+  let ir ← match IR.fromJsonString raw with
+    | .ok ir => pure ir
+    | .error e => fail s!"could not parse example1: {e}"
+  let r ← match runDispatchBroker ir [bvFakeManifest, cvc4Manifest] with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchBroker error: {repr e}"
+  unless r.cert.isSome do
+    fail s!"expected cert minted; attempts={r.attempts.length}"
+  unless r.attempts.length == 2 do
+    fail s!"expected 2 attempts, got {r.attempts.length}"
+  let a0 := r.attempts[0]!
+  let a1 := r.attempts[1]!
+  unless a0.adapter == "bv-fake" do
+    fail s!"expected first attempt bv-fake, got {a0.adapter}"
+  -- The example1 fixture has first_order_fragment="none", so the
+  -- fragment check is skipped (see Capability_match notes). The
+  -- type-construction check does the work: alpha lives in
+  -- context.type_vars, requiring [type_variable_via_specialization]
+  -- support — which bv-fake doesn't have.
+  match a0.outcome with
+  | .skipped (.typeConstructionNotSupported _) => pure ()
+  | other => fail s!"expected skipped typeConstructionNotSupported for bv-fake, got {repr other}"
+  unless a1.adapter == "cvc4" do
+    fail s!"expected second attempt cvc4, got {a1.adapter}"
+  match a1.outcome with
+  | .succeeded => pure ()
+  | other => fail s!"expected succeeded for cvc4, got {repr other}"
+  IO.println "OK dispatch_broker: bv-fake skipped on type construction, cvc4 minted cert, attempts logged in order"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -720,3 +775,4 @@ def main : IO Unit := do
   runFarkasVerificationFlow
   runDispatchToCvc4Flow
   runRefinementDispatchFlow rootDir
+  runDispatchBrokerFlow rootDir
