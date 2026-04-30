@@ -25,7 +25,7 @@ import Lean.Data.Json
 
 open Lean (Json)
 open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding
-                  runPipeline decodeEnvelope PipelineConfig PassStep)
+                  quotientElimination runPipeline decodeEnvelope PipelineConfig PassStep)
 open ProofBroker.IR (IR ShellTerm normalize)
 open ProofBroker.Trace (Entry Outcome Document)
 
@@ -283,6 +283,66 @@ def runPipelineStopOnFailure : IO Unit := do
     fail s!"expected outcome=failed for unknown pass, got {repr e.outcome}"
   IO.println "OK pipeline: stop_on_failure halts after Failed entry"
 
+/-- Read example3 with `enable_quotient_elimination := true` patched
+    into `userDirectives`, then call `quotientElimination`. Validates
+    that the pass lands on `Outcome.applied` and that all three
+    inversion-data sections (eliminations, equality_reductions,
+    lifted_unfoldings) carry at least one entry. -/
+def runQuotientEliminationOnFixture (rootDir : System.FilePath) : IO Unit := do
+  let path := rootDir / "examples" / "example3-quotient-zmod.json"
+  let raw ← IO.FS.readFile path
+  let irBase ← match IR.fromJsonString raw with
+    | .ok ir => pure ir
+    | .error e => fail s!"could not parse example3 fixture: {e}"
+  let ud : ProofBroker.IR.UserDirectives := {
+    preferredBackend := none,
+    tierPreference := none,
+    rewriterPreferences := some {
+      enableQuotientElimination := some true,
+      enableDefinitionUnfolding := none,
+      disablePasses := none
+    },
+    budget := none
+  }
+  let ir : IR := { irBase with userDirectives := some ud }
+  let (_, entry) ← match quotientElimination ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"quotientElimination returned error: {repr e}"
+  unless entry.pass == "quotient_elimination" do
+    fail s!"unexpected pass name: {entry.pass}"
+  unless entry.outcome == some .applied do
+    fail s!"expected outcome=applied on example3, got {repr entry.outcome}"
+  let inv ← match entry.inversionData with
+    | some j => pure j
+    | none => fail "inversion_data missing"
+  let countSection (key : String) : IO Nat := do
+    match inv.getObjVal? key with
+    | .ok j => match j.getArr? with
+      | .ok arr => pure arr.size
+      | .error e => fail s!"{key} not an array: {e}"
+    | .error e => fail s!"missing {key}: {e}"
+  let elims ← countSection "eliminations"
+  let lifted ← countSection "lifted_unfoldings"
+  let eqs ← countSection "equality_reductions"
+  unless elims >= 1 ∧ lifted >= 1 ∧ eqs >= 1 do
+    fail s!"expected each inversion section to be non-empty, got eliminations={elims}, lifted_unfoldings={lifted}, equality_reductions={eqs}"
+  unless entry.beforeHash != entry.afterHash do
+    fail "expected before_hash != after_hash on applied pass"
+  IO.println s!"OK quotient_elimination: example3 yields outcome=applied with {elims} elim(s), {lifted} lifted unfolding(s), {eqs} eq reduction(s)"
+
+/-- Without the flag set, the pass must report
+    `Outcome.skippedPreconditions` and leave the IR untouched. -/
+def runQuotientEliminationSkipped : IO Unit := do
+  let ir := mkTestIR (.var "p")  -- mkTestIR sets userDirectives := none
+  let (_, entry) ← match quotientElimination ir with
+    | .ok pair => pure pair
+    | .error e => fail s!"quotientElimination returned error: {repr e}"
+  unless entry.outcome == some .skippedPreconditions do
+    fail s!"expected outcome=skippedPreconditions, got {repr entry.outcome}"
+  unless entry.beforeHash == entry.afterHash do
+    fail "expected before_hash == after_hash on skipped pass"
+  IO.println "OK quotient_elimination: missing flag yields outcome=skippedPreconditions"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -295,6 +355,8 @@ def main : IO Unit := do
   runPropositionalSimplifyNoOp
   runDefinitionUnfoldingOnFixture rootDir
   runDefinitionUnfoldingSkipped
+  runQuotientEliminationOnFixture rootDir
+  runQuotientEliminationSkipped
   runPipelineTwoPassChain
   runPipelineDefault
   runPipelineStopOnFailure

@@ -186,6 +186,21 @@ def definitionUnfolding (ir : IR) : Except FfiError (IR × Entry) := do
   let payload ← decodeEnvelope (pbCall "definition_unfolding" inputStr)
   decodeIrAndTrace payload
 
+/-- Run the quotient-elimination pass on `ir`. Configuration is read
+    from `ir.userDirectives.rewriterPreferences.enableQuotientElimination`
+    (a `Bool`). When the flag is missing or `false`, the trace's
+    `outcome` is `.skippedPreconditions`. When set, the pass rewrites:
+    * free vars and binders of quotient type → underlying type,
+    * `Eq` at a quotient type → applied equivalence relation,
+    * `App` of a `lifted_to_quotient` symbol → underlying function.
+    Inversion data populates three sections — `eliminations`,
+    `equality_reductions`, `lifted_unfoldings` — that the lifting
+    layer consults to rewrap the result in `Quot.ind`/`Quot.sound`. -/
+def quotientElimination (ir : IR) : Except FfiError (IR × Entry) := do
+  let inputStr := (ProofBroker.IR.IR.toJson ir).compress
+  let payload ← decodeEnvelope (pbCall "quotient_elimination" inputStr)
+  decodeIrAndTrace payload
+
 /-- Decode the pipeline-payload shape `{"ir": <IR>, "trace": <Document>}`
     as defined in `sdk/lib/pipeline.ml`. -/
 private def decodeIrAndTraceDocument (payload : Json) : Except FfiError (IR × Document) := do

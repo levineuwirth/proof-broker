@@ -73,6 +73,10 @@ let () =
   register_pass "definition_unfolding"
     (fun ir ->
       let r = Definition_unfolding.run ir in
+      { ir = r.ir; entry = r.trace });
+  register_pass "quotient_elimination"
+    (fun ir ->
+      let r = Quotient_elimination.run ir in
       { ir = r.ir; entry = r.trace })
 
 (* --- config codec ----------------------------------------------------- *)
