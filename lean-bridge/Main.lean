@@ -653,6 +653,51 @@ def runDispatchToCvc4Flow : IO Unit := do
     IO.println "OK dispatch_to_adapter: cvc4 reports satReturned on non-provable goal"
   | other => fail s!"expected .failed .satReturned, got {repr other}"
 
+/-- End-to-end refinement-then-dispatch on the typeclass-shaped
+    example1 fixture: the IR has `alpha` as a type variable, full
+    `type_metadata` (with the LIA embedding tag) and
+    `definitional_metadata` (with HAdd.hAdd / LE.le specialization
+    targets). The broker should refine to LIA, dispatch to cvc4,
+    and return a Tier 0 oracle cert whose `refinement_record`
+    enumerates the type and method specializations applied. -/
+def runRefinementDispatchFlow (rootDir : System.FilePath) : IO Unit := do
+  unless ← cvc4Available do
+    IO.println "[skip] cvc4 not on PATH; skipping refinement+dispatch flow"
+    return
+  let path := rootDir / "examples" / "example1-lia-typeclass.json"
+  let raw ← IO.FS.readFile path
+  let ir ← match IR.fromJsonString raw with
+    | .ok ir => pure ir
+    | .error e => fail s!"could not parse example1: {e}"
+  let res ← match runDispatchToAdapter "cvc4" ir with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchToAdapter (typeclass IR): {repr e}"
+  let certJ ← match res with
+    | .cert j => pure j
+    | .failed f => fail s!"expected .cert on typeclass IR, got .failed {repr f}"
+  let rrJ ← match certJ.getObjVal? "refinement_record" with
+    | .ok j => pure j
+    | .error e => fail s!"missing refinement_record: {e}"
+  let specsJ ← match rrJ.getObjVal? "specializations" with
+    | .ok j => pure j
+    | .error e => fail s!"missing specializations: {e}"
+  let arr ← match specsJ.getArr? with
+    | .ok a => pure a
+    | .error e => fail s!"specializations not array: {e}"
+  let kinds := arr.toList.filterMap fun s =>
+    (s.getObjValAs? String "kind").toOption
+  let sources := arr.toList.filterMap fun s =>
+    (s.getObjValAs? String "source").toOption
+  unless kinds.contains "type_specialization" do
+    fail s!"expected type_specialization in cert; kinds={kinds}"
+  unless kinds.contains "method_specialization" do
+    fail s!"expected method_specialization in cert; kinds={kinds}"
+  unless sources.contains "alpha" do
+    fail s!"expected alpha in specializations; sources={sources}"
+  unless sources.contains "HAdd.hAdd" || sources.contains "LE.le" do
+    fail s!"expected HAdd.hAdd or LE.le; sources={sources}"
+  IO.println s!"OK refinement+dispatch: example1 typeclass IR refined to LIA, cvc4 minted cert with {arr.size} refinement specs"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -674,3 +719,4 @@ def main : IO Unit := do
   runVerifyCertificateFlow
   runFarkasVerificationFlow
   runDispatchToCvc4Flow
+  runRefinementDispatchFlow rootDir

@@ -23,15 +23,24 @@
     reason. The timeout is enforced by cvc4 itself via
     [--tlimit-per]; the OCaml side just reads to EOF.
 
-    Refinement record. The cvc4 adapter records the
-    method-specialization entries the SMT-LIB serializer applied
-    (e.g., [HAdd.hAdd] → [+]) plus a single [type_specialization]
-    entry per non-primitive free-var type that was rendered as
-    [Int]. The certificate's [refinement_record.fragment] is set
-    to the SMT-LIB logic the serializer chose ([QF_LIA] /
-    [QF_LRA]). Auxiliary metadata records the chosen logic
-    verbatim so a future reconstructor can replay the same
-    specialization. *)
+    Refinement record. The cvc4 adapter runs [Refinement.run]
+    before serialization. The refinement output supplies both the
+    substituted IR (with [alpha → Int] applied for LIA goals) and
+    the [Refinement_record.specialization] list the cert carries.
+    Two specialization kinds end up in the record:
+    [type_specialization] (one per type variable the metadata
+    embeds into [Int]) and [method_specialization] (one per
+    typeclass method declared in [definitional_metadata] with a
+    matching fragment target). The SMT-LIB serializer's
+    side-channel for renderer-recorded specs is no longer used —
+    refinement is the single source of truth for the cert's
+    record.
+
+    Hash discipline. The cert's [dispatch_context_hash] addresses
+    the *original* (pre-refinement) IR — what the caller handed
+    in. Lifters reading the cert + record can reconstruct the
+    refined IR by re-running refinement against the original; we
+    don't store the refined IR's hash separately. *)
 
 let cvc4_binary = "cvc4"
 
@@ -121,53 +130,41 @@ let resources_now ~timeout_ms : Certificate.resources = {
   budget_consumed = None;
 }
 
-(** Build the refinement record from the serializer's
-    specializations + the chosen SMT-LIB logic. *)
+let fragment_of_logic = function
+  | "QF_LIA" -> "LIA"
+  | "QF_LRA" -> "LRA"
+  | other -> other
+
+(** Build the refinement record from refinement output + chosen logic. *)
 let mk_refinement_record
       ~adapter_version
-      (specs : Smtlib.specialization list)
+      (specs : Refinement_record.specialization list)
       ~logic
   : Refinement_record.t =
-  let method_entries =
-    List.map (fun (s : Smtlib.specialization) : Refinement_record.specialization ->
-      {
-        kind = Method_specialization;
-        source = s.source;
-        target = s.target;
-        justification = Some (Printf.sprintf "specialization_targets[%s]" logic);
-        soundness_witness = None;
-      })
-      specs
-  in
-  let fragment_of_logic = function
-    | "QF_LIA" -> "LIA"
-    | "QF_LRA" -> "LRA"
-    | other -> other
-  in
   {
     adapter = "cvc4";
     adapter_version;
-    specializations = method_entries;
+    specializations = specs;
     fragment = fragment_of_logic logic;
     auxiliary = Some (`Assoc [ "smtlib_logic", `String logic ]);
   }
 
-(** Mint a Tier 0 oracle cert addressing [ir]. *)
+(** Mint a Tier 0 oracle cert addressing [original_ir] (pre-refinement). *)
 let mint_oracle_cert
       ~adapter_version
-      (ir : Ir.t)
-      (specs : Smtlib.specialization list)
+      ~(original_ir : Ir.t)
+      ~(specs : Refinement_record.specialization list)
       ~logic
       ~timeout_ms
   : Certificate.t =
   let dispatch_context_hash =
-    Hash.sha256_of_json (Codec.to_json ir)
+    Hash.sha256_of_json (Codec.to_json original_ir)
   in
   {
     cert_version = "1.0";
     tier = 0;
     format = "oracle";
-    goal = ir.goal;
+    goal = original_ir.goal;
     dispatch_context_hash;
     rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
     backend = backend ~version:adapter_version;
@@ -184,46 +181,64 @@ let mint_oracle_cert
 
 let version = "1.8"
 
+(** Pick the LIA/LRA target fragment from the IR's free-var sorts.
+    Falls back to LIA when there are no Real free vars. *)
+let pick_fragment (ir : Ir.t) : string =
+  let has_real =
+    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
+      ir.context.free_vars
+  in
+  if has_real then "LRA" else "LIA"
+
 let dispatch (ir : Ir.t) : Adapter.result =
-  match Smtlib.emit ir with
+  let fragment = pick_fragment ir in
+  match Refinement.run ~fragment ir with
   | Error err ->
     Failed (Unsupported_ir {
-      kind = Smtlib.kind_of_error err;
-      detail = Smtlib.detail_of_error err;
+      kind = Refinement.kind_of_error err;
+      detail = Refinement.detail_of_error err;
     })
-  | Ok script ->
-    let timeout_ms = timeout_of_ir ir in
-    let body = script.body ^ "(check-sat)\n(exit)\n" in
-    (try
-       let stdout, stderr, code = run_solver ~timeout_ms body in
-       (* cvc4 exits 0 on a successful run regardless of sat/unsat;
-          parse the stdout regardless of code, since some
-          configurations print "unknown" + nonzero exit. *)
-       match parse_response stdout, code with
-       | Unsat, _ ->
-         Cert (mint_oracle_cert
-                 ~adapter_version:version
-                 ir script.specializations
-                 ~logic:script.logic
-                 ~timeout_ms)
-       | Sat, _ -> Failed Sat_returned
-       | Unknown_resp, _ -> Failed Unknown_returned
-       | Other_resp _, n when n <> 0 ->
-         Failed (Solver_error { stderr =
-           if stderr = "" then Printf.sprintf "exit=%d, stdout=%s" n stdout
-           else stderr })
-       | Other_resp s, _ ->
-         Failed (Parse_error {
-           stage = "stdout";
-           detail = "no sat/unsat/unknown line; first content: " ^ s;
-         })
-     with
-     | Unix.Unix_error (e, _, _) ->
-       Failed (Solver_error {
-         stderr = "could not spawn cvc4: " ^ Unix.error_message e;
+  | Ok refinement ->
+    (match Smtlib.emit refinement.refined_ir with
+     | Error err ->
+       Failed (Unsupported_ir {
+         kind = Smtlib.kind_of_error err;
+         detail = Smtlib.detail_of_error err;
        })
-     | Sys_error msg ->
-       Failed (Solver_error { stderr = msg }))
+     | Ok script ->
+       let timeout_ms = timeout_of_ir ir in
+       let body = script.body ^ "(check-sat)\n(exit)\n" in
+       (try
+          let stdout, stderr, code = run_solver ~timeout_ms body in
+          (* cvc4 exits 0 on a successful run regardless of sat/unsat;
+             parse the stdout regardless of code, since some
+             configurations print "unknown" + nonzero exit. *)
+          match parse_response stdout, code with
+          | Unsat, _ ->
+            Cert (mint_oracle_cert
+                    ~adapter_version:version
+                    ~original_ir:ir
+                    ~specs:refinement.specializations
+                    ~logic:script.logic
+                    ~timeout_ms)
+          | Sat, _ -> Failed Sat_returned
+          | Unknown_resp, _ -> Failed Unknown_returned
+          | Other_resp _, n when n <> 0 ->
+            Failed (Solver_error { stderr =
+              if stderr = "" then Printf.sprintf "exit=%d, stdout=%s" n stdout
+              else stderr })
+          | Other_resp s, _ ->
+            Failed (Parse_error {
+              stage = "stdout";
+              detail = "no sat/unsat/unknown line; first content: " ^ s;
+            })
+        with
+        | Unix.Unix_error (e, _, _) ->
+          Failed (Solver_error {
+            stderr = "could not spawn cvc4: " ^ Unix.error_message e;
+          })
+        | Sys_error msg ->
+          Failed (Solver_error { stderr = msg })))
 
 let adapter : Adapter.t = {
   name = "cvc4";

@@ -204,10 +204,10 @@ let test_registry_loads_cvc5 () =
   let dir = fixture_dir () in
   let r, errors = Registry.load_dir dir in
   Alcotest.(check (list string)) "no load errors" [] errors;
-  Alcotest.(check int) "exactly one manifest in fixtures" 1
-    (Registry.cardinal r);
   Alcotest.(check bool) "cvc5 is loaded"
-    true (Option.is_some (Registry.find "cvc5" r))
+    true (Option.is_some (Registry.find "cvc5" r));
+  Alcotest.(check bool) "cvc4 is loaded"
+    true (Option.is_some (Registry.find "cvc4" r))
 
 let test_registry_skips_non_manifest_files () =
   (* Pass the [examples] directory which contains other JSON files

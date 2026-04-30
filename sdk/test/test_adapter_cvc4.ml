@@ -86,9 +86,58 @@ let test_dispatch_unsat_mints_oracle_cert () =
     Alcotest.(check int) "payload encoding tier 0" 0 payload_kind;
     Alcotest.(check string) "fragment = LIA" "LIA"
       cert.refinement_record.fragment;
-    Alcotest.(check bool) "refinement_record has at least 2 method specs"
-      true
-      (List.length cert.refinement_record.specializations >= 2)
+    (* The hand-built IR has no metadata, so refinement produces no
+       specializations; that's correct for an IR already in LIA
+       primitive shape. The metadata-rich path is exercised in the
+       fixture-based test below. *)
+    Alcotest.(check int) "refinement_record empty for primitive IR" 0
+      (List.length cert.refinement_record.specializations)
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f)
+         (Adapter.detail_of_failure f))
+
+(** Read [example1-lia-typeclass.json] (alpha-typed, full
+    metadata) and dispatch it through cvc4. The refinement pass
+    should commit to alpha → Int from type_metadata's
+    [embeds_into:Int_for_universal_LIA] tag, then SMT-LIB
+    serialization succeeds (it would have rejected [alpha]
+    without refinement), and cvc4 returns unsat. The cert's
+    refinement_record gets type_specialization (alpha → Int) +
+    method_specialization entries (HAdd.hAdd → +, LE.le → <=,
+    OfNat.ofNat → literal). *)
+let test_dispatch_on_typeclass_fixture () =
+  with_cvc4 @@ fun () ->
+  let path = Filename.concat (Sys.getcwd ())
+    "../../../../examples/example1-lia-typeclass.json" in
+  let raw = In_channel.with_open_text path In_channel.input_all in
+  let ir = Codec.of_json (Yojson.Safe.from_string raw) in
+  match Adapter_cvc4.dispatch ir with
+  | Cert cert ->
+    let kinds =
+      List.map
+        (fun (s : Refinement_record.specialization) ->
+          Refinement_record.specialization_kind_to_string s.kind)
+        cert.refinement_record.specializations
+    in
+    Alcotest.(check bool) "type_specialization recorded" true
+      (List.mem "type_specialization" kinds);
+    Alcotest.(check bool) "method_specialization recorded" true
+      (List.mem "method_specialization" kinds);
+    let alpha_spec =
+      List.find_opt
+        (fun (s : Refinement_record.specialization) ->
+          s.kind = Type_specialization && s.source = "alpha")
+        cert.refinement_record.specializations
+    in
+    (match alpha_spec with
+     | Some s ->
+       Alcotest.(check string) "alpha → Int" "Int" s.target;
+       Alcotest.(check bool) "alpha has soundness witness" true
+         (Option.is_some s.soundness_witness)
+     | None ->
+       Alcotest.fail "expected alpha → Int type_specialization")
   | Failed f ->
     Alcotest.fail
       (Printf.sprintf "expected Cert, got Failed(%s: %s)"
@@ -163,5 +212,7 @@ let () =
         `Quick test_dispatch_unsupported_ir;
       Alcotest.test_case "minted cert verifies through envelope"
         `Quick test_minted_cert_passes_envelope_verifier;
+      Alcotest.test_case "typeclass fixture refines + dispatches"
+        `Quick test_dispatch_on_typeclass_fixture;
     ];
   ]
