@@ -112,6 +112,66 @@ let definition_unfolding (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [match_adapters] takes a wrapped input of shape
+     {"ir": <IR>, "manifests": [<Manifest>, ...]}
+   and returns
+     {"matches":    [{"adapter": ...}, ...],
+      "rejections": [{"adapter": ..., "reason": {"kind":..., "detail":...}}, ...]}
+   under [payload]. Order is preserved within each list relative
+   to the input. The full manifest is not echoed back; callers
+   already have it. *)
+let match_adapters (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: ir", j))
+    in
+    let manifests_json = match List.assoc_opt "manifests" pairs with
+      | Some (`List xs) -> xs
+      | Some other ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("expected array at manifests", other))
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: manifests", j))
+    in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    let manifests = List.map Proof_broker.Manifest.of_json manifests_json in
+    let matches, rejections =
+      Proof_broker.Capability_match.select manifests ir
+    in
+    let payload = `Assoc [
+      "matches",
+      `List (List.map
+               (fun (m : Proof_broker.Manifest.t) ->
+                 `Assoc [ "adapter", `String m.adapter ])
+               matches);
+      "rejections",
+      `List (List.map
+               (fun ((m : Proof_broker.Manifest.t), reason) ->
+                 `Assoc [
+                   "adapter", `String m.adapter;
+                   "reason",
+                   Proof_broker.Capability_match.reason_to_json reason;
+                 ])
+               rejections);
+    ] in
+    envelope_ok payload
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* [run_pipeline] takes a wrapped input of shape
      {"ir": <IR>, "config": <PipelineConfig>?}
    so the IR and the pipeline config travel together through the
@@ -164,4 +224,5 @@ let () =
   register_method "definition_unfolding" definition_unfolding;
   register_method "quotient_elimination" quotient_elimination;
   register_method "run_pipeline" run_pipeline;
+  register_method "match_adapters" match_adapters;
   Callback.register "pb_dispatch_call" dispatch

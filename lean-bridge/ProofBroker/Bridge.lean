@@ -234,4 +234,68 @@ def runPipeline (ir : IR) (config : PipelineConfig := PipelineConfig.default)
   let payload ← decodeEnvelope (pbCall "run_pipeline" input.compress)
   decodeIrAndTraceDocument payload
 
+/-- Capability-matching reason. Mirrors OCaml's `Capability_match.reason`
+    via the kind discriminator. `kind="match"` for adapters that pass;
+    the other three are the rejection reasons spec §7.4 enumerates. -/
+inductive MatchReason where
+  | match_
+  | orderTooHigh (detail : String)
+  | logicOutOfFragment (detail : String)
+  | typeConstructionNotSupported (detail : String)
+  | otherReason (kind : String) (detail : String)
+deriving Repr
+
+/-- Outcome of `runMatchAdapters`: parallel `matches` and `rejections`
+    arrays, each carrying the adapter name and (for rejections) the
+    structured reason. -/
+structure MatchResults where
+  matchedAdapters : List String
+  rejections : List (String × MatchReason)
+deriving Inhabited
+
+private def parseReason (j : Json) : MatchReason :=
+  let kind := (j.getObjValAs? String "kind").toOption.getD ""
+  let detail := (j.getObjValAs? String "detail").toOption.getD ""
+  match kind with
+  | "match" => .match_
+  | "order_too_high" => .orderTooHigh detail
+  | "logic_out_of_fragment" => .logicOutOfFragment detail
+  | "type_construction_not_supported" => .typeConstructionNotSupported detail
+  | k => .otherReason k detail
+
+/-- Submit an IR + a list of manifest JSON values to the dispatcher's
+    capability-matching layer (spec §7.4). Returns the partition of
+    adapters into matches / rejections. The manifests are caller-
+    supplied JSON because there's no Lean-side `Manifest` ADT yet —
+    consistent with the pass-through stance for adapter manifests
+    documented in `sdk/FFI_CONVENTIONS.md`. -/
+def runMatchAdapters (ir : IR) (manifests : List Json)
+    : Except FfiError MatchResults := do
+  let input := Json.mkObj [
+    ("ir", ProofBroker.IR.IR.toJson ir),
+    ("manifests", Json.arr manifests.toArray)
+  ]
+  let payload ← decodeEnvelope (pbCall "match_adapters" input.compress)
+  let matchesJ ← match payload.getObjVal? "matches" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'matches'" none)
+  let rejectionsJ ← match payload.getObjVal? "rejections" with
+    | .ok v => pure v
+    | .error _ => .error (.decodeError "missing 'rejections'" none)
+  let matchesArr ← match matchesJ.getArr? with
+    | .ok a => pure a
+    | .error e => .error (.decodeError s!"matches not array: {e}" none)
+  let rejArr ← match rejectionsJ.getArr? with
+    | .ok a => pure a
+    | .error e => .error (.decodeError s!"rejections not array: {e}" none)
+  let matched := matchesArr.toList.filterMap fun e =>
+    (e.getObjValAs? String "adapter").toOption
+  let rejections := rejArr.toList.filterMap fun e =>
+    let adapter? := (e.getObjValAs? String "adapter").toOption
+    let reason? := (e.getObjVal? "reason").toOption.map parseReason
+    match adapter?, reason? with
+    | some a, some r => some (a, r)
+    | _, _ => none
+  return { matchedAdapters := matched, rejections }
+
 end ProofBroker

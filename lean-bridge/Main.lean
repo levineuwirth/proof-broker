@@ -25,7 +25,8 @@ import Lean.Data.Json
 
 open Lean (Json)
 open ProofBroker (FfiError pbCall roundtripIR propositionalSimplify definitionUnfolding
-                  quotientElimination runPipeline decodeEnvelope PipelineConfig PassStep)
+                  quotientElimination runPipeline runMatchAdapters
+                  decodeEnvelope PipelineConfig PassStep MatchReason MatchResults)
 open ProofBroker.IR (IR ShellTerm normalize)
 open ProofBroker.Trace (Entry Outcome Document)
 
@@ -343,6 +344,45 @@ def runQuotientEliminationSkipped : IO Unit := do
     fail "expected before_hash == after_hash on skipped pass"
   IO.println "OK quotient_elimination: missing flag yields outcome=skippedPreconditions"
 
+/-- Capability matching against the cvc5 manifest fixture. example1
+    (LIA goal, primitive constructions) should match; example3
+    (quotient construction) should reject as
+    `typeConstructionNotSupported`. Validates the FFI surface of
+    `match_adapters` and the typed Lean rejection-reason ADT. -/
+def runMatchAdaptersOnFixtures (rootDir : System.FilePath) : IO Unit := do
+  let manifestRaw ← IO.FS.readFile (rootDir / "examples" / "manifest-cvc5.json")
+  let manifestJ ← match Json.parse manifestRaw with
+    | .ok j => pure j
+    | .error e => fail s!"could not parse cvc5 manifest: {e}"
+  let loadIr (name : String) : IO IR := do
+    let raw ← IO.FS.readFile (rootDir / "examples" / name)
+    match IR.fromJsonString raw with
+    | .ok ir => pure ir
+    | .error e => fail s!"{name}: parse error: {e}"
+  let ir1 ← loadIr "example1-lia-typeclass.json"
+  let res1 ← match runMatchAdapters ir1 [manifestJ] with
+    | .ok r => pure r
+    | .error e => fail s!"runMatchAdapters on example1: {repr e}"
+  unless res1.matchedAdapters == ["cvc5"] do
+    fail s!"expected example1 to match cvc5; got matches={res1.matchedAdapters}"
+  unless res1.rejections.length == 0 do
+    fail s!"expected no rejections on example1; got {res1.rejections.length}"
+  IO.println "OK match_adapters: example1 matches cvc5"
+  let ir3 ← loadIr "example3-quotient-zmod.json"
+  let res3 ← match runMatchAdapters ir3 [manifestJ] with
+    | .ok r => pure r
+    | .error e => fail s!"runMatchAdapters on example3: {repr e}"
+  unless res3.matchedAdapters.length == 0 do
+    fail s!"expected no matches on example3; got {res3.matchedAdapters}"
+  unless res3.rejections.length == 1 do
+    fail s!"expected 1 rejection on example3; got {res3.rejections.length}"
+  match res3.rejections with
+  | [(adapter, .typeConstructionNotSupported _)] =>
+    unless adapter == "cvc5" do fail s!"unexpected rejected adapter: {adapter}"
+    IO.println "OK match_adapters: example3 rejected as typeConstructionNotSupported"
+  | other =>
+    fail s!"expected single typeConstructionNotSupported rejection; got {other.length} entries"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -360,3 +400,4 @@ def main : IO Unit := do
   runPipelineTwoPassChain
   runPipelineDefault
   runPipelineStopOnFailure
+  runMatchAdaptersOnFixtures rootDir

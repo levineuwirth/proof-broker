@@ -48,8 +48,29 @@ single-entry replaced by a full trace document under key `trace`:
 { "status": "ok", "payload": { "ir": <Ir.t>, "trace": <Trace.Document> } }
 ```
 
+The capability matcher (`match_adapters`) returns parallel arrays of
+adapter names plus structured rejection reasons:
+
+```json
+{ "status": "ok",
+  "payload": {
+    "matches":    [ { "adapter": "cvc5" } ],
+    "rejections": [ { "adapter": "vampire",
+                      "reason": { "kind": "logic_out_of_fragment",
+                                  "detail": "..." } } ]
+  } }
+```
+
+The reason `kind` is a small enumeration (`match`, `order_too_high`,
+`logic_out_of_fragment`, `type_construction_not_supported`); typed
+Lean callers decode it into a sum type, raw callers can just inspect
+the string. New reason kinds added on the OCaml side decode into a
+forward-compat `otherReason` variant on the Lean side rather than
+failing the envelope.
+
 Inputs that need to carry more than just an IR — currently
-`run_pipeline`, which takes `{"ir": <Ir.t>, "config": <PipelineConfig>?}` —
+`run_pipeline` (`{"ir": <Ir.t>, "config": <PipelineConfig>?}`) and
+`match_adapters` (`{"ir": <Ir.t>, "manifests": [<Manifest>, ...]}`) —
 follow the same envelope-style convention on the input side: an object
 with named fields, optional fields omitted (never `null`).
 
@@ -172,6 +193,15 @@ The Lean side keeps `typeMetadata` / `definitionalMetadata` as
 `Json` pass-through in `IR.lean` because no Lean-side consumer reads
 their fields yet; when one appears, mirror the OCaml typed decoders
 into Lean modules under the same names.
+
+Adapter manifests follow the same stance: typed ADTs and capability-
+matching logic live on the OCaml side (`Manifest`, `Capability_match`,
+`Registry`); the Lean-side `runMatchAdapters` accepts manifests as
+opaque `Json` values and only decodes the structured *response*
+(matches/rejections + typed reason). When a Lean-side consumer needs
+to read manifest fields directly (e.g., a Lean tactic that filters
+manifests before submitting), graduate to a typed Lean `Manifest`
+ADT then.
 
 The Python `tools/check.py` validator remains authoritative for
 schema-level rules (required fields, kind-discriminator legality,
