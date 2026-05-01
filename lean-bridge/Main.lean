@@ -573,6 +573,81 @@ def runFarkasVerificationFlow : IO Unit := do
   | other =>
     fail s!"expected farkasNotContradictory, got {repr other}"
 
+/-- LRA strict-witness end-to-end. IR: 0 <= x with hypothesis
+    `0 < x` over Real, tagged firstOrderFragment="LRA". `0 < x` is
+    a strictly stronger claim than the goal, so the cert
+    `{neg_goal=1, h1=1}` is a real proof. ¬Goal compiles to `Lt(x)`
+    (saying `x < 0`) and h1 to `Lt(-x)` (saying `0 < x`); the
+    weighted sum cancels the variable and leaves residual = 0 with
+    a positively-weighted strict witness, which is the LRA
+    contradiction. Under LIA the +1 trick would push the residual
+    to 2 > 0 instead — the test pins down that the LRA path is
+    actually taken once the IR is tagged accordingly. -/
+def runLraFarkasFlow : IO Unit := do
+  let x : ShellTerm := .var "x"
+  let zero : ShellTerm := .numLit "0" "Real"
+  let h1 : ShellTerm := .app "LT.lt" [] [zero, x]
+  let goal : ShellTerm := .app "LE.le" [] [zero, x]
+  let irBase := mkTestIR goal
+  let ir : IR := { irBase with
+    logicClassification := {
+      order := "first_order",
+      featuresUsed := [],
+      firstOrderFragment := "LRA",
+      decidableTheory := none
+    },
+    context := {
+      typeVars := [], freeVars := [{ name := "x", ty := "Real" }],
+      hypotheses := [{ name := "h1", shell := h1 }],
+      librarySlice := none
+    }
+  }
+  let emptyConfig : PipelineConfig := {
+    pipeline := [], stopOnFailure := false, timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir emptyConfig with
+    | .ok pair => pure pair
+    | .error e => fail s!"pipeline run for LRA hash failed: {repr e}"
+  let irHash := doc.initialIrHash
+  let goalJson := ProofBroker.IR.Goal.toJson ir.goal
+  let coef (h : String) (c : String) : Json :=
+    Json.mkObj [("hypothesis", .str h), ("coefficient", .str c)]
+  let cert : Json := Json.mkObj [
+    ("cert_version", .str "1.0"),
+    ("tier", .num 1),
+    ("format", .str "farkas"),
+    ("goal", goalJson),
+    ("dispatch_context_hash", .str irHash),
+    ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+    ("backend", Json.mkObj [
+      ("name", .str "synthetic"), ("version", .str "0.0"),
+      ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
+    ]),
+    ("resources", Json.mkObj [
+      ("wall_time_ms", .num 1), ("memory_peak_kb", .num 1)
+    ]),
+    ("refinement_record", Json.mkObj [
+      ("adapter", .str "synthetic"), ("adapter_version", .str "0.0"),
+      ("specializations", Json.arr #[]), ("fragment", .str "LRA")
+    ]),
+    ("payload", Json.mkObj [
+      ("witness_kind", .str "farkas"),
+      ("witness_data", Json.mkObj [("coefficients", Json.arr
+        #[coef "neg_goal" "1", coef "h1" "1"])]),
+      ("checking_recipe", .str "lean.farkas_check")
+    ])
+  ]
+  let res ← match runVerifyCertificate cert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (LRA strict): {repr e}"
+  unless res.ok do
+    fail s!"expected ok=true on LRA strict cert; reason={repr res.reason}"
+  match res.reason with
+  | .verifiedFarkas =>
+    IO.println "OK verify_certificate: LRA strict-witness Farkas verified end-to-end"
+  | other =>
+    fail s!"expected verifiedFarkas under LRA strict, got {repr other}"
+
 /-- Probe whether cvc4 is available; the dispatch flow needs the
     binary on PATH and we want CI without cvc4 to stay green. -/
 def cvc4Available : IO Bool := do
@@ -773,6 +848,7 @@ def main : IO Unit := do
   runMatchAdaptersOnFixtures rootDir
   runVerifyCertificateFlow
   runFarkasVerificationFlow
+  runLraFarkasFlow
   runDispatchToCvc4Flow
   runRefinementDispatchFlow rootDir
   runDispatchBrokerFlow rootDir

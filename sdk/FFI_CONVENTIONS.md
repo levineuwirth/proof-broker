@@ -87,7 +87,13 @@ arithmetic Farkas verifier runs and the kind graduates to
 `verified_farkas` (success) or one of the Farkas-specific failure
 kinds: `farkas_unknown_hypothesis`, `farkas_nonlinear`,
 `farkas_bad_coefficient`, `farkas_negative_coefficient`,
-`farkas_not_contradictory`, `farkas_malformed_witness`. For Tiers
+`farkas_not_contradictory`, `farkas_malformed_witness`. The verifier
+dispatches on the IR's
+`logic_classification.first_order_fragment`: `"LRA"` keeps strict
+inequalities (`<`, `>`, `¬(≤)`) explicit and accepts a residual `≥
+0` whenever a strict witness contributed positively; anything else
+(including `"LIA"`) folds strictness into `≤` via the Z-only +1
+trick and requires a strictly-positive residual. For Tiers
 0/2/3 (and Tier 1 witness kinds beyond Farkas), the envelope check
 passes through and the reason is `tier_check_deferred` /
 `unsupported_witness_kind` — `ok` is `true` in those cases, signalling
