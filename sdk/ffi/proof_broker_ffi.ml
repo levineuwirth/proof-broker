@@ -118,13 +118,13 @@ let definition_unfolding (input : string) : string =
      {"ok": <bool>, "reason": {"kind": "...", "detail": "..."}}.
 
    [ok] is true iff [Verifier.verify] returns a verified reason
-   ([Verified_envelope] or [Verified_farkas]); the structured
-   [reason] always tells the caller what was checked (or what
-   failed). When envelope verification passes but no tier-specific
-   verifier exists for the cert's tier/witness_kind, [ok] is true
-   and [reason] is [tier_check_deferred] / [unsupported_witness_kind]
-   so callers can decide whether to trust the cert at envelope
-   level alone. *)
+   ([Verified_envelope], [Verified_farkas], or [Verified_case_split]);
+   the structured [reason] always tells the caller what was checked
+   (or what failed). When envelope verification passes but no
+   tier-specific verifier exists for the cert's tier/witness_kind,
+   [ok] is true and [reason] is [tier_check_deferred] /
+   [unsupported_witness_kind] so callers can decide whether to trust
+   the cert at envelope level alone. *)
 let verify_certificate (input : string) : string =
   try
     let j = from_string input in
@@ -155,7 +155,7 @@ let verify_certificate (input : string) : string =
       Proof_broker.Verifier.verify ~trace cert ir
     in
     let ok = match reason with
-      | Verified_envelope | Verified_farkas
+      | Verified_envelope | Verified_farkas | Verified_case_split
       | Tier_check_deferred _ | Unsupported_witness_kind _ -> true
       | _ -> false
     in

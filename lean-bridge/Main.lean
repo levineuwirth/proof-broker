@@ -648,6 +648,133 @@ def runLraFarkasFlow : IO Unit := do
   | other =>
     fail s!"expected verifiedFarkas under LRA strict, got {repr other}"
 
+/-- End-to-end Tier 2 case-split-Farkas verification across the FFI.
+    IR over LRA: `(x ≤ 0 ∨ x ≥ 10), x ≥ 1, x ≤ 9 ⊢ False`. The
+    disjunctive hypothesis splits into two cases, each closing by
+    Farkas against one of the bound hypotheses:
+      * case `x ≤ 0` + `x ≥ 1`  ⇒  `Le(x) + Le(-x + 1) = Le(1)`,
+      * case `x ≥ 10` + `x ≤ 9` ⇒  `Le(-x + 10) + Le(x - 9) = Le(1)`.
+    Build a Tier 2 cert with these two lemmas (each carrying its own
+    Farkas witness over the IR + a synthetic `case` hypothesis),
+    feed it to `runVerifyCertificate`, expect `verifiedCaseSplit`.
+    Then bend one branch's coefficients to confirm
+    `caseSplitBranchFailed` surfaces, and drop a lemma to confirm
+    `caseSplitPartitionMismatch` surfaces. -/
+def runTier2CaseSplitFlow : IO Unit := do
+  let x : ShellTerm := .var "x"
+  let zero : ShellTerm := .numLit "0" "Real"
+  let one : ShellTerm := .numLit "1" "Real"
+  let nine : ShellTerm := .numLit "9" "Real"
+  let ten : ShellTerm := .numLit "10" "Real"
+  let leXZero : ShellTerm := .app "<=" [] [x, zero]
+  let geXTen : ShellTerm := .app ">=" [] [x, ten]
+  let geXOne : ShellTerm := .app ">=" [] [x, one]
+  let leXNine : ShellTerm := .app "<=" [] [x, nine]
+  let hDisj : ShellTerm := .or_ leXZero geXTen
+  let goal : ShellTerm := .const "False"
+  let irBase := mkTestIR goal
+  let ir : IR := { irBase with
+    logicClassification := {
+      order := "first_order",
+      featuresUsed := [],
+      firstOrderFragment := "LRA",
+      decidableTheory := none
+    },
+    context := {
+      typeVars := [], freeVars := [{ name := "x", ty := "Real" }],
+      hypotheses := [
+        { name := "h_disj", shell := hDisj },
+        { name := "h_low", shell := geXOne },
+        { name := "h_high", shell := leXNine }
+      ],
+      librarySlice := none
+    }
+  }
+  let emptyConfig : PipelineConfig := {
+    pipeline := [], stopOnFailure := false, timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir emptyConfig with
+    | .ok pair => pure pair
+    | .error e => fail s!"pipeline run for Tier2 hash failed: {repr e}"
+  let irHash := doc.initialIrHash
+  let goalJson := ProofBroker.IR.Goal.toJson ir.goal
+  let coef (h : String) (c : String) : Json :=
+    Json.mkObj [("hypothesis", .str h), ("coefficient", .str c)]
+  let lemma (caseShell : ShellTerm) (coefs : Array Json) : Json :=
+    Json.mkObj [
+      ("case", ProofBroker.IR.ShellTerm.toJson caseShell),
+      ("witness", Json.mkObj [("coefficients", Json.arr coefs)])
+    ]
+  let mkCert (lemmas : Array Json) : Json :=
+    Json.mkObj [
+      ("cert_version", .str "1.0"),
+      ("tier", .num 2),
+      ("format", .str "case_split_farkas"),
+      ("goal", goalJson),
+      ("dispatch_context_hash", .str irHash),
+      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+      ("backend", Json.mkObj [
+        ("name", .str "synthetic"), ("version", .str "0.0"),
+        ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
+      ]),
+      ("resources", Json.mkObj [
+        ("wall_time_ms", .num 1), ("memory_peak_kb", .num 1)
+      ]),
+      ("refinement_record", Json.mkObj [
+        ("adapter", .str "synthetic"), ("adapter_version", .str "0.0"),
+        ("specializations", Json.arr #[]), ("fragment", .str "LRA")
+      ]),
+      ("payload", Json.mkObj [
+        ("lemmas_used", Json.arr lemmas),
+        ("strategy_hint", .str "case_split_farkas"),
+        ("structural_hint", Json.mkObj [
+          ("disjunctive_hypothesis", .str "h_disj")
+        ])
+      ])
+    ]
+  -- Branch 1: case = (x ≤ 0), close with case=1, h_low=1.
+  let lemma1 := lemma leXZero #[coef "case" "1", coef "h_low" "1"]
+  -- Branch 2: case = (x ≥ 10), close with case=1, h_high=1.
+  let lemma2 := lemma geXTen #[coef "case" "1", coef "h_high" "1"]
+  let goodCert := mkCert #[lemma1, lemma2]
+  let res ← match runVerifyCertificate goodCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Tier2 good): {repr e}"
+  unless res.ok do
+    fail s!"expected ok=true on valid Tier2 cert; reason={repr res.reason}"
+  match res.reason with
+  | .verifiedCaseSplit =>
+    IO.println "OK verify_certificate: Tier 2 case-split Farkas verified end-to-end"
+  | other =>
+    fail s!"expected verifiedCaseSplit, got {repr other}"
+  -- Bad branch: drop case from the second lemma's witness so the
+  -- residual fails to contradict (h_high alone gives Le(x-9), not 0).
+  let badBranch := lemma geXTen #[coef "h_high" "1"]
+  let badCert := mkCert #[lemma1, badBranch]
+  let res2 ← match runVerifyCertificate badCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Tier2 bad branch): {repr e}"
+  if res2.ok then
+    fail s!"expected ok=false on broken-branch cert; reason={repr res2.reason}"
+  match res2.reason with
+  | .caseSplitBranchFailed _ =>
+    IO.println "OK verify_certificate: per-branch Farkas failure surfaces as caseSplitBranchFailed"
+  | other =>
+    fail s!"expected caseSplitBranchFailed, got {repr other}"
+  -- Partition mismatch: only the first lemma covers the first
+  -- disjunct; the second disjunct is uncovered.
+  let partialCert := mkCert #[lemma1]
+  let res3 ← match runVerifyCertificate partialCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Tier2 partial): {repr e}"
+  if res3.ok then
+    fail s!"expected ok=false on incomplete-partition cert; reason={repr res3.reason}"
+  match res3.reason with
+  | .caseSplitPartitionMismatch _ =>
+    IO.println "OK verify_certificate: incomplete partition surfaces as caseSplitPartitionMismatch"
+  | other =>
+    fail s!"expected caseSplitPartitionMismatch, got {repr other}"
+
 /-- Probe whether cvc4 is available; the dispatch flow needs the
     binary on PATH and we want CI without cvc4 to stay green. -/
 def cvc4Available : IO Bool := do
@@ -910,6 +1037,7 @@ def main : IO Unit := do
   runVerifyCertificateFlow
   runFarkasVerificationFlow
   runLraFarkasFlow
+  runTier2CaseSplitFlow
   runDispatchToCvc4Flow
   runRefinementDispatchFlow rootDir
   runDispatchBrokerFlow rootDir

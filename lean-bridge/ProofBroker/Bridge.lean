@@ -264,17 +264,21 @@ private def parseReason (j : Json) : MatchReason :=
   | k => .otherReason k detail
 
 /-- Result of `runVerifyCertificate`. Mirrors OCaml's
-    `Verifier.reason`, covering both layers: envelope checks
+    `Verifier.reason`, covering three layers: envelope checks
     (`verifiedEnvelope`, `hashMismatch`, `tierPayloadMismatch`,
-    `certVersionMismatch`) and Tier 1 / Farkas arithmetic checks
-    (`verifiedFarkas` plus `farkas*` failure variants). For tiers
-    without a soundness verifier, OCaml emits `tierCheckDeferred` /
-    `unsupportedWitnessKind`; the cert's envelope was verified but
-    nothing further. New reason kinds the OCaml side adds in the
-    future decode into `otherCertReason`. -/
+    `certVersionMismatch`); Tier 1 / Farkas arithmetic checks
+    (`verifiedFarkas` plus `farkas*` failure variants); and Tier 2 /
+    case-split-Farkas checks (`verifiedCaseSplit` plus `caseSplit*`
+    failure variants — per-branch Farkas plus partition coverage of
+    a disjunctive hypothesis). For tiers without a soundness
+    verifier, OCaml emits `tierCheckDeferred` / `unsupportedWitnessKind`;
+    the cert's envelope was verified but nothing further. New reason
+    kinds the OCaml side adds in the future decode into
+    `otherCertReason`. -/
 inductive CertReason where
   | verifiedEnvelope
   | verifiedFarkas
+  | verifiedCaseSplit
   | hashMismatch (detail : String)
   | tierPayloadMismatch (detail : String)
   | certVersionMismatch (detail : String)
@@ -284,6 +288,9 @@ inductive CertReason where
   | farkasNegativeCoefficient (detail : String)
   | farkasNotContradictory (detail : String)
   | farkasMalformedWitness (detail : String)
+  | caseSplitMalformed (detail : String)
+  | caseSplitBranchFailed (detail : String)
+  | caseSplitPartitionMismatch (detail : String)
   | unsupportedWitnessKind (detail : String)
   | tierCheckDeferred (detail : String)
   | otherCertReason (kind : String) (detail : String)
@@ -300,6 +307,7 @@ private def parseCertReason (j : Json) : CertReason :=
   match kind with
   | "verified_envelope" => .verifiedEnvelope
   | "verified_farkas" => .verifiedFarkas
+  | "verified_case_split" => .verifiedCaseSplit
   | "hash_mismatch" => .hashMismatch detail
   | "tier_payload_mismatch" => .tierPayloadMismatch detail
   | "cert_version_mismatch" => .certVersionMismatch detail
@@ -309,6 +317,9 @@ private def parseCertReason (j : Json) : CertReason :=
   | "farkas_negative_coefficient" => .farkasNegativeCoefficient detail
   | "farkas_not_contradictory" => .farkasNotContradictory detail
   | "farkas_malformed_witness" => .farkasMalformedWitness detail
+  | "case_split_malformed" => .caseSplitMalformed detail
+  | "case_split_branch_failed" => .caseSplitBranchFailed detail
+  | "case_split_partition_mismatch" => .caseSplitPartitionMismatch detail
   | "unsupported_witness_kind" => .unsupportedWitnessKind detail
   | "tier_check_deferred" => .tierCheckDeferred detail
   | k => .otherCertReason k detail
@@ -320,10 +331,15 @@ private def parseCertReason (j : Json) : CertReason :=
     dispatches to a tier-specific soundness verifier where one
     exists. Today: Tier 1 / Farkas certs go through real arithmetic
     verification (returning `verifiedFarkas` / `farkas*`
-    diagnostics); other tiers fall through to `tierCheckDeferred`,
-    other Tier 1 witness kinds to `unsupportedWitnessKind`. Strict
-    consumers should treat only `verifiedEnvelope` and
-    `verifiedFarkas` as proof of soundness.
+    diagnostics); Tier 2 / case-split-Farkas certs (strategy_hint
+    = "case_split_farkas") run a per-branch Farkas check plus a
+    partition-coverage check against the disjunctive hypothesis
+    named in `structural_hint.disjunctive_hypothesis` (returning
+    `verifiedCaseSplit` / `caseSplit*` diagnostics); other tiers
+    fall through to `tierCheckDeferred`, other Tier 1 witness kinds
+    to `unsupportedWitnessKind`. Strict consumers should treat only
+    `verifiedEnvelope`, `verifiedFarkas`, and `verifiedCaseSplit`
+    as proof of soundness.
 
     Certificates are caller-supplied JSON because there's no
     Lean-side `Certificate` ADT yet — consistent with the
