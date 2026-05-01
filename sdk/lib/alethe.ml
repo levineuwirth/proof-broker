@@ -143,6 +143,7 @@ type step = {
   rule : string;
   args : Sexp.t list option;
   premises : string list option;
+  discharge : string list option;
 }
 
 (** Pull the clause literals from a [(cl ...)] form. *)
@@ -185,10 +186,17 @@ let step_of_sexp ~table (s : Sexp.t) : step option =
                 xs)
       | _ -> None
     in
+    let discharge = match List.assoc_opt ":discharge" kvs with
+      | Some (List xs) ->
+        Some (List.filter_map
+                (function Sexp.Atom a -> Some a | _ -> None)
+                xs)
+      | _ -> None
+    in
     let clause = match clause_of clause_form with
       | Some lits -> lits | None -> []
     in
-    Some { id; clause; rule; args; premises }
+    Some { id; clause; rule; args; premises; discharge }
   | _ -> None
 
 (** Match a single [(assume ID ATOM)] form. Returns [(id,
@@ -250,3 +258,33 @@ let unique_la_generic (p : proof) : step option =
   match steps_with_rule p "la_generic" with
   | [ s ] -> Some s
   | _ -> None
+
+(* --- subproof helpers ------------------------------------------------- *)
+
+(** Strip the last dotted component of a step or assume ID, yielding
+    the ID of the immediately enclosing subproof. Top-level IDs (no
+    dot) return [None]. Examples: ["t1.t10"] → [Some "t1"];
+    ["t1.t10.t21"] → [Some "t1.t10"]; ["t1"] → [None]. *)
+let enclosing_subproof_id (id : string) : string option =
+  match String.rindex_opt id '.' with
+  | None -> None
+  | Some i -> Some (String.sub id 0 i)
+
+(** Look up an assume's atom by ID. *)
+let assume_atom (p : proof) (id : string) : Sexp.t option =
+  List.assoc_opt id p.assumes
+
+(** Every step whose [:rule] is ["subproof"]. Each marks the close
+    of a subproof whose ID is the step's own ID. The step's
+    [:discharge] list names the local assumes. *)
+let subproof_close_steps (p : proof) : step list =
+  steps_with_rule p "subproof"
+
+(** Steps whose ID lies inside the given subproof (i.e., starts
+    with [<subproof_id>.]). *)
+let steps_in_subproof (p : proof) (subproof_id : string) : step list =
+  let prefix = subproof_id ^ "." in
+  let plen = String.length prefix in
+  List.filter (fun (s : step) ->
+    String.length s.id > plen
+    && String.sub s.id 0 plen = prefix) p.steps

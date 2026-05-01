@@ -178,6 +178,97 @@ let test_extract_g5 () =
          (Printf.sprintf "verify rejected witness: %s; witness=%s"
             kind (Yojson.Safe.to_string witness)))
 
+(** IR for the case-split fixture: [(or (<= x 0) (>= x 10)),
+    x >= 1, x <= 9 ⊢ False]. The disjunctive hypothesis closes
+    via two subproofs, each running its own la_generic. *)
+let make_case_split_ir () : Ir.t =
+  let x = real_var "x" in
+  let zero = real_const "0" in
+  let one = real_const "1" in
+  let nine = real_const "9" in
+  let ten = real_const "10" in
+  let h_disj : Ir.hypothesis = {
+    name = "h_disj";
+    shell = Or {
+      left = App { symbol = "<="; type_args = []; args = [ x; zero ] };
+      right = App { symbol = ">="; type_args = []; args = [ x; ten ] };
+    };
+  } in
+  let h_low : Ir.hypothesis = {
+    name = "h_low";
+    shell = App { symbol = ">="; type_args = []; args = [ x; one ] };
+  } in
+  let h_high : Ir.hypothesis = {
+    name = "h_high";
+    shell = App { symbol = "<="; type_args = []; args = [ x; nine ] };
+  } in
+  {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = lra_logic;
+    goal = {
+      shell = Const { name = "False" };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [ { name = "x"; ty = "Real" } ];
+      hypotheses = [ h_disj; h_low; h_high ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  }
+
+let test_extract_case_split () =
+  let proof_str = load_fixture "alethe-case-split-x.proof" in
+  let ir = make_case_split_ir () in
+  match Alethe_farkas.extract_case_split_payload ir proof_str with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "case-split extract failed: %s — %s"
+                     (Alethe_farkas.error_kind e)
+                     (Alethe_farkas.error_detail e))
+  | Ok (lemmas, hyp_name) ->
+    Alcotest.(check string) "disjunctive hyp = h_disj" "h_disj" hyp_name;
+    Alcotest.(check int) "two lemmas" 2 (List.length lemmas);
+    (* Round-trip the lemmas through the verifier's case-split path. *)
+    let cert : Certificate.t = {
+      cert_version = "1.0";
+      tier = 2;
+      format = "case_split_farkas";
+      goal = ir.goal;
+      dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
+      rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+      backend = {
+        name = "cvc5"; version = "1.3.3";
+        config_hash = "sha256:" ^ String.make 64 '0';
+      };
+      resources = {
+        wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+      };
+      refinement_record = {
+        adapter = "cvc5"; adapter_version = "1.3.3";
+        specializations = []; fragment = "LRA"; auxiliary = None;
+      };
+      payload = Tier2_lemma_list {
+        lemmas_used = lemmas;
+        strategy_hint = "case_split_farkas";
+        structural_hint = Some (`Assoc [
+          "disjunctive_hypothesis", `String hyp_name;
+        ]);
+      };
+    } in
+    (match Verifier.verify cert ir with
+     | Verified_case_split -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "case-split verifier rejected extracted lemmas: %s — %s"
+            (Verifier.kind_of_reason other)
+            (Verifier.detail_of_reason other)))
+
 let test_no_la_generic () =
   (* A proof that contains only assumes and a trivial closing
      resolution — no la_generic. Build it inline. *)
@@ -203,5 +294,9 @@ let () =
       Alcotest.test_case "extract g4 farkas witness" `Quick test_extract_g4;
       Alcotest.test_case "extract g5 farkas witness" `Quick test_extract_g5;
       Alcotest.test_case "no la_generic in proof" `Quick test_no_la_generic;
+    ];
+    "case_split", [
+      Alcotest.test_case "extract + verify case-split witness"
+        `Quick test_extract_case_split;
     ];
   ]

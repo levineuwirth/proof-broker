@@ -9,14 +9,19 @@
     from stdin without [--no-interactive]).
 
     Tier scope. cvc5 always runs with [--produce-proofs
-    --proof-format-mode=alethe]; on [unsat] we attempt to extract a
-    Tier 1 Farkas witness from the proof's [la_generic] step (see
-    [Alethe_farkas]). On any extraction failure — no la_generic,
-    integer-tightening literals that don't match the IR, parse
-    error — we fall back to a Tier 0 oracle cert. So a cvc5 run
-    that closes a goal via Farkas combination yields a witness the
-    Lean side can independently re-check, while harder closures
-    still produce a cert (just at Tier 0).
+    --proof-format-mode=alethe]; on [unsat] we ladder Tier 1 → Tier 2
+    → Tier 0:
+    1. Tier 1 Farkas witness from a single [la_generic] step (see
+       [Alethe_farkas.extract]).
+    2. If that fails, Tier 2 case-split Farkas: each subproof's
+       [la_generic] becomes a per-branch Farkas witness, and the
+       branch case-assumptions must partition a disjunctive IR
+       hypothesis (see [Alethe_farkas.extract_case_split_payload]).
+    3. If both fail, fall back to a Tier 0 oracle cert.
+
+    So a cvc5 unsat reply always yields a cert; how much of cvc5's
+    work the Lean side can independently re-check depends on the
+    proof's shape.
 
     Refinement and hash discipline match [Adapter_cvc4] exactly:
     refinement runs first, the cert addresses the *original*
@@ -193,6 +198,44 @@ let mint_farkas_cert
     };
   }
 
+(** Tier 2 case-split Farkas cert. Each lemma carries a [case]
+    (one disjunct of an IR disjunctive hypothesis) and a Farkas
+    [witness] valid under the IR extended with that case as an
+    extra hypothesis named ["case"]. The verifier re-runs each
+    Farkas check and confirms the cases partition the disjunctive
+    hypothesis named in [structural_hint]. *)
+let mint_case_split_cert
+      ~adapter_version
+      ~(original_ir : Ir.t)
+      ~(specs : Refinement_record.specialization list)
+      ~logic
+      ~timeout_ms
+      ~(lemmas : Yojson.Safe.t list)
+      ~(disjunctive_hyp : string)
+  : Certificate.t =
+  let dispatch_context_hash =
+    Hash.sha256_of_json (Codec.to_json original_ir)
+  in
+  {
+    cert_version = "1.0";
+    tier = 2;
+    format = "case_split_farkas";
+    goal = original_ir.goal;
+    dispatch_context_hash;
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    backend = backend ~version:adapter_version;
+    resources = resources_now ~timeout_ms;
+    refinement_record =
+      mk_refinement_record ~adapter_version specs ~logic;
+    payload = Tier2_lemma_list {
+      lemmas_used = lemmas;
+      strategy_hint = "case_split_farkas";
+      structural_hint = Some (`Assoc [
+        "disjunctive_hypothesis", `String disjunctive_hyp;
+      ]);
+    };
+  }
+
 (** Slice the proof body out of cvc5's stdout. cvc5 prints the
     [sat]/[unsat]/[unknown] verdict on its own line, possibly
     preceded by warnings, then emits the [(get-proof)] response as
@@ -263,11 +306,12 @@ let dispatch (ir : Ir.t) : Adapter.result =
           let stdout, stderr, code = run_solver ~timeout_ms body in
           match parse_response stdout, code with
           | Unsat, _ ->
-            (* Try to upgrade Tier 0 → Tier 1 by extracting a Farkas
-               witness from the Alethe proof. Any extraction failure
-               (no la_generic, integer-tightening literals, parse
-               error, etc.) silently falls back to the Tier 0 oracle
-               cert. *)
+            (* Try to upgrade Tier 0 to Tier 1 (single la_generic) or
+               Tier 2 (multi-la_generic case split) by extracting a
+               witness from the Alethe proof. Tier 1 is preferred —
+               we attempt it first; on failure we try the case-split
+               extraction; on a second failure we fall back to the
+               Tier 0 oracle cert. *)
             let mk_oracle () =
               mint_oracle_cert
                 ~adapter_version:version
@@ -289,7 +333,18 @@ let dispatch (ir : Ir.t) : Adapter.result =
                      ~logic:script.logic
                      ~timeout_ms
                      ~witness
-                 | Error _ -> mk_oracle ())
+                 | Error _ ->
+                   (match Alethe_farkas.extract_case_split_payload ir proof_str with
+                    | Ok (lemmas, disjunctive_hyp) ->
+                      mint_case_split_cert
+                        ~adapter_version:version
+                        ~original_ir:ir
+                        ~specs:refinement.specializations
+                        ~logic:script.logic
+                        ~timeout_ms
+                        ~lemmas
+                        ~disjunctive_hyp
+                    | Error _ -> mk_oracle ()))
             in
             Cert cert
           | Sat, _ -> Failed Sat_returned

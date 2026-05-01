@@ -298,6 +298,40 @@ let match_one ~fragment (lit : S.t) (inputs : input_entry list)
     in
     find inputs
 
+(** Walk a single la_generic step's clause+args, matching each
+    literal against [inputs] and accumulating the witness pairs.
+    Factored so case-split extraction can supply augmented inputs
+    (the disjunctive case as an extra entry). *)
+let extract_from_step
+    ~fragment ~(inputs : input_entry list) (step : Alethe.step)
+  : ((string * L.rational) list, error) result =
+  let args = Option.value step.args ~default:[] in
+  if List.length args <> List.length step.clause then
+    Error (Coefficient_count_mismatch {
+      args = List.length args;
+      literals = List.length step.clause;
+    })
+  else
+    let rec walk acc = function
+      | [], [] -> Ok (List.rev acc)
+      | lit :: lits, arg :: args' ->
+        let raw = match arg with
+          | S.Atom s -> s
+          | s -> S.to_string s
+        in
+        (match L.rat_of_string raw with
+         | None -> Error (Bad_coefficient { raw })
+         | Some k ->
+           (match match_one ~fragment lit inputs with
+            | Error e -> Error e
+            | Ok None -> walk acc (lits, args')
+            | Ok (Some (name, r)) ->
+              let coef = L.rat_mul k r in
+              walk ((name, coef) :: acc) (lits, args')))
+      | _ -> Error No_la_generic  (* unreachable: lengths checked *)
+    in
+    walk [] (step.clause, args)
+
 (** Pair clause literals with [:args] coefficients, parse each
     coefficient as a rational, and produce the matched witness. The
     [:args] list must have the same length as [clause]; that's an
@@ -307,34 +341,9 @@ let extract_witness (ir : Ir.t) (proof : Alethe.proof)
   match Alethe.unique_la_generic proof with
   | None -> Error No_la_generic
   | Some step ->
-    let args = Option.value step.args ~default:[] in
-    if List.length args <> List.length step.clause then
-      Error (Coefficient_count_mismatch {
-        args = List.length args;
-        literals = List.length step.clause;
-      })
-    else
-      let fragment = ir.logic_classification.first_order_fragment in
-      let inputs = compile_ir_inputs ir in
-      let rec walk acc = function
-        | [], [] -> Ok (List.rev acc)
-        | lit :: lits, arg :: args' ->
-          let raw = match arg with
-            | S.Atom s -> s
-            | s -> S.to_string s
-          in
-          (match L.rat_of_string raw with
-           | None -> Error (Bad_coefficient { raw })
-           | Some k ->
-             (match match_one ~fragment lit inputs with
-              | Error e -> Error e
-              | Ok None -> walk acc (lits, args')
-              | Ok (Some (name, r)) ->
-                let coef = L.rat_mul k r in
-                walk ((name, coef) :: acc) (lits, args')))
-        | _ -> Error No_la_generic  (* unreachable: lengths checked *)
-      in
-      walk [] (step.clause, args)
+    let fragment = ir.logic_classification.first_order_fragment in
+    let inputs = compile_ir_inputs ir in
+    extract_from_step ~fragment ~inputs step
 
 (** Combine duplicate hypothesis names (same name appearing twice
     in the witness, e.g. if cvc5 split the same input across two
@@ -382,3 +391,192 @@ let extract (ir : Ir.t) (proof_str : string)
     (match extract_witness ir p with
      | Error e -> Error e
      | Ok entries -> Ok (witness_to_json (dedupe entries)))
+
+(* --- case-split (Tier 2) extraction ---------------------------------- *)
+
+(** Flatten [Or { left; right }] into a flat disjunct list. *)
+let rec disjuncts_of (s : Ir.shell_term) : Ir.shell_term list =
+  match s with
+  | Or { left; right } -> disjuncts_of left @ disjuncts_of right
+  | _ -> [ s ]
+
+type disjunctive_target = {
+  hyp_name : string;
+  disjuncts : Ir.shell_term list;
+  compiled_disjuncts : Farkas.compiled list;
+}
+
+(** Find an IR hypothesis that is a disjunction of linear atoms.
+    Returns the unique target if exactly one such hypothesis exists
+    and every disjunct compiles cleanly; otherwise [None]. We only
+    handle a single disjunctive hypothesis per case-split cert —
+    multiple disjunctive hyps are out of scope and fall back to
+    Tier 0. *)
+let unique_disjunctive_target ~fragment (ir : Ir.t)
+  : disjunctive_target option =
+  let candidates =
+    List.filter_map (fun (h : Ir.hypothesis) ->
+      match h.shell with
+      | Or _ ->
+        let ds = disjuncts_of h.shell in
+        let cs = List.map (Farkas.compile_hypothesis ~fragment) ds in
+        if List.for_all (function Ok _ -> true | _ -> false) cs then
+          Some {
+            hyp_name = h.name;
+            disjuncts = ds;
+            compiled_disjuncts =
+              List.map (function Ok c -> c | _ -> assert false) cs;
+          }
+        else None
+      | _ -> None) ir.context.hypotheses
+  in
+  match candidates with
+  | [ t ] -> Some t
+  | _ -> None
+
+(** Compile a positive Alethe atom to a [Farkas.compiled] form,
+    applying the LIA +1 trick for tightened strict literals so the
+    result aligns with what [Farkas.compile_hypothesis] produces on
+    the IR side. *)
+let compile_assume_atom ~fragment (atom : S.t) : Farkas.compiled option =
+  match compile_atom_pos atom with
+  | None -> None
+  | Some c when String.equal fragment "LRA" -> Some c
+  | Some c -> Some (lia_normalize c)
+
+(** Among the local assumes of [subproof_step], find the one that
+    matches a disjunct of [target]. Returns the matched disjunct's
+    IR shell (so the caller can record it as the "case") and the
+    matched index, or [None] if no local assume matches any
+    disjunct. *)
+let identify_subproof_case
+    ~fragment (proof : Alethe.proof) (target : disjunctive_target)
+    (subproof_step : Alethe.step)
+  : (Ir.shell_term * int) option =
+  match subproof_step.discharge with
+  | None -> None
+  | Some ids ->
+    let try_one assume_id =
+      match Alethe.assume_atom proof assume_id with
+      | None -> None
+      | Some atom ->
+        (match compile_assume_atom ~fragment atom with
+         | None -> None
+         | Some c ->
+           let rec find i = function
+             | [] -> None
+             | d :: rest ->
+               (match match_shape ~from_cvc5:c ~from_ir:d with
+                | Some _ -> Some i
+                | None -> find (i + 1) rest)
+           in
+           (match find 0 target.compiled_disjuncts with
+            | Some i -> Some (List.nth target.disjuncts i, i)
+            | None -> None))
+    in
+    let rec scan = function
+      | [] -> None
+      | a :: rest ->
+        (match try_one a with
+         | Some hit -> Some hit
+         | None -> scan rest)
+    in
+    scan ids
+
+(** Locate the la_generic step inside [subproof_step]'s body. *)
+let la_generic_in_subproof (proof : Alethe.proof) (subproof_step : Alethe.step)
+  : Alethe.step option =
+  let inner = Alethe.steps_in_subproof proof subproof_step.id in
+  match List.filter (fun (s : Alethe.step) -> s.rule = "la_generic") inner with
+  | [ s ] -> Some s
+  | _ -> None
+
+type case_lemma = {
+  case : Ir.shell_term;
+  witness : Yojson.Safe.t;
+}
+
+type case_split_result = {
+  disjunctive_hyp : string;
+  lemmas : case_lemma list;
+}
+
+(** Extract a case-split (Tier 2) witness. Requires exactly one
+    disjunctive IR hypothesis with linear-atom disjuncts, and a
+    matching set of subproofs each closing one disjunct via
+    la_generic. Cases must collectively cover every disjunct
+    (no duplicates, no gaps). *)
+let extract_case_split (ir : Ir.t) (proof : Alethe.proof)
+  : (case_split_result, error) result =
+  let fragment = ir.logic_classification.first_order_fragment in
+  match unique_disjunctive_target ~fragment ir with
+  | None -> Error No_la_generic
+  | Some target ->
+    let close_steps = Alethe.subproof_close_steps proof in
+    let n_disjuncts = List.length target.disjuncts in
+    if List.length close_steps <> n_disjuncts then
+      Error No_la_generic
+    else
+      let base_inputs = compile_ir_inputs ir in
+      let rec each_subproof acc seen = function
+        | [] ->
+          if List.length acc = n_disjuncts
+             && List.length seen = n_disjuncts
+          then Ok { disjunctive_hyp = target.hyp_name;
+                    lemmas = List.rev acc }
+          else Error No_la_generic
+        | (sp : Alethe.step) :: rest ->
+          (match la_generic_in_subproof proof sp with
+           | None -> Error No_la_generic
+           | Some la ->
+             match identify_subproof_case ~fragment proof target sp with
+             | None -> Error No_la_generic
+             | Some (case_shell, idx) ->
+               if List.mem idx seen then Error No_la_generic
+               else
+                 let case_compiled =
+                   match Farkas.compile_hypothesis ~fragment case_shell with
+                   | Ok c -> c
+                   | Error _ -> assert false
+                 in
+                 let inputs =
+                   base_inputs @ [ { name = "case"; compiled = case_compiled } ]
+                 in
+                 (match extract_from_step ~fragment ~inputs la with
+                  | Error e -> Error e
+                  | Ok entries ->
+                    let witness = witness_to_json (dedupe entries) in
+                    each_subproof
+                      ({ case = case_shell; witness } :: acc)
+                      (idx :: seen)
+                      rest))
+      in
+      each_subproof [] [] close_steps
+
+(** Encode a case-split extraction as a Tier 2 [lemmas_used] list:
+    each lemma is [{"case": <shell>, "witness": <farkas>}]. The
+    structural_hint tells the verifier which IR hypothesis to
+    expect the cases to partition. *)
+let case_split_to_lemmas (r : case_split_result) : Yojson.Safe.t list =
+  List.map (fun (l : case_lemma) ->
+    `Assoc [
+      "case", Codec.shell_to_json l.case;
+      "witness", l.witness;
+    ]) r.lemmas
+
+(** End-to-end Tier 2 extraction: parse + try case-split. Returns
+    the lemma list and the disjunctive-hypothesis name for use in
+    [Tier2_lemma_list]'s [structural_hint]. *)
+let extract_case_split_payload (ir : Ir.t) (proof_str : string)
+  : (Yojson.Safe.t list * string, error) result =
+  let proof =
+    try Ok (Alethe.parse proof_str)
+    with Alethe.Parse_error msg ->
+      Error (Unrecognized_literal { sexp = "parse error: " ^ msg })
+  in
+  match proof with
+  | Error e -> Error e
+  | Ok p ->
+    (match extract_case_split ir p with
+     | Error e -> Error e
+     | Ok r -> Ok (case_split_to_lemmas r, r.disjunctive_hyp))

@@ -24,9 +24,15 @@
     trick is applied to strict shapes and the residual must be
     strictly positive; under LRA strict witnesses stay strict and
     the residual is allowed to be merely non-negative whenever a
-    strict witness contributed positively. Other Tier 1 witness
-    kinds (sat_assignment, sat_unsat_core,
-    polynomial_positivstellensatz) and Tiers 0/2/3 fall through to
+    strict witness contributed positively. Tier 2 with
+    [strategy_hint=case_split_farkas] is also implemented: each
+    lemma carries a [case] (one disjunct of an IR disjunctive
+    hypothesis) and a Farkas [witness] valid under the IR extended
+    with that case; the verifier runs each Farkas check and then
+    checks the cases partition the disjunctive hypothesis named in
+    [structural_hint]. Other Tier 1 witness kinds (sat_assignment,
+    sat_unsat_core, polynomial_positivstellensatz), other Tier 2
+    strategies, and Tiers 0/3 fall through to
     [Tier_check_deferred] / [Unsupported_witness_kind] — [verify]
     succeeds at the envelope level only for those.
 
@@ -41,6 +47,7 @@
 type reason =
   | Verified_envelope
   | Verified_farkas
+  | Verified_case_split
   | Hash_mismatch of {
       field : string;
       expected : string;
@@ -57,6 +64,9 @@ type reason =
   | Farkas_negative_coefficient of { hypothesis : string; value : string }
   | Farkas_not_contradictory of { residual : string }
   | Farkas_malformed_witness of { detail : string }
+  | Case_split_malformed of { detail : string }
+  | Case_split_branch_failed of { case_index : int; reason_kind : string }
+  | Case_split_partition_mismatch of { detail : string }
   | Unsupported_witness_kind of { kind : string }
   | Tier_check_deferred of { tier : int }
   | Other of { kind : string; detail : string }
@@ -64,6 +74,7 @@ type reason =
 let kind_of_reason = function
   | Verified_envelope -> "verified_envelope"
   | Verified_farkas -> "verified_farkas"
+  | Verified_case_split -> "verified_case_split"
   | Hash_mismatch _ -> "hash_mismatch"
   | Tier_payload_mismatch _ -> "tier_payload_mismatch"
   | Cert_version_mismatch _ -> "cert_version_mismatch"
@@ -73,6 +84,9 @@ let kind_of_reason = function
   | Farkas_negative_coefficient _ -> "farkas_negative_coefficient"
   | Farkas_not_contradictory _ -> "farkas_not_contradictory"
   | Farkas_malformed_witness _ -> "farkas_malformed_witness"
+  | Case_split_malformed _ -> "case_split_malformed"
+  | Case_split_branch_failed _ -> "case_split_branch_failed"
+  | Case_split_partition_mismatch _ -> "case_split_partition_mismatch"
   | Unsupported_witness_kind _ -> "unsupported_witness_kind"
   | Tier_check_deferred _ -> "tier_check_deferred"
   | Other { kind; _ } -> kind
@@ -80,6 +94,11 @@ let kind_of_reason = function
 let detail_of_reason = function
   | Verified_envelope -> ""
   | Verified_farkas -> ""
+  | Verified_case_split -> ""
+  | Case_split_malformed { detail } -> detail
+  | Case_split_branch_failed { case_index; reason_kind } ->
+    Printf.sprintf "branch %d failed: %s" case_index reason_kind
+  | Case_split_partition_mismatch { detail } -> detail
   | Hash_mismatch { field; expected; got } ->
     Printf.sprintf "%s: expected %s, got %s" field expected got
   | Tier_payload_mismatch { envelope_tier; payload_tier } ->
@@ -212,10 +231,180 @@ let reason_of_farkas (v : Farkas.verdict) : reason =
   | Malformed_witness { detail } ->
     Farkas_malformed_witness { detail }
 
+(* --- Tier 2: case-split Farkas --------------------------------------- *)
+
+(** Recognize an IR shell as one of the disjuncts of [target] by
+    compiled-form equality (modulo the same positive scaling
+    [Alethe_farkas.match_shape] uses). Returns the matched index or
+    [None]. *)
+let match_disjunct_index
+      ~fragment (case : Ir.shell_term) (disjuncts : Ir.shell_term list)
+  : int option =
+  match Farkas.compile_hypothesis ~fragment case with
+  | Error _ -> None
+  | Ok cc ->
+    let rec find i = function
+      | [] -> None
+      | d :: rest ->
+        (match Farkas.compile_hypothesis ~fragment d with
+         | Error _ -> find (i + 1) rest
+         | Ok cd ->
+           let res =
+             let module L = Linear_arith in
+             let inv (r : L.rational) =
+               if r.num = 0 then None else Some (L.mk_rat r.den r.num)
+             in
+             let scale_factor (f1 : L.t) (f2 : L.t) : L.rational option =
+               match f2.coeffs, f1.coeffs with
+               | [], [] ->
+                 if L.rat_is_zero f2.const then
+                   if L.rat_is_zero f1.const then Some L.rat_one else None
+                 else if L.rat_is_zero f1.const then Some L.rat_zero
+                 else (match inv f2.const with
+                       | Some i -> Some (L.rat_mul f1.const i)
+                       | None -> None)
+               | [], _ :: _ -> None
+               | (n2, c2) :: _, _ ->
+                 (match List.assoc_opt n2 f1.coeffs, inv c2 with
+                  | Some c1, Some i ->
+                    let r = L.rat_mul c1 i in
+                    if L.scale r f2 = f1 then Some r else None
+                  | _ -> None)
+             in
+             match cc, cd with
+             | Le c, Le d | Lt c, Lt d ->
+               (match scale_factor c d with
+                | Some r when L.rat_is_pos r -> true
+                | _ -> false)
+             | Eq c, Eq d ->
+               (match scale_factor c d with
+                | Some r when not (L.rat_is_zero r) -> true
+                | _ -> false)
+             | _ -> false
+           in
+           if res then Some i else find (i + 1) rest)
+    in
+    find 0 disjuncts
+
+(** Parse one Tier 2 lemma object [{"case": ..., "witness": ...}]. *)
+let parse_lemma (j : Yojson.Safe.t) : (Ir.shell_term * Yojson.Safe.t) option =
+  match j with
+  | `Assoc fields ->
+    (match List.assoc_opt "case" fields, List.assoc_opt "witness" fields with
+     | Some case_json, Some witness_json ->
+       (try Some (Codec.shell_of_json case_json, witness_json)
+        with _ -> None)
+     | _ -> None)
+  | _ -> None
+
+(** Run case-split Tier 2 verification: each lemma's witness must
+    Farkas-verify against the IR extended with the lemma's case as
+    an extra hypothesis named "case", and the cases must partition
+    the IR's disjunctive hypothesis named in [structural_hint]. *)
+let verify_case_split
+      ~(structural_hint : Yojson.Safe.t option)
+      (lemmas : Yojson.Safe.t list)
+      (ir : Ir.t) : reason =
+  let fragment = ir.logic_classification.first_order_fragment in
+  let hyp_name =
+    match structural_hint with
+    | Some (`Assoc kvs) ->
+      (match List.assoc_opt "disjunctive_hypothesis" kvs with
+       | Some (`String s) -> Some s
+       | _ -> None)
+    | _ -> None
+  in
+  match hyp_name with
+  | None ->
+    Case_split_malformed {
+      detail = "structural_hint must be an object with field \
+                disjunctive_hypothesis"
+    }
+  | Some hyp_name ->
+    (match List.find_opt
+             (fun (h : Ir.hypothesis) -> h.name = hyp_name)
+             ir.context.hypotheses
+     with
+     | None ->
+       Case_split_malformed {
+         detail = Printf.sprintf "hypothesis %s not found in IR" hyp_name
+       }
+     | Some hyp ->
+       let disjuncts = Alethe_farkas.disjuncts_of hyp.shell in
+       let parsed = List.map parse_lemma lemmas in
+       if List.exists Option.is_none parsed then
+         Case_split_malformed {
+           detail = "every lemma must be {\"case\": shell, \
+                     \"witness\": farkas-witness}"
+         }
+       else
+         let lemmas_typed =
+           List.map (function Some p -> p | None -> assert false) parsed
+         in
+         (* Each branch must Farkas-verify against IR + case. *)
+         let rec verify_each i = function
+           | [] -> Verified_case_split
+           | (case_shell, witness) :: rest ->
+             let case_hyp : Ir.hypothesis =
+               { name = "case"; shell = case_shell }
+             in
+             let extended = {
+               ir with
+               context = { ir.context with
+                 hypotheses = ir.context.hypotheses @ [ case_hyp ]
+               }
+             } in
+             (match Farkas.verify extended witness with
+              | Verified -> verify_each (i + 1) rest
+              | other ->
+                Case_split_branch_failed {
+                  case_index = i;
+                  reason_kind =
+                    (match other with
+                     | Verified -> "verified"
+                     | Unknown_hypothesis _ -> "unknown_hypothesis"
+                     | Nonlinear _ -> "nonlinear"
+                     | Bad_coefficient _ -> "bad_coefficient"
+                     | Negative_coefficient _ -> "negative_coefficient"
+                     | Not_contradictory _ -> "not_contradictory"
+                     | Malformed_witness _ -> "malformed_witness");
+                })
+         in
+         (match verify_each 0 lemmas_typed with
+          | Verified_case_split ->
+            (* Partition check: every disjunct must be matched by
+               exactly one lemma's case, and there must be no
+               unmatched lemmas. *)
+            let cases = List.map fst lemmas_typed in
+            let matched =
+              List.map (fun c -> match_disjunct_index ~fragment c disjuncts)
+                cases
+            in
+            if List.exists Option.is_none matched then
+              Case_split_partition_mismatch {
+                detail = "one or more cases do not match any disjunct"
+              }
+            else
+              let indices =
+                List.map (function Some i -> i | None -> assert false) matched
+              in
+              let n = List.length disjuncts in
+              let covered = List.sort_uniq compare indices in
+              if List.length covered <> n then
+                Case_split_partition_mismatch {
+                  detail = Printf.sprintf
+                    "cases cover %d of %d disjuncts (need each exactly once)"
+                    (List.length covered) n
+                }
+              else Verified_case_split
+          | other -> other))
+
 (** Full verification: envelope checks then tier-specific. Tier 1
-    [farkas] dispatches to [Farkas.verify]; any other tier or
-    witness kind without an implemented verifier surfaces as
-    [Tier_check_deferred] or [Unsupported_witness_kind]. *)
+    [farkas] dispatches to [Farkas.verify]; Tier 2 with
+    [strategy_hint=case_split_farkas] dispatches to
+    [verify_case_split]; any other tier or strategy without an
+    implemented verifier surfaces as [Tier_check_deferred] or
+    [Unsupported_witness_kind]. *)
 let verify
       ?(trace : Trace.t option = None)
       (cert : Certificate.t)
@@ -229,5 +418,8 @@ let verify
        Unsupported_witness_kind {
          kind = Certificate.witness_kind_to_string witness_kind;
        }
+     | Tier2_lemma_list { lemmas_used; strategy_hint; structural_hint }
+       when strategy_hint = "case_split_farkas" ->
+       verify_case_split ~structural_hint lemmas_used ir
      | _ -> Tier_check_deferred { tier = cert.tier })
   | r -> r
