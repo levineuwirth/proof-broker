@@ -159,6 +159,14 @@ let compile_hypothesis ?(fragment = "LIA") (shell : Ir.shell_term)
   | Not { operand = App { symbol = "<"; args = [ a; b ]; _ } } ->
     (* ¬(a < b) ≡ b <= a — same in LIA and LRA, no +1. *)
     lift_le_pair b a
+  | Not { operand = App { symbol = "GE.ge"; args = [ a; b ]; _ } }
+  | Not { operand = App { symbol = ">="; args = [ a; b ]; _ } } ->
+    (* ¬(a >= b) ≡ a < b *)
+    lift_strict_pair a b
+  | Not { operand = App { symbol = "GT.gt"; args = [ a; b ]; _ } }
+  | Not { operand = App { symbol = ">"; args = [ a; b ]; _ } } ->
+    (* ¬(a > b) ≡ a <= b *)
+    lift_le_pair a b
   | _ -> Error "unsupported hypothesis shape"
 
 (* --- main entry ------------------------------------------------------ *)

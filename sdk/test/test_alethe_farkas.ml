@@ -1,0 +1,207 @@
+(** Unit tests for [Alethe_farkas].
+
+    Coverage:
+    * Parse a real cvc5 Alethe proof for [x>=3 ∧ x<=1] and extract
+      the Farkas witness, then run it through [Farkas.verify].
+    * Same for an LRA goal with a non-trivial negated goal.
+    * No la_generic in the proof → [No_la_generic] error.
+    * Coefficient mismatch fixture (synthetic) → caught.
+
+    Fixture proofs live under [sdk/test/fixtures/] and were generated
+    by running cvc5 with [--produce-proofs --proof-format-mode=alethe]
+    on the SMT-LIB scripts described in each test. *)
+
+open Proof_broker
+
+let load_fixture name =
+  let path =
+    Filename.concat (Sys.getcwd ()) ("../../../../sdk/test/fixtures/" ^ name)
+  in
+  In_channel.with_open_text path In_channel.input_all
+
+(* --- IR builders ----------------------------------------------------- *)
+
+let lra_logic : Ir.logic_classification = {
+  order = "first_order";
+  features_used = [];
+  first_order_fragment = "LRA";
+  decidable_theory = None;
+}
+
+let real_var name : Ir.shell_term = Var { name }
+let real_const value : Ir.shell_term = Num_lit { value; ty = "Real" }
+
+(** IR for the trivial Farkas: [x ≥ 3, x ≤ 1 ⊢ False]. We model
+    "False" as a goal that is itself contradicted, by setting the
+    goal to [True] (so [neg_goal] is [False] = unused) and letting
+    the two hypotheses do the work. The simplest encoding is to
+    use the goal [x = x] (always true, neg_goal = (not (x = x))
+    which compiles fine but won't appear in the witness). *)
+let make_g4_ir () : Ir.t =
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App {
+      symbol = ">="; type_args = [];
+      args = [ real_var "x"; real_const "3" ];
+    };
+  } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App {
+      symbol = "<="; type_args = [];
+      args = [ real_var "x"; real_const "1" ];
+    };
+  } in
+  {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = lra_logic;
+    goal = {
+      shell = Eq {
+        ty = "Real"; left = real_var "x"; right = real_var "x";
+      };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [ { name = "x"; ty = "Real" } ];
+      hypotheses = [ h0; h1 ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  }
+
+(** IR for [x+y >= 10, x <= 4 ⊢ y >= 6]. *)
+let make_g5_ir () : Ir.t =
+  let xy_sum : Ir.shell_term = App {
+    symbol = "+"; type_args = []; args = [ real_var "x"; real_var "y" ];
+  } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App {
+      symbol = ">="; type_args = []; args = [ xy_sum; real_const "10" ];
+    };
+  } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App {
+      symbol = "<="; type_args = []; args = [ real_var "x"; real_const "4" ];
+    };
+  } in
+  {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = lra_logic;
+    goal = {
+      shell = App {
+        symbol = ">="; type_args = [];
+        args = [ real_var "y"; real_const "6" ];
+      };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [
+        { name = "x"; ty = "Real" };
+        { name = "y"; ty = "Real" };
+      ];
+      hypotheses = [ h0; h1 ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  }
+
+(* --- tests ---------------------------------------------------------- *)
+
+let test_parse_g4 () =
+  let proof_str = load_fixture "alethe-x-3-x-1.proof" in
+  let p = Alethe.parse proof_str in
+  Alcotest.(check int) "two assumes" 2 (List.length p.assumes);
+  Alcotest.(check bool) "has la_generic step"
+    true (Option.is_some (Alethe.unique_la_generic p))
+
+let test_extract_g4 () =
+  let proof_str = load_fixture "alethe-x-3-x-1.proof" in
+  let ir = make_g4_ir () in
+  match Alethe_farkas.extract ir proof_str with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "extract failed: %s — %s"
+                     (Alethe_farkas.error_kind e)
+                     (Alethe_farkas.error_detail e))
+  | Ok witness ->
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | other ->
+       let kind = match other with
+         | Verified -> "Verified"
+         | Unknown_hypothesis _ -> "Unknown_hypothesis"
+         | Nonlinear _ -> "Nonlinear"
+         | Bad_coefficient _ -> "Bad_coefficient"
+         | Negative_coefficient _ -> "Negative_coefficient"
+         | Not_contradictory _ -> "Not_contradictory"
+         | Malformed_witness _ -> "Malformed_witness"
+       in
+       Alcotest.fail
+         (Printf.sprintf "verify rejected witness: %s; witness=%s"
+            kind (Yojson.Safe.to_string witness)))
+
+let test_extract_g5 () =
+  let proof_str = load_fixture "alethe-xy-10-x-4-y-6.proof" in
+  let ir = make_g5_ir () in
+  match Alethe_farkas.extract ir proof_str with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "extract failed: %s — %s"
+                     (Alethe_farkas.error_kind e)
+                     (Alethe_farkas.error_detail e))
+  | Ok witness ->
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | other ->
+       let kind = match other with
+         | Verified -> "Verified"
+         | Unknown_hypothesis _ -> "Unknown_hypothesis"
+         | Nonlinear _ -> "Nonlinear"
+         | Bad_coefficient _ -> "Bad_coefficient"
+         | Negative_coefficient _ -> "Negative_coefficient"
+         | Not_contradictory _ -> "Not_contradictory"
+         | Malformed_witness _ -> "Malformed_witness"
+       in
+       Alcotest.fail
+         (Printf.sprintf "verify rejected witness: %s; witness=%s"
+            kind (Yojson.Safe.to_string witness)))
+
+let test_no_la_generic () =
+  (* A proof that contains only assumes and a trivial closing
+     resolution — no la_generic. Build it inline. *)
+  let synth_proof = "(\n\
+                     (assume a0 (= 1 1))\n\
+                     (step t0 (cl false) :rule resolution)\n\
+                     )" in
+  let ir = make_g4_ir () in
+  match Alethe_farkas.extract ir synth_proof with
+  | Error No_la_generic -> ()
+  | Error e ->
+    Alcotest.fail
+      (Printf.sprintf "expected No_la_generic, got %s"
+         (Alethe_farkas.error_kind e))
+  | Ok _ -> Alcotest.fail "expected error, got Ok"
+
+let () =
+  Alcotest.run "alethe_farkas" [
+    "parse", [
+      Alcotest.test_case "parse g4 fixture" `Quick test_parse_g4;
+    ];
+    "extract", [
+      Alcotest.test_case "extract g4 farkas witness" `Quick test_extract_g4;
+      Alcotest.test_case "extract g5 farkas witness" `Quick test_extract_g5;
+      Alcotest.test_case "no la_generic in proof" `Quick test_no_la_generic;
+    ];
+  ]

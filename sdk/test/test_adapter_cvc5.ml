@@ -137,6 +137,171 @@ let test_minted_cert_passes_envelope_verifier () =
       (Printf.sprintf "expected Cert, got Failed(%s)"
          (Adapter.kind_of_failure f))
 
+(** LRA IR exercising the Tier 1 Alethe→Farkas path: [x + y >= 10,
+    x <= 4 ⊢ y >= 6]. cvc5 closes this via a single la_generic
+    step with rational coefficients, which our extractor turns into
+    a Farkas witness that [Farkas.verify] re-checks. *)
+let lra_logic : Ir.logic_classification = {
+  order = "first_order";
+  features_used = [];
+  first_order_fragment = "LRA";
+  decidable_theory = None;
+}
+
+let make_lra_ir ?(free_vars = []) ?(hypotheses = []) (goal_shell : Ir.shell_term)
+  : Ir.t = {
+  ir_version = "1.0";
+  source_system = { name = "test"; version = "0.0" };
+  tier = "goal";
+  logic_classification = lra_logic;
+  goal = { shell = goal_shell; payloads = None };
+  context = { type_vars = []; free_vars; hypotheses; library_slice = None };
+  type_metadata = [];
+  definitional_metadata = [];
+  library_provenance = [];
+  user_directives = None;
+}
+
+let lra_farkas_ir () =
+  let x : Ir.shell_term = Var { name = "x" } in
+  let y : Ir.shell_term = Var { name = "y" } in
+  let ten : Ir.shell_term = Num_lit { value = "10"; ty = "Real" } in
+  let four : Ir.shell_term = Num_lit { value = "4"; ty = "Real" } in
+  let six : Ir.shell_term = Num_lit { value = "6"; ty = "Real" } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App {
+      symbol = ">="; type_args = [];
+      args = [
+        App { symbol = "+"; type_args = []; args = [ x; y ] };
+        ten;
+      ];
+    };
+  } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "<="; type_args = []; args = [ x; four ] };
+  } in
+  make_lra_ir
+    ~free_vars:[
+      { name = "x"; ty = "Real" };
+      { name = "y"; ty = "Real" };
+    ]
+    ~hypotheses:[ h0; h1 ]
+    (App { symbol = ">="; type_args = []; args = [ y; six ] })
+
+let test_dispatch_lra_mints_farkas_cert () =
+  with_cvc5 @@ fun () ->
+  let ir = lra_farkas_ir () in
+  match Adapter_cvc5.dispatch ir with
+  | Cert cert ->
+    Alcotest.(check int) "tier=1" 1 cert.tier;
+    Alcotest.(check string) "format=farkas" "farkas" cert.format;
+    (match cert.payload with
+     | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
+       (match Farkas.verify ir witness_data with
+        | Verified -> ()
+        | other ->
+          let kind = match other with
+            | Verified -> "Verified"
+            | Unknown_hypothesis _ -> "Unknown_hypothesis"
+            | Nonlinear _ -> "Nonlinear"
+            | Bad_coefficient _ -> "Bad_coefficient"
+            | Negative_coefficient _ -> "Negative_coefficient"
+            | Not_contradictory _ -> "Not_contradictory"
+            | Malformed_witness _ -> "Malformed_witness"
+          in
+          Alcotest.fail
+            (Printf.sprintf "extracted witness rejected by Farkas.verify: %s"
+               kind))
+     | _ -> Alcotest.fail "expected Tier1_witness payload")
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f)
+         (Adapter.detail_of_failure f))
+
+(** LIA IR exercising the integer-tightening normalization in
+    Alethe_farkas. cvc5 emits [la_generic] for [x + y >= 10, x <=
+    4 ⊢ y >= 6] over Int, and uses tightened strict literals like
+    [(< y 6)] for our loose [(>= y 6)] negated goal. The +1
+    normalization in [Alethe_farkas.lia_normalize] folds these
+    back to a loose form the IR-side compile recognizes. *)
+let lia_farkas_ir () =
+  let x : Ir.shell_term = Var { name = "x" } in
+  let y : Ir.shell_term = Var { name = "y" } in
+  let ten : Ir.shell_term = Num_lit { value = "10"; ty = "Int" } in
+  let four : Ir.shell_term = Num_lit { value = "4"; ty = "Int" } in
+  let six : Ir.shell_term = Num_lit { value = "6"; ty = "Int" } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App {
+      symbol = ">="; type_args = [];
+      args = [
+        App { symbol = "+"; type_args = []; args = [ x; y ] };
+        ten;
+      ];
+    };
+  } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "<="; type_args = []; args = [ x; four ] };
+  } in
+  make_ir
+    ~free_vars:[
+      { name = "x"; ty = "Int" };
+      { name = "y"; ty = "Int" };
+    ]
+    ~hypotheses:[ h0; h1 ]
+    (App { symbol = ">="; type_args = []; args = [ y; six ] })
+
+let test_dispatch_lia_mints_farkas_cert () =
+  with_cvc5 @@ fun () ->
+  let ir = lia_farkas_ir () in
+  match Adapter_cvc5.dispatch ir with
+  | Cert cert ->
+    Alcotest.(check int) "tier=1" 1 cert.tier;
+    Alcotest.(check string) "format=farkas" "farkas" cert.format;
+    (match cert.payload with
+     | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
+       (match Farkas.verify ir witness_data with
+        | Verified -> ()
+        | other ->
+          let kind = match other with
+            | Verified -> "Verified"
+            | Unknown_hypothesis _ -> "Unknown_hypothesis"
+            | Nonlinear _ -> "Nonlinear"
+            | Bad_coefficient _ -> "Bad_coefficient"
+            | Negative_coefficient _ -> "Negative_coefficient"
+            | Not_contradictory _ -> "Not_contradictory"
+            | Malformed_witness _ -> "Malformed_witness"
+          in
+          Alcotest.fail
+            (Printf.sprintf "extracted LIA witness rejected by Farkas.verify: %s"
+               kind))
+     | _ -> Alcotest.fail "expected Tier1_witness payload")
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f)
+         (Adapter.detail_of_failure f))
+
+let test_lra_farkas_cert_envelope_verifies () =
+  with_cvc5 @@ fun () ->
+  let ir = lra_farkas_ir () in
+  match Adapter_cvc5.dispatch ir with
+  | Cert cert ->
+    (match Verifier.verify cert ir with
+     | Verified_farkas -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "envelope verifier rejected Tier 1 cert: %s"
+            (Verifier.kind_of_reason other)))
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s)"
+         (Adapter.kind_of_failure f))
+
 let () =
   Alcotest.run "adapter_cvc5" [
     "dispatch", [
@@ -148,5 +313,13 @@ let () =
         `Quick test_dispatch_unsupported_ir;
       Alcotest.test_case "minted cert verifies through envelope"
         `Quick test_minted_cert_passes_envelope_verifier;
+    ];
+    "tier1", [
+      Alcotest.test_case "LRA mints Tier 1 farkas cert"
+        `Quick test_dispatch_lra_mints_farkas_cert;
+      Alcotest.test_case "LIA mints Tier 1 farkas cert (with tightening)"
+        `Quick test_dispatch_lia_mints_farkas_cert;
+      Alcotest.test_case "Tier 1 cert envelope-verifies"
+        `Quick test_lra_farkas_cert_envelope_verifies;
     ];
   ]

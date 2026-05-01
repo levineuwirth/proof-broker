@@ -8,12 +8,15 @@
     [--lang=smt2] / [--tlimit-per=MS] in the [=] form and reads
     from stdin without [--no-interactive]).
 
-    Tier scope. We mint Tier 0 oracle certs only — the same scope
-    as cvc4 today. cvc5 also produces Alethe proofs via
-    [--produce-proofs --proof-format=alethe], which is the natural
-    next step toward Tier 3, but parsing those is a separate
-    milestone. The Tier 0 cert is honest about its tier: the
-    broker's verifier returns [Tier_check_deferred] for it.
+    Tier scope. cvc5 always runs with [--produce-proofs
+    --proof-format-mode=alethe]; on [unsat] we attempt to extract a
+    Tier 1 Farkas witness from the proof's [la_generic] step (see
+    [Alethe_farkas]). On any extraction failure — no la_generic,
+    integer-tightening literals that don't match the IR, parse
+    error — we fall back to a Tier 0 oracle cert. So a cvc5 run
+    that closes a goal via Farkas combination yields a witness the
+    Lean side can independently re-check, while harder closures
+    still produce a cert (just at Tier 0).
 
     Refinement and hash discipline match [Adapter_cvc4] exactly:
     refinement runs first, the cert addresses the *original*
@@ -46,12 +49,18 @@ let read_all (ic : in_channel) : string =
   Buffer.contents buf
 
 (** Spawn cvc5 with the given timeout, write [script] to its stdin,
-    return [(stdout, stderr, exit_code)]. Raises any [Unix] error
-    so callers can wrap. *)
+    return [(stdout, stderr, exit_code)]. We always request Alethe
+    proof generation: it is cheap on the small problems we dispatch
+    (linear arithmetic), and the dispatch path uses the proof to
+    upgrade Tier 0 [unsat] verdicts to Tier 1 Farkas witnesses when
+    the proof closes via a single [la_generic] step. Raises any
+    [Unix] error so callers can wrap. *)
 let run_solver ~timeout_ms (script : string) : string * string * int =
   let argv = [|
     cvc5_binary;
     "--lang=smt2";
+    "--produce-proofs";
+    "--proof-format-mode=alethe";
     Printf.sprintf "--tlimit-per=%d" timeout_ms;
   |] in
   let cmd = String.concat " " (Array.to_list argv) in
@@ -150,6 +159,74 @@ let mint_oracle_cert
     };
   }
 
+(** Tier 1 Farkas cert built from the witness JSON extracted from
+    cvc5's Alethe proof. The dispatch_context_hash addresses the
+    *original* IR (same discipline as the Tier 0 cert), so the
+    witness's [hypothesis] entries refer to the IR's hypothesis
+    names and the verifier can look them up directly. *)
+let mint_farkas_cert
+      ~adapter_version
+      ~(original_ir : Ir.t)
+      ~(specs : Refinement_record.specialization list)
+      ~logic
+      ~timeout_ms
+      ~(witness : Yojson.Safe.t)
+  : Certificate.t =
+  let dispatch_context_hash =
+    Hash.sha256_of_json (Codec.to_json original_ir)
+  in
+  {
+    cert_version = "1.0";
+    tier = 1;
+    format = "farkas";
+    goal = original_ir.goal;
+    dispatch_context_hash;
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    backend = backend ~version:adapter_version;
+    resources = resources_now ~timeout_ms;
+    refinement_record =
+      mk_refinement_record ~adapter_version specs ~logic;
+    payload = Tier1_witness {
+      witness_kind = Farkas;
+      witness_data = witness;
+      checking_recipe = "lean.farkas_check";
+    };
+  }
+
+(** Slice the proof body out of cvc5's stdout. cvc5 prints the
+    [sat]/[unsat]/[unknown] verdict on its own line, possibly
+    preceded by warnings, then emits the [(get-proof)] response as
+    a single S-expression. We grab everything from the first [(]
+    that follows the [unsat] line onward — the parser is happy with
+    trailing whitespace. *)
+let extract_proof_body (stdout : string) : string option =
+  match String.index_opt stdout '\n' with
+  | _ ->
+    (* find "unsat" line, then the next "(" *)
+    let n = String.length stdout in
+    let rec find_after_unsat i =
+      if i >= n then None
+      else
+        let line_end =
+          try String.index_from stdout i '\n' with Not_found -> n
+        in
+        let line = String.trim (String.sub stdout i (line_end - i)) in
+        if line = "unsat" then Some (line_end + 1)
+        else find_after_unsat (line_end + 1)
+    in
+    (match find_after_unsat 0 with
+     | None -> None
+     | Some start ->
+       (* Find first '(' from [start]. *)
+       let rec find_paren i =
+         if i >= n then None
+         else if stdout.[i] = '(' then Some i
+         else find_paren (i + 1)
+       in
+       (match find_paren start with
+        | None -> None
+        | Some j -> Some (String.sub stdout j (n - j))))
+
 (* --- top-level dispatch --------------------------------------------- *)
 
 (** Pinned to the static-release version we install at
@@ -181,17 +258,40 @@ let dispatch (ir : Ir.t) : Adapter.result =
        })
      | Ok script ->
        let timeout_ms = timeout_of_ir ir in
-       let body = script.body ^ "(check-sat)\n(exit)\n" in
+       let body = script.body ^ "(check-sat)\n(get-proof)\n(exit)\n" in
        (try
           let stdout, stderr, code = run_solver ~timeout_ms body in
           match parse_response stdout, code with
           | Unsat, _ ->
-            Cert (mint_oracle_cert
-                    ~adapter_version:version
-                    ~original_ir:ir
-                    ~specs:refinement.specializations
-                    ~logic:script.logic
-                    ~timeout_ms)
+            (* Try to upgrade Tier 0 → Tier 1 by extracting a Farkas
+               witness from the Alethe proof. Any extraction failure
+               (no la_generic, integer-tightening literals, parse
+               error, etc.) silently falls back to the Tier 0 oracle
+               cert. *)
+            let mk_oracle () =
+              mint_oracle_cert
+                ~adapter_version:version
+                ~original_ir:ir
+                ~specs:refinement.specializations
+                ~logic:script.logic
+                ~timeout_ms
+            in
+            let cert =
+              match extract_proof_body stdout with
+              | None -> mk_oracle ()
+              | Some proof_str ->
+                (match Alethe_farkas.extract ir proof_str with
+                 | Ok witness ->
+                   mint_farkas_cert
+                     ~adapter_version:version
+                     ~original_ir:ir
+                     ~specs:refinement.specializations
+                     ~logic:script.logic
+                     ~timeout_ms
+                     ~witness
+                 | Error _ -> mk_oracle ())
+            in
+            Cert cert
           | Sat, _ -> Failed Sat_returned
           | Unknown_resp, _ -> Failed Unknown_returned
           | Other_resp _, n when n <> 0 ->
