@@ -1,7 +1,7 @@
 {
   "manifest_version": "1.0",
   "adapter": "cvc5",
-  "adapter_version": "1.0",
+  "adapter_version": "1.3.3",
   "backends_supported": ["cvc5"],
 
   "logic_fragments": ["LIA", "LRA", "BV", "UF", "UFLIA", "UFLRA", "ARRAY"],
@@ -13,7 +13,7 @@
 
   "max_order": "first_order",
 
-  "tiers_produced": [1, 3],
+  "tiers_produced": [0, 1, 3],
 
   "trace_formats_produced": ["alethe-2024"],
 

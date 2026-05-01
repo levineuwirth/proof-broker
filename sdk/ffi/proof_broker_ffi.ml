@@ -280,12 +280,13 @@ let run_pipeline (input : string) : string =
    IR couldn't be serialized to SMT-LIB). Genuine plumbing errors
    (input couldn't be parsed) still go through the error envelope.
 
-   Adapter registry. Phase 2.1 ships cvc4 only; the registry is
-   built-in (no manifest-driven loading yet). Adding adapters is
-   a one-line change. *)
+   Adapter registry. Phase 2.1 ships cvc4 and cvc5 (both as Tier 0
+   oracle adapters); the registry is built-in (no manifest-driven
+   loading yet). Adding adapters is a one-line change. *)
 let adapter_registry : (string, Proof_broker.Adapter.t) Hashtbl.t =
   let r = Hashtbl.create 4 in
   Hashtbl.replace r "cvc4" Proof_broker.Adapter_cvc4.adapter;
+  Hashtbl.replace r "cvc5" Proof_broker.Adapter_cvc5.adapter;
   r
 
 let dispatch_to_adapter (input : string) : string =

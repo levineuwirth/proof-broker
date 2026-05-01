@@ -656,6 +656,13 @@ def cvc4Available : IO Bool := do
   } |>.toBaseIO
   return exit.toOption.isSome
 
+/-- Sibling probe for cvc5; same skip-on-CI convention. -/
+def cvc5Available : IO Bool := do
+  let exit ← IO.Process.run {
+    cmd := "sh", args := #["-c", "which cvc5 > /dev/null 2>&1"], stdin := .null
+  } |>.toBaseIO
+  return exit.toOption.isSome
+
 /-- End-to-end Phase 2.1 cvc4 dispatch across the FFI: build the
     example1 LIA IR, hand it to `runDispatchToAdapter "cvc4" ...`,
     expect a Tier 0 oracle cert addressing the same IR. Then feed
@@ -828,6 +835,60 @@ def runDispatchBrokerFlow (rootDir : System.FilePath) : IO Unit := do
   | other => fail s!"expected succeeded for cvc4, got {repr other}"
   IO.println "OK dispatch_broker: bv-fake skipped on type construction, cvc4 minted cert, attempts logged in order"
 
+/-- Two-backend priority test: hand the broker the example1 LIA IR
+    (both cvc4 and cvc5 can solve it) with manifests in two orders
+    and confirm the broker's stop-on-success default makes manifest
+    order the priority lever. With [cvc4, cvc5] the first attempt
+    succeeds and cvc5 is not tried; with [cvc5, cvc4] the roles
+    swap. Skipped if either binary is missing. -/
+def runDispatchBrokerTwoBackendsFlow (rootDir : System.FilePath) : IO Unit := do
+  unless ← cvc4Available do
+    IO.println "[skip] cvc4 not on PATH; skipping two-backend broker flow"
+    return
+  unless ← cvc5Available do
+    IO.println "[skip] cvc5 not on PATH; skipping two-backend broker flow"
+    return
+  let cvc4ManifestRaw ← IO.FS.readFile (rootDir / "examples" / "manifest-cvc4.json")
+  let cvc5ManifestRaw ← IO.FS.readFile (rootDir / "examples" / "manifest-cvc5.json")
+  let cvc4Manifest ← match Json.parse cvc4ManifestRaw with
+    | .ok j => pure j
+    | .error e => fail s!"could not parse cvc4 manifest: {e}"
+  let cvc5Manifest ← match Json.parse cvc5ManifestRaw with
+    | .ok j => pure j
+    | .error e => fail s!"could not parse cvc5 manifest: {e}"
+  let path := rootDir / "examples" / "example1-lia-typeclass.json"
+  let raw ← IO.FS.readFile path
+  let ir ← match IR.fromJsonString raw with
+    | .ok ir => pure ir
+    | .error e => fail s!"could not parse example1: {e}"
+  -- Order [cvc4, cvc5]: cvc4 wins, cvc5 untried.
+  let r4 ← match runDispatchBroker ir [cvc4Manifest, cvc5Manifest] with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchBroker [cvc4, cvc5] error: {repr e}"
+  unless r4.cert.isSome do fail s!"expected cert from cvc4-first order"
+  unless r4.attempts.length == 1 do
+    fail s!"expected stop_on_success=true → 1 attempt, got {r4.attempts.length}"
+  let a4 := r4.attempts[0]!
+  unless a4.adapter == "cvc4" do
+    fail s!"expected first-priority cvc4 to win, got {a4.adapter}"
+  match a4.outcome with
+  | .succeeded => pure ()
+  | other => fail s!"expected succeeded on cvc4, got {repr other}"
+  -- Order [cvc5, cvc4]: cvc5 wins, cvc4 untried.
+  let r5 ← match runDispatchBroker ir [cvc5Manifest, cvc4Manifest] with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchBroker [cvc5, cvc4] error: {repr e}"
+  unless r5.cert.isSome do fail s!"expected cert from cvc5-first order"
+  unless r5.attempts.length == 1 do
+    fail s!"expected stop_on_success=true → 1 attempt, got {r5.attempts.length}"
+  let a5 := r5.attempts[0]!
+  unless a5.adapter == "cvc5" do
+    fail s!"expected first-priority cvc5 to win, got {a5.adapter}"
+  match a5.outcome with
+  | .succeeded => pure ()
+  | other => fail s!"expected succeeded on cvc5, got {repr other}"
+  IO.println "OK dispatch_broker: manifest order is the priority lever — [cvc4,cvc5] picks cvc4, [cvc5,cvc4] picks cvc5"
+
 def main : IO Unit := do
   let cwd ← IO.currentDir
   let rootDir := cwd / ".."
@@ -852,3 +913,4 @@ def main : IO Unit := do
   runDispatchToCvc4Flow
   runRefinementDispatchFlow rootDir
   runDispatchBrokerFlow rootDir
+  runDispatchBrokerTwoBackendsFlow rootDir
