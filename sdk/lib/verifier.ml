@@ -17,14 +17,18 @@
     is no trace to hash).
 
     Tier-specific verification implemented. Tier 1 [farkas]
-    witnesses are checked by [Farkas.verify]: hypotheses (and
-    the negated goal under the LIA +1 trick) are linearized,
-    weighted by the cert's coefficients, and the residual is
-    inspected for a strictly-positive constant. Other Tier 1
-    witness kinds (sat_assignment, sat_unsat_core,
-    polynomial_positivstellensatz) and Tiers 0/2/3 fall through
-    to [Tier_check_deferred] / [Unsupported_witness_kind] —
-    [verify] succeeds at the envelope level only for those.
+    witnesses are checked by [Farkas.verify]: hypotheses (and the
+    negated goal) are linearized, weighted by the cert's
+    coefficients, and the residual is inspected for a contradiction.
+    The fragment dispatch is read from the IR — under LIA the +1
+    trick is applied to strict shapes and the residual must be
+    strictly positive; under LRA strict witnesses stay strict and
+    the residual is allowed to be merely non-negative whenever a
+    strict witness contributed positively. Other Tier 1 witness
+    kinds (sat_assignment, sat_unsat_core,
+    polynomial_positivstellensatz) and Tiers 0/2/3 fall through to
+    [Tier_check_deferred] / [Unsupported_witness_kind] — [verify]
+    succeeds at the envelope level only for those.
 
     Trust scope. A [Verified_envelope] result asserts envelope
     well-formedness only — the cert is *addressed* to the right
@@ -95,7 +99,9 @@ let detail_of_reason = function
     Printf.sprintf "%s: coefficient %s is negative on an inequality \
                     (Farkas requires nonneg here)" hypothesis value
   | Farkas_not_contradictory { residual } ->
-    Printf.sprintf "weighted sum is %s, not a strictly-positive constant"
+    Printf.sprintf "weighted sum is %s, not a contradictory constant \
+                    (need >0 for loose, >=0 with a positively-weighted \
+                    strict witness)"
       residual
   | Farkas_malformed_witness { detail } -> detail
   | Unsupported_witness_kind { kind } ->

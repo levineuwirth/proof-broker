@@ -156,6 +156,48 @@ let test_compile_lt () =
     Alcotest.(check int) "n coef = 1" 1 (List.assoc "n" f.coeffs).num
   | _ -> Alcotest.fail "expected Le compilation for n < 10"
 
+let test_compile_lt_lra () =
+  (* Under LRA, n < 10 stays strict: Lt(n - 10), no +1. *)
+  let h = Ir.App {
+    symbol = "LT.lt"; type_args = [];
+    args = [ Var { name = "n" }; Num_lit { value = "10"; ty = "Real" } ];
+  } in
+  match Farkas.compile_hypothesis ~fragment:"LRA" h with
+  | Ok (Lt f) ->
+    Alcotest.(check int) "const = -10" (-10) f.const.num;
+    Alcotest.(check int) "n coef = 1" 1 (List.assoc "n" f.coeffs).num
+  | _ -> Alcotest.fail "expected Lt compilation for n < 10 under LRA"
+
+let test_compile_not_le_lra () =
+  (* Under LRA, ¬(n <= 10) ≡ 10 < n: Lt(10 - n), no +1. *)
+  let h = Ir.Not {
+    operand = App {
+      symbol = "LE.le"; type_args = [];
+      args = [ Var { name = "n" }; Num_lit { value = "10"; ty = "Real" } ];
+    };
+  } in
+  match Farkas.compile_hypothesis ~fragment:"LRA" h with
+  | Ok (Lt f) ->
+    Alcotest.(check int) "const = 10" 10 f.const.num;
+    Alcotest.(check int) "n coef = -1" (-1)
+      (List.assoc "n" f.coeffs).num
+  | _ -> Alcotest.fail "expected Lt compilation for ¬(n <= 10) under LRA"
+
+let test_compile_not_lt_lra () =
+  (* Under LRA, ¬(n < 10) ≡ 10 <= n: Le(10 - n) — same as LIA. *)
+  let h = Ir.Not {
+    operand = App {
+      symbol = "LT.lt"; type_args = [];
+      args = [ Var { name = "n" }; Num_lit { value = "10"; ty = "Real" } ];
+    };
+  } in
+  match Farkas.compile_hypothesis ~fragment:"LRA" h with
+  | Ok (Le f) ->
+    Alcotest.(check int) "const = 10" 10 f.const.num;
+    Alcotest.(check int) "n coef = -1" (-1)
+      (List.assoc "n" f.coeffs).num
+  | _ -> Alcotest.fail "expected Le compilation for ¬(n < 10) under LRA"
+
 let test_compile_unsupported () =
   let h = Ir.Var { name = "p" } in
   Alcotest.(check bool) "Var p not a hypothesis shape" true
@@ -305,6 +347,141 @@ let test_verify_neg_goal_lookup () =
   | Not_contradictory _ -> ()
   | _ -> Alcotest.fail "expected Not_contradictory on neg_goal alone"
 
+(* --- LRA strict-witness verification --------------------------------- *)
+
+let lra_logic : Ir.logic_classification = {
+  order = "first_order";
+  features_used = [];
+  first_order_fragment = "LRA";
+  decidable_theory = None;
+}
+
+(** Build an LRA-tagged IR. *)
+let make_lra_ir ?(hypotheses = []) (goal_shell : Ir.shell_term) : Ir.t =
+  { (make_ir ~hypotheses goal_shell) with logic_classification = lra_logic }
+
+(** Goal: 0 <= x. h1: 0 < x (strict implies non-strict). Under LRA
+    the cert {neg_goal=1, h1=1} works because ¬Goal compiles to
+    [Lt(x)] (form [x < 0]) and h1 compiles to [Lt(-x)] (form
+    [-x < 0]); they cancel to residual 0 with [has_strict], which
+    is the LRA contradiction. LIA would also verify (residual=2
+    after the +1 trick), but via a different residual. *)
+let lra_strict_pair_ir () =
+  let x = Ir.Var { name = "x" } in
+  let zero = Ir.Num_lit { value = "0"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LT.lt"; type_args = []; args = [ zero; x ] };
+  } in
+  make_lra_ir
+    ~hypotheses:[ h1 ]
+    (App { symbol = "LE.le"; type_args = []; args = [ zero; x ] })
+
+let test_verify_lra_strict_residual_zero () =
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h1";       "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify (lra_strict_pair_ir ()) witness with
+  | Verified -> ()
+  | Not_contradictory { residual } ->
+    Alcotest.fail (Printf.sprintf
+      "expected Verified under LRA strict, got Not_contradictory(%s)"
+      residual)
+  | _ -> Alcotest.fail "expected Verified under LRA strict"
+
+let test_verify_lra_strict_loose_mix () =
+  (* Goal: x <= 1. h1: x <= 1. Under LRA, ¬Goal is strict
+     (Lt(1 - x), no +1), and the cert {neg_goal=1, h1=1} yields
+     residual 0 with one positively-weighted strict witness — LRA
+     verdict is Verified. *)
+  let x = Ir.Var { name = "x" } in
+  let one = Ir.Num_lit { value = "1"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ x; one ] };
+  } in
+  let ir = make_lra_ir ~hypotheses:[ h1 ]
+    (App { symbol = "LE.le"; type_args = []; args = [ x; one ] })
+  in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h1";       "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify ir witness with
+  | Verified -> ()
+  | _ -> Alcotest.fail "expected Verified for LRA strict + loose"
+
+let test_verify_lra_rejects_real_counterexample () =
+  (* Goal: x <= 0, h1: x = 1/2. Over R the goal is FALSE under h1
+     (1/2 <= 0 is false), so any cert claiming to prove it must be
+     rejected. The LIA +1 trick would unsoundly accept this
+     (residual = 1/2 > 0). LRA strict mode keeps the negation
+     strict: residual = -1/2 with a positively-weighted strict
+     witness still needs >= 0, so we get Not_contradictory. *)
+  let x = Ir.Var { name = "x" } in
+  let zero = Ir.Num_lit { value = "0"; ty = "Real" } in
+  let half = Ir.Num_lit { value = "1/2"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Eq { ty = "Real"; left = x; right = half };
+  } in
+  let ir = make_lra_ir ~hypotheses:[ h1 ]
+    (App { symbol = "LE.le"; type_args = []; args = [ x; zero ] })
+  in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h1";       "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify ir witness with
+  | Not_contradictory _ -> ()
+  | Verified -> Alcotest.fail
+    "LRA must reject the LIA +1-trick cert against a real counterexample"
+  | _ -> Alcotest.fail "expected Not_contradictory under LRA"
+
+let test_verify_lra_loose_only_matches_lia () =
+  (* No strict witnesses involved: LRA mode behaves exactly like
+     LIA. Goal: x < 2 in LRA, h1: x <= 1. ¬Goal is loose under both
+     fragments (¬(x < y) ≡ y <= x). Residual = 1 > 0 — same path
+     as LIA. *)
+  let x = Ir.Var { name = "x" } in
+  let one = Ir.Num_lit { value = "1"; ty = "Real" } in
+  let two = Ir.Num_lit { value = "2"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ x; one ] };
+  } in
+  let ir = make_lra_ir ~hypotheses:[ h1 ]
+    (App { symbol = "LT.lt"; type_args = []; args = [ x; two ] })
+  in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h1";       "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify ir witness with
+  | Verified -> ()
+  | _ -> Alcotest.fail "expected Verified for LRA loose-only cert"
+
+let test_verify_lra_strict_negative_coef_rejected () =
+  (* A negative coefficient on a Lt witness is unsound for the same
+     reason it's unsound on a Le witness. *)
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "h1"; "coefficient", `String "-1" ];
+    ];
+  ] in
+  match Farkas.verify (lra_strict_pair_ir ()) witness with
+  | Negative_coefficient { hypothesis = "h1"; _ } -> ()
+  | _ -> Alcotest.fail "expected Negative_coefficient on strict h1"
+
 let test_verify_with_rational_coefs () =
   (* Same Farkas combination, scaled by 2: coefs 2, 2, 2 ⇒ residual 2 ⇒ contradiction. *)
   let witness : Yojson.Safe.t = `Assoc [
@@ -342,6 +519,9 @@ let () =
       Alcotest.test_case "Eq" `Quick test_compile_eq;
       Alcotest.test_case "Not(LE.le)" `Quick test_compile_not_le_int;
       Alcotest.test_case "LT.lt" `Quick test_compile_lt;
+      Alcotest.test_case "LT.lt under LRA" `Quick test_compile_lt_lra;
+      Alcotest.test_case "Not(LE.le) under LRA" `Quick test_compile_not_le_lra;
+      Alcotest.test_case "Not(LT.lt) under LRA" `Quick test_compile_not_lt_lra;
       Alcotest.test_case "unsupported shape" `Quick test_compile_unsupported;
     ];
     "verify", [
@@ -355,5 +535,17 @@ let () =
       Alcotest.test_case "empty coefficient list" `Quick test_verify_empty_witness;
       Alcotest.test_case "neg_goal alone is non-contradictory" `Quick test_verify_neg_goal_lookup;
       Alcotest.test_case "rational coefficients" `Quick test_verify_with_rational_coefs;
+    ];
+    "verify (LRA strict)", [
+      Alcotest.test_case "two strict witnesses, residual 0"
+        `Quick test_verify_lra_strict_residual_zero;
+      Alcotest.test_case "strict ¬Goal + loose hypothesis"
+        `Quick test_verify_lra_strict_loose_mix;
+      Alcotest.test_case "rejects LIA +1-trick on real counterexample"
+        `Quick test_verify_lra_rejects_real_counterexample;
+      Alcotest.test_case "loose-only LRA cert verifies"
+        `Quick test_verify_lra_loose_only_matches_lia;
+      Alcotest.test_case "negative coef on Lt rejected"
+        `Quick test_verify_lra_strict_negative_coef_rejected;
     ];
   ]

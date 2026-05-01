@@ -7,29 +7,34 @@
     1. Parsing each cert coefficient as a rational.
     2. Looking up the named hypothesis in the IR (or, for the
        reserved name [neg_goal], constructing the negated goal).
-    3. Compiling the hypothesis to a [Le] or [Eq] linear form.
+    3. Compiling the hypothesis to a [Le], [Lt], or [Eq] linear form.
     4. Multiplying each form by its coefficient and summing.
-    5. Verifying the residual is a strictly-positive constant — that
-       is, the weighted combination yields [c <= 0] with [c > 0],
-       which is the contradiction.
+    5. Verifying the residual is a contradictory constant — strictly
+       positive in the loose case ([c <= 0] with [c > 0]), or
+       non-negative when at least one strict ([Lt]) witness was
+       weighted positively ([c < 0] with [c >= 0]).
 
-    Sign convention. Coefficients on inequality (Le) hypotheses must
-    be nonnegative — Farkas' lemma is unsound otherwise. Coefficients
-    on equality (Eq) hypotheses may be any rational; multiplying an
-    equality [a = b] by [-c] gives [c * (b - a) = 0], which is also
-    a valid contribution. The spec text says "nonnegative" but that
-    only constrains the inequality case; equalities are signed by
-    convention. We surface a per-hypothesis violation
-    ([Negative_coefficient]) only when the coefficient sign is wrong
-    for that hypothesis's term shape.
+    Sign convention. Coefficients on inequality ([Le], [Lt])
+    hypotheses must be nonnegative — Farkas' lemma is unsound
+    otherwise. Coefficients on equality ([Eq]) hypotheses may be any
+    rational; multiplying an equality [a = b] by [-c] gives
+    [c * (b - a) = 0], which is also a valid contribution. The spec
+    text says "nonnegative" but that only constrains the inequality
+    case; equalities are signed by convention. We surface a
+    per-hypothesis violation ([Negative_coefficient]) only when the
+    coefficient sign is wrong for that hypothesis's term shape.
 
-    Fragment scope. The +1 trick for [¬(a <= b) ≡ b + 1 <= a] is
-    Z-specific (LIA). For LRA we'd need strict-inequality witnesses,
-    which require a slightly different residual check. v1 supports
-    LIA only; LRA Farkas is a follow-up. We don't gate on the cert's
-    [refinement_record.fragment] because the linearizer ignores
-    types — but a future LRA Farkas verifier will need to dispatch
-    on fragment.
+    Fragment scope. Compilation of strict shapes ([LT.lt], [GT.gt],
+    [Not(LE.le)]) depends on the fragment: in LIA we apply the +1
+    trick ([¬(a <= b) ≡ b + 1 <= a]) which is sound only over Z;
+    in LRA we keep strictness explicit as a [Lt] form. The verify
+    entry derives the fragment from the IR's
+    [logic_classification.first_order_fragment]; only the literal
+    string ["LRA"] selects strict mode, everything else (notably
+    ["LIA"]) takes the +1 path. The linearization vocabulary is the
+    same in both modes — the difference is only in how strict
+    inequalities compile and how the residual is judged
+    contradictory.
 
     Linearization scope. The linearizer recognizes the LIA shell
     vocabulary: [HAdd.hAdd]/[Int.add]/[Add.add],
@@ -90,57 +95,70 @@ and bin_lin op a b =
 
 (* --- compiled hypotheses --------------------------------------------- *)
 
-(** A hypothesis compiled to one of the two Farkas-amenable forms.
-    [Le f] means [f <= 0]; [Eq f] means [f = 0]. *)
+(** A hypothesis compiled to one of the three Farkas-amenable forms.
+    [Le f] means [f <= 0]; [Lt f] means [f < 0]; [Eq f] means [f = 0]. *)
 type compiled =
   | Le of Linear_arith.t
+  | Lt of Linear_arith.t
   | Eq of Linear_arith.t
 
 (** Compile a hypothesis shell to a [compiled] form. Returns the
     raw [Ir.shell_term] structure as a [Nonlinear] detail if anything
     fails to linearize; this lets the caller surface a useful error
-    rather than a generic "couldn't parse". *)
-let compile_hypothesis (shell : Ir.shell_term) : (compiled, string) result =
-  let lift_pair op a b =
+    rather than a generic "couldn't parse".
+
+    [fragment] selects how strict shapes ([LT.lt], [GT.gt],
+    [Not(LE.le)]) compile. ["LRA"] keeps strictness explicit as
+    [Lt]; anything else (default ["LIA"]) folds it into [Le] via the
+    +1 trick — sound only over the integers. *)
+let compile_hypothesis ?(fragment = "LIA") (shell : Ir.shell_term)
+  : (compiled, string) result =
+  let lra = String.equal fragment "LRA" in
+  let lift_le_pair a b =
     match linearize a, linearize b with
-    | Some la, Some lb -> Ok (op (Linear_arith.sub la lb))
+    | Some la, Some lb -> Ok (Le (Linear_arith.sub la lb))
+    | _ -> Error "non-linear arithmetic operand"
+  in
+  let lift_eq_pair a b =
+    match linearize a, linearize b with
+    | Some la, Some lb -> Ok (Eq (Linear_arith.sub la lb))
+    | _ -> Error "non-linear arithmetic operand"
+  in
+  (* Compile [a < b] under the active fragment: strict [Lt(a-b)] for
+     LRA, or [Le(a-b+1)] under the LIA +1 trick. *)
+  let lift_strict_pair a b =
+    match linearize a, linearize b with
+    | Some la, Some lb ->
+      let f = Linear_arith.sub la lb in
+      if lra then Ok (Lt f)
+      else
+        Ok (Le (Linear_arith.add f
+                  (Linear_arith.const Linear_arith.rat_one)))
     | _ -> Error "non-linear arithmetic operand"
   in
   match shell with
   | Eq { left; right; _ } ->
-    lift_pair (fun f -> Eq f) left right
+    lift_eq_pair left right
   | App { symbol = "LE.le"; args = [ a; b ]; _ }
   | App { symbol = "<="; args = [ a; b ]; _ } ->
-    lift_pair (fun f -> Le f) a b
+    lift_le_pair a b
   | App { symbol = "GE.ge"; args = [ a; b ]; _ }
   | App { symbol = ">="; args = [ a; b ]; _ } ->
-    lift_pair (fun f -> Le f) b a
+    lift_le_pair b a
   | App { symbol = "LT.lt"; args = [ a; b ]; _ }
   | App { symbol = "<"; args = [ a; b ]; _ } ->
-    (match linearize a, linearize b with
-     | Some la, Some lb ->
-       let f = Linear_arith.add (Linear_arith.sub la lb)
-                 (Linear_arith.const Linear_arith.rat_one) in
-       Ok (Le f)
-     | _ -> Error "non-linear arithmetic operand")
+    lift_strict_pair a b
   | App { symbol = "GT.gt"; args = [ a; b ]; _ }
   | App { symbol = ">"; args = [ a; b ]; _ } ->
-    (match linearize a, linearize b with
-     | Some la, Some lb ->
-       let f = Linear_arith.add (Linear_arith.sub lb la)
-                 (Linear_arith.const Linear_arith.rat_one) in
-       Ok (Le f)
-     | _ -> Error "non-linear arithmetic operand")
+    lift_strict_pair b a
   | Not { operand = App { symbol = "LE.le"; args = [ a; b ]; _ } }
   | Not { operand = App { symbol = "<="; args = [ a; b ]; _ } } ->
-    (match linearize a, linearize b with
-     | Some la, Some lb ->
-       let f = Linear_arith.add (Linear_arith.sub lb la)
-                 (Linear_arith.const Linear_arith.rat_one) in
-       Ok (Le f)
-     | _ -> Error "non-linear arithmetic operand")
-  | Not { operand = App { symbol = "LT.lt"; args = [ a; b ]; _ } } ->
-    lift_pair (fun f -> Le f) b a
+    (* ¬(a <= b) ≡ b < a *)
+    lift_strict_pair b a
+  | Not { operand = App { symbol = "LT.lt"; args = [ a; b ]; _ } }
+  | Not { operand = App { symbol = "<"; args = [ a; b ]; _ } } ->
+    (* ¬(a < b) ≡ b <= a — same in LIA and LRA, no +1. *)
+    lift_le_pair b a
   | _ -> Error "unsupported hypothesis shape"
 
 (* --- main entry ------------------------------------------------------ *)
@@ -200,8 +218,11 @@ let parse_coefficients (witness : Yojson.Safe.t)
   | _ -> None
 
 (** Run Farkas verification. Returns [Verified] on a valid certificate,
-    or one of the failure variants describing what went wrong. *)
+    or one of the failure variants describing what went wrong. The
+    fragment is read from [ir.logic_classification.first_order_fragment]
+    and selects strict-witness behavior — see [compile_hypothesis]. *)
 let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
+  let fragment = ir.logic_classification.first_order_fragment in
   match parse_coefficients witness with
   | None ->
     Malformed_witness {
@@ -211,8 +232,11 @@ let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
   | Some [] ->
     Malformed_witness { detail = "empty coefficient list" }
   | Some entries ->
-    let rec sum_up acc = function
-      | [] -> Ok acc
+    (* [has_strict] becomes true the first time a [Lt] form is added
+       with a strictly positive coefficient. A zero coef on a strict
+       form contributes nothing and does not preserve strictness. *)
+    let rec sum_up acc has_strict = function
+      | [] -> Ok (acc, has_strict)
       | (hyp_name, coef_str) :: rest ->
         (match Linear_arith.rat_of_string coef_str with
          | None ->
@@ -222,7 +246,7 @@ let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
             | None ->
               Error (Unknown_hypothesis { hypothesis = hyp_name })
             | Some shell ->
-              (match compile_hypothesis shell with
+              (match compile_hypothesis ~fragment shell with
                | Error detail ->
                  Error (Nonlinear { hypothesis = hyp_name; detail })
                | Ok (Le f) ->
@@ -233,18 +257,39 @@ let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
                    })
                  else
                    let term = Linear_arith.scale coef f in
-                   sum_up (Linear_arith.add acc term) rest
+                   sum_up (Linear_arith.add acc term) has_strict rest
+               | Ok (Lt f) ->
+                 if not (Linear_arith.rat_is_nonneg coef) then
+                   Error (Negative_coefficient {
+                     hypothesis = hyp_name;
+                     value = Linear_arith.rat_to_string coef;
+                   })
+                 else
+                   let term = Linear_arith.scale coef f in
+                   let strict' =
+                     has_strict || Linear_arith.rat_is_pos coef
+                   in
+                   sum_up (Linear_arith.add acc term) strict' rest
                | Ok (Eq f) ->
                  let term = Linear_arith.scale coef f in
-                 sum_up (Linear_arith.add acc term) rest)))
+                 sum_up (Linear_arith.add acc term) has_strict rest)))
     in
-    (match sum_up Linear_arith.zero entries with
+    (match sum_up Linear_arith.zero false entries with
      | Error r -> r
-     | Ok residual ->
-       if Linear_arith.is_constant residual
-       && Linear_arith.rat_is_pos (Linear_arith.constant_value residual)
-       then Verified
+     | Ok (residual, has_strict) ->
+       if not (Linear_arith.is_constant residual) then
+         Not_contradictory { residual = Linear_arith.to_string residual }
        else
-         Not_contradictory {
+         let c = Linear_arith.constant_value residual in
+         (* Loose combination: the sum is bounded by [<= 0], so a
+            strictly-positive constant contradicts. With a strict
+            witness present the sum is bounded by [< 0], so any
+            non-negative constant contradicts. *)
+         let ok =
+           if has_strict then Linear_arith.rat_is_nonneg c
+           else Linear_arith.rat_is_pos c
+         in
+         if ok then Verified
+         else Not_contradictory {
            residual = Linear_arith.to_string residual;
          })
