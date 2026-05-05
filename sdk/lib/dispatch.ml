@@ -12,7 +12,9 @@
     Order. The driver iterates manifests in the order they're
     handed in. Callers can sort by adapter preference (latency,
     tier capability, user-supplied priority) before passing the
-    list. The driver itself is preference-agnostic.
+    list — see [Manifest.sort_by_max_tier_descending] for the
+    "prefer higher-tier capability" policy the FFI broker uses by
+    default. The driver itself is preference-agnostic.
 
     Stop condition. The driver stops at the first [Cert _] from
     an adapter, leaving the rest of the manifests un-attempted. A

@@ -41,7 +41,7 @@ let test_codec_round_trip_cvc5 () =
     [ "LIA"; "LRA"; "BV"; "UF"; "UFLIA"; "UFLRA"; "ARRAY" ]
     m.logic_fragments;
   Alcotest.(check (list int)) "tiers_produced preserved"
-    [ 0; 1; 3 ] m.tiers_produced
+    [ 0; 1; 2; 3 ] m.tiers_produced
 
 let test_decode_rejects_missing_required () =
   let bad = `Assoc [ "manifest_version", `String "1.0" ] in

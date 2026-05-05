@@ -108,6 +108,15 @@ let bv_only_manifest () : Manifest.t = {
   logic_fragments = [ "BV" ];
 }
 
+(** A higher-tier manifest stand-in for sort-helper tests.
+    Doesn't need a real adapter binding since we never run it. *)
+let high_tier_manifest ?(adapter = "synthetic-tier2") () : Manifest.t = {
+  (cvc4_manifest ()) with
+  adapter;
+  adapter_version = "0.0";
+  tiers_produced = [ 0; 1; 2 ];
+}
+
 (* --- Adapter registry helpers ---------------------------------------- *)
 
 let registry_with_cvc4 () : (string, Adapter.t) Hashtbl.t =
@@ -243,6 +252,25 @@ let test_continue_past_success () =
   Alcotest.(check bool) "cert minted from one of them" true
     (Option.is_some r.cert)
 
+(** [Manifest.sort_by_max_tier_descending] floats higher-tier
+    manifests to the front and is stable on ties. *)
+let test_sort_by_max_tier_descending () =
+  let cvc4 = cvc4_manifest () in
+  let cvc5 = high_tier_manifest ~adapter:"cvc5-like" () in
+  let other_tier0 = { (cvc4_manifest ()) with adapter = "other-tier0" } in
+  (* Mixed input: tier-0 then tier-2 then tier-0. *)
+  let sorted = Manifest.sort_by_max_tier_descending
+    [ cvc4; cvc5; other_tier0 ]
+  in
+  let names = List.map (fun (m : Manifest.t) -> m.adapter) sorted in
+  Alcotest.(check (list string)) "tier-2 first, ties keep input order"
+    [ "cvc5-like"; "cvc4"; "other-tier0" ] names;
+  (* Stability check: two same-tier manifests preserve their input order. *)
+  let sorted2 = Manifest.sort_by_max_tier_descending [ cvc4; other_tier0 ] in
+  let names2 = List.map (fun (m : Manifest.t) -> m.adapter) sorted2 in
+  Alcotest.(check (list string)) "stable on ties"
+    [ "cvc4"; "other-tier0" ] names2
+
 let () =
   Alcotest.run "dispatch" [
     "driver", [
@@ -256,5 +284,9 @@ let () =
       Alcotest.test_case "stop_on_success default" `Quick test_stop_on_success;
       Alcotest.test_case "continue past success"
         `Quick test_continue_past_success;
+    ];
+    "preference", [
+      Alcotest.test_case "sort_by_max_tier_descending"
+        `Quick test_sort_by_max_tier_descending;
     ];
   ]

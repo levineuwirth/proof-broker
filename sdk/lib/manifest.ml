@@ -193,3 +193,22 @@ let to_json (m : t) : Yojson.Safe.t =
     | Some c -> f @ [ "concurrency", concurrency_to_json c ]
   in
   `Assoc f
+
+(** Highest tier this manifest claims to produce. Empty
+    [tiers_produced] (a malformed but representable manifest) is
+    treated as [-1] so it sorts below every well-formed manifest. *)
+let max_tier (m : t) : int =
+  match m.tiers_produced with
+  | [] -> -1
+  | xs -> List.fold_left max min_int xs
+
+(** Stable sort by [max_tier] descending: manifests that can mint
+    higher-tier certs come first. Stability preserves the caller's
+    input order within a tier — useful when a user has already
+    encoded latency/policy preference among adapters at the same
+    tier capability. The driver in [Dispatch] is preference-agnostic;
+    callers that want a tier-preferring broker apply this first. *)
+let sort_by_max_tier_descending (ms : t list) : t list =
+  List.stable_sort
+    (fun a b -> compare (max_tier b) (max_tier a))
+    ms

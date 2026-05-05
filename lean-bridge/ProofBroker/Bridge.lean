@@ -478,12 +478,21 @@ private def parseAttempt (j : Json) : Attempt :=
     plus an ordered list of manifest JSON values; the broker
     consults each manifest's capabilities, dispatches to the first
     eligible adapter that succeeds, and returns the cert (if any)
-    plus the per-manifest attempt log. -/
+    plus the per-manifest attempt log.
+
+    [preferHigherTier := true] (the default) sorts manifests by
+    max declared tier capability descending before dispatch, so a
+    Tier 1/2-capable adapter wins over a Tier 0 fallback regardless
+    of input order. The sort is stable, so caller-supplied order
+    within a tier is preserved. Pass [false] to opt out and respect
+    input order verbatim. -/
 def runDispatchBroker (ir : IR) (manifests : List Json)
+    (preferHigherTier : Bool := true)
     : Except FfiError BrokerResult := do
   let input := Json.mkObj [
     ("ir", ProofBroker.IR.IR.toJson ir),
-    ("manifests", Json.arr manifests.toArray)
+    ("manifests", Json.arr manifests.toArray),
+    ("prefer_higher_tier", .bool preferHigherTier)
   ]
   let payload ← decodeEnvelope (pbCall "dispatch_broker" input.compress)
   let cert := (payload.getObjVal? "cert").toOption
