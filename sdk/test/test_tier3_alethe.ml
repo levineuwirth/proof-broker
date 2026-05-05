@@ -113,18 +113,17 @@ let make_case_split_ir () : Ir.t =
     user_directives = None;
   }
 
-(** A synthetic minimal Alethe proof: two assumes + one la_generic
-    step, no propositional bookkeeping. v0's verifier walks each
-    step's per-rule check; this proof has exactly the rule
-    coverage v0 supports. Real cvc5 proofs also use [resolution],
-    [refl], [cong], [trans], etc. and trip the bailout until
-    those rules are registered too. *)
+(** A synthetic minimal Alethe proof: two assumes, one la_generic
+    step, one resolution step that combines la_generic's clause
+    with the assumes to reach the empty clause [(cl)]. Uses only
+    rules in [supported_rules]. *)
 let synthetic_la_generic_only_proof : string =
   "(\n\
    (assume a0 (>= x 3))\n\
    (assume a1 (<= x 1))\n\
    (step t1 (cl (not (>= x 3)) (not (<= x 1))) \
    :rule la_generic :args (1 1))\n\
+   (step t2 (cl) :rule resolution :premises (t1 a0 a1))\n\
    )"
 
 (* --- whole-proof verifier tests ------------------------------------ *)
@@ -142,23 +141,28 @@ let test_verify_synthetic_la_generic_only () =
       step_id rule detail)
 
 let test_verify_real_fixture_unsupported () =
-  (* The alethe-x-3-x-1 fixture uses 14 distinct Alethe rules
-     (equiv_pos2, hole, refl, cong, trans, resolution, …) on top
-     of la_generic. v0 only registers la_generic, so the walker
-     should bail out with [Unsupported_rule] on whichever
-     non-la_generic rule comes first. *)
+  (* The alethe-x-3-x-1 fixture uses 14 distinct Alethe rules.
+     With la_generic + refl + trans + cong + resolution + false
+     registered, the walker now gets further than v0 but still
+     trips on the propositional bookkeeping rules cvc5 emits
+     ([equiv_pos2], [hole], [la_mult_neg], [implies], [and_neg],
+     [equiv_simplify], [equiv1], [rare_rewrite]). The bailout
+     rule must be one of these — i.e., NOT in our supported set. *)
   let proof_str = load_fixture "alethe-x-3-x-1.proof" in
   let ir = make_x_ir () in
   match Tier3_alethe.verify ir proof_str with
   | Unsupported_rule { rule; _ } ->
-    Alcotest.(check bool) "bailout names a non-la_generic rule"
-      true (rule <> "la_generic")
+    Alcotest.(check bool)
+      (Printf.sprintf
+         "bailout rule %s is not in supported_rules" rule)
+      false (List.mem rule Tier3_alethe.supported_rules)
   | Verified ->
-    Alcotest.fail "real fixture should not Verify under v0 \
-                   (only la_generic registered; fixture uses 14 rules)"
-  | Step_failed { rule; _ } ->
+    Alcotest.fail "real fixture should not Verify yet — \
+                   supported_rules doesn't cover all 14 rules"
+  | Step_failed { rule; step_id; detail } ->
     Alcotest.fail (Printf.sprintf
-      "expected Unsupported_rule, got Step_failed (rule=%s)" rule)
+      "expected Unsupported_rule, got Step_failed at %s (rule=%s): %s"
+      step_id rule detail)
 
 let test_verify_case_split_unsupported () =
   let proof_str = load_fixture "alethe-case-split-x.proof" in
@@ -177,6 +181,193 @@ let test_verify_case_split_unsupported () =
     literal: replace the original [1] with [9999], so the matched
     Farkas witness fails the contradiction check at
     [Farkas.verify]. *)
+(* --- per-rule checker tests ----------------------------------------- *)
+
+let env_with (ir : Ir.t) (proven : (string * Alethe.Sexp.t list) list)
+  : Tier3_alethe.env =
+  let h = Hashtbl.create (List.length proven) in
+  List.iter (fun (k, v) -> Hashtbl.replace h k v) proven;
+  { ir; proven = h }
+
+let mk_step ?(args = []) ?(premises = []) ~rule ~clause id : Alethe.step = {
+  id; rule; clause;
+  args = (if args = [] then None else Some args);
+  premises = (if premises = [] then None else Some premises);
+  discharge = None;
+}
+
+let test_check_refl_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.refl" ~rule:"refl"
+    ~clause:[ List [ Atom "="; Atom "x"; Atom "x" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "refl rejected (= x x): %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | Step_unsupported_rule r -> "unsupported " ^ r
+       | _ -> "?"))
+
+let test_check_refl_rejects_non_equal () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.refl" ~rule:"refl"
+    ~clause:[ List [ Atom "="; Atom "x"; Atom "y" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "refl should reject (= x y) with distinct sides"
+
+let test_check_trans_accepts_chain () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "="; Atom "a"; Atom "b" ] ];
+    "p2", [ List [ Atom "="; Atom "b"; Atom "c" ] ];
+  ] in
+  let step = mk_step "t.trans" ~rule:"trans"
+    ~clause:[ List [ Atom "="; Atom "a"; Atom "c" ] ]
+    ~premises:[ "p1"; "p2" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "trans rejected a=b, b=c → a=c: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_trans_rejects_broken_chain () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "="; Atom "a"; Atom "b" ] ];
+    "p2", [ List [ Atom "="; Atom "c"; Atom "d" ] ];
+  ] in
+  let step = mk_step "t.trans" ~rule:"trans"
+    ~clause:[ List [ Atom "="; Atom "a"; Atom "d" ] ]
+    ~premises:[ "p1"; "p2" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "trans should reject broken chain"
+
+let test_check_cong_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "="; Atom "a1"; Atom "b1" ] ];
+    "p2", [ List [ Atom "="; Atom "a2"; Atom "b2" ] ];
+  ] in
+  let step = mk_step "t.cong" ~rule:"cong"
+    ~clause:[ List [ Atom "=";
+                     List [ Atom "f"; Atom "a1"; Atom "a2" ];
+                     List [ Atom "f"; Atom "b1"; Atom "b2" ] ] ]
+    ~premises:[ "p1"; "p2" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "cong rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_resolution_simple () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ Atom "p"; Atom "q" ];
+    "p2", [ List [ Atom "not"; Atom "p" ] ];
+  ] in
+  let step = mk_step "t.res" ~rule:"resolution"
+    ~clause:[ Atom "q" ]
+    ~premises:[ "p1"; "p2" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "resolution rejected (p∨q), ¬p → q: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_resolution_to_empty () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ Atom "p" ];
+    "p2", [ List [ Atom "not"; Atom "p" ] ];
+  ] in
+  let step = mk_step "t.res" ~rule:"resolution"
+    ~clause:[]
+    ~premises:[ "p1"; "p2" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "resolution to empty rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_resolution_rejects_unsound () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ Atom "p" ];
+    "p2", [ Atom "q" ];
+  ] in
+  (* Conclusion `r` doesn't appear in any premise; resolution
+     should reject. *)
+  let step = mk_step "t.res" ~rule:"resolution"
+    ~clause:[ Atom "r" ]
+    ~premises:[ "p1"; "p2" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "resolution should reject unsound conclusion"
+
+let test_check_false () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.false" ~rule:"false"
+    ~clause:[ List [ Atom "not"; Atom "false" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "false rejected (cl (not false)): %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_verify_requires_terminal_clause () =
+  (* la_generic alone, no resolution: terminates with non-empty
+     clause, should fail termination check. *)
+  let proof_str =
+    "(\n\
+     (assume a0 (>= x 3))\n\
+     (assume a1 (<= x 1))\n\
+     (step t1 (cl (not (>= x 3)) (not (<= x 1))) \
+     :rule la_generic :args (1 1))\n\
+     )"
+  in
+  let ir = make_x_ir () in
+  match Tier3_alethe.verify ir proof_str with
+  | Step_failed { detail; _ }
+    when (try
+            let _ = Str.search_forward
+              (Str.regexp_string "final step") detail 0
+            in true
+          with Not_found -> false) -> ()
+  | other ->
+    let label = match other with
+      | Verified -> "Verified"
+      | Unsupported_rule { rule; _ } -> "Unsupported_rule " ^ rule
+      | Step_failed { detail; _ } -> "Step_failed " ^ detail
+    in
+    Alcotest.fail
+      (Printf.sprintf "expected Step_failed (final step …), got %s"
+         label)
+
 (* --- supported_rules / proof_rules_supported gate ------------------- *)
 
 let test_supported_rules_sync () =
@@ -188,12 +379,13 @@ let test_supported_rules_sync () =
      dispatch knows the rule: it'll return [Step_failed], not
      [Step_unsupported_rule]. *)
   let ir = make_x_ir () in
+  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0 } in
   List.iter (fun rule ->
     let probe : Alethe.step = {
       id = "probe"; rule;
       clause = []; args = Some []; premises = None; discharge = None;
     } in
-    match Tier3_alethe.check_step ir probe with
+    match Tier3_alethe.check_step env probe with
     | Step_unsupported_rule r ->
       Alcotest.fail
         (Printf.sprintf "rule %s in supported_rules but check_step \
@@ -239,7 +431,8 @@ let test_verify_step_failed () =
     premises = None;
     discharge = None;
   } in
-  match Tier3_alethe.check_step ir bogus_step with
+  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0 } in
+  match Tier3_alethe.check_step env bogus_step with
   | Step_failed { rule; _ } ->
     Alcotest.(check string) "rule preserved on failure"
       "la_generic" rule
@@ -342,6 +535,30 @@ let () =
         `Quick test_proof_rules_supported_synthetic;
       Alcotest.test_case "real fixture fails gate"
         `Quick test_proof_rules_supported_real_fixture;
+    ];
+    "rules", [
+      Alcotest.test_case "refl accepts (= x x)"
+        `Quick test_check_refl_accepts;
+      Alcotest.test_case "refl rejects (= x y)"
+        `Quick test_check_refl_rejects_non_equal;
+      Alcotest.test_case "trans accepts a=b ∧ b=c → a=c"
+        `Quick test_check_trans_accepts_chain;
+      Alcotest.test_case "trans rejects broken chain"
+        `Quick test_check_trans_rejects_broken_chain;
+      Alcotest.test_case "cong accepts per-arg equalities"
+        `Quick test_check_cong_accepts;
+      Alcotest.test_case "resolution: (p∨q), ¬p → q"
+        `Quick test_check_resolution_simple;
+      Alcotest.test_case "resolution: p, ¬p → ()"
+        `Quick test_check_resolution_to_empty;
+      Alcotest.test_case "resolution rejects unsound conclusion"
+        `Quick test_check_resolution_rejects_unsound;
+      Alcotest.test_case "false rule accepts (cl (not false))"
+        `Quick test_check_false;
+    ];
+    "termination", [
+      Alcotest.test_case "non-terminal final clause rejected"
+        `Quick test_verify_requires_terminal_clause;
     ];
     "verifier-end-to-end", [
       Alcotest.test_case "Tier 3 alethe-2024 cert verifies"

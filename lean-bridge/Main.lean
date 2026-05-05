@@ -845,10 +845,13 @@ def runTier3AletheFlow (rootDir : System.FilePath) : IO Unit := do
         ("trace_data", .str proofStr)
       ])
     ]
-  -- Synthetic minimal proof: one la_generic step, no other rules.
-  -- v0 has la_generic registered, so this verifies end-to-end.
+  -- Synthetic minimal proof reaching the empty clause via
+  -- la_generic + resolution against the two assumes. Uses only
+  -- rules in `Tier3_alethe.supported_rules` (la_generic,
+  -- resolution).
   let synthetic := "(\n(assume a0 (>= x 3))\n(assume a1 (<= x 1))\n" ++
-    "(step t1 (cl (not (>= x 3)) (not (<= x 1))) :rule la_generic :args (1 1))\n)"
+    "(step t1 (cl (not (>= x 3)) (not (<= x 1))) :rule la_generic :args (1 1))\n" ++
+    "(step t2 (cl) :rule resolution :premises (t1 a0 a1))\n)"
   let goodCert := mkCert synthetic "alethe-2024"
   let res ← match runVerifyCertificate goodCert ir with
     | .ok r => pure r

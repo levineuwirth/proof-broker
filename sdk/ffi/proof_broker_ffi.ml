@@ -461,7 +461,17 @@ let check_alethe_step (input : string) : string =
     in
     let ir = Proof_broker.Codec.of_json ir_json in
     let step = Proof_broker.Alethe.step_of_json step_json in
-    let result = Proof_broker.Tier3_alethe.check_step ir step in
+    (* The FFI per-step interface ships no premise context yet —
+       it's a direction-2 hook for a future Lean walker. With an
+       empty [env.proven], stateless rules ([la_generic], [refl],
+       [false]) work; stateful rules ([trans], [cong], [resolution])
+       will surface "unknown premise" until the FFI grows an env
+       parameter. *)
+    let env : Proof_broker.Tier3_alethe.env = {
+      ir;
+      proven = Hashtbl.create 0;
+    } in
+    let result = Proof_broker.Tier3_alethe.check_step env step in
     envelope_ok (Proof_broker.Tier3_alethe.step_result_to_json result)
   with
   | Proof_broker.Codec.Decode_error (msg, j) ->

@@ -32,6 +32,42 @@ type step_result =
   | Step_unsupported_rule of string
   | Step_failed of { rule : string; detail : string }
 
+(** Per-proof verification environment: the IR plus a map from
+    already-verified step IDs (and assume IDs) to their proven
+    clauses. Stateful rules ([trans], [cong], [resolution]) look
+    up premise clauses through this; stateless rules ([la_generic],
+    [refl], [false]) ignore the [proven] table. *)
+type env = {
+  ir : Ir.t;
+  proven : (string, Alethe.Sexp.t list) Hashtbl.t;
+}
+
+(** [Sexp.t] structural equality is the right notion for clause
+    literals since [Alethe.parse] already expanded named refs, so
+    syntactically-equal forms after expansion really mean the same
+    literal. *)
+let sexp_equal : Alethe.Sexp.t -> Alethe.Sexp.t -> bool = (=)
+
+(** Negate a clause literal: strip [(not L)] to [L]; otherwise wrap
+    in [(not L)]. Used by the [resolution] check to pair off
+    complementary literals. *)
+let complement_literal (lit : Alethe.Sexp.t) : Alethe.Sexp.t =
+  match lit with
+  | List [ Atom "not"; inner ] -> inner
+  | _ -> List [ Atom "not"; lit ]
+
+(** Pop the first occurrence of [needle] from [lst]. [None] when
+    no match. Multiset-aware diff via repeated [pop_first]. *)
+let pop_first (needle : Alethe.Sexp.t) (lst : Alethe.Sexp.t list)
+  : Alethe.Sexp.t list option =
+  let rec loop acc = function
+    | [] -> None
+    | x :: rest when sexp_equal x needle ->
+      Some (List.rev_append acc rest)
+    | x :: rest -> loop (x :: acc) rest
+  in
+  loop [] lst
+
 (** Check a single [la_generic] step. Reuses the existing
     [Alethe_farkas] extraction (clause-vs-IR-hypothesis matching by
     linear-form scaling, plus LIA tightening) to produce a Farkas
@@ -73,14 +109,202 @@ let check_la_generic (ir : Ir.t) (step : Alethe.step) : step_result =
            | Malformed_witness { detail } -> detail);
        })
 
+(** [refl]: [(cl (= a a))]. The clause must contain exactly one
+    equality literal whose two sides are syntactically equal after
+    named-ref expansion. *)
+let check_refl (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "="; a; b ] ] when sexp_equal a b -> Step_verified
+  | [ List [ Atom "="; _; _ ] ] ->
+    Step_failed {
+      rule = "refl";
+      detail = "operands of = are not syntactically equal";
+    }
+  | _ ->
+    Step_failed {
+      rule = "refl";
+      detail = "expected (cl (= a b)) with one equality literal";
+    }
+
+(** [false]: [(cl (not false))]. Asserts the trivial fact that
+    [false] is false; used in conjunction with [resolution] to
+    convert a [(cl false)] clause into the empty clause [(cl)]. *)
+let check_false (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "not"; Atom "false" ] ] -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "false";
+      detail = "expected (cl (not false))";
+    }
+
+(** [trans]: from [(cl (= a_0 a_1))], [(cl (= a_1 a_2))], …,
+    [(cl (= a_{n-1} a_n))], conclude [(cl (= a_0 a_n))]. Each
+    premise must be a singleton equality clause whose left-hand
+    side is the previous link's right-hand side. *)
+let check_trans (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match step.clause with
+  | [ List [ Atom "="; conclusion_a; conclusion_b ] ] ->
+    if premises = [] then
+      Step_failed { rule = "trans"; detail = "no premises" }
+    else
+      let lookup id =
+        match Hashtbl.find_opt env.proven id with
+        | Some [ List [ Atom "="; a; b ] ] -> Ok (a, b)
+        | Some _ -> Error "premise not a singleton equality"
+        | None -> Error ("unknown premise: " ^ id)
+      in
+      let rec walk expected_a = function
+        | [] -> Step_failed { rule = "trans"; detail = "empty premise list" }
+        | [ id ] ->
+          (match lookup id with
+           | Error msg -> Step_failed { rule = "trans"; detail = msg }
+           | Ok (a, b) ->
+             if not (sexp_equal a expected_a) then
+               Step_failed {
+                 rule = "trans";
+                 detail = "last premise lhs doesn't match chain";
+               }
+             else if sexp_equal b conclusion_b then Step_verified
+             else
+               Step_failed {
+                 rule = "trans";
+                 detail = "last premise rhs doesn't match conclusion rhs";
+               })
+        | id :: rest ->
+          (match lookup id with
+           | Error msg -> Step_failed { rule = "trans"; detail = msg }
+           | Ok (a, b) ->
+             if not (sexp_equal a expected_a) then
+               Step_failed {
+                 rule = "trans";
+                 detail = "premise lhs doesn't follow chain";
+               }
+             else walk b rest)
+      in
+      walk conclusion_a premises
+  | _ ->
+    Step_failed {
+      rule = "trans";
+      detail = "expected (cl (= a b)) singleton equality conclusion";
+    }
+
+(** [cong]: from [(cl (= a_1 b_1))], …, [(cl (= a_n b_n))],
+    conclude [(cl (= (f a_1 … a_n) (f b_1 … b_n)))]. The premise
+    list runs in arg-position order, including trivial [(= a a)]
+    refl premises for syntactically-identical arg pairs (cvc5
+    always emits all n premises, even the trivial ones). *)
+let check_cong (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match step.clause with
+  | [ List [ Atom "=";
+             List (Atom f1 :: args1);
+             List (Atom f2 :: args2) ] ]
+    when f1 = f2 && List.length args1 = List.length args2 ->
+    if List.length premises <> List.length args1 then
+      Step_failed {
+        rule = "cong";
+        detail = "premise count doesn't match function arity";
+      }
+    else
+      let rec walk = function
+        | [], [], [] -> Step_verified
+        | a :: arest, b :: brest, p :: prest ->
+          (match Hashtbl.find_opt env.proven p with
+           | Some [ List [ Atom "="; pa; pb ] ]
+             when sexp_equal pa a && sexp_equal pb b ->
+             walk (arest, brest, prest)
+           | Some _ ->
+             Step_failed {
+               rule = "cong";
+               detail = "premise " ^ p ^ " doesn't match arg pair shape";
+             }
+           | None ->
+             Step_failed {
+               rule = "cong";
+               detail = "unknown premise: " ^ p;
+             })
+        | _ ->
+          Step_failed {
+            rule = "cong";
+            detail = "args/premises lists desynced (impossible)";
+          }
+      in
+      walk (args1, args2, premises)
+  | _ ->
+    Step_failed {
+      rule = "cong";
+      detail = "expected (cl (= (f …) (f …))) with same head symbol";
+    }
+
+(** [resolution]: from premise clauses C_1, …, C_n derive the
+    conclusion clause D. The check is multiset-based: the
+    multiset of premise literals minus the multiset of conclusion
+    literals must consist entirely of complementary pairs
+    [(L, ¬L)]. Sound but slightly incomplete — declines proofs
+    that need [factoring] (duplicate-literal collapse), which
+    Alethe technically handles via a separate rule. *)
+let check_resolution (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  if premises = [] then
+    Step_failed { rule = "resolution"; detail = "no premises" }
+  else
+    let unknown = List.filter
+      (fun id -> not (Hashtbl.mem env.proven id)) premises
+    in
+    if unknown <> [] then
+      Step_failed {
+        rule = "resolution";
+        detail = "unknown premises: " ^ String.concat ", " unknown;
+      }
+    else
+      let premise_lits = List.concat_map
+        (fun id -> Hashtbl.find env.proven id) premises
+      in
+      let conclusion_lits = step.clause in
+      let rec subtract removed = function
+        | [] -> Ok removed
+        | lit :: rest ->
+          (match pop_first lit removed with
+           | Some removed' -> subtract removed' rest
+           | None ->
+             Error (Printf.sprintf
+               "conclusion literal not in any premise: %s"
+               (Alethe.Sexp.to_string lit)))
+      in
+      (match subtract premise_lits conclusion_lits with
+       | Error msg -> Step_failed { rule = "resolution"; detail = msg }
+       | Ok removed ->
+         let rec pair_up = function
+           | [] -> Ok ()
+           | lit :: rest ->
+             let comp = complement_literal lit in
+             (match pop_first comp rest with
+              | Some rest' -> pair_up rest'
+              | None ->
+                Error (Printf.sprintf
+                  "unpaired residual literal (no complement): %s"
+                  (Alethe.Sexp.to_string lit)))
+         in
+         (match pair_up removed with
+          | Ok () -> Step_verified
+          | Error msg ->
+            Step_failed { rule = "resolution"; detail = msg }))
+
 (** Top-level rule dispatch. Add a new clause here when wiring an
     OCaml-side checker for another Alethe rule, and add the same
-    rule name to [supported_rules] below. The Lean walker treats
+    rule name to [supported_rules] below. The walker treats
     [Step_unsupported_rule _] as the bailout — Tier 3 verification
     fails when any step uses a rule no checker handles. *)
-let check_step (ir : Ir.t) (step : Alethe.step) : step_result =
+let check_step (env : env) (step : Alethe.step) : step_result =
   match step.rule with
-  | "la_generic" -> check_la_generic ir step
+  | "la_generic" -> check_la_generic env.ir step
+  | "refl" -> check_refl step
+  | "false" -> check_false step
+  | "trans" -> check_trans env step
+  | "cong" -> check_cong env step
+  | "resolution" -> check_resolution env step
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -89,7 +313,9 @@ let check_step (ir : Ir.t) (step : Alethe.step) : step_result =
     pins this. The cvc5 minter consults this set to decide whether
     a parsed proof is eligible for Tier 3 minting (the "fail
     closed" gate of direction 3). *)
-let supported_rules : string list = [ "la_generic" ]
+let supported_rules : string list = [
+  "cong"; "false"; "la_generic"; "refl"; "resolution"; "trans"
+]
 
 (** True iff every step in [p] uses a rule [check_step] knows. The
     cvc5 minter uses this to decide between minting Tier 3 (gate
@@ -135,11 +361,28 @@ type verify_result =
   | Unsupported_rule of { rule : string; step_id : string }
   | Step_failed of { step_id : string; rule : string; detail : string }
 
+(** True iff [clause] is the empty clause [(cl)] or its
+    [cvc5]-flavored equivalent [(cl false)] (a singleton clause
+    with the [false] literal). cvc5's Alethe output usually
+    terminates with one or the other; both denote the bottom
+    derivation. *)
+let is_terminal_clause (clause : Alethe.Sexp.t list) : bool =
+  match clause with
+  | [] -> true
+  | [ Atom "false" ] -> true
+  | _ -> false
+
 (** Verify a Tier 3 alethe-2024 proof end-to-end. Walks every step
-    in input order, dispatching to [check_step]; returns on the
-    first unsupported-rule or step-failure, or [Verified] when all
-    steps pass. The proof must parse as a valid Alethe S-expression;
-    a parse error surfaces as a [Step_failed] with [step_id = ""]
+    in input order, threading an [env] populated with the assumes'
+    atoms (as singleton clauses) and each verified step's clause
+    so stateful rules ([trans], [cong], [resolution]) can look up
+    premises. Returns on the first unsupported-rule or
+    step-failure. After all steps pass, requires the final step's
+    clause to be terminal ([(cl)] or [(cl false)]) — otherwise the
+    proof verified locally but didn't reach the bottom derivation,
+    and we surface that as a [Step_failed] on the final step.
+
+    A parse error surfaces as a [Step_failed] with [step_id = ""]
     and [rule = "<parse>"] so callers don't need a third failure
     arm. *)
 let verify (ir : Ir.t) (proof_str : string) : verify_result =
@@ -151,11 +394,38 @@ let verify (ir : Ir.t) (proof_str : string) : verify_result =
   | Error msg ->
     Step_failed { step_id = ""; rule = "<parse>"; detail = msg }
   | Ok p ->
+    let env = { ir; proven = Hashtbl.create 32 } in
+    (* Seed the environment with each assume's atom as a singleton
+       clause. Resolution premises can then reference assume IDs
+       directly. *)
+    List.iter
+      (fun (id, atom) -> Hashtbl.replace env.proven id [ atom ])
+      p.assumes;
     let rec walk = function
-      | [] -> Verified
+      | [] ->
+        (* Every step verified; check the final step's clause is
+           terminal. An empty step list is also a failure (no
+           proof at all). *)
+        (match List.rev p.steps with
+         | [] ->
+           Step_failed {
+             step_id = "";
+             rule = "<empty>";
+             detail = "proof has no steps";
+           }
+         | last :: _ ->
+           if is_terminal_clause last.clause then Verified
+           else
+             Step_failed {
+               step_id = last.id;
+               rule = last.rule;
+               detail = "final step does not derive (cl) or (cl false)";
+             })
       | (step : Alethe.step) :: rest ->
-        (match check_step ir step with
-         | Step_verified -> walk rest
+        (match check_step env step with
+         | Step_verified ->
+           Hashtbl.replace env.proven step.id step.clause;
+           walk rest
          | Step_unsupported_rule rule ->
            Unsupported_rule { rule; step_id = step.id }
          | Step_failed { rule; detail } ->
