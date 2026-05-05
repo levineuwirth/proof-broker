@@ -238,6 +238,137 @@ let check_cong (env : env) (step : Alethe.step) : step_result =
       detail = "expected (cl (= (f …) (f …))) with same head symbol";
     }
 
+(** [equiv_pos2]: tautological clause [(cl (not (= φ ψ)) (not φ) ψ)].
+    Encodes "from [φ ↔ ψ] and [φ], conclude [ψ]" in clause form;
+    sound regardless of [φ], [ψ] since the disjunction is a
+    propositional tautology. We just check the three-literal shape
+    matches with the same [φ] and [ψ] across positions. *)
+let check_equiv_pos2 (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "not"; List [ Atom "="; phi1; psi1 ] ];
+      List [ Atom "not"; phi2 ];
+      psi2 ]
+    when sexp_equal phi1 phi2 && sexp_equal psi1 psi2 -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "equiv_pos2";
+      detail = "expected (cl (not (= phi psi)) (not phi) psi)";
+    }
+
+(** [equiv_simplify]: a rewrite rule whose conclusion is always a
+    singleton equivalence [(cl (= LHS RHS))] for one of the standard
+    boolean simplifications:
+    - [(= φ true) ↔ φ], [(= true φ) ↔ φ]
+    - [(= φ false) ↔ (not φ)], [(= false φ) ↔ (not φ)]
+    - [(= φ φ) ↔ true]
+    cvc5's fixture only uses the first form, but the others are the
+    same shape-check cost. *)
+let check_equiv_simplify (step : Alethe.step) : step_result =
+  let ok =
+    match step.clause with
+    | [ List [ Atom "="; List [ Atom "="; a; Atom "true" ]; b ] ]
+      when sexp_equal a b -> true
+    | [ List [ Atom "="; List [ Atom "="; Atom "true"; a ]; b ] ]
+      when sexp_equal a b -> true
+    | [ List [ Atom "=";
+               List [ Atom "="; a; Atom "false" ];
+               List [ Atom "not"; b ] ] ]
+      when sexp_equal a b -> true
+    | [ List [ Atom "=";
+               List [ Atom "="; Atom "false"; a ];
+               List [ Atom "not"; b ] ] ]
+      when sexp_equal a b -> true
+    | [ List [ Atom "="; List [ Atom "="; a; b ]; Atom "true" ] ]
+      when sexp_equal a b -> true
+    | _ -> false
+  in
+  if ok then Step_verified
+  else Step_failed {
+    rule = "equiv_simplify";
+    detail = "no recognized boolean-simplification shape";
+  }
+
+(** [and_neg]: tautological clause [(cl (and l_1 … l_n) (not l_1) …
+    (not l_n))]. Encodes the de Morgan / and-introduction tautology.
+    Shape check: head literal is [(and a_1 … a_n)], remaining literals
+    are [(not a_1)], …, [(not a_n)] in order. *)
+let check_and_neg (step : Alethe.step) : step_result =
+  match step.clause with
+  | Alethe.Sexp.List (Atom "and" :: args) :: rest
+    when List.length rest = List.length args ->
+    let rec walk args rest =
+      match args, rest with
+      | [], [] -> true
+      | a :: arest,
+        Alethe.Sexp.List [ Atom "not"; b ] :: nrest
+        when sexp_equal a b -> walk arest nrest
+      | _ -> false
+    in
+    if walk args rest then Step_verified
+    else Step_failed {
+      rule = "and_neg";
+      detail = "negated literals don't match (and …) operands in order";
+    }
+  | _ ->
+    Step_failed {
+      rule = "and_neg";
+      detail = "expected (cl (and l_1 … l_n) (not l_1) … (not l_n))";
+    }
+
+(** [implies]: from premise [(cl (=> A B))], conclude [(cl (not A) B)].
+    Implication elimination as a clause rewrite. *)
+let check_implies (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises, step.clause with
+  | [ p ], [ List [ Atom "not"; a_concl ]; b_concl ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | Some [ List [ Atom "=>"; a_prem; b_prem ] ]
+       when sexp_equal a_prem a_concl && sexp_equal b_prem b_concl ->
+       Step_verified
+     | Some _ ->
+       Step_failed {
+         rule = "implies";
+         detail = "premise not (cl (=> A B)) matching conclusion";
+       }
+     | None ->
+       Step_failed {
+         rule = "implies";
+         detail = "unknown premise: " ^ p;
+       })
+  | _ ->
+    Step_failed {
+      rule = "implies";
+      detail = "expected one premise and (cl (not A) B) conclusion";
+    }
+
+(** [equiv1]: from premise [(cl (= A B))], conclude [(cl (not A) B)].
+    One direction of equivalence elimination (the [equiv2] sibling
+    yields [(cl A (not B))]; we register only [equiv1] until cvc5
+    emits the other on a real proof). *)
+let check_equiv1 (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises, step.clause with
+  | [ p ], [ List [ Atom "not"; a_concl ]; b_concl ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | Some [ List [ Atom "="; a_prem; b_prem ] ]
+       when sexp_equal a_prem a_concl && sexp_equal b_prem b_concl ->
+       Step_verified
+     | Some _ ->
+       Step_failed {
+         rule = "equiv1";
+         detail = "premise not (cl (= A B)) matching conclusion";
+       }
+     | None ->
+       Step_failed {
+         rule = "equiv1";
+         detail = "unknown premise: " ^ p;
+       })
+  | _ ->
+    Step_failed {
+      rule = "equiv1";
+      detail = "expected one premise and (cl (not A) B) conclusion";
+    }
+
 (** [resolution]: from premise clauses C_1, …, C_n derive the
     conclusion clause D. The check is multiset-based: the
     multiset of premise literals minus the multiset of conclusion
@@ -305,6 +436,11 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "trans" -> check_trans env step
   | "cong" -> check_cong env step
   | "resolution" -> check_resolution env step
+  | "equiv_pos2" -> check_equiv_pos2 step
+  | "equiv_simplify" -> check_equiv_simplify step
+  | "and_neg" -> check_and_neg step
+  | "implies" -> check_implies env step
+  | "equiv1" -> check_equiv1 env step
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -314,7 +450,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
     a parsed proof is eligible for Tier 3 minting (the "fail
     closed" gate of direction 3). *)
 let supported_rules : string list = [
-  "cong"; "false"; "la_generic"; "refl"; "resolution"; "trans"
+  "and_neg"; "cong"; "equiv1"; "equiv_pos2"; "equiv_simplify";
+  "false"; "implies"; "la_generic"; "refl"; "resolution"; "trans";
 ]
 
 (** True iff every step in [p] uses a rule [check_step] knows. The

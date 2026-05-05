@@ -863,18 +863,22 @@ def runTier3AletheFlow (rootDir : System.FilePath) : IO Unit := do
     IO.println "OK verify_certificate: Tier 3 alethe-2024 single-la_generic re-checked end-to-end"
   | other =>
     fail s!"expected verifiedTier3, got {repr other}"
-  -- Real cvc5 fixture: 14 distinct rules, only la_generic registered.
-  -- v0 walker bails on the first non-la_generic step.
+  -- Real cvc5 fixture: 14 distinct rules. The walker registry covers
+  -- the structural rules (la_generic, refl, trans, cong, resolution,
+  -- false, and now equiv_pos2/equiv_simplify/and_neg/implies/equiv1)
+  -- but bails on the trust/arithmetic rules (hole, la_mult_neg,
+  -- rare_rewrite) — so the fixture still surfaces tier3UnsupportedRule
+  -- on the first such step.
   let realProof ← IO.FS.readFile (rootDir / "sdk" / "test" / "fixtures" / "alethe-x-3-x-1.proof")
   let realCert := mkCert realProof "alethe-2024"
   let res2 ← match runVerifyCertificate realCert ir with
     | .ok r => pure r
     | .error e => fail s!"runVerifyCertificate (Tier3 real): {repr e}"
   if res2.ok then
-    fail s!"expected ok=false on real fixture under v0; reason={repr res2.reason}"
+    fail s!"expected ok=false on real fixture; reason={repr res2.reason}"
   match res2.reason with
   | .tier3UnsupportedRule _ =>
-    IO.println "OK verify_certificate: real cvc5 fixture trips tier3UnsupportedRule under v0 (only la_generic registered)"
+    IO.println "OK verify_certificate: real cvc5 fixture trips tier3UnsupportedRule (rules beyond structural batch)"
   | other =>
     fail s!"expected tier3UnsupportedRule, got {repr other}"
   -- Non-alethe trace_format → tier3UnsupportedFormat.

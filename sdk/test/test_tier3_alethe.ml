@@ -325,6 +325,164 @@ let test_check_resolution_rejects_unsound () =
   | Step_failed _ -> ()
   | _ -> Alcotest.fail "resolution should reject unsound conclusion"
 
+let test_check_equiv_pos2_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.eq2" ~rule:"equiv_pos2"
+    ~clause:[
+      List [ Atom "not"; List [ Atom "="; Atom "p"; Atom "q" ] ];
+      List [ Atom "not"; Atom "p" ];
+      Atom "q";
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "equiv_pos2 rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_equiv_pos2_rejects_mismatched_phi () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.eq2" ~rule:"equiv_pos2"
+    ~clause:[
+      List [ Atom "not"; List [ Atom "="; Atom "p"; Atom "q" ] ];
+      List [ Atom "not"; Atom "r" ];  (* != p *)
+      Atom "q";
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "equiv_pos2 should reject mismatched phi"
+
+let test_check_equiv_simplify_phi_eq_true () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.es" ~rule:"equiv_simplify"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "="; Atom "phi"; Atom "true" ];
+             Atom "phi" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "equiv_simplify rejected (= φ true) ↔ φ: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_equiv_simplify_phi_eq_false () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.es" ~rule:"equiv_simplify"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "="; Atom "phi"; Atom "false" ];
+             List [ Atom "not"; Atom "phi" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "equiv_simplify rejected (= φ false) ↔ ¬φ: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_equiv_simplify_rejects_unknown_shape () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.es" ~rule:"equiv_simplify"
+    ~clause:[ List [ Atom "="; Atom "p"; Atom "q" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "equiv_simplify should reject (= p q)"
+
+let test_check_and_neg_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.an" ~rule:"and_neg"
+    ~clause:[
+      List [ Atom "and"; Atom "p"; Atom "q"; Atom "r" ];
+      List [ Atom "not"; Atom "p" ];
+      List [ Atom "not"; Atom "q" ];
+      List [ Atom "not"; Atom "r" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "and_neg rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_and_neg_rejects_mismatched_order () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.an" ~rule:"and_neg"
+    ~clause:[
+      List [ Atom "and"; Atom "p"; Atom "q" ];
+      List [ Atom "not"; Atom "q" ];  (* swapped *)
+      List [ Atom "not"; Atom "p" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "and_neg should reject swapped negated literals"
+
+let test_check_implies_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "=>"; Atom "a"; Atom "b" ] ];
+  ] in
+  let step = mk_step "t.imp" ~rule:"implies"
+    ~clause:[ List [ Atom "not"; Atom "a" ]; Atom "b" ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "implies rejected (=> a b) → ¬a, b: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_implies_rejects_mismatch () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "=>"; Atom "a"; Atom "b" ] ];
+  ] in
+  let step = mk_step "t.imp" ~rule:"implies"
+    ~clause:[ List [ Atom "not"; Atom "x" ]; Atom "b" ]  (* a → x *)
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "implies should reject when antecedent doesn't match"
+
+let test_check_equiv1_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "="; Atom "a"; Atom "b" ] ];
+  ] in
+  let step = mk_step "t.e1" ~rule:"equiv1"
+    ~clause:[ List [ Atom "not"; Atom "a" ]; Atom "b" ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "equiv1 rejected (= a b) → ¬a, b: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
 let test_check_false () =
   let ir = make_x_ir () in
   let env = env_with ir [] in
@@ -555,6 +713,26 @@ let () =
         `Quick test_check_resolution_rejects_unsound;
       Alcotest.test_case "false rule accepts (cl (not false))"
         `Quick test_check_false;
+      Alcotest.test_case "equiv_pos2 accepts tautology"
+        `Quick test_check_equiv_pos2_accepts;
+      Alcotest.test_case "equiv_pos2 rejects mismatched phi"
+        `Quick test_check_equiv_pos2_rejects_mismatched_phi;
+      Alcotest.test_case "equiv_simplify (= φ true) ↔ φ"
+        `Quick test_check_equiv_simplify_phi_eq_true;
+      Alcotest.test_case "equiv_simplify (= φ false) ↔ ¬φ"
+        `Quick test_check_equiv_simplify_phi_eq_false;
+      Alcotest.test_case "equiv_simplify rejects unknown shape"
+        `Quick test_check_equiv_simplify_rejects_unknown_shape;
+      Alcotest.test_case "and_neg accepts (and ...) + negated literals"
+        `Quick test_check_and_neg_accepts;
+      Alcotest.test_case "and_neg rejects mismatched order"
+        `Quick test_check_and_neg_rejects_mismatched_order;
+      Alcotest.test_case "implies accepts (=> a b) → ¬a, b"
+        `Quick test_check_implies_accepts;
+      Alcotest.test_case "implies rejects when antecedent mismatch"
+        `Quick test_check_implies_rejects_mismatch;
+      Alcotest.test_case "equiv1 accepts (= a b) → ¬a, b"
+        `Quick test_check_equiv1_accepts;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"
