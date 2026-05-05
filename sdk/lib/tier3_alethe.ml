@@ -74,13 +74,35 @@ let check_la_generic (ir : Ir.t) (step : Alethe.step) : step_result =
        })
 
 (** Top-level rule dispatch. Add a new clause here when wiring an
-    OCaml-side checker for another Alethe rule. The Lean walker
-    treats [Step_unsupported_rule _] as the bailout — Tier 3
-    verification fails when any step uses a rule no checker handles. *)
+    OCaml-side checker for another Alethe rule, and add the same
+    rule name to [supported_rules] below. The Lean walker treats
+    [Step_unsupported_rule _] as the bailout — Tier 3 verification
+    fails when any step uses a rule no checker handles. *)
 let check_step (ir : Ir.t) (step : Alethe.step) : step_result =
   match step.rule with
   | "la_generic" -> check_la_generic ir step
   | other -> Step_unsupported_rule other
+
+(** Sorted list of every Alethe rule [check_step] has a registered
+    checker for. Must stay in sync with the [check_step] match
+    above; [test_supported_rules_sync] in [test_tier3_alethe]
+    pins this. The cvc5 minter consults this set to decide whether
+    a parsed proof is eligible for Tier 3 minting (the "fail
+    closed" gate of direction 3). *)
+let supported_rules : string list = [ "la_generic" ]
+
+(** True iff every step in [p] uses a rule [check_step] knows. The
+    cvc5 minter uses this to decide between minting Tier 3 (gate
+    passes) and falling back to lower-tier paths (gate fails);
+    keeps the minting side and the verifier side aligned, so a
+    minted Tier 3 cert is always re-checkable by the verifier as
+    of mint time. *)
+let proof_rules_supported (p : Alethe.proof) : bool =
+  let supported = supported_rules in
+  List.for_all
+    (fun (s : Alethe.step) ->
+      String.length s.rule = 0 || List.mem s.rule supported)
+    p.steps
 
 (** Render a [step_result] as the FFI envelope payload shape:
     [{ok: bool, kind: <reason kind>, [detail | rule]: ...}]. *)

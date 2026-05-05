@@ -198,6 +198,42 @@ let mint_farkas_cert
     };
   }
 
+(** Tier 3 alethe-2024 passthrough cert. Captures the verbatim
+    Alethe S-expression from cvc5's [(get-proof)] output along
+    with rule/structural feature inventory; the verifier
+    ([Tier3_alethe.verify]) walks the proof step-by-step and
+    re-runs each rule's check. The minter only fires when every
+    rule in the proof has a registered checker
+    ([Tier3_alethe.supported_rules]); the cvc5 dispatch ladder's
+    "fail closed" gate sends ineligible proofs down the existing
+    Tier 1 / Tier 2 / Tier 0 path instead, so we never mint a
+    Tier 3 cert the verifier can't re-check at mint time. *)
+let mint_tier3_cert
+      ~adapter_version
+      ~(original_ir : Ir.t)
+      ~(specs : Refinement_record.specialization list)
+      ~logic
+      ~timeout_ms
+      ~(proof_str : string)
+      ~(proof : Alethe.proof)
+  : Certificate.t =
+  let dispatch_context_hash =
+    Hash.sha256_of_json (Codec.to_json original_ir)
+  in
+  {
+    cert_version = "1.0";
+    tier = 3;
+    format = "alethe-2024";
+    goal = original_ir.goal;
+    dispatch_context_hash;
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    backend = backend ~version:adapter_version;
+    resources = resources_now ~timeout_ms;
+    refinement_record =
+      mk_refinement_record ~adapter_version specs ~logic;
+    payload = Alethe_passthrough.make_payload ~proof_str proof;
+  }
+
 (** Tier 2 case-split Farkas cert. Each lemma carries a [case]
     (one disjunct of an IR disjunctive hypothesis) and a Farkas
     [witness] valid under the IR extended with that case as an
@@ -306,15 +342,24 @@ let dispatch (ir : Ir.t) : Adapter.result =
           let stdout, stderr, code = run_solver ~timeout_ms body in
           match parse_response stdout, code with
           | Unsat, _ ->
-            (* Try to upgrade Tier 0 to Tier 1 (single la_generic) or
-               Tier 2 (multi-la_generic case split) by extracting a
-               witness from the Alethe proof. Tier 1 is preferred —
-               we attempt it first; on failure we try the case-split
-               extraction; on a second failure we run our internal
-               Farkas closer over the IR directly (rescues the
-               Farkas-shaped cases cvc5 closes via theory rewrites
-               with no la_generic, e.g. example1 LIA); on a final
-               failure we fall back to the Tier 0 oracle cert. *)
+            (* Dispatch ladder:
+               1. Tier 3 alethe-2024 passthrough — when every rule
+                  in the proof is in [Tier3_alethe.supported_rules],
+                  ship the whole proof so the verifier can re-check
+                  step-by-step. "Fail closed": ineligible proofs
+                  fall through rather than minting a Tier 3 cert no
+                  verifier can re-check.
+               2. Tier 1 (single la_generic) — extracts a Farkas
+                  witness from one la_generic step in the proof.
+               3. Tier 2 (multi-la_generic case split) — extracts
+                  per-branch Farkas witnesses from disjunctive
+                  subproofs.
+               4. Tier 1 (internal closer) — runs our own bounded
+                  Farkas search over the IR directly, rescuing the
+                  Farkas-shaped cases cvc5 closes via theory
+                  rewrites with no la_generic.
+               5. Tier 0 oracle — falls back when nothing else
+                  produced a soundness-checkable witness. *)
             let mk_oracle () =
               mint_oracle_cert
                 ~adapter_version:version
@@ -337,24 +382,42 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Ok witness -> mk_farkas witness
               | Error _ -> mk_oracle ()
             in
+            let try_tier3 proof_str =
+              match Alethe.parse proof_str with
+              | exception Alethe.Parse_error _ -> None
+              | proof ->
+                if Tier3_alethe.proof_rules_supported proof then
+                  Some (mint_tier3_cert
+                          ~adapter_version:version
+                          ~original_ir:ir
+                          ~specs:refinement.specializations
+                          ~logic:script.logic
+                          ~timeout_ms
+                          ~proof_str
+                          ~proof)
+                else None
+            in
             let cert =
               match extract_proof_body stdout with
               | None -> try_internal_closer ()
               | Some proof_str ->
-                (match Alethe_farkas.extract ir proof_str with
-                 | Ok witness -> mk_farkas witness
-                 | Error _ ->
-                   (match Alethe_farkas.extract_case_split_payload ir proof_str with
-                    | Ok (lemmas, disjunctive_hyp) ->
-                      mint_case_split_cert
-                        ~adapter_version:version
-                        ~original_ir:ir
-                        ~specs:refinement.specializations
-                        ~logic:script.logic
-                        ~timeout_ms
-                        ~lemmas
-                        ~disjunctive_hyp
-                    | Error _ -> try_internal_closer ()))
+                (match try_tier3 proof_str with
+                 | Some t3 -> t3
+                 | None ->
+                   (match Alethe_farkas.extract ir proof_str with
+                    | Ok witness -> mk_farkas witness
+                    | Error _ ->
+                      (match Alethe_farkas.extract_case_split_payload ir proof_str with
+                       | Ok (lemmas, disjunctive_hyp) ->
+                         mint_case_split_cert
+                           ~adapter_version:version
+                           ~original_ir:ir
+                           ~specs:refinement.specializations
+                           ~logic:script.logic
+                           ~timeout_ms
+                           ~lemmas
+                           ~disjunctive_hyp
+                       | Error _ -> try_internal_closer ())))
             in
             Cert cert
           | Sat, _ -> Failed Sat_returned

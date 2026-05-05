@@ -378,6 +378,30 @@ let test_lra_farkas_cert_envelope_verifies () =
       (Printf.sprintf "expected Cert, got Failed(%s)"
          (Adapter.kind_of_failure f))
 
+(** Confirm the new Tier 3 step in the cvc5 ladder is wired in but
+    "fail-closed" gates real proofs out: cvc5's Alethe output for a
+    typical Farkas-shaped goal uses 14+ rules (la_generic plus
+    propositional bookkeeping like resolution, refl, cong, trans).
+    With only la_generic registered in [Tier3_alethe.supported_rules],
+    the gate fails and the ladder falls through to the existing
+    Tier 1 farkas extractor. As more rules ship, this test should
+    flip to expecting tier=3 — the change is automatic at the
+    minter once supported_rules grows. *)
+let test_dispatch_tier3_gate_falls_through () =
+  with_cvc5 @@ fun () ->
+  let ir = example1_ir () in
+  match Adapter_cvc5.dispatch ir with
+  | Cert cert ->
+    Alcotest.(check int) "Tier 3 gate fails on real proof (v0); \
+                          ladder falls through to Tier 1"
+      1 cert.tier;
+    Alcotest.(check string) "format=farkas (Tier 1 fallback path)"
+      "farkas" cert.format
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s)"
+         (Adapter.kind_of_failure f))
+
 let () =
   Alcotest.run "adapter_cvc5" [
     "dispatch", [
@@ -403,5 +427,10 @@ let () =
         `Quick test_dispatch_case_split_mints_tier2;
       Alcotest.test_case "Tier 2 case-split cert envelope-verifies"
         `Quick test_case_split_cert_envelope_verifies;
+    ];
+    "tier3", [
+      Alcotest.test_case "Tier 3 minter present in ladder; \
+                          gate fails on real proofs (v0)"
+        `Quick test_dispatch_tier3_gate_falls_through;
     ];
   ]

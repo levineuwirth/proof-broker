@@ -177,6 +177,51 @@ let test_verify_case_split_unsupported () =
     literal: replace the original [1] with [9999], so the matched
     Farkas witness fails the contradiction check at
     [Farkas.verify]. *)
+(* --- supported_rules / proof_rules_supported gate ------------------- *)
+
+let test_supported_rules_sync () =
+  (* Every rule listed in [supported_rules] should actually have a
+     [check_step] dispatch — i.e., a step using that rule must not
+     return [Step_unsupported_rule]. We can't easily produce a
+     "valid" step for every rule (some need linearizable atoms,
+     args, etc.), but a malformed step is enough to confirm the
+     dispatch knows the rule: it'll return [Step_failed], not
+     [Step_unsupported_rule]. *)
+  let ir = make_x_ir () in
+  List.iter (fun rule ->
+    let probe : Alethe.step = {
+      id = "probe"; rule;
+      clause = []; args = Some []; premises = None; discharge = None;
+    } in
+    match Tier3_alethe.check_step ir probe with
+    | Step_unsupported_rule r ->
+      Alcotest.fail
+        (Printf.sprintf "rule %s in supported_rules but check_step \
+                         returned Unsupported_rule(%s)" rule r)
+    | _ -> ())
+    Tier3_alethe.supported_rules
+
+let test_proof_rules_supported_synthetic () =
+  (* The minimal one-la_generic proof should pass the gate. *)
+  let proof_str =
+    "(\n\
+     (assume a0 (>= x 3))\n\
+     (assume a1 (<= x 1))\n\
+     (step t1 (cl (not (>= x 3)) (not (<= x 1))) \
+     :rule la_generic :args (1 1))\n\
+     )"
+  in
+  let p = Alethe.parse proof_str in
+  Alcotest.(check bool) "synthetic la_generic-only proof passes gate"
+    true (Tier3_alethe.proof_rules_supported p)
+
+let test_proof_rules_supported_real_fixture () =
+  (* Real cvc5 fixture has 14 distinct rules; gate should fail. *)
+  let proof_str = load_fixture "alethe-x-3-x-1.proof" in
+  let p = Alethe.parse proof_str in
+  Alcotest.(check bool) "real cvc5 fixture fails gate (rules beyond v0)"
+    false (Tier3_alethe.proof_rules_supported p)
+
 let test_verify_step_failed () =
   let ir = make_x_ir () in
   let bogus_step : Alethe.step = {
@@ -289,6 +334,14 @@ let () =
         `Quick test_verify_case_split_unsupported;
       Alcotest.test_case "bogus la_generic surfaces step_failed"
         `Quick test_verify_step_failed;
+    ];
+    "gate", [
+      Alcotest.test_case "supported_rules in sync with check_step"
+        `Quick test_supported_rules_sync;
+      Alcotest.test_case "synthetic proof passes gate"
+        `Quick test_proof_rules_supported_synthetic;
+      Alcotest.test_case "real fixture fails gate"
+        `Quick test_proof_rules_supported_real_fixture;
     ];
     "verifier-end-to-end", [
       Alcotest.test_case "Tier 3 alethe-2024 cert verifies"
