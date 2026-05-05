@@ -66,13 +66,18 @@ let example1_ir () =
     ~hypotheses:[ h1; h3 ]
     (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
 
-let test_dispatch_unsat_mints_oracle_cert () =
+let test_dispatch_unsat_mints_farkas_cert () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
-    Alcotest.(check int) "tier=0" 0 cert.tier;
-    Alcotest.(check string) "format=oracle" "oracle" cert.format;
+    (* cvc5 closes example1's LIA shape via theory rewrites, so
+       the Alethe proof carries no [la_generic] step. The internal
+       Farkas closer rescues this case from a Tier 0 oracle into a
+       Tier 1 farkas cert, addressing the gap that motivated the
+       closer. *)
+    Alcotest.(check int) "tier=1" 1 cert.tier;
+    Alcotest.(check string) "format=farkas" "farkas" cert.format;
     Alcotest.(check string) "backend=cvc5" "cvc5" cert.backend.name;
     Alcotest.(check string) "backend.version pinned" Adapter_cvc5.version
       cert.backend.version;
@@ -126,11 +131,14 @@ let test_minted_cert_passes_envelope_verifier () =
   let ir = example1_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
+    (* cvc5's Alethe proof has no la_generic on this shape; the
+       internal Farkas closer mints Tier 1, and [Farkas.verify]
+       re-checks the witness independently. *)
     (match Verifier.verify cert ir with
-     | Tier_check_deferred { tier = 0 } -> ()
+     | Verified_farkas -> ()
      | other ->
        Alcotest.fail
-         (Printf.sprintf "expected Tier_check_deferred(0), got %s"
+         (Printf.sprintf "expected Verified_farkas, got %s"
             (Verifier.kind_of_reason other)))
   | Failed f ->
     Alcotest.fail
@@ -373,8 +381,8 @@ let test_lra_farkas_cert_envelope_verifies () =
 let () =
   Alcotest.run "adapter_cvc5" [
     "dispatch", [
-      Alcotest.test_case "unsat mints Tier 0 oracle cert"
-        `Quick test_dispatch_unsat_mints_oracle_cert;
+      Alcotest.test_case "unsat on Farkas-shape mints Tier 1 farkas cert"
+        `Quick test_dispatch_unsat_mints_farkas_cert;
       Alcotest.test_case "sat returns Sat_returned"
         `Quick test_dispatch_sat_returns_failure;
       Alcotest.test_case "unsupported IR shape"

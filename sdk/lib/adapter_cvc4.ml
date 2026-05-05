@@ -177,6 +177,42 @@ let mint_oracle_cert
     };
   }
 
+(** Mint a Tier 1 Farkas cert addressing [original_ir]. The
+    [witness] field carries a JSON object whose [coefficients]
+    re-verify under [Farkas.verify] independent of cvc4 — so
+    soundness rests on our internal closer, not on cvc4's verdict.
+    cvc4's "unsat" is still the entry condition (no closer attempt
+    on [sat]/[unknown]) so the backend attestation matches the
+    actual subprocess outcome. *)
+let mint_farkas_cert
+      ~adapter_version
+      ~(original_ir : Ir.t)
+      ~(specs : Refinement_record.specialization list)
+      ~logic
+      ~timeout_ms
+      ~(witness : Yojson.Safe.t)
+  : Certificate.t =
+  let dispatch_context_hash =
+    Hash.sha256_of_json (Codec.to_json original_ir)
+  in
+  {
+    cert_version = "1.0";
+    tier = 1;
+    format = "farkas";
+    goal = original_ir.goal;
+    dispatch_context_hash;
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    backend = backend ~version:adapter_version;
+    resources = resources_now ~timeout_ms;
+    refinement_record =
+      mk_refinement_record ~adapter_version specs ~logic;
+    payload = Tier1_witness {
+      witness_kind = Farkas;
+      witness_data = witness;
+      checking_recipe = "lean.farkas_check";
+    };
+  }
+
 (* --- top-level dispatch --------------------------------------------- *)
 
 let version = "1.8"
@@ -215,12 +251,30 @@ let dispatch (ir : Ir.t) : Adapter.result =
              configurations print "unknown" + nonzero exit. *)
           match parse_response stdout, code with
           | Unsat, _ ->
-            Cert (mint_oracle_cert
-                    ~adapter_version:version
-                    ~original_ir:ir
-                    ~specs:refinement.specializations
-                    ~logic:script.logic
-                    ~timeout_ms)
+            (* Try our internal Farkas closer to upgrade Tier 0 to
+               Tier 1. cvc4 has no proof-trace path, so this is the
+               only way for cvc4 to mint a soundness-checkable cert.
+               The closer runs after cvc4's [unsat] verdict so the
+               backend attestation reflects what actually executed. *)
+            let cert =
+              match Farkas_search.try_close ir with
+              | Ok witness ->
+                mint_farkas_cert
+                  ~adapter_version:version
+                  ~original_ir:ir
+                  ~specs:refinement.specializations
+                  ~logic:script.logic
+                  ~timeout_ms
+                  ~witness
+              | Error _ ->
+                mint_oracle_cert
+                  ~adapter_version:version
+                  ~original_ir:ir
+                  ~specs:refinement.specializations
+                  ~logic:script.logic
+                  ~timeout_ms
+            in
+            Cert cert
           | Sat, _ -> Failed Sat_returned
           | Unknown_resp, _ -> Failed Unknown_returned
           | Other_resp _, n when n <> 0 ->

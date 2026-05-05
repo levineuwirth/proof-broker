@@ -13,11 +13,11 @@
 
   "max_order": "first_order",
 
-  "tiers_produced": [0],
+  "tiers_produced": [0, 1],
 
   "trace_formats_produced": [],
 
-  "witness_kinds_produced": [],
+  "witness_kinds_produced": ["farkas"],
 
   "preferred_rewrite_pipeline": [
     { "pass": "definition_unfolding",

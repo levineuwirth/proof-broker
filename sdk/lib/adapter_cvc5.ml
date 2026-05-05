@@ -310,8 +310,11 @@ let dispatch (ir : Ir.t) : Adapter.result =
                Tier 2 (multi-la_generic case split) by extracting a
                witness from the Alethe proof. Tier 1 is preferred —
                we attempt it first; on failure we try the case-split
-               extraction; on a second failure we fall back to the
-               Tier 0 oracle cert. *)
+               extraction; on a second failure we run our internal
+               Farkas closer over the IR directly (rescues the
+               Farkas-shaped cases cvc5 closes via theory rewrites
+               with no la_generic, e.g. example1 LIA); on a final
+               failure we fall back to the Tier 0 oracle cert. *)
             let mk_oracle () =
               mint_oracle_cert
                 ~adapter_version:version
@@ -320,19 +323,26 @@ let dispatch (ir : Ir.t) : Adapter.result =
                 ~logic:script.logic
                 ~timeout_ms
             in
+            let mk_farkas witness =
+              mint_farkas_cert
+                ~adapter_version:version
+                ~original_ir:ir
+                ~specs:refinement.specializations
+                ~logic:script.logic
+                ~timeout_ms
+                ~witness
+            in
+            let try_internal_closer () =
+              match Farkas_search.try_close ir with
+              | Ok witness -> mk_farkas witness
+              | Error _ -> mk_oracle ()
+            in
             let cert =
               match extract_proof_body stdout with
-              | None -> mk_oracle ()
+              | None -> try_internal_closer ()
               | Some proof_str ->
                 (match Alethe_farkas.extract ir proof_str with
-                 | Ok witness ->
-                   mint_farkas_cert
-                     ~adapter_version:version
-                     ~original_ir:ir
-                     ~specs:refinement.specializations
-                     ~logic:script.logic
-                     ~timeout_ms
-                     ~witness
+                 | Ok witness -> mk_farkas witness
                  | Error _ ->
                    (match Alethe_farkas.extract_case_split_payload ir proof_str with
                     | Ok (lemmas, disjunctive_hyp) ->
@@ -344,7 +354,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
                         ~timeout_ms
                         ~lemmas
                         ~disjunctive_hyp
-                    | Error _ -> mk_oracle ()))
+                    | Error _ -> try_internal_closer ()))
             in
             Cert cert
           | Sat, _ -> Failed Sat_returned

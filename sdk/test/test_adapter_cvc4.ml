@@ -71,19 +71,23 @@ let with_cvc4 f =
     Printf.printf "[skip] cvc4 not on PATH\n"
   else f ()
 
-let test_dispatch_unsat_mints_oracle_cert () =
+let test_dispatch_unsat_mints_farkas_cert () =
   with_cvc4 @@ fun () ->
   let ir = example1_ir () in
   match Adapter_cvc4.dispatch ir with
   | Cert cert ->
-    Alcotest.(check int) "tier=0" 0 cert.tier;
-    Alcotest.(check string) "format=oracle" "oracle" cert.format;
+    (* cvc4 has no proof trace; the internal Farkas closer runs
+       after cvc4's [unsat] verdict and discovers a witness for
+       this LIA-Farkas-shaped goal, so the cert is upgraded from
+       Tier 0 oracle to Tier 1 farkas. *)
+    Alcotest.(check int) "tier=1" 1 cert.tier;
+    Alcotest.(check string) "format=farkas" "farkas" cert.format;
     Alcotest.(check string) "backend=cvc4" "cvc4" cert.backend.name;
     let dispatch_hash = Hash.sha256_of_json (Codec.to_json ir) in
     Alcotest.(check string) "dispatch_context_hash addresses ir"
       dispatch_hash cert.dispatch_context_hash;
     let payload_kind = Certificate.payload_tier cert.payload in
-    Alcotest.(check int) "payload encoding tier 0" 0 payload_kind;
+    Alcotest.(check int) "payload encoding tier 1" 1 payload_kind;
     Alcotest.(check string) "fragment = LIA" "LIA"
       cert.refinement_record.fragment;
     (* The hand-built IR has no metadata, so refinement produces no
@@ -92,6 +96,45 @@ let test_dispatch_unsat_mints_oracle_cert () =
        fixture-based test below. *)
     Alcotest.(check int) "refinement_record empty for primitive IR" 0
       (List.length cert.refinement_record.specializations)
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f)
+         (Adapter.detail_of_failure f))
+
+(** When the internal closer can't find a Farkas witness within
+    its bound, cvc4 falls back to the Tier 0 oracle cert. The
+    canonical out-of-bound shape has a coefficient ratio above the
+    closer's default [bound = 3]: [7n <= 6, n >= 1 ⊢ False] needs
+    [c=(1, 7)] to close, which exceeds the search box. cvc4 still
+    says [unsat] (it's a tiny LIA problem), so the dispatcher falls
+    through the closer-fail branch into the oracle path. *)
+let test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle () =
+  with_cvc4 @@ fun () ->
+  let n : Ir.shell_term = Var { name = "n" } in
+  let one : Ir.shell_term = Num_lit { value = "1"; ty = "Int" } in
+  let six : Ir.shell_term = Num_lit { value = "6"; ty = "Int" } in
+  let seven : Ir.shell_term = Num_lit { value = "7"; ty = "Int" } in
+  let seven_n : Ir.shell_term =
+    App { symbol = "Int.mul"; type_args = []; args = [ seven; n ] }
+  in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ seven_n; six ] };
+  } in
+  let h2 : Ir.hypothesis = {
+    name = "h2";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ one; n ] };
+  } in
+  let ir = make_ir
+    ~free_vars:[ { name = "n"; ty = "Int" } ]
+    ~hypotheses:[ h1; h2 ]
+    (Const { name = "False" })
+  in
+  match Adapter_cvc4.dispatch ir with
+  | Cert cert ->
+    Alcotest.(check int) "tier=0" 0 cert.tier;
+    Alcotest.(check string) "format=oracle" "oracle" cert.format
   | Failed f ->
     Alcotest.fail
       (Printf.sprintf "expected Cert, got Failed(%s: %s)"
@@ -185,16 +228,16 @@ let test_minted_cert_passes_envelope_verifier () =
   let ir = example1_ir () in
   match Adapter_cvc4.dispatch ir with
   | Cert cert ->
-    (* The minted cert's dispatch_context_hash should match the IR
-       it was minted against, so envelope verification passes;
-       there's no Tier 0 soundness check, so [verify] returns
-       [Tier_check_deferred 0]. Both outcomes count as "ok" in the
-       FFI semantics. *)
+    (* With the internal Farkas closer wired in, cvc4 mints Tier 1
+       on this Farkas-shaped goal. The cert's dispatch_context_hash
+       matches the IR, the envelope checks pass, and [Farkas.verify]
+       re-checks the witness independently of cvc4 — so [verify]
+       returns [Verified_farkas]. *)
     (match Verifier.verify cert ir with
-     | Tier_check_deferred { tier = 0 } -> ()
+     | Verified_farkas -> ()
      | other ->
        Alcotest.fail
-         (Printf.sprintf "expected Tier_check_deferred(0), got %s"
+         (Printf.sprintf "expected Verified_farkas, got %s"
             (Verifier.kind_of_reason other)))
   | Failed f ->
     Alcotest.fail
@@ -204,8 +247,10 @@ let test_minted_cert_passes_envelope_verifier () =
 let () =
   Alcotest.run "adapter_cvc4" [
     "dispatch", [
-      Alcotest.test_case "unsat mints Tier 0 oracle cert"
-        `Quick test_dispatch_unsat_mints_oracle_cert;
+      Alcotest.test_case "unsat on Farkas-shape mints Tier 1 farkas cert"
+        `Quick test_dispatch_unsat_mints_farkas_cert;
+      Alcotest.test_case "unsat beyond closer bound falls back to Tier 0 oracle"
+        `Quick test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle;
       Alcotest.test_case "sat returns Sat_returned"
         `Quick test_dispatch_sat_returns_failure;
       Alcotest.test_case "unsupported IR shape"

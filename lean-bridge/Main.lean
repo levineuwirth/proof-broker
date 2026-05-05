@@ -790,12 +790,14 @@ def cvc5Available : IO Bool := do
   } |>.toBaseIO
   return exit.toOption.isSome
 
-/-- End-to-end Phase 2.1 cvc4 dispatch across the FFI: build the
-    example1 LIA IR, hand it to `runDispatchToAdapter "cvc4" ...`,
-    expect a Tier 0 oracle cert addressing the same IR. Then feed
-    the cert back to `runVerifyCertificate` and confirm the
-    envelope verifies (with `tierCheckDeferred` on Tier 0). Then
-    a satisfiable goal returns `.failed .satReturned`. Skipped
+/-- End-to-end cvc4 dispatch across the FFI: build the example1
+    LIA IR, hand it to `runDispatchToAdapter "cvc4" ...`. With the
+    internal Farkas closer wired into the cvc4 adapter, this
+    Farkas-shaped LIA goal lifts from the old Tier 0 oracle to a
+    Tier 1 farkas cert; round-tripping the cert through
+    `runVerifyCertificate` returns `verifiedFarkas` because the
+    closer-discovered witness re-checks independently. A
+    satisfiable goal returns `.failed .satReturned`. Skipped
     cleanly if cvc4 isn't on PATH. -/
 def runDispatchToCvc4Flow : IO Unit := do
   unless ← cvc4Available do
@@ -830,24 +832,24 @@ def runDispatchToCvc4Flow : IO Unit := do
     | .cert j => pure j
     | .failed f => fail s!"expected .cert on provable goal, got .failed {repr f}"
   let tier := (certJ.getObjValAs? Int "tier").toOption.getD (-1)
-  unless tier == 0 do
-    fail s!"expected tier=0, got {tier}"
+  unless tier == 1 do
+    fail s!"expected tier=1 from internal closer, got {tier}"
   let backend := (certJ.getObjVal? "backend" |>.bind (·.getObjValAs? String "name")).toOption.getD ""
   unless backend == "cvc4" do
     fail s!"expected backend=cvc4, got {backend}"
-  IO.println "OK dispatch_to_adapter: cvc4 minted Tier 0 oracle cert on provable LIA goal"
-  -- Round-trip the cert through verify_certificate to confirm the
-  -- envelope addresses our IR.
+  IO.println "OK dispatch_to_adapter: cvc4 + internal closer minted Tier 1 farkas cert on provable LIA goal"
+  -- Round-trip the cert through verify_certificate. With Tier 1,
+  -- Farkas re-verification runs and returns verifiedFarkas.
   let verif ← match runVerifyCertificate certJ ir with
     | .ok v => pure v
     | .error e => fail s!"runVerifyCertificate on minted cert: {repr e}"
   unless verif.ok do
     fail s!"expected ok=true on minted cert verification; reason={repr verif.reason}"
   match verif.reason with
-  | .tierCheckDeferred _ =>
-    IO.println "OK verify_certificate: Tier 0 cvc4 cert envelope-verifies (tier soundness deferred)"
+  | .verifiedFarkas =>
+    IO.println "OK verify_certificate: Tier 1 closer cert re-verified independently via Farkas.verify"
   | other =>
-    fail s!"expected tierCheckDeferred, got {repr other}"
+    fail s!"expected verifiedFarkas, got {repr other}"
   -- Satisfiable goal: no hypotheses, ⊢ n <= 10. n=11 satisfies ¬G.
   let irOpen : IR := { mkTestIR goal with
     context := {
@@ -867,9 +869,10 @@ def runDispatchToCvc4Flow : IO Unit := do
     example1 fixture: the IR has `alpha` as a type variable, full
     `type_metadata` (with the LIA embedding tag) and
     `definitional_metadata` (with HAdd.hAdd / LE.le specialization
-    targets). The broker should refine to LIA, dispatch to cvc4,
-    and return a Tier 0 oracle cert whose `refinement_record`
-    enumerates the type and method specializations applied. -/
+    targets). The broker refines to LIA, dispatches to cvc4, and
+    returns a cert (now Tier 1 farkas via the internal closer)
+    whose `refinement_record` enumerates the type and method
+    specializations applied. -/
 def runRefinementDispatchFlow (rootDir : System.FilePath) : IO Unit := do
   unless ← cvc4Available do
     IO.println "[skip] cvc4 not on PATH; skipping refinement+dispatch flow"
@@ -911,9 +914,13 @@ def runRefinementDispatchFlow (rootDir : System.FilePath) : IO Unit := do
 /-- End-to-end multi-adapter dispatch (spec §7). Hands the broker
     the typeclass-shaped example1 IR plus two manifests in priority
     order: a fake BV-only manifest first (capability mismatch on
-    LIA), then the real cvc4 manifest. Expectation: bv-fake is
-    skipped via logicOutOfFragment, cvc4 mints the cert, attempts
-    list reflects both outcomes in order. -/
+    LIA), then the real cvc4 manifest. The point of this test is
+    the per-attempt skip path (bv-fake → typeConstructionNotSupported,
+    cvc4 → succeeds), so we opt out of the tier-preference sort
+    with `preferHigherTier := false` to keep both attempts visible
+    in the log; otherwise cvc4's max-tier-1 capability would float
+    it past bv-fake (max-tier 0) and the broker would short-circuit
+    after the first success. -/
 def runDispatchBrokerFlow (rootDir : System.FilePath) : IO Unit := do
   unless ← cvc4Available do
     IO.println "[skip] cvc4 not on PATH; skipping broker dispatch flow"
@@ -936,7 +943,8 @@ def runDispatchBrokerFlow (rootDir : System.FilePath) : IO Unit := do
   let ir ← match IR.fromJsonString raw with
     | .ok ir => pure ir
     | .error e => fail s!"could not parse example1: {e}"
-  let r ← match runDispatchBroker ir [bvFakeManifest, cvc4Manifest] with
+  let r ← match runDispatchBroker ir [bvFakeManifest, cvc4Manifest]
+            (preferHigherTier := false) with
     | .ok r => pure r
     | .error e => fail s!"runDispatchBroker error: {repr e}"
   unless r.cert.isSome do

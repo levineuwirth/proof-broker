@@ -1,0 +1,191 @@
+(** Unit tests for [Farkas_search].
+
+    Coverage:
+    * Closes the example1 LIA shape ([n + m = 10, 0 <= m, ⊢ n <= 10])
+      that cvc5 closes via theory rewrites with no la_generic. The
+      witness must verify under [Farkas.verify] against the same IR.
+    * Closes a similar LRA shape ([0 <= x, x <= -1] is inconsistent).
+    * Returns [Search_exhausted] on a satisfiable IR.
+    * Returns [No_compilable_inputs] when no hypothesis (and no
+      neg_goal) compiles to a Farkas-amenable form.
+    * Pinned bound: [bound = 0] never finds anything. *)
+
+open Proof_broker
+
+let lia_logic : Ir.logic_classification = {
+  order = "first_order";
+  features_used = [];
+  first_order_fragment = "LIA";
+  decidable_theory = None;
+}
+
+let lra_logic : Ir.logic_classification = {
+  order = "first_order";
+  features_used = [];
+  first_order_fragment = "LRA";
+  decidable_theory = None;
+}
+
+let mk_ir ?(logic = lia_logic) ?(free_vars = []) ?(hypotheses = [])
+          (goal_shell : Ir.shell_term) : Ir.t = {
+  ir_version = "1.0";
+  source_system = { name = "test"; version = "0.0" };
+  tier = "goal";
+  logic_classification = logic;
+  goal = { shell = goal_shell; payloads = None };
+  context = { type_vars = []; free_vars; hypotheses; library_slice = None };
+  type_metadata = [];
+  definitional_metadata = [];
+  library_provenance = [];
+  user_directives = None;
+}
+
+(** [n + m = 10, 0 <= m, ⊢ n <= 10] — example1's Farkas shape, with
+    typeclass-flavored symbols [HAdd.hAdd] / [LE.le] that
+    [Linear_arith.linearize] already recognizes. *)
+let example1_like_ir () =
+  let n : Ir.shell_term = Var { name = "n" } in
+  let m : Ir.shell_term = Var { name = "m" } in
+  let zero : Ir.shell_term = Num_lit { value = "0"; ty = "Int" } in
+  let ten : Ir.shell_term = Num_lit { value = "10"; ty = "Int" } in
+  let n_plus_m : Ir.shell_term =
+    App { symbol = "HAdd.hAdd"; type_args = []; args = [ n; m ] }
+  in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Eq { ty = "Int"; left = n_plus_m; right = ten };
+  } in
+  let h3 : Ir.hypothesis = {
+    name = "h3";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ zero; m ] };
+  } in
+  mk_ir
+    ~free_vars:[ { name = "n"; ty = "Int" }; { name = "m"; ty = "Int" } ]
+    ~hypotheses:[ h1; h3 ]
+    (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
+
+(** [x <= 0, x >= 1, ⊢ False] — needs a strict-witness path under
+    LRA. *)
+let lra_inconsistent_ir () =
+  let x : Ir.shell_term = Var { name = "x" } in
+  let zero : Ir.shell_term = Num_lit { value = "0"; ty = "Real" } in
+  let one : Ir.shell_term = Num_lit { value = "1"; ty = "Real" } in
+  let h_low : Ir.hypothesis = {
+    name = "h_low";
+    shell = App { symbol = "<="; type_args = []; args = [ x; zero ] };
+  } in
+  let h_high : Ir.hypothesis = {
+    name = "h_high";
+    shell = App { symbol = ">="; type_args = []; args = [ x; one ] };
+  } in
+  mk_ir
+    ~logic:lra_logic
+    ~free_vars:[ { name = "x"; ty = "Real" } ]
+    ~hypotheses:[ h_low; h_high ]
+    (Const { name = "False" })
+
+(** No useful hypotheses, satisfiable goal: [⊢ x <= 10] with no
+    constraints on [x]. *)
+let satisfiable_lia_ir () =
+  let n : Ir.shell_term = Var { name = "n" } in
+  let ten : Ir.shell_term = Num_lit { value = "10"; ty = "Int" } in
+  mk_ir
+    ~free_vars:[ { name = "n"; ty = "Int" } ]
+    (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
+
+(** A non-arithmetic goal whose shell can't compile to a Farkas
+    form, with no compilable hypotheses either. *)
+let non_arithmetic_ir () =
+  mk_ir (Const { name = "P" })
+
+(* --- tests --------------------------------------------------------- *)
+
+let test_close_example1_like () =
+  let ir = example1_like_ir () in
+  match Farkas_search.try_close ir with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected Ok witness, got %s — %s"
+                     (Farkas_search.kind_of_error e)
+                     (Farkas_search.detail_of_error e))
+  | Ok witness ->
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | other ->
+       let kind = match other with
+         | Verified -> "Verified"
+         | Unknown_hypothesis _ -> "Unknown_hypothesis"
+         | Nonlinear _ -> "Nonlinear"
+         | Bad_coefficient _ -> "Bad_coefficient"
+         | Negative_coefficient _ -> "Negative_coefficient"
+         | Not_contradictory _ -> "Not_contradictory"
+         | Malformed_witness _ -> "Malformed_witness"
+       in
+       Alcotest.fail
+         (Printf.sprintf "Farkas.verify rejected the discovered \
+                          witness: %s; witness=%s"
+            kind (Yojson.Safe.to_string witness)))
+
+let test_close_lra_inconsistent () =
+  let ir = lra_inconsistent_ir () in
+  match Farkas_search.try_close ir with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected Ok witness, got %s — %s"
+                     (Farkas_search.kind_of_error e)
+                     (Farkas_search.detail_of_error e))
+  | Ok witness ->
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | other ->
+       let kind = match other with
+         | Verified -> "Verified"
+         | _ -> "<other>"
+       in
+       Alcotest.fail
+         (Printf.sprintf "Farkas.verify rejected LRA witness: %s; \
+                          witness=%s"
+            kind (Yojson.Safe.to_string witness)))
+
+let test_satisfiable_returns_search_exhausted () =
+  let ir = satisfiable_lia_ir () in
+  match Farkas_search.try_close ir with
+  | Ok w ->
+    Alcotest.fail (Printf.sprintf "expected Error, got Ok witness=%s"
+                     (Yojson.Safe.to_string w))
+  | Error Search_exhausted -> ()
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected Search_exhausted, got %s"
+                     (Farkas_search.kind_of_error e))
+
+let test_no_compilable_inputs () =
+  let ir = non_arithmetic_ir () in
+  match Farkas_search.try_close ir with
+  | Ok _ -> Alcotest.fail "expected Error, got Ok"
+  | Error No_compilable_inputs -> ()
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected No_compilable_inputs, got %s"
+                     (Farkas_search.kind_of_error e))
+
+let test_bound_zero_finds_nothing () =
+  let ir = example1_like_ir () in
+  match Farkas_search.try_close ~bound:0 ir with
+  | Ok _ -> Alcotest.fail "bound=0 should never find a witness"
+  | Error Search_exhausted -> ()
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected Search_exhausted, got %s"
+                     (Farkas_search.kind_of_error e))
+
+let () =
+  Alcotest.run "farkas_search" [
+    "close", [
+      Alcotest.test_case "example1 LIA closes" `Quick test_close_example1_like;
+      Alcotest.test_case "LRA inconsistent closes" `Quick test_close_lra_inconsistent;
+    ];
+    "non-close", [
+      Alcotest.test_case "satisfiable returns search_exhausted"
+        `Quick test_satisfiable_returns_search_exhausted;
+      Alcotest.test_case "no compilable inputs"
+        `Quick test_no_compilable_inputs;
+      Alcotest.test_case "bound=0 finds nothing"
+        `Quick test_bound_zero_finds_nothing;
+    ];
+  ]
