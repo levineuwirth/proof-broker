@@ -4,7 +4,7 @@
         test_certificate test_pipeline test_linear_arith test_farkas
         test_smtlib test_adapter_cvc4 test_adapter_cvc5
         test_refinement test_dispatch test_alethe_farkas test_farkas_search
-        test_alethe_passthrough)
+        test_alethe_passthrough test_tier3_alethe)
  (libraries proof_broker yojson alcotest str))
 
 ; test_round_trip resolves the reference IR fixtures (in repo/examples,

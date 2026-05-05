@@ -10,8 +10,11 @@
       with [trace_format = "alethe-2024"] and the verbatim S-expr
       under [trace_data].
     * Codec round-trip: encode → decode preserves payload.
-    * A constructed Tier 3 cert's envelope verifies; the verifier
-      returns [Tier_check_deferred 3] (no soundness checker yet). *)
+    * A constructed Tier 3 cert's envelope verifies; with v0
+      Tier 3 verification, real cvc5 fixtures bail out via
+      [Tier3_unsupported_rule] because they use propositional
+      bookkeeping rules ([refl], [cong], [resolution], …) that
+      no v0 checker handles yet. *)
 
 open Proof_broker
 
@@ -157,10 +160,16 @@ let test_envelope_verifier_tier3 () =
     payload;
   } in
   match Verifier.verify cert ir with
-  | Tier_check_deferred { tier = 3 } -> ()
+  | Tier3_unsupported_rule { rule; _ } ->
+    (* v0 has only la_generic registered; cvc5's real proof uses
+       14 rules. The walker bails out at the first unregistered
+       rule it sees. The exact rule depends on step order; we
+       only check it's a non-la_generic rule. *)
+    Alcotest.(check bool) "bailout on a non-la_generic rule"
+      true (rule <> "la_generic")
   | other ->
     Alcotest.fail
-      (Printf.sprintf "expected Tier_check_deferred(3), got %s — %s"
+      (Printf.sprintf "expected Tier3_unsupported_rule, got %s — %s"
          (Verifier.kind_of_reason other)
          (Verifier.detail_of_reason other))
 
@@ -181,7 +190,7 @@ let () =
         `Quick test_payload_codec_round_trip;
     ];
     "verifier", [
-      Alcotest.test_case "envelope verifies, soundness deferred"
+      Alcotest.test_case "real fixture trips Tier 3 unsupported_rule under v0"
         `Quick test_envelope_verifier_tier3;
     ];
   ]

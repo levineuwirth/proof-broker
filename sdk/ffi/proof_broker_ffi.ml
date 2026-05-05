@@ -156,6 +156,7 @@ let verify_certificate (input : string) : string =
     in
     let ok = match reason with
       | Verified_envelope | Verified_farkas | Verified_case_split
+      | Verified_tier3
       | Tier_check_deferred _ | Unsupported_witness_kind _ -> true
       | _ -> false
     in
@@ -420,6 +421,55 @@ let dispatch_broker (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [check_alethe_step] is the rule-specific check entry point used
+   by the Lean Tier 3 walker (direction 2 of the Tier 3 plan). The
+   Lean side parses the Alethe proof and ships one step at a time;
+   OCaml dispatches by [step.rule] to a checker that re-derives
+   the step's soundness. Currently registered: [la_generic] (via
+   [Alethe_farkas] + [Farkas.verify]). Unsupported rules return
+   [step_unsupported_rule] so the walker can surface the bailout
+   reason cleanly.
+
+   Input shape:
+     {"ir": <IR>, "step": {id, rule, clause, args?, premises?, discharge?}}
+   where each entry of [clause]/[args] is a [Sexp] JSON value
+   (string = atom, array = list).
+
+   Output payload (under [envelope_ok]):
+     {ok: <bool>, kind: <step_verified | step_unsupported_rule
+                          | step_failed>,
+      [rule]: ..., [detail]: ...}. *)
+let check_alethe_step (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: ir", j))
+    in
+    let step_json = match List.assoc_opt "step" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: step", j))
+    in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    let step = Proof_broker.Alethe.step_of_json step_json in
+    let result = Proof_broker.Tier3_alethe.check_step ir step in
+    envelope_ok (Proof_broker.Tier3_alethe.step_result_to_json result)
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
@@ -438,4 +488,5 @@ let () =
   register_method "verify_certificate" verify_certificate;
   register_method "dispatch_to_adapter" dispatch_to_adapter;
   register_method "dispatch_broker" dispatch_broker;
+  register_method "check_alethe_step" check_alethe_step;
   Callback.register "pb_dispatch_call" dispatch

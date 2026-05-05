@@ -48,6 +48,7 @@ type reason =
   | Verified_envelope
   | Verified_farkas
   | Verified_case_split
+  | Verified_tier3
   | Hash_mismatch of {
       field : string;
       expected : string;
@@ -67,6 +68,13 @@ type reason =
   | Case_split_malformed of { detail : string }
   | Case_split_branch_failed of { case_index : int; reason_kind : string }
   | Case_split_partition_mismatch of { detail : string }
+  | Tier3_unsupported_rule of { rule : string; step_id : string }
+  | Tier3_step_failed of {
+      step_id : string;
+      rule : string;
+      detail : string;
+    }
+  | Tier3_unsupported_format of { trace_format : string }
   | Unsupported_witness_kind of { kind : string }
   | Tier_check_deferred of { tier : int }
   | Other of { kind : string; detail : string }
@@ -75,6 +83,7 @@ let kind_of_reason = function
   | Verified_envelope -> "verified_envelope"
   | Verified_farkas -> "verified_farkas"
   | Verified_case_split -> "verified_case_split"
+  | Verified_tier3 -> "verified_tier3"
   | Hash_mismatch _ -> "hash_mismatch"
   | Tier_payload_mismatch _ -> "tier_payload_mismatch"
   | Cert_version_mismatch _ -> "cert_version_mismatch"
@@ -87,6 +96,9 @@ let kind_of_reason = function
   | Case_split_malformed _ -> "case_split_malformed"
   | Case_split_branch_failed _ -> "case_split_branch_failed"
   | Case_split_partition_mismatch _ -> "case_split_partition_mismatch"
+  | Tier3_unsupported_rule _ -> "tier3_unsupported_rule"
+  | Tier3_step_failed _ -> "tier3_step_failed"
+  | Tier3_unsupported_format _ -> "tier3_unsupported_format"
   | Unsupported_witness_kind _ -> "unsupported_witness_kind"
   | Tier_check_deferred _ -> "tier_check_deferred"
   | Other { kind; _ } -> kind
@@ -95,10 +107,19 @@ let detail_of_reason = function
   | Verified_envelope -> ""
   | Verified_farkas -> ""
   | Verified_case_split -> ""
+  | Verified_tier3 -> ""
   | Case_split_malformed { detail } -> detail
   | Case_split_branch_failed { case_index; reason_kind } ->
     Printf.sprintf "branch %d failed: %s" case_index reason_kind
   | Case_split_partition_mismatch { detail } -> detail
+  | Tier3_unsupported_rule { rule; step_id } ->
+    Printf.sprintf "step %s: rule %s has no registered checker"
+      step_id rule
+  | Tier3_step_failed { step_id; rule; detail } ->
+    Printf.sprintf "step %s (rule %s) failed: %s" step_id rule detail
+  | Tier3_unsupported_format { trace_format } ->
+    Printf.sprintf "no Tier 3 verifier registered for trace_format=%s"
+      trace_format
   | Hash_mismatch { field; expected; got } ->
     Printf.sprintf "%s: expected %s, got %s" field expected got
   | Tier_payload_mismatch { envelope_tier; payload_tier } ->
@@ -399,12 +420,27 @@ let verify_case_split
               else Verified_case_split
           | other -> other))
 
+(** Map a [Tier3_alethe.verify_result] to the verifier's [reason]
+    taxonomy. [Verified] becomes [Verified_tier3]; per-step
+    failures preserve the offending step ID + rule for diagnostics. *)
+let reason_of_tier3 (v : Tier3_alethe.verify_result) : reason =
+  match v with
+  | Verified -> Verified_tier3
+  | Unsupported_rule { rule; step_id } ->
+    Tier3_unsupported_rule { rule; step_id }
+  | Step_failed { step_id; rule; detail } ->
+    Tier3_step_failed { step_id; rule; detail }
+
 (** Full verification: envelope checks then tier-specific. Tier 1
     [farkas] dispatches to [Farkas.verify]; Tier 2 with
     [strategy_hint=case_split_farkas] dispatches to
-    [verify_case_split]; any other tier or strategy without an
-    implemented verifier surfaces as [Tier_check_deferred] or
-    [Unsupported_witness_kind]. *)
+    [verify_case_split]; Tier 3 with [trace_format="alethe-2024"]
+    dispatches to [Tier3_alethe.verify], which walks the proof
+    step-by-step and returns [Verified_tier3] when every step's
+    rule has a registered checker and accepts. Any other tier or
+    strategy without an implemented verifier surfaces as
+    [Tier_check_deferred], [Unsupported_witness_kind], or
+    [Tier3_unsupported_format]. *)
 let verify
       ?(trace : Trace.t option = None)
       (cert : Certificate.t)
@@ -421,5 +457,10 @@ let verify
      | Tier2_lemma_list { lemmas_used; strategy_hint; structural_hint }
        when strategy_hint = "case_split_farkas" ->
        verify_case_split ~structural_hint lemmas_used ir
+     | Tier3_proof_trace { trace_format = "alethe-2024";
+                           trace_data = `String proof_str; _ } ->
+       reason_of_tier3 (Tier3_alethe.verify ir proof_str)
+     | Tier3_proof_trace { trace_format; _ } ->
+       Tier3_unsupported_format { trace_format }
      | _ -> Tier_check_deferred { tier = cert.tier })
   | r -> r

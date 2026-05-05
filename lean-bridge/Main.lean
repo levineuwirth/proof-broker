@@ -775,6 +775,118 @@ def runTier2CaseSplitFlow : IO Unit := do
   | other =>
     fail s!"expected caseSplitPartitionMismatch, got {repr other}"
 
+/-- End-to-end Tier 3 alethe-2024 verification across the FFI.
+    Build an IR for `x ≥ 3, x ≤ 1 ⊢ x = x` (Farkas-style
+    inconsistent hypotheses), pair it with a hand-written minimal
+    Alethe proof that has exactly one `la_generic` step, mint a
+    Tier 3 cert, and confirm `runVerifyCertificate` returns
+    `verifiedTier3` — every step's rule had a registered checker
+    that accepted. Then construct a cert from a real cvc5 fixture
+    and confirm the bailout fires (`tier3UnsupportedRule`) because
+    cvc5 emits 14 distinct rules and v0 only registers
+    `la_generic`. The bailout reason kind is the load-bearing
+    feature of direction 2: each future rule that lands flips one
+    such bailout into a verifiedTier3. -/
+def runTier3AletheFlow (rootDir : System.FilePath) : IO Unit := do
+  -- IR: x ≥ 3, x ≤ 1 ⊢ x = x  (over LRA; the la_generic step
+  -- discharges the (cl ¬(x ≥ 3) ¬(x ≤ 1)) disjunction).
+  let x : ShellTerm := .var "x"
+  let one : ShellTerm := .numLit "1" "Real"
+  let three : ShellTerm := .numLit "3" "Real"
+  let h0 : ShellTerm := .app ">=" [] [x, three]
+  let h1 : ShellTerm := .app "<=" [] [x, one]
+  let goal : ShellTerm := .eq "Real" x x
+  let irBase := mkTestIR goal
+  let ir : IR := { irBase with
+    logicClassification := {
+      order := "first_order",
+      featuresUsed := [],
+      firstOrderFragment := "LRA",
+      decidableTheory := none
+    },
+    context := {
+      typeVars := [], freeVars := [{ name := "x", ty := "Real" }],
+      hypotheses := [
+        { name := "h0", shell := h0 },
+        { name := "h1", shell := h1 }
+      ],
+      librarySlice := none
+    }
+  }
+  let emptyConfig : PipelineConfig := {
+    pipeline := [], stopOnFailure := false, timeoutPerPassMs := none
+  }
+  let (_, doc) ← match runPipeline ir emptyConfig with
+    | .ok pair => pure pair
+    | .error e => fail s!"pipeline run for Tier3 hash failed: {repr e}"
+  let irHash := doc.initialIrHash
+  let goalJson := ProofBroker.IR.Goal.toJson ir.goal
+  let mkCert (proofStr : String) (traceFormat : String) : Json :=
+    Json.mkObj [
+      ("cert_version", .str "1.0"),
+      ("tier", .num 3),
+      ("format", .str traceFormat),
+      ("goal", goalJson),
+      ("dispatch_context_hash", .str irHash),
+      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+      ("backend", Json.mkObj [
+        ("name", .str "synthetic"), ("version", .str "0.0"),
+        ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
+      ]),
+      ("resources", Json.mkObj [
+        ("wall_time_ms", .num 1), ("memory_peak_kb", .num 1)
+      ]),
+      ("refinement_record", Json.mkObj [
+        ("adapter", .str "synthetic"), ("adapter_version", .str "0.0"),
+        ("specializations", Json.arr #[]), ("fragment", .str "LRA")
+      ]),
+      ("payload", Json.mkObj [
+        ("trace_format", .str traceFormat),
+        ("trace_data", .str proofStr)
+      ])
+    ]
+  -- Synthetic minimal proof: one la_generic step, no other rules.
+  -- v0 has la_generic registered, so this verifies end-to-end.
+  let synthetic := "(\n(assume a0 (>= x 3))\n(assume a1 (<= x 1))\n" ++
+    "(step t1 (cl (not (>= x 3)) (not (<= x 1))) :rule la_generic :args (1 1))\n)"
+  let goodCert := mkCert synthetic "alethe-2024"
+  let res ← match runVerifyCertificate goodCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Tier3 synthetic): {repr e}"
+  unless res.ok do
+    fail s!"expected ok=true on synthetic Tier 3 cert; reason={repr res.reason}"
+  match res.reason with
+  | .verifiedTier3 =>
+    IO.println "OK verify_certificate: Tier 3 alethe-2024 single-la_generic re-checked end-to-end"
+  | other =>
+    fail s!"expected verifiedTier3, got {repr other}"
+  -- Real cvc5 fixture: 14 distinct rules, only la_generic registered.
+  -- v0 walker bails on the first non-la_generic step.
+  let realProof ← IO.FS.readFile (rootDir / "sdk" / "test" / "fixtures" / "alethe-x-3-x-1.proof")
+  let realCert := mkCert realProof "alethe-2024"
+  let res2 ← match runVerifyCertificate realCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Tier3 real): {repr e}"
+  if res2.ok then
+    fail s!"expected ok=false on real fixture under v0; reason={repr res2.reason}"
+  match res2.reason with
+  | .tier3UnsupportedRule _ =>
+    IO.println "OK verify_certificate: real cvc5 fixture trips tier3UnsupportedRule under v0 (only la_generic registered)"
+  | other =>
+    fail s!"expected tier3UnsupportedRule, got {repr other}"
+  -- Non-alethe trace_format → tier3UnsupportedFormat.
+  let lfscCert := mkCert "(... not alethe ...)" "lfsc"
+  let res3 ← match runVerifyCertificate lfscCert ir with
+    | .ok r => pure r
+    | .error e => fail s!"runVerifyCertificate (Tier3 lfsc): {repr e}"
+  if res3.ok then
+    fail s!"expected ok=false on unsupported trace_format; reason={repr res3.reason}"
+  match res3.reason with
+  | .tier3UnsupportedFormat _ =>
+    IO.println "OK verify_certificate: non-alethe trace_format surfaces tier3UnsupportedFormat"
+  | other =>
+    fail s!"expected tier3UnsupportedFormat, got {repr other}"
+
 /-- Probe whether cvc4 is available; the dispatch flow needs the
     binary on PATH and we want CI without cvc4 to stay green. -/
 def cvc4Available : IO Bool := do
@@ -1065,6 +1177,7 @@ def main : IO Unit := do
   runFarkasVerificationFlow
   runLraFarkasFlow
   runTier2CaseSplitFlow
+  runTier3AletheFlow rootDir
   runDispatchToCvc4Flow
   runRefinementDispatchFlow rootDir
   runDispatchBrokerFlow rootDir

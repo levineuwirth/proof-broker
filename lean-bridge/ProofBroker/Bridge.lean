@@ -264,21 +264,26 @@ private def parseReason (j : Json) : MatchReason :=
   | k => .otherReason k detail
 
 /-- Result of `runVerifyCertificate`. Mirrors OCaml's
-    `Verifier.reason`, covering three layers: envelope checks
+    `Verifier.reason`, covering four layers: envelope checks
     (`verifiedEnvelope`, `hashMismatch`, `tierPayloadMismatch`,
     `certVersionMismatch`); Tier 1 / Farkas arithmetic checks
-    (`verifiedFarkas` plus `farkas*` failure variants); and Tier 2 /
+    (`verifiedFarkas` plus `farkas*` failure variants); Tier 2 /
     case-split-Farkas checks (`verifiedCaseSplit` plus `caseSplit*`
     failure variants — per-branch Farkas plus partition coverage of
-    a disjunctive hypothesis). For tiers without a soundness
-    verifier, OCaml emits `tierCheckDeferred` / `unsupportedWitnessKind`;
-    the cert's envelope was verified but nothing further. New reason
-    kinds the OCaml side adds in the future decode into
-    `otherCertReason`. -/
+    a disjunctive hypothesis); and Tier 3 / Alethe passthrough
+    re-checking (`verifiedTier3` plus `tier3*` failure variants —
+    per-step rule dispatch with `tier3UnsupportedRule` as the
+    bailout, `tier3StepFailed` for rejected step-level checks, and
+    `tier3UnsupportedFormat` for non-`alethe-2024` trace formats).
+    For tiers without a soundness verifier, OCaml emits
+    `tierCheckDeferred` / `unsupportedWitnessKind`; the cert's
+    envelope was verified but nothing further. New reason kinds the
+    OCaml side adds in the future decode into `otherCertReason`. -/
 inductive CertReason where
   | verifiedEnvelope
   | verifiedFarkas
   | verifiedCaseSplit
+  | verifiedTier3
   | hashMismatch (detail : String)
   | tierPayloadMismatch (detail : String)
   | certVersionMismatch (detail : String)
@@ -291,6 +296,9 @@ inductive CertReason where
   | caseSplitMalformed (detail : String)
   | caseSplitBranchFailed (detail : String)
   | caseSplitPartitionMismatch (detail : String)
+  | tier3UnsupportedRule (detail : String)
+  | tier3StepFailed (detail : String)
+  | tier3UnsupportedFormat (detail : String)
   | unsupportedWitnessKind (detail : String)
   | tierCheckDeferred (detail : String)
   | otherCertReason (kind : String) (detail : String)
@@ -308,6 +316,7 @@ private def parseCertReason (j : Json) : CertReason :=
   | "verified_envelope" => .verifiedEnvelope
   | "verified_farkas" => .verifiedFarkas
   | "verified_case_split" => .verifiedCaseSplit
+  | "verified_tier3" => .verifiedTier3
   | "hash_mismatch" => .hashMismatch detail
   | "tier_payload_mismatch" => .tierPayloadMismatch detail
   | "cert_version_mismatch" => .certVersionMismatch detail
@@ -320,6 +329,9 @@ private def parseCertReason (j : Json) : CertReason :=
   | "case_split_malformed" => .caseSplitMalformed detail
   | "case_split_branch_failed" => .caseSplitBranchFailed detail
   | "case_split_partition_mismatch" => .caseSplitPartitionMismatch detail
+  | "tier3_unsupported_rule" => .tier3UnsupportedRule detail
+  | "tier3_step_failed" => .tier3StepFailed detail
+  | "tier3_unsupported_format" => .tier3UnsupportedFormat detail
   | "unsupported_witness_kind" => .unsupportedWitnessKind detail
   | "tier_check_deferred" => .tierCheckDeferred detail
   | k => .otherCertReason k detail
@@ -335,11 +347,17 @@ private def parseCertReason (j : Json) : CertReason :=
     = "case_split_farkas") run a per-branch Farkas check plus a
     partition-coverage check against the disjunctive hypothesis
     named in `structural_hint.disjunctive_hypothesis` (returning
-    `verifiedCaseSplit` / `caseSplit*` diagnostics); other tiers
-    fall through to `tierCheckDeferred`, other Tier 1 witness kinds
-    to `unsupportedWitnessKind`. Strict consumers should treat only
-    `verifiedEnvelope`, `verifiedFarkas`, and `verifiedCaseSplit`
-    as proof of soundness.
+    `verifiedCaseSplit` / `caseSplit*` diagnostics); Tier 3 with
+    `trace_format = "alethe-2024"` runs the per-step Alethe
+    re-checker, returning `verifiedTier3` only when every step's
+    rule has a registered checker that accepts (today: just
+    `la_generic`; everything else trips
+    `tier3UnsupportedRule`). Other tiers fall through to
+    `tierCheckDeferred`, other Tier 1 witness kinds to
+    `unsupportedWitnessKind`, and other Tier 3 trace formats to
+    `tier3UnsupportedFormat`. Strict consumers should treat only
+    `verifiedEnvelope`, `verifiedFarkas`, `verifiedCaseSplit`, and
+    `verifiedTier3` as proof of soundness.
 
     Certificates are caller-supplied JSON because there's no
     Lean-side `Certificate` ADT yet — consistent with the

@@ -28,6 +28,24 @@ module Sexp = struct
   let rec to_string = function
     | Atom s -> s
     | List xs -> "(" ^ String.concat " " (List.map to_string xs) ^ ")"
+
+  (** JSON serialization for crossing the FFI to Lean. Atoms render
+      as JSON strings; lists as JSON arrays. The encoding is
+      unambiguous because JSON's [String] and [List] are distinct
+      type tags, so the inverse [of_json] is total without an
+      auxiliary tag field. Note that an Alethe atom that happens to
+      look like a number ([42]) still rides as [`String "42"`]. *)
+  let rec to_json = function
+    | Atom s -> `String s
+    | List xs -> `List (List.map to_json xs)
+
+  let rec of_json (j : Yojson.Safe.t) : t =
+    match j with
+    | `String s -> Atom s
+    | `List xs -> List (List.map of_json xs)
+    | _ ->
+      raise (Codec.Decode_error
+               ("expected JSON string or array for Alethe Sexp", j))
 end
 
 (* --- lexer / parser --------------------------------------------------- *)
@@ -288,3 +306,67 @@ let steps_in_subproof (p : proof) (subproof_id : string) : step list =
   List.filter (fun (s : step) ->
     String.length s.id > plen
     && String.sub s.id 0 plen = prefix) p.steps
+
+(* --- step JSON serialization (for the Lean Tier 3 walker) ----------- *)
+
+(** Serialize a step to JSON for FFI transport. The shape is:
+    [{id, rule, clause, args?, premises?, discharge?}], with [args],
+    [premises], [discharge] omitted when [None]. Sexp arrays in
+    [clause]/[args] use [Sexp.to_json]. *)
+let step_to_json (s : step) : Yojson.Safe.t =
+  let f = [
+    "id", `String s.id;
+    "rule", `String s.rule;
+    "clause", `List (List.map Sexp.to_json s.clause);
+  ] in
+  let f = match s.args with
+    | None -> f
+    | Some xs -> f @ [ "args", `List (List.map Sexp.to_json xs) ]
+  in
+  let f = match s.premises with
+    | None -> f
+    | Some xs -> f @ [ "premises", `List (List.map (fun s -> `String s) xs) ]
+  in
+  let f = match s.discharge with
+    | None -> f
+    | Some xs ->
+      f @ [ "discharge", `List (List.map (fun s -> `String s) xs) ]
+  in
+  `Assoc f
+
+(** Inverse of [step_to_json]. Optional fields default to [None]
+    when missing so the JSON is forward-compatible. *)
+let step_of_json (j : Yojson.Safe.t) : step =
+  let pairs = match j with
+    | `Assoc p -> p
+    | _ -> raise (Codec.Decode_error ("expected object for step", j))
+  in
+  let req k = match List.assoc_opt k pairs with
+    | Some v -> v
+    | None ->
+      raise (Codec.Decode_error
+               ("missing required field: " ^ k, `Assoc pairs))
+  in
+  let str = function
+    | `String s -> s
+    | other ->
+      raise (Codec.Decode_error ("expected string", other))
+  in
+  let str_list = function
+    | `List xs -> List.map str xs
+    | other ->
+      raise (Codec.Decode_error ("expected array of strings", other))
+  in
+  let sexp_list = function
+    | `List xs -> List.map Sexp.of_json xs
+    | other ->
+      raise (Codec.Decode_error ("expected array of Sexp JSON", other))
+  in
+  {
+    id = str (req "id");
+    rule = str (req "rule");
+    clause = sexp_list (req "clause");
+    args = Option.map sexp_list (List.assoc_opt "args" pairs);
+    premises = Option.map str_list (List.assoc_opt "premises" pairs);
+    discharge = Option.map str_list (List.assoc_opt "discharge" pairs);
+  }
