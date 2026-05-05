@@ -466,6 +466,102 @@ let test_check_implies_rejects_mismatch () =
   | Step_failed _ -> ()
   | _ -> Alcotest.fail "implies should reject when antecedent doesn't match"
 
+let test_check_la_mult_neg_accepts () =
+  (* Canonical fixture shape: (=> (and (< -1 0) (>= x 3)) (<= -x -3)).
+     Both (>= x 3) and (<= -x -3) linearize to Le(3 - x), and the
+     hyp scaled by |c| = 1 is the same form, so the check passes. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.lmn" ~rule:"la_mult_neg"
+    ~clause:[
+      List [
+        Atom "=>";
+        List [ Atom "and";
+               List [ Atom "<"; Atom "-1/1"; Atom "0/1" ];
+               List [ Atom ">="; Atom "x"; Atom "3/1" ] ];
+        List [ Atom "<=";
+               List [ Atom "*"; Atom "-1/1"; Atom "x" ];
+               List [ Atom "*"; Atom "-1/1"; Atom "3/1" ] ];
+      ]
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "la_mult_neg rejected canonical shape: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_la_mult_neg_rejects_positive_c () =
+  (* c = 1 > 0 should be rejected — the rule requires c < 0. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.lmn" ~rule:"la_mult_neg"
+    ~clause:[
+      List [
+        Atom "=>";
+        List [ Atom "and";
+               List [ Atom "<"; Atom "1/1"; Atom "0/1" ];
+               List [ Atom ">="; Atom "x"; Atom "3/1" ] ];
+        List [ Atom "<="; Atom "x"; Atom "3/1" ];
+      ]
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "la_mult_neg should reject c >= 0"
+
+let test_check_la_mult_neg_rejects_wrong_scale () =
+  (* c = -1, hyp = (>= x 3), but conc claims (<= -x -10) instead of
+     (<= -x -3) — the conclusion isn't hyp scaled by |c|. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.lmn" ~rule:"la_mult_neg"
+    ~clause:[
+      List [
+        Atom "=>";
+        List [ Atom "and";
+               List [ Atom "<"; Atom "-1/1"; Atom "0/1" ];
+               List [ Atom ">="; Atom "x"; Atom "3/1" ] ];
+        List [ Atom "<=";
+               List [ Atom "*"; Atom "-1/1"; Atom "x" ];
+               Atom "-10" ];
+      ]
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "la_mult_neg should reject mismatched scale"
+
+let test_check_la_mult_neg_scale_two () =
+  (* c = -2, hyp = (>= x 3), conc = (<= -2*x -2*3). Hyp's Farkas
+     form is Le(3 - x); scaled by |c|=2 is Le(6 - 2x). Conc
+     linearizes to Le((-2x) - (-6)) = Le(-2x + 6). Both equal
+     Le(-2x + 6) so the check accepts. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.lmn" ~rule:"la_mult_neg"
+    ~clause:[
+      List [
+        Atom "=>";
+        List [ Atom "and";
+               List [ Atom "<"; Atom "-2/1"; Atom "0/1" ];
+               List [ Atom ">="; Atom "x"; Atom "3/1" ] ];
+        List [ Atom "<=";
+               List [ Atom "*"; Atom "-2/1"; Atom "x" ];
+               List [ Atom "*"; Atom "-2/1"; Atom "3/1" ] ];
+      ]
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "la_mult_neg c=-2 rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
 let test_check_equiv1_accepts () =
   let ir = make_x_ir () in
   let env = env_with ir [
@@ -733,6 +829,14 @@ let () =
         `Quick test_check_implies_rejects_mismatch;
       Alcotest.test_case "equiv1 accepts (= a b) → ¬a, b"
         `Quick test_check_equiv1_accepts;
+      Alcotest.test_case "la_mult_neg accepts canonical c=-1 shape"
+        `Quick test_check_la_mult_neg_accepts;
+      Alcotest.test_case "la_mult_neg rejects c >= 0"
+        `Quick test_check_la_mult_neg_rejects_positive_c;
+      Alcotest.test_case "la_mult_neg rejects wrong-scale conclusion"
+        `Quick test_check_la_mult_neg_rejects_wrong_scale;
+      Alcotest.test_case "la_mult_neg accepts c=-2 scaling"
+        `Quick test_check_la_mult_neg_scale_two;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"

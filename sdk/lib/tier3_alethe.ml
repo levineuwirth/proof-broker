@@ -238,6 +238,79 @@ let check_cong (env : env) (step : Alethe.step) : step_result =
       detail = "expected (cl (= (f …) (f …))) with same head symbol";
     }
 
+(** Scale a [Farkas.compiled] form by a rational [k]. The shape
+    ([Le]/[Lt]/[Eq]) is preserved — we use this for [la_mult_neg]
+    where the conclusion has the same direction as the hypothesis
+    (multiplied by [|c|], not [c], so direction doesn't flip). *)
+let scale_compiled (k : Linear_arith.rational) (c : Farkas.compiled)
+  : Farkas.compiled =
+  match c with
+  | Farkas.Le f -> Farkas.Le (Linear_arith.scale k f)
+  | Farkas.Lt f -> Farkas.Lt (Linear_arith.scale k f)
+  | Farkas.Eq f -> Farkas.Eq (Linear_arith.scale k f)
+
+(** Structural equality on [Farkas.compiled] forms. [Linear_arith.t]
+    is canonicalized (sorted-assoc-list with no zero entries), so
+    OCaml's [=] is the right notion of arithmetic equality. *)
+let compiled_equal (a : Farkas.compiled) (b : Farkas.compiled) : bool =
+  match a, b with
+  | Farkas.Le x, Farkas.Le y
+  | Farkas.Lt x, Farkas.Lt y
+  | Farkas.Eq x, Farkas.Eq y -> x = y
+  | _ -> false
+
+(** [la_mult_neg]: tautological clause
+    [(cl (=> (and (< c 0) hyp) conc))], where [c] is a strictly
+    negative rational constant and [conc] is [hyp] scaled through
+    by [c]. Multiplying an inequality by a negative constant flips
+    its direction syntactically, but the resulting Farkas-normal
+    form is the same as scaling the original linear form by [|c|]
+    (since both [(>= x 3)] and [(<= -x -3)] linearize to the same
+    [Le(3 - x)]). We check (a) the implication shape, (b) that
+    [(< c 0)] really has [c < 0] and the right-hand side really is
+    [0], and (c) that [conc]'s compiled form equals [hyp]'s
+    compiled form scaled by [|c|]. *)
+let check_la_mult_neg (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "=>";
+             List [ Atom "and";
+                    List [ Atom "<"; c_expr; zero_expr ];
+                    hyp_atom ];
+             conc_atom ] ] ->
+    (match Alethe_farkas.lin_arith c_expr,
+           Alethe_farkas.lin_arith zero_expr with
+     | Some cl, Some zl
+       when Linear_arith.is_constant cl
+         && Linear_arith.is_constant zl
+         && Linear_arith.rat_is_zero (Linear_arith.constant_value zl)
+         && Linear_arith.rat_is_neg (Linear_arith.constant_value cl) ->
+       let c = Linear_arith.constant_value cl in
+       let abs_c = Linear_arith.rat_neg c in
+       (match Alethe_farkas.compile_atom_pos hyp_atom,
+              Alethe_farkas.compile_atom_pos conc_atom with
+        | Some hc, Some cc ->
+          if compiled_equal (scale_compiled abs_c hc) cc then Step_verified
+          else
+            Step_failed {
+              rule = "la_mult_neg";
+              detail = "conclusion is not hyp scaled by |c|";
+            }
+        | _ ->
+          Step_failed {
+            rule = "la_mult_neg";
+            detail = "hyp or conc atom not linearizable";
+          })
+     | _ ->
+       Step_failed {
+         rule = "la_mult_neg";
+         detail = "(< c 0) premise: c not a negative constant or 0 not zero";
+       })
+  | _ ->
+    Step_failed {
+      rule = "la_mult_neg";
+      detail = "expected (cl (=> (and (< c 0) hyp) conc))";
+    }
+
 (** [equiv_pos2]: tautological clause [(cl (not (= φ ψ)) (not φ) ψ)].
     Encodes "from [φ ↔ ψ] and [φ], conclude [ψ]" in clause form;
     sound regardless of [φ], [ψ] since the disjunction is a
@@ -441,6 +514,7 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "and_neg" -> check_and_neg step
   | "implies" -> check_implies env step
   | "equiv1" -> check_equiv1 env step
+  | "la_mult_neg" -> check_la_mult_neg step
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -451,7 +525,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
     closed" gate of direction 3). *)
 let supported_rules : string list = [
   "and_neg"; "cong"; "equiv1"; "equiv_pos2"; "equiv_simplify";
-  "false"; "implies"; "la_generic"; "refl"; "resolution"; "trans";
+  "false"; "implies"; "la_generic"; "la_mult_neg"; "refl";
+  "resolution"; "trans";
 ]
 
 (** True iff every step in [p] uses a rule [check_step] knows. The
