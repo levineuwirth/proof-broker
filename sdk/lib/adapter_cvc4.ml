@@ -58,15 +58,6 @@ let timeout_of_ir (ir : Ir.t) : int =
 
 (* --- I/O ------------------------------------------------------------- *)
 
-let read_all (ic : in_channel) : string =
-  let buf = Buffer.create 256 in
-  (try
-     while true do
-       Buffer.add_channel buf ic 4096
-     done
-   with End_of_file -> ());
-  Buffer.contents buf
-
 (** Spawn cvc4 with the given timeout, write [script] to its stdin,
     return [(stdout, stderr, exit_code)]. Raises any [Unix] error
     so callers can wrap. *)
@@ -83,8 +74,7 @@ let run_solver ~timeout_ms (script : string) : string * string * int =
   in
   output_string stdin_ch script;
   close_out stdin_ch;
-  let out = read_all stdout_ch in
-  let err = read_all stderr_ch in
+  let out, err = Adapter.drain_subprocess_streams stdout_ch stderr_ch in
   let status = Unix.close_process_full (stdout_ch, stdin_ch, stderr_ch) in
   let code = match status with
     | Unix.WEXITED n -> n

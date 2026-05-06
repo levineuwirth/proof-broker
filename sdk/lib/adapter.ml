@@ -72,3 +72,40 @@ type t = {
   version : string;
   dispatch : Ir.t -> result;
 }
+
+(** Drain a child process's stdout and stderr concurrently into
+    strings. The naive "read stdout, then read stderr" pattern
+    deadlocks when the child fills its stderr pipe buffer (~64KB
+    on Linux) before closing stdout: the child blocks writing to
+    stderr, and the parent blocks waiting for stdout EOF that the
+    child can never reach. We multiplex via [Unix.select] on the
+    underlying fds so neither pipe is left undrained.
+
+    Both channels are read until EOF and then closed by the
+    caller. The returned tuple is [(stdout_text, stderr_text)]. *)
+let drain_subprocess_streams
+    (stdout_ch : in_channel) (stderr_ch : in_channel)
+  : string * string =
+  let buf_out = Buffer.create 4096 in
+  let buf_err = Buffer.create 1024 in
+  let fd_out = Unix.descr_of_in_channel stdout_ch in
+  let fd_err = Unix.descr_of_in_channel stderr_ch in
+  let chunk = Bytes.create 4096 in
+  let active = ref [ fd_out; fd_err ] in
+  while !active <> [] do
+    match Unix.select !active [] [] (-1.0) with
+    | exception Unix.Unix_error (Unix.EINTR, _, _) -> ()
+    | ready, _, _ ->
+      List.iter (fun fd ->
+        let n =
+          try Unix.read fd chunk 0 (Bytes.length chunk)
+          with Unix.Unix_error (Unix.EINTR, _, _) -> -1
+        in
+        if n < 0 then ()
+        else if n = 0 then
+          active := List.filter (fun f -> f <> fd) !active
+        else
+          let buf = if fd = fd_out then buf_out else buf_err in
+          Buffer.add_subbytes buf chunk 0 n) ready
+  done;
+  (Buffer.contents buf_out, Buffer.contents buf_err)
