@@ -28,11 +28,30 @@ from check import (  # noqa: E402
     check_manifest,
     check_trace,
 )
+from jsonschema import Draft202012Validator  # noqa: E402
+from referencing import Registry, Resource  # noqa: E402
+from referencing.jsonschema import DRAFT202012  # noqa: E402
 
 
 def load(p: Path) -> dict:
     with p.open() as f:
         return json.load(f)
+
+
+def cert_schema_validator() -> Draft202012Validator:
+    schema_dir = ROOT / "schemas" / "v1.0"
+    registry = Registry()
+    cert_schema = None
+    for path in sorted(schema_dir.glob("*.schema.json")):
+        with path.open() as f:
+            schema = json.load(f)
+        registry = registry.with_resource(
+            schema["$id"], Resource(contents=schema, specification=DRAFT202012)
+        )
+        if path.name == "certificate.schema.json":
+            cert_schema = schema
+    assert cert_schema is not None
+    return Draft202012Validator(cert_schema, registry=registry)
 
 
 REGISTRY = load(ROOT / "registry" / "patterns-v1.json")
@@ -221,6 +240,127 @@ def _cert_unknown_trace_format():
     }
     e, _ = check_certificate(fake, REGISTRY)
     assert_contains(e, "unknown format 'fake-format-1'", "error")
+
+
+# --- Tier 2 schema checks ----------------------------------------------------
+
+# Synthetic Tier 2 cert template. Values that aren't relevant to the
+# Tier 2 lemmas_used branch use placeholders that match the schema's
+# generic shapes (ContentHash, BackendIdentity, etc.).
+_DUMMY_HASH = "sha256:" + "0" * 64
+
+_TIER2_BASE = {
+    "cert_version": "1.0",
+    "tier": 2,
+    "format": "case_split_farkas",
+    "goal": {
+        "shell": {"node": "Const", "name": "True"}
+    },
+    "dispatch_context_hash": _DUMMY_HASH,
+    "rewrite_trace_hash": _DUMMY_HASH,
+    "backend": {"name": "cvc5", "version": "1.3.3", "config_hash": _DUMMY_HASH},
+    "resources": {"wall_time_ms": 1, "memory_peak_kb": 1},
+    "refinement_record": {
+        "adapter": "cvc5",
+        "adapter_version": "1.3.3",
+        "specializations": [],
+        "fragment": "LRA",
+    },
+}
+
+
+@test("tier2 schema: case_split_farkas {case, witness} lemmas validate")
+def _tier2_case_split_validates():
+    cert = copy.deepcopy(_TIER2_BASE)
+    cert["payload"] = {
+        "lemmas_used": [
+            {
+                "case": {
+                    "node": "App", "symbol": "<=", "type_args": [],
+                    "args": [
+                        {"node": "Var", "name": "x"},
+                        {"node": "NumLit", "value": "0", "type": "Real"},
+                    ],
+                },
+                "witness": {
+                    "coefficients": [
+                        {"hypothesis": "case", "coefficient": "1"},
+                        {"hypothesis": "neg_goal", "coefficient": "1"},
+                    ]
+                },
+            },
+            {
+                "case": {
+                    "node": "App", "symbol": ">", "type_args": [],
+                    "args": [
+                        {"node": "Var", "name": "x"},
+                        {"node": "NumLit", "value": "0", "type": "Real"},
+                    ],
+                },
+                "witness": {
+                    "coefficients": [
+                        {"hypothesis": "case", "coefficient": "1"},
+                    ]
+                },
+            },
+        ],
+        "strategy_hint": "case_split_farkas",
+        "structural_hint": {"disjunctive_hypothesis": "h_disj"},
+    }
+    errors = list(cert_schema_validator().iter_errors(cert))
+    assert not errors, [f"{e.json_path}: {e.message}" for e in errors]
+
+
+@test("tier2 schema: library-lemma shape still validates")
+def _tier2_library_lemma_validates():
+    cert = copy.deepcopy(_TIER2_BASE)
+    cert["format"] = "library_lemmas"
+    cert["payload"] = {
+        "lemmas_used": [
+            {
+                "name": "Nat.add_comm",
+                "library": "mathlib",
+                "version": "4.0.0",
+                "content_hash": _DUMMY_HASH,
+            }
+        ],
+        "strategy_hint": "smt_reconstruct",
+    }
+    errors = list(cert_schema_validator().iter_errors(cert))
+    assert not errors, [f"{e.json_path}: {e.message}" for e in errors]
+
+
+@test("tier2 schema: lemma matching neither shape rejected")
+def _tier2_unknown_lemma_shape_rejected():
+    cert = copy.deepcopy(_TIER2_BASE)
+    cert["payload"] = {
+        "lemmas_used": [
+            {"random_field": "nope"}
+        ],
+        "strategy_hint": "case_split_farkas",
+    }
+    errors = list(cert_schema_validator().iter_errors(cert))
+    assert errors, "expected schema rejection for unrecognized lemma shape"
+
+
+@test("tier2 schema: case-split witness with negative coefficient rejected")
+def _tier2_case_split_negative_coeff_rejected():
+    cert = copy.deepcopy(_TIER2_BASE)
+    cert["payload"] = {
+        "lemmas_used": [
+            {
+                "case": {"node": "Const", "name": "True"},
+                "witness": {
+                    "coefficients": [
+                        {"hypothesis": "case", "coefficient": "-1"}
+                    ]
+                },
+            }
+        ],
+        "strategy_hint": "case_split_farkas",
+    }
+    errors = list(cert_schema_validator().iter_errors(cert))
+    assert errors, "expected schema rejection for negative coefficient"
 
 
 # --- Manifest checks ---------------------------------------------------------

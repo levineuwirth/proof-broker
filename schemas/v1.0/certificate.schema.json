@@ -205,25 +205,66 @@
       "properties": {
         "lemmas_used": {
           "type": "array",
+          "description": "Lemma list. Each item is either a named library lemma (reconstructed by hash lookup) or a case-split-derived lemma {case, witness} produced by the case_split_farkas strategy.",
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["name", "library", "version", "content_hash"],
-            "properties": {
-              "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
-              "library": { "type": "string", "minLength": 1 },
-              "version": { "type": "string", "minLength": 1 },
-              "content_hash": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash" }
-            }
+            "oneOf": [
+              { "$ref": "#/$defs/Tier2_LibraryLemma" },
+              { "$ref": "#/$defs/Tier2_CaseSplitLemma" }
+            ]
           }
         },
         "strategy_hint": {
           "type": "string",
           "minLength": 1,
-          "description": "Home-system reconstruction tactic to use (e.g. 'aesop', 'auto', 'simp_arith', 'smt_reconstruct')."
+          "description": "Home-system reconstruction tactic to use (e.g. 'aesop', 'auto', 'simp_arith', 'smt_reconstruct', 'case_split_farkas')."
         },
         "structural_hint": {
-          "description": "Optional ordering/shape hint for reconstruction; format is strategy-specific."
+          "description": "Optional ordering/shape hint for reconstruction; format is strategy-specific. For 'case_split_farkas': object with field 'disjunctive_hypothesis' naming the IR hypothesis the cases partition."
+        }
+      }
+    },
+
+    "Tier2_LibraryLemma": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "library", "version", "content_hash"],
+      "properties": {
+        "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
+        "library": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "content_hash": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ContentHash" }
+      }
+    },
+
+    "Tier2_CaseSplitLemma": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case", "witness"],
+      "description": "Disjunctive case + Farkas witness. The verifier checks that adding 'case' as a hypothesis makes the witness close the goal, and that the cases partition the disjunctive hypothesis named in structural_hint.",
+      "properties": {
+        "case": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/ShellTerm" },
+        "witness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["coefficients"],
+          "description": "Farkas witness for this case. Same shape as Tier 1 farkas witness_data.",
+          "properties": {
+            "coefficients": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["hypothesis", "coefficient"],
+                "properties": {
+                  "hypothesis": { "type": "string", "minLength": 1 },
+                  "coefficient": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
