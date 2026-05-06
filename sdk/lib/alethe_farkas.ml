@@ -216,7 +216,7 @@ type input_entry = {
     sum anyway, and the caller will fail gracefully if a clause
     literal wants them. *)
 let compile_ir_inputs (ir : Ir.t) : input_entry list =
-  let fragment = ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment ir in
   let one (name, shell) =
     match Farkas.compile_hypothesis ~fragment shell with
     | Ok c -> Some { name; compiled = c }
@@ -336,7 +336,7 @@ let extract_witness (ir : Ir.t) (proof : Alethe.proof)
   match Alethe.unique_la_generic proof with
   | None -> Error No_la_generic
   | Some step ->
-    let fragment = ir.logic_classification.first_order_fragment in
+    let fragment = Farkas.effective_fragment ir in
     let inputs = compile_ir_inputs ir in
     extract_from_step ~fragment ~inputs step
 
@@ -503,7 +503,7 @@ type case_split_result = {
     (no duplicates, no gaps). *)
 let extract_case_split (ir : Ir.t) (proof : Alethe.proof)
   : (case_split_result, error) result =
-  let fragment = ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment ir in
   match unique_disjunctive_target ~fragment ir with
   | None -> Error No_la_generic
   | Some target ->

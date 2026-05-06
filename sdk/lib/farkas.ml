@@ -169,6 +169,57 @@ let compile_hypothesis ?(fragment = "LIA") (shell : Ir.shell_term)
     lift_le_pair a b
   | _ -> Error "unsupported hypothesis shape"
 
+(* --- fragment derivation --------------------------------------------- *)
+
+(** True iff any subterm of [t] mentions a [Real] type tag, either
+    on a numeric literal or an equality. The check is structural
+    so an [Int]-typed term tree returns [false] even when it lives
+    in an IR whose [logic_classification.first_order_fragment] is
+    misreported. *)
+let rec shell_mentions_real (t : Ir.shell_term) : bool =
+  match t with
+  | Var _ | Const _ -> false
+  | Num_lit { ty; _ } -> String.equal ty "Real"
+  | Eq { ty; left; right } ->
+    String.equal ty "Real"
+    || shell_mentions_real left || shell_mentions_real right
+  | App { args; _ } -> List.exists shell_mentions_real args
+  | And { left; right } | Or { left; right } ->
+    shell_mentions_real left || shell_mentions_real right
+  | Implies { antecedent; consequent } ->
+    shell_mentions_real antecedent || shell_mentions_real consequent
+  | Not { operand } -> shell_mentions_real operand
+  | Forall { body; _ } | Exists { body; _ } -> shell_mentions_real body
+  | Lambda { body; _ } -> shell_mentions_real body
+  | Opaque _ -> false
+
+(** Return the arithmetic-mode fragment to use for Farkas /
+    Tier 3 reasoning, derived from the actual term and free-var
+    types rather than trusting [logic_classification.first_order_fragment]
+    blindly. The label is documentation; soundness is governed by
+    types. Specifically: if any free var is [Real]-typed, or any
+    subterm mentions a [Real] type tag, the effective fragment is
+    ["LRA"] — the +1 strict-inequality trick is unsound on Reals
+    and must not be applied. Otherwise the declared fragment
+    passes through.
+
+    Conservative bias: when in doubt, refuse the +1 trick.
+    Rejecting a sound LIA witness because the IR happens to
+    mention a stray [Real] tag is a false negative, not a
+    soundness break. *)
+let effective_fragment (ir : Ir.t) : string =
+  let any_real_free_var =
+    List.exists (fun (fv : Ir.free_var) -> String.equal fv.ty "Real")
+      ir.context.free_vars
+  in
+  let any_real_term =
+    shell_mentions_real ir.goal.shell
+    || List.exists (fun (h : Ir.hypothesis) -> shell_mentions_real h.shell)
+         ir.context.hypotheses
+  in
+  if any_real_free_var || any_real_term then "LRA"
+  else ir.logic_classification.first_order_fragment
+
 (* --- main entry ------------------------------------------------------ *)
 
 (** Look up a hypothesis in the IR by name, treating [neg_goal] as
@@ -230,7 +281,7 @@ let parse_coefficients (witness : Yojson.Safe.t)
     fragment is read from [ir.logic_classification.first_order_fragment]
     and selects strict-witness behavior — see [compile_hypothesis]. *)
 let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
-  let fragment = ir.logic_classification.first_order_fragment in
+  let fragment = effective_fragment ir in
   match parse_coefficients witness with
   | None ->
     Malformed_witness {

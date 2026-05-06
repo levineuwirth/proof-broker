@@ -326,7 +326,7 @@ let verify_case_split
       ~(structural_hint : Yojson.Safe.t option)
       (lemmas : Yojson.Safe.t list)
       (ir : Ir.t) : reason =
-  let fragment = ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment ir in
   let hyp_name =
     match structural_hint with
     | Some (`Assoc kvs) ->

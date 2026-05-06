@@ -445,6 +445,51 @@ let test_verify_lra_rejects_real_counterexample () =
     "LRA must reject the LIA +1-trick cert against a real counterexample"
   | _ -> Alcotest.fail "expected Not_contradictory under LRA"
 
+let test_verify_real_typed_ir_mislabeled_lia_rejects_plus_one_trick () =
+  (* Soundness gate: an IR whose free vars and literals are all
+     Real-typed but whose [first_order_fragment] is misreported as
+     "LIA" must NOT enable the +1 strict-inequality trick. The
+     verifier derives the effective arithmetic mode from term
+     types, not the label, so this counterexample-bearing cert
+     surfaces as Not_contradictory exactly like under "LRA". *)
+  let x = Ir.Var { name = "x" } in
+  let zero = Ir.Num_lit { value = "0"; ty = "Real" } in
+  let half = Ir.Num_lit { value = "1/2"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Eq { ty = "Real"; left = x; right = half };
+  } in
+  (* Same IR as test_verify_lra_rejects_real_counterexample, but
+     with first_order_fragment lying about being LIA. *)
+  let ir = { (make_ir ~hypotheses:[ h1 ]
+                (App { symbol = "LE.le"; type_args = [];
+                       args = [ x; zero ] })) with
+             logic_classification = {
+               order = "first_order";
+               features_used = [];
+               first_order_fragment = "LIA";
+               decidable_theory = None;
+             }
+           }
+  in
+  (* Override the free var to be Real-typed (the helper from
+     example1 uses Int by default). *)
+  let ir = { ir with
+             context = { ir.context with
+                         free_vars = [ { name = "x"; ty = "Real" } ] } }
+  in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h1";       "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify ir witness with
+  | Not_contradictory _ -> ()
+  | Verified -> Alcotest.fail
+    "Real-typed IR labeled LIA must NOT admit the +1 trick"
+  | _ -> Alcotest.fail "expected Not_contradictory"
+
 let test_verify_lra_loose_only_matches_lia () =
   (* No strict witnesses involved: LRA mode behaves exactly like
      LIA. Goal: x < 2 in LRA, h1: x <= 1. ¬Goal is loose under both
@@ -543,6 +588,8 @@ let () =
         `Quick test_verify_lra_strict_loose_mix;
       Alcotest.test_case "rejects LIA +1-trick on real counterexample"
         `Quick test_verify_lra_rejects_real_counterexample;
+      Alcotest.test_case "Real-typed IR mislabeled LIA still LRA-treated"
+        `Quick test_verify_real_typed_ir_mislabeled_lia_rejects_plus_one_trick;
       Alcotest.test_case "loose-only LRA cert verifies"
         `Quick test_verify_lra_loose_only_matches_lia;
       Alcotest.test_case "negative coef on Lt rejected"

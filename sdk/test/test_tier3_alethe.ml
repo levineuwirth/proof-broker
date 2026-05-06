@@ -669,14 +669,40 @@ let test_check_hole_double_negation () =
        | Step_failed { detail; _ } -> detail
        | _ -> "?"))
 
-(** Build an LIA-fragment IR so the LIA tightening tests can exercise
-    the +1 trick path inside [normalize_literal]. *)
+(** Build an honestly-Int-typed LIA IR so the LIA tightening tests
+    can exercise the +1 trick path. The IR's free vars and numeric
+    literals are all [Int]-typed; only an Int-typed IR may
+    legitimately use the +1 strict-inequality trick. *)
 let make_lia_ir () : Ir.t =
-  let ir = make_x_ir () in
-  { ir with
-    logic_classification = {
-      ir.logic_classification with first_order_fragment = "LIA"
-    }
+  let n : Ir.shell_term = Var { name = "n" } in
+  let mk_int k : Ir.shell_term =
+    Num_lit { value = string_of_int k; ty = "Int" }
+  in
+  {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = lia_logic;
+    goal = {
+      shell = Eq { ty = "Int"; left = n; right = n };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [
+        { name = "n"; ty = "Int" };
+        { name = "m"; ty = "Int" };
+      ];
+      hypotheses = [
+        { name = "h0";
+          shell = App { symbol = "<="; type_args = []; args = [ n; mk_int 10 ] } };
+      ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
   }
 
 let test_check_hole_lia_tightening () =

@@ -370,7 +370,7 @@ let verify_witness_with_inputs
     residual sum is a positive constant. *)
 let check_la_generic (env : env) (step : Alethe.step) : step_result =
   let ir = env.ir in
-  let fragment = ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment ir in
   let base_inputs = Alethe_farkas.compile_ir_inputs ir in
   (* Add local-assume atoms (if [step] is inside a subproof) as
      Farkas inputs alongside the IR's hypotheses. The la_generic
@@ -704,7 +704,7 @@ let check_theory_rewrite_equality
     what tag cvc5 used. The IR's fragment threads through to
     enable LIA tightening when normalizing literals. *)
 let check_hole (env : env) (step : Alethe.step) : step_result =
-  let fragment = env.ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment env.ir in
   match step.clause with
   | [ List [ Atom "="; lhs; rhs ] ] ->
     (match check_theory_rewrite_equality ~fragment lhs rhs with
@@ -725,7 +725,7 @@ let check_hole (env : env) (step : Alethe.step) : step_result =
     soundness contracts; this leaves room to tighten one without
     affecting the other. *)
 let check_rare_rewrite (env : env) (step : Alethe.step) : step_result =
-  let fragment = env.ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment env.ir in
   match step.clause with
   | [ List [ Atom "="; lhs; rhs ] ] ->
     (match check_theory_rewrite_equality ~fragment lhs rhs with
