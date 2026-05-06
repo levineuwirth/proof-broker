@@ -65,8 +65,10 @@ let detail_of_error = function
   | Bad_literal { value; ty } ->
     Printf.sprintf "%s does not parse as %s" value ty
   | Bad_identifier { name; site } ->
-    Printf.sprintf "%s at %s contains characters that cannot be \
-                    represented as a SMT-LIB symbol or quoted symbol"
+    Printf.sprintf "%s at %s is not a SMT-LIB simple symbol; \
+                    rename or alpha-convert before serialization \
+                    (quoted symbols not supported by the proof-trace \
+                    round trip)"
       name site
 
 (* --- identifier quoting ---------------------------------------------- *)
@@ -101,22 +103,25 @@ let is_simple_symbol (s : string) : bool =
   && not (List.mem s smtlib_reserved)
 
 (** Render an identifier (variable name, free-var name) safely.
-    Returns the bare name when it parses as a SMT-LIB simple symbol
-    (and isn't a reserved word). Otherwise wraps the name in
-    [|...|], the quoted-symbol form. Quoted symbols may contain any
-    printable character except [|] and [\\]; if either is present the
-    name is rejected with [Bad_identifier], since SMT-LIB has no
-    escape mechanism for these. *)
+
+    Names that parse as an SMT-LIB simple symbol (and aren't
+    reserved words) pass through verbatim. Anything else is
+    rejected with [Bad_identifier]. SMT-LIB does have a quoted
+    symbol form ([|...|]) we could fall back to, and an earlier
+    iteration of this function did so. We've since removed that
+    fallback because it breaks the proof-trace round trip: cvc5
+    echoes the name as-is in its Alethe output, but [Alethe.parse]
+    tokenizes on whitespace alone and has no special-case for
+    [|...|], so a quoted name in the script makes the resulting
+    proof unparseable on the verifier side. Until the Alethe lexer
+    grows quoted-symbol support, the conservative policy is to
+    refuse names that would need quoting at serialization time —
+    callers must pre-rename or alpha-convert non-simple identifiers
+    before handing the IR to the adapter. *)
 let format_identifier ~site (name : string) : (string, error) result =
   if name = "" then Error (Bad_identifier { name; site })
   else if is_simple_symbol name then Ok name
-  else if String.contains name '|' || String.contains name '\\' then
-    Error (Bad_identifier { name; site })
-  else
-    let printable c = Char.code c >= 0x20 && Char.code c < 0x7f in
-    if String.for_all printable name then
-      Ok (Printf.sprintf "|%s|" name)
-    else Error (Bad_identifier { name; site })
+  else Error (Bad_identifier { name; site })
 
 (* --- type mapping ---------------------------------------------------- *)
 

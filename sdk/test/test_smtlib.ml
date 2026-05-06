@@ -162,19 +162,26 @@ let test_emit_var_simple_unquoted () =
   Alcotest.(check string) "dotted simple symbol unquoted"
     "Nat.add" (emit_term_ok (Var { name = "Nat.add" }))
 
-let test_emit_var_with_space_quoted () =
-  Alcotest.(check string) "name with space gets quoted"
-    "|user input|" (emit_term_ok (Var { name = "user input" }))
+let test_emit_var_with_space_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs (Var { name = "user input" }) with
+  | Error (Bad_identifier { name = "user input"; _ }) -> ()
+  | _ -> Alcotest.fail "expected Bad_identifier for name containing space"
 
-let test_emit_var_starting_with_digit_quoted () =
-  Alcotest.(check string) "leading digit gets quoted"
-    "|3foo|" (emit_term_ok (Var { name = "3foo" }))
+let test_emit_var_starting_with_digit_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs (Var { name = "3foo" }) with
+  | Error (Bad_identifier { name = "3foo"; _ }) -> ()
+  | _ -> Alcotest.fail "expected Bad_identifier for name with leading digit"
 
-let test_emit_var_reserved_word_quoted () =
-  Alcotest.(check string) "reserved word gets quoted"
-    "|let|" (emit_term_ok (Var { name = "let" }));
-  Alcotest.(check string) "Real type name gets quoted"
-    "|Real|" (emit_term_ok (Var { name = "Real" }))
+let test_emit_var_reserved_word_rejected () =
+  let specs = ref [] in
+  (match Smtlib.emit_term ~specs (Var { name = "let" }) with
+   | Error (Bad_identifier { name = "let"; _ }) -> ()
+   | _ -> Alcotest.fail "expected Bad_identifier for reserved word 'let'");
+  (match Smtlib.emit_term ~specs (Var { name = "Real" }) with
+   | Error (Bad_identifier { name = "Real"; _ }) -> ()
+   | _ -> Alcotest.fail "expected Bad_identifier for reserved word 'Real'")
 
 let test_emit_var_pipe_rejected () =
   let specs = ref [] in
@@ -182,34 +189,17 @@ let test_emit_var_pipe_rejected () =
   | Error (Bad_identifier { name = "bad|name"; _ }) -> ()
   | _ -> Alcotest.fail "expected Bad_identifier for name containing |"
 
-let test_emit_var_backslash_rejected () =
-  let specs = ref [] in
-  match Smtlib.emit_term ~specs (Var { name = "bad\\name" }) with
-  | Error (Bad_identifier _) -> ()
-  | _ -> Alcotest.fail "expected Bad_identifier for name containing backslash"
-
-let test_emit_declare_const_quotes_consistently () =
+let test_emit_declare_const_rejects_non_simple () =
   let ir = make_ir
     ~free_vars:[ { name = "user input"; ty = "Int" } ]
     ~hypotheses:[]
     (Var { name = "user input" })
   in
   match Smtlib.emit ir with
-  | Ok script ->
-    let body = script.body in
-    let contains s sub =
-      try
-        for i = 0 to String.length s - String.length sub do
-          if String.sub s i (String.length sub) = sub then raise Exit
-        done; false
-      with Exit -> true
-    in
-    Alcotest.(check bool) "declare-const quotes the var name" true
-      (contains body "(declare-const |user input| Int)");
-    Alcotest.(check bool) "goal also uses quoted form" true
-      (contains body "(not |user input|)")
-  | Error e ->
-    Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+  | Error (Bad_identifier _) -> ()
+  | _ ->
+    Alcotest.fail
+      "expected Bad_identifier when free var name is not a simple symbol"
 
 (* --- error paths ----------------------------------------------------- *)
 
@@ -372,21 +362,19 @@ let () =
       Alcotest.test_case "garbage rejected"
         `Quick test_emit_num_lit_garbage_rejected;
     ];
-    "identifier quoting", [
+    "identifier sanitization", [
       Alcotest.test_case "simple symbol unquoted"
         `Quick test_emit_var_simple_unquoted;
-      Alcotest.test_case "name with space quoted"
-        `Quick test_emit_var_with_space_quoted;
-      Alcotest.test_case "leading digit quoted"
-        `Quick test_emit_var_starting_with_digit_quoted;
-      Alcotest.test_case "reserved word quoted"
-        `Quick test_emit_var_reserved_word_quoted;
-      Alcotest.test_case "pipe rejected"
+      Alcotest.test_case "name with space rejected"
+        `Quick test_emit_var_with_space_rejected;
+      Alcotest.test_case "leading digit rejected"
+        `Quick test_emit_var_starting_with_digit_rejected;
+      Alcotest.test_case "reserved word rejected"
+        `Quick test_emit_var_reserved_word_rejected;
+      Alcotest.test_case "pipe in name rejected"
         `Quick test_emit_var_pipe_rejected;
-      Alcotest.test_case "backslash rejected"
-        `Quick test_emit_var_backslash_rejected;
-      Alcotest.test_case "declare-const quoting agrees with Var"
-        `Quick test_emit_declare_const_quotes_consistently;
+      Alcotest.test_case "declare-const rejects non-simple name"
+        `Quick test_emit_declare_const_rejects_non_simple;
     ];
     "errors", [
       Alcotest.test_case "Forall rejected" `Quick test_emit_quantifier_rejected;
