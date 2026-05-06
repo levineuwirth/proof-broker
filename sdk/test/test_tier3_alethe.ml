@@ -168,8 +168,10 @@ let test_proven_in_scope_filters_local_assumes () =
   Hashtbl.replace proven "global" [ Alethe.Sexp.Atom "G" ];
   let env : Tier3_alethe.env = {
     ir; proven; assumes = Hashtbl.create 0;
+    deps = Hashtbl.create 0;
     last_step_clause = None;
     last_step_id = None;
+    last_la_generic_consumed = None;
   } in
   let mk_at id : Alethe.step = {
     id; rule = "any"; clause = []; args = None;
@@ -216,7 +218,9 @@ let test_local_assume_atoms_excludes_descendant_scope () =
   Hashtbl.replace assumes "global"     (Alethe.Sexp.Atom "G");
   let env : Tier3_alethe.env = {
     ir; proven = Hashtbl.create 0; assumes;
+    deps = Hashtbl.create 0;
     last_step_clause = None; last_step_id = None;
+    last_la_generic_consumed = None;
   } in
   let mk_at id : Alethe.step = {
     id; rule = "any"; clause = []; args = None;
@@ -296,7 +300,9 @@ let env_with (ir : Ir.t) (proven : (string * Alethe.Sexp.t list) list)
   let h = Hashtbl.create (List.length proven) in
   List.iter (fun (k, v) -> Hashtbl.replace h k v) proven;
   { ir; proven = h; assumes = Hashtbl.create 0;
-    last_step_clause = None; last_step_id = None }
+    deps = Hashtbl.create 0;
+    last_step_clause = None; last_step_id = None;
+    last_la_generic_consumed = None }
 
 let mk_step ?(args = []) ?(premises = []) ~rule ~clause id : Alethe.step = {
   id; rule; clause;
@@ -1056,6 +1062,81 @@ let test_check_subproof () =
        | Step_failed { detail; _ } -> detail
        | _ -> "?"))
 
+let test_check_subproof_rejects_undisclosed_local_dep () =
+  (* Body of subproof t1 derived its clause using local assume
+     t1.bad (an opened-but-undisclosed assume of false), but the
+     subproof close lists only t1.p in :discharge. The close
+     would otherwise lift body_concl as if t1.bad never existed,
+     producing an exported clause that — when combined with a
+     global proof of P — collapses to (cl). The dep check
+     refuses to close until every same-scope local assume the
+     body actually consumed is in :discharge. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "t1.p"   , [ Atom "P" ];
+    "t1.bad" , [ Atom "false" ];
+  ] in
+  Hashtbl.replace env.assumes "t1.p"   (Atom "P");
+  Hashtbl.replace env.assumes "t1.bad" (Atom "false");
+  Hashtbl.replace env.deps "t1.p"     (Tier3_alethe.StringSet.singleton "t1.p");
+  Hashtbl.replace env.deps "t1.bad"   (Tier3_alethe.StringSet.singleton "t1.bad");
+  (* The body conclusion's deps include both t1.p AND t1.bad —
+     simulating a body that used both. *)
+  Hashtbl.replace env.deps "t1.body"
+    (Tier3_alethe.StringSet.of_list [ "t1.p"; "t1.bad" ]);
+  env.last_step_clause <- Some [ Atom "false" ];
+  env.last_step_id <- Some "t1.body";
+  let step : Alethe.step = {
+    id = "t1"; rule = "subproof";
+    clause = [ List [ Atom "not"; Atom "P" ]; Atom "false" ];
+    args = None; premises = None;
+    discharge = Some [ "t1.p" ];  (* missing t1.bad *)
+  } in
+  match Tier3_alethe.check_step env step with
+  | Step_failed { detail; _ } ->
+    let pat = Str.regexp_string "t1.bad" in
+    Alcotest.(check bool) "diagnostics names the undisclosed assume"
+      true (try ignore (Str.search_forward pat detail 0); true
+            with Not_found -> false)
+  | _ ->
+    Alcotest.fail
+      "subproof close with undisclosed local-assume dep should be rejected"
+
+let test_check_subproof_accepts_full_discharge () =
+  (* Same scenario, but :discharge now lists every local-T assume
+     the body deps mention. Close must accept. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "t1.p"   , [ Atom "P" ];
+    "t1.bad" , [ Atom "false" ];
+  ] in
+  Hashtbl.replace env.assumes "t1.p"   (Atom "P");
+  Hashtbl.replace env.assumes "t1.bad" (Atom "false");
+  Hashtbl.replace env.deps "t1.p"     (Tier3_alethe.StringSet.singleton "t1.p");
+  Hashtbl.replace env.deps "t1.bad"   (Tier3_alethe.StringSet.singleton "t1.bad");
+  Hashtbl.replace env.deps "t1.body"
+    (Tier3_alethe.StringSet.of_list [ "t1.p"; "t1.bad" ]);
+  env.last_step_clause <- Some [ Atom "false" ];
+  env.last_step_id <- Some "t1.body";
+  let step : Alethe.step = {
+    id = "t1"; rule = "subproof";
+    clause = [
+      List [ Atom "not"; Atom "P" ];
+      List [ Atom "not"; Atom "false" ];
+      Atom "false";
+    ];
+    args = None; premises = None;
+    discharge = Some [ "t1.p"; "t1.bad" ];
+  } in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf
+      "subproof close with full discharge should verify: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
 let test_check_subproof_rejects_nested_body_conclusion () =
   (* Closing t1 while the most recent verified step lives inside
      t1.t2 (an unsealed nested subproof) must be rejected: the
@@ -1299,7 +1380,9 @@ let test_supported_rules_sync () =
   let ir = make_x_ir () in
   let env : Tier3_alethe.env = {
     ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0;
+    deps = Hashtbl.create 0;
     last_step_clause = None; last_step_id = None;
+    last_la_generic_consumed = None;
   } in
   List.iter (fun rule ->
     let probe : Alethe.step = {
@@ -1357,7 +1440,9 @@ let test_verify_step_failed () =
   } in
   let env : Tier3_alethe.env = {
     ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0;
+    deps = Hashtbl.create 0;
     last_step_clause = None; last_step_id = None;
+    last_la_generic_consumed = None;
   } in
   match Tier3_alethe.check_step env bogus_step with
   | Step_failed { rule; _ } ->
@@ -1566,6 +1651,10 @@ let () =
         `Quick test_check_subproof;
       Alcotest.test_case "subproof rejects nested unsealed body conclusion"
         `Quick test_check_subproof_rejects_nested_body_conclusion;
+      Alcotest.test_case "subproof rejects undisclosed local-assume dep"
+        `Quick test_check_subproof_rejects_undisclosed_local_dep;
+      Alcotest.test_case "subproof accepts full local-assume discharge"
+        `Quick test_check_subproof_accepts_full_discharge;
       Alcotest.test_case "verify rejects dotted assume without anchor"
         `Quick test_verify_rejects_dotted_assume_without_anchor;
     ];

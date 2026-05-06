@@ -32,6 +32,8 @@ type step_result =
   | Step_unsupported_rule of string
   | Step_failed of { rule : string; detail : string }
 
+module StringSet = Set.Make (String)
+
 (** Per-proof verification environment: the IR plus a map from
     already-verified step IDs (and assume IDs) to their proven
     clauses. Stateful rules ([trans], [cong], [resolution], …)
@@ -57,8 +59,30 @@ type env = {
   ir : Ir.t;
   proven : (string, Alethe.Sexp.t list) Hashtbl.t;
   assumes : (string, Alethe.Sexp.t) Hashtbl.t;
+  (** Per-step assumption-dependency set. Each entry maps a
+      step or assume ID to the set of (transitive) assumption IDs
+      its clause depends on. Assumes are seeded with their own
+      singleton; non-assume steps inherit the union of their
+      premises' deps; [subproof] close subtracts the [:discharge]
+      set. [check_subproof] uses these to enforce that every
+      same-scope local assume the body actually consumed appears
+      in [:discharge] — without this, a body could derive [false]
+      from an undisclosed local assume [t1.bad], close while
+      discharging only [t1.p], and export [(cl (not P) false)],
+      which combined with a global proof of [P] resolves to the
+      empty clause and is unsound. *)
+  deps : (string, StringSet.t) Hashtbl.t;
   mutable last_step_clause : Alethe.Sexp.t list option;
   mutable last_step_id : string option;
+  (** Set by [check_la_generic] when it verifies: the local-assume
+      IDs whose Farkas inputs took a non-zero coefficient. The
+      walker reads this when computing the la_generic step's
+      [deps] entry, then resets to [None]. la_generic doesn't
+      surface premises in [step.premises] (the rule pairs clause
+      literals with [:args] coefficients implicitly), so we
+      thread this signal explicitly rather than re-running the
+      matching logic outside the rule. *)
+  mutable last_la_generic_consumed : StringSet.t option;
 }
 
 (** Translate an IR shell to its [Alethe.Sexp.t] form, mirroring
@@ -409,9 +433,30 @@ let check_la_generic (env : env) (step : Alethe.step) : step_result =
        reference local-assume IDs (e.g. [t1.a0]) that aren't IR
        hypotheses; [Farkas.verify] would reject those as
        Unknown_hypothesis. *)
-    (match verify_witness_with_inputs inputs
-             (Alethe_farkas.dedupe entries) with
-     | Ok () -> Step_verified
+    let deduped = Alethe_farkas.dedupe entries in
+    (match verify_witness_with_inputs inputs deduped with
+     | Ok () ->
+       (* Record which local-assume IDs participated with a
+          non-zero coefficient so the walker can fold them into
+          this step's dependency set. IR-hypothesis names are
+          not local assumes and don't propagate as deps. *)
+       let local_names =
+         List.fold_left (fun acc (id, _) ->
+           StringSet.add id acc)
+           StringSet.empty
+           (List.map fst (local_assume_atoms env step)
+            |> List.filter_map (fun id ->
+                if Hashtbl.mem env.assumes id then Some (id, ()) else None))
+       in
+       let consumed =
+         List.fold_left (fun acc (name, coef) ->
+           if (not (Linear_arith.rat_is_zero coef))
+              && StringSet.mem name local_names
+           then StringSet.add name acc else acc)
+           StringSet.empty deduped
+       in
+       env.last_la_generic_consumed <- Some consumed;
+       Step_verified
      | Error msg -> Step_failed { rule = "la_generic"; detail = msg })
 
 (** [refl]: [(cl (= a a))]. The clause must contain exactly one
@@ -1289,30 +1334,66 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
            List.map (fun a -> Alethe.Sexp.List [ Atom "not"; a ]) atoms
            @ body_concl
          in
-         if multiset_equal_clauses expected step.clause then begin
-           let inner_prefix = step.id ^ "." in
-           let plen = String.length inner_prefix in
-           let prefixed k =
-             String.length k > plen
-             && String.sub k 0 plen = inner_prefix
-           in
-           let drop_proven =
-             Hashtbl.fold (fun k _ acc ->
-               if prefixed k then k :: acc else acc) env.proven []
-           in
-           let drop_assumes =
-             Hashtbl.fold (fun k _ acc ->
-               if prefixed k then k :: acc else acc) env.assumes []
-           in
-           List.iter (Hashtbl.remove env.proven) drop_proven;
-           List.iter (Hashtbl.remove env.assumes) drop_assumes;
-           Step_verified
-         end
-         else
+         if not (multiset_equal_clauses expected step.clause) then
            Step_failed {
              rule = "subproof";
              detail = "conclusion is not (not A_i)… ++ body_clause";
-           })
+           }
+         else
+           (* Dependency check: every same-scope local assume the
+              body actually used must appear in [:discharge].
+              Without this an undisclosed local assume (e.g.
+              [t1.bad: false]) consumed by the body would leak
+              into the close's clause as if it didn't exist —
+              the close would lift only the [:discharge]'d
+              assumes and silently drop the rest, producing an
+              unsound exported clause. *)
+           let body_id = Option.get env.last_step_id in
+           let body_deps =
+             match Hashtbl.find_opt env.deps body_id with
+             | Some s -> s
+             | None -> StringSet.empty
+           in
+           let local_T_used =
+             StringSet.filter (fun id ->
+               match Alethe.enclosing_subproof_id id with
+               | Some encl -> String.equal encl step.id
+               | None -> false) body_deps
+           in
+           let discharge_set = StringSet.of_list discharge in
+           let undisclosed = StringSet.diff local_T_used discharge_set in
+           if not (StringSet.is_empty undisclosed) then
+             Step_failed {
+               rule = "subproof";
+               detail = Printf.sprintf
+                 "body depends on local assume %s but it's not in \
+                  :discharge"
+                 (StringSet.choose undisclosed);
+             }
+           else begin
+             let inner_prefix = step.id ^ "." in
+             let plen = String.length inner_prefix in
+             let prefixed k =
+               String.length k > plen
+               && String.sub k 0 plen = inner_prefix
+             in
+             let drop_proven =
+               Hashtbl.fold (fun k _ acc ->
+                 if prefixed k then k :: acc else acc) env.proven []
+             in
+             let drop_assumes =
+               Hashtbl.fold (fun k _ acc ->
+                 if prefixed k then k :: acc else acc) env.assumes []
+             in
+             let drop_deps =
+               Hashtbl.fold (fun k _ acc ->
+                 if prefixed k then k :: acc else acc) env.deps []
+             in
+             List.iter (Hashtbl.remove env.proven) drop_proven;
+             List.iter (Hashtbl.remove env.assumes) drop_assumes;
+             List.iter (Hashtbl.remove env.deps) drop_deps;
+             Step_verified
+           end)
 
 (** Top-level rule dispatch. Add a new clause here when wiring an
     OCaml-side checker for another Alethe rule, and add the same
@@ -1444,8 +1525,10 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
     ir;
     proven = Hashtbl.create 32;
     assumes = Hashtbl.create 8;
+    deps = Hashtbl.create 32;
     last_step_clause = None;
     last_step_id = None;
+    last_la_generic_consumed = None;
   } in
   (* Seed env with assumes. Top-level assumes (no dot in ID) are
      globally in scope — we've just validated they match an IR
@@ -1456,10 +1539,17 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
      sibling subproof U even though both are in [env.assumes].
      [check_subproof] additionally strips inner-scope entries
      after discharge, so an outer step run after the close gets
-     a clean env. *)
+     a clean env.
+
+     Each assume seeds a singleton [{id}] dependency set. Any
+     step that looks the assume up via a premise inherits that
+     ID into its own deps set; a [subproof] close subtracts the
+     [:discharge] set from the body's deps, sealing the
+     discharged assumes. *)
   List.iter (fun (id, atom) ->
     Hashtbl.replace env.proven id [ atom ];
-    Hashtbl.replace env.assumes id atom)
+    Hashtbl.replace env.assumes id atom;
+    Hashtbl.replace env.deps id (StringSet.singleton id))
     p.assumes;
   let rec walk = function
     | [] ->
@@ -1482,6 +1572,57 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
       (match check_step env step with
        | Step_verified ->
          Hashtbl.replace env.proven step.id step.clause;
+         (* Compute and record this step's dependency set.
+
+            Most rules cite premises in [step.premises] and the
+            step's deps are simply the union of those premises'
+            deps (already in [env.deps]; for an assume cited as
+            a premise this is its singleton [{id}]).
+
+            [la_generic] doesn't surface premises in
+            [step.premises]; [check_la_generic] stashes the
+            consumed local-assume IDs into
+            [env.last_la_generic_consumed] and we fold them in.
+
+            [subproof] close has special semantics: the close
+            seals the discharged assumes, so its deps are the
+            body's deps minus the [:discharge] set. The body
+            here is whichever step the close listed as
+            [last_step_id]. *)
+         let union_premise_deps () =
+           let prems = Option.value step.premises ~default:[] in
+           List.fold_left (fun acc id ->
+             match Hashtbl.find_opt env.deps id with
+             | Some s -> StringSet.union acc s
+             | None -> acc)
+             StringSet.empty prems
+         in
+         let step_deps =
+           match step.rule with
+           | "subproof" ->
+             let body_id = Option.value env.last_step_id ~default:"" in
+             let body_deps =
+               match Hashtbl.find_opt env.deps body_id with
+               | Some s -> s | None -> StringSet.empty
+             in
+             let discharge_set = StringSet.of_list
+                                   (Option.value step.discharge ~default:[]) in
+             StringSet.diff body_deps discharge_set
+           | "la_generic" ->
+             let consumed =
+               Option.value env.last_la_generic_consumed
+                 ~default:StringSet.empty
+             in
+             env.last_la_generic_consumed <- None;
+             (* Each consumed name is an in-scope local assume,
+                already seeded with singleton deps in env.deps. *)
+             StringSet.fold (fun id acc ->
+               match Hashtbl.find_opt env.deps id with
+               | Some s -> StringSet.union acc s
+               | None -> StringSet.add id acc) consumed StringSet.empty
+           | _ -> union_premise_deps ()
+         in
+         Hashtbl.replace env.deps step.id step_deps;
          env.last_step_clause <- Some step.clause;
          env.last_step_id <- Some step.id;
          walk rest
