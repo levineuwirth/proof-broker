@@ -230,16 +230,33 @@ let assume_of_sexp ~table (s : Sexp.t) : (string * Sexp.t) option =
 type proof = {
   assumes : (string * Sexp.t) list;
   steps : step list;
+  anchors : string list;
   table : (string, Sexp.t) Hashtbl.t;
 }
 
-(** Walk a sequence of top-level forms, extracting all [assume]s
-    and [step]s. Subproof anchors and other forms are recursed into
-    so nested steps (e.g. [t6.t10.t21]) are picked up. The shared
-    [table] threads named-ref expansion across the whole proof. *)
-let collect ~table (cmds : Sexp.t list) : (string * Sexp.t) list * step list =
+(** Match an [(anchor :step ID ...)] command. Returns the subproof
+    ID being opened, or [None] if [s] isn't an anchor. The keyword
+    arguments after [:step ID] (e.g. [:assumes (a0 a1)]) are
+    ignored — we only need the opened ID. *)
+let anchor_id_of_sexp (s : Sexp.t) : string option =
+  match s with
+  | List (Atom "anchor" :: Atom ":step" :: Atom id :: _) -> Some id
+  | _ -> None
+
+(** Walk a sequence of top-level forms, extracting all [assume]s,
+    [step]s, and [(anchor :step ID)] openings. Anchors mark the
+    set of subproof IDs that the proof actually opens; any dotted
+    assume / step whose enclosing-subproof prefix isn't an opened
+    anchor is structurally suspect and the verifier rejects it.
+
+    Other List forms are recursed into so nested anchor/step
+    bodies are still walked. The shared [table] threads named-ref
+    expansion across the whole proof. *)
+let collect ~table (cmds : Sexp.t list)
+  : (string * Sexp.t) list * step list * string list =
   let assumes = ref [] in
   let steps = ref [] in
+  let anchors = ref [] in
   let rec go cmd =
     match assume_of_sexp ~table cmd with
     | Some pair -> assumes := pair :: !assumes
@@ -247,23 +264,28 @@ let collect ~table (cmds : Sexp.t list) : (string * Sexp.t) list * step list =
       match step_of_sexp ~table cmd with
       | Some s -> steps := s :: !steps
       | None ->
-        (* Recurse into List forms so nested anchor/step bodies are
-           still walked. We don't care about (anchor :step ID) per
-           se; we just want all step forms regardless of nesting. *)
-        match cmd with
-        | List xs -> List.iter go xs
-        | Atom _ -> ()
+        (match anchor_id_of_sexp cmd with
+         | Some id ->
+           anchors := id :: !anchors;
+           (match cmd with
+            | List xs -> List.iter go xs
+            | Atom _ -> ())
+         | None ->
+           (match cmd with
+            | List xs -> List.iter go xs
+            | Atom _ -> ()))
   in
   List.iter go cmds;
-  (List.rev !assumes, List.rev !steps)
+  (List.rev !assumes, List.rev !steps, List.rev !anchors)
 
 (** Top-level parse: read the proof string, walk every form and
-    record assumes / steps with named-ref expansion applied. *)
+    record assumes / steps / anchors with named-ref expansion
+    applied. *)
 let parse (s : string) : proof =
   let table = Hashtbl.create 64 in
   let top = parse_string s in
-  let assumes, steps = collect ~table top in
-  { assumes; steps; table }
+  let assumes, steps, anchors = collect ~table top in
+  { assumes; steps; anchors; table }
 
 (** Find every step whose [:rule] matches [name]. *)
 let steps_with_rule (p : proof) (name : string) : step list =

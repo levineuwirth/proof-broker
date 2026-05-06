@@ -169,6 +169,7 @@ let test_proven_in_scope_filters_local_assumes () =
   let env : Tier3_alethe.env = {
     ir; proven; assumes = Hashtbl.create 0;
     last_step_clause = None;
+    last_step_id = None;
   } in
   let mk_at id : Alethe.step = {
     id; rule = "any"; clause = []; args = None;
@@ -257,7 +258,8 @@ let env_with (ir : Ir.t) (proven : (string * Alethe.Sexp.t list) list)
   : Tier3_alethe.env =
   let h = Hashtbl.create (List.length proven) in
   List.iter (fun (k, v) -> Hashtbl.replace h k v) proven;
-  { ir; proven = h; assumes = Hashtbl.create 0; last_step_clause = None }
+  { ir; proven = h; assumes = Hashtbl.create 0;
+    last_step_clause = None; last_step_id = None }
 
 let mk_step ?(args = []) ?(premises = []) ~rule ~clause id : Alethe.step = {
   id; rule; clause;
@@ -976,6 +978,7 @@ let test_check_subproof () =
   ] in
   Hashtbl.replace env.assumes "t1.a0" (Atom "A");
   env.last_step_clause <- Some [ Atom "B" ];
+  env.last_step_id <- Some "t1.body";
   let step : Alethe.step = {
     id = "t1"; rule = "subproof";
     clause = [ List [ Atom "not"; Atom "A" ]; Atom "B" ];
@@ -989,6 +992,60 @@ let test_check_subproof () =
       (match other with
        | Step_failed { detail; _ } -> detail
        | _ -> "?"))
+
+let test_check_subproof_rejects_nested_body_conclusion () =
+  (* Closing t1 while the most recent verified step lives inside
+     t1.t2 (an unsealed nested subproof) must be rejected: the
+     close would otherwise lift a clause derived under unsealed
+     nested-local assumptions. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "t1.a0", [ Atom "A" ];
+  ] in
+  Hashtbl.replace env.assumes "t1.a0" (Atom "A");
+  env.last_step_clause <- Some [ Atom "B" ];
+  env.last_step_id <- Some "t1.t2.body";
+  let step : Alethe.step = {
+    id = "t1"; rule = "subproof";
+    clause = [ List [ Atom "not"; Atom "A" ]; Atom "B" ];
+    args = None; premises = None;
+    discharge = Some [ "t1.a0" ];
+  } in
+  match Tier3_alethe.check_step env step with
+  | Step_failed { detail; _ } ->
+    let pat = Str.regexp_string "direct child" in
+    Alcotest.(check bool) "diagnostics mentions 'direct child'"
+      true (try ignore (Str.search_forward pat detail 0); true
+            with Not_found -> false)
+  | _ ->
+    Alcotest.fail
+      "subproof close with nested body conclusion should have been rejected"
+
+let test_verify_rejects_dotted_assume_without_anchor () =
+  (* Top-level (assume t1.t2.a0 false) without any (anchor :step t1)
+     is structurally illegitimate. The parser collects it but
+     [validate_anchor_structure] rejects it before any step runs. *)
+  let ir = make_x_ir () in
+  let bogus =
+    "(\n\
+     (assume t1.t2.a0 false)\n\
+     (step t.bot (cl false) :rule resolution :premises (t1.t2.a0))\n\
+     )"
+  in
+  match Tier3_alethe.verify ir bogus with
+  | Step_failed { rule = "<anchor>"; detail; _ } ->
+    let pat = Str.regexp_string "no matching (anchor" in
+    Alcotest.(check bool) "diagnostics points at the missing anchor"
+      true (try ignore (Str.search_forward pat detail 0); true
+            with Not_found -> false)
+  | other ->
+    Alcotest.fail
+      (Printf.sprintf
+         "expected anchor-validation failure, got %s"
+         (match other with
+          | Verified -> "Verified"
+          | Step_failed { rule; _ } -> "Step_failed[" ^ rule ^ "]"
+          | Unsupported_rule { rule; _ } -> "Unsupported_rule[" ^ rule ^ "]"))
 
 let test_check_rare_rewrite_evaluate () =
   (* (< -1 0) = true — fixture's rare_rewrite "evaluate" instance. *)
@@ -1177,7 +1234,10 @@ let test_supported_rules_sync () =
      dispatch knows the rule: it'll return [Step_failed], not
      [Step_unsupported_rule]. *)
   let ir = make_x_ir () in
-  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0; last_step_clause = None } in
+  let env : Tier3_alethe.env = {
+    ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0;
+    last_step_clause = None; last_step_id = None;
+  } in
   List.iter (fun rule ->
     let probe : Alethe.step = {
       id = "probe"; rule;
@@ -1232,7 +1292,10 @@ let test_verify_step_failed () =
     premises = None;
     discharge = None;
   } in
-  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0; last_step_clause = None } in
+  let env : Tier3_alethe.env = {
+    ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0;
+    last_step_clause = None; last_step_id = None;
+  } in
   match Tier3_alethe.check_step env bogus_step with
   | Step_failed { rule; _ } ->
     Alcotest.(check string) "rule preserved on failure"
@@ -1436,6 +1499,10 @@ let () =
         `Quick test_check_symm;
       Alcotest.test_case "subproof accepts minimal discharge close"
         `Quick test_check_subproof;
+      Alcotest.test_case "subproof rejects nested unsealed body conclusion"
+        `Quick test_check_subproof_rejects_nested_body_conclusion;
+      Alcotest.test_case "verify rejects dotted assume without anchor"
+        `Quick test_verify_rejects_dotted_assume_without_anchor;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"

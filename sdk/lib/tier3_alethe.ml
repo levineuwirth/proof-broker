@@ -43,12 +43,22 @@ type step_result =
     body conclusion (the step immediately before the [subproof]
     close), and rather than re-derive it by scanning the proof,
     we just remember it as the walker advances. Reset to [None]
-    on entry, mutated each time [walk] verifies a step. *)
+    on entry, mutated each time [walk] verifies a step.
+
+    [last_step_id] tracks the ID of the same step. Pairing it
+    with the clause lets [check_subproof] enforce that the body
+    conclusion lives in the subproof being closed: closing [T]
+    requires the most recent step to be a direct child of [T]
+    ([enclosing_subproof_id last_step_id = Some T]). Without this
+    check the close would happily lift a clause derived in a
+    deeper, still-open nested subproof — leaking that nested
+    scope's local assumes through the outer discharge. *)
 type env = {
   ir : Ir.t;
   proven : (string, Alethe.Sexp.t list) Hashtbl.t;
   assumes : (string, Alethe.Sexp.t) Hashtbl.t;
   mutable last_step_clause : Alethe.Sexp.t list option;
+  mutable last_step_id : string option;
 }
 
 (** Translate an IR shell to its [Alethe.Sexp.t] form, mirroring
@@ -169,6 +179,60 @@ let validate_top_level_assumes
        | Error msg -> Error msg)
   in
   walk assumes
+
+(** Validate that every dotted assume / step ID has a corresponding
+    [(anchor :step ID)] opening for each prefix in its dotted path.
+    A top-level [(assume t1.t2.a0 ...)] without an enclosing anchor
+    structure is structurally illegitimate — Alethe's emission
+    discipline never produces it — and admitting it would let a
+    proof seed a fake nested-local premise that no anchor opened.
+
+    Returns [Ok ()] when every dotted ID's enclosing-subproof
+    prefix appears in [anchors]; otherwise reports the offending
+    ID. *)
+let validate_anchor_structure
+    ~(anchors : string list)
+    ~(assumes : (string * Alethe.Sexp.t) list)
+    ~(steps : Alethe.step list)
+  : (unit, string) result =
+  let opened = List.fold_left
+                 (fun acc id -> Hashtbl.replace acc id (); acc)
+                 (Hashtbl.create 16) anchors in
+  let prefixes (id : string) : string list =
+    let rec loop acc s =
+      match Alethe.enclosing_subproof_id s with
+      | None -> List.rev acc
+      | Some p -> loop (p :: acc) p
+    in
+    loop [] id
+  in
+  let check_id ~kind id =
+    let ps = prefixes id in
+    let bad = List.find_opt (fun p -> not (Hashtbl.mem opened p)) ps in
+    match bad with
+    | None -> Ok ()
+    | Some p ->
+      Error (Printf.sprintf
+        "%s id %s has dotted prefix %s with no matching (anchor :step %s)"
+        kind id p p)
+  in
+  let rec walk_assumes = function
+    | [] -> Ok ()
+    | (id, _) :: rest ->
+      (match check_id ~kind:"assume" id with
+       | Ok () -> walk_assumes rest
+       | Error _ as e -> e)
+  in
+  let rec walk_steps = function
+    | [] -> Ok ()
+    | (s : Alethe.step) :: rest ->
+      (match check_id ~kind:"step" s.id with
+       | Ok () -> walk_steps rest
+       | Error _ as e -> e)
+  in
+  match walk_assumes assumes with
+  | Error _ as e -> e
+  | Ok () -> walk_steps steps
 
 (** True iff [id] is in scope at [step.id]. An ID with no dot is
     "global" and always in scope. An ID like [t1.a0] is local to
@@ -1183,6 +1247,27 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
     match collect_atoms [] discharge with
     | Error msg -> Step_failed { rule = "subproof"; detail = msg }
     | Ok atoms ->
+      (* The body conclusion is the step immediately preceding the
+         close. It must live directly inside subproof [step.id] —
+         i.e., its enclosing-subproof id is exactly [step.id]. A
+         body conclusion with a deeper enclosing scope means a
+         nested subproof was never closed, so the close-step would
+         be lifting a clause derived under unsealed nested-local
+         assumptions. *)
+      let direct_child = match env.last_step_id with
+        | None -> false
+        | Some sid ->
+          (match Alethe.enclosing_subproof_id sid with
+           | Some encl -> String.equal encl step.id
+           | None -> false)
+      in
+      if not direct_child then
+        Step_failed {
+          rule = "subproof";
+          detail = "body conclusion is not a direct child of the \
+                    subproof being closed";
+        }
+      else
       (match env.last_step_clause with
        | None ->
          Step_failed {
@@ -1336,6 +1421,11 @@ let is_terminal_clause (clause : Alethe.Sexp.t list) : bool =
     re-use one [Alethe.parse] result for the gate check and the
     payload construction (rather than parsing twice). *)
 let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
+  match validate_anchor_structure
+          ~anchors:p.anchors ~assumes:p.assumes ~steps:p.steps with
+  | Error msg ->
+    Step_failed { step_id = ""; rule = "<anchor>"; detail = msg }
+  | Ok () ->
   match validate_top_level_assumes ir p.assumes with
   | Error msg ->
     Step_failed { step_id = ""; rule = "<assume>"; detail = msg }
@@ -1345,6 +1435,7 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
     proven = Hashtbl.create 32;
     assumes = Hashtbl.create 8;
     last_step_clause = None;
+    last_step_id = None;
   } in
   (* Seed env with assumes. Top-level assumes (no dot in ID) are
      globally in scope — we've just validated they match an IR
@@ -1382,6 +1473,7 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
        | Step_verified ->
          Hashtbl.replace env.proven step.id step.clause;
          env.last_step_clause <- Some step.clause;
+         env.last_step_id <- Some step.id;
          walk rest
        | Step_unsupported_rule rule ->
          Unsupported_rule { rule; step_id = step.id }

@@ -490,6 +490,7 @@ let check_alethe_step (input : string) : string =
       proven = Hashtbl.create 0;
       assumes = Hashtbl.create 0;
       last_step_clause = None;
+      last_step_id = None;
     } in
     let result = Proof_broker.Tier3_alethe.check_step env step in
     envelope_ok (Proof_broker.Tier3_alethe.step_result_to_json result)
