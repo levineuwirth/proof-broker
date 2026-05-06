@@ -204,6 +204,111 @@ let test_exception_capture () =
   Alcotest.(check string) "after_hash = before_hash on failure"
     e.before_hash e.after_hash
 
+let test_lying_pass_before_hash () =
+  (* A pass that reports a fabricated before_hash should be caught
+     and replaced with a Failed entry. The IR going into the next
+     step is the pre-pass IR (failure leaves IR untouched). *)
+  Pipeline.register_pass "liar_before"
+    (fun ir ->
+       let dummy_after = Hash.sha256_of_json (Codec.to_json ir) in
+       { ir;
+         entry = {
+           pass = "liar_before";
+           version = "1.0";
+           before_hash = "sha256:" ^ String.make 64 'd';
+           after_hash = dummy_after;
+           configuration = None;
+           outcome = None;
+           inversion_data = None;
+           diagnostics = None;
+         } });
+  let ir = make_ir (v "p") in
+  let config : Pipeline.config = {
+    pipeline = [ { pass = "liar_before"; config = None } ];
+    stop_on_failure = false;
+    timeout_per_pass_ms = None;
+  } in
+  let _ir', trace = Pipeline.run config ir in
+  let e = List.hd trace.entries in
+  Alcotest.(check bool) "outcome=Failed" true (e.outcome = Some Failed);
+  Alcotest.(check string) "before_hash matches initial"
+    trace.initial_ir_hash e.before_hash;
+  Alcotest.(check string) "after_hash unchanged on rejection"
+    e.before_hash e.after_hash;
+  Alcotest.(check bool) "diagnostics mentions hash mismatch"
+    true (match e.diagnostics with
+          | Some s ->
+            (try ignore (Str.search_forward
+                           (Str.regexp_string "hash mismatch") s 0); true
+             with Not_found -> false)
+          | None -> false)
+
+let test_lying_pass_after_hash () =
+  (* A pass that reports an after_hash that doesn't match its
+     actual returned IR should also be flagged. *)
+  Pipeline.register_pass "liar_after"
+    (fun ir ->
+       let real_before = Hash.sha256_of_json (Codec.to_json ir) in
+       { ir;
+         entry = {
+           pass = "liar_after";
+           version = "1.0";
+           before_hash = real_before;
+           after_hash = "sha256:" ^ String.make 64 'e';
+           configuration = None;
+           outcome = None;
+           inversion_data = None;
+           diagnostics = None;
+         } });
+  let ir = make_ir (v "p") in
+  let config : Pipeline.config = {
+    pipeline = [ { pass = "liar_after"; config = None } ];
+    stop_on_failure = false;
+    timeout_per_pass_ms = None;
+  } in
+  let _ir', trace = Pipeline.run config ir in
+  let e = List.hd trace.entries in
+  Alcotest.(check bool) "outcome=Failed" true (e.outcome = Some Failed);
+  Alcotest.(check string) "after_hash unchanged on rejection"
+    e.before_hash e.after_hash
+
+let test_lying_pass_breaks_chain_caught () =
+  (* A lying pass in the middle of a chain must not corrupt the
+     downstream IR. The next pass should see the pre-failure IR. *)
+  Pipeline.register_pass "liar_mid"
+    (fun _ir ->
+       (* Returns an IR different from the input, with a fabricated
+          after_hash that matches neither input nor output. *)
+       let bogus_ir = make_ir (v "ghost") in
+       { ir = bogus_ir;
+         entry = {
+           pass = "liar_mid";
+           version = "1.0";
+           before_hash = "sha256:" ^ String.make 64 'a';
+           after_hash = "sha256:" ^ String.make 64 'b';
+           configuration = None;
+           outcome = None;
+           inversion_data = None;
+           diagnostics = None;
+         } });
+  let ir = make_ir (v "real") in
+  let config : Pipeline.config = {
+    pipeline = [
+      { pass = "liar_mid"; config = None };
+      { pass = "propositional_simplification"; config = None };
+    ];
+    stop_on_failure = false;
+    timeout_per_pass_ms = None;
+  } in
+  let _ir', trace = Pipeline.run config ir in
+  let e0 = List.nth trace.entries 0 in
+  let e1 = List.nth trace.entries 1 in
+  Alcotest.(check bool) "first pass Failed" true (e0.outcome = Some Failed);
+  Alcotest.(check string) "chain remains consistent: e0.after = e1.before"
+    e0.after_hash e1.before_hash;
+  Alcotest.(check string) "downstream pass saw the original IR"
+    trace.initial_ir_hash e1.before_hash
+
 let test_config_codec_round_trip () =
   let config : Pipeline.config = {
     pipeline = [
@@ -258,6 +363,12 @@ let () =
         `Quick test_continue_on_failure;
       Alcotest.test_case "exception is captured as Failed"
         `Quick test_exception_capture;
+      Alcotest.test_case "pass lying about before_hash flagged"
+        `Quick test_lying_pass_before_hash;
+      Alcotest.test_case "pass lying about after_hash flagged"
+        `Quick test_lying_pass_after_hash;
+      Alcotest.test_case "lying mid-pass doesn't corrupt downstream"
+        `Quick test_lying_pass_breaks_chain_caught;
     ];
     "codec", [
       Alcotest.test_case "config round-trip"

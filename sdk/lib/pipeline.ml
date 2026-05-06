@@ -167,6 +167,41 @@ let unknown_pass_entry ~pass_name ~before_hash : Trace.entry =
     diagnostics = Some (Printf.sprintf "unknown pass: %s" pass_name);
   }
 
+(** Build a synthetic [Failed] entry for a pass that lied about its
+    own input or output hash. The pipeline computes the "true"
+    before/after independently from [Codec.to_json] and compares
+    against what the pass reported in its [Trace.entry]; a mismatch
+    means the pass module's bookkeeping disagrees with the actual
+    IR it consumed or produced, which would otherwise corrupt the
+    [before_hash[i+1] = after_hash[i]] chain invariant. We replace
+    the pass's entry with a [Failed] entry pinned to the real
+    [before_hash] and revert to the pre-pass IR — same contract as
+    [failed_entry] for an exception. *)
+let hash_mismatch_entry
+    ~pass_name ~before_hash
+    ~(reported : Trace.entry)
+    ~actual_after_hash : Trace.entry =
+  let detail =
+    if not (String.equal reported.before_hash before_hash) then
+      Printf.sprintf
+        "pass reported before_hash=%s but pipeline computed %s"
+        reported.before_hash before_hash
+    else
+      Printf.sprintf
+        "pass reported after_hash=%s but pipeline computed %s"
+        reported.after_hash actual_after_hash
+  in
+  {
+    pass = pass_name;
+    version = reported.version;
+    before_hash;
+    after_hash = before_hash;
+    configuration = reported.configuration;
+    outcome = Some Failed;
+    inversion_data = None;
+    diagnostics = Some ("pass hash mismatch: " ^ detail);
+  }
+
 (* --- driver ----------------------------------------------------------- *)
 
 (** Run [config.pipeline] against [ir]. Returns the final IR and a
@@ -187,7 +222,17 @@ let run (config : config) (ir : Ir.t) : Ir.t * Trace.t =
         | Some pass_run ->
           (try
              let r = pass_run ir in
-             r.entry, r.ir
+             let actual_after = Hash.sha256_of_json (Codec.to_json r.ir) in
+             let before_ok = String.equal r.entry.before_hash before_hash in
+             let after_ok = String.equal r.entry.after_hash actual_after in
+             if before_ok && after_ok then r.entry, r.ir
+             else
+               (* Pass's bookkeeping disagrees with the actual IR.
+                  Discard the pass's output and surface a Failed
+                  entry so the chain invariant stays intact. *)
+               hash_mismatch_entry ~pass_name:step.pass ~before_hash
+                 ~reported:r.entry ~actual_after_hash:actual_after,
+               ir
            with exn ->
              failed_entry ~pass_name:step.pass ~before_hash ~exn, ir)
       in
