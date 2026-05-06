@@ -362,63 +362,66 @@ let verify_case_split
          let lemmas_typed =
            List.map (function Some p -> p | None -> assert false) parsed
          in
-         (* Each branch must Farkas-verify against IR + case. *)
-         let rec verify_each i = function
-           | [] -> Verified_case_split
-           | (case_shell, witness) :: rest ->
-             let case_hyp : Ir.hypothesis =
-               { name = "case"; shell = case_shell }
-             in
-             let extended = {
-               ir with
-               context = { ir.context with
-                 hypotheses = ir.context.hypotheses @ [ case_hyp ]
-               }
-             } in
-             (match Farkas.verify extended witness with
-              | Verified -> verify_each (i + 1) rest
-              | other ->
-                Case_split_branch_failed {
-                  case_index = i;
-                  reason_kind =
-                    (match other with
-                     | Verified -> "verified"
-                     | Unknown_hypothesis _ -> "unknown_hypothesis"
-                     | Nonlinear _ -> "nonlinear"
-                     | Bad_coefficient _ -> "bad_coefficient"
-                     | Negative_coefficient _ -> "negative_coefficient"
-                     | Not_contradictory _ -> "not_contradictory"
-                     | Malformed_witness _ -> "malformed_witness");
-                })
+         (* Partition check first: every case must match exactly one
+            disjunct, and the cases must collectively cover every
+            disjunct. Running this before per-branch Farkas
+            verification means a malformed cert (missing case,
+            duplicate, off-target) surfaces a precise
+            [Case_split_partition_mismatch] without first burning
+            cycles closing arithmetic for branches that can't
+            satisfy the partition contract anyway. *)
+         let cases = List.map fst lemmas_typed in
+         let matched =
+           List.map (fun c -> match_disjunct_index ~fragment c disjuncts)
+             cases
          in
-         (match verify_each 0 lemmas_typed with
-          | Verified_case_split ->
-            (* Partition check: every disjunct must be matched by
-               exactly one lemma's case, and there must be no
-               unmatched lemmas. *)
-            let cases = List.map fst lemmas_typed in
-            let matched =
-              List.map (fun c -> match_disjunct_index ~fragment c disjuncts)
-                cases
-            in
-            if List.exists Option.is_none matched then
-              Case_split_partition_mismatch {
-                detail = "one or more cases do not match any disjunct"
-              }
-            else
-              let indices =
-                List.map (function Some i -> i | None -> assert false) matched
-              in
-              let n = List.length disjuncts in
-              let covered = List.sort_uniq compare indices in
-              if List.length covered <> n then
-                Case_split_partition_mismatch {
-                  detail = Printf.sprintf
-                    "cases cover %d of %d disjuncts (need each exactly once)"
-                    (List.length covered) n
-                }
-              else Verified_case_split
-          | other -> other))
+         if List.exists Option.is_none matched then
+           Case_split_partition_mismatch {
+             detail = "one or more cases do not match any disjunct"
+           }
+         else
+           let indices =
+             List.map (function Some i -> i | None -> assert false) matched
+           in
+           let n = List.length disjuncts in
+           let covered = List.sort_uniq compare indices in
+           if List.length covered <> n then
+             Case_split_partition_mismatch {
+               detail = Printf.sprintf
+                 "cases cover %d of %d disjuncts (need each exactly once)"
+                 (List.length covered) n
+             }
+           else
+             (* Partition is sound; now verify each branch. *)
+             let rec verify_each i = function
+               | [] -> Verified_case_split
+               | (case_shell, witness) :: rest ->
+                 let case_hyp : Ir.hypothesis =
+                   { name = "case"; shell = case_shell }
+                 in
+                 let extended = {
+                   ir with
+                   context = { ir.context with
+                     hypotheses = ir.context.hypotheses @ [ case_hyp ]
+                   }
+                 } in
+                 (match Farkas.verify extended witness with
+                  | Verified -> verify_each (i + 1) rest
+                  | other ->
+                    Case_split_branch_failed {
+                      case_index = i;
+                      reason_kind =
+                        (match other with
+                         | Verified -> "verified"
+                         | Unknown_hypothesis _ -> "unknown_hypothesis"
+                         | Nonlinear _ -> "nonlinear"
+                         | Bad_coefficient _ -> "bad_coefficient"
+                         | Negative_coefficient _ -> "negative_coefficient"
+                         | Not_contradictory _ -> "not_contradictory"
+                         | Malformed_witness _ -> "malformed_witness");
+                    })
+             in
+             verify_each 0 lemmas_typed)
 
 (** Map a [Tier3_alethe.verify_result] to the verifier's [reason]
     taxonomy. [Verified] becomes [Verified_tier3]; per-step
