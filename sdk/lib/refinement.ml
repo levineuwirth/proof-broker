@@ -123,6 +123,10 @@ let subst_free_var s (fv : Ir.free_var) : Ir.free_var =
 let subst_goal s (g : Ir.goal) : Ir.goal =
   { shell = subst_shell s g.shell; payloads = g.payloads }
 
+let subst_library_slice_entry s (e : Ir.library_slice_entry)
+  : Ir.library_slice_entry =
+  { e with shell = subst_shell s e.shell }
+
 let subst_context s (c : Ir.context) : Ir.context =
   let drop_type_vars = SM.bindings s |> List.map fst in
   {
@@ -130,7 +134,8 @@ let subst_context s (c : Ir.context) : Ir.context =
       List.filter (fun v -> not (List.mem v drop_type_vars)) c.type_vars;
     free_vars = List.map (subst_free_var s) c.free_vars;
     hypotheses = List.map (subst_hypothesis s) c.hypotheses;
-    library_slice = c.library_slice;
+    library_slice =
+      Option.map (List.map (subst_library_slice_entry s)) c.library_slice;
   }
 
 let apply_type_subst (s : type_subst) (ir : Ir.t) : Ir.t =

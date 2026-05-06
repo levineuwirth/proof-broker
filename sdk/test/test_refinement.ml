@@ -28,13 +28,14 @@ let make_ir
       ?(definitional_metadata = [])
       ?(free_vars = [])
       ?(hypotheses = [])
+      ?(library_slice = None)
       (goal_shell : Ir.shell_term) : Ir.t = {
   ir_version = "1.0";
   source_system = { name = "test"; version = "0.0" };
   tier = "goal";
   logic_classification = trivial_logic;
   goal = { shell = goal_shell; payloads = None };
-  context = { type_vars = []; free_vars; hypotheses; library_slice = None };
+  context = { type_vars = []; free_vars; hypotheses; library_slice };
   type_metadata;
   definitional_metadata;
   library_provenance = [];
@@ -103,6 +104,55 @@ let test_alpha_type_var_substituted () =
        Alcotest.(check string) "Eq.ty: alpha → Int" "Int" ty;
        Alcotest.(check string) "NumLit.ty: alpha → Int" "Int" ty2
      | _ -> Alcotest.fail "goal shell shape wrong")
+  | Error e ->
+    Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
+
+let test_library_slice_substituted () =
+  (* A library_slice entry whose shell mentions [alpha] must be
+     refined alongside hypotheses and free_vars; otherwise the
+     refined IR still carries a stray [alpha] type tag in a slice
+     and downstream consumers see an unresolved type ref. *)
+  let alpha_meta = `Assoc [
+    "kind", `String "type_variable";
+    "name", `String "alpha";
+    "instances", `List [
+      `Assoc [
+        "instance_name", `String "inst_alpha";
+        "theory_classification_tags", `List [
+          `String "embeds_into:Int_for_universal_LIA";
+        ];
+      ];
+    ];
+  ] in
+  let slice : Ir.library_slice_entry list = [
+    {
+      entity_name = "Stub.lemma";
+      shell = Eq {
+        ty = "alpha";
+        left = Var { name = "x" };
+        right = Num_lit { value = "0"; ty = "alpha" };
+      };
+      selection_reason = Some "test";
+    }
+  ] in
+  let ir = make_ir
+    ~type_metadata:[ ("alpha", alpha_meta) ]
+    ~free_vars:[ { name = "n"; ty = "alpha" } ]
+    ~library_slice:(Some slice)
+    (Var { name = "n" })
+  in
+  match Refinement.run ~fragment:"LIA" ir with
+  | Ok r ->
+    let entries = Option.get r.refined_ir.context.library_slice in
+    Alcotest.(check int) "one slice entry preserved" 1 (List.length entries);
+    let e = List.hd entries in
+    Alcotest.(check string) "entity_name preserved"
+      "Stub.lemma" e.entity_name;
+    (match e.shell with
+     | Eq { ty; right = Num_lit { ty = ty2; _ }; _ } ->
+       Alcotest.(check string) "slice Eq.ty: alpha → Int" "Int" ty;
+       Alcotest.(check string) "slice NumLit.ty: alpha → Int" "Int" ty2
+     | _ -> Alcotest.fail "slice shell shape wrong")
   | Error e ->
     Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
 
@@ -226,6 +276,8 @@ let () =
         `Quick test_unknown_fragment_errors;
       Alcotest.test_case "alpha → Int via type_metadata"
         `Quick test_alpha_type_var_substituted;
+      Alcotest.test_case "library_slice entries refined alongside hyps"
+        `Quick test_library_slice_substituted;
       Alcotest.test_case "typeclass method specs"
         `Quick test_typeclass_method_specs;
       Alcotest.test_case "non-matching fragment yields no specs"
