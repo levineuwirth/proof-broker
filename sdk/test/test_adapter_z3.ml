@@ -188,6 +188,70 @@ let test_minted_cert_passes_envelope_verifier () =
       (Printf.sprintf "expected Cert, got Failed(%s)"
          (Adapter.kind_of_failure f))
 
+(** Two-hypothesis LRA Farkas: [x >= 5, x <= 3 ⊢ False]. This shape
+    triggers z3's clause-introducing th-lemma form
+    [((_ th-lemma arith farkas 1 1) (or (not (<= x 3.0)) (not (>= x
+    5.0))))], which is what [Z3_farkas.extract] handles natively.
+    The minted cert's witness is built from z3's emitted
+    coefficients, not from [Farkas_search] — and re-verifies
+    independently via [Farkas.verify]. *)
+let test_dispatch_lra_two_hyp_uses_native_extraction () =
+  with_z3 @@ fun () ->
+  let lra_logic : Ir.logic_classification = {
+    order = "first_order";
+    features_used = [];
+    first_order_fragment = "LRA";
+    decidable_theory = None;
+  } in
+  let x = Ir.Var { name = "x" } in
+  (* Real-typed integer-form literals: Linear_arith.rat_of_string
+     handles "3" / "5" exactly, but not the SMT-LIB-printed "3.0" /
+     "5.0" forms. See [test_smtlib] for matching round-trip. *)
+  let three = Ir.Num_lit { value = "3"; ty = "Real" } in
+  let five = Ir.Num_lit { value = "5"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = ">="; type_args = []; args = [ x; five ] };
+  } in
+  let h2 : Ir.hypothesis = {
+    name = "h2";
+    shell = App { symbol = "<="; type_args = []; args = [ x; three ] };
+  } in
+  let ir : Ir.t = {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = lra_logic;
+    goal = { shell = Const { name = "False" }; payloads = None };
+    context = {
+      type_vars = [];
+      free_vars = [ { name = "x"; ty = "Real" } ];
+      hypotheses = [ h1; h2 ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  } in
+  match Adapter_z3.dispatch ir with
+  | Cert cert ->
+    Alcotest.(check int) "tier=1" 1 cert.tier;
+    Alcotest.(check string) "format=farkas" "farkas" cert.format;
+    Alcotest.(check string) "fragment=LRA" "LRA"
+      cert.refinement_record.fragment;
+    (match Verifier.verify cert ir with
+     | Verified_farkas -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "expected Verified_farkas, got %s"
+            (Verifier.kind_of_reason other)))
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f)
+         (Adapter.detail_of_failure f))
+
 let () =
   Alcotest.run "adapter_z3" [
     "dispatch", [
@@ -201,5 +265,7 @@ let () =
         `Quick test_dispatch_unsupported_ir;
       Alcotest.test_case "minted cert verifies through envelope"
         `Quick test_minted_cert_passes_envelope_verifier;
+      Alcotest.test_case "LRA two-hyp Farkas uses native extraction"
+        `Quick test_dispatch_lra_two_hyp_uses_native_extraction;
     ];
   ]

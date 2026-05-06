@@ -1,21 +1,30 @@
 (** z3 oracle adapter (Phase 2.2 / spec v1.0 §7).
 
     Wires an [Ir.t] through to a z3 subprocess and turns the
-    [sat]/[unsat]/[unknown] reply into either a Tier 0 oracle
-    [Certificate.t] (on [unsat]) or a typed [Adapter.failure].
-    Mirrors [Adapter_cvc4] in shape; the only differences are the
-    binary name, version string, and argv (z3 takes [-smt2 -in
-    -t:MS] — [-t:MS] is per-query timeout in milliseconds, [-in]
-    reads from stdin, [-smt2] selects SMT-LIB v2 input).
+    [sat]/[unsat]/[unknown] reply into either a [Certificate.t]
+    or a typed [Adapter.failure]. Mirrors [Adapter_cvc4] in
+    shape; differences are the binary name, version, and argv
+    ([-smt2 -in -t:MS] — [-t:MS] is per-query timeout in
+    milliseconds).
 
-    Tier scope. Phase 2.2 mints Tier 0 / Tier 1: z3 does support
-    proof output ([(set-option :produce-proofs true)] + an
-    in-house proof format), but that format is markedly different
-    from Alethe and we don't parse it yet. So z3's path here
-    matches the cvc4 path: refinement → SMT-LIB emit → spawn →
-    parse [unsat] → run the internal Farkas closer to upgrade Tier
-    0 to Tier 1 when the IR is Farkas-shaped within the closer's
-    bound; otherwise mint a Tier 0 oracle cert.
+    Tier scope. The dispatch ladder for [unsat] is:
+    1. Native Tier 1 — request [(get-proof)] and try to extract
+       a Farkas witness from a [(_ th-lemma arith farkas C1...Cn)]
+       application via [Z3_farkas.extract]. We force
+       [smt.arith.solver=2] so z3 emits the [farkas] tag with
+       explicit coefficients (the default new-arith-solver
+       sometimes emits opaque [(_ th-lemma arith)]). Currently
+       handles the clause-introducing shape
+       [((_ th-lemma arith farkas ...) (or (not L1) ...))]; the
+       direct shape [((_ th-lemma arith farkas ...) p1 ... pn
+       false)] with signed coefficients falls through to step 2
+       pending a sign-convention audit.
+    2. Internal Tier 1 — [Farkas_search.try_close] runs a bounded
+       search over the IR directly, rescuing Farkas-shaped goals
+       z3 closed via the direct-shape th-lemma or theory rewrites
+       we don't extract from yet.
+    3. Tier 0 oracle — falls back when neither produced a
+       soundness-checkable witness.
 
     Refinement and hash discipline match [Adapter_cvc4] exactly:
     refinement runs first, the cert addresses the *original*
@@ -80,6 +89,36 @@ let parse_response (stdout : string) : response =
   | _ ->
     let first_real = List.find_opt (fun s -> s <> "") trimmed in
     Other_resp (Option.value first_real ~default:stdout)
+
+(** Slice the proof body out of z3's stdout. z3 prints the
+    [unsat] verdict on its own line, possibly preceded by
+    [unsupported] notes from logic-mismatch warnings, then emits
+    the [(get-proof)] response as a single S-expression. We grab
+    everything from the first [(] that follows the [unsat] line
+    onward; the parser tolerates trailing whitespace. *)
+let extract_proof_body (stdout : string) : string option =
+  let n = String.length stdout in
+  let rec find_after_unsat i =
+    if i >= n then None
+    else
+      let line_end =
+        try String.index_from stdout i '\n' with Not_found -> n
+      in
+      let line = String.trim (String.sub stdout i (line_end - i)) in
+      if line = "unsat" then Some (line_end + 1)
+      else find_after_unsat (line_end + 1)
+  in
+  match find_after_unsat 0 with
+  | None -> None
+  | Some start ->
+    let rec find_paren i =
+      if i >= n then None
+      else if stdout.[i] = '(' then Some i
+      else find_paren (i + 1)
+    in
+    (match find_paren start with
+     | None -> None
+     | Some j -> Some (String.sub stdout j (n - j)))
 
 (* --- cert minting ---------------------------------------------------- *)
 
@@ -206,34 +245,63 @@ let dispatch (ir : Ir.t) : Adapter.result =
        })
      | Ok script ->
        let timeout_ms = timeout_of_ir ir in
-       let body = script.body ^ "(check-sat)\n(exit)\n" in
+       (* Force the classical Simplex_LRA arith solver so z3 emits
+          the [farkas] tag with explicit coefficients. The default
+          new-arith-solver sometimes emits opaque [(_ th-lemma
+          arith)] without coefficients, which makes native
+          extraction impossible. *)
+       let preamble =
+         "(set-option :produce-proofs true)\n\
+          (set-option :smt.arith.solver 2)\n"
+       in
+       let body =
+         preamble ^ script.body ^ "(check-sat)\n(get-proof)\n(exit)\n"
+       in
        (try
           let stdout, stderr, code = run_solver ~timeout_ms body in
           match parse_response stdout, code with
           | Unsat, _ ->
-            (* Try our internal Farkas closer to upgrade Tier 0 to
-               Tier 1. z3 has no proof-trace path here (Phase 2.2
-               scope), so this is the only way for z3 to mint a
-               soundness-checkable cert. The closer runs after z3's
-               [unsat] verdict so the backend attestation reflects
-               what actually executed. *)
-            let cert =
+            let mk_oracle () =
+              mint_oracle_cert
+                ~adapter_version:version
+                ~original_ir:ir
+                ~specs:refinement.specializations
+                ~logic:script.logic
+                ~timeout_ms
+            in
+            let mk_farkas witness =
+              mint_farkas_cert
+                ~adapter_version:version
+                ~original_ir:ir
+                ~specs:refinement.specializations
+                ~logic:script.logic
+                ~timeout_ms
+                ~witness
+            in
+            let try_internal_closer () =
               match Farkas_search.try_close ir with
-              | Ok witness ->
-                mint_farkas_cert
-                  ~adapter_version:version
-                  ~original_ir:ir
-                  ~specs:refinement.specializations
-                  ~logic:script.logic
-                  ~timeout_ms
-                  ~witness
-              | Error _ ->
-                mint_oracle_cert
-                  ~adapter_version:version
-                  ~original_ir:ir
-                  ~specs:refinement.specializations
-                  ~logic:script.logic
-                  ~timeout_ms
+              | Ok witness -> mk_farkas witness
+              | Error _ -> mk_oracle ()
+            in
+            (* Native Tier 1: parse z3's proof and extract Farkas
+               coefficients from a [(_ th-lemma arith farkas
+               C1...Cn) (or (not L1) ... (not Ln))] application.
+               When that succeeds the witness is verified
+               independently by the broker via [Farkas.verify], so
+               the soundness chain doesn't depend on z3 — only the
+               Farkas multipliers came from z3's proof.
+
+               When extraction fails (no proof body, no
+               Farkas-tagged th-lemma, or the direct shape with
+               signed coefficients which we don't handle yet) we
+               fall through to the internal closer. *)
+            let cert =
+              match extract_proof_body stdout with
+              | None -> try_internal_closer ()
+              | Some proof_str ->
+                (match Z3_farkas.extract ir proof_str with
+                 | Ok witness -> mk_farkas witness
+                 | Error _ -> try_internal_closer ())
             in
             Cert cert
           | Sat, _ -> Failed Sat_returned
