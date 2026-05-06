@@ -287,40 +287,117 @@ let evaluate_comparison_to_bool (lhs : Alethe.Sexp.t) : bool option =
      | _ -> None)
   | _ -> None
 
-(** Verify a theory-rewrite equality [(= LHS RHS)]. Strategy:
-    1. Try linear-form arithmetic equality: linearize both sides; if
-       both succeed and the canonical forms are equal, accept. This
-       handles constant-fold rewrites (e.g. [-1] times [3] equals
-       [-3]) and algebraic identities that reduce to the same form
-       (e.g. [x] plus [-x] equals [0]).
-    2. If [RHS] is [true] or [false], try evaluating [LHS] as a
-       constant comparison. This handles boolean-truth rewrites
-       (e.g. [0 <= -2] is [false], [-1 < 0] is [true]).
-    3. Otherwise reject — we don't yet implement other theory
-       rewrites (uninterpreted-function ground rewrites, bit-vector
-       evaluation, etc.). *)
+(** Reduce a literal to a canonical [Farkas.compiled] form, treating
+    arbitrary nesting of [(not ...)] as repeated negation. Counts
+    the [(not)] wrappers; even count means the inner atom stays
+    positive, odd means negate. Under non-LRA fragments (LIA), a
+    final [Lt] is folded to [Le(f+1)] via the +1 trick — sound only
+    over the integers, but exactly the trick cvc5 uses internally
+    when emitting tightening rewrites like [(<= n 10) = (not (>= n
+    11))]. Returns [None] when the inner atom isn't a Farkas-amenable
+    comparison or when the negation produces a non-inequality
+    (negating an [Eq] yields a disjunction, not a single Farkas
+    form, and we don't normalize that case). *)
+let normalize_literal ?(fragment = "LRA") (lit : Alethe.Sexp.t)
+  : Farkas.compiled option =
+  let lia = not (String.equal fragment "LRA") in
+  let rec count_nots n s =
+    match s with
+    | Alethe.Sexp.List [ Alethe.Sexp.Atom "not"; inner ] ->
+      count_nots (n + 1) inner
+    | _ -> (n, s)
+  in
+  let (n, atom) = count_nots 0 lit in
+  match Alethe_farkas.compile_atom_pos atom with
+  | None -> None
+  | Some c ->
+    let normed =
+      if n mod 2 = 0 then Some c
+      else Alethe_farkas.neg_compiled c
+    in
+    (match normed with
+     | None -> None
+     | Some r when lia -> Some (Alethe_farkas.lia_normalize r)
+     | Some r -> Some r)
+
+(** Evaluate a literal whose top-level structure is some number of
+    [(not ...)] wrappers around a [true]/[false] atom. Used to
+    handle theory rewrites like [(not (not true)) = true] and
+    [(= true (not false))] that cvc5 emits as ground propositional
+    folds. Returns [None] for any other shape. *)
+let evaluate_constant_literal (lit : Alethe.Sexp.t) : bool option =
+  let rec walk parity = function
+    | Alethe.Sexp.Atom "true" -> Some parity
+    | Alethe.Sexp.Atom "false" -> Some (not parity)
+    | Alethe.Sexp.List [ Alethe.Sexp.Atom "not"; inner ] ->
+      walk (not parity) inner
+    | _ -> None
+  in
+  walk true lit
+
+(** Verify a theory-rewrite equality [(= LHS RHS)]. Strategy, in
+    order of generality:
+    1. Linear-form arithmetic equality: linearize both sides via
+       [Alethe_farkas.lin_arith] and compare canonical forms.
+       Handles constant-fold rewrites (e.g. [-1] times [3] equals
+       [-3]) and algebraic identities (e.g. [x] plus [-x] equals
+       [0]).
+    2. Normalized-literal equality: reduce each side to a canonical
+       [Farkas.compiled] form, accounting for [(not)] nesting and
+       LIA tightening. Handles direction flips, double negation,
+       LIA tightenings (over the integers, [n <= 10] is the same
+       atom as [not (n >= 11)]), equation rearrangements (an
+       equation reordered or moved to one side), and any
+       composition of these.
+    3. Constant-boolean evaluation: if both sides reduce to the
+       same boolean via [(not)] wrappers around [true]/[false],
+       accept. Handles propositional folds like [(not (not true))
+       = true].
+    4. Comparison-boolean evaluation: if [RHS] is [true]/[false]
+       and [LHS] is a comparison with constant operands, evaluate
+       the comparison. Handles [(<= 0 -2) = false], [(< -1 0) =
+       true].
+    Otherwise reject — there are still classes of cvc5 theory
+    rewrites we don't recognize (uninterpreted-function ground
+    rewrites, bit-vector evaluation, complex propositional
+    simplifications). *)
 let check_theory_rewrite_equality
+    ?(fragment = "LIA")
     (lhs : Alethe.Sexp.t) (rhs : Alethe.Sexp.t)
   : (unit, string) result =
   match Alethe_farkas.lin_arith lhs, Alethe_farkas.lin_arith rhs with
   | Some la, Some lb when la = lb -> Ok ()
   | _ ->
-    (match rhs with
-     | Atom "true" ->
-       (match evaluate_comparison_to_bool lhs with
-        | Some true -> Ok ()
-        | Some false ->
-          Error "comparison evaluates to false but rhs is true"
-        | None ->
-          Error "linear-form mismatch and lhs is not a constant comparison")
-     | Atom "false" ->
-       (match evaluate_comparison_to_bool lhs with
-        | Some false -> Ok ()
-        | Some true ->
-          Error "comparison evaluates to true but rhs is false"
-        | None ->
-          Error "linear-form mismatch and lhs is not a constant comparison")
-     | _ -> Error "neither linear-equal nor boolean-evaluation applies")
+    (match normalize_literal ~fragment lhs,
+           normalize_literal ~fragment rhs with
+     | Some ca, Some cb when compiled_equal ca cb -> Ok ()
+     | _ ->
+       (match evaluate_constant_literal lhs,
+              evaluate_constant_literal rhs with
+        | Some a, Some b when a = b -> Ok ()
+        | Some _, Some _ ->
+          Error "constant-boolean sides evaluate to opposite truths"
+        | _ ->
+          (match rhs with
+           | Atom "true" ->
+             (match evaluate_comparison_to_bool lhs with
+              | Some true -> Ok ()
+              | Some false ->
+                Error "comparison evaluates to false but rhs is true"
+              | None ->
+                Error "no rewrite path: not linear-equal, normalized-equal, \
+                       constant-bool, or comparison-eval")
+           | Atom "false" ->
+             (match evaluate_comparison_to_bool lhs with
+              | Some false -> Ok ()
+              | Some true ->
+                Error "comparison evaluates to true but rhs is false"
+              | None ->
+                Error "no rewrite path: not linear-equal, normalized-equal, \
+                       constant-bool, or comparison-eval")
+           | _ ->
+             Error "no rewrite path: not linear-equal, normalized-equal, \
+                    constant-bool, or comparison-eval")))
 
 (** [hole]: cvc5's escape hatch for theory rewrites it doesn't
     spell out fully. The conclusion is a single equality clause
@@ -328,12 +405,14 @@ let check_theory_rewrite_equality
     ...)]. Sound treatment: ignore the [:args] tag (it's a hint,
     not a proof), and verify the equality independently via
     [check_theory_rewrite_equality]. If we can prove [LHS = RHS]
-    by constant-fold or boolean evaluation, the step is sound
-    regardless of what tag cvc5 used. *)
-let check_hole (step : Alethe.step) : step_result =
+    by one of the rewrite paths, the step is sound regardless of
+    what tag cvc5 used. The IR's fragment threads through to
+    enable LIA tightening when normalizing literals. *)
+let check_hole (env : env) (step : Alethe.step) : step_result =
+  let fragment = env.ir.logic_classification.first_order_fragment in
   match step.clause with
   | [ List [ Atom "="; lhs; rhs ] ] ->
-    (match check_theory_rewrite_equality lhs rhs with
+    (match check_theory_rewrite_equality ~fragment lhs rhs with
      | Ok () -> Step_verified
      | Error msg -> Step_failed { rule = "hole"; detail = msg })
   | _ ->
@@ -345,14 +424,16 @@ let check_hole (step : Alethe.step) : step_result =
 (** [rare_rewrite]: same shape as [hole] — a single equality clause
     [(cl (= LHS RHS))] — typed by [:args ("evaluate" ...)] or other
     rewrite-kind tags. Same sound treatment as [hole]: verify the
-    equality independently. The two rules are kept separate (rather
-    than aliased) because future cvc5 versions may give them
-    different soundness contracts; this leaves room to tighten one
-    without affecting the other. *)
-let check_rare_rewrite (step : Alethe.step) : step_result =
+    equality independently, threading the IR's fragment for LIA
+    tightening. The two rules are kept separate (rather than
+    aliased) because future cvc5 versions may give them different
+    soundness contracts; this leaves room to tighten one without
+    affecting the other. *)
+let check_rare_rewrite (env : env) (step : Alethe.step) : step_result =
+  let fragment = env.ir.logic_classification.first_order_fragment in
   match step.clause with
   | [ List [ Atom "="; lhs; rhs ] ] ->
-    (match check_theory_rewrite_equality lhs rhs with
+    (match check_theory_rewrite_equality ~fragment lhs rhs with
      | Ok () -> Step_verified
      | Error msg -> Step_failed { rule = "rare_rewrite"; detail = msg })
   | _ ->
@@ -617,8 +698,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "implies" -> check_implies env step
   | "equiv1" -> check_equiv1 env step
   | "la_mult_neg" -> check_la_mult_neg step
-  | "hole" -> check_hole step
-  | "rare_rewrite" -> check_rare_rewrite step
+  | "hole" -> check_hole env step
+  | "rare_rewrite" -> check_rare_rewrite env step
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered

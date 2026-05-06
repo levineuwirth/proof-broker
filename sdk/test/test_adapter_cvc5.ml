@@ -66,18 +66,19 @@ let example1_ir () =
     ~hypotheses:[ h1; h3 ]
     (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
 
-let test_dispatch_unsat_mints_farkas_cert () =
+let test_dispatch_unsat_mints_tier3_cert () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
-    (* cvc5 closes example1's LIA shape via theory rewrites, so
-       the Alethe proof carries no [la_generic] step. The internal
-       Farkas closer rescues this case from a Tier 0 oracle into a
-       Tier 1 farkas cert, addressing the gap that motivated the
-       closer. *)
-    Alcotest.(check int) "tier=1" 1 cert.tier;
-    Alcotest.(check string) "format=farkas" "farkas" cert.format;
+    (* cvc5 closes example1's LIA shape via a chain of theory
+       rewrites (LIA tightening + variable isolation + direction
+       flip + double negation), all of which the Tier 3 hole/
+       rare_rewrite checker recognizes via normalize_literal. The
+       full proof verifies under the strict Tier 3 gate, so
+       [Adapter_cvc5.dispatch] mints a Tier 3 alethe-2024 cert. *)
+    Alcotest.(check int) "tier=3" 3 cert.tier;
+    Alcotest.(check string) "format=alethe-2024" "alethe-2024" cert.format;
     Alcotest.(check string) "backend=cvc5" "cvc5" cert.backend.name;
     Alcotest.(check string) "backend.version pinned" Adapter_cvc5.version
       cert.backend.version;
@@ -131,15 +132,18 @@ let test_minted_cert_passes_envelope_verifier () =
   let ir = example1_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
-    (* cvc5's Alethe proof has no la_generic on this shape; the
-       internal Farkas closer mints Tier 1, and [Farkas.verify]
-       re-checks the witness independently. *)
+    (* The Tier 3 cert minted for example1 verifies end-to-end via
+       the envelope verifier: [Tier3_alethe.verify] walks every
+       step (la_generic, refl, trans, cong, resolution, false,
+       equiv_pos2, hole, ...) and the strict mint-time gate
+       guaranteed every rule check accepted at mint time. *)
     (match Verifier.verify cert ir with
-     | Verified_farkas -> ()
+     | Verified_tier3 -> ()
      | other ->
        Alcotest.fail
-         (Printf.sprintf "expected Verified_farkas, got %s"
-            (Verifier.kind_of_reason other)))
+         (Printf.sprintf "expected Verified_tier3, got %s — %s"
+            (Verifier.kind_of_reason other)
+            (Verifier.detail_of_reason other)))
   | Failed f ->
     Alcotest.fail
       (Printf.sprintf "expected Cert, got Failed(%s)"
@@ -378,29 +382,31 @@ let test_lra_farkas_cert_envelope_verifies () =
       (Printf.sprintf "expected Cert, got Failed(%s)"
          (Adapter.kind_of_failure f))
 
-(** Confirm the strict "fail-closed" Tier 3 gate (full dry-run
-    verification) keeps cvc5 from minting unverifiable Tier 3
-    certs. example1's proof uses [hole]/[rare_rewrite] for
-    propositional theory rewrites like [(<= n 10) = (not (>= n
-    11))] (LIA tightening) and double-negation collapse — both
-    outside our v0 [check_theory_rewrite_equality] scope, which
-    only handles constant-fold and ground comparison evaluation.
-    The gate's [Tier3_alethe.verify_parsed] dry-run rejects this
-    proof, the ladder falls through to the Tier 1 closer
-    (Farkas_search), and the cert that mints is tier=1. As the
-    [hole] checker grows to cover more theory rewrites, this test
-    should flip to expecting tier=3 — the change is automatic at
-    the minter once full verification accepts cvc5's proof. *)
-let test_dispatch_tier3_gate_falls_through () =
+(** Confirm the strict "fail-closed" Tier 3 gate accepts a proof
+    once every step's rule check passes. example1's proof uses
+    [hole]/[rare_rewrite] for LIA tightening, double-negation,
+    direction flip, and equation rearrangement — all of which our
+    [normalize_literal]-based rewriter handles. Mint time =
+    verify time, so the produced cert verifies as
+    [Verified_tier3]. If a future cvc5 emits a hole shape outside
+    our scope, the gate would fall through to Tier 1 (closer);
+    that's the intended fail-closed direction. *)
+let test_dispatch_tier3_gate_admits_real_proof () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
-    Alcotest.(check int) "strict gate rejects example1's proof; \
-                          ladder falls through to Tier 1"
-      1 cert.tier;
-    Alcotest.(check string) "format=farkas (Tier 1 fallback path)"
-      "farkas" cert.format
+    Alcotest.(check int) "strict gate admits example1's proof at Tier 3"
+      3 cert.tier;
+    Alcotest.(check string) "format=alethe-2024 (Tier 3 path)"
+      "alethe-2024" cert.format;
+    (match Verifier.verify cert ir with
+     | Verified_tier3 -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "expected Verified_tier3, got %s — %s"
+            (Verifier.kind_of_reason other)
+            (Verifier.detail_of_reason other)))
   | Failed f ->
     Alcotest.fail
       (Printf.sprintf "expected Cert, got Failed(%s)"
@@ -409,8 +415,8 @@ let test_dispatch_tier3_gate_falls_through () =
 let () =
   Alcotest.run "adapter_cvc5" [
     "dispatch", [
-      Alcotest.test_case "unsat on Farkas-shape mints Tier 1 farkas cert"
-        `Quick test_dispatch_unsat_mints_farkas_cert;
+      Alcotest.test_case "unsat on Farkas-shape mints Tier 3 alethe cert"
+        `Quick test_dispatch_unsat_mints_tier3_cert;
       Alcotest.test_case "sat returns Sat_returned"
         `Quick test_dispatch_sat_returns_failure;
       Alcotest.test_case "unsupported IR shape"
@@ -433,8 +439,7 @@ let () =
         `Quick test_case_split_cert_envelope_verifies;
     ];
     "tier3", [
-      Alcotest.test_case "Tier 3 minter present in ladder; \
-                          gate fails on real proofs (v0)"
-        `Quick test_dispatch_tier3_gate_falls_through;
+      Alcotest.test_case "strict gate admits example1's real cvc5 proof"
+        `Quick test_dispatch_tier3_gate_admits_real_proof;
     ];
   ]

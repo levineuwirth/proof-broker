@@ -550,6 +550,173 @@ let test_check_hole_rejects_wrong_bool () =
   | Step_failed _ -> ()
   | _ -> Alcotest.fail "hole should reject (<= 0 -2) = true"
 
+let test_check_hole_direction_flip () =
+  (* (<= 0 m) = (>= m 0): direction flip on inequality. Both sides
+     normalize to Le(-m). *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "<="; Atom "0/1"; Atom "m" ];
+             List [ Atom ">="; Atom "m"; Atom "0/1" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected direction flip: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_double_negation () =
+  (* (not (not (>= n 11))) = (>= n 11). Both sides normalize to
+     Le(11 - n) — the outer not pair cancels. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "not";
+                    List [ Atom "not";
+                           List [ Atom ">="; Atom "n"; Atom "11/1" ] ] ];
+             List [ Atom ">="; Atom "n"; Atom "11/1" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected double negation: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+(** Build an LIA-fragment IR so the LIA tightening tests can exercise
+    the +1 trick path inside [normalize_literal]. *)
+let make_lia_ir () : Ir.t =
+  let ir = make_x_ir () in
+  { ir with
+    logic_classification = {
+      ir.logic_classification with first_order_fragment = "LIA"
+    }
+  }
+
+let test_check_hole_lia_tightening () =
+  (* Over LIA, (<= n 10) = (not (>= n 11)). Both sides normalize
+     to Le(n - 10): LHS directly, RHS via negate-Le(11-n) →
+     Lt(n-11) → +1 trick → Le(n-10). The check requires fragment=LIA;
+     under LRA the tightening is unsound and we'd reject. *)
+  let ir = make_lia_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "<="; Atom "n"; Atom "10/1" ];
+             List [ Atom "not";
+                    List [ Atom ">="; Atom "n"; Atom "11/1" ] ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected LIA tightening: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_lia_tightening_rejected_in_lra () =
+  (* The same LIA tightening shape is unsound over LRA — there's a
+     gap between (<= n 10) and (not (>= n 11)) at non-integer n
+     in [10, 11). Under LRA fragment, the +1 trick doesn't fire,
+     and the two sides normalize to different Farkas forms. *)
+  let ir = make_x_ir () in  (* LRA *)
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "<="; Atom "n"; Atom "10/1" ];
+             List [ Atom "not";
+                    List [ Atom ">="; Atom "n"; Atom "11/1" ] ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "hole should reject LIA tightening under LRA"
+
+let test_check_hole_equation_rearrangement () =
+  (* hole asserts (= (+ n m) 10) = (= n (+ 10 -m)). Both sides
+     compile to Eq(n + m - 10) once linearized. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "=";
+                    List [ Atom "+"; Atom "n"; Atom "m" ];
+                    Atom "10/1" ];
+             List [ Atom "=";
+                    Atom "n";
+                    List [ Atom "+";
+                           Atom "10/1";
+                           List [ Atom "*"; Atom "-1/1"; Atom "m" ] ] ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected equation rearrangement: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_combined_arith_lia () =
+  (* hole asserts (>= (+ 10 -m) 11) = (not (>= m 0)) over LIA.
+     LHS: 10 - m >= 11 normalizes to Le(m + 1).
+     RHS: ¬(m >= 0) → strip not → (>= m 0) → Le(-m) → negate to
+       Lt(m) → LIA +1 → Le(m + 1).
+     Same. *)
+  let ir = make_lia_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom ">=";
+                    List [ Atom "+";
+                           Atom "10/1";
+                           List [ Atom "*"; Atom "-1/1"; Atom "m" ] ];
+                    Atom "11/1" ];
+             List [ Atom "not";
+                    List [ Atom ">="; Atom "m"; Atom "0/1" ] ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected combined arith+LIA: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_constant_bool_eval () =
+  (* (not (not true)) = true: nested constant-boolean evaluation. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "not"; List [ Atom "not"; Atom "true" ] ];
+             Atom "true" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected (not (not true)) = true: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
 let test_check_rare_rewrite_evaluate () =
   (* (< -1 0) = true — fixture's rare_rewrite "evaluate" instance. *)
   let ir = make_x_ir () in
@@ -956,6 +1123,20 @@ let () =
         `Quick test_check_hole_rejects_wrong_bool;
       Alcotest.test_case "rare_rewrite accepts (< -1 0) = true"
         `Quick test_check_rare_rewrite_evaluate;
+      Alcotest.test_case "hole accepts direction flip (<= 0 m) = (>= m 0)"
+        `Quick test_check_hole_direction_flip;
+      Alcotest.test_case "hole accepts double negation collapse"
+        `Quick test_check_hole_double_negation;
+      Alcotest.test_case "hole accepts LIA tightening (<= n 10) = (not (>= n 11))"
+        `Quick test_check_hole_lia_tightening;
+      Alcotest.test_case "hole rejects LIA tightening shape under LRA"
+        `Quick test_check_hole_lia_tightening_rejected_in_lra;
+      Alcotest.test_case "hole accepts equation rearrangement"
+        `Quick test_check_hole_equation_rearrangement;
+      Alcotest.test_case "hole accepts combined arith + LIA tightening"
+        `Quick test_check_hole_combined_arith_lia;
+      Alcotest.test_case "hole accepts nested-not constant-bool eval"
+        `Quick test_check_hole_constant_bool_eval;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"
