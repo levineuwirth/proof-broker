@@ -159,18 +159,26 @@ let test_verify_real_fixture_verified () =
       "expected Verified, got Step_failed at %s (rule=%s): %s"
       step_id rule detail)
 
-let test_verify_case_split_unsupported () =
+let test_verify_case_split_verified () =
+  (* The alethe-case-split-x fixture exercises the full subproof
+     path: anchor blocks bracketing local assumes, la_generic
+     steps inside subproofs (which need local-assume Farkas
+     inputs), the [subproof] discharge close, plus the proposition
+     bookkeeping rules around them ([implies_neg1/2], [and_pos],
+     [reordering], [contraction], [not_and], [or], [symm], etc.).
+     The whole proof verifies end-to-end now that all 24 rules
+     are registered. *)
   let proof_str = load_fixture "alethe-case-split-x.proof" in
   let ir = make_case_split_ir () in
   match Tier3_alethe.verify ir proof_str with
-  | Unsupported_rule { rule; _ } ->
-    Alcotest.(check bool) "bailout names a non-la_generic rule"
-      true (rule <> "la_generic")
-  | Verified ->
-    Alcotest.fail "case-split fixture should not Verify under v0"
-  | Step_failed { rule; _ } ->
+  | Verified -> ()
+  | Unsupported_rule { rule; step_id } ->
     Alcotest.fail (Printf.sprintf
-      "expected Unsupported_rule, got Step_failed (rule=%s)" rule)
+      "expected Verified, got Unsupported_rule(%s) at %s" rule step_id)
+  | Step_failed { rule; step_id; detail } ->
+    Alcotest.fail (Printf.sprintf
+      "expected Verified, got Step_failed at %s (rule=%s): %s"
+      step_id rule detail)
 
 (** Forge a la_generic step with a wrong coefficient on the second
     literal: replace the original [1] with [9999], so the matched
@@ -182,7 +190,7 @@ let env_with (ir : Ir.t) (proven : (string * Alethe.Sexp.t list) list)
   : Tier3_alethe.env =
   let h = Hashtbl.create (List.length proven) in
   List.iter (fun (k, v) -> Hashtbl.replace h k v) proven;
-  { ir; proven = h }
+  { ir; proven = h; assumes = Hashtbl.create 0; last_step_clause = None }
 
 let mk_step ?(args = []) ?(premises = []) ~rule ~clause id : Alethe.step = {
   id; rule; clause;
@@ -717,6 +725,204 @@ let test_check_hole_constant_bool_eval () =
        | Step_failed { detail; _ } -> detail
        | _ -> "?"))
 
+let test_check_implies_neg1 () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.in1" ~rule:"implies_neg1"
+    ~clause:[
+      List [ Atom "=>"; Atom "a"; Atom "b" ];
+      Atom "a";
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "implies_neg1 rejected (cl (=> a b) a): %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_implies_neg2 () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.in2" ~rule:"implies_neg2"
+    ~clause:[
+      List [ Atom "=>"; Atom "a"; Atom "b" ];
+      List [ Atom "not"; Atom "b" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "implies_neg2 rejected (cl (=> a b) (not b)): %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_implies_simplify () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.is" ~rule:"implies_simplify"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "=>"; Atom "a"; Atom "false" ];
+             List [ Atom "not"; Atom "a" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "implies_simplify rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_and_pos () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.ap" ~rule:"and_pos"
+    ~args:[ Atom "1" ]
+    ~clause:[
+      List [ Atom "not"; List [ Atom "and"; Atom "p"; Atom "q"; Atom "r" ] ];
+      Atom "q";
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "and_pos rejected i=1 → q: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_and_pos_rejects_wrong_index () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.ap" ~rule:"and_pos"
+    ~args:[ Atom "1" ]
+    ~clause:[
+      List [ Atom "not"; List [ Atom "and"; Atom "p"; Atom "q" ] ];
+      Atom "p";  (* should be q at i=1 *)
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "and_pos should reject wrong-index projection"
+
+let test_check_reordering () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ Atom "a"; Atom "b"; Atom "c" ];
+  ] in
+  let step = mk_step "t.r" ~rule:"reordering"
+    ~clause:[ Atom "c"; Atom "a"; Atom "b" ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "reordering rejected permutation: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_contraction () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ Atom "a"; Atom "b"; Atom "a"; Atom "c"; Atom "b" ];
+  ] in
+  let step = mk_step "t.c" ~rule:"contraction"
+    ~clause:[ Atom "a"; Atom "b"; Atom "c" ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "contraction rejected dup-collapse: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_not_and () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "not"; List [ Atom "and"; Atom "p"; Atom "q"; Atom "r" ] ] ];
+  ] in
+  let step = mk_step "t.na" ~rule:"not_and"
+    ~clause:[
+      List [ Atom "not"; Atom "p" ];
+      List [ Atom "not"; Atom "q" ];
+      List [ Atom "not"; Atom "r" ];
+    ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "not_and rejected De Morgan: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_or () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "or"; Atom "a"; Atom "b"; Atom "c" ] ];
+  ] in
+  let step = mk_step "t.or" ~rule:"or"
+    ~clause:[ Atom "a"; Atom "b"; Atom "c" ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "or rejected disjunction unwrap: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_symm () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "p1", [ List [ Atom "="; Atom "a"; Atom "b" ] ];
+  ] in
+  let step = mk_step "t.s" ~rule:"symm"
+    ~clause:[ List [ Atom "="; Atom "b"; Atom "a" ] ]
+    ~premises:[ "p1" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "symm rejected: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_subproof () =
+  (* A minimal subproof shape: one local assume A, body proves
+     (cl B), close concludes (cl (not A) B). The walker has just
+     verified the body step (last_step_clause = [B]) and a0 was
+     seeded into env.proven and env.assumes as A. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "t1.a0", [ Atom "A" ];
+  ] in
+  Hashtbl.replace env.assumes "t1.a0" (Atom "A");
+  env.last_step_clause <- Some [ Atom "B" ];
+  let step : Alethe.step = {
+    id = "t1"; rule = "subproof";
+    clause = [ List [ Atom "not"; Atom "A" ]; Atom "B" ];
+    args = None; premises = None;
+    discharge = Some [ "t1.a0" ];
+  } in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "subproof rejected discharge close: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
 let test_check_rare_rewrite_evaluate () =
   (* (< -1 0) = true — fixture's rare_rewrite "evaluate" instance. *)
   let ir = make_x_ir () in
@@ -904,7 +1110,7 @@ let test_supported_rules_sync () =
      dispatch knows the rule: it'll return [Step_failed], not
      [Step_unsupported_rule]. *)
   let ir = make_x_ir () in
-  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0 } in
+  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0; last_step_clause = None } in
   List.iter (fun rule ->
     let probe : Alethe.step = {
       id = "probe"; rule;
@@ -959,7 +1165,7 @@ let test_verify_step_failed () =
     premises = None;
     discharge = None;
   } in
-  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0 } in
+  let env : Tier3_alethe.env = { ir; proven = Hashtbl.create 0; assumes = Hashtbl.create 0; last_step_clause = None } in
   match Tier3_alethe.check_step env bogus_step with
   | Step_failed { rule; _ } ->
     Alcotest.(check string) "rule preserved on failure"
@@ -1051,8 +1257,8 @@ let () =
         `Quick test_verify_synthetic_la_generic_only;
       Alcotest.test_case "real cvc5 fixture verifies end-to-end"
         `Quick test_verify_real_fixture_verified;
-      Alcotest.test_case "case-split bailouts on unsupported rule"
-        `Quick test_verify_case_split_unsupported;
+      Alcotest.test_case "case-split fixture verifies end-to-end"
+        `Quick test_verify_case_split_verified;
       Alcotest.test_case "bogus la_generic surfaces step_failed"
         `Quick test_verify_step_failed;
     ];
@@ -1137,6 +1343,28 @@ let () =
         `Quick test_check_hole_combined_arith_lia;
       Alcotest.test_case "hole accepts nested-not constant-bool eval"
         `Quick test_check_hole_constant_bool_eval;
+      Alcotest.test_case "implies_neg1 accepts (cl (=> A B) A)"
+        `Quick test_check_implies_neg1;
+      Alcotest.test_case "implies_neg2 accepts (cl (=> A B) (not B))"
+        `Quick test_check_implies_neg2;
+      Alcotest.test_case "implies_simplify accepts (=> A false) ↔ (not A)"
+        `Quick test_check_implies_simplify;
+      Alcotest.test_case "and_pos projects conjunct at index"
+        `Quick test_check_and_pos;
+      Alcotest.test_case "and_pos rejects wrong-index projection"
+        `Quick test_check_and_pos_rejects_wrong_index;
+      Alcotest.test_case "reordering accepts permutation of premise"
+        `Quick test_check_reordering;
+      Alcotest.test_case "contraction collapses duplicate literals"
+        `Quick test_check_contraction;
+      Alcotest.test_case "not_and applies De Morgan"
+        `Quick test_check_not_and;
+      Alcotest.test_case "or unwraps singleton disjunction"
+        `Quick test_check_or;
+      Alcotest.test_case "symm flips equality sides"
+        `Quick test_check_symm;
+      Alcotest.test_case "subproof accepts minimal discharge close"
+        `Quick test_check_subproof;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"

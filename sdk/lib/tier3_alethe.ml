@@ -34,13 +34,46 @@ type step_result =
 
 (** Per-proof verification environment: the IR plus a map from
     already-verified step IDs (and assume IDs) to their proven
-    clauses. Stateful rules ([trans], [cong], [resolution]) look
-    up premise clauses through this; stateless rules ([la_generic],
-    [refl], [false]) ignore the [proven] table. *)
+    clauses. Stateful rules ([trans], [cong], [resolution], …)
+    look up premise clauses through this; stateless rules
+    ([la_generic], [refl], [false]) ignore the [proven] table.
+
+    [last_step_clause] tracks the most recently verified step's
+    clause in input order; [subproof]'s soundness check needs the
+    body conclusion (the step immediately before the [subproof]
+    close), and rather than re-derive it by scanning the proof,
+    we just remember it as the walker advances. Reset to [None]
+    on entry, mutated each time [walk] verifies a step. *)
 type env = {
   ir : Ir.t;
   proven : (string, Alethe.Sexp.t list) Hashtbl.t;
+  assumes : (string, Alethe.Sexp.t) Hashtbl.t;
+  mutable last_step_clause : Alethe.Sexp.t list option;
 }
+
+(** Recover the set of local-assume atoms in scope at [step.id].
+    A subproof body opens a fresh assume scope: assumes parsed
+    inside an [(anchor :step ID)] block have IDs prefixed with
+    [ID.] and live only inside that block. We recover them by
+    scanning [env.assumes] for entries whose ID starts with the
+    step's enclosing subproof prefix.
+
+    Used by [check_la_generic] so a la_generic step inside a
+    subproof can use local assumes as additional Farkas inputs
+    (the case-split fixture has la_generic steps inside [t1]'s
+    body that reference [t1.a0], [t1.a1] — those won't match any
+    IR hypothesis but match the local-assume atoms exactly). *)
+let local_assume_atoms (env : env) (step : Alethe.step)
+  : (string * Alethe.Sexp.t) list =
+  match Alethe.enclosing_subproof_id step.id with
+  | None -> []
+  | Some subproof_id ->
+    let prefix = subproof_id ^ "." in
+    let plen = String.length prefix in
+    Hashtbl.fold (fun id atom acc ->
+      if String.length id > plen
+         && String.sub id 0 plen = prefix
+      then (id, atom) :: acc else acc) env.assumes []
 
 (** [Sexp.t] structural equality is the right notion for clause
     literals since [Alethe.parse] already expanded named refs, so
@@ -68,14 +101,80 @@ let pop_first (needle : Alethe.Sexp.t) (lst : Alethe.Sexp.t list)
   in
   loop [] lst
 
-(** Check a single [la_generic] step. Reuses the existing
-    [Alethe_farkas] extraction (clause-vs-IR-hypothesis matching by
-    linear-form scaling, plus LIA tightening) to produce a Farkas
-    witness, then runs [Farkas.verify] on the witness against the
-    same IR. Verified iff [Farkas.verify] returns [Verified]. *)
-let check_la_generic (ir : Ir.t) (step : Alethe.step) : step_result =
+(** Sum a Farkas witness [(name, coef)] against the precompiled
+    [inputs] and report whether the residual is a strictly-positive
+    constant (contradiction). Sibling of [Farkas.verify], differing
+    only in that it consumes the already-compiled inputs (so it
+    works for local-assume names that aren't IR hypotheses). *)
+let verify_witness_with_inputs
+    (inputs : Alethe_farkas.input_entry list)
+    (entries : (string * Linear_arith.rational) list)
+  : (unit, string) result =
+  let lookup_compiled name =
+    List.find_map (fun (e : Alethe_farkas.input_entry) ->
+      if e.name = name then Some e.compiled else None) inputs
+  in
+  let rec sum_up acc has_strict = function
+    | [] -> Ok (acc, has_strict)
+    | (name, coef) :: rest ->
+      (match lookup_compiled name with
+       | None -> Error ("unknown input: " ^ name)
+       | Some (Farkas.Le f) ->
+         if not (Linear_arith.rat_is_nonneg coef) then
+           Error ("negative coefficient on " ^ name)
+         else
+           sum_up (Linear_arith.add acc (Linear_arith.scale coef f))
+             has_strict rest
+       | Some (Farkas.Lt f) ->
+         if not (Linear_arith.rat_is_nonneg coef) then
+           Error ("negative coefficient on " ^ name)
+         else
+           let strict' = has_strict || Linear_arith.rat_is_pos coef in
+           sum_up (Linear_arith.add acc (Linear_arith.scale coef f))
+             strict' rest
+       | Some (Farkas.Eq f) ->
+         sum_up (Linear_arith.add acc (Linear_arith.scale coef f))
+           has_strict rest)
+  in
+  match sum_up Linear_arith.zero false entries with
+  | Error msg -> Error msg
+  | Ok (residual, has_strict) ->
+    if not (Linear_arith.is_constant residual) then
+      Error ("not contradictory; residual=" ^ Linear_arith.to_string residual)
+    else
+      let c = Linear_arith.constant_value residual in
+      let ok =
+        if has_strict then Linear_arith.rat_is_nonneg c
+        else Linear_arith.rat_is_pos c
+      in
+      if ok then Ok ()
+      else
+        Error ("non-positive residual constant: "
+               ^ Linear_arith.rat_to_string c)
+
+(** Check a single [la_generic] step. Reuses [Alethe_farkas]
+    extraction (clause-vs-input matching by linear-form scaling,
+    plus LIA tightening) to produce a Farkas witness, then runs
+    [verify_witness_with_inputs] on the precompiled inputs (IR
+    hypotheses + any local assumes in scope). Verified iff the
+    residual sum is a positive constant. *)
+let check_la_generic (env : env) (step : Alethe.step) : step_result =
+  let ir = env.ir in
   let fragment = ir.logic_classification.first_order_fragment in
-  let inputs = Alethe_farkas.compile_ir_inputs ir in
+  let base_inputs = Alethe_farkas.compile_ir_inputs ir in
+  (* Add local-assume atoms (if [step] is inside a subproof) as
+     Farkas inputs alongside the IR's hypotheses. The la_generic
+     check otherwise only matches against IR hyps, which is wrong
+     inside a subproof body where the local assumes are also
+     usable facts. *)
+  let local_inputs =
+    List.filter_map (fun (id, atom) ->
+      match Alethe_farkas.compile_assume_atom ~fragment atom with
+      | Some compiled ->
+        Some Alethe_farkas.{ name = id; compiled }
+      | None -> None) (local_assume_atoms env step)
+  in
+  let inputs = base_inputs @ local_inputs in
   match Alethe_farkas.extract_from_step ~fragment ~inputs step with
   | Error e ->
     Step_failed {
@@ -85,29 +184,15 @@ let check_la_generic (ir : Ir.t) (step : Alethe.step) : step_result =
         (Alethe_farkas.error_detail e);
     }
   | Ok entries ->
-    let witness =
-      Alethe_farkas.witness_to_json (Alethe_farkas.dedupe entries)
-    in
-    (match Farkas.verify ir witness with
-     | Verified -> Step_verified
-     | other ->
-       Step_failed {
-         rule = "la_generic";
-         detail = (match other with
-           | Verified -> "verified"
-           | Unknown_hypothesis { hypothesis } ->
-             "unknown_hypothesis: " ^ hypothesis
-           | Nonlinear { hypothesis; detail } ->
-             Printf.sprintf "nonlinear in %s: %s" hypothesis detail
-           | Bad_coefficient { hypothesis; raw } ->
-             Printf.sprintf "bad coefficient on %s: %s" hypothesis raw
-           | Negative_coefficient { hypothesis; value } ->
-             Printf.sprintf "negative coefficient on %s: %s"
-               hypothesis value
-           | Not_contradictory { residual } ->
-             "not contradictory; residual=" ^ residual
-           | Malformed_witness { detail } -> detail);
-       })
+    (* Verify directly against the precompiled inputs rather than
+       re-resolving names through [Farkas.verify]. The names may
+       reference local-assume IDs (e.g. [t1.a0]) that aren't IR
+       hypotheses; [Farkas.verify] would reject those as
+       Unknown_hypothesis. *)
+    (match verify_witness_with_inputs inputs
+             (Alethe_farkas.dedupe entries) with
+     | Ok () -> Step_verified
+     | Error msg -> Step_failed { rule = "la_generic"; detail = msg })
 
 (** [refl]: [(cl (= a a))]. The clause must contain exactly one
     equality literal whose two sides are syntactically equal after
@@ -679,6 +764,302 @@ let check_resolution (env : env) (step : Alethe.step) : step_result =
           | Error msg ->
             Step_failed { rule = "resolution"; detail = msg }))
 
+(** Multiset equality on clause-literal lists. Clauses are unordered
+    disjunctions, so [reordering] / [contraction] / [subproof] need
+    multiset-rather-than-list equality on their conclusion checks. *)
+let multiset_equal_clauses
+    (a : Alethe.Sexp.t list) (b : Alethe.Sexp.t list) : bool =
+  let rec subtract a' = function
+    | [] -> Some a'
+    | x :: rest ->
+      (match pop_first x a' with
+       | None -> None
+       | Some a'' -> subtract a'' rest)
+  in
+  match subtract a b with
+  | Some [] -> true
+  | _ -> false
+
+(** [implies_neg1]: tautological clause [(cl (=> A B) A)]. From the
+    classical equivalence [(=> A B)] iff [(not A) or B], the
+    disjunction [(=> A B) or A] is a tautology (one of the two
+    disjuncts must hold). No premises needed; pure shape check. *)
+let check_implies_neg1 (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "=>"; a; _b ]; a' ] when sexp_equal a a' -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "implies_neg1";
+      detail = "expected (cl (=> A B) A)";
+    }
+
+(** [implies_neg2]: tautological clause [(cl (=> A B) (not B))].
+    Sibling of [implies_neg1] for the other disjunct: the
+    disjunction [(=> A B) or (not B)] is a tautology (under the
+    classical reading of implication). *)
+let check_implies_neg2 (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "=>"; _a; b ]; List [ Atom "not"; b' ] ]
+    when sexp_equal b b' -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "implies_neg2";
+      detail = "expected (cl (=> A B) (not B))";
+    }
+
+(** [implies_simplify]: rewrite rule with conclusion
+    [(cl (= (=> A false) (not A)))]. Encodes the boolean simplification
+    that an implication with a [false] consequent is just the
+    negation of the antecedent. The single-shape [(=> A false)] is
+    what cvc5 actually emits in the case-split fixture. *)
+let check_implies_simplify (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "=";
+             List [ Atom "=>"; a; Atom "false" ];
+             List [ Atom "not"; a' ] ] ]
+    when sexp_equal a a' -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "implies_simplify";
+      detail = "expected (cl (= (=> A false) (not A)))";
+    }
+
+(** [and_pos]: from no premise, conclude [(cl (not (and l_1 … l_n))
+    l_i)] where [i] is given in [:args]. Encodes "from a conjunction,
+    project a chosen conjunct" as a tautological disjunction. *)
+let check_and_pos (step : Alethe.step) : step_result =
+  let args = Option.value step.args ~default:[] in
+  match args, step.clause with
+  | [ Atom idx_str ],
+    [ List [ Atom "not"; List (Atom "and" :: conjuncts) ]; l ] ->
+    (match int_of_string_opt idx_str with
+     | None ->
+       Step_failed {
+         rule = "and_pos";
+         detail = "args[0] is not an integer index";
+       }
+     | Some i when i >= 0 && i < List.length conjuncts
+                && sexp_equal (List.nth conjuncts i) l ->
+       Step_verified
+     | Some _ ->
+       Step_failed {
+         rule = "and_pos";
+         detail = "args index doesn't match the projected conjunct";
+       })
+  | _ ->
+    Step_failed {
+      rule = "and_pos";
+      detail = "expected :args (i) and (cl (not (and …)) l_i)";
+    }
+
+(** [reordering]: from premise [(cl L_1 … L_n)], conclude any
+    permutation of those literals. Pure multiset check — clause
+    literals are unordered, so a reordered conclusion is sound iff
+    the multisets agree. *)
+let check_reordering (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises with
+  | [ p ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | None ->
+       Step_failed {
+         rule = "reordering";
+         detail = "unknown premise: " ^ p;
+       }
+     | Some prem_clause ->
+       if multiset_equal_clauses prem_clause step.clause then Step_verified
+       else
+         Step_failed {
+           rule = "reordering";
+           detail = "conclusion is not a permutation of the premise";
+         })
+  | _ ->
+    Step_failed {
+      rule = "reordering";
+      detail = "expected exactly one premise";
+    }
+
+(** [contraction]: from premise [(cl … L … L …)], conclude
+    [(cl … L …)] where any duplicate literals are collapsed.
+    Soundness: the conclusion's set of literals equals the
+    premise's; the premise has no literal absent from the
+    conclusion, and vice versa. *)
+let check_contraction (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises with
+  | [ p ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | None ->
+       Step_failed {
+         rule = "contraction";
+         detail = "unknown premise: " ^ p;
+       }
+     | Some prem_clause ->
+       let prem_set = List.sort_uniq compare prem_clause in
+       let concl_set = List.sort_uniq compare step.clause in
+       if prem_set = concl_set then Step_verified
+       else
+         Step_failed {
+           rule = "contraction";
+           detail = "conclusion's literal set differs from premise's";
+         })
+  | _ ->
+    Step_failed {
+      rule = "contraction";
+      detail = "expected exactly one premise";
+    }
+
+(** [not_and]: from premise [(cl (not (and l_1 … l_n)))], conclude
+    [(cl (not l_1) … (not l_n))]. De Morgan's law: the negation of
+    a conjunction is the disjunction of negations. *)
+let check_not_and (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises with
+  | [ p ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | None ->
+       Step_failed { rule = "not_and"; detail = "unknown premise: " ^ p }
+     | Some [ List [ Atom "not"; List (Atom "and" :: conjuncts) ] ] ->
+       let expected =
+         List.map (fun c -> Alethe.Sexp.List [ Atom "not"; c ]) conjuncts
+       in
+       if expected = step.clause then Step_verified
+       else
+         Step_failed {
+           rule = "not_and";
+           detail = "conclusion's negated literals don't match conjuncts";
+         }
+     | Some _ ->
+       Step_failed {
+         rule = "not_and";
+         detail = "premise is not (cl (not (and …)))";
+       })
+  | _ ->
+    Step_failed { rule = "not_and"; detail = "expected exactly one premise" }
+
+(** [or]: from premise [(cl (or l_1 … l_n))], conclude
+    [(cl l_1 … l_n)]. Strips the [(or)] wrapper from a singleton
+    disjunction-as-literal back to its component literals. *)
+let check_or (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises with
+  | [ p ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | None ->
+       Step_failed { rule = "or"; detail = "unknown premise: " ^ p }
+     | Some [ List (Atom "or" :: disjuncts) ] ->
+       if disjuncts = step.clause then Step_verified
+       else
+         Step_failed {
+           rule = "or";
+           detail = "conclusion's literals don't match (or …) disjuncts";
+         }
+     | Some _ ->
+       Step_failed { rule = "or"; detail = "premise is not (cl (or …))" })
+  | _ ->
+    Step_failed { rule = "or"; detail = "expected exactly one premise" }
+
+(** [symm]: from premise [(cl (= a b))], conclude [(cl (= b a))].
+    Symmetry of equality. cvc5 emits this when the proof's
+    consumer needs the equality oriented the opposite way from
+    its derivation. *)
+let check_symm (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises, step.clause with
+  | [ p ], [ List [ Atom "="; b'; a' ] ] ->
+    (match Hashtbl.find_opt env.proven p with
+     | Some [ List [ Atom "="; a; b ] ]
+       when sexp_equal a a' && sexp_equal b b' ->
+       Step_verified
+     | Some _ ->
+       Step_failed {
+         rule = "symm";
+         detail = "premise sides don't match conclusion's flipped sides";
+       }
+     | None ->
+       Step_failed { rule = "symm"; detail = "unknown premise: " ^ p })
+  | _ ->
+    Step_failed {
+      rule = "symm";
+      detail = "expected one premise and (cl (= b a)) conclusion";
+    }
+
+(** [subproof]: closes an [(anchor :step ID)] block. The body
+    derived a clause [C] under local assumptions [A_1 … A_n] (named
+    in [:discharge]); the subproof step concludes
+    [(cl (not A_1) … (not A_n) C)] — the discharge equivalence.
+
+    Soundness check:
+    1. Look up each discharged ID in [env.proven] to recover the
+       local-assume atoms.
+    2. The body conclusion is the most recently verified step
+       (tracked via [env.last_step_clause]) — the step immediately
+       preceding this close in input order is always the body's
+       last step under cvc5's emission order.
+    3. The subproof's clause must match
+       [(not A_i)…] ++ body_clause as a multiset.
+
+    On success we also strip the inner-scope assumes and steps
+    (anything whose ID has [step.id ^ "."] as a prefix) from
+    [env.proven] so an outer step can't accidentally reference a
+    discharged local fact as if it were globally proven. *)
+let check_subproof (env : env) (step : Alethe.step) : step_result =
+  let discharge = Option.value step.discharge ~default:[] in
+  if discharge = [] then
+    Step_failed { rule = "subproof"; detail = "no :discharge list" }
+  else
+    let lookup_atom id =
+      match Hashtbl.find_opt env.proven id with
+      | Some [ atom ] -> Ok atom
+      | Some _ -> Error ("discharged id " ^ id ^ " is not a singleton clause")
+      | None -> Error ("unknown discharged assume: " ^ id)
+    in
+    let rec collect_atoms acc = function
+      | [] -> Ok (List.rev acc)
+      | id :: rest ->
+        (match lookup_atom id with
+         | Ok atom -> collect_atoms (atom :: acc) rest
+         | Error msg -> Error msg)
+    in
+    match collect_atoms [] discharge with
+    | Error msg -> Step_failed { rule = "subproof"; detail = msg }
+    | Ok atoms ->
+      (match env.last_step_clause with
+       | None ->
+         Step_failed {
+           rule = "subproof";
+           detail = "no preceding body conclusion";
+         }
+       | Some body_concl ->
+         let expected =
+           List.map (fun a -> Alethe.Sexp.List [ Atom "not"; a ]) atoms
+           @ body_concl
+         in
+         if multiset_equal_clauses expected step.clause then begin
+           let inner_prefix = step.id ^ "." in
+           let plen = String.length inner_prefix in
+           let prefixed k =
+             String.length k > plen
+             && String.sub k 0 plen = inner_prefix
+           in
+           let drop_proven =
+             Hashtbl.fold (fun k _ acc ->
+               if prefixed k then k :: acc else acc) env.proven []
+           in
+           let drop_assumes =
+             Hashtbl.fold (fun k _ acc ->
+               if prefixed k then k :: acc else acc) env.assumes []
+           in
+           List.iter (Hashtbl.remove env.proven) drop_proven;
+           List.iter (Hashtbl.remove env.assumes) drop_assumes;
+           Step_verified
+         end
+         else
+           Step_failed {
+             rule = "subproof";
+             detail = "conclusion is not (not A_i)… ++ body_clause";
+           })
+
 (** Top-level rule dispatch. Add a new clause here when wiring an
     OCaml-side checker for another Alethe rule, and add the same
     rule name to [supported_rules] below. The walker treats
@@ -686,7 +1067,7 @@ let check_resolution (env : env) (step : Alethe.step) : step_result =
     fails when any step uses a rule no checker handles. *)
 let check_step (env : env) (step : Alethe.step) : step_result =
   match step.rule with
-  | "la_generic" -> check_la_generic env.ir step
+  | "la_generic" -> check_la_generic env step
   | "refl" -> check_refl step
   | "false" -> check_false step
   | "trans" -> check_trans env step
@@ -700,6 +1081,16 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "la_mult_neg" -> check_la_mult_neg step
   | "hole" -> check_hole env step
   | "rare_rewrite" -> check_rare_rewrite env step
+  | "implies_neg1" -> check_implies_neg1 step
+  | "implies_neg2" -> check_implies_neg2 step
+  | "implies_simplify" -> check_implies_simplify step
+  | "and_pos" -> check_and_pos step
+  | "reordering" -> check_reordering env step
+  | "contraction" -> check_contraction env step
+  | "not_and" -> check_not_and env step
+  | "or" -> check_or env step
+  | "symm" -> check_symm env step
+  | "subproof" -> check_subproof env step
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -709,9 +1100,11 @@ let check_step (env : env) (step : Alethe.step) : step_result =
     a parsed proof is eligible for Tier 3 minting (the "fail
     closed" gate of direction 3). *)
 let supported_rules : string list = [
-  "and_neg"; "cong"; "equiv1"; "equiv_pos2"; "equiv_simplify";
-  "false"; "hole"; "implies"; "la_generic"; "la_mult_neg";
-  "rare_rewrite"; "refl"; "resolution"; "trans";
+  "and_neg"; "and_pos"; "cong"; "contraction"; "equiv1";
+  "equiv_pos2"; "equiv_simplify"; "false"; "hole"; "implies";
+  "implies_neg1"; "implies_neg2"; "implies_simplify";
+  "la_generic"; "la_mult_neg"; "not_and"; "or"; "rare_rewrite";
+  "refl"; "reordering"; "resolution"; "subproof"; "symm"; "trans";
 ]
 
 (** True iff every step in [p] uses a rule [check_step] knows. The
@@ -784,9 +1177,15 @@ let is_terminal_clause (clause : Alethe.Sexp.t list) : bool =
     re-use one [Alethe.parse] result for the gate check and the
     payload construction (rather than parsing twice). *)
 let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
-  let env = { ir; proven = Hashtbl.create 32 } in
-  List.iter
-    (fun (id, atom) -> Hashtbl.replace env.proven id [ atom ])
+  let env = {
+    ir;
+    proven = Hashtbl.create 32;
+    assumes = Hashtbl.create 8;
+    last_step_clause = None;
+  } in
+  List.iter (fun (id, atom) ->
+    Hashtbl.replace env.proven id [ atom ];
+    Hashtbl.replace env.assumes id atom)
     p.assumes;
   let rec walk = function
     | [] ->
@@ -809,6 +1208,7 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
       (match check_step env step with
        | Step_verified ->
          Hashtbl.replace env.proven step.id step.clause;
+         env.last_step_clause <- Some step.clause;
          walk rest
        | Step_unsupported_rule rule ->
          Unsupported_rule { rule; step_id = step.id }
