@@ -107,6 +107,93 @@ let test_extract_proof_term_returns_none_on_garbage () =
   | None -> ()
   | Some _ -> Alcotest.fail "expected None on non-envelope input"
 
+(* --- Farkas extraction tests --------------------------------------- *)
+
+let rat (n : int) (d : int) : Linear_arith.rational =
+  { num = Z.of_int n; den = Z.of_int d }
+
+let rat_eq (a : Linear_arith.rational) (b : Linear_arith.rational) : bool =
+  Z.equal a.num b.num && Z.equal a.den b.den
+
+let test_parse_farkas_rule_head_simple () =
+  let head = parse_one "(_ th-lemma arith farkas 1 1)" in
+  match parse_farkas_rule_head head with
+  | None -> Alcotest.fail "expected Some coefficients"
+  | Some coefs ->
+    Alcotest.(check int) "two coefficients" 2 (List.length coefs);
+    Alcotest.(check bool) "first coef = 1" true (rat_eq (rat 1 1) (List.nth coefs 0));
+    Alcotest.(check bool) "second coef = 1" true (rat_eq (rat 1 1) (List.nth coefs 1))
+
+let test_parse_farkas_rule_head_rationals () =
+  let head = parse_one "(_ th-lemma arith farkas 3 1/2 7)" in
+  match parse_farkas_rule_head head with
+  | None -> Alcotest.fail "expected Some coefficients"
+  | Some coefs ->
+    Alcotest.(check int) "three coefficients" 3 (List.length coefs);
+    Alcotest.(check bool) "second coef = 1/2" true (rat_eq (rat 1 2) (List.nth coefs 1))
+
+let test_parse_farkas_rule_head_rejects_non_farkas () =
+  let head = parse_one "(_ th-lemma arith)" in
+  Alcotest.(check bool) "bare arith th-lemma rejected" true
+    (Option.is_none (parse_farkas_rule_head head));
+  let head2 = parse_one "(_ th-lemma arith gomory-cut 1 1)" in
+  Alcotest.(check bool) "gomory-cut rejected" true
+    (Option.is_none (parse_farkas_rule_head head2))
+
+let test_find_farkas_clause_real_proof () =
+  (* z3 4.16.0 verbatim, two-hyp LRA Farkas. *)
+  let envelope =
+    "((set-logic QF_LRA)\n\
+     (proof\n\
+     (let (($x28 (<= x 3.0)))\n\
+     (let ((@x29 (asserted $x28)))\n\
+     (let (($x25 (>= x 5.0)))\n\
+     (let ((@x26 (asserted $x25)))\n\
+     (unit-resolution ((_ th-lemma arith farkas 1 1) (or (not $x28) (not $x25))) @x26 @x29 false)))))))"
+  in
+  let term = match extract_proof_term envelope with
+    | Some t -> t
+    | None -> Alcotest.fail "envelope unwrap failed"
+  in
+  match find_farkas_clause term with
+  | None -> Alcotest.fail "expected Farkas extraction on a Farkas-shaped proof"
+  | Some { coefficients; literals } ->
+    Alcotest.(check int) "two coefficients" 2 (List.length coefficients);
+    Alcotest.(check int) "two literals" 2 (List.length literals);
+    Alcotest.(check bool) "first coef = 1" true
+      (rat_eq (rat 1 1) (List.nth coefficients 0));
+    Alcotest.(check bool) "second coef = 1" true
+      (rat_eq (rat 1 1) (List.nth coefficients 1));
+    Alcotest.(check string) "first literal = (<= x 3.0)"
+      "(<= x 3.0)" (Sexp.to_string (List.nth literals 0));
+    Alcotest.(check string) "second literal = (>= x 5.0)"
+      "(>= x 5.0)" (Sexp.to_string (List.nth literals 1))
+
+let test_find_farkas_clause_returns_none_on_opaque () =
+  (* Opaque arith th-lemma (no farkas tag, no clause shape). *)
+  let envelope =
+    "((set-logic QF_LIA)(proof ((_ th-lemma arith) (asserted (>= n 5)) false)))"
+  in
+  let term = match extract_proof_term envelope with
+    | Some t -> t
+    | None -> Alcotest.fail "envelope unwrap failed"
+  in
+  Alcotest.(check bool) "no Farkas extraction on opaque th-lemma" true
+    (Option.is_none (find_farkas_clause term))
+
+let test_find_farkas_clause_mismatched_arity_rejected () =
+  (* 2 coefficients but 3 disjuncts — must reject. *)
+  let envelope =
+    "((set-logic QF_LRA)(proof\n\
+     (unit-resolution ((_ th-lemma arith farkas 1 1) (or (not (<= x 3.0)) (not (>= x 5.0)) (not (<= y 0.0)))) false)))"
+  in
+  let term = match extract_proof_term envelope with
+    | Some t -> t
+    | None -> Alcotest.fail "envelope unwrap failed"
+  in
+  Alcotest.(check bool) "mismatched coef/disjunct arity rejected" true
+    (Option.is_none (find_farkas_clause term))
+
 let () =
   Alcotest.run "z3_proof" [
     "let_resolution", [
@@ -124,5 +211,19 @@ let () =
         `Quick test_extract_proof_term_real_farkas;
       Alcotest.test_case "non-envelope returns None"
         `Quick test_extract_proof_term_returns_none_on_garbage;
+    ];
+    "farkas_extraction", [
+      Alcotest.test_case "rule head: simple integer coefs"
+        `Quick test_parse_farkas_rule_head_simple;
+      Alcotest.test_case "rule head: rational coefs"
+        `Quick test_parse_farkas_rule_head_rationals;
+      Alcotest.test_case "rule head: non-farkas arith rejected"
+        `Quick test_parse_farkas_rule_head_rejects_non_farkas;
+      Alcotest.test_case "find_farkas_clause on real proof"
+        `Quick test_find_farkas_clause_real_proof;
+      Alcotest.test_case "find_farkas_clause returns None on opaque arith"
+        `Quick test_find_farkas_clause_returns_none_on_opaque;
+      Alcotest.test_case "find_farkas_clause rejects mismatched arity"
+        `Quick test_find_farkas_clause_mismatched_arity_rejected;
     ];
   ]

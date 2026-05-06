@@ -123,3 +123,102 @@ let extract_proof_term (s : string) : Sexp.t option =
     in
     Option.map resolve_lets proof_term
   | _ -> None
+
+(* --- Farkas th-lemma extraction -------------------------------------- *)
+
+(** A Farkas-flavored th-lemma application reduced to coefficients
+    + the literals they apply to. The Farkas certificate's claim
+    is that the positive linear combination
+    [C1 * L1 + ... + Cn * Ln] (read as a sum of inequality
+    expressions) yields a contradiction; each [Ci] is a
+    nonnegative rational and each [Li] is the inequality atom in
+    the same position.
+
+    For consumers downstream: align [literals] to the IR's
+    hypotheses or the negated goal, sign the coefficients
+    appropriately (z3 emits unsigned coefficients; the IR side
+    decides whether each literal corresponds to a forward or
+    flipped hypothesis), and feed the result through
+    [Farkas.verify]. *)
+type farkas_extract = {
+  coefficients : Linear_arith.rational list;
+  literals : Sexp.t list;
+}
+
+(** Recognize the rule head of a Farkas th-lemma application. The
+    rule head looks like [(_ th-lemma arith farkas C1 C2 ... Cn)] —
+    an indexed identifier whose first three indices are
+    [th-lemma], [arith], [farkas], followed by the Farkas
+    coefficients as positional atoms (decimal integers or
+    [num/den] rationals). Returns [Some coefficients] when the
+    head matches and every coefficient parses as a rational, [None]
+    otherwise. *)
+let parse_farkas_rule_head (head : Sexp.t) : Linear_arith.rational list option =
+  match head with
+  | Sexp.List (Atom "_" :: Atom "th-lemma" :: Atom "arith" :: Atom "farkas" :: rest)
+    when rest <> [] ->
+    let coefs = List.filter_map (fun s ->
+      match s with
+      | Sexp.Atom token -> Linear_arith.rat_of_string token
+      | _ -> None)
+      rest
+    in
+    if List.length coefs = List.length rest then Some coefs else None
+  | _ -> None
+
+(** Pull the negated literal [Li] out of a [(not Li)] form. Used
+    when destructuring a th-lemma's [(or (not L1) ... (not Ln))]
+    clause. *)
+let strip_not (s : Sexp.t) : Sexp.t option =
+  match s with
+  | Sexp.List [ Atom "not"; lit ] -> Some lit
+  | _ -> None
+
+(** Destructure a Farkas th-lemma application of the
+    "clause-introducing" shape:
+    [((_ th-lemma arith farkas C1...Cn) (or (not L1) ... (not Ln)))].
+
+    This is the form z3 emits when the th-lemma will be consumed
+    by a downstream [unit-resolution]: th-lemma produces the
+    Farkas tautology as a clause, and resolution closes it
+    against unit proofs of each [Li].
+
+    Returns [Some {coefficients; literals}] when the application
+    shape matches AND the number of clause disjuncts equals the
+    number of coefficients; [None] otherwise. *)
+let parse_farkas_clause_application (app : Sexp.t)
+  : farkas_extract option =
+  match app with
+  | Sexp.List [ head; Sexp.List (Atom "or" :: disjuncts) ] ->
+    (match parse_farkas_rule_head head with
+     | None -> None
+     | Some coefficients ->
+       let lits = List.filter_map strip_not disjuncts in
+       if List.length lits <> List.length disjuncts
+          || List.length lits <> List.length coefficients
+       then None
+       else Some { coefficients; literals = lits })
+  | _ -> None
+
+(** Walk a proof term depth-first looking for the first
+    Farkas-clause th-lemma application (the clause-introducing
+    shape consumed by unit-resolution; see
+    [parse_farkas_clause_application]). Returns [None] if none is
+    present.
+
+    The walk is structural: any list-shaped subterm is recursed
+    into. We don't model z3's proof-rule semantics — we just look
+    for the syntactic shape. The first match wins; for proofs
+    with multiple Farkas th-lemmas (case-split-shaped), a
+    different walker will be needed. *)
+let rec find_farkas_clause (t : Sexp.t) : farkas_extract option =
+  match parse_farkas_clause_application t with
+  | Some extract -> Some extract
+  | None ->
+    (match t with
+     | Atom _ -> None
+     | List xs ->
+       List.fold_left (fun acc child ->
+         match acc with
+         | Some _ -> acc
+         | None -> find_farkas_clause child) None xs)
