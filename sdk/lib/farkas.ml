@@ -28,11 +28,15 @@
     [Not(LE.le)]) depends on the fragment: in LIA we apply the +1
     trick ([¬(a <= b) ≡ b + 1 <= a]) which is sound only over Z;
     in LRA we keep strictness explicit as a [Lt] form. The verify
-    entry derives the fragment from the IR's
-    [logic_classification.first_order_fragment]; only the literal
-    string ["LRA"] selects strict mode, everything else (notably
-    ["LIA"]) takes the +1 path. The linearization vocabulary is the
-    same in both modes — the difference is only in how strict
+    entry derives the active fragment via [effective_fragment ir]
+    rather than reading [logic_classification.first_order_fragment]
+    directly: the label is documentation and a Real-typed IR
+    mislabeled ["LIA"] would otherwise unlock the +1 trick on the
+    reals, where it's unsound. [effective_fragment] returns ["LRA"]
+    whenever any free var or numeric literal mentions a [Real]
+    type tag, regardless of the declared fragment, and the
+    declared fragment otherwise. The linearization vocabulary is
+    the same in both modes — the difference is only in how strict
     inequalities compile and how the residual is judged
     contradictory.
 
@@ -108,9 +112,12 @@ type compiled =
     rather than a generic "couldn't parse".
 
     [fragment] selects how strict shapes ([LT.lt], [GT.gt],
-    [Not(LE.le)]) compile. ["LRA"] keeps strictness explicit as
-    [Lt]; anything else (default ["LIA"]) folds it into [Le] via the
-    +1 trick — sound only over the integers. *)
+    [Not(LE.le)]) compile: ["LRA"] keeps strictness explicit as
+    [Lt]; anything else folds it into [Le] via the +1 trick, which
+    is sound only over Z. Callers must use [effective_fragment ir]
+    rather than the declared fragment label so a Real-typed IR
+    mislabeled ["LIA"] doesn't accidentally unlock the +1 trick on
+    the reals. *)
 let compile_hypothesis ?(fragment = "LIA") (shell : Ir.shell_term)
   : (compiled, string) result =
   let lra = String.equal fragment "LRA" in
