@@ -106,6 +106,54 @@ let test_emit_neg () =
   } in
   Alcotest.(check string) "(- n)" "(- n)" (emit_term_ok t)
 
+let test_emit_num_lit_big_int () =
+  let big = "123456789012345678901234567890" in
+  Alcotest.(check string) "big positive integer round-trips"
+    big (emit_term_ok (Num_lit { value = big; ty = "Int" }));
+  Alcotest.(check string) "big negative integer wraps in (- N)"
+    (Printf.sprintf "(- %s)" big)
+    (emit_term_ok (Num_lit { value = "-" ^ big; ty = "Int" }))
+
+let test_emit_num_lit_real_rational () =
+  Alcotest.(check string) "Real 3/4 → (/ 3 4)"
+    "(/ 3 4)" (emit_term_ok (Num_lit { value = "3/4"; ty = "Real" }));
+  Alcotest.(check string) "Real -3/4 → (- (/ 3 4))"
+    "(- (/ 3 4))" (emit_term_ok (Num_lit { value = "-3/4"; ty = "Real" }))
+
+let test_emit_num_lit_real_decimal () =
+  Alcotest.(check string) "Real 0.5 verbatim"
+    "0.5" (emit_term_ok (Num_lit { value = "0.5"; ty = "Real" }));
+  Alcotest.(check string) "Real -1.25 → (- 1.25)"
+    "(- 1.25)" (emit_term_ok (Num_lit { value = "-1.25"; ty = "Real" }))
+
+let test_emit_num_lit_int_with_slash_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs
+          (Num_lit { value = "3/4"; ty = "Int" }) with
+  | Error (Bad_literal { value = "3/4"; ty = "Int" }) -> ()
+  | _ -> Alcotest.fail "expected Bad_literal for Int 3/4"
+
+let test_emit_num_lit_int_with_dot_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs
+          (Num_lit { value = "1.5"; ty = "Int" }) with
+  | Error (Bad_literal { value = "1.5"; ty = "Int" }) -> ()
+  | _ -> Alcotest.fail "expected Bad_literal for Int 1.5"
+
+let test_emit_num_lit_exponent_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs
+          (Num_lit { value = "1e6"; ty = "Real" }) with
+  | Error (Bad_literal { value = "1e6"; ty = "Real" }) -> ()
+  | _ -> Alcotest.fail "expected Bad_literal for exponent literal"
+
+let test_emit_num_lit_garbage_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs
+          (Num_lit { value = "abc"; ty = "Int" }) with
+  | Error (Bad_literal { value = "abc"; ty = "Int" }) -> ()
+  | _ -> Alcotest.fail "expected Bad_literal for non-numeric"
+
 (* --- error paths ----------------------------------------------------- *)
 
 let test_emit_quantifier_rejected () =
@@ -250,6 +298,22 @@ let () =
       Alcotest.test_case "= (Int)" `Quick test_emit_eq;
       Alcotest.test_case "bool connectives" `Quick test_emit_bool_connectives;
       Alcotest.test_case "Neg.neg" `Quick test_emit_neg;
+      Alcotest.test_case "NumLit big int (Zarith)"
+        `Quick test_emit_num_lit_big_int;
+      Alcotest.test_case "NumLit Real rational"
+        `Quick test_emit_num_lit_real_rational;
+      Alcotest.test_case "NumLit Real decimal"
+        `Quick test_emit_num_lit_real_decimal;
+    ];
+    "literal errors", [
+      Alcotest.test_case "Int with slash rejected"
+        `Quick test_emit_num_lit_int_with_slash_rejected;
+      Alcotest.test_case "Int with dot rejected"
+        `Quick test_emit_num_lit_int_with_dot_rejected;
+      Alcotest.test_case "exponent rejected"
+        `Quick test_emit_num_lit_exponent_rejected;
+      Alcotest.test_case "garbage rejected"
+        `Quick test_emit_num_lit_garbage_rejected;
     ];
     "errors", [
       Alcotest.test_case "Forall rejected" `Quick test_emit_quantifier_rejected;

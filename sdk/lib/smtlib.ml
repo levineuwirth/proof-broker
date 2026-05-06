@@ -104,21 +104,85 @@ let arith_target = function
   | _ -> None
 
 (** Format a numeric literal value string into SMT-LIB grammar.
+
     SMT-LIB's [<numeral>] is a non-negative decimal sequence; a
-    negative number like [-3] is the application [(- 3)]. *)
+    negative integer like [-3] is the application [(- 3)]. SMT-LIB
+    [<decimal>] is [<numeral>.<digit>+] (e.g. [0.5]). Rationals like
+    [3/4] are not directly part of SMT-LIB's literal grammar and are
+    emitted as the binary application [(/ 3 4)].
+
+    The IR's [Num_lit.value] follows the schema's NumLit pattern,
+    which permits an optional minus, a decimal/integer/rational
+    body, and an optional decimal-point or exponent suffix. We
+    parse via Zarith ([Linear_arith.rat_of_string]) so arbitrarily
+    large numerators and denominators round-trip exactly — neither
+    [int_of_string] nor [float_of_string] are sound for the Int /
+    Rat cases the IR is allowed to produce post-Zarith graduation
+    (e.g., a 25-digit integer or [10^18 / 7] as a hypothesis
+    coefficient). Exponent notation ([1e6], [3.14e-2]) is rejected
+    here as out of scope; the rewriter is expected to canonicalize
+    such literals upstream.
+
+    Behavior by type:
+    * [Int]: must parse as an integer (no [/], no [.]). Emitted as
+      a numeral, with a leading minus wrapped as [(- N)].
+    * [Real]: accepts integer, rational ([N/M]), or decimal
+      ([N.M]). Rationals are emitted as [(/ N M)]; decimals are
+      emitted verbatim. Negative values are wrapped in [(- ...)].
+    * Anything else: rejected as [Bad_literal]. *)
 let format_numeric ~(ty : string) (value : string) : (string, error) result =
-  let ok = match ty with
-    | "Int" -> (try ignore (int_of_string value); true with _ -> false)
-    | "Real" ->
-      (* allow [N] or [N.M] or [N/M] — SMT-LIB also has [(/  N M)] *)
-      (try ignore (float_of_string value); true with _ -> false)
-    | _ -> false
-  in
-  if not ok then Error (Bad_literal { value; ty })
-  else if String.length value > 0 && value.[0] = '-' then
-    let mag = String.sub value 1 (String.length value - 1) in
-    Ok (Printf.sprintf "(- %s)" mag)
-  else Ok value
+  let bad () = Error (Bad_literal { value; ty }) in
+  if value = "" then bad ()
+  else if String.contains value 'e' || String.contains value 'E' then
+    bad ()
+  else
+    let has_slash = String.contains value '/' in
+    let has_dot = String.contains value '.' in
+    let neg = value.[0] = '-' in
+    let mag =
+      if neg then String.sub value 1 (String.length value - 1) else value
+    in
+    let wrap_neg s = if neg then Printf.sprintf "(- %s)" s else s in
+    match ty, has_slash, has_dot with
+    | "Int", false, false ->
+      (try
+         let _z = Z.of_string mag in
+         Ok (wrap_neg mag)
+       with _ -> bad ())
+    | "Int", _, _ -> bad ()
+    | "Real", false, false ->
+      (try
+         let _z = Z.of_string mag in
+         Ok (wrap_neg mag)
+       with _ -> bad ())
+    | "Real", true, false ->
+      (* [N/M]: parse via Zarith and emit as [(/ N M)]. *)
+      (match Linear_arith.rat_of_string mag with
+       | Some r when not (Z.equal r.den Z.zero) ->
+         let num_s = Z.to_string r.num in
+         let den_s = Z.to_string r.den in
+         Ok (wrap_neg (Printf.sprintf "(/ %s %s)" num_s den_s))
+       | _ -> bad ())
+    | "Real", false, true ->
+      (* [N.M] decimal. Validate that the body parses as a SMT-LIB
+         decimal: digit+ '.' digit+, no other dots. *)
+      let dot = String.index mag '.' in
+      let int_part = String.sub mag 0 dot in
+      let frac_part = String.sub mag (dot + 1) (String.length mag - dot - 1) in
+      let all_digits s =
+        String.length s > 0
+        && String.for_all (fun c -> c >= '0' && c <= '9') s
+      in
+      if all_digits int_part && all_digits frac_part
+         && not (String.contains frac_part '.')
+      then Ok (wrap_neg mag)
+      else bad ()
+    | "Real", true, true ->
+      (* The schema technically allows both [/] and [.] together,
+         but no SMT-LIB grammar accommodates it; refuse rather than
+         guess. *)
+      bad ()
+    | _ -> bad ()
 
 let rec emit_term ~specs (t : Ir.shell_term) : (string, error) result =
   match t with
