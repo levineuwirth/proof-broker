@@ -43,6 +43,7 @@ type error =
   | Unsupported_type of { ty : string; site : string }
   | Bad_arity of { symbol : string; expected : int; got : int }
   | Bad_literal of { value : string; ty : string }
+  | Bad_identifier of { name : string; site : string }
 
 let kind_of_error = function
   | Unsupported_node _ -> "unsupported_node"
@@ -50,6 +51,7 @@ let kind_of_error = function
   | Unsupported_type _ -> "unsupported_type"
   | Bad_arity _ -> "bad_arity"
   | Bad_literal _ -> "bad_literal"
+  | Bad_identifier _ -> "bad_identifier"
 
 let detail_of_error = function
   | Unsupported_node { node; detail } ->
@@ -62,6 +64,59 @@ let detail_of_error = function
     Printf.sprintf "%s expects %d args, got %d" symbol expected got
   | Bad_literal { value; ty } ->
     Printf.sprintf "%s does not parse as %s" value ty
+  | Bad_identifier { name; site } ->
+    Printf.sprintf "%s at %s contains characters that cannot be \
+                    represented as a SMT-LIB symbol or quoted symbol"
+      name site
+
+(* --- identifier quoting ---------------------------------------------- *)
+
+(** SMT-LIB 2.6 reserved words that look like symbols and must be
+    quoted to be safely usable as identifiers. Only the keywords
+    that can plausibly collide with an IR variable / constant name
+    are listed; commands like [check-sat] never appear in identifier
+    position so there's no ambiguity. *)
+let smtlib_reserved =
+  [ "let"; "forall"; "exists"; "match"; "as"; "par"; "_";
+    "Bool"; "Int"; "Real" ]
+
+(** Allowed characters in an SMT-LIB simple symbol after the first.
+    Spec §3.1: alphanumeric plus a fixed set of punctuation. *)
+let is_simple_symbol_tail_char (c : char) =
+  (c >= 'a' && c <= 'z')
+  || (c >= 'A' && c <= 'Z')
+  || (c >= '0' && c <= '9')
+  || (match c with
+      | '~' | '!' | '@' | '$' | '%' | '^' | '&' | '*'
+      | '_' | '-' | '+' | '=' | '<' | '>' | '.' | '?' | '/' -> true
+      | _ -> false)
+
+let is_simple_symbol_head_char (c : char) =
+  is_simple_symbol_tail_char c && not (c >= '0' && c <= '9')
+
+let is_simple_symbol (s : string) : bool =
+  String.length s > 0
+  && is_simple_symbol_head_char s.[0]
+  && String.for_all is_simple_symbol_tail_char s
+  && not (List.mem s smtlib_reserved)
+
+(** Render an identifier (variable name, free-var name) safely.
+    Returns the bare name when it parses as a SMT-LIB simple symbol
+    (and isn't a reserved word). Otherwise wraps the name in
+    [|...|], the quoted-symbol form. Quoted symbols may contain any
+    printable character except [|] and [\\]; if either is present the
+    name is rejected with [Bad_identifier], since SMT-LIB has no
+    escape mechanism for these. *)
+let format_identifier ~site (name : string) : (string, error) result =
+  if name = "" then Error (Bad_identifier { name; site })
+  else if is_simple_symbol name then Ok name
+  else if String.contains name '|' || String.contains name '\\' then
+    Error (Bad_identifier { name; site })
+  else
+    let printable c = Char.code c >= 0x20 && Char.code c < 0x7f in
+    if String.for_all printable name then
+      Ok (Printf.sprintf "|%s|" name)
+    else Error (Bad_identifier { name; site })
 
 (* --- type mapping ---------------------------------------------------- *)
 
@@ -186,7 +241,7 @@ let format_numeric ~(ty : string) (value : string) : (string, error) result =
 
 let rec emit_term ~specs (t : Ir.shell_term) : (string, error) result =
   match t with
-  | Var { name } -> Ok name
+  | Var { name } -> format_identifier ~site:"Var" name
   | Const { name = "True" } -> Ok "true"
   | Const { name = "False" } -> Ok "false"
   | Const { name } ->
@@ -300,8 +355,11 @@ let emit (ir : Ir.t) : (script, error) result =
       | [] -> Ok ()
       | (fv : Ir.free_var) :: rest ->
         let* sort = sort_of_type_ref ~site:("free_var:" ^ fv.name) fv.ty in
+        let* name =
+          format_identifier ~site:("free_var:" ^ fv.name) fv.name
+        in
         Buffer.add_string buf
-          (Printf.sprintf "(declare-const %s %s)\n" fv.name sort);
+          (Printf.sprintf "(declare-const %s %s)\n" name sort);
         emit_decls rest
     in
     emit_decls ir.context.free_vars
