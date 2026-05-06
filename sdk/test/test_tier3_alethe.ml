@@ -196,6 +196,43 @@ let test_proven_in_scope_filters_local_assumes () =
   Alcotest.(check bool) "nested step sees outer-subproof assume"
     true (Option.is_some (Tier3_alethe.proven_in_scope env (mk_at "t1.t5.t10") "t1.a0"))
 
+let test_local_assume_atoms_excludes_descendant_scope () =
+  (* A step at t1.body must NOT see t1.t2.a0 as a local-assume
+     atom: t1.t2 is a sibling (or unsealed nested) subproof, not
+     an ancestor of t1.body. The earlier prefix-only filter swept
+     in any "t1.*" assume; the structural scope rule now filters
+     to ancestors only.
+
+     In scope at t1.body:        t1.a0
+     Out of scope at t1.body:    t1.t2.a0, t22.a0, global (no dot)
+     In scope at t1.t2.deep:     t1.a0, t1.t2.a0
+     Out of scope at t1.t2.deep: t22.a0, t1.t99.a0 *)
+  let ir = make_x_ir () in
+  let assumes = Hashtbl.create 8 in
+  Hashtbl.replace assumes "t1.a0"      (Alethe.Sexp.Atom "A_t1");
+  Hashtbl.replace assumes "t1.t2.a0"   (Alethe.Sexp.Atom "A_t1_t2");
+  Hashtbl.replace assumes "t1.t99.a0"  (Alethe.Sexp.Atom "A_t1_t99");
+  Hashtbl.replace assumes "t22.a0"     (Alethe.Sexp.Atom "A_t22");
+  Hashtbl.replace assumes "global"     (Alethe.Sexp.Atom "G");
+  let env : Tier3_alethe.env = {
+    ir; proven = Hashtbl.create 0; assumes;
+    last_step_clause = None; last_step_id = None;
+  } in
+  let mk_at id : Alethe.step = {
+    id; rule = "any"; clause = []; args = None;
+    premises = None; discharge = None;
+  } in
+  let names_at sid =
+    List.sort compare
+      (List.map fst (Tier3_alethe.local_assume_atoms env (mk_at sid)))
+  in
+  Alcotest.(check (list string)) "t1.body sees only t1.a0"
+    [ "t1.a0" ] (names_at "t1.body");
+  Alcotest.(check (list string)) "t1.t2.deep sees t1.a0 + t1.t2.a0"
+    [ "t1.a0"; "t1.t2.a0" ] (names_at "t1.t2.deep");
+  Alcotest.(check (list string)) "t22.x sees only t22.a0"
+    [ "t22.a0" ] (names_at "t22.x")
+
 let test_verify_synthetic_la_generic_only () =
   let ir = make_x_ir () in
   match Tier3_alethe.verify ir synthetic_la_generic_only_proof with
@@ -1415,6 +1452,8 @@ let () =
         `Quick test_verify_rejects_unbacked_top_level_assume;
       Alcotest.test_case "proven_in_scope filters local assumes by ID prefix"
         `Quick test_proven_in_scope_filters_local_assumes;
+      Alcotest.test_case "local_assume_atoms excludes descendant scope"
+        `Quick test_local_assume_atoms_excludes_descendant_scope;
       Alcotest.test_case "real cvc5 fixture verifies end-to-end"
         `Quick test_verify_real_fixture_verified;
       Alcotest.test_case "case-split fixture verifies end-to-end"

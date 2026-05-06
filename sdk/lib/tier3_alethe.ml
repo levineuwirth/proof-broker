@@ -262,28 +262,38 @@ let proven_in_scope (env : env) (step : Alethe.step) (id : string)
   else None
 
 (** Recover the set of local-assume atoms in scope at [step.id].
-    A subproof body opens a fresh assume scope: assumes parsed
-    inside an [(anchor :step ID)] block have IDs prefixed with
-    [ID.] and live only inside that block. We recover them by
-    scanning [env.assumes] for entries whose ID starts with the
-    step's enclosing subproof prefix.
+
+    Subproof bodies open fresh assume scopes: assumes parsed
+    inside [(anchor :step T)] have IDs prefixed [T.] and live
+    inside that block plus any of its descendants. The correct
+    structural rule is "assume A is visible at step S iff A's
+    enclosing subproof is an ancestor of S's path". An earlier
+    iteration here used a raw prefix match against the step's
+    enclosing-subproof path, which over-collected: a step at
+    [t1.body] (enclosing [t1]) saw assumes from sibling
+    subproof [t1.t2] like [t1.t2.a0] because they happened to
+    start with [t1.] too. That sibling-leak was not blocked by
+    the subproof-close direct-child check, since the leaking
+    la_generic step is itself a direct child of [t1] — only its
+    *premises* came from a non-ancestor scope.
+
+    Now uses [id_in_scope_of] for each candidate assume, which
+    asks the right structural question: is the assume's
+    enclosing subproof actually a strict prefix of [step.id]'s
+    dotted path? [t1.t2.a0]'s enclosing [t1.t2] is not a prefix
+    of [t1.body], so it's correctly excluded.
 
     Used by [check_la_generic] so a la_generic step inside a
     subproof can use local assumes as additional Farkas inputs
     (the case-split fixture has la_generic steps inside [t1]'s
-    body that reference [t1.a0], [t1.a1] — those won't match any
-    IR hypothesis but match the local-assume atoms exactly). *)
+    body that reference [t1.a0] — those won't match any IR
+    hypothesis but match the local-assume atoms exactly). *)
 let local_assume_atoms (env : env) (step : Alethe.step)
   : (string * Alethe.Sexp.t) list =
-  match Alethe.enclosing_subproof_id step.id with
-  | None -> []
-  | Some subproof_id ->
-    let prefix = subproof_id ^ "." in
-    let plen = String.length prefix in
-    Hashtbl.fold (fun id atom acc ->
-      if String.length id > plen
-         && String.sub id 0 plen = prefix
-      then (id, atom) :: acc else acc) env.assumes []
+  Hashtbl.fold (fun id atom acc ->
+    if id_in_scope_of step.id id
+       && Option.is_some (Alethe.enclosing_subproof_id id)
+    then (id, atom) :: acc else acc) env.assumes []
 
 (** [Sexp.t] structural equality is the right notion for clause
     literals since [Alethe.parse] already expanded named refs, so
