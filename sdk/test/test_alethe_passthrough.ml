@@ -10,11 +10,9 @@
       with [trace_format = "alethe-2024"] and the verbatim S-expr
       under [trace_data].
     * Codec round-trip: encode → decode preserves payload.
-    * A constructed Tier 3 cert's envelope verifies; with v0
-      Tier 3 verification, real cvc5 fixtures bail out via
-      [Tier3_unsupported_rule] because they use propositional
-      bookkeeping rules ([refl], [cong], [resolution], …) that
-      no v0 checker handles yet. *)
+    * A constructed Tier 3 cert's envelope verifies through the
+      full Tier 3 walker against the matching IR (alethe-x-3-x-1
+      ⇒ x ≥ 3 ∧ x ≤ 1 ⊢ False). *)
 
 open Proof_broker
 
@@ -33,23 +31,44 @@ let lia_logic : Ir.logic_classification = {
   decidable_theory = None;
 }
 
-let trivial_ir () : Ir.t = {
-  ir_version = "1.0";
-  source_system = { name = "test"; version = "0.0" };
-  tier = "goal";
-  logic_classification = lia_logic;
-  goal = {
-    shell = Const { name = "False" };
-    payloads = None;
-  };
-  context = {
-    type_vars = []; free_vars = []; hypotheses = []; library_slice = None;
-  };
-  type_metadata = [];
-  definitional_metadata = [];
-  library_provenance = [];
-  user_directives = None;
-}
+(** IR matching alethe-x-3-x-1.proof: x ≥ 3 ∧ x ≤ 1 ⊢ False. The
+    envelope verifier hands the IR into [Tier3_alethe.verify], which
+    matches the la_generic step's clause literals against the IR's
+    hypotheses; the IR must reflect the proof's actual hyps. *)
+let x_3_x_1_ir () : Ir.t =
+  let x : Ir.shell_term = Var { name = "x" } in
+  let one : Ir.shell_term = Num_lit { value = "1"; ty = "Real" } in
+  let three : Ir.shell_term = Num_lit { value = "3"; ty = "Real" } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App { symbol = ">="; type_args = []; args = [ x; three ] };
+  } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "<="; type_args = []; args = [ x; one ] };
+  } in
+  {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = {
+      lia_logic with first_order_fragment = "LRA"
+    };
+    goal = {
+      shell = Eq { ty = "Real"; left = x; right = x };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [ { name = "x"; ty = "Real" } ];
+      hypotheses = [ h0; h1 ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  }
 
 (* --- inventory tests ------------------------------------------------- *)
 
@@ -138,7 +157,7 @@ let test_envelope_verifier_tier3 () =
   let proof_str = load_fixture "alethe-x-3-x-1.proof" in
   let p = Alethe.parse proof_str in
   let payload = Alethe_passthrough.make_payload ~proof_str p in
-  let ir = trivial_ir () in
+  let ir = x_3_x_1_ir () in
   let cert : Certificate.t = {
     cert_version = "1.0";
     tier = 3;
@@ -160,16 +179,10 @@ let test_envelope_verifier_tier3 () =
     payload;
   } in
   match Verifier.verify cert ir with
-  | Tier3_unsupported_rule { rule; _ } ->
-    (* v0 has only la_generic registered; cvc5's real proof uses
-       14 rules. The walker bails out at the first unregistered
-       rule it sees. The exact rule depends on step order; we
-       only check it's a non-la_generic rule. *)
-    Alcotest.(check bool) "bailout on a non-la_generic rule"
-      true (rule <> "la_generic")
+  | Verified_tier3 -> ()
   | other ->
     Alcotest.fail
-      (Printf.sprintf "expected Tier3_unsupported_rule, got %s — %s"
+      (Printf.sprintf "expected Verified_tier3, got %s — %s"
          (Verifier.kind_of_reason other)
          (Verifier.detail_of_reason other))
 

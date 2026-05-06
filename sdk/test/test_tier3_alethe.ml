@@ -140,28 +140,23 @@ let test_verify_synthetic_la_generic_only () =
       "expected Verified, got Step_failed at %s (rule=%s): %s"
       step_id rule detail)
 
-let test_verify_real_fixture_unsupported () =
+let test_verify_real_fixture_verified () =
   (* The alethe-x-3-x-1 fixture uses 14 distinct Alethe rules.
-     With la_generic + refl + trans + cong + resolution + false
-     registered, the walker now gets further than v0 but still
-     trips on the propositional bookkeeping rules cvc5 emits
-     ([equiv_pos2], [hole], [la_mult_neg], [implies], [and_neg],
-     [equiv_simplify], [equiv1], [rare_rewrite]). The bailout
-     rule must be one of these — i.e., NOT in our supported set. *)
+     With the full registry — la_generic, refl, trans, cong,
+     resolution, false, equiv_pos2, equiv_simplify, and_neg,
+     implies, equiv1, la_mult_neg, hole, rare_rewrite — the
+     walker now verifies the proof end-to-end. This is the
+     "real cvc5 proof verified by the Tier 3 walker" milestone. *)
   let proof_str = load_fixture "alethe-x-3-x-1.proof" in
   let ir = make_x_ir () in
   match Tier3_alethe.verify ir proof_str with
-  | Unsupported_rule { rule; _ } ->
-    Alcotest.(check bool)
-      (Printf.sprintf
-         "bailout rule %s is not in supported_rules" rule)
-      false (List.mem rule Tier3_alethe.supported_rules)
-  | Verified ->
-    Alcotest.fail "real fixture should not Verify yet — \
-                   supported_rules doesn't cover all 14 rules"
+  | Verified -> ()
+  | Unsupported_rule { rule; step_id } ->
+    Alcotest.fail (Printf.sprintf
+      "expected Verified, got Unsupported_rule(%s) at %s" rule step_id)
   | Step_failed { rule; step_id; detail } ->
     Alcotest.fail (Printf.sprintf
-      "expected Unsupported_rule, got Step_failed at %s (rule=%s): %s"
+      "expected Verified, got Step_failed at %s (rule=%s): %s"
       step_id rule detail)
 
 let test_verify_case_split_unsupported () =
@@ -466,6 +461,115 @@ let test_check_implies_rejects_mismatch () =
   | Step_failed _ -> ()
   | _ -> Alcotest.fail "implies should reject when antecedent doesn't match"
 
+let test_check_hole_const_arith () =
+  (* hole asserts (-1)*3 = -3 — constant arithmetic fold. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "*"; Atom "-1/1"; Atom "3/1" ];
+             Atom "-3/1" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected (* -1 3) = -3: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_x_minus_x () =
+  (* hole asserts x + (-x) = 0 — algebraic identity, x cancels. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "+";
+                    Atom "x";
+                    List [ Atom "*"; Atom "-1/1"; Atom "x" ] ];
+             Atom "0/1" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected (+ x (* -1 x)) = 0: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_bool_eval_false () =
+  (* (<= 0 -2) = false — comparison evaluates to false. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "<="; Atom "0/1"; Atom "-2/1" ];
+             Atom "false" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "hole rejected (<= 0 -2) = false: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
+let test_check_hole_rejects_wrong_const () =
+  (* hole asserts (-1)*3 = 5 — bogus constant. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "*"; Atom "-1/1"; Atom "3/1" ];
+             Atom "5/1" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "hole should reject (* -1 3) = 5"
+
+let test_check_hole_rejects_wrong_bool () =
+  (* (<= 0 -2) = true — comparison is false, so RHS=true is wrong. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.h" ~rule:"hole"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "<="; Atom "0/1"; Atom "-2/1" ];
+             Atom "true" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "hole should reject (<= 0 -2) = true"
+
+let test_check_rare_rewrite_evaluate () =
+  (* (< -1 0) = true — fixture's rare_rewrite "evaluate" instance. *)
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.rr" ~rule:"rare_rewrite"
+    ~args:[ Atom "\"evaluate\"" ]
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "<"; Atom "-1/1"; Atom "0/1" ];
+             Atom "true" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | other ->
+    Alcotest.fail (Printf.sprintf "rare_rewrite rejected (< -1 0) = true: %s"
+      (match other with
+       | Step_failed { detail; _ } -> detail
+       | _ -> "?"))
+
 let test_check_la_mult_neg_accepts () =
   (* Canonical fixture shape: (=> (and (< -1 0) (>= x 3)) (<= -x -3)).
      Both (>= x 3) and (<= -x -3) linearize to Le(3 - x), and the
@@ -662,11 +766,14 @@ let test_proof_rules_supported_synthetic () =
     true (Tier3_alethe.proof_rules_supported p)
 
 let test_proof_rules_supported_real_fixture () =
-  (* Real cvc5 fixture has 14 distinct rules; gate should fail. *)
+  (* Real cvc5 fixture: all 14 rules are registered in the
+     supported_rules set, so the rule-name pre-check now passes.
+     (Whether the *full* verifier accepts the proof is a separate
+     question, addressed by test_verify_real_fixture_verified.) *)
   let proof_str = load_fixture "alethe-x-3-x-1.proof" in
   let p = Alethe.parse proof_str in
-  Alcotest.(check bool) "real cvc5 fixture fails gate (rules beyond v0)"
-    false (Tier3_alethe.proof_rules_supported p)
+  Alcotest.(check bool) "real cvc5 fixture passes rule-name gate"
+    true (Tier3_alethe.proof_rules_supported p)
 
 let test_verify_step_failed () =
   let ir = make_x_ir () in
@@ -775,8 +882,8 @@ let () =
     "whole-proof", [
       Alcotest.test_case "synthetic la_generic-only proof verifies"
         `Quick test_verify_synthetic_la_generic_only;
-      Alcotest.test_case "real fixture bailouts on unsupported rule"
-        `Quick test_verify_real_fixture_unsupported;
+      Alcotest.test_case "real cvc5 fixture verifies end-to-end"
+        `Quick test_verify_real_fixture_verified;
       Alcotest.test_case "case-split bailouts on unsupported rule"
         `Quick test_verify_case_split_unsupported;
       Alcotest.test_case "bogus la_generic surfaces step_failed"
@@ -787,7 +894,7 @@ let () =
         `Quick test_supported_rules_sync;
       Alcotest.test_case "synthetic proof passes gate"
         `Quick test_proof_rules_supported_synthetic;
-      Alcotest.test_case "real fixture fails gate"
+      Alcotest.test_case "real fixture passes rule-name gate"
         `Quick test_proof_rules_supported_real_fixture;
     ];
     "rules", [
@@ -837,6 +944,18 @@ let () =
         `Quick test_check_la_mult_neg_rejects_wrong_scale;
       Alcotest.test_case "la_mult_neg accepts c=-2 scaling"
         `Quick test_check_la_mult_neg_scale_two;
+      Alcotest.test_case "hole accepts (* -1 3) = -3 (const arith)"
+        `Quick test_check_hole_const_arith;
+      Alcotest.test_case "hole accepts (+ x (* -1 x)) = 0 (cancellation)"
+        `Quick test_check_hole_x_minus_x;
+      Alcotest.test_case "hole accepts (<= 0 -2) = false (bool eval)"
+        `Quick test_check_hole_bool_eval_false;
+      Alcotest.test_case "hole rejects wrong constant"
+        `Quick test_check_hole_rejects_wrong_const;
+      Alcotest.test_case "hole rejects wrong boolean"
+        `Quick test_check_hole_rejects_wrong_bool;
+      Alcotest.test_case "rare_rewrite accepts (< -1 0) = true"
+        `Quick test_check_rare_rewrite_evaluate;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"

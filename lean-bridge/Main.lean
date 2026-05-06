@@ -863,24 +863,25 @@ def runTier3AletheFlow (rootDir : System.FilePath) : IO Unit := do
     IO.println "OK verify_certificate: Tier 3 alethe-2024 single-la_generic re-checked end-to-end"
   | other =>
     fail s!"expected verifiedTier3, got {repr other}"
-  -- Real cvc5 fixture: 14 distinct rules. The walker registry covers
-  -- the structural rules (la_generic, refl, trans, cong, resolution,
-  -- false, and now equiv_pos2/equiv_simplify/and_neg/implies/equiv1)
-  -- but bails on the trust/arithmetic rules (hole, la_mult_neg,
-  -- rare_rewrite) — so the fixture still surfaces tier3UnsupportedRule
-  -- on the first such step.
+  -- Real cvc5 fixture: 14 distinct Alethe rules. The Tier 3 walker
+  -- now has a registered checker for every rule the fixture uses
+  -- (la_generic, refl, trans, cong, resolution, false, equiv_pos2,
+  -- equiv_simplify, and_neg, implies, equiv1, la_mult_neg, hole,
+  -- rare_rewrite — including constant-fold/boolean-eval support
+  -- in hole/rare_rewrite for the fixture's specific rewrites).
+  -- The full proof verifies end-to-end, surfacing verifiedTier3.
   let realProof ← IO.FS.readFile (rootDir / "sdk" / "test" / "fixtures" / "alethe-x-3-x-1.proof")
   let realCert := mkCert realProof "alethe-2024"
   let res2 ← match runVerifyCertificate realCert ir with
     | .ok r => pure r
     | .error e => fail s!"runVerifyCertificate (Tier3 real): {repr e}"
-  if res2.ok then
-    fail s!"expected ok=false on real fixture; reason={repr res2.reason}"
+  unless res2.ok do
+    fail s!"expected ok=true on real fixture; reason={repr res2.reason}"
   match res2.reason with
-  | .tier3UnsupportedRule _ =>
-    IO.println "OK verify_certificate: real cvc5 fixture trips tier3UnsupportedRule (rules beyond structural batch)"
+  | .verifiedTier3 =>
+    IO.println "OK verify_certificate: real cvc5 fixture verifies end-to-end via Tier 3 walker"
   | other =>
-    fail s!"expected tier3UnsupportedRule, got {repr other}"
+    fail s!"expected verifiedTier3 on real fixture, got {repr other}"
   -- Non-alethe trace_format → tier3UnsupportedFormat.
   let lfscCert := mkCert "(... not alethe ...)" "lfsc"
   let res3 ← match runVerifyCertificate lfscCert ir with

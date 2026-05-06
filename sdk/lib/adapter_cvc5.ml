@@ -382,20 +382,33 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Ok witness -> mk_farkas witness
               | Error _ -> mk_oracle ()
             in
+            (* Tier 3 gate: dry-run the full Tier 3 verifier on the
+               parsed proof before minting. Only mint when the
+               verifier reports [Verified] — this is the strict
+               "fail closed" property: a minted Tier 3 cert is
+               always re-checkable end-to-end at mint time. cvc5's
+               proofs use [hole]/[rare_rewrite] for many distinct
+               theory rewrites, only some of which our checker can
+               currently verify; the rule-name pre-check
+               [proof_rules_supported] is too coarse on its own
+               since e.g. [hole] passes the name check but fails
+               on a propositional rewrite like [(<= n 10) =
+               (not (>= n 11))] under LIA tightening. *)
             let try_tier3 proof_str =
               match Alethe.parse proof_str with
               | exception Alethe.Parse_error _ -> None
               | proof ->
-                if Tier3_alethe.proof_rules_supported proof then
-                  Some (mint_tier3_cert
-                          ~adapter_version:version
-                          ~original_ir:ir
-                          ~specs:refinement.specializations
-                          ~logic:script.logic
-                          ~timeout_ms
-                          ~proof_str
-                          ~proof)
-                else None
+                (match Tier3_alethe.verify_parsed ir proof with
+                 | Verified ->
+                   Some (mint_tier3_cert
+                           ~adapter_version:version
+                           ~original_ir:ir
+                           ~specs:refinement.specializations
+                           ~logic:script.logic
+                           ~timeout_ms
+                           ~proof_str
+                           ~proof)
+                 | _ -> None)
             in
             let cert =
               match extract_proof_body stdout with

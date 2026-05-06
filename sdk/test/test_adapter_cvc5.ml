@@ -378,21 +378,25 @@ let test_lra_farkas_cert_envelope_verifies () =
       (Printf.sprintf "expected Cert, got Failed(%s)"
          (Adapter.kind_of_failure f))
 
-(** Confirm the new Tier 3 step in the cvc5 ladder is wired in but
-    "fail-closed" gates real proofs out: cvc5's Alethe output for a
-    typical Farkas-shaped goal uses 14+ rules (la_generic plus
-    propositional bookkeeping like resolution, refl, cong, trans).
-    With only la_generic registered in [Tier3_alethe.supported_rules],
-    the gate fails and the ladder falls through to the existing
-    Tier 1 farkas extractor. As more rules ship, this test should
-    flip to expecting tier=3 — the change is automatic at the
-    minter once supported_rules grows. *)
+(** Confirm the strict "fail-closed" Tier 3 gate (full dry-run
+    verification) keeps cvc5 from minting unverifiable Tier 3
+    certs. example1's proof uses [hole]/[rare_rewrite] for
+    propositional theory rewrites like [(<= n 10) = (not (>= n
+    11))] (LIA tightening) and double-negation collapse — both
+    outside our v0 [check_theory_rewrite_equality] scope, which
+    only handles constant-fold and ground comparison evaluation.
+    The gate's [Tier3_alethe.verify_parsed] dry-run rejects this
+    proof, the ladder falls through to the Tier 1 closer
+    (Farkas_search), and the cert that mints is tier=1. As the
+    [hole] checker grows to cover more theory rewrites, this test
+    should flip to expecting tier=3 — the change is automatic at
+    the minter once full verification accepts cvc5's proof. *)
 let test_dispatch_tier3_gate_falls_through () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
-    Alcotest.(check int) "Tier 3 gate fails on real proof (v0); \
+    Alcotest.(check int) "strict gate rejects example1's proof; \
                           ladder falls through to Tier 1"
       1 cert.tier;
     Alcotest.(check string) "format=farkas (Tier 1 fallback path)"

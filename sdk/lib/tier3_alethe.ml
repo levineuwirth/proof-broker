@@ -259,6 +259,108 @@ let compiled_equal (a : Farkas.compiled) (b : Farkas.compiled) : bool =
   | Farkas.Eq x, Farkas.Eq y -> x = y
   | _ -> false
 
+(** Evaluate a constant comparison literal like [(<= 0 -2)] or
+    [(< -1 0)] to a boolean, when both operands are numeric
+    constants. Returns [None] if either operand isn't a constant
+    or the operator isn't a recognized arithmetic comparison.
+    Used by the [hole]/[rare_rewrite] equality-rewrite checkers
+    to prove things like [(<= 0 -2) = false]. *)
+let evaluate_comparison_to_bool (lhs : Alethe.Sexp.t) : bool option =
+  let const_of e =
+    match Alethe_farkas.lin_arith e with
+    | Some lf when Linear_arith.is_constant lf ->
+      Some (Linear_arith.constant_value lf)
+    | _ -> None
+  in
+  match lhs with
+  | List [ Atom op; a; b ] ->
+    (match const_of a, const_of b with
+     | Some ra, Some rb ->
+       let d = Linear_arith.rat_sub ra rb in
+       (match op with
+        | "<=" -> Some (not (Linear_arith.rat_is_pos d))
+        | "<"  -> Some (Linear_arith.rat_is_neg d)
+        | ">=" -> Some (Linear_arith.rat_is_nonneg d)
+        | ">"  -> Some (Linear_arith.rat_is_pos d)
+        | "="  -> Some (Linear_arith.rat_is_zero d)
+        | _ -> None)
+     | _ -> None)
+  | _ -> None
+
+(** Verify a theory-rewrite equality [(= LHS RHS)]. Strategy:
+    1. Try linear-form arithmetic equality: linearize both sides; if
+       both succeed and the canonical forms are equal, accept. This
+       handles constant-fold rewrites (e.g. [-1] times [3] equals
+       [-3]) and algebraic identities that reduce to the same form
+       (e.g. [x] plus [-x] equals [0]).
+    2. If [RHS] is [true] or [false], try evaluating [LHS] as a
+       constant comparison. This handles boolean-truth rewrites
+       (e.g. [0 <= -2] is [false], [-1 < 0] is [true]).
+    3. Otherwise reject — we don't yet implement other theory
+       rewrites (uninterpreted-function ground rewrites, bit-vector
+       evaluation, etc.). *)
+let check_theory_rewrite_equality
+    (lhs : Alethe.Sexp.t) (rhs : Alethe.Sexp.t)
+  : (unit, string) result =
+  match Alethe_farkas.lin_arith lhs, Alethe_farkas.lin_arith rhs with
+  | Some la, Some lb when la = lb -> Ok ()
+  | _ ->
+    (match rhs with
+     | Atom "true" ->
+       (match evaluate_comparison_to_bool lhs with
+        | Some true -> Ok ()
+        | Some false ->
+          Error "comparison evaluates to false but rhs is true"
+        | None ->
+          Error "linear-form mismatch and lhs is not a constant comparison")
+     | Atom "false" ->
+       (match evaluate_comparison_to_bool lhs with
+        | Some false -> Ok ()
+        | Some true ->
+          Error "comparison evaluates to true but rhs is false"
+        | None ->
+          Error "linear-form mismatch and lhs is not a constant comparison")
+     | _ -> Error "neither linear-equal nor boolean-evaluation applies")
+
+(** [hole]: cvc5's escape hatch for theory rewrites it doesn't
+    spell out fully. The conclusion is a single equality clause
+    [(cl (= LHS RHS))], typed by [:args ("TRUST_THEORY_REWRITE"
+    ...)]. Sound treatment: ignore the [:args] tag (it's a hint,
+    not a proof), and verify the equality independently via
+    [check_theory_rewrite_equality]. If we can prove [LHS = RHS]
+    by constant-fold or boolean evaluation, the step is sound
+    regardless of what tag cvc5 used. *)
+let check_hole (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "="; lhs; rhs ] ] ->
+    (match check_theory_rewrite_equality lhs rhs with
+     | Ok () -> Step_verified
+     | Error msg -> Step_failed { rule = "hole"; detail = msg })
+  | _ ->
+    Step_failed {
+      rule = "hole";
+      detail = "expected singleton (cl (= LHS RHS))";
+    }
+
+(** [rare_rewrite]: same shape as [hole] — a single equality clause
+    [(cl (= LHS RHS))] — typed by [:args ("evaluate" ...)] or other
+    rewrite-kind tags. Same sound treatment as [hole]: verify the
+    equality independently. The two rules are kept separate (rather
+    than aliased) because future cvc5 versions may give them
+    different soundness contracts; this leaves room to tighten one
+    without affecting the other. *)
+let check_rare_rewrite (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "="; lhs; rhs ] ] ->
+    (match check_theory_rewrite_equality lhs rhs with
+     | Ok () -> Step_verified
+     | Error msg -> Step_failed { rule = "rare_rewrite"; detail = msg })
+  | _ ->
+    Step_failed {
+      rule = "rare_rewrite";
+      detail = "expected singleton (cl (= LHS RHS))";
+    }
+
 (** [la_mult_neg]: tautological clause
     [(cl (=> (and (< c 0) hyp) conc))], where [c] is a strictly
     negative rational constant and [conc] is [hyp] scaled through
@@ -515,6 +617,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "implies" -> check_implies env step
   | "equiv1" -> check_equiv1 env step
   | "la_mult_neg" -> check_la_mult_neg step
+  | "hole" -> check_hole step
+  | "rare_rewrite" -> check_rare_rewrite step
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -525,8 +629,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
     closed" gate of direction 3). *)
 let supported_rules : string list = [
   "and_neg"; "cong"; "equiv1"; "equiv_pos2"; "equiv_simplify";
-  "false"; "implies"; "la_generic"; "la_mult_neg"; "refl";
-  "resolution"; "trans";
+  "false"; "hole"; "implies"; "la_generic"; "la_mult_neg";
+  "rare_rewrite"; "refl"; "resolution"; "trans";
 ]
 
 (** True iff every step in [p] uses a rule [check_step] knows. The
@@ -584,63 +688,60 @@ let is_terminal_clause (clause : Alethe.Sexp.t list) : bool =
   | [ Atom "false" ] -> true
   | _ -> false
 
-(** Verify a Tier 3 alethe-2024 proof end-to-end. Walks every step
-    in input order, threading an [env] populated with the assumes'
-    atoms (as singleton clauses) and each verified step's clause
-    so stateful rules ([trans], [cong], [resolution]) can look up
-    premises. Returns on the first unsupported-rule or
-    step-failure. After all steps pass, requires the final step's
-    clause to be terminal ([(cl)] or [(cl false)]) — otherwise the
-    proof verified locally but didn't reach the bottom derivation,
-    and we surface that as a [Step_failed] on the final step.
+(** Verify a parsed Tier 3 alethe-2024 proof end-to-end against
+    [ir]. Walks every step in input order, threading an [env]
+    populated with the assumes' atoms (as singleton clauses) and
+    each verified step's clause so stateful rules ([trans], [cong],
+    [resolution]) can look up premises. Returns on the first
+    unsupported-rule or step-failure. After all steps pass,
+    requires the final step's clause to be terminal ([(cl)] or
+    [(cl false)]) — otherwise the proof verified locally but
+    didn't reach the bottom derivation, and we surface that as a
+    [Step_failed] on the final step.
 
-    A parse error surfaces as a [Step_failed] with [step_id = ""]
-    and [rule = "<parse>"] so callers don't need a third failure
-    arm. *)
-let verify (ir : Ir.t) (proof_str : string) : verify_result =
-  let proof =
-    try Ok (Alethe.parse proof_str)
-    with Alethe.Parse_error msg -> Error msg
-  in
-  match proof with
-  | Error msg ->
-    Step_failed { step_id = ""; rule = "<parse>"; detail = msg }
-  | Ok p ->
-    let env = { ir; proven = Hashtbl.create 32 } in
-    (* Seed the environment with each assume's atom as a singleton
-       clause. Resolution premises can then reference assume IDs
-       directly. *)
-    List.iter
-      (fun (id, atom) -> Hashtbl.replace env.proven id [ atom ])
-      p.assumes;
-    let rec walk = function
-      | [] ->
-        (* Every step verified; check the final step's clause is
-           terminal. An empty step list is also a failure (no
-           proof at all). *)
-        (match List.rev p.steps with
-         | [] ->
+    Exposes the parsed-proof entry point so the cvc5 minter can
+    re-use one [Alethe.parse] result for the gate check and the
+    payload construction (rather than parsing twice). *)
+let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
+  let env = { ir; proven = Hashtbl.create 32 } in
+  List.iter
+    (fun (id, atom) -> Hashtbl.replace env.proven id [ atom ])
+    p.assumes;
+  let rec walk = function
+    | [] ->
+      (match List.rev p.steps with
+       | [] ->
+         Step_failed {
+           step_id = "";
+           rule = "<empty>";
+           detail = "proof has no steps";
+         }
+       | last :: _ ->
+         if is_terminal_clause last.clause then Verified
+         else
            Step_failed {
-             step_id = "";
-             rule = "<empty>";
-             detail = "proof has no steps";
-           }
-         | last :: _ ->
-           if is_terminal_clause last.clause then Verified
-           else
-             Step_failed {
-               step_id = last.id;
-               rule = last.rule;
-               detail = "final step does not derive (cl) or (cl false)";
-             })
-      | (step : Alethe.step) :: rest ->
-        (match check_step env step with
-         | Step_verified ->
-           Hashtbl.replace env.proven step.id step.clause;
-           walk rest
-         | Step_unsupported_rule rule ->
-           Unsupported_rule { rule; step_id = step.id }
-         | Step_failed { rule; detail } ->
-           Step_failed { step_id = step.id; rule; detail })
-    in
-    walk p.steps
+             step_id = last.id;
+             rule = last.rule;
+             detail = "final step does not derive (cl) or (cl false)";
+           })
+    | (step : Alethe.step) :: rest ->
+      (match check_step env step with
+       | Step_verified ->
+         Hashtbl.replace env.proven step.id step.clause;
+         walk rest
+       | Step_unsupported_rule rule ->
+         Unsupported_rule { rule; step_id = step.id }
+       | Step_failed { rule; detail } ->
+         Step_failed { step_id = step.id; rule; detail })
+  in
+  walk p.steps
+
+(** Top-level [verify]: parses [proof_str] then dispatches to
+    [verify_parsed]. A parse error surfaces as a [Step_failed]
+    with [step_id = ""] and [rule = "<parse>"] so callers don't
+    need a third failure arm. *)
+let verify (ir : Ir.t) (proof_str : string) : verify_result =
+  match Alethe.parse proof_str with
+  | exception Alethe.Parse_error msg ->
+    Step_failed { step_id = ""; rule = "<parse>"; detail = msg }
+  | p -> verify_parsed ir p
