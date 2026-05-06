@@ -128,6 +128,73 @@ let synthetic_la_generic_only_proof : string =
 
 (* --- whole-proof verifier tests ------------------------------------ *)
 
+(** Negative test: a malicious proof that smuggles in an extra
+    top-level [(assume a99 false)] not backed by any IR fact must
+    be rejected at validate time, before any step is walked.
+    Without the fix, this would have verified trivially since
+    [false] could be resolved with [(not false)] to derive (cl). *)
+let test_verify_rejects_unbacked_top_level_assume () =
+  let bogus_proof =
+    "(\n\
+     (assume a0 (>= x 3))\n\
+     (assume a1 (<= x 1))\n\
+     (assume a99 false)\n\
+     (step t1 (cl (not false)) :rule false)\n\
+     (step t2 (cl) :rule resolution :premises (t1 a99))\n\
+     )"
+  in
+  let ir = make_x_ir () in
+  match Tier3_alethe.verify ir bogus_proof with
+  | Verified ->
+    Alcotest.fail "expected validation rejection of unbacked top-level assume"
+  | Step_failed { rule = "<assume>"; _ } -> ()
+  | Step_failed { rule; step_id; detail } ->
+    Alcotest.fail (Printf.sprintf
+      "expected <assume> rejection, got Step_failed at %s (rule=%s): %s"
+      step_id rule detail)
+  | Unsupported_rule { rule; step_id } ->
+    Alcotest.fail (Printf.sprintf
+      "expected <assume> rejection, got Unsupported_rule(%s) at %s"
+      rule step_id)
+
+(** Unit test on [proven_in_scope]: a top-level step's id has no
+    enclosing subproof, so any subproof-local id is out of scope.
+    A step inside subproof [t1] sees [t1.*] but not [t22.*]. *)
+let test_proven_in_scope_filters_local_assumes () =
+  let ir = make_x_ir () in
+  let proven = Hashtbl.create 4 in
+  Hashtbl.replace proven "t1.a0" [ Alethe.Sexp.Atom "A_t1" ];
+  Hashtbl.replace proven "t22.a0" [ Alethe.Sexp.Atom "A_t22" ];
+  Hashtbl.replace proven "global" [ Alethe.Sexp.Atom "G" ];
+  let env : Tier3_alethe.env = {
+    ir; proven; assumes = Hashtbl.create 0;
+    last_step_clause = None;
+  } in
+  let mk_at id : Alethe.step = {
+    id; rule = "any"; clause = []; args = None;
+    premises = None; discharge = None;
+  } in
+  (* Top-level step: only globals in scope. *)
+  Alcotest.(check bool) "top-level sees global"
+    true (Option.is_some (Tier3_alethe.proven_in_scope env (mk_at "outer") "global"));
+  Alcotest.(check bool) "top-level cannot see t1.a0"
+    true (Option.is_none (Tier3_alethe.proven_in_scope env (mk_at "outer") "t1.a0"));
+  Alcotest.(check bool) "top-level cannot see t22.a0"
+    true (Option.is_none (Tier3_alethe.proven_in_scope env (mk_at "outer") "t22.a0"));
+  (* Step inside t1: sees t1.* and globals, not t22.*. *)
+  Alcotest.(check bool) "inside t1 sees t1.a0"
+    true (Option.is_some (Tier3_alethe.proven_in_scope env (mk_at "t1.t10") "t1.a0"));
+  Alcotest.(check bool) "inside t1 sees global"
+    true (Option.is_some (Tier3_alethe.proven_in_scope env (mk_at "t1.t10") "global"));
+  Alcotest.(check bool) "inside t1 cannot see t22.a0"
+    true (Option.is_none (Tier3_alethe.proven_in_scope env (mk_at "t1.t10") "t22.a0"));
+  (* Step inside t22 cannot see t1.a0 either (siblings). *)
+  Alcotest.(check bool) "inside t22 cannot see t1.a0"
+    true (Option.is_none (Tier3_alethe.proven_in_scope env (mk_at "t22.t5") "t1.a0"));
+  (* Deeply nested t1.t5.t10 sees t1.* and t1.t5.* but not t1.t6.*. *)
+  Alcotest.(check bool) "nested step sees outer-subproof assume"
+    true (Option.is_some (Tier3_alethe.proven_in_scope env (mk_at "t1.t5.t10") "t1.a0"))
+
 let test_verify_synthetic_la_generic_only () =
   let ir = make_x_ir () in
   match Tier3_alethe.verify ir synthetic_la_generic_only_proof with
@@ -1255,6 +1322,10 @@ let () =
     "whole-proof", [
       Alcotest.test_case "synthetic la_generic-only proof verifies"
         `Quick test_verify_synthetic_la_generic_only;
+      Alcotest.test_case "rejects unbacked top-level assume"
+        `Quick test_verify_rejects_unbacked_top_level_assume;
+      Alcotest.test_case "proven_in_scope filters local assumes by ID prefix"
+        `Quick test_proven_in_scope_filters_local_assumes;
       Alcotest.test_case "real cvc5 fixture verifies end-to-end"
         `Quick test_verify_real_fixture_verified;
       Alcotest.test_case "case-split fixture verifies end-to-end"

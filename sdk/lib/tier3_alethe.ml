@@ -51,6 +51,152 @@ type env = {
   mutable last_step_clause : Alethe.Sexp.t list option;
 }
 
+(** Translate an IR shell to its [Alethe.Sexp.t] form, mirroring
+    what cvc5 would emit when given this term as part of an
+    SMT-LIB assert. Symbol names are normalized to SMT-LIB
+    primitives ([HAdd.hAdd] → [+], [LE.le] → [<=], etc.) so the
+    output matches cvc5's atom shapes after named-ref expansion.
+    Returns [None] for shapes that have no SMT-LIB atomic form
+    (Forall, Lambda, Opaque), which can't appear as Tier 3
+    assume atoms anyway. *)
+let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
+  let arith_sym = function
+    | "HAdd.hAdd" | "Int.add" | "Add.add" | "+" -> "+"
+    | "HSub.hSub" | "Int.sub" | "Sub.sub" | "-" -> "-"
+    | "HMul.hMul" | "Int.mul" | "Mul.mul" | "*" -> "*"
+    | "Neg.neg" | "Int.neg" -> "-"
+    | "LE.le" | "<=" -> "<="
+    | "LT.lt" | "<"  -> "<"
+    | "GE.ge" | ">=" -> ">="
+    | "GT.gt" | ">"  -> ">"
+    | s -> s
+  in
+  let bin op a b =
+    match shell_to_sexp a, shell_to_sexp b with
+    | Some sa, Some sb -> Some (Alethe.Sexp.List [ Atom op; sa; sb ])
+    | _ -> None
+  in
+  match t with
+  | Var { name } -> Some (Atom name)
+  | Const { name = "True" } -> Some (Atom "true")
+  | Const { name = "False" } -> Some (Atom "false")
+  | Const { name } -> Some (Atom name)
+  | Num_lit { value; _ } -> Some (Atom value)
+  | And { left; right } -> bin "and" left right
+  | Or  { left; right } -> bin "or"  left right
+  | Implies { antecedent; consequent } ->
+    bin "=>" antecedent consequent
+  | Not { operand } ->
+    (match shell_to_sexp operand with
+     | Some s -> Some (List [ Atom "not"; s ])
+     | None -> None)
+  | Eq { left; right; _ } -> bin "=" left right
+  | App { symbol; args; _ } ->
+    let sargs = List.map shell_to_sexp args in
+    if List.for_all Option.is_some sargs then
+      Some (List (Atom (arith_sym symbol)
+                  :: List.map Option.get sargs))
+    else None
+  | _ -> None
+
+(** Canonicalize numeric atoms in a Sexp by parsing them as
+    rationals and re-emitting via [rat_to_string]. This makes
+    cvc5's [3/1] match the IR's [3], and [-3/1] match [-3], so
+    structural equality on normalized Sexps is the right
+    arithmetic-aware notion of equality between assume atoms and
+    IR-derived atoms. *)
+let rec normalize_numeric_atoms (s : Alethe.Sexp.t) : Alethe.Sexp.t =
+  match s with
+  | Atom a ->
+    (match Linear_arith.rat_of_string a with
+     | Some r -> Atom (Linear_arith.rat_to_string r)
+     | None -> Atom a)
+  | List xs -> List (List.map normalize_numeric_atoms xs)
+
+(** Validate top-level assumes against the IR. Each top-level
+    [(assume aN ATOM)] in cvc5's output must correspond to either
+    an IR hypothesis or the negated goal — otherwise a malicious
+    or buggy proof could simply [(assume a99 false)] and use it
+    as a global premise. We compute the expected atom set from
+    the IR's hypotheses plus [(not goal)] (omitting the negation
+    when [goal = False] since [(not False) = True] is trivially
+    valid and cvc5 doesn't bother asserting it), normalize both
+    sides, and require every top-level assume's atom to appear in
+    the expected set.
+
+    Subproof-local assumes (IDs with a dot) are out of scope here
+    — they're introduced by their enclosing [(anchor)] block and
+    don't need to back to an IR-level fact. *)
+let validate_top_level_assumes
+    (ir : Ir.t) (assumes : (string * Alethe.Sexp.t) list)
+  : (unit, string) result =
+  let expected =
+    let from_hyps =
+      List.filter_map (fun (h : Ir.hypothesis) ->
+        match shell_to_sexp h.shell with
+        | Some s -> Some (normalize_numeric_atoms s)
+        | None -> None) ir.context.hypotheses
+    in
+    (* Always include (not goal) — the SMT-LIB script asserts it
+       regardless of whether [(not goal)] is a tautology. cvc5
+       emits the corresponding [(assume aN (not <goal>))] step
+       even when the negation is trivially true (e.g.
+       [(not false)] for a [Const False] goal). *)
+    let neg_goal =
+      match shell_to_sexp ir.goal.shell with
+      | Some s -> [ normalize_numeric_atoms (List [ Atom "not"; s ]) ]
+      | None -> []
+    in
+    from_hyps @ neg_goal
+  in
+  let check_one (id, atom) =
+    (* Skip subproof-local assumes (dotted IDs). *)
+    match Alethe.enclosing_subproof_id id with
+    | Some _ -> Ok ()
+    | None ->
+      let normed = normalize_numeric_atoms atom in
+      if List.exists (fun e -> e = normed) expected then Ok ()
+      else
+        Error (Printf.sprintf
+          "top-level assume %s = %s does not match any IR hypothesis or \
+           the negated goal" id (Alethe.Sexp.to_string atom))
+  in
+  let rec walk = function
+    | [] -> Ok ()
+    | a :: rest ->
+      (match check_one a with
+       | Ok () -> walk rest
+       | Error msg -> Error msg)
+  in
+  walk assumes
+
+(** True iff [id] is in scope at [step.id]. An ID with no dot is
+    "global" and always in scope. An ID like [t1.a0] is local to
+    subproof [t1] and is in scope only when the current step's ID
+    has [t1.] as a prefix (so [t1.t10], [t1.t5.t8], etc. can see
+    [t1.a0]; [t22.t5] cannot). The scope check rules out the most
+    pernicious bug class identified by the review: a malicious or
+    buggy proof citing a subproof-local assume from outer scope or
+    a sibling subproof. *)
+let id_in_scope_of (step_id : string) (id : string) : bool =
+  match Alethe.enclosing_subproof_id id with
+  | None -> true
+  | Some encl ->
+    let prefix = encl ^ "." in
+    let plen = String.length prefix in
+    String.length step_id >= plen
+    && String.sub step_id 0 plen = prefix
+
+(** Scope-aware lookup. Returns the clause keyed by [id] in
+    [env.proven] only if [id] is in [step]'s scope. Wraps every
+    rule's premise/discharge lookup so a top-level step cannot
+    cite a subproof-local assume, and a step in subproof [t22]
+    cannot cite an assume from sibling [t1]. *)
+let proven_in_scope (env : env) (step : Alethe.step) (id : string)
+  : Alethe.Sexp.t list option =
+  if id_in_scope_of step.id id then Hashtbl.find_opt env.proven id
+  else None
+
 (** Recover the set of local-assume atoms in scope at [step.id].
     A subproof body opens a fresh assume scope: assumes parsed
     inside an [(anchor :step ID)] block have IDs prefixed with
@@ -235,10 +381,10 @@ let check_trans (env : env) (step : Alethe.step) : step_result =
       Step_failed { rule = "trans"; detail = "no premises" }
     else
       let lookup id =
-        match Hashtbl.find_opt env.proven id with
+        match proven_in_scope env step id with
         | Some [ List [ Atom "="; a; b ] ] -> Ok (a, b)
         | Some _ -> Error "premise not a singleton equality"
-        | None -> Error ("unknown premise: " ^ id)
+        | None -> Error ("unknown or out-of-scope premise: " ^ id)
       in
       let rec walk expected_a = function
         | [] -> Step_failed { rule = "trans"; detail = "empty premise list" }
@@ -296,7 +442,7 @@ let check_cong (env : env) (step : Alethe.step) : step_result =
       let rec walk = function
         | [], [], [] -> Step_verified
         | a :: arest, b :: brest, p :: prest ->
-          (match Hashtbl.find_opt env.proven p with
+          (match proven_in_scope env step p with
            | Some [ List [ Atom "="; pa; pb ] ]
              when sexp_equal pa a && sexp_equal pb b ->
              walk (arest, brest, prest)
@@ -308,7 +454,7 @@ let check_cong (env : env) (step : Alethe.step) : step_result =
            | None ->
              Step_failed {
                rule = "cong";
-               detail = "unknown premise: " ^ p;
+               detail = "unknown or out-of-scope premise: " ^ p;
              })
         | _ ->
           Step_failed {
@@ -662,7 +808,7 @@ let check_implies (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises, step.clause with
   | [ p ], [ List [ Atom "not"; a_concl ]; b_concl ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | Some [ List [ Atom "=>"; a_prem; b_prem ] ]
        when sexp_equal a_prem a_concl && sexp_equal b_prem b_concl ->
        Step_verified
@@ -690,7 +836,7 @@ let check_equiv1 (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises, step.clause with
   | [ p ], [ List [ Atom "not"; a_concl ]; b_concl ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | Some [ List [ Atom "="; a_prem; b_prem ] ]
        when sexp_equal a_prem a_concl && sexp_equal b_prem b_concl ->
        Step_verified
@@ -723,16 +869,17 @@ let check_resolution (env : env) (step : Alethe.step) : step_result =
     Step_failed { rule = "resolution"; detail = "no premises" }
   else
     let unknown = List.filter
-      (fun id -> not (Hashtbl.mem env.proven id)) premises
+      (fun id -> Option.is_none (proven_in_scope env step id)) premises
     in
     if unknown <> [] then
       Step_failed {
         rule = "resolution";
-        detail = "unknown premises: " ^ String.concat ", " unknown;
+        detail = "unknown or out-of-scope premises: "
+                 ^ String.concat ", " unknown;
       }
     else
       let premise_lits = List.concat_map
-        (fun id -> Hashtbl.find env.proven id) premises
+        (fun id -> Option.get (proven_in_scope env step id)) premises
       in
       let conclusion_lits = step.clause in
       let rec subtract removed = function
@@ -860,7 +1007,7 @@ let check_reordering (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises with
   | [ p ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | None ->
        Step_failed {
          rule = "reordering";
@@ -888,7 +1035,7 @@ let check_contraction (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises with
   | [ p ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | None ->
        Step_failed {
          rule = "contraction";
@@ -916,7 +1063,7 @@ let check_not_and (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises with
   | [ p ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | None ->
        Step_failed { rule = "not_and"; detail = "unknown premise: " ^ p }
      | Some [ List [ Atom "not"; List (Atom "and" :: conjuncts) ] ] ->
@@ -944,7 +1091,7 @@ let check_or (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises with
   | [ p ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | None ->
        Step_failed { rule = "or"; detail = "unknown premise: " ^ p }
      | Some [ List (Atom "or" :: disjuncts) ] ->
@@ -967,7 +1114,7 @@ let check_symm (env : env) (step : Alethe.step) : step_result =
   let premises = Option.value step.premises ~default:[] in
   match premises, step.clause with
   | [ p ], [ List [ Atom "="; b'; a' ] ] ->
-    (match Hashtbl.find_opt env.proven p with
+    (match proven_in_scope env step p with
      | Some [ List [ Atom "="; a; b ] ]
        when sexp_equal a a' && sexp_equal b b' ->
        Step_verified
@@ -1008,11 +1155,23 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
   if discharge = [] then
     Step_failed { rule = "subproof"; detail = "no :discharge list" }
   else
+    (* Subproof close [step.id = T] discharges assumes whose
+       enclosing subproof is exactly [T] — i.e., assumes parsed
+       inside [(anchor :step T)] before any further nested anchor.
+       The general [proven_in_scope] check would reject these
+       since [step.id = T] doesn't itself sit inside subproof [T];
+       this lookup applies the close-step-specific scope rule. *)
     let lookup_atom id =
-      match Hashtbl.find_opt env.proven id with
-      | Some [ atom ] -> Ok atom
-      | Some _ -> Error ("discharged id " ^ id ^ " is not a singleton clause")
-      | None -> Error ("unknown discharged assume: " ^ id)
+      match Alethe.enclosing_subproof_id id with
+      | Some encl when String.equal encl step.id ->
+        (match Hashtbl.find_opt env.proven id with
+         | Some [ atom ] -> Ok atom
+         | Some _ ->
+           Error ("discharged id " ^ id ^ " is not a singleton clause")
+         | None -> Error ("unknown discharged assume: " ^ id))
+      | _ ->
+        Error ("discharged id " ^ id
+               ^ " is not local to this subproof's immediate body")
     in
     let rec collect_atoms acc = function
       | [] -> Ok (List.rev acc)
@@ -1177,12 +1336,26 @@ let is_terminal_clause (clause : Alethe.Sexp.t list) : bool =
     re-use one [Alethe.parse] result for the gate check and the
     payload construction (rather than parsing twice). *)
 let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
+  match validate_top_level_assumes ir p.assumes with
+  | Error msg ->
+    Step_failed { step_id = ""; rule = "<assume>"; detail = msg }
+  | Ok () ->
   let env = {
     ir;
     proven = Hashtbl.create 32;
     assumes = Hashtbl.create 8;
     last_step_clause = None;
   } in
+  (* Seed env with assumes. Top-level assumes (no dot in ID) are
+     globally in scope — we've just validated they match an IR
+     fact. Subproof-local assumes (dotted ID) are also seeded
+     (the parser collected them all), but [proven_in_scope] /
+     [local_assume_atoms] gate every lookup by the step's ID
+     prefix, so a step in subproof T cannot see assumes from
+     sibling subproof U even though both are in [env.assumes].
+     [check_subproof] additionally strips inner-scope entries
+     after discharge, so an outer step run after the close gets
+     a clean env. *)
   List.iter (fun (id, atom) ->
     Hashtbl.replace env.proven id [ atom ];
     Hashtbl.replace env.assumes id atom)
