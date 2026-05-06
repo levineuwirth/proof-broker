@@ -273,7 +273,7 @@ let match_disjunct_index
            let res =
              let module L = Linear_arith in
              let inv (r : L.rational) =
-               if r.num = 0 then None else Some (L.mk_rat r.den r.num)
+               if L.rat_is_zero r then None else Some (L.rat_inv r)
              in
              let scale_factor (f1 : L.t) (f2 : L.t) : L.rational option =
                match f2.coeffs, f1.coeffs with

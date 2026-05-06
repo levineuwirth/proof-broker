@@ -161,11 +161,6 @@ let compile_neg_literal ?(fragment = "LRA") (lit : S.t)
 
 (* --- scalar-multiple matching ---------------------------------------- *)
 
-(** Multiplicative inverse of a rational. *)
-let rat_inv (r : L.rational) : L.rational =
-  if r.num = 0 then invalid_arg "Alethe_farkas.rat_inv: zero"
-  else L.mk_rat r.den r.num
-
 (** Find the rational [r] such that [f1 = r * f2], or [None] when
     no such [r] exists. The canonical form of [Linear_arith.t]
     (sorted assoc list, no zero entries) makes this a straight
@@ -178,7 +173,7 @@ let scale_factor (f1 : L.t) (f2 : L.t) : L.rational option =
     if L.rat_is_zero f2.const then
       if L.rat_is_zero f1.const then Some L.rat_one else None
     else if L.rat_is_zero f1.const then Some L.rat_zero
-    else Some (L.rat_mul f1.const (rat_inv f2.const))
+    else Some (L.rat_mul f1.const (L.rat_inv f2.const))
   | [], _ :: _ ->
     (* f2 is constant, f1 has variables — not a scalar multiple. *)
     None
@@ -186,7 +181,7 @@ let scale_factor (f1 : L.t) (f2 : L.t) : L.rational option =
     (match List.assoc_opt n2 f1.coeffs with
      | None -> None
      | Some c1 ->
-       let r = L.rat_mul c1 (rat_inv c2) in
+       let r = L.rat_mul c1 (L.rat_inv c2) in
        if L.scale r f2 = f1 then Some r else None)
 
 (** Match a compiled form from cvc5 against one from the IR. Both

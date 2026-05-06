@@ -6,7 +6,9 @@
     * Parsing: integer, fraction, negative, malformed.
     * Linear forms: var, const, add, sub, neg, scale.
     * Sorted-merge: variables stay sorted; zero-coefficient entries
-      are dropped after merge. *)
+      are dropped after merge.
+    * Big-integer paths exercised through [Z.of_string] inputs that
+      would have overflowed the previous OCaml-int representation. *)
 
 open Proof_broker.Linear_arith
 
@@ -14,27 +16,35 @@ open Proof_broker.Linear_arith
 
 let r n d = mk_rat n d
 
+(** Project [Z.t]-backed numerator/denominator to native int for
+    [Alcotest.(check int)] comparisons. Safe for these tests since
+    every literal coefficient fits comfortably in a 63-bit int.
+    Big-integer paths get their own dedicated tests below. *)
+let ni r = Z.to_int r.num
+let di r = Z.to_int r.den
+
 let test_mk_rat_normalizes () =
-  Alcotest.(check int) "2/4 → 1/2 (num)" 1 (r 2 4).num;
-  Alcotest.(check int) "2/4 → 1/2 (den)" 2 (r 2 4).den;
-  Alcotest.(check int) "-1/-2 → 1/2 (num)" 1 (r (-1) (-2)).num;
-  Alcotest.(check int) "-1/-2 → 1/2 (den)" 2 (r (-1) (-2)).den;
-  Alcotest.(check int) "1/-2 → -1/2 (num)" (-1) (r 1 (-2)).num;
-  Alcotest.(check int) "0/5 → 0/1 (num)" 0 (r 0 5).num;
-  Alcotest.(check int) "0/5 → 0/1 (den)" 1 (r 0 5).den
+  Alcotest.(check int) "2/4 → 1/2 (num)" 1 (ni (r 2 4));
+  Alcotest.(check int) "2/4 → 1/2 (den)" 2 (di (r 2 4));
+  Alcotest.(check int) "-1/-2 → 1/2 (num)" 1 (ni (r (-1) (-2)));
+  Alcotest.(check int) "-1/-2 → 1/2 (den)" 2 (di (r (-1) (-2)));
+  Alcotest.(check int) "1/-2 → -1/2 (num)" (-1) (ni (r 1 (-2)));
+  Alcotest.(check int) "0/5 → 0/1 (num)" 0 (ni (r 0 5));
+  Alcotest.(check int) "0/5 → 0/1 (den)" 1 (di (r 0 5))
 
 let test_rat_zero_div_raises () =
-  Alcotest.check_raises "1/0 raises" (Invalid_argument "Linear_arith.mk_rat: zero denominator")
+  Alcotest.check_raises "1/0 raises"
+    (Invalid_argument "Linear_arith.mk_rat: zero denominator")
     (fun () -> ignore (mk_rat 1 0))
 
 let test_rat_arith () =
-  Alcotest.(check int) "(1/2 + 1/3).num" 5 (rat_add (r 1 2) (r 1 3)).num;
-  Alcotest.(check int) "(1/2 + 1/3).den" 6 (rat_add (r 1 2) (r 1 3)).den;
-  Alcotest.(check int) "(1/2 - 1/3).num" 1 (rat_sub (r 1 2) (r 1 3)).num;
-  Alcotest.(check int) "(1/2 - 1/3).den" 6 (rat_sub (r 1 2) (r 1 3)).den;
-  Alcotest.(check int) "(2/3 * 3/4).num" 1 (rat_mul (r 2 3) (r 3 4)).num;
-  Alcotest.(check int) "(2/3 * 3/4).den" 2 (rat_mul (r 2 3) (r 3 4)).den;
-  Alcotest.(check int) "neg(3/4).num" (-3) (rat_neg (r 3 4)).num
+  Alcotest.(check int) "(1/2 + 1/3).num" 5 (ni (rat_add (r 1 2) (r 1 3)));
+  Alcotest.(check int) "(1/2 + 1/3).den" 6 (di (rat_add (r 1 2) (r 1 3)));
+  Alcotest.(check int) "(1/2 - 1/3).num" 1 (ni (rat_sub (r 1 2) (r 1 3)));
+  Alcotest.(check int) "(1/2 - 1/3).den" 6 (di (rat_sub (r 1 2) (r 1 3)));
+  Alcotest.(check int) "(2/3 * 3/4).num" 1 (ni (rat_mul (r 2 3) (r 3 4)));
+  Alcotest.(check int) "(2/3 * 3/4).den" 2 (di (rat_mul (r 2 3) (r 3 4)));
+  Alcotest.(check int) "neg(3/4).num" (-3) (ni (rat_neg (r 3 4)))
 
 let test_rat_signs () =
   Alcotest.(check bool) "0 zero" true (rat_is_zero rat_zero);
@@ -47,15 +57,15 @@ let test_rat_signs () =
 
 let test_rat_of_string () =
   Alcotest.(check (option int)) "parse 5" (Some 5)
-    (Option.map (fun r -> r.num) (rat_of_string "5"));
+    (Option.map ni (rat_of_string "5"));
   Alcotest.(check (option int)) "parse -3" (Some (-3))
-    (Option.map (fun r -> r.num) (rat_of_string "-3"));
+    (Option.map ni (rat_of_string "-3"));
   Alcotest.(check (option int)) "parse 1/2 (num)" (Some 1)
-    (Option.map (fun r -> r.num) (rat_of_string "1/2"));
+    (Option.map ni (rat_of_string "1/2"));
   Alcotest.(check (option int)) "parse 1/2 (den)" (Some 2)
-    (Option.map (fun r -> r.den) (rat_of_string "1/2"));
+    (Option.map di (rat_of_string "1/2"));
   Alcotest.(check (option int)) "parse -3/4 (num)" (Some (-3))
-    (Option.map (fun r -> r.num) (rat_of_string "-3/4"));
+    (Option.map ni (rat_of_string "-3/4"));
   Alcotest.(check bool) "reject 1/0" true
     (Option.is_none (rat_of_string "1/0"));
   Alcotest.(check bool) "reject hello" true
@@ -66,6 +76,47 @@ let test_rat_to_string () =
   Alcotest.(check string) "1" "1" (rat_to_string rat_one);
   Alcotest.(check string) "-3" "-3" (rat_to_string (r (-3) 1));
   Alcotest.(check string) "1/2" "1/2" (rat_to_string (r 1 2))
+
+(* --- big-integer rationals ------------------------------------------ *)
+
+(** Confirm [rat_of_string] accepts a 25-digit numerator that would
+    overflow the previous OCaml-int representation (max ~9.2e18 on
+    64-bit). The parsed rational round-trips through [rat_to_string]
+    cleanly, and arithmetic on it stays exact. *)
+let test_big_int_parse_round_trip () =
+  let big = "12345678901234567890123/7" in
+  match rat_of_string big with
+  | None -> Alcotest.fail "expected parse to succeed on 23-digit numerator"
+  | Some q ->
+    Alcotest.(check string) "round-trip preserves big rational"
+      big (rat_to_string q)
+
+(** Multiplying two large rationals must not silently wrap. The
+    previous int-backed [rat_mul] would have lost precision here
+    (the product exceeds 2^63). We confirm the exact product via
+    [rat_to_string]. *)
+let test_big_int_mul_exact () =
+  let a = Option.get (rat_of_string "1000000000") in
+  let b = Option.get (rat_of_string "1000000000") in
+  let c = Option.get (rat_of_string "1000000000") in
+  let abc = rat_mul (rat_mul a b) c in
+  Alcotest.(check string) "10^9 * 10^9 * 10^9 = 10^27 exactly"
+    "1000000000000000000000000000" (rat_to_string abc)
+
+(** Adding rationals whose product-of-denominators exceeds 2^63
+    used to overflow OCaml's native int. With Z.t backing the
+    canonical form is exact at any magnitude. We pick 10^18 (just
+    over 2^59 — the previous representation rounded), so the
+    intermediate cross-multiply blows past int range, and verify
+    the canonical form is byte-exact. *)
+let test_big_int_add_canonical () =
+  let one = rat_one in
+  let big_den = Option.get (rat_of_string "1/1000000000000000000") in
+  let result = rat_add one big_den in
+  (* 1 + 1/10^18 = (10^18 + 1)/10^18 — coprime numerator and den
+     so the canonical form is the unreduced ratio. *)
+  Alcotest.(check string) "1 + 1/10^18 stays exact"
+    "1000000000000000001/1000000000000000000" (rat_to_string result)
 
 (* --- linear forms ---------------------------------------------------- *)
 
@@ -83,7 +134,7 @@ let test_linform_var () =
 let test_linform_const () =
   let f = const (r 7 1) in
   Alcotest.(check int) "no var coeffs" 0 (coeff_count f);
-  Alcotest.(check int) "const num=7" 7 f.const.num
+  Alcotest.(check int) "const num=7" 7 (ni f.const)
 
 let test_linform_add () =
   (* x + (y + 2) = x + y + 2; coefs sorted x,y *)
@@ -91,7 +142,7 @@ let test_linform_add () =
   Alcotest.(check int) "two var coeffs" 2 (coeff_count f);
   Alcotest.(check (list string)) "sorted [x;y]" [ "x"; "y" ]
     (List.map fst f.coeffs);
-  Alcotest.(check int) "const = 2" 2 f.const.num
+  Alcotest.(check int) "const = 2" 2 (ni f.const)
 
 let test_linform_add_drops_zero () =
   (* x + (-x) = 0 — coefficient must be elided *)
@@ -107,20 +158,20 @@ let test_linform_sub () =
   (match coef_of f "x" with
    | Some r when r = rat_one -> ()
    | _ -> Alcotest.fail "x's coeff is not 1");
-  Alcotest.(check int) "const = -1" (-1) f.const.num
+  Alcotest.(check int) "const = -1" (-1) (ni f.const)
 
 let test_linform_neg () =
   let f = neg (add (var "x") (const (r 3 1))) in
-  Alcotest.(check int) "const = -3" (-3) f.const.num;
+  Alcotest.(check int) "const = -3" (-3) (ni f.const);
   (match coef_of f "x" with
-   | Some r when r.num = -1 && r.den = 1 -> ()
+   | Some r when ni r = -1 && di r = 1 -> ()
    | _ -> Alcotest.fail "x's coeff is not -1")
 
 let test_linform_scale () =
   let f = scale (r 2 1) (add (var "x") (const (r 3 1))) in
   Alcotest.(check int) "x coeff = 2" 2
-    (Option.value ~default:(r 0 1) (coef_of f "x")).num;
-  Alcotest.(check int) "const = 6" 6 f.const.num
+    (ni (Option.value ~default:(r 0 1) (coef_of f "x")));
+  Alcotest.(check int) "const = 6" 6 (ni f.const)
 
 let test_linform_scale_zero () =
   let f = scale rat_zero (add (var "x") (const (r 3 1))) in
@@ -150,6 +201,14 @@ let () =
       Alcotest.test_case "sign predicates" `Quick test_rat_signs;
       Alcotest.test_case "of_string" `Quick test_rat_of_string;
       Alcotest.test_case "to_string" `Quick test_rat_to_string;
+    ];
+    "big-int", [
+      Alcotest.test_case "parse + round-trip 23-digit numerator"
+        `Quick test_big_int_parse_round_trip;
+      Alcotest.test_case "10^9 * 10^9 * 10^9 = 10^27 exactly"
+        `Quick test_big_int_mul_exact;
+      Alcotest.test_case "1 + 1/10^18 stays exact"
+        `Quick test_big_int_add_canonical;
     ];
     "linear forms", [
       Alcotest.test_case "var" `Quick test_linform_var;

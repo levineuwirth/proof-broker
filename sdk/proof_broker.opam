@@ -8,6 +8,7 @@ depends: [
   "dune" {>= "3.0"}
   "yojson" {>= "3.0"}
   "digestif" {>= "1.0"}
+  "zarith" {>= "1.13"}
   "alcotest" {with-test}
   "odoc" {with-doc}
 ]

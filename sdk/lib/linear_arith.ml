@@ -9,68 +9,95 @@
 
     Rationals are stored canonically: positive denominator, gcd of
     [|num|] and [den] is one, and [zero] is the unique representation
-    of 0. Equality is structural.
+    of 0. Equality is structural — Zarith's [Z.t] interoperates
+    cleanly with OCaml's polymorphic [(=)].
 
-    Overflow. We use OCaml's native [int], which on 64-bit is 63-bit
-    signed. Coefficients in real Farkas certificates are typically
-    small integers; pathological certificates with huge numerators
-    can overflow. A future graduation to Zarith would lift this
-    limitation; for now [Linear_arith.add]/[mul] silently wrap on
-    overflow, and Farkas verification of overflowing certificates
-    will misreport. Acceptable for v1. *)
+    Numerator and denominator are arbitrary-precision integers
+    ([Zarith.Z.t]). Real Farkas certificates almost always use small
+    coefficients, but pathological inputs (e.g. a synthetic IR with
+    a huge constant, or a backend that scales its witness through
+    a 100-digit multiplier) used to overflow OCaml's 63-bit native
+    int and silently misreport. With Z.t backing, [add], [mul], and
+    [scale] are exact at any magnitude. The price is a small
+    constant-factor allocation overhead, which is below noise for
+    Farkas-shaped certs (a few hundred operations per cert). *)
 
 (* --- rationals ------------------------------------------------------- *)
 
-type rational = { num : int; den : int }
+type rational = { num : Z.t; den : Z.t }
 
-let rec gcd a b = if b = 0 then a else gcd b (a mod b)
+(** Internal canonicalizer: ensure den is positive, drop the gcd of
+    |num| and den, and normalize the representation of zero to
+    [{num = 0; den = 1}]. Raises [Invalid_argument] on a zero
+    denominator. *)
+let mk_rat_z (n : Z.t) (d : Z.t) : rational =
+  if Z.equal d Z.zero then
+    invalid_arg "Linear_arith.mk_rat: zero denominator";
+  let n, d = if Z.sign d < 0 then (Z.neg n, Z.neg d) else (n, d) in
+  if Z.equal n Z.zero then { num = Z.zero; den = Z.one }
+  else
+    let g = Z.gcd (Z.abs n) d in
+    { num = Z.div n g; den = Z.div d g }
 
-let mk_rat n d =
-  if d = 0 then invalid_arg "Linear_arith.mk_rat: zero denominator";
-  let n, d = if d < 0 then (-n, -d) else (n, d) in
-  let g = gcd (abs n) d in
-  if g = 0 then { num = 0; den = 1 }
-  else { num = n / g; den = d / g }
+(** Convenience constructor from native int operands. Most callers
+    use small integer coefficients ([mk_rat 3 1], [mk_rat (-1) 2]),
+    so keeping the int-input signature avoids a [Z.of_int] sprinkle
+    at every call site. Big-integer construction (e.g. parsing a
+    100-digit numerator from JSON) goes through [mk_rat_z]. *)
+let mk_rat (n : int) (d : int) : rational =
+  mk_rat_z (Z.of_int n) (Z.of_int d)
 
-let rat_zero = { num = 0; den = 1 }
-let rat_one = { num = 1; den = 1 }
+let rat_zero = { num = Z.zero; den = Z.one }
+let rat_one = { num = Z.one; den = Z.one }
 
-let rat_neg r = { r with num = -r.num }
+let rat_neg (r : rational) : rational = { r with num = Z.neg r.num }
 
-let rat_add a b =
-  mk_rat (a.num * b.den + b.num * a.den) (a.den * b.den)
+let rat_add (a : rational) (b : rational) : rational =
+  mk_rat_z
+    (Z.add (Z.mul a.num b.den) (Z.mul b.num a.den))
+    (Z.mul a.den b.den)
 
-let rat_sub a b = rat_add a (rat_neg b)
+let rat_sub (a : rational) (b : rational) : rational = rat_add a (rat_neg b)
 
-let rat_mul a b =
-  mk_rat (a.num * b.num) (a.den * b.den)
+let rat_mul (a : rational) (b : rational) : rational =
+  mk_rat_z (Z.mul a.num b.num) (Z.mul a.den b.den)
 
-let rat_is_zero r = r.num = 0
-let rat_is_pos r = r.num > 0
-let rat_is_neg r = r.num < 0
-let rat_is_nonneg r = r.num >= 0
+(** Multiplicative inverse. Raises on zero, since [1/0] is undefined
+    and surfacing the error eagerly is preferable to silently
+    producing a malformed [{num = 1; den = 0}]. Used by the
+    Farkas-witness scaling step in [Alethe_farkas] and [Verifier]
+    to recover an IR coefficient from a cvc5-side scale factor. *)
+let rat_inv (r : rational) : rational =
+  if Z.equal r.num Z.zero then invalid_arg "Linear_arith.rat_inv: zero"
+  else mk_rat_z r.den r.num
 
-let rat_to_string r =
-  if r.den = 1 then string_of_int r.num
-  else Printf.sprintf "%d/%d" r.num r.den
+let rat_is_zero (r : rational) : bool = Z.equal r.num Z.zero
+let rat_is_pos (r : rational) : bool = Z.sign r.num > 0
+let rat_is_neg (r : rational) : bool = Z.sign r.num < 0
+let rat_is_nonneg (r : rational) : bool = Z.sign r.num >= 0
+
+let rat_to_string (r : rational) : string =
+  if Z.equal r.den Z.one then Z.to_string r.num
+  else Printf.sprintf "%s/%s" (Z.to_string r.num) (Z.to_string r.den)
 
 (** Parse a rational from a decimal string ["1"], ["-3"], ["1/2"],
     ["-3/4"]. Returns [None] on any parse failure (including a zero
     denominator). Whitespace is not stripped — callers should
-    pre-trim. *)
+    pre-trim. Numerator and denominator can be arbitrarily large
+    (Zarith [Z.of_string]); a 100-digit literal parses cleanly. *)
 let rat_of_string (s : string) : rational option =
   match String.index_opt s '/' with
   | None ->
-    (try Some (mk_rat (int_of_string s) 1)
+    (try Some (mk_rat_z (Z.of_string s) Z.one)
      with _ -> None)
   | Some i ->
     let n_str = String.sub s 0 i in
     let d_str = String.sub s (i + 1) (String.length s - i - 1) in
     (try
-       let n_i = int_of_string n_str in
-       let d_i = int_of_string d_str in
-       if d_i = 0 then None
-       else Some (mk_rat n_i d_i)
+       let n = Z.of_string n_str in
+       let d = Z.of_string d_str in
+       if Z.equal d Z.zero then None
+       else Some (mk_rat_z n d)
      with _ -> None)
 
 (* --- linear forms ---------------------------------------------------- *)

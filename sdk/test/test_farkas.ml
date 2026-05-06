@@ -55,7 +55,7 @@ let test_linearize_num_lit () =
   match Farkas.linearize (Ir.Num_lit { value = "42"; ty = "Int" }) with
   | Some f ->
     Alcotest.(check bool) "is constant" true (L.is_constant f);
-    Alcotest.(check int) "const=42" 42 f.const.num
+    Alcotest.(check int) "const=42" 42 (Z.to_int f.const.num)
   | None -> Alcotest.fail "NumLit 42 not linear"
 
 let test_linearize_add () =
@@ -65,9 +65,9 @@ let test_linearize_add () =
   } in
   match Farkas.linearize t with
   | Some f ->
-    Alcotest.(check int) "const=5" 5 f.const.num;
+    Alcotest.(check int) "const=5" 5 (Z.to_int f.const.num);
     Alcotest.(check int) "x coef=1" 1
-      (List.assoc "x" f.coeffs).num
+      ((Z.to_int (List.assoc "x" f.coeffs).num))
   | None -> Alcotest.fail "x + 5 not linear"
 
 let test_linearize_const_mul () =
@@ -78,7 +78,7 @@ let test_linearize_const_mul () =
   match Farkas.linearize t with
   | Some f ->
     Alcotest.(check int) "x coef=3" 3
-      (List.assoc "x" f.coeffs).num
+      ((Z.to_int (List.assoc "x" f.coeffs).num))
   | None -> Alcotest.fail "3 * x not linear"
 
 let test_linearize_var_mul_var_rejected () =
@@ -108,7 +108,7 @@ let test_compile_le () =
   | Ok (Le f) ->
     (* 0 <= x  ⇒  -x <= 0  ⇒  form = -x *)
     Alcotest.(check int) "x coef = -1" (-1)
-      (List.assoc "x" f.coeffs).num;
+      ((Z.to_int (List.assoc "x" f.coeffs).num));
     Alcotest.(check bool) "no const" true (L.rat_is_zero f.const)
   | _ -> Alcotest.fail "expected Le compilation"
 
@@ -124,9 +124,9 @@ let test_compile_eq () =
   match Farkas.compile_hypothesis h with
   | Ok (Eq f) ->
     (* n + m = 10  ⇒  form = n + m - 10 *)
-    Alcotest.(check int) "const = -10" (-10) f.const.num;
-    Alcotest.(check int) "n coef = 1" 1 (List.assoc "n" f.coeffs).num;
-    Alcotest.(check int) "m coef = 1" 1 (List.assoc "m" f.coeffs).num
+    Alcotest.(check int) "const = -10" (-10) (Z.to_int f.const.num);
+    Alcotest.(check int) "n coef = 1" 1 (Z.to_int (List.assoc "n" f.coeffs).num);
+    Alcotest.(check int) "m coef = 1" 1 (Z.to_int (List.assoc "m" f.coeffs).num)
   | _ -> Alcotest.fail "expected Eq compilation"
 
 let test_compile_not_le_int () =
@@ -139,9 +139,9 @@ let test_compile_not_le_int () =
   } in
   match Farkas.compile_hypothesis h with
   | Ok (Le f) ->
-    Alcotest.(check int) "const = 11" 11 f.const.num;
+    Alcotest.(check int) "const = 11" 11 (Z.to_int f.const.num);
     Alcotest.(check int) "n coef = -1" (-1)
-      (List.assoc "n" f.coeffs).num
+      (Z.to_int (List.assoc "n" f.coeffs).num)
   | _ -> Alcotest.fail "expected Le compilation for ¬(n <= 10)"
 
 let test_compile_lt () =
@@ -152,8 +152,8 @@ let test_compile_lt () =
   } in
   match Farkas.compile_hypothesis h with
   | Ok (Le f) ->
-    Alcotest.(check int) "const = -9" (-9) f.const.num;
-    Alcotest.(check int) "n coef = 1" 1 (List.assoc "n" f.coeffs).num
+    Alcotest.(check int) "const = -9" (-9) (Z.to_int f.const.num);
+    Alcotest.(check int) "n coef = 1" 1 (Z.to_int (List.assoc "n" f.coeffs).num)
   | _ -> Alcotest.fail "expected Le compilation for n < 10"
 
 let test_compile_lt_lra () =
@@ -164,8 +164,8 @@ let test_compile_lt_lra () =
   } in
   match Farkas.compile_hypothesis ~fragment:"LRA" h with
   | Ok (Lt f) ->
-    Alcotest.(check int) "const = -10" (-10) f.const.num;
-    Alcotest.(check int) "n coef = 1" 1 (List.assoc "n" f.coeffs).num
+    Alcotest.(check int) "const = -10" (-10) (Z.to_int f.const.num);
+    Alcotest.(check int) "n coef = 1" 1 (Z.to_int (List.assoc "n" f.coeffs).num)
   | _ -> Alcotest.fail "expected Lt compilation for n < 10 under LRA"
 
 let test_compile_not_le_lra () =
@@ -178,9 +178,9 @@ let test_compile_not_le_lra () =
   } in
   match Farkas.compile_hypothesis ~fragment:"LRA" h with
   | Ok (Lt f) ->
-    Alcotest.(check int) "const = 10" 10 f.const.num;
+    Alcotest.(check int) "const = 10" 10 (Z.to_int f.const.num);
     Alcotest.(check int) "n coef = -1" (-1)
-      (List.assoc "n" f.coeffs).num
+      (Z.to_int (List.assoc "n" f.coeffs).num)
   | _ -> Alcotest.fail "expected Lt compilation for ¬(n <= 10) under LRA"
 
 let test_compile_not_lt_lra () =
@@ -193,9 +193,9 @@ let test_compile_not_lt_lra () =
   } in
   match Farkas.compile_hypothesis ~fragment:"LRA" h with
   | Ok (Le f) ->
-    Alcotest.(check int) "const = 10" 10 f.const.num;
+    Alcotest.(check int) "const = 10" 10 (Z.to_int f.const.num);
     Alcotest.(check int) "n coef = -1" (-1)
-      (List.assoc "n" f.coeffs).num
+      (Z.to_int (List.assoc "n" f.coeffs).num)
   | _ -> Alcotest.fail "expected Le compilation for ¬(n < 10) under LRA"
 
 let test_compile_unsupported () =
