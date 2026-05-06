@@ -289,6 +289,49 @@ let test_emit_logic_lra () =
   | Error e ->
     Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
 
+let test_emit_logic_lra_from_real_literal_only () =
+  (* Closed Real-arithmetic goal: no free vars at all, but a Real
+     numeric literal. pick_logic must scan term types and select
+     QF_LRA — the previous free-var-only rule would have emitted
+     QF_LIA and either trip an ill-sorted reject or quietly run
+     the goal under integer semantics. *)
+  let half = Ir.Num_lit { value = "1/2"; ty = "Real" } in
+  let one = Ir.Num_lit { value = "1"; ty = "Real" } in
+  let ir = make_ir
+    ~free_vars:[]
+    (Ir.App {
+      symbol = "LE.le"; type_args = [];
+      args = [ half; one ];
+    })
+  in
+  match Smtlib.emit ir with
+  | Ok script ->
+    Alcotest.(check string) "closed Real-literal goal picks QF_LRA"
+      "QF_LRA" script.logic
+  | Error e ->
+    Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
+let test_emit_logic_lra_from_real_eq_only () =
+  (* Real-typed equality with no Real free var: still QF_LRA. *)
+  let n : Ir.shell_term = Var { name = "n" } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = Eq {
+      ty = "Real"; left = n; right = n;
+    };
+  } in
+  let ir = make_ir
+    ~free_vars:[ { name = "n"; ty = "Int" } ]
+    ~hypotheses:[ h0 ]
+    (Ir.Const { name = "True" })
+  in
+  match Smtlib.emit ir with
+  | Ok script ->
+    Alcotest.(check string) "Real-typed Eq picks QF_LRA"
+      "QF_LRA" script.logic
+  | Error e ->
+    Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
 let test_emit_full_script () =
   let n = Ir.Var { name = "n" } in
   let m = Ir.Var { name = "m" } in
@@ -389,6 +432,10 @@ let () =
     "script", [
       Alcotest.test_case "QF_LIA logic" `Quick test_emit_logic_lia;
       Alcotest.test_case "QF_LRA logic" `Quick test_emit_logic_lra;
+      Alcotest.test_case "QF_LRA from closed Real-literal goal"
+        `Quick test_emit_logic_lra_from_real_literal_only;
+      Alcotest.test_case "QF_LRA from Real-typed Eq with no Real free var"
+        `Quick test_emit_logic_lra_from_real_eq_only;
       Alcotest.test_case "full script" `Quick test_emit_full_script;
     ];
   ]

@@ -332,15 +332,29 @@ type script = {
   logic : string;
 }
 
-(** Choose an SMT-LIB logic from the cert's free-var sorts. With
-    only [Int] vars and the LIA arithmetic vocabulary we use
-    [QF_LIA]; with quantifiers it would be [LIA]. We're QF-only in
-    Phase 2.1. *)
-let pick_logic (free_vars : Ir.free_var list) : string =
-  let has_real =
-    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real") free_vars
+(** Choose an SMT-LIB logic from the IR's actual term types.
+
+    A free-var-only scan misses closed Real-arithmetic goals
+    where every operand is a Real numeric literal or a
+    Real-typed equality — those would emit under QF_LIA, and
+    cvc5/cvc4 would either reject the script as ill-sorted or
+    quietly run it under integer semantics. The rule mirrors
+    [Farkas.effective_fragment]: any [Real]-typed free var or
+    any [Real] type tag inside any hypothesis or goal shell
+    selects QF_LRA; otherwise QF_LIA. We're QF-only in Phase
+    2.1; quantifiers would lift to LIA / LRA. *)
+let pick_logic (ir : Ir.t) : string =
+  let any_real_free_var =
+    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
+      ir.context.free_vars
   in
-  if has_real then "QF_LRA" else "QF_LIA"
+  let any_real_term =
+    Farkas.shell_mentions_real ir.goal.shell
+    || List.exists (fun (h : Ir.hypothesis) ->
+         Farkas.shell_mentions_real h.shell)
+       ir.context.hypotheses
+  in
+  if any_real_free_var || any_real_term then "QF_LRA" else "QF_LIA"
 
 (** Assemble the SMT-LIB script. Order:
     1. [(set-logic ...)] — picked from free-var sorts.
@@ -352,7 +366,7 @@ let pick_logic (free_vars : Ir.free_var list) : string =
 let emit (ir : Ir.t) : (script, error) result =
   let ( let* ) = Result.bind in
   let specs = ref [] in
-  let logic = pick_logic ir.context.free_vars in
+  let logic = pick_logic ir in
   let buf = Buffer.create 256 in
   Buffer.add_string buf (Printf.sprintf "(set-logic %s)\n" logic);
   let* () =
