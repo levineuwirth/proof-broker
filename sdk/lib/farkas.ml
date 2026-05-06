@@ -285,8 +285,9 @@ let parse_coefficients (witness : Yojson.Safe.t)
 
 (** Run Farkas verification. Returns [Verified] on a valid certificate,
     or one of the failure variants describing what went wrong. The
-    fragment is read from [ir.logic_classification.first_order_fragment]
-    and selects strict-witness behavior — see [compile_hypothesis]. *)
+    active fragment comes from [effective_fragment ir] (term-type
+    derived, not the [logic_classification] label) and selects
+    strict-witness behavior — see [compile_hypothesis]. *)
 let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
   let fragment = effective_fragment ir in
   match parse_coefficients witness with

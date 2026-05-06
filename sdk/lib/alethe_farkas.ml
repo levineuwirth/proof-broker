@@ -210,11 +210,13 @@ type input_entry = {
 }
 
 (** Compile every IR hypothesis plus the synthetic [neg_goal] entry,
-    using [Farkas.compile_hypothesis] under the IR's declared
-    fragment. Hypotheses that fail to compile (non-linear, unsupported
-    shape) are simply dropped — they can't participate in a Farkas
-    sum anyway, and the caller will fail gracefully if a clause
-    literal wants them. *)
+    using [Farkas.compile_hypothesis] under [Farkas.effective_fragment]
+    (term-type-derived, not the declared label, to keep the +1 trick
+    locked when an IR mislabels itself "LIA" but actually uses Reals).
+    Hypotheses that fail to compile (non-linear, unsupported shape)
+    are simply dropped — they can't participate in a Farkas sum
+    anyway, and the caller will fail gracefully if a clause literal
+    wants them. *)
 let compile_ir_inputs (ir : Ir.t) : input_entry list =
   let fragment = Farkas.effective_fragment ir in
   let one (name, shell) =
