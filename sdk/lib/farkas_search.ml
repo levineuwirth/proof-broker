@@ -58,7 +58,7 @@ let detail_of_error = function
     name [Farkas.lookup_hypothesis] expects, so the witness JSON
     is directly verifier-ready. *)
 let compile_inputs (ir : Ir.t) : input list =
-  let fragment = ir.logic_classification.first_order_fragment in
+  let fragment = Farkas.effective_fragment ir in
   let from_hyps =
     List.filter_map (fun (h : Ir.hypothesis) ->
       match Farkas.compile_hypothesis ~fragment h.shell with
@@ -154,9 +154,7 @@ let try_close ?(bound = 3) (ir : Ir.t) : (Yojson.Safe.t, error) result =
   let inputs = compile_inputs ir in
   if inputs = [] then Error No_compilable_inputs
   else
-    let lra = String.equal
-      ir.logic_classification.first_order_fragment "LRA"
-    in
+    let lra = String.equal (Farkas.effective_fragment ir) "LRA" in
     let ranges = List.map (range_for ~bound) inputs in
     let candidates = cartesian ranges in
     let result = List.find_map

@@ -165,6 +165,66 @@ let test_no_compilable_inputs () =
     Alcotest.fail (Printf.sprintf "expected No_compilable_inputs, got %s"
                      (Farkas_search.kind_of_error e))
 
+let test_search_uses_effective_fragment_on_real_typed_lia_label () =
+  (* Mint-then-verify round trip: build a Real-typed counterexample
+     IR mislabeled "LIA". Goal: x <= 0, h: x = 1/2. Over the reals
+     this isn't provable. The search must consult the effective
+     fragment (LRA, derived from term types) and refuse to mint a
+     witness that exploits the +1 trick — otherwise the verifier,
+     which now uses effective_fragment too, would reject the
+     minted cert. Either both sides agree it's unprovable, or both
+     agree on a sound witness; never search-says-yes /
+     verify-says-no. *)
+  let x = Ir.Var { name = "x" } in
+  let zero = Ir.Num_lit { value = "0"; ty = "Real" } in
+  let half = Ir.Num_lit { value = "1/2"; ty = "Real" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Eq { ty = "Real"; left = x; right = half };
+  } in
+  let ir : Ir.t = {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = {
+      order = "first_order"; features_used = [];
+      first_order_fragment = "LIA";  (* mislabeled *)
+      decidable_theory = None;
+    };
+    goal = {
+      shell = App { symbol = "LE.le"; type_args = []; args = [ x; zero ] };
+      payloads = None;
+    };
+    context = { type_vars = [];
+                free_vars = [ { name = "x"; ty = "Real" } ];
+                hypotheses = [ h1 ];
+                library_slice = None };
+    type_metadata = []; definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  } in
+  match Farkas_search.try_close ir with
+  | Error Search_exhausted -> ()
+  | Ok witness ->
+    (* If the search ever yields a witness here, the verifier MUST
+       accept it — otherwise mint and verify disagree. *)
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | other ->
+       Alcotest.fail (Printf.sprintf
+         "search produced witness verifier rejects: %s" (
+         match other with
+         | Verified -> "verified"
+         | Not_contradictory _ -> "not_contradictory"
+         | Bad_coefficient _ -> "bad_coefficient"
+         | Negative_coefficient _ -> "negative_coefficient"
+         | Unknown_hypothesis _ -> "unknown_hypothesis"
+         | Nonlinear _ -> "nonlinear"
+         | Malformed_witness _ -> "malformed_witness")))
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "unexpected error %s"
+                     (Farkas_search.kind_of_error e))
+
 let test_bound_zero_finds_nothing () =
   let ir = example1_like_ir () in
   match Farkas_search.try_close ~bound:0 ir with
@@ -187,5 +247,7 @@ let () =
         `Quick test_no_compilable_inputs;
       Alcotest.test_case "bound=0 finds nothing"
         `Quick test_bound_zero_finds_nothing;
+      Alcotest.test_case "Real-typed IR mislabeled LIA: search agrees with verify"
+        `Quick test_search_uses_effective_fragment_on_real_typed_lia_label;
     ];
   ]
