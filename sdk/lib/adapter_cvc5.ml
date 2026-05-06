@@ -38,9 +38,7 @@ let cvc5_binary = "cvc5"
 let default_timeout_ms = 5000
 
 let timeout_of_ir (ir : Ir.t) : int =
-  match ir.user_directives with
-  | Some { budget = Some { wall_time_ms = Some ms; _ }; _ } -> ms
-  | _ -> default_timeout_ms
+  Adapter.resolve_timeout_ms ~default_ms:default_timeout_ms ir
 
 (* --- I/O ------------------------------------------------------------- *)
 

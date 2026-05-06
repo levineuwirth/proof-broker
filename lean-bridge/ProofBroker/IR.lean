@@ -450,12 +450,22 @@ def Budget.toJson (b : Budget) : Json :=
   mkObj fields
 
 def Budget.fromJson? (j : Json) : Except String Budget := do
-  let getIntOpt (key : String) : Except String (Option Int) :=
+  /- Decode a budget integer field, enforcing the schema's
+     nonnegativity constraint at decode time so an FFI / in-process
+     caller can't bypass schema validation by handing us a budget
+     object with `wall_time_ms = -1`. Negative values surface as
+     a decode error. -/
+  let getNonNegIntOpt (key : String) : Except String (Option Int) :=
     match getOpt j key with
     | none => .ok none
-    | some v => v.getInt?.map some
-  return { wallTimeMs := ← getIntOpt "wall_time_ms",
-           memoryMb := ← getIntOpt "memory_mb" }
+    | some v => do
+      let n ← v.getInt?
+      if n < 0 then
+        .error s!"{key} must be nonnegative; got {n}"
+      else
+        .ok (some n)
+  return { wallTimeMs := ← getNonNegIntOpt "wall_time_ms",
+           memoryMb := ← getNonNegIntOpt "memory_mb" }
 
 instance : ToJson Budget := ⟨Budget.toJson⟩
 instance : FromJson Budget := ⟨Budget.fromJson?⟩

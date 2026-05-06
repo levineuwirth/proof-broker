@@ -296,11 +296,25 @@ let budget_to_json (b : Ir.budget) : Yojson.Safe.t =
   in
   `Assoc fields
 
+(** Decode a budget integer field, enforcing the schema's
+    nonnegativity constraint at decode time so an FFI / in-process
+    caller can't bypass schema validation by handing us a budget
+    object with [wall_time_ms = -1] and pathological downstream
+    behavior. Negative values surface as [Decode_error]. *)
+let nonneg_int_of ~field (j : Yojson.Safe.t) : int =
+  let n = int_of j in
+  if n < 0 then
+    raise (Decode_error
+             (Printf.sprintf "%s must be nonnegative; got %d" field n, j))
+  else n
+
 let budget_of_json (j : Yojson.Safe.t) : Ir.budget =
   let p = assoc j in
   {
-    wall_time_ms = Option.map int_of (get_opt "wall_time_ms" p);
-    memory_mb = Option.map int_of (get_opt "memory_mb" p);
+    wall_time_ms = Option.map (nonneg_int_of ~field:"wall_time_ms")
+                     (get_opt "wall_time_ms" p);
+    memory_mb = Option.map (nonneg_int_of ~field:"memory_mb")
+                  (get_opt "memory_mb" p);
   }
 
 let rewriter_preferences_to_json (rp : Ir.rewriter_preferences) : Yojson.Safe.t =

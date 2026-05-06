@@ -73,6 +73,30 @@ type t = {
   dispatch : Ir.t -> result;
 }
 
+(** Hard upper bound on a single solver subprocess's wall time.
+    The broker can be configured with smaller per-call defaults,
+    but this cap is enforced regardless: an in-process caller
+    requesting [wall_time_ms = 1_000_000_000] still gets capped to
+    five minutes so a pathological input can't pin a thread. *)
+let max_solver_wall_time_ms = 300_000  (* 5 minutes *)
+
+(** Resolve a per-call solver timeout from an IR's user_directives,
+    clamped into [[1, max_solver_wall_time_ms]]. The schema decoder
+    already rejects negatives, but a [Some 0] still has to be
+    handled — sending [0] to a solver's [--tlimit] flag is a
+    pathological non-budget that some configurations interpret as
+    "no limit", which is not what the IR's author meant. *)
+let resolve_timeout_ms ~(default_ms : int) (ir : Ir.t) : int =
+  let raw = match ir.user_directives with
+    | Some { budget = Some { wall_time_ms = Some ms; _ }; _ } -> ms
+    | _ -> default_ms
+  in
+  let lo = 1 in
+  let hi = max_solver_wall_time_ms in
+  if raw < lo then lo
+  else if raw > hi then hi
+  else raw
+
 (** Drain a child process's stdout and stderr concurrently into
     strings. The naive "read stdout, then read stderr" pattern
     deadlocks when the child fills its stderr pipe buffer (~64KB

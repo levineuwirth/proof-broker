@@ -82,6 +82,76 @@ let test_cert_codec_round_trip_example1 () =
   Alcotest.(check int) "payload variant matches envelope tier"
     1 (Certificate.payload_tier cert.payload)
 
+let test_budget_decode_rejects_negative_wall_time () =
+  let bad = `Assoc [ "wall_time_ms", `Int (-1) ] in
+  Alcotest.(check bool) "negative wall_time_ms rejected at decode time"
+    true
+    (try ignore (Codec.budget_of_json bad); false
+     with Codec.Decode_error _ -> true)
+
+let test_budget_decode_rejects_negative_memory () =
+  let bad = `Assoc [ "memory_mb", `Int (-1) ] in
+  Alcotest.(check bool) "negative memory_mb rejected at decode time"
+    true
+    (try ignore (Codec.budget_of_json bad); false
+     with Codec.Decode_error _ -> true)
+
+let test_budget_decode_accepts_zero () =
+  (* 0 is the schema's lower bound, must round-trip cleanly. *)
+  let ok = `Assoc [ "wall_time_ms", `Int 0; "memory_mb", `Int 0 ] in
+  let b = Codec.budget_of_json ok in
+  Alcotest.(check (option int)) "wall_time_ms = 0" (Some 0) b.wall_time_ms;
+  Alcotest.(check (option int)) "memory_mb = 0" (Some 0) b.memory_mb
+
+let test_adapter_resolve_timeout_clamps_high () =
+  let ir : Ir.t = {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = {
+      order = "first_order"; features_used = [];
+      first_order_fragment = "LIA"; decidable_theory = None;
+    };
+    goal = { shell = Const { name = "True" }; payloads = None };
+    context = { type_vars = []; free_vars = []; hypotheses = [];
+                library_slice = None };
+    type_metadata = []; definitional_metadata = [];
+    library_provenance = [];
+    user_directives = Some {
+      preferred_backend = None;
+      tier_preference = None;
+      rewriter_preferences = None;
+      budget = Some { wall_time_ms = Some 1_000_000_000; memory_mb = None };
+    };
+  } in
+  let t = Adapter.resolve_timeout_ms ~default_ms:5000 ir in
+  Alcotest.(check int) "huge wall_time_ms clamped to cap"
+    Adapter.max_solver_wall_time_ms t
+
+let test_adapter_resolve_timeout_clamps_zero () =
+  let ir : Ir.t = {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = {
+      order = "first_order"; features_used = [];
+      first_order_fragment = "LIA"; decidable_theory = None;
+    };
+    goal = { shell = Const { name = "True" }; payloads = None };
+    context = { type_vars = []; free_vars = []; hypotheses = [];
+                library_slice = None };
+    type_metadata = []; definitional_metadata = [];
+    library_provenance = [];
+    user_directives = Some {
+      preferred_backend = None;
+      tier_preference = None;
+      rewriter_preferences = None;
+      budget = Some { wall_time_ms = Some 0; memory_mb = None };
+    };
+  } in
+  let t = Adapter.resolve_timeout_ms ~default_ms:5000 ir in
+  Alcotest.(check int) "zero wall_time_ms clamped to 1ms" 1 t
+
 let test_cert_decode_rejects_unsupported_tier () =
   let raw = load_json
     (Filename.concat (fixture_dir ()) "cert-example1-tier1-farkas.json") in
@@ -425,6 +495,16 @@ let () =
         `Quick test_cert_codec_round_trip_example1;
       Alcotest.test_case "decode rejects unsupported tier"
         `Quick test_cert_decode_rejects_unsupported_tier;
+      Alcotest.test_case "budget decode rejects negative wall_time_ms"
+        `Quick test_budget_decode_rejects_negative_wall_time;
+      Alcotest.test_case "budget decode rejects negative memory_mb"
+        `Quick test_budget_decode_rejects_negative_memory;
+      Alcotest.test_case "budget decode accepts zero"
+        `Quick test_budget_decode_accepts_zero;
+      Alcotest.test_case "adapter clamps wall_time_ms to cap"
+        `Quick test_adapter_resolve_timeout_clamps_high;
+      Alcotest.test_case "adapter clamps zero wall_time_ms to 1ms"
+        `Quick test_adapter_resolve_timeout_clamps_zero;
     ];
     "verifier", [
       Alcotest.test_case "envelope verifies on matching hash"
