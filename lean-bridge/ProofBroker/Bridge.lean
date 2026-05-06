@@ -304,8 +304,20 @@ inductive CertReason where
   | otherCertReason (kind : String) (detail : String)
 deriving Repr, Inhabited
 
+/-- Result of a certificate verification.
+
+    `ok` is the strict soundness flag — true only when a real
+    tier-specific verifier (Tier 1 Farkas, Tier 2 case-split,
+    Tier 3 Alethe walker) accepted the proof end-to-end.
+    `envelopeOk` is the looser flag covering everything where
+    envelope checks (hashes, tier/payload match, dispatch
+    context) passed but no tier-specific soundness check applied
+    or was implementable. Strict consumers should gate on `ok`;
+    callers that trust their oracle and only need to confirm a
+    cert is addressed to the right IR can gate on `envelopeOk`. -/
 structure CertVerification where
   ok : Bool
+  envelopeOk : Bool
   reason : CertReason
 deriving Inhabited
 
@@ -374,10 +386,12 @@ def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := non
   let input := Json.mkObj fields
   let payload ← decodeEnvelope (pbCall "verify_certificate" input.compress)
   let ok := (payload.getObjValAs? Bool "ok").toOption.getD false
+  let envelopeOk :=
+    (payload.getObjValAs? Bool "envelope_ok").toOption.getD ok
   let reasonJ ← match payload.getObjVal? "reason" with
     | .ok v => pure v
     | .error _ => .error (.decodeError "missing 'reason'" none)
-  return { ok, reason := parseCertReason reasonJ }
+  return { ok, envelopeOk, reason := parseCertReason reasonJ }
 
 /-- Adapter dispatch failure (spec §7). Mirrors OCaml's
     `Adapter.failure`. `satReturned` means the solver said the

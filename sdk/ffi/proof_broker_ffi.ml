@@ -154,14 +154,32 @@ let verify_certificate (input : string) : string =
     let reason =
       Proof_broker.Verifier.verify ~trace cert ir
     in
-    let ok = match reason with
+    (* [ok] is the soundness flag: only true when the verifier
+       has actually checked the proof's arithmetic / structural
+       claim end-to-end. [envelope_ok] is the looser claim that
+       envelope checks (hashes, tier/payload match, dispatch
+       context) all passed but no tier-specific soundness
+       check applied — this is the right gate for callers that
+       trust their oracle and just want to confirm the cert is
+       addressed to the right IR. Splitting the two keeps a
+       caller from accidentally treating a Tier 0 oracle cert
+       (Tier_check_deferred) or a Tier 1 cert with a witness
+       shape we don't understand (Unsupported_witness_kind) as
+       proof of soundness. *)
+    let soundness_ok = match reason with
+      | Verified_farkas | Verified_case_split | Verified_tier3 -> true
+      | _ -> false
+    in
+    let env_ok = match reason with
       | Verified_envelope | Verified_farkas | Verified_case_split
       | Verified_tier3
-      | Tier_check_deferred _ | Unsupported_witness_kind _ -> true
+      | Tier_check_deferred _ | Unsupported_witness_kind _
+      | Tier3_unsupported_format _ -> true
       | _ -> false
     in
     let payload = `Assoc [
-      "ok", `Bool ok;
+      "ok", `Bool soundness_ok;
+      "envelope_ok", `Bool env_ok;
       "reason", Proof_broker.Verifier.reason_to_json reason;
     ] in
     envelope_ok payload
