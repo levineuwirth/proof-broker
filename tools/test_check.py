@@ -269,6 +269,16 @@ _TIER2_BASE = {
 }
 
 
+@test("tier1 schema: farkas witness with signed Eq coefficient accepted")
+def _tier1_farkas_signed_eq_coeff_accepted():
+    cert = copy.deepcopy(CERT1)
+    cert["payload"]["witness_data"]["coefficients"].append(
+        {"hypothesis": "h2", "coefficient": "-2"}
+    )
+    errors = list(cert_schema_validator().iter_errors(cert))
+    assert not errors, [f"{e.json_path}: {e.message}" for e in errors]
+
+
 @test("tier2 schema: case_split_farkas {case, witness} lemmas validate")
 def _tier2_case_split_validates():
     cert = copy.deepcopy(_TIER2_BASE)
@@ -343,8 +353,10 @@ def _tier2_unknown_lemma_shape_rejected():
     assert errors, "expected schema rejection for unrecognized lemma shape"
 
 
-@test("tier2 schema: case-split witness with negative coefficient rejected")
-def _tier2_case_split_negative_coeff_rejected():
+@test("tier2 schema: case-split witness with signed Eq coefficient accepted")
+def _tier2_case_split_signed_eq_coeff_accepted():
+    # Signed Farkas coefficients are admitted at the schema level —
+    # the verifier enforces nonneg-on-inequality and nonzero-on-Eq.
     cert = copy.deepcopy(_TIER2_BASE)
     cert["payload"] = {
         "lemmas_used": [
@@ -352,7 +364,7 @@ def _tier2_case_split_negative_coeff_rejected():
                 "case": {"node": "Const", "name": "True"},
                 "witness": {
                     "coefficients": [
-                        {"hypothesis": "case", "coefficient": "-1"}
+                        {"hypothesis": "case", "coefficient": "-3/4"}
                     ]
                 },
             }
@@ -360,7 +372,27 @@ def _tier2_case_split_negative_coeff_rejected():
         "strategy_hint": "case_split_farkas",
     }
     errors = list(cert_schema_validator().iter_errors(cert))
-    assert errors, "expected schema rejection for negative coefficient"
+    assert not errors, [f"{e.json_path}: {e.message}" for e in errors]
+
+
+@test("tier2 schema: malformed coefficient string rejected")
+def _tier2_case_split_bad_coeff_rejected():
+    cert = copy.deepcopy(_TIER2_BASE)
+    cert["payload"] = {
+        "lemmas_used": [
+            {
+                "case": {"node": "Const", "name": "True"},
+                "witness": {
+                    "coefficients": [
+                        {"hypothesis": "case", "coefficient": "1.5"}
+                    ]
+                },
+            }
+        ],
+        "strategy_hint": "case_split_farkas",
+    }
+    errors = list(cert_schema_validator().iter_errors(cert))
+    assert errors, "expected schema rejection for non-rational coefficient"
 
 
 # --- Manifest checks ---------------------------------------------------------

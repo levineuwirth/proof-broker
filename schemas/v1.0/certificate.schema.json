@@ -146,7 +146,7 @@
                 "properties": {
                   "coefficients": {
                     "type": "array",
-                    "description": "Per-hypothesis nonnegative coefficient (decimal as string for exactness). Sum over coefficient*hypothesis must yield a contradiction for the negation of the goal.",
+                    "description": "Per-hypothesis Farkas coefficient (rational, exact-string-encoded). The verifier requires nonnegative coefficients on inequality hypotheses (Le, Lt) and any nonzero rational on equality hypotheses (Eq); the schema only enforces the rational format so cvc5-derived witnesses with negative equality coefficients round-trip without preprocessing. Sum over coefficient*hypothesis must yield a contradiction for the negation of the goal.",
                     "items": {
                       "type": "object",
                       "additionalProperties": false,
@@ -155,7 +155,7 @@
                         "hypothesis": { "type": "string", "minLength": 1 },
                         "coefficient": {
                           "type": "string",
-                          "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+                          "pattern": "^-?(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
                         }
                       }
                     }
@@ -247,7 +247,7 @@
           "type": "object",
           "additionalProperties": false,
           "required": ["coefficients"],
-          "description": "Farkas witness for this case. Same shape as Tier 1 farkas witness_data.",
+          "description": "Farkas witness for this case. Same shape and sign convention as Tier 1 farkas witness_data: signed rationals admitted at the schema level; the verifier enforces nonneg-on-inequality and nonzero-on-equality.",
           "properties": {
             "coefficients": {
               "type": "array",
@@ -259,7 +259,7 @@
                   "hypothesis": { "type": "string", "minLength": 1 },
                   "coefficient": {
                     "type": "string",
-                    "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+                    "pattern": "^-?(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
                   }
                 }
               }
