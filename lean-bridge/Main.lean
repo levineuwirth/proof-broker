@@ -910,6 +910,13 @@ def cvc5Available : IO Bool := do
   } |>.toBaseIO
   return exit.toOption.isSome
 
+/-- Sibling probe for z3; same skip-on-CI convention. -/
+def z3Available : IO Bool := do
+  let exit ← IO.Process.run {
+    cmd := "sh", args := #["-c", "which z3 > /dev/null 2>&1"], stdin := .null
+  } |>.toBaseIO
+  return exit.toOption.isSome
+
 /-- End-to-end cvc4 dispatch across the FFI: build the example1
     LIA IR, hand it to `runDispatchToAdapter "cvc4" ...`. With the
     internal Farkas closer wired into the cvc4 adapter, this
@@ -984,6 +991,62 @@ def runDispatchToCvc4Flow : IO Unit := do
   | .failed .satReturned =>
     IO.println "OK dispatch_to_adapter: cvc4 reports satReturned on non-provable goal"
   | other => fail s!"expected .failed .satReturned, got {repr other}"
+
+/-- End-to-end z3 dispatch across the FFI: same example1 IR
+    handed to `runDispatchToAdapter "z3" ...`. z3 is a Tier 0
+    oracle adapter in this phase (no proof reconstruction yet),
+    but the internal Farkas closer fires on z3's `unsat` verdict
+    and lifts the result to Tier 1 farkas, mirroring the cvc4
+    flow. Skipped cleanly if z3 isn't on PATH. -/
+def runDispatchToZ3Flow : IO Unit := do
+  unless ← z3Available do
+    IO.println "[skip] z3 not on PATH; skipping dispatch flow"
+    return
+  let n : ShellTerm := .var "n"
+  let m : ShellTerm := .var "m"
+  let ten : ShellTerm := .numLit "10" "Int"
+  let zero : ShellTerm := .numLit "0" "Int"
+  let n_plus_m : ShellTerm := .app "Int.add" [] [n, m]
+  let h1 : ShellTerm := .eq "Int" n_plus_m ten
+  let h3 : ShellTerm := .app "LE.le" [] [zero, m]
+  let goal : ShellTerm := .app "LE.le" [] [n, ten]
+  let irBase := mkTestIR goal
+  let ir : IR := { irBase with
+    context := {
+      typeVars := [], freeVars := [
+        { name := "n", ty := "Int" },
+        { name := "m", ty := "Int" }
+      ],
+      hypotheses := [
+        { name := "h1", shell := h1 },
+        { name := "h3", shell := h3 }
+      ],
+      librarySlice := none
+    }
+  }
+  let res ← match runDispatchToAdapter "z3" ir with
+    | .ok r => pure r
+    | .error e => fail s!"runDispatchToAdapter z3 (provable goal): {repr e}"
+  let certJ ← match res with
+    | .cert j => pure j
+    | .failed f => fail s!"expected .cert on provable goal, got .failed {repr f}"
+  let tier := (certJ.getObjValAs? Int "tier").toOption.getD (-1)
+  unless tier == 1 do
+    fail s!"expected tier=1 from z3 + internal closer, got {tier}"
+  let backend := (certJ.getObjVal? "backend" |>.bind (·.getObjValAs? String "name")).toOption.getD ""
+  unless backend == "z3" do
+    fail s!"expected backend=z3, got {backend}"
+  IO.println "OK dispatch_to_adapter: z3 + internal closer minted Tier 1 farkas cert on provable LIA goal"
+  let verif ← match runVerifyCertificate certJ ir with
+    | .ok v => pure v
+    | .error e => fail s!"runVerifyCertificate on z3-minted cert: {repr e}"
+  unless verif.ok do
+    fail s!"expected ok=true on z3-minted cert verification; reason={repr verif.reason}"
+  match verif.reason with
+  | .verifiedFarkas =>
+    IO.println "OK verify_certificate: z3-minted Tier 1 cert re-verified independently via Farkas.verify"
+  | other =>
+    fail s!"expected verifiedFarkas, got {repr other}"
 
 /-- End-to-end refinement-then-dispatch on the typeclass-shaped
     example1 fixture: the IR has `alpha` as a type variable, full
@@ -1187,6 +1250,7 @@ def main : IO Unit := do
   runTier2CaseSplitFlow
   runTier3AletheFlow rootDir
   runDispatchToCvc4Flow
+  runDispatchToZ3Flow
   runRefinementDispatchFlow rootDir
   runDispatchBrokerFlow rootDir
   runDispatchBrokerTwoBackendsFlow rootDir
