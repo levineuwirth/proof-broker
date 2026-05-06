@@ -191,6 +191,28 @@ let test_hash_changes_iff_rewrites () =
   Alcotest.(check bool) "hash equal when no rules fired"
     true (without.trace.before_hash = without.trace.after_hash)
 
+let extract_indices (entry : Trace.entry) : int list =
+  match entry.inversion_data with
+  | Some (`Assoc pairs) ->
+    (match List.assoc_opt "simplifications" pairs with
+     | Some (`List xs) ->
+       List.map
+         (fun j ->
+           let p = match j with `Assoc p -> p | _ -> failwith "bad simp" in
+           match List.assoc_opt "index" p with
+           | Some (`Int i) -> i
+           | _ -> failwith "missing index")
+         xs
+     | _ -> [])
+  | _ -> []
+
+let test_inversion_records_indexed () =
+  (* Cascade fires two rules; both must have distinct indices 0 and 1. *)
+  let ir = make_ir (mk_and (mk_and c_true c_true) (v "p")) in
+  let result = Propositional_simplify.run ir in
+  Alcotest.(check (list int)) "indices are dense [0; 1]"
+    [ 0; 1 ] (extract_indices result.trace)
+
 let test_pass_metadata () =
   let result = Propositional_simplify.run (make_ir (v "p")) in
   Alcotest.(check string) "pass name"
@@ -218,5 +240,7 @@ let () =
       Alcotest.test_case "hypothesis site tag" `Quick test_hypothesis_site;
       Alcotest.test_case "hash discipline" `Quick test_hash_changes_iff_rewrites;
       Alcotest.test_case "pass metadata" `Quick test_pass_metadata;
+      Alcotest.test_case "inversion records carry dense indices"
+        `Quick test_inversion_records_indexed;
     ];
   ]

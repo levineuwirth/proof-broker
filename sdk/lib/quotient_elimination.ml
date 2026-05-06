@@ -215,8 +215,9 @@ let rec rewrite_shell
 
 (* --- inversion-data serialization ------------------------------------ *)
 
-let elimination_to_json (e : elimination_record) : Yojson.Safe.t =
+let elimination_to_json ~index (e : elimination_record) : Yojson.Safe.t =
   `Assoc [
+    "index", `Int index;
     "var", `String e.e_var;
     "from_type", `String e.e_from_type;
     "to_type", `String e.e_to_type;
@@ -224,18 +225,20 @@ let elimination_to_json (e : elimination_record) : Yojson.Safe.t =
     "equivalence_proof", `String e.e_equivalence_proof;
   ]
 
-let equality_reduction_to_json (e : equality_reduction_record)
+let equality_reduction_to_json ~index (e : equality_reduction_record)
   : Yojson.Safe.t =
   `Assoc [
+    "index", `Int index;
     "site", `String e.er_site;
     "from_type", `String e.er_from_type;
     "equality_principle", `String e.er_equality_principle;
     "equivalence_proof", `String e.er_equivalence_proof;
   ]
 
-let lifted_unfolding_to_json (e : lifted_unfolding_record)
+let lifted_unfolding_to_json ~index (e : lifted_unfolding_record)
   : Yojson.Safe.t =
   let fields = [
+    "index", `Int index;
     "site", `String e.lu_site;
     "lifted", `String e.lu_lifted;
     "underlying", `String e.lu_underlying;
@@ -247,12 +250,13 @@ let lifted_unfolding_to_json (e : lifted_unfolding_record)
 let inversion_data_to_json (acc : acc) : Yojson.Safe.t =
   `Assoc [
     "eliminations",
-    `List (List.map elimination_to_json (List.rev acc.eliminations));
+    `List (List.mapi (fun i e -> elimination_to_json ~index:i e)
+             (List.rev acc.eliminations));
     "equality_reductions",
-    `List (List.map equality_reduction_to_json
+    `List (List.mapi (fun i e -> equality_reduction_to_json ~index:i e)
              (List.rev acc.equality_reductions));
     "lifted_unfoldings",
-    `List (List.map lifted_unfolding_to_json
+    `List (List.mapi (fun i e -> lifted_unfolding_to_json ~index:i e)
              (List.rev acc.lifted_unfoldings));
   ]
 

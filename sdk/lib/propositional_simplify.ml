@@ -184,9 +184,13 @@ let run (ir : Ir.t) : result =
   let inversion_data : Yojson.Safe.t =
     `Assoc [
       "simplifications",
-      `List (List.map
-               (fun (rule, site) ->
-                 `Assoc [ "rule", `String rule; "site", `String site ])
+      `List (List.mapi
+               (fun i (rule, site) ->
+                 `Assoc [
+                   "index", `Int i;
+                   "rule", `String rule;
+                   "site", `String site;
+                 ])
                all_rules)
     ]
   in

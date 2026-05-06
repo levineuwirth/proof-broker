@@ -45,8 +45,8 @@
       "outcome": "applied",
       "inversion_data": {
         "unfolded_symbols": [
-          { "symbol": "myRel",     "via": "definitional_equation" },
-          { "symbol": "Int.divides","via": "definitional_equation" }
+          { "index": 0, "symbol": "myRel",      "via": "definitional_equation", "site": "goal" },
+          { "index": 1, "symbol": "Int.divides","via": "definitional_equation", "site": "goal" }
         ]
       }
     },
@@ -58,7 +58,7 @@
       "outcome": "applied",
       "inversion_data": {
         "simplifications": [
-          { "rule": "And_True_left", "site": "goal" }
+          { "index": 0, "rule": "And_True_left", "site": "goal" }
         ]
       }
     }

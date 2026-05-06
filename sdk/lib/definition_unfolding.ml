@@ -222,7 +222,11 @@ let configured_concept_tags (ir : Ir.t) : SS.t =
     [{symbol, via, site}] objects. [via] is hard-coded to
     ["definitional_equation"] for v1 — when alternative unfolding
     sources land (extensional axioms, beta reduction, ...), [via]
-    will distinguish them. *)
+    will distinguish them.
+
+    The [index] field is filled in by [run] at the document level,
+    not here, since duplicate occurrences may span multiple call
+    sites and need a single dense index for the lifting layer. *)
 let inversion_entries (site : string) (symbols : string list) : Yojson.Safe.t list =
   List.map
     (fun s ->
@@ -232,6 +236,18 @@ let inversion_entries (site : string) (symbols : string list) : Yojson.Safe.t li
         "site", `String site;
       ])
     symbols
+
+(** Adjoin a dense [index] field to each entry produced by
+    [inversion_entries]. The lifting layer uses [(site, index)] to
+    address a specific unfold occurrence when the same symbol is
+    unfolded multiple times. *)
+let with_indices (entries : Yojson.Safe.t list) : Yojson.Safe.t list =
+  List.mapi
+    (fun i e ->
+       match e with
+       | `Assoc fields -> `Assoc (("index", `Int i) :: fields)
+       | other -> other)
+    entries
 
 type result = {
   ir : Ir.t;
@@ -266,7 +282,7 @@ let run (ir : Ir.t) : result =
     else Applied
   in
   let inversion_data : Yojson.Safe.t =
-    `Assoc [ "unfolded_symbols", `List all_inv ]
+    `Assoc [ "unfolded_symbols", `List (with_indices all_inv) ]
   in
   let trace : Trace.entry = {
     pass = "definition_unfolding";

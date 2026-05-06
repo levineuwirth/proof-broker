@@ -286,6 +286,32 @@ let test_hypothesis_site () =
   Alcotest.(check (list string)) "site is hypothesis[0]"
     [ "hypothesis[0]" ] (List.map (fun (_, _, s) -> s) unfolds)
 
+let extract_unfold_indices (entry : Trace.entry) : int list =
+  match entry.inversion_data with
+  | Some (`Assoc pairs) ->
+    (match List.assoc_opt "unfolded_symbols" pairs with
+     | Some (`List xs) ->
+       List.map
+         (fun j ->
+           let p = match j with `Assoc p -> p | _ -> failwith "bad entry" in
+           match List.assoc_opt "index" p with
+           | Some (`Int i) -> i
+           | _ -> failwith "missing index")
+         xs
+     | _ -> [])
+  | _ -> []
+
+let test_inversion_records_indexed () =
+  (* Two unfolds of the same symbol must have distinct indices so
+     the lifting layer can address each occurrence independently. *)
+  let ir = make_ir
+             ~defn_meta:[ "identity", identity_meta ]
+             ~concept_tags:[ "identity" ]
+             (mk_app "identity" [ mk_app "identity" [ v "y" ] ]) in
+  let result = Definition_unfolding.run ir in
+  Alcotest.(check (list int)) "indices are dense [0; 1]"
+    [ 0; 1 ] (extract_unfold_indices result.trace)
+
 let test_pass_metadata () =
   let result = Definition_unfolding.run (make_ir (v "p")) in
   Alcotest.(check string) "pass name"
@@ -310,5 +336,7 @@ let () =
       Alcotest.test_case "fixpoint cascade in one run" `Quick test_fixpoint_cascade;
       Alcotest.test_case "hypothesis site tag" `Quick test_hypothesis_site;
       Alcotest.test_case "pass metadata" `Quick test_pass_metadata;
+      Alcotest.test_case "inversion records carry dense indices"
+        `Quick test_inversion_records_indexed;
     ];
   ]
