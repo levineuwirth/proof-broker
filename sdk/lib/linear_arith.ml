@@ -80,16 +80,23 @@ let rat_to_string (r : rational) : string =
   if Z.equal r.den Z.one then Z.to_string r.num
   else Printf.sprintf "%s/%s" (Z.to_string r.num) (Z.to_string r.den)
 
-(** Parse a rational from a decimal string ["1"], ["-3"], ["1/2"],
-    ["-3/4"]. Returns [None] on any parse failure (including a zero
-    denominator). Whitespace is not stripped — callers should
-    pre-trim. Numerator and denominator can be arbitrarily large
-    (Zarith [Z.of_string]); a 100-digit literal parses cleanly. *)
+(** Parse a rational from one of the SMT-LIB-flavored formats:
+    integer ["1"], ["-3"]; explicit rational ["1/2"], ["-3/4"]; or
+    SMT-LIB Real decimal ["3.0"], ["-1.25"]. Returns [None] on any
+    parse failure (including a zero denominator). Whitespace is
+    not stripped — callers should pre-trim. Magnitudes are
+    arbitrary (Zarith [Z.of_string]); a 100-digit literal parses
+    cleanly.
+
+    Decimal handling: [I.F] is read as [(I·10^|F| + F) / 10^|F|],
+    with the sign hoisted from [I]. This means [3.0] returns
+    [3/1], [-1.25] returns [-5/4], and [.5] returns [1/2].
+    Without this, z3-emitted Real-typed atoms ([(<= x 3.0)])
+    silently parse as variable names rather than constants on the
+    Alethe-Sexp side, which broke alignment against Real-typed IR
+    hypotheses. *)
 let rat_of_string (s : string) : rational option =
   match String.index_opt s '/' with
-  | None ->
-    (try Some (mk_rat_z (Z.of_string s) Z.one)
-     with _ -> None)
   | Some i ->
     let n_str = String.sub s 0 i in
     let d_str = String.sub s (i + 1) (String.length s - i - 1) in
@@ -99,6 +106,39 @@ let rat_of_string (s : string) : rational option =
        if Z.equal d Z.zero then None
        else Some (mk_rat_z n d)
      with _ -> None)
+  | None ->
+    (match String.index_opt s '.' with
+     | None ->
+       (try Some (mk_rat_z (Z.of_string s) Z.one)
+        with _ -> None)
+     | Some j ->
+       let int_part = String.sub s 0 j in
+       let frac_part = String.sub s (j + 1) (String.length s - j - 1) in
+       (* Sign-hoist: leading '-' (or '+') belongs on the whole rational,
+          not on the fractional digits. We strip it from int_part and
+          re-apply at the end. *)
+       let sign, int_digits =
+         if String.length int_part > 0 && int_part.[0] = '-' then
+           (Z.minus_one, String.sub int_part 1 (String.length int_part - 1))
+         else if String.length int_part > 0 && int_part.[0] = '+' then
+           (Z.one, String.sub int_part 1 (String.length int_part - 1))
+         else
+           (Z.one, int_part)
+       in
+       (try
+          let int_z =
+            if int_digits = "" then Z.zero else Z.of_string int_digits
+          in
+          let frac_len = String.length frac_part in
+          let frac_z =
+            if frac_len = 0 then Z.zero else Z.of_string frac_part
+          in
+          let den = Z.pow (Z.of_int 10) frac_len in
+          let num_unsigned = Z.add (Z.mul int_z den) frac_z in
+          let num = Z.mul sign num_unsigned in
+          if Z.equal den Z.zero then None
+          else Some (mk_rat_z num den)
+        with _ -> None))
 
 (* --- linear forms ---------------------------------------------------- *)
 

@@ -66,10 +66,33 @@ let test_rat_of_string () =
     (Option.map di (rat_of_string "1/2"));
   Alcotest.(check (option int)) "parse -3/4 (num)" (Some (-3))
     (Option.map ni (rat_of_string "-3/4"));
+  (* SMT-LIB Real decimal forms: I.F → (I·10^|F|+F)/10^|F| with sign
+     hoisted from the integer part. Without these, z3-emitted Real
+     literals like [(<= x 3.0)] silently parsed as variable names. *)
+  Alcotest.(check (option int)) "parse 3.0 (num)" (Some 3)
+    (Option.map ni (rat_of_string "3.0"));
+  Alcotest.(check (option int)) "parse 3.0 (den)" (Some 1)
+    (Option.map di (rat_of_string "3.0"));
+  Alcotest.(check (option int)) "parse -1.25 (num)" (Some (-5))
+    (Option.map ni (rat_of_string "-1.25"));
+  Alcotest.(check (option int)) "parse -1.25 (den)" (Some 4)
+    (Option.map di (rat_of_string "-1.25"));
+  Alcotest.(check (option int)) "parse 0.5 (num)" (Some 1)
+    (Option.map ni (rat_of_string "0.5"));
+  Alcotest.(check (option int)) "parse 0.5 (den)" (Some 2)
+    (Option.map di (rat_of_string "0.5"));
+  Alcotest.(check (option int)) "parse 5.0 = 5/1 (num)" (Some 5)
+    (Option.map ni (rat_of_string "5.0"));
+  Alcotest.(check (option int)) "parse 5.0 = 5/1 (den)" (Some 1)
+    (Option.map di (rat_of_string "5.0"));
   Alcotest.(check bool) "reject 1/0" true
     (Option.is_none (rat_of_string "1/0"));
   Alcotest.(check bool) "reject hello" true
-    (Option.is_none (rat_of_string "hello"))
+    (Option.is_none (rat_of_string "hello"));
+  Alcotest.(check bool) "reject 1.2.3" true
+    (Option.is_none (rat_of_string "1.2.3"));
+  Alcotest.(check bool) "reject 1.x" true
+    (Option.is_none (rat_of_string "1.x"))
 
 let test_rat_to_string () =
   Alcotest.(check string) "0" "0" (rat_to_string rat_zero);
