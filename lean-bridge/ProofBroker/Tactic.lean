@@ -55,29 +55,93 @@ open Lean Lean.Elab.Tactic Lean.Meta ProofBroker.IR
 axiom proofBrokerCertSound : ∀ (P : Prop), P
 
 /- ============================================================
-   Reifier: Lean Expr → ProofBroker IR ShellTerm (LIA fragment)
+   Extension hook for non-LIA fragments
+
+   Core `ProofBroker` is Mathlib-free and supports LIA only. The
+   `ProofBrokerMathlib` lib opts users into LRA support (Real
+   reifier + `linarith` closer) by registering a `ReifierExt`
+   here at module init. With no extension registered, behavior
+   is unchanged from before this hook landed.
+   ============================================================ -/
+
+/-- Pluggable extension to the core reifier and closer. The core
+    consults this for every recognition step that might extend
+    beyond `Int`/LIA, falling through to its built-in error if
+    the extension declines or none is registered.
+
+    * `reifyType` returns `some "Real"` (or another non-Int type
+      tag) for types the extension recognizes; `none` falls
+      through to core's "Int only" rejection.
+    * `freeVarType` decides which non-Prop locals become IR
+      `freeVars`. Same shape as `reifyType` but keyed on the
+      LCtx walk.
+    * `matchLiteralExt` recognizes numeric literals in the
+      extension's types, returning `(rendered value, type tag)`.
+      Core handles Int via `OfNat.ofNat` / `Int.ofNat` directly.
+    * `lraCloser` is the closer for `verif.ok = true` certs over
+      LRA. The cert verification gates the call (the OCaml-side
+      verifier already accepted the proof), so the closer can
+      delegate to e.g. `linarith` and the resulting proof term
+      is axiom-free.
+    * `irFragment` is the IR's `firstOrderFragment` label to use
+      when the extension is active and any free var is in an
+      extension-recognized type. Core picks `"LIA"` by default. -/
+structure ReifierExt where
+  reifyType : Expr → MetaM (Option TypeRef)
+  freeVarType : Expr → MetaM (Option TypeRef)
+  matchLiteralExt : Expr → MetaM (Option (String × TypeRef))
+  lraCloser : TacticM Unit
+  irFragment : String
+
+initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
+
+/- ============================================================
+   Reifier: Lean Expr → ProofBroker IR ShellTerm
    ============================================================ -/
 
 namespace Reify
 
-/-- Decode a type `Expr` as an IR `TypeRef`. LIA scope: Int only. -/
+/-- Decode a type `Expr` as an IR `TypeRef`. Core handles `Int`;
+    everything else falls through to the registered `reifierExt`,
+    erroring only when no extension recognizes it either. -/
 def reifyType (ty : Expr) : MetaM TypeRef := do
   if ty.isConstOf ``Int then return "Int"
-  else throwError "proof_broker: unsupported type {ty}; LIA scope is Int only"
+  match ← reifierExt.get with
+  | some ext =>
+    match ← ext.reifyType ty with
+    | some t => return t
+    | none => throwError "proof_broker: unsupported type {ty}"
+  | none => throwError "proof_broker: unsupported type {ty}; LIA scope is Int only"
 
-/-- Recognize an `OfNat.ofNat` / `Int.ofNat` literal and read out
-    its raw `Nat` value. Returns `none` if the expression is not a
-    literal in this shape. -/
-def matchLiteral? (e : Expr) : Option Nat :=
+/-- Recognize an `OfNat.ofNat` / `Int.ofNat` literal at type `Int`
+    and read out its raw `Nat` value. Returns `none` if the
+    expression is not a literal in this shape, or if it's an
+    `OfNat.ofNat` over a non-`Int` type (e.g. Real, Nat) — those
+    fall through to the registered `reifierExt`'s
+    `matchLiteralExt`. The `Int.ofNat` and bare `Nat.lit` paths
+    are unambiguously Int. -/
+def matchIntLiteral? (e : Expr) : Option Nat :=
   match e.getAppFnArgs with
-  | (``OfNat.ofNat, #[_α, n, _inst]) => n.rawNatLit?
+  | (``OfNat.ofNat, #[α, n, _inst]) =>
+    if α.isConstOf ``Int then n.rawNatLit? else none
   | (``Int.ofNat, #[n]) => n.rawNatLit?
   | _ => e.rawNatLit?
 
-/-- Confirm that a comparison/equality at type `α` is operating
-    over `Int`. LIA-only scope; Nat or any other carrier trips. -/
-def expectIntCarrier (α : Expr) : MetaM Unit := do
-  unless α.isConstOf ``Int do
+/-- Confirm that a comparison/equality at type `α` is over a
+    fragment we can reify — `Int` always; anything else only if
+    the extension's `reifyType` recognizes it. The reified IR
+    term's type tag isn't carried through `LE.le` / `LT.lt`
+    explicitly (the OCaml side derives it from the operand
+    types), so we only need to gate, not capture. -/
+def expectArithCarrier (α : Expr) : MetaM Unit := do
+  if α.isConstOf ``Int then return
+  match ← reifierExt.get with
+  | some ext =>
+    match ← ext.reifyType α with
+    | some _ => return
+    | none =>
+      throwError "proof_broker: comparison/equality over {α} not in supported fragment"
+  | none =>
     throwError "proof_broker: comparison/equality over {α} not in LIA scope (Int only)"
 
 partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
@@ -86,8 +150,16 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
     let decl := lctx.get! e.fvarId!
     let _ ← reifyType decl.type
     return .var decl.userName.toString
-  if let some n := matchLiteral? e then
+  if e.isConstOf ``False then
+    return .const "False"
+  if e.isConstOf ``True then
+    return .const "True"
+  if let some n := matchIntLiteral? e then
     return .numLit (toString n) "Int"
+  -- Extension-provided literal recognizer (e.g. Real OfNat / OfScientific).
+  if let some ext ← reifierExt.get then
+    if let some (val, ty) ← ext.matchLiteralExt e then
+      return .numLit val ty
   match e.getAppFnArgs with
   | (``HAdd.hAdd, #[_, _, _, _, a, b]) =>
       return .app "HAdd.hAdd" [] [← reifyTerm a, ← reifyTerm b]
@@ -98,16 +170,16 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   | (``Neg.neg, #[_, _, a]) =>
       return .app "Neg.neg" [] [← reifyTerm a]
   | (``LE.le, #[α, _, a, b]) =>
-      expectIntCarrier α
+      expectArithCarrier α
       return .app "LE.le" [] [← reifyTerm a, ← reifyTerm b]
   | (``LT.lt, #[α, _, a, b]) =>
-      expectIntCarrier α
+      expectArithCarrier α
       return .app "LT.lt" [] [← reifyTerm a, ← reifyTerm b]
   | (``GE.ge, #[α, _, a, b]) =>
-      expectIntCarrier α
+      expectArithCarrier α
       return .app "LE.le" [] [← reifyTerm b, ← reifyTerm a]
   | (``GT.gt, #[α, _, a, b]) =>
-      expectIntCarrier α
+      expectArithCarrier α
       return .app "LT.lt" [] [← reifyTerm b, ← reifyTerm a]
   | (``Eq, #[α, a, b]) =>
       let tref ← reifyType α
@@ -134,6 +206,8 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   let goalShell ← reifyTerm goalType
   let mut freeVars : List FreeVar := []
   let mut hypotheses : List IR.Hypothesis := []
+  let extOpt ← reifierExt.get
+  let mut sawExtensionType : Bool := false
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
     let ty := decl.type
@@ -142,13 +216,30 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
       hypotheses := hypotheses ++ [{ name := decl.userName.toString, shell }]
     else if ty.isConstOf ``Int then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Int" }]
+    else
+      match extOpt with
+      | some ext =>
+        match ← ext.freeVarType ty with
+        | some tref =>
+          freeVars := freeVars ++ [{ name := decl.userName.toString, ty := tref }]
+          sawExtensionType := true
+        | none => pure ()
+      | none => pure ()
+  -- Pick fragment label: extension wins if it claimed any free var,
+  -- otherwise default to LIA. The OCaml-side adapters derive the
+  -- effective fragment from term types anyway, so this label is
+  -- mostly about routing through the right capability_match path.
+  let fragment :=
+    match extOpt with
+    | some ext => if sawExtensionType then ext.irFragment else "LIA"
+    | none => "LIA"
   return {
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
     tier := "goal",
     logicClassification := {
       order := "first_order", featuresUsed := [],
-      firstOrderFragment := "LIA", decidableTheory := none
+      firstOrderFragment := fragment, decidableTheory := none
     },
     goal := { shell := goalShell, payloads := none },
     context := { typeVars := [], freeVars, hypotheses, librarySlice := none },
@@ -366,7 +457,17 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       -- came from.
       evalTactic (← `(tactic| omega))
     else
-      goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+      -- Non-LIA: dispatch through the registered ReifierExt's
+      -- closer if present (e.g. ProofBrokerMathlib registers a
+      -- linarith closer for "LRA"); otherwise fall back to the
+      -- trust axiom. The cert verification gates the call either
+      -- way, so the closer can trust solvability.
+      if fragment == "LRA" then
+        match ← reifierExt.get with
+        | some ext => ext.lraCloser
+        | none => goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+      else
+        goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
   | none, _ =>
     let head := path.attempts.head?.map (·.outcome) |>.map reprStr |>.getD "<no attempts>"
     throwError "proof_broker: no adapter could close the goal \
