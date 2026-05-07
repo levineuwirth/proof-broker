@@ -67,15 +67,24 @@ example (n : Int) (h : n ≤ 5) : n ≤ 10 := by
 example (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
   proof_broker? [cvc4]
 
-/-- Named LIA Tier 1 goal proven via cvc4 (so `verifiedFarkas`
-    fires; bare `proof_broker` would prefer cvc5's Tier 3 path
-    instead). The closer is `omega`, axiom-free, so this
-    theorem's transitive axiom set must not contain
-    `proofBrokerCertSound` — verified inline by `#print axioms`
-    below. Coexists in this same module thanks to the FFI shim's
-    runtime-system lock discipline; before that fix, mixing a
-    named theorem + `#print axioms` with the existing examples
-    above tripped an OCaml domain-lock panic. -/
+/-- Named LIA goal proven via the default `proof_broker` form,
+    which `preferHigherTier := true` floats to cvc5's Tier 3
+    alethe-2024 path. Even with a Tier 3 cert (no Lean-side
+    Alethe walker yet) the closer is `omega` because the goal is
+    LIA — cert verification gates the call, omega does the rest.
+    omega is axiom-free, so this theorem's transitive axiom set
+    must not contain `proofBrokerCertSound`; verified inline by
+    `#print axioms` below. -/
+theorem lia_axiom_free
+    (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
+  proof_broker
+
+#print axioms lia_axiom_free
+
+/-- Same theorem pinned through cvc4 (Tier 1 Farkas) — confirms
+    the dispatch-on-fragment closer doesn't regress on the
+    original Tier 1 path that motivated the omega-based closure
+    in the first place. -/
 theorem tier1_lia_axiom_free
     (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
   proof_broker [cvc4]

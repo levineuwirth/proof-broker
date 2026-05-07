@@ -8,18 +8,23 @@ Pipeline:
   4. Close the goal with a tier-and-fragment-appropriate closer.
 
 Soundness footprint:
-  * `verifiedFarkas` + LIA fragment: closes via core Lean's `omega`
-    decision procedure. Cert verification gates the call (we only
-    invoke `omega` on a goal the broker has already checked is
-    Farkas-discharged), and `omega` is itself axiom-free, so goals
-    closed on this path do not depend on `proofBrokerCertSound`.
-    The fragment comes from the cert's `refinement_record`.
-  * Every other reason (`verifiedFarkas` over LRA, `verifiedCaseSplit`,
-    `verifiedTier3`) falls back to `proofBrokerCertSound`. Each is
-    individually removable: LRA Tier 1 by a `linarith`-style closer
-    (or Mathlib if a future package allows it); Tier 2 by reifying
-    the case-split branches into a Lean disjunction-elimination;
-    Tier 3 by walking the saved Alethe proof step-by-step in Lean.
+  * Any cert over LIA (Tier 1 Farkas, Tier 2 case-split, or
+    Tier 3 alethe-2024 — whichever the broker minted): closes via
+    core Lean's `omega` decision procedure. Cert verification
+    gates the call — the OCaml-side verifier has already accepted
+    the proof, so `omega` will succeed on the LIA goal. `omega`
+    itself is axiom-free, so goals closed on this path do not
+    depend on `proofBrokerCertSound`. The fragment comes from the
+    cert's `refinement_record`.
+  * Anything else (`verifiedFarkas` over LRA, future BV / UF /
+    etc.) falls back to `proofBrokerCertSound`. Each is removable
+    per fragment: LRA needs a `linarith`-style closer (or Mathlib
+    if a future package allows it); other fragments need their
+    own decision procedure. Reifying the cert into a term-mode
+    Lean proof — Farkas combination from the Tier 1 witness, or
+    the Alethe walker for Tier 3 — is the principled finish, but
+    LIA goals don't need it because `omega` already discharges
+    them axiom-free.
   * Goal/hypothesis reification covers the LIA fragment only (Int with
     +, -, negation, multiplication by integer literal; ≤, <, =; ¬, ∧,
     ∨). Anything outside this fragment fails fast with a
@@ -41,10 +46,12 @@ open Lean Lean.Elab.Tactic Lean.Meta ProofBroker.IR
 
     Soundness footprint: the OCaml-side verifier (Tier 1 Farkas /
     Tier 2 case-split / Tier 3 Alethe walker). Used by `proof_broker`
-    only on tiers we haven't yet reified into a real Lean proof
-    term — the Tier 1 LIA case discharges via core `omega` and does
-    not depend on this axiom. Each remaining usage is removable
-    per-tier (see top-level docstring). -/
+    only on fragments without a Lean-side closer — every LIA goal
+    discharges via core `omega` regardless of which tier the cert
+    came from, so this axiom is currently exercised only on LRA
+    (and any non-arithmetic fragment a future adapter might add).
+    Each remaining usage is removable per fragment (see top-level
+    docstring). -/
 axiom proofBrokerCertSound : ∀ (P : Prop), P
 
 /- ============================================================
@@ -324,13 +331,23 @@ private def certFragment (cert : Json) : String :=
 /-- Close the goal from a successfully verified path, or surface a
     structured error describing why the path didn't close.
 
-    Closure dispatch is keyed on the cert's verify reason and
-    fragment:
+    Closure dispatch is keyed on the cert's fragment first, then
+    its verify reason:
 
-    * `verifiedFarkas` over LIA: `omega` (axiom-free; cert verification
-      gates the call so we only invoke it on goals the broker has
-      already checked are Farkas-discharged).
-    * Anything else `verif.ok = true`: `proofBrokerCertSound`.
+    * Any cert (Tier 1 / 2 / 3) over LIA: `omega`. Sound for LIA
+      and axiom-free; cert verification gates the call so we only
+      invoke `omega` on goals the broker has already certified
+      provable. This covers the common case where `preferHigherTier`
+      floats cvc5's Tier 3 alethe-2024 path to the top — those
+      `verifiedTier3` certs over LIA close axiom-free even though
+      we don't have a Lean-side Alethe walker yet.
+    * Anything else `verif.ok = true` (LRA Tier 1 Farkas, future
+      BV / UF / etc.): `proofBrokerCertSound`. Removable per
+      fragment: LRA needs a `linarith`-style closer (or Mathlib);
+      others need their own decision procedure. Tier 3 reification
+      via a Lean-side Alethe walker is the principled finish, but
+      not needed for LIA Tier 3 — omega already nails that with
+      no axiom.
 
     The verbose form calls `logInfo` with `renderPath` first; the bare
     form just throws so unsuccessful invocations are silent. -/
@@ -339,21 +356,16 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
   match path.cert, path.verifyOk with
   | some cert, some true =>
     let fragment := certFragment cert
-    match path.verifyReason with
-    | some .verifiedFarkas =>
-      if fragment == "LIA" then
-        -- Axiom-free closure: omega is sound for LIA, gated by the
-        -- broker-side Farkas verifier having already accepted the
-        -- witness. The witness coefficients are not consumed
-        -- directly; reifying them into a term-mode Farkas proof is
-        -- the next removable step (would require a `ring`/Mathlib-
-        -- equivalent tactic core-Lean lacks today). The main goal
-        -- is already this `goal` (callers fetched it via
-        -- `getMainGoal`), so `evalTactic` runs on it.
-        evalTactic (← `(tactic| omega))
-      else
-        goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
-    | _ =>
+    if fragment == "LIA" then
+      -- Cert-gated omega: the OCaml-side verifier (Tier 1 Farkas,
+      -- Tier 2 case-split, or Tier 3 Alethe walker — whichever
+      -- the verify reason indicates) has already accepted this
+      -- proof, so omega will succeed on the LIA goal. omega itself
+      -- is axiom-free, so the resulting proof term does not depend
+      -- on `proofBrokerCertSound` regardless of the tier the cert
+      -- came from.
+      evalTactic (← `(tactic| omega))
+    else
       goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
   | none, _ =>
     let head := path.attempts.head?.map (·.outcome) |>.map reprStr |>.getD "<no attempts>"
