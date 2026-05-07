@@ -194,6 +194,199 @@ let test_find_farkas_clause_mismatched_arity_rejected () =
   Alcotest.(check bool) "mismatched coef/disjunct arity rejected" true
     (Option.is_none (find_farkas_clause term))
 
+(* --- direct-shape (Case 1) tests ----------------------------------- *)
+
+let test_chase_to_conclusion () =
+  (* (asserted L) → L. *)
+  let p = parse_one "(asserted (<= n 10))" in
+  (match chase_to_conclusion p with
+   | Some t -> Alcotest.(check string) "(asserted L) chases to L"
+                 "(<= n 10)" (Sexp.to_string t)
+   | None -> Alcotest.fail "expected Some literal");
+  (* (mp p1 p2 L) → L (last positional arg). *)
+  let p2 = parse_one "(mp pf rew (>= m 0))" in
+  (match chase_to_conclusion p2 with
+   | Some t -> Alcotest.(check string) "(mp _ _ L) chases to L"
+                 "(>= m 0)" (Sexp.to_string t)
+   | None -> Alcotest.fail "expected Some literal");
+  (* Atom has no chase target. *)
+  Alcotest.(check bool) "atom has no conclusion" true
+    (Option.is_none (chase_to_conclusion (Sexp.Atom "@x40")))
+
+let test_parse_farkas_direct_application () =
+  (* The verbatim shape z3 4.16.0 emits with arith.solver=2 for a
+     three-hypothesis LIA proof. Three premises, three coefs
+     (signed: -1, -1, 1), trailing `false`. *)
+  let app = parse_one
+    "((_ th-lemma arith farkas -1 -1 1) \
+       (mp p1 rew (not (<= n 10))) \
+       (mp p2 rew (>= m 0)) \
+       (asserted (<= (+ n m) 10)) \
+       false)"
+  in
+  match parse_farkas_direct_application app with
+  | None -> Alcotest.fail "expected Some farkas_extract"
+  | Some { coefficients; literals } ->
+    Alcotest.(check int) "three coefficients" 3 (List.length coefficients);
+    Alcotest.(check int) "three literals" 3 (List.length literals);
+    (* Signs preserved at the parser layer; consumers (Z3_farkas)
+       take absolute values. *)
+    Alcotest.(check string) "first coef = -1"
+      "-1" (Linear_arith.rat_to_string (List.nth coefficients 0));
+    Alcotest.(check string) "third coef = 1"
+      "1" (Linear_arith.rat_to_string (List.nth coefficients 2));
+    Alcotest.(check string) "first literal = (not (<= n 10))"
+      "(not (<= n 10))" (Sexp.to_string (List.nth literals 0));
+    Alcotest.(check string) "third literal = (<= (+ n m) 10)"
+      "(<= (+ n m) 10)" (Sexp.to_string (List.nth literals 2))
+
+let test_parse_farkas_direct_rejects_non_false_conclusion () =
+  (* th-lemma not closed by `false` — wrong shape for the direct
+     case (probably feeding a downstream resolution). *)
+  let app = parse_one
+    "((_ th-lemma arith farkas 1) (asserted (<= n 10)) (= (<= n 10) (<= n 10)))"
+  in
+  Alcotest.(check bool) "non-false conclusion rejected" true
+    (Option.is_none (parse_farkas_direct_application app))
+
+let test_parse_farkas_direct_rejects_arity_mismatch () =
+  let app = parse_one
+    "((_ th-lemma arith farkas 1 1) (asserted A) (asserted B) (asserted C) false)"
+  in
+  Alcotest.(check bool) "2 coefs vs 3 premises rejected" true
+    (Option.is_none (parse_farkas_direct_application app))
+
+let test_find_farkas_direct_walks_into_lets () =
+  (* The direct-shape th-lemma is buried inside a let-resolved
+     proof tree. find_farkas_direct's depth-first walk should
+     locate it. *)
+  let envelope =
+    "((set-logic QF_LIA)\n\
+     (proof\n\
+     (let (($p (<= n 10)))\n\
+     (let ((@a (asserted $p)))\n\
+     ((_ th-lemma arith farkas 1) (mp @a (rewrite (= $p $p)) $p) false)))))"
+  in
+  let term = match extract_proof_term envelope with
+    | Some t -> t
+    | None -> Alcotest.fail "envelope unwrap failed"
+  in
+  match find_farkas_direct term with
+  | None -> Alcotest.fail "expected to find a direct th-lemma"
+  | Some { coefficients; literals } ->
+    Alcotest.(check int) "one coef" 1 (List.length coefficients);
+    Alcotest.(check int) "one literal" 1 (List.length literals);
+    Alcotest.(check string) "literal resolves through let"
+      "(<= n 10)" (Sexp.to_string (List.hd literals))
+
+(** End-to-end: feed a real example1-shaped z3 proof (LIA, three
+    hypotheses, direct-shape th-lemma with signed coefficients
+    [-1, -1, 1]) through Z3_farkas.extract on a matching IR.
+    Exercises the abs-value heuristic + Le-vs-Eq matching + pre-
+    verification gate in one path. *)
+let test_z3_farkas_extracts_case1_example1 () =
+  let n = Ir.Var { name = "n" } in
+  let m = Ir.Var { name = "m" } in
+  let ten = Ir.Num_lit { value = "10"; ty = "Int" } in
+  let zero = Ir.Num_lit { value = "0"; ty = "Int" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Eq {
+      ty = "Int";
+      left = App { symbol = "Int.add"; type_args = []; args = [ n; m ] };
+      right = ten;
+    };
+  } in
+  let h3 : Ir.hypothesis = {
+    name = "h3";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ zero; m ] };
+  } in
+  let logic : Ir.logic_classification = {
+    order = "first_order";
+    features_used = [];
+    first_order_fragment = "LIA";
+    decidable_theory = None;
+  } in
+  let ir : Ir.t = {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = logic;
+    goal = {
+      shell = App { symbol = "LE.le"; type_args = []; args = [ n; ten ] };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [
+        { name = "n"; ty = "Int" }; { name = "m"; ty = "Int" }
+      ];
+      hypotheses = [ h1; h3 ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  } in
+  (* Verbatim z3 4.16.0 output for example1 with arith.solver=2. *)
+  let proof_str =
+    "((set-logic QF_LIA)\n\
+     (proof\n\
+     (let (($x27 (<= (+ n m) 10)))\n\
+     (let ((@x40 (rewrite (= $x27 $x27))))\n\
+     (let (($x34 (>= m 0)))\n\
+     (let ((@x33 (rewrite (= (<= 0 m) $x34))))\n\
+     (let (($x30 (<= 0 m)))\n\
+     (let ((@x31 (asserted $x30)))\n\
+     (let (($x37 (not (<= n 10))))\n\
+     (let ((@x38 (asserted $x37)))\n\
+     ((_ th-lemma arith farkas -1 -1 1) (mp @x38 (rewrite (= $x37 $x37)) $x37) (mp (mp @x31 (rewrite (= $x30 $x30)) $x30) @x33 $x34) (mp (mp (asserted $x27) @x40 $x27) @x40 $x27) false)))))))))))"
+  in
+  match Z3_farkas.extract ir proof_str with
+  | Error e ->
+    Alcotest.fail
+      (Printf.sprintf "expected Ok witness, got Error %s: %s"
+         (Z3_farkas.error_kind e) (Z3_farkas.error_detail e))
+  | Ok witness ->
+    (* The witness must round-trip through Farkas.verify
+       (Z3_farkas pre-verifies, but a cross-check confirms the
+       JSON encoding survives serialization). *)
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "witness re-verify failed: %s"
+            (match other with
+             | Not_contradictory { residual } -> "not contradictory: " ^ residual
+             | Negative_coefficient { hypothesis; value } ->
+               Printf.sprintf "neg coef on %s = %s" hypothesis value
+             | _ -> "other failure")))
+
+let test_find_farkas_unified_prefers_clause () =
+  (* Both shapes are syntactically present. The unified walker
+     should pick the clause shape because the outer wrapping (a
+     unit-resolution) contains it. *)
+  let envelope =
+    "((set-logic QF_LRA)\n\
+     (proof\n\
+     (let (($x28 (<= x 3.0)))\n\
+     (let ((@x29 (asserted $x28)))\n\
+     (let (($x25 (>= x 5.0)))\n\
+     (let ((@x26 (asserted $x25)))\n\
+     (unit-resolution ((_ th-lemma arith farkas 1 1) (or (not $x28) (not $x25))) @x26 @x29 false)))))))"
+  in
+  let term = match extract_proof_term envelope with
+    | Some t -> t
+    | None -> Alcotest.fail "envelope unwrap failed"
+  in
+  match find_farkas term with
+  | None -> Alcotest.fail "expected Some farkas_extract"
+  | Some { literals; _ } ->
+    (* Clause shape returns positive literals (no `(not _)` wrapping). *)
+    Alcotest.(check string) "clause-shape literal is positive form"
+      "(<= x 3.0)" (Sexp.to_string (List.nth literals 0))
+
 let () =
   Alcotest.run "z3_proof" [
     "let_resolution", [
@@ -225,5 +418,21 @@ let () =
         `Quick test_find_farkas_clause_returns_none_on_opaque;
       Alcotest.test_case "find_farkas_clause rejects mismatched arity"
         `Quick test_find_farkas_clause_mismatched_arity_rejected;
+    ];
+    "farkas_direct", [
+      Alcotest.test_case "chase_to_conclusion"
+        `Quick test_chase_to_conclusion;
+      Alcotest.test_case "parse direct application"
+        `Quick test_parse_farkas_direct_application;
+      Alcotest.test_case "direct rejects non-false conclusion"
+        `Quick test_parse_farkas_direct_rejects_non_false_conclusion;
+      Alcotest.test_case "direct rejects arity mismatch"
+        `Quick test_parse_farkas_direct_rejects_arity_mismatch;
+      Alcotest.test_case "find_farkas_direct walks into lets"
+        `Quick test_find_farkas_direct_walks_into_lets;
+      Alcotest.test_case "unified find_farkas prefers clause shape"
+        `Quick test_find_farkas_unified_prefers_clause;
+      Alcotest.test_case "z3_farkas extracts case1 example1 (LIA)"
+        `Quick test_z3_farkas_extracts_case1_example1;
     ];
   ]

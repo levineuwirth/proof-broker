@@ -222,3 +222,93 @@ let rec find_farkas_clause (t : Sexp.t) : farkas_extract option =
          match acc with
          | Some _ -> acc
          | None -> find_farkas_clause child) None xs)
+
+(* --- direct (premise-shaped) Farkas th-lemma extraction --- *)
+
+(** Pull the conclusion out of a z3 proof rule application. z3's
+    proof grammar emits each rule as
+    [(rule arg1 ... argN conclusion)] with the conclusion (the
+    proven formula) in the LAST positional slot. Returns [Some
+    last] for a list-shaped term, [None] for an atom (which can
+    only appear post-let-resolution if z3 emits a bare boolean
+    like [false] — that has no separate conclusion).
+
+    Used when chasing each premise of a direct-shape th-lemma to
+    the literal it proves. The walk is non-recursive: we want the
+    immediate conclusion of the proof rule, not a deeper claim
+    that some premise of that rule eventually establishes. *)
+let chase_to_conclusion (t : Sexp.t) : Sexp.t option =
+  match t with
+  | Atom _ -> None
+  | List xs ->
+    (match List.rev xs with
+     | [] -> None
+     | last :: _ -> Some last)
+
+(** Destructure a Farkas th-lemma application of the
+    "direct from premises" shape:
+    [((_ th-lemma arith farkas C1...Cn) p1 p2 ... pn false)].
+
+    Each [pi] is a proof term whose conclusion is the literal
+    [Li] participating in the Farkas combination; we chase each
+    to its literal via [chase_to_conclusion]. The trailing
+    [false] is z3's conclusion for the th-lemma itself.
+
+    The coefficients are returned signed exactly as z3 emits them.
+    Higher-level consumers (notably [Z3_farkas]) decide how to
+    interpret the signs — for example, taking absolute values and
+    delegating to [Farkas.verify] as the source of truth, since
+    z3's internal sign convention for direct-shape th-lemmas
+    isn't documented and a verifying-or-fall-through heuristic is
+    safer than committing to a guess.
+
+    Returns [None] if the application doesn't match this shape,
+    if the conclusion isn't [false], if any premise is atomic, or
+    if the premise count doesn't equal the coefficient count. *)
+let parse_farkas_direct_application (app : Sexp.t)
+  : farkas_extract option =
+  match app with
+  | Sexp.List (head :: rest) when rest <> [] ->
+    (match parse_farkas_rule_head head with
+     | None -> None
+     | Some coefficients ->
+       (match List.rev rest with
+        | Sexp.Atom "false" :: rev_premises ->
+          let premises = List.rev rev_premises in
+          if List.length premises <> List.length coefficients then None
+          else
+            let literals = List.filter_map chase_to_conclusion premises in
+            if List.length literals = List.length premises then
+              Some { coefficients; literals }
+            else None
+        | _ -> None))
+  | _ -> None
+
+(** Walk a proof term depth-first looking for the first
+    direct-shaped Farkas th-lemma application. See
+    [find_farkas_clause] for the analogous walker over the
+    clause-introducing shape; the structure is identical. *)
+let rec find_farkas_direct (t : Sexp.t) : farkas_extract option =
+  match parse_farkas_direct_application t with
+  | Some extract -> Some extract
+  | None ->
+    (match t with
+     | Atom _ -> None
+     | List xs ->
+       List.fold_left (fun acc child ->
+         match acc with
+         | Some _ -> acc
+         | None -> find_farkas_direct child) None xs)
+
+(** Unified Farkas extraction: try the clause-introducing shape
+    first (cleaner literals, unsigned coefficients in practice),
+    falling back to the direct-from-premises shape when no clause
+    th-lemma is present. The order matters: for a proof that has
+    BOTH shapes nested, the outer clause shape wins because the
+    clause shape's literals are positive atoms (so consumers don't
+    have to chase any further) while direct-shape literals can be
+    [(not P)] forms requiring an extra negation step. *)
+let find_farkas (t : Sexp.t) : farkas_extract option =
+  match find_farkas_clause t with
+  | Some e -> Some e
+  | None -> find_farkas_direct t
