@@ -67,4 +67,19 @@ example (n : Int) (h : n ≤ 5) : n ≤ 10 := by
 example (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
   proof_broker? [cvc4]
 
+/-- Named LIA Tier 1 goal proven via cvc4 (so `verifiedFarkas`
+    fires; bare `proof_broker` would prefer cvc5's Tier 3 path
+    instead). The closer is `omega`, axiom-free, so this
+    theorem's transitive axiom set must not contain
+    `proofBrokerCertSound` — verified inline by `#print axioms`
+    below. Coexists in this same module thanks to the FFI shim's
+    runtime-system lock discipline; before that fix, mixing a
+    named theorem + `#print axioms` with the existing examples
+    above tripped an OCaml domain-lock panic. -/
+theorem tier1_lia_axiom_free
+    (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
+  proof_broker [cvc4]
+
+#print axioms tier1_lia_axiom_free
+
 end ProofBroker.Test

@@ -87,20 +87,3 @@ lean_lib ProofBrokerTest where
     "--load-dynlib=../sdk/_build/default/ffi/proof_broker_ffi.so"
   ]
 
-/-- Axiom-dependency check for the Tier 1 LIA closer. Compiled in
-    its own elaborator process (separate `lean_lib` from
-    `ProofBrokerTest`), with one `proof_broker` invocation
-    followed by one `#print axioms`. The build emits the axiom
-    list as an info line; CI grep / human inspection asserts the
-    trust axiom `proofBrokerCertSound` is absent. Splitting from
-    `ProofBrokerTest` sidesteps an OCaml lifecycle panic that
-    appears when many FFI calls + kernel-traversing commands
-    coexist in a single module. -/
-@[default_target]
-lean_lib ProofBrokerAxiomCheck where
-  roots := #[`Test.AxiomCheck]
-  precompileModules := false
-  moreLeanArgs := #[
-    "--load-dynlib=.lake/build/lib/libpbglue.so",
-    "--load-dynlib=../sdk/_build/default/ffi/proof_broker_ffi.so"
-  ]

@@ -9,10 +9,15 @@
 ; Downstream consumers (Lean via @[extern], the C smoke test) link against
 ; this single .so and call the C ABI declared in proof_broker_shim.h.
 
+; threads.posix pulls in the runtime support for caml_c_thread_register
+; / caml_c_thread_unregister, which the C shim uses to register
+; non-OCaml-created caller threads (the shim grabs the runtime-system
+; lock around each OCaml callback so multi-threaded callers like Lean
+; don't trip OCaml 5's "no domain lock held" assertion).
 (executable
  (name proof_broker_ffi)
  (modes (native shared_object))
- (libraries proof_broker yojson)
+ (libraries proof_broker yojson threads.posix)
  (foreign_stubs
   (language c)
   (names proof_broker_shim)))
