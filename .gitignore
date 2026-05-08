@@ -22,3 +22,7 @@ _build/
 .lake/
 lakefile.olean
 lake-manifest.json
+
+# Locally cached cvc5 release archive. Adapters spawn the system-installed
+# solver, not anything from this zip; it just lives in-repo for offline reinstall.
+cvc5-*.zip

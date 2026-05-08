@@ -1,7 +1,0 @@
-((set-logic QF_LRA)
-(proof
-(let (($x28 (<= x 3.0)))
-(let ((@x29 (asserted $x28)))
-(let (($x25 (>= x 5.0)))
-(let ((@x26 (asserted $x25)))
-(unit-resolution ((_ th-lemma arith farkas 1 1) (or (not $x28) (not $x25))) @x26 @x29 false)))))))

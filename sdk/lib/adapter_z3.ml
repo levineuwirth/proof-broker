@@ -13,16 +13,18 @@
        application via [Z3_farkas.extract]. We force
        [smt.arith.solver=2] so z3 emits the [farkas] tag with
        explicit coefficients (the default new-arith-solver
-       sometimes emits opaque [(_ th-lemma arith)]). Currently
-       handles the clause-introducing shape
-       [((_ th-lemma arith farkas ...) (or (not L1) ...))]; the
-       direct shape [((_ th-lemma arith farkas ...) p1 ... pn
-       false)] with signed coefficients falls through to step 2
-       pending a sign-convention audit.
+       sometimes emits opaque [(_ th-lemma arith)]). The unified
+       walker [Z3_proof.find_farkas] handles both surface shapes:
+       the clause-introducing form
+       [((_ th-lemma arith farkas ...) (or (not L1) ...))] and
+       the direct-from-premises form
+       [((_ th-lemma arith farkas ...) p1 ... pn false)] with
+       signed coefficients (consumers take absolute values, with
+       [Farkas.verify] gating the result).
     2. Internal Tier 1 — [Farkas_search.try_close] runs a bounded
        search over the IR directly, rescuing Farkas-shaped goals
-       z3 closed via the direct-shape th-lemma or theory rewrites
-       we don't extract from yet.
+       z3 closed through theory rewrites the native extractor
+       can't follow.
     3. Tier 0 oracle — falls back when neither produced a
        soundness-checkable witness.
 
@@ -284,17 +286,19 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Error _ -> mk_oracle ()
             in
             (* Native Tier 1: parse z3's proof and extract Farkas
-               coefficients from a [(_ th-lemma arith farkas
-               C1...Cn) (or (not L1) ... (not Ln))] application.
-               When that succeeds the witness is verified
+               coefficients from either surface shape — the
+               clause-introducing
+               [(_ th-lemma arith farkas C1...Cn) (or (not L1) ...
+               (not Ln))] or the direct-from-premises
+               [(_ th-lemma arith farkas C1...Cn) p1 ... pn false].
+               When extraction succeeds the witness is verified
                independently by the broker via [Farkas.verify], so
                the soundness chain doesn't depend on z3 — only the
                Farkas multipliers came from z3's proof.
 
                When extraction fails (no proof body, no
-               Farkas-tagged th-lemma, or the direct shape with
-               signed coefficients which we don't handle yet) we
-               fall through to the internal closer. *)
+               Farkas-tagged th-lemma, or theory rewrites we can't
+               follow) we fall through to the internal closer. *)
             let cert =
               match extract_proof_body stdout with
               | None -> try_internal_closer ()
