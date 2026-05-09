@@ -119,9 +119,10 @@ let resources_now ~timeout_ms : Certificate.resources = {
 }
 
 let fragment_of_logic = function
-  | "QF_LIA" -> "LIA"
-  | "QF_LRA" -> "LRA"
-  | "QF_BV"  -> "BV"
+  | "QF_LIA"   -> "LIA"
+  | "QF_LRA"   -> "LRA"
+  | "QF_BV"    -> "BV"
+  | "QF_UF" | "QF_UFLIA" | "QF_UFLRA" -> "UF"
   | other -> other
 
 (** Build the refinement record from refinement output + chosen logic. *)

@@ -122,13 +122,31 @@ def matchBitVecType? (ty : Expr) : Option Nat :=
   | (``BitVec, #[n]) => matchNatLiteral? n
   | _ => none
 
-/-- Decode a type `Expr` as an IR `TypeRef`. Core handles `Int` and
-    `BitVec n`; everything else falls through to the registered
-    `reifierExt`. -/
-def reifyType (ty : Expr) : MetaM TypeRef := do
+/-- Decode a type `Expr` as an IR `TypeRef`. Core handles `Int`,
+    `BitVec n`, and arrow types `T1 → T2 → ... → R` (encoded as
+    `T1->T2->...->R`); everything else falls through to the
+    registered `reifierExt`. The arrow encoding is the IR
+    convention for UF — the SDK's [Smtlib.parse_arrow_type] +
+    [emit_decls] turn this into `(declare-fun f (T1 T2) R)` SMT-LIB
+    output. -/
+partial def reifyType (ty : Expr) : MetaM TypeRef := do
   if ty.isConstOf ``Int then return "Int"
   if let some n := matchBitVecType? ty then
     return s!"BitVec({n})"
+  if ty.isArrow then
+    -- Walk every arrow in the chain so [(T1 → T2) → R] becomes
+    -- `(T1->T2)->R` etc. — the SDK's parse_arrow_type splits on
+    -- the rightmost `->`, but we encode strictly left-to-right
+    -- which the parser accepts because all our UF types are
+    -- first-order (no higher-order arguments).
+    let mut t := ty
+    let mut parts : Array TypeRef := #[]
+    while t.isArrow do
+      let dom := t.bindingDomain!
+      parts := parts.push (← reifyType dom)
+      t := t.bindingBody!
+    parts := parts.push (← reifyType t)
+    return String.intercalate "->" parts.toList
   match ← reifierExt.get with
   | some ext =>
     match ← ext.reifyType ty with
@@ -246,6 +264,21 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   | (``Not, #[a]) =>
       return .not_ (← reifyTerm a)
   | _ =>
+      -- UF fallback: the head is a free variable applied to
+      -- arguments, with an arrow-typed declaration in scope.
+      -- Emit `App { symbol = "UF.<fname>" }` and the SDK
+      -- serializer takes care of the [declare-fun] /
+      -- application emission. Anything else is genuinely
+      -- unsupported.
+      let fn := e.getAppFn
+      if fn.isFVar && e.getAppNumArgs > 0 then
+        let lctx ← getLCtx
+        let decl := lctx.get! fn.fvarId!
+        if decl.type.isArrow then
+          let fname := decl.userName.toString
+          let argList := e.getAppArgs.toList
+          let reifiedArgs ← argList.mapM reifyTerm
+          return .app s!"UF.{fname}" [] reifiedArgs
       throwError "proof_broker: unsupported expression: {e}"
 
 /-- True iff any subterm carries a `BitVec(N)` type tag, on a
@@ -271,6 +304,24 @@ partial def shellMentionsBV : ShellTerm → Bool
   | .lambda _ b => shellMentionsBV b
   | .opaque_ _ => false
 
+/-- True iff any subterm carries a `UF.*` App-symbol — the
+    bridge-level convention for uninterpreted-function
+    applications. The SDK's [Smtlib.shell_mentions_uf] is the
+    OCaml-side mirror used by [pick_logic] for SMT-LIB output;
+    the Lean-side function here drives the IR's fragment label
+    for [capability_match]. -/
+partial def shellMentionsUF : ShellTerm → Bool
+  | .var _ | .const _ | .numLit _ _ => false
+  | .eq _ a b => shellMentionsUF a || shellMentionsUF b
+  | .app sym _ args =>
+    sym.startsWith "UF." || args.any shellMentionsUF
+  | .and_ a b | .or_ a b => shellMentionsUF a || shellMentionsUF b
+  | .implies a b => shellMentionsUF a || shellMentionsUF b
+  | .not_ a => shellMentionsUF a
+  | .forall_ _ _ b | .exists_ _ _ b => shellMentionsUF b
+  | .lambda _ b => shellMentionsUF b
+  | .opaque_ _ => false
+
 /-- Reify the goal + Prop-typed hypotheses + Int-typed free variables
     of `mvarId` into an IR document tagged for the LIA fragment.
 
@@ -287,6 +338,7 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   let extOpt ← reifierExt.get
   let mut sawExtensionType : Bool := false
   let mut sawBV : Bool := false
+  let mut sawUF : Bool := false
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
     let ty := decl.type
@@ -298,6 +350,12 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     else if let some n := matchBitVecType? ty then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := s!"BitVec({n})" }]
       sawBV := true
+    else if ty.isArrow then
+      -- Function-typed local: this is a UF candidate. Encode the
+      -- type as the arrow chain the SDK serializer parses.
+      let tref ← reifyType ty
+      freeVars := freeVars ++ [{ name := decl.userName.toString, ty := tref }]
+      sawUF := true
     else
       match extOpt with
       | some ext =>
@@ -307,18 +365,26 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
           sawExtensionType := true
         | none => pure ()
       | none => pure ()
-  -- Pick fragment label. BV wins over LIA/extension if any free var
-  -- is BitVec-typed OR any goal/hypothesis term mentions a BV type
-  -- tag — capability_match keys on this label, so closed-BV-term
-  -- goals (no BitVec free vars, just BV literals + ops) need to
-  -- carry "BV" too or cvc4-style LIA-only manifests would
-  -- spuriously match. Otherwise extension wins if it claimed any
-  -- free var; otherwise default LIA.
+  -- Pick fragment label. Precedence:
+  --   BV  wins if any free var is BitVec-typed OR any subterm
+  --       mentions a BV type tag (capability_match keys on this
+  --       label, so closed-BV-term goals need to carry "BV" too
+  --       or cvc4-style LIA-only manifests would spuriously match).
+  --   UF  wins next if any free var is arrow-typed OR any subterm
+  --       carries a UF.* App symbol — sdk's pick_logic emits
+  --       QF_UFLIA / QF_UFLRA as appropriate from term content,
+  --       this label is just for capability_match.
+  --   Extension wins if it claimed any free var (Real → LRA).
+  --   Otherwise default LIA.
   let bvInTerms :=
     shellMentionsBV goalShell
     || hypotheses.any (fun h => shellMentionsBV h.shell)
+  let ufInTerms :=
+    shellMentionsUF goalShell
+    || hypotheses.any (fun h => shellMentionsUF h.shell)
   let fragment :=
     if sawBV || bvInTerms then "BV"
+    else if sawUF || ufInTerms then "UF"
     else match extOpt with
       | some ext => if sawExtensionType then ext.irFragment else "LIA"
       | none => "LIA"
@@ -577,6 +643,37 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       -- elaboration time fall through to the trust axiom.
       try evalTactic (← `(tactic| decide))
       catch _ => goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+    else if fragment == "UF" then
+      -- Cert-gated congruence: cvc5 / z3 already accepted the
+      -- goal under QF_UFLIA / QF_UFLRA, so the goal is
+      -- semantically valid. We try a small chain of constructive
+      -- closers — `rfl` for trivially-defeq closed UF terms,
+      -- then `subst_eqs` (substitutes equation hypotheses
+      -- everywhere) followed by `rfl`/`omega` for the common
+      -- congruence-style goal `f x = f y` with `x = y` in
+      -- scope. Falls through to the trust axiom on shapes the
+      -- chain can't close (deeper UF reasoning, theory
+      -- combinations the SAT-style solver handled but Lean's
+      -- propositional toolkit doesn't). `subst_eqs` and friends
+      -- are themselves axiom-free, so closures inside the chain
+      -- don't introduce a trust assumption.
+      -- Tactics tried, in order:
+      --   subst_eqs; rfl  — the `f x = f y` from `x = y` shape;
+      --                     covers the canonical congruence case.
+      --   simp_all        — heavier rewriting, picks up rewrites
+      --                     under conjunctions / nested structure
+      --                     subst_eqs misses.
+      -- If both fail, the cert verdict still holds and we route
+      -- through the trust axiom. `subst_eqs` and `simp_all` are
+      -- themselves axiom-free (the `propext` they may pull in is
+      -- already in the LIA path's footprint), so the chain
+      -- doesn't introduce a stronger trust assumption than
+      -- omega/decide do elsewhere.
+      try evalTactic (← `(tactic| subst_eqs; rfl))
+      catch _ =>
+        try evalTactic (← `(tactic| simp_all))
+        catch _ =>
+          goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
     else
       -- Non-LIA / non-BV: dispatch through the registered
       -- ReifierExt's closer if present (e.g. ProofBrokerMathlib

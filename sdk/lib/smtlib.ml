@@ -150,6 +150,29 @@ let sort_of_type_ref ~site (t : Ir.type_ref) : (string, error) result =
      | Some n -> Ok (Printf.sprintf "(_ BitVec %d)" n)
      | None -> Error (Unsupported_type { ty = other; site }))
 
+(** Parse an arrow-type ref ["T1->T2->...->R"] into [(arg_types,
+    return_type)]. Returns [None] for any non-arrow shape (the
+    plain primitive types fall through). The arrow separator is
+    [->] without surrounding whitespace; the convention is set by
+    the bridge reifiers (Lean uses [->] in its IR.TypeRef strings;
+    Rocq mirrors). Reused by free-var emission ([declare-fun] when
+    arity > 0) and by [pick_logic]'s UF-presence detector. *)
+let parse_arrow_type (t : Ir.type_ref) : (string list * string) option =
+  let parts = String.split_on_char '>' t in
+  (* Crude: split on '>' then post-process the trailing '-'. A
+     two-pass approach is more legible than threading a state
+     machine — UF type-refs are always shallow (one or two arrows),
+     so the cost is O(n). *)
+  let stripped = List.map (fun p ->
+    let n = String.length p in
+    if n > 0 && p.[n - 1] = '-' then String.sub p 0 (n - 1) else p)
+    parts
+  in
+  match List.rev stripped with
+  | last :: rest_rev when List.length stripped >= 2 ->
+    Some (List.rev rest_rev, last)
+  | _ -> None
+
 (* --- specialization side-channel ------------------------------------- *)
 
 (** A method specialization the serializer applied: ["HAdd.hAdd"] →
@@ -351,6 +374,32 @@ and emit_bin_op ~specs op a b =
   Ok (Printf.sprintf "(%s %s %s)" op sa sb)
 
 and emit_app ~specs symbol args =
+  (* UF.<name> symbols correspond to declared uninterpreted
+     functions; strip the prefix and emit a generic application.
+     The free-var declaration ([emit_decls]) handles the matching
+     [declare-fun]. *)
+  let uf_prefix = "UF." in
+  let plen = String.length uf_prefix in
+  let slen = String.length symbol in
+  let uf_name =
+    if slen > plen && String.sub symbol 0 plen = uf_prefix
+    then Some (String.sub symbol plen (slen - plen))
+    else None
+  in
+  match uf_name with
+  | Some name ->
+    let ( let* ) = Result.bind in
+    let* sname = format_identifier ~site:("UF:" ^ name) name in
+    add_spec specs symbol ("uf:" ^ name);
+    let rec emit_args acc = function
+      | [] -> Ok (List.rev acc)
+      | a :: rest ->
+        let* sa = emit_term ~specs a in
+        emit_args (sa :: acc) rest
+    in
+    let* arg_strs = emit_args [] args in
+    Ok (Printf.sprintf "(%s %s)" sname (String.concat " " arg_strs))
+  | None ->
   let target_lookup =
     match arith_target symbol with
     | Some _ as r -> r
@@ -361,7 +410,8 @@ and emit_app ~specs symbol args =
     Error (Unsupported_symbol {
       symbol;
       detail = "no SMT-LIB mapping; expected refined LIA / LRA / BV \
-                primitive or one of the recognized typeclass methods";
+                primitive, a UF.<name> uninterpreted-function symbol, \
+                or one of the recognized typeclass methods";
     })
   | Some (target, source) ->
     add_spec specs source target;
@@ -426,6 +476,30 @@ let rec shell_mentions_bv (t : Ir.shell_term) : bool =
   | Lambda { body; _ } -> shell_mentions_bv body
   | Opaque _ -> false
 
+(** True iff any subterm carries a [UF.<name>] App-symbol (the
+    convention for uninterpreted functions). The corresponding
+    function declaration lives in [free_vars] with an arrow-type
+    [ty]; [pick_logic] consults both. *)
+let rec shell_mentions_uf (t : Ir.shell_term) : bool =
+  match t with
+  | Var _ | Const _ | Num_lit _ -> false
+  | Eq { left; right; _ } ->
+    shell_mentions_uf left || shell_mentions_uf right
+  | App { symbol; args; _ } ->
+    let prefix = "UF." in
+    let plen = String.length prefix in
+    let slen = String.length symbol in
+    (slen > plen && String.sub symbol 0 plen = prefix)
+    || List.exists shell_mentions_uf args
+  | And { left; right } | Or { left; right } ->
+    shell_mentions_uf left || shell_mentions_uf right
+  | Implies { antecedent; consequent } ->
+    shell_mentions_uf antecedent || shell_mentions_uf consequent
+  | Not { operand } -> shell_mentions_uf operand
+  | Forall { body; _ } | Exists { body; _ } -> shell_mentions_uf body
+  | Lambda { body; _ } -> shell_mentions_uf body
+  | Opaque _ -> false
+
 let pick_logic (ir : Ir.t) : string =
   let any_bv_free_var =
     List.exists
@@ -439,6 +513,16 @@ let pick_logic (ir : Ir.t) : string =
   in
   if any_bv_free_var || any_bv_term then "QF_BV"
   else
+    let any_uf_free_var =
+      List.exists
+        (fun (fv : Ir.free_var) -> Option.is_some (parse_arrow_type fv.ty))
+        ir.context.free_vars
+    in
+    let any_uf_term =
+      shell_mentions_uf ir.goal.shell
+      || List.exists (fun (h : Ir.hypothesis) -> shell_mentions_uf h.shell)
+         ir.context.hypotheses
+    in
     let any_real_free_var =
       List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
         ir.context.free_vars
@@ -449,7 +533,18 @@ let pick_logic (ir : Ir.t) : string =
            Farkas.shell_mentions_real h.shell)
          ir.context.hypotheses
     in
-    if any_real_free_var || any_real_term then "QF_LRA" else "QF_LIA"
+    let real = any_real_free_var || any_real_term in
+    let uf = any_uf_free_var || any_uf_term in
+    (* Composition rules — SMT-LIB's logic alphabet uses positional
+       prefixes; we just produce the relevant 2-3 of them. Adding
+       a non-LIA arithmetic fragment alongside UF (or arrays etc.)
+       expands this match exhaustively; in scope today, just
+       LIA / LRA crossed with UF presence. *)
+    match uf, real with
+    | true,  true  -> "QF_UFLRA"
+    | true,  false -> "QF_UFLIA"
+    | false, true  -> "QF_LRA"
+    | false, false -> "QF_LIA"
 
 (** Assemble the SMT-LIB script. Order:
     1. [(set-logic ...)] — picked from free-var sorts.
@@ -468,13 +563,37 @@ let emit (ir : Ir.t) : (script, error) result =
     let rec emit_decls = function
       | [] -> Ok ()
       | (fv : Ir.free_var) :: rest ->
-        let* sort = sort_of_type_ref ~site:("free_var:" ^ fv.name) fv.ty in
         let* name =
           format_identifier ~site:("free_var:" ^ fv.name) fv.name
         in
-        Buffer.add_string buf
-          (Printf.sprintf "(declare-const %s %s)\n" name sort);
-        emit_decls rest
+        (match parse_arrow_type fv.ty with
+         | Some (arg_tys, ret_ty) ->
+           (* Function-typed free var: emit (declare-fun f (T1 T2) R).
+              The IR convention is that arrow-typed free_vars
+              correspond to UF.* App symbols at use sites; the
+              serializer uses the same name (sans "UF." prefix —
+              [emit_app] handles the strip). *)
+           let* arg_sorts =
+             List.fold_left (fun acc t ->
+               let* acc = acc in
+               let* sort =
+                 sort_of_type_ref ~site:("free_var:" ^ fv.name ^ ":arg") t
+               in
+               Ok (acc @ [ sort ]))
+               (Ok []) arg_tys
+           in
+           let* ret_sort =
+             sort_of_type_ref ~site:("free_var:" ^ fv.name ^ ":ret") ret_ty
+           in
+           Buffer.add_string buf
+             (Printf.sprintf "(declare-fun %s (%s) %s)\n"
+                name (String.concat " " arg_sorts) ret_sort);
+           emit_decls rest
+         | None ->
+           let* sort = sort_of_type_ref ~site:("free_var:" ^ fv.name) fv.ty in
+           Buffer.add_string buf
+             (Printf.sprintf "(declare-const %s %s)\n" name sort);
+           emit_decls rest)
     in
     emit_decls ir.context.free_vars
   in

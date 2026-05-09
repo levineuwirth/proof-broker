@@ -459,6 +459,63 @@ let test_emit_bv_zero_width_rejected () =
   | Ok s -> Alcotest.fail ("expected rejection of width 0, got: " ^ s)
   | Error _ -> ()
 
+(* --- UF vertical slice --------------------------------------------- *)
+
+let test_parse_arrow () =
+  Alcotest.(check (option (pair (list string) string))) "Int->Int → ([Int], Int)"
+    (Some ([ "Int" ], "Int")) (Smtlib.parse_arrow_type "Int->Int");
+  Alcotest.(check (option (pair (list string) string))) "Int->Int->Bool"
+    (Some ([ "Int"; "Int" ], "Bool"))
+    (Smtlib.parse_arrow_type "Int->Int->Bool");
+  Alcotest.(check (option (pair (list string) string))) "Int (no arrow)"
+    None (Smtlib.parse_arrow_type "Int")
+
+let test_emit_uf_declare_fun () =
+  let ir = make_ir
+    ~free_vars:[ { name = "f"; ty = "Int->Int" }; { name = "x"; ty = "Int" } ]
+    (Eq { ty = "Int";
+          left = App { symbol = "UF.f"; type_args = [];
+                       args = [ Var { name = "x" } ] };
+          right = App { symbol = "UF.f"; type_args = [];
+                        args = [ Var { name = "x" } ] } })
+  in
+  match Smtlib.emit ir with
+  | Ok script ->
+    Alcotest.(check bool) "(declare-fun f (Int) Int) emitted" true
+      (try
+         ignore (Str.search_forward
+           (Str.regexp_string "(declare-fun f (Int) Int)")
+           script.body 0); true
+       with Not_found -> false);
+    Alcotest.(check bool) "(declare-const x Int) emitted" true
+      (try
+         ignore (Str.search_forward
+           (Str.regexp_string "(declare-const x Int)")
+           script.body 0); true
+       with Not_found -> false)
+  | Error e ->
+    Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
+let test_emit_uf_app () =
+  let t = Ir.App {
+    symbol = "UF.f"; type_args = [];
+    args = [ Var { name = "x" }; Var { name = "y" } ];
+  } in
+  Alcotest.(check string) "(f x y)" "(f x y)" (emit_term_ok t)
+
+let test_emit_logic_uflia () =
+  let ir = make_ir
+    ~free_vars:[ { name = "f"; ty = "Int->Int" } ]
+    (Eq { ty = "Int";
+          left = App { symbol = "UF.f"; type_args = [];
+                       args = [ Num_lit { value = "0"; ty = "Int" } ] };
+          right = App { symbol = "UF.f"; type_args = [];
+                        args = [ Num_lit { value = "0"; ty = "Int" } ] } })
+  in
+  match Smtlib.emit ir with
+  | Ok script -> Alcotest.(check string) "QF_UFLIA" "QF_UFLIA" script.logic
+  | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
 let () =
   Alcotest.run "smtlib" [
     "term emission", [
@@ -531,5 +588,13 @@ let () =
       Alcotest.test_case "negative BV literal rejected"
         `Quick test_emit_bv_negative_rejected;
       Alcotest.test_case "BitVec(0) rejected" `Quick test_emit_bv_zero_width_rejected;
+    ];
+    "uf", [
+      Alcotest.test_case "arrow type-ref parse" `Quick test_parse_arrow;
+      Alcotest.test_case "declare-fun for arrow free_var"
+        `Quick test_emit_uf_declare_fun;
+      Alcotest.test_case "UF symbol app" `Quick test_emit_uf_app;
+      Alcotest.test_case "QF_UFLIA logic with UF + Int"
+        `Quick test_emit_logic_uflia;
     ];
   ]

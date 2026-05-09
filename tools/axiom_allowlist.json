@@ -10,6 +10,8 @@
       [],
     "ProofBroker.Test.bv_compare_axiom_free":
       [],
+    "ProofBroker.Test.uf_axiom_free":
+      [],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"]
   },

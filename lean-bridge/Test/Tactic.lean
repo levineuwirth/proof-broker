@@ -117,4 +117,20 @@ theorem bv_compare_axiom_free : (3 : BitVec 8) < 5 := by
 
 #print axioms bv_compare_axiom_free
 
+/-- UF vertical-slice gate: a congruence-style goal with an
+    uninterpreted function `f : Int → Int` and an equality hypothesis
+    routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated
+    `subst_eqs; rfl` closer). The reifier walks the function-typed
+    free var into the IR's free_vars list with `ty = "Int->Int"`,
+    the SDK serializer emits `(declare-fun f (Int) Int)` plus
+    `(f x)` / `(f y)` use sites, the verifier envelope-checks, and
+    the closer's `subst h; rfl` chain discharges constructively.
+    `subst_eqs` is axiom-free; this theorem's transitive axiom set
+    matches the LIA / BV paths' [propext, Quot.sound] (or fewer). -/
+theorem uf_axiom_free
+    (f : Int → Int) (x y : Int) (h : x = y) : f x = f y := by
+  proof_broker
+
+#print axioms uf_axiom_free
+
 end ProofBroker.Test
