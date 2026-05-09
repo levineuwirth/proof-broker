@@ -377,6 +377,72 @@ let test_emit_unsupported_type_rejected () =
   | Error (Unsupported_type { ty = "alpha"; _ }) -> ()
   | _ -> Alcotest.fail "expected Unsupported_type alpha"
 
+(* --- BV vertical slice ----------------------------------------------- *)
+
+let bv8 : Ir.type_ref = "BitVec(8)"
+
+let test_emit_bv_sort () =
+  let ir = make_ir
+    ~free_vars:[ { name = "x"; ty = bv8 } ]
+    (Eq { ty = bv8; left = Var { name = "x" }; right = Var { name = "x" } })
+  in
+  match Smtlib.emit ir with
+  | Ok script ->
+    Alcotest.(check bool) "declare-const x with BitVec sort" true
+      (try
+         ignore (Str.search_forward
+           (Str.regexp_string "(declare-const x (_ BitVec 8))")
+           script.body 0); true
+       with Not_found -> false)
+  | Error e ->
+    Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
+let test_emit_bv_literal () =
+  Alcotest.(check string) "BV literal 5 over BV8 → (_ bv5 8)"
+    "(_ bv5 8)" (emit_term_ok (Num_lit { value = "5"; ty = bv8 }))
+
+let test_emit_bvadd () =
+  let t = Ir.App {
+    symbol = "BV.add"; type_args = [];
+    args = [
+      Var { name = "x" };
+      Num_lit { value = "3"; ty = bv8 };
+    ];
+  } in
+  Alcotest.(check string) "(bvadd x (_ bv3 8))"
+    "(bvadd x (_ bv3 8))" (emit_term_ok t)
+
+let test_emit_bv_eq () =
+  let t = Ir.Eq {
+    ty = bv8;
+    left = Var { name = "x" };
+    right = Num_lit { value = "8"; ty = bv8 };
+  } in
+  Alcotest.(check string) "(= x (_ bv8 8))"
+    "(= x (_ bv8 8))" (emit_term_ok t)
+
+let test_emit_logic_bv () =
+  let ir = make_ir
+    ~free_vars:[ { name = "x"; ty = bv8 } ]
+    (Eq { ty = bv8;
+          left = Var { name = "x" };
+          right = Num_lit { value = "0"; ty = bv8 } })
+  in
+  match Smtlib.emit ir with
+  | Ok script -> Alcotest.(check string) "QF_BV" "QF_BV" script.logic
+  | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
+let test_emit_bv_negative_rejected () =
+  let specs = ref [] in
+  match Smtlib.emit_term ~specs (Num_lit { value = "-1"; ty = bv8 }) with
+  | Ok s -> Alcotest.fail ("expected rejection, got: " ^ s)
+  | Error _ -> ()
+
+let test_emit_bv_zero_width_rejected () =
+  match Smtlib.sort_of_type_ref ~site:"test" "BitVec(0)" with
+  | Ok s -> Alcotest.fail ("expected rejection of width 0, got: " ^ s)
+  | Error _ -> ()
+
 let () =
   Alcotest.run "smtlib" [
     "term emission", [
@@ -437,5 +503,15 @@ let () =
       Alcotest.test_case "QF_LRA from Real-typed Eq with no Real free var"
         `Quick test_emit_logic_lra_from_real_eq_only;
       Alcotest.test_case "full script" `Quick test_emit_full_script;
+    ];
+    "bv", [
+      Alcotest.test_case "BitVec(8) sort" `Quick test_emit_bv_sort;
+      Alcotest.test_case "BV literal" `Quick test_emit_bv_literal;
+      Alcotest.test_case "bvadd" `Quick test_emit_bvadd;
+      Alcotest.test_case "BV equality" `Quick test_emit_bv_eq;
+      Alcotest.test_case "QF_BV logic" `Quick test_emit_logic_bv;
+      Alcotest.test_case "negative BV literal rejected"
+        `Quick test_emit_bv_negative_rejected;
+      Alcotest.test_case "BitVec(0) rejected" `Quick test_emit_bv_zero_width_rejected;
     ];
   ]

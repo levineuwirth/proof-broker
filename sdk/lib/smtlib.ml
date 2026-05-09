@@ -125,12 +125,30 @@ let format_identifier ~site (name : string) : (string, error) result =
 
 (* --- type mapping ---------------------------------------------------- *)
 
+(** Parse a [BitVec(N)] type-ref into its width. Mirrors the form
+    documented in [Ir.type_ref]; returns [None] for any other shape. *)
+let parse_bitvec_width (t : Ir.type_ref) : int option =
+  let prefix = "BitVec(" in
+  let plen = String.length prefix in
+  let tlen = String.length t in
+  if tlen > plen
+     && String.sub t 0 plen = prefix
+     && t.[tlen - 1] = ')'
+  then
+    match int_of_string_opt (String.sub t plen (tlen - plen - 1)) with
+    | Some n when n > 0 -> Some n
+    | _ -> None
+  else None
+
 let sort_of_type_ref ~site (t : Ir.type_ref) : (string, error) result =
   match t with
   | "Int" -> Ok "Int"
   | "Real" -> Ok "Real"
   | "Bool" | "Prop" -> Ok "Bool"
-  | other -> Error (Unsupported_type { ty = other; site })
+  | other ->
+    (match parse_bitvec_width other with
+     | Some n -> Ok (Printf.sprintf "(_ BitVec %d)" n)
+     | None -> Error (Unsupported_type { ty = other; site }))
 
 (* --- specialization side-channel ------------------------------------- *)
 
@@ -161,6 +179,20 @@ let arith_target = function
   | "LT.lt" | "<"  -> Some ("<", "LT.lt")
   | "GE.ge" | ">=" -> Some (">=", "GE.ge")
   | "GT.gt" | ">"  -> Some (">", "GT.gt")
+  | _ -> None
+
+(** BV-flavored symbol mapping. Same shape as [arith_target] but for
+    QF_BV operators. The Phase-4-equivalent BV reach is intentionally
+    minimal here: just enough to ship the [BV.add] / Eq vertical
+    slice. Add bvsub / bvmul / bvand / bvor / bvxor / bvult / bvule
+    / bvslt / bvsle when a consumer needs them. *)
+let bv_target = function
+  | "BV.add" -> Some ("bvadd", "BV.add")
+  | "BV.sub" -> Some ("bvsub", "BV.sub")
+  | "BV.mul" -> Some ("bvmul", "BV.mul")
+  | "BV.and" -> Some ("bvand", "BV.and")
+  | "BV.or"  -> Some ("bvor",  "BV.or")
+  | "BV.xor" -> Some ("bvxor", "BV.xor")
   | _ -> None
 
 (** Format a numeric literal value string into SMT-LIB grammar.
@@ -242,6 +274,21 @@ let format_numeric ~(ty : string) (value : string) : (string, error) result =
          but no SMT-LIB grammar accommodates it; refuse rather than
          guess. *)
       bad ()
+    | bvty, false, false when Option.is_some (parse_bitvec_width bvty) ->
+      (* [BitVec(N)] literal: SMT-LIB grammar is [(_ bvK W)] where K is
+         a non-negative decimal numeral and W is the width. Negative
+         IR literals over BV are 2's-complement-translated to the
+         non-negative representative in the OCaml side; we don't try
+         to do that here — the reifier is expected to emit
+         non-negative decimals. *)
+      let w = Option.get (parse_bitvec_width bvty) in
+      if neg then bad ()
+      else
+        (try
+           let z = Z.of_string mag in
+           if Z.sign z < 0 then bad ()
+           else Ok (Printf.sprintf "(_ bv%s %d)" (Z.to_string z) w)
+         with _ -> bad ())
     | _ -> bad ()
 
 let rec emit_term ~specs (t : Ir.shell_term) : (string, error) result =
@@ -294,12 +341,17 @@ and emit_bin_op ~specs op a b =
   Ok (Printf.sprintf "(%s %s %s)" op sa sb)
 
 and emit_app ~specs symbol args =
-  match arith_target symbol with
+  let target_lookup =
+    match arith_target symbol with
+    | Some _ as r -> r
+    | None -> bv_target symbol
+  in
+  match target_lookup with
   | None ->
     Error (Unsupported_symbol {
       symbol;
-      detail = "no SMT-LIB mapping; expected refined LIA primitive \
-                or one of the recognized typeclass methods";
+      detail = "no SMT-LIB mapping; expected refined LIA / LRA / BV \
+                primitive or one of the recognized typeclass methods";
     })
   | Some (target, source) ->
     add_spec specs source target;
@@ -343,18 +395,51 @@ type script = {
     any [Real] type tag inside any hypothesis or goal shell
     selects QF_LRA; otherwise QF_LIA. We're QF-only in Phase
     2.1; quantifiers would lift to LIA / LRA. *)
+(** True iff any subterm carries a [BitVec(N)] type tag, on a
+    Num_lit or an Eq's [ty] field. App symbols that are BV ops
+    don't carry types; their BV-ness propagates from the operands.
+    Mirrors [Farkas.shell_mentions_real]. *)
+let rec shell_mentions_bv (t : Ir.shell_term) : bool =
+  match t with
+  | Var _ | Const _ -> false
+  | Num_lit { ty; _ } -> Option.is_some (parse_bitvec_width ty)
+  | Eq { ty; left; right } ->
+    Option.is_some (parse_bitvec_width ty)
+    || shell_mentions_bv left || shell_mentions_bv right
+  | App { args; _ } -> List.exists shell_mentions_bv args
+  | And { left; right } | Or { left; right } ->
+    shell_mentions_bv left || shell_mentions_bv right
+  | Implies { antecedent; consequent } ->
+    shell_mentions_bv antecedent || shell_mentions_bv consequent
+  | Not { operand } -> shell_mentions_bv operand
+  | Forall { body; _ } | Exists { body; _ } -> shell_mentions_bv body
+  | Lambda { body; _ } -> shell_mentions_bv body
+  | Opaque _ -> false
+
 let pick_logic (ir : Ir.t) : string =
-  let any_real_free_var =
-    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
+  let any_bv_free_var =
+    List.exists
+      (fun (fv : Ir.free_var) -> Option.is_some (parse_bitvec_width fv.ty))
       ir.context.free_vars
   in
-  let any_real_term =
-    Farkas.shell_mentions_real ir.goal.shell
-    || List.exists (fun (h : Ir.hypothesis) ->
-         Farkas.shell_mentions_real h.shell)
+  let any_bv_term =
+    shell_mentions_bv ir.goal.shell
+    || List.exists (fun (h : Ir.hypothesis) -> shell_mentions_bv h.shell)
        ir.context.hypotheses
   in
-  if any_real_free_var || any_real_term then "QF_LRA" else "QF_LIA"
+  if any_bv_free_var || any_bv_term then "QF_BV"
+  else
+    let any_real_free_var =
+      List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
+        ir.context.free_vars
+    in
+    let any_real_term =
+      Farkas.shell_mentions_real ir.goal.shell
+      || List.exists (fun (h : Ir.hypothesis) ->
+           Farkas.shell_mentions_real h.shell)
+         ir.context.hypotheses
+    in
+    if any_real_free_var || any_real_term then "QF_LRA" else "QF_LIA"
 
 (** Assemble the SMT-LIB script. Order:
     1. [(set-logic ...)] — picked from free-var sorts.
