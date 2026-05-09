@@ -6,6 +6,8 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.bv_axiom_free":
       [],
     "ProofBroker.Test.bv_compare_axiom_free":

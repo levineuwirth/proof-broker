@@ -37,6 +37,7 @@ by OCaml-side verifier acceptance. See per-reason removal notes above.
 import Lean
 import ProofBroker.IR
 import ProofBroker.Bridge
+import ProofBroker.TermMode
 
 namespace ProofBroker.Tactic
 
@@ -701,6 +702,148 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker: cert minted but verifier rejected: {r}"
 
+/- ============================================================
+   Term-mode closer (Tier 1 Farkas reconstruction)
+   ============================================================ -/
+
+/-- Read coefficient strings out of `cert.payload.witness_data.coefficients`.
+    Returns `(name, coef-as-Int)` per entry. Errors if the cert isn't a
+    Tier 1 Farkas envelope or any coefficient isn't an integer string. -/
+private def parseFarkasCoefficients (cert : Json)
+    : TacticM (List (String × Int)) := do
+  let payload ← match cert.getObjVal? "payload" with
+    | .ok j => pure j
+    | .error e => throwError "proof_broker_term: cert missing payload: {e}"
+  let witnessKind := (payload.getObjValAs? String "witness_kind").toOption.getD ""
+  unless witnessKind == "farkas" do
+    throwError "proof_broker_term: cert is not a Farkas witness (kind={witnessKind})"
+  let witnessData ← match payload.getObjVal? "witness_data" with
+    | .ok j => pure j
+    | .error e => throwError "proof_broker_term: cert missing witness_data: {e}"
+  let coeffsJ ← match witnessData.getObjVal? "coefficients" with
+    | .ok j => pure j
+    | .error e => throwError "proof_broker_term: witness missing coefficients: {e}"
+  let arr ← match coeffsJ.getArr? with
+    | .ok a => pure a
+    | .error e => throwError "proof_broker_term: coefficients not array: {e}"
+  arr.toList.mapM fun entry => do
+    let name := (entry.getObjValAs? String "hypothesis").toOption.getD ""
+    let coefStr := (entry.getObjValAs? String "coefficient").toOption.getD ""
+    if name == "" then throwError "proof_broker_term: witness entry missing hypothesis"
+    let coef ← match coefStr.toInt? with
+      | some n => pure n
+      | none => throwError
+          "proof_broker_term: non-integer coefficient '{coefStr}' \
+           (rationals not yet wired)"
+    pure (name, coef)
+
+/-- Look up a hypothesis by user-name in the LCtx, returning the
+    `(FVar Expr, type Expr)` pair. Throws if not found or shadowed
+    (multiple matches with the same user-name). -/
+private def fvarOfName (name : String) : MetaM (Expr × Expr) := do
+  let lctx ← getLCtx
+  let hits := lctx.foldl (init := #[]) fun acc decl =>
+    if decl.isImplementationDetail || decl.userName.toString != name then acc
+    else acc.push decl
+  match hits.toList with
+  | [decl] => return (Expr.fvar decl.fvarId, decl.type)
+  | [] => throwError "proof_broker_term: hypothesis '{name}' not in scope"
+  | _ => throwError "proof_broker_term: hypothesis '{name}' is ambiguous (shadowed)"
+
+/-- Recognize an `Int` `≤` / `≥` / `<` / `>` shape in a hypothesis
+    type. Returns `(direction, lhs, rhs)` where direction picks the
+    normalization helper to apply. Lean's `≥` desugars to
+    `LE.le b a`, so we pattern-match on `LE.le`/`LT.lt` only —
+    anything else is out of scope for the arity-2 starter slice. -/
+private def matchIntBound? (ty : Expr) : Option (Bool × Expr × Expr) :=
+  match ty.getAppFnArgs with
+  | (``LE.le, #[α, _, a, b]) =>
+    if α.isConstOf ``Int then some (true, a, b) else none
+  | (``LT.lt, #[α, _, _, _]) =>
+    -- Strict bounds need a different normalization (`a < b → a + 1 ≤ b`)
+    -- the arity-2 slice doesn't yet wire — surface as unsupported.
+    let _ := α
+    none
+  | _ => none
+
+/-- Given a hypothesis `(h : a ≤ b)` with `a b : Int`, build an
+    `Expr` of type `a - b ≤ 0` by applying `leToLe0`. Returns
+    `(a - b)` as an Expr alongside the proof so the caller can
+    reference both. -/
+private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
+    : MetaM (Expr × Expr) := do
+  match matchIntBound? hypTy with
+  | some (true, a, b) =>
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.leToLe0 #[hypFV]
+    return (normExpr, proof)
+  | _ =>
+    throwError "proof_broker_term: hypothesis shape outside Int ≤/≥ \
+                 (got type {hypTy})"
+
+/-- Build a proof of `0 ≤ c` for a literal integer `c` using `decide`.
+    Closed under `Int.decLe` for nonnegative literals; throws if the
+    coefficient is negative. -/
+private def buildNonnegProof (c : Int) : MetaM Expr := do
+  if c < 0 then
+    throwError "proof_broker_term: negative coefficient {c} (cert verifier \
+                 should have caught this earlier)"
+  let cExpr := mkApp (.const ``Int.ofNat []) (mkNatLit c.toNat)
+  let zeroExpr := mkApp (.const ``Int.ofNat []) (mkNatLit 0)
+  let goalTy ← Lean.Meta.mkAppM ``LE.le #[zeroExpr, cExpr]
+  let proof ← Lean.Meta.mkAppOptM ``Decidable.decide #[goalTy, none]
+  -- A simpler path: just return `(by decide)`-style proof via `mkDecide`.
+  let _ := proof
+  Lean.Meta.mkDecideProof goalTy
+
+/-- Term-mode closer for arity-2 LIA Farkas witnesses. Goal must be
+    `False`; the witness must reference exactly two hypotheses;
+    coefficients must be nonnegative integers; hypothesis types must
+    each be `_ ≤ _ : Int`. Discharges the strictly-positive
+    linear-combination subgoal via `omega`. The full proof term
+    is `farkasContradict h1' h2' (by decide) (by decide) (by omega)`,
+    with the witness's coefficients flowing through the omega
+    metavariable's elaborated value. -/
+private def closeViaTermMode (goal : MVarId) (goalType : Expr)
+    (cert : Json) : TacticM Unit := do
+  unless goalType.isConstOf ``False do
+    throwError "proof_broker_term: goal is not False (got {goalType}); \
+                 the arity-2 starter slice handles direct-False goals only"
+  let entries ← parseFarkasCoefficients cert
+  unless entries.length == 2 do
+    throwError "proof_broker_term: arity {entries.length} witness — only \
+                 arity 2 wired today"
+  let [(name1, c1), (name2, c2)] := entries
+    | throwError "proof_broker_term: unexpected entry count after arity check"
+  if name1 == "neg_goal" || name2 == "neg_goal" then
+    throwError "proof_broker_term: witness names neg_goal — non-False \
+                 goals not yet wired (use proof_broker for omega-discharge)"
+  goal.withContext do
+    let (fv1, ty1) ← fvarOfName name1
+    let (fv2, ty2) ← fvarOfName name2
+    let (a1, h1') ← normalizeHypothesis fv1 ty1
+    let (a2, h2') ← normalizeHypothesis fv2 ty2
+    let c1Expr := mkApp (.const ``Int.ofNat []) (mkNatLit c1.toNat)
+    let c2Expr := mkApp (.const ``Int.ofNat []) (mkNatLit c2.toNat)
+    let hc1 ← buildNonnegProof c1
+    let hc2 ← buildNonnegProof c2
+    -- Build hpos type and metavariable, discharge via omega.
+    let zero := mkApp (.const ``Int.ofNat []) (mkNatLit 0)
+    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
+    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[c2Expr, a2]
+    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
+    let hposTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
+    let hposMV ← Lean.Meta.mkFreshExprMVar hposTy
+    let term ← Lean.Meta.mkAppM ``ProofBroker.TermMode.farkasContradict
+      #[h1', h2', hc1, hc2, hposMV]
+    -- Close the omega subgoal first.
+    let omegaGoal := hposMV.mvarId!
+    let prevGoals ← getGoals
+    setGoals [omegaGoal]
+    evalTactic (← `(tactic| omega))
+    setGoals prevGoals
+    goal.assign term
+
 /-- Bare form `proof_broker` runs against the default manifest list
     (cvc4, cvc5, z3 if present in the manifest dir) under
     `preferHigherTier := true`, so the highest-tier capable adapter
@@ -713,6 +856,21 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
     user-supplied order is respected verbatim — the bracket list is a
     priority lever, not just a filter. -/
 syntax (name := proofBroker) "proof_broker" ("[" ident,* "]")? : tactic
+
+/-- Term-mode form: dispatch + verify as usual, then on a Tier 1
+    Farkas cert build the proof term from the witness coefficients
+    via `farkasContradict` rather than discharging through `omega`
+    on the original goal. The coefficients are visible in the
+    constructed proof term — the cert is *consumed* rather than
+    gating an opaque tactic call.
+
+    Scope: the goal must be literally `False`; the witness must be
+    arity 2 with nonnegative integer coefficients on hypotheses of
+    shape `_ ≤ _ : Int`. The strictly-positive linear-combination
+    subgoal is discharged by `omega` (the Lean-side analogue of
+    Rocq's `ring`-discharged polynomial-identity step) — narrower
+    than the LIA closer's full goal-discharge omega call. -/
+syntax (name := proofBrokerTerm) "proof_broker_term" ("[" ident,* "]")? : tactic
 
 /-- Debug form. Same dispatch behavior as the bare/bracketed forms,
     but emits a `logInfo` summary of the extraction path: IR shape,
@@ -759,5 +917,26 @@ def evalProofBrokerQ : Tactic := fun stx => do
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
   logInfo (renderPath path)
   closeOrFail goal goalType path
+
+@[tactic proofBrokerTerm]
+def evalProofBrokerTerm : Tactic := fun stx => do
+  let goal ← getMainGoal
+  let goalType ← goal.getType
+  let (adapterNames?, preferHigherTier) ← match stx with
+    | `(tactic| proof_broker_term [$names,*]) =>
+        parseAdapterList (some names.getElems)
+    | `(tactic| proof_broker_term) =>
+        parseAdapterList none
+    | _ => throwError "proof_broker_term: malformed invocation"
+  let path ← buildExtractionPath goal adapterNames? preferHigherTier
+  let cert ← match path.cert with
+    | some c => pure c
+    | none => throwError "proof_broker_term: no adapter minted a cert"
+  unless path.verifyOk == some true do
+    let r := path.verifyReason.map reprStr |>.getD "<unknown>"
+    throwError "proof_broker_term: cert was minted but verifier did not \
+                 accept it (reason: {r}); term-mode requires a verified \
+                 Tier 1 Farkas cert"
+  closeViaTermMode goal goalType cert
 
 end ProofBroker.Tactic

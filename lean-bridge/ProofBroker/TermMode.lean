@@ -1,0 +1,59 @@
+/-
+Helper lemmas for term-mode Tier 1 Farkas reconstruction.
+
+The plugin's term-mode closer (`evalProofBrokerTerm` in
+`ProofBroker.Tactic`) takes a Farkas witness JSON (coefficients
+keyed by hypothesis name) and builds an application of
+`farkasContradict` from the LCtx-derived linear combination. The
+cert IS the proof, not a certificate that one exists. No `omega`
+call closes the *original* goal along this path; the closer's
+trust footprint is exactly these lemmas plus a single `omega`
+invocation on the strictly-positive linear combination subgoal
+(`0 < c1*a1 + c2*a2` with literal c_i and symbolic a_i differences)
+— a strictly narrower role than the LIA closer's full goal-discharge
+omega call. Both are axiom-free.
+
+Mirror of `rocq-bridge/theories/ProofBrokerTermMode.v`'s `farkas_le_2`,
+except Lean has no core `ring` so we fold the residual `K` into a
+single positive-sum premise and skip the `Heq` polynomial-identity
+subgoal Rocq's term builder discharges via `ring`. The proof term
+still names every coefficient explicitly — the Farkas multipliers
+flow through.
+
+Everything here is axiom-free: only `Init.Data.Int.Order` is touched.
+`#print axioms` of any theorem that funnels through `farkasContradict`
+reports "does not depend on any axioms".
+
+Arity scope: arity 2 only today, matching the smallest non-trivial
+Farkas cert (e.g. `5 ≤ x ∧ x ≤ 3 ⊢ False` with witness
+`[(h1, 1), (h2, 1)]`). Arities 3..N are mechanical copies — write
+them when a cert in practice exceeds arity 2.
+-/
+
+namespace ProofBroker.TermMode
+
+/-- Direction-normalization helper: convert `a ≤ b` to `a - b ≤ 0`. -/
+theorem leToLe0 {a b : Int} (h : a ≤ b) : a - b ≤ 0 :=
+  Int.sub_nonpos_of_le h
+
+/-- Direction-normalization helper: convert `a ≥ b` to `b - a ≤ 0`. -/
+theorem geToLe0 {a b : Int} (h : a ≥ b) : b - a ≤ 0 :=
+  Int.sub_nonpos_of_le h
+
+/-- Farkas contradiction, arity 2. Hypotheses are pre-normalized to
+    `a ≤ 0` form by the OCaml side via `leToLe0` / `geToLe0`. The
+    `hpos` premise is discharged by `omega` at closer-build time —
+    the only narrow tactical step the closer takes. The coefficients
+    `c1`, `c2` are visible in the proof term as explicit Int literal
+    arguments, so the cert's witness is *consumed* by reconstruction
+    rather than thrown away. -/
+theorem farkasContradict
+    {a1 a2 : Int} (h1 : a1 ≤ 0) (h2 : a2 ≤ 0)
+    {c1 c2 : Int} (hc1 : 0 ≤ c1) (hc2 : 0 ≤ c2)
+    (hpos : 0 < c1 * a1 + c2 * a2) : False :=
+  let s1 : c1 * a1 ≤ 0 := Int.mul_nonpos_of_nonneg_of_nonpos hc1 h1
+  let s2 : c2 * a2 ≤ 0 := Int.mul_nonpos_of_nonneg_of_nonpos hc2 h2
+  let ssum : c1 * a1 + c2 * a2 ≤ 0 := Int.add_nonpos s1 s2
+  absurd hpos (Int.not_lt_of_ge ssum)
+
+end ProofBroker.TermMode

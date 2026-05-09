@@ -117,6 +117,21 @@ theorem bv_compare_axiom_free : (3 : BitVec 8) < 5 := by
 
 #print axioms bv_compare_axiom_free
 
+/-- Term-mode Tier 1 Farkas: `5 ≤ x ∧ x ≤ 3 ⊢ False`. Pinned through
+    `[z3]` because z3 mints native Tier 1 Farkas certs (cvc5 mints
+    Tier 3 alethe-2024 which the term builder doesn't yet consume,
+    cvc4 mints Tier 0 oracle). The closer reads the witness's
+    coefficients and applies `farkasContradict` from
+    `ProofBroker.TermMode`; only the strictly-positive
+    linear-combination subgoal goes through `omega` (a narrower
+    role than the LIA closer's full goal-discharge omega call).
+    Mirror of Rocq's `pb_term_axiom_free`. -/
+theorem pb_term_axiom_free
+    (x : Int) (h1 : 5 ≤ x) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated
