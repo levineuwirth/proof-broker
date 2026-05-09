@@ -12,6 +12,12 @@
       [],
     "ProofBroker.Test.uf_axiom_free":
       [],
+    "ProofBroker.Test.uf_two_arg_axiom_free":
+      [],
+    "ProofBroker.Test.uf_composed_axiom_free":
+      [],
+    "ProofBroker.Test.uf_predicate_axiom_free":
+      [],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"]
   },

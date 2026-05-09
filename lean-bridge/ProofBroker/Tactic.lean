@@ -123,14 +123,18 @@ def matchBitVecType? (ty : Expr) : Option Nat :=
   | _ => none
 
 /-- Decode a type `Expr` as an IR `TypeRef`. Core handles `Int`,
-    `BitVec n`, and arrow types `T1 → T2 → ... → R` (encoded as
-    `T1->T2->...->R`); everything else falls through to the
-    registered `reifierExt`. The arrow encoding is the IR
-    convention for UF — the SDK's [Smtlib.parse_arrow_type] +
-    [emit_decls] turn this into `(declare-fun f (T1 T2) R)` SMT-LIB
-    output. -/
+    `Prop` (mapped to SMT-LIB `Bool` by the serializer), `BitVec n`,
+    and arrow types `T1 → T2 → ... → R` (encoded as `T1->T2->...->R`);
+    everything else falls through to the registered `reifierExt`.
+    The arrow encoding is the IR convention for UF — the SDK's
+    [Smtlib.parse_arrow_type] + [emit_decls] turn this into
+    `(declare-fun f (T1 T2) R)` SMT-LIB output. `Prop` arises in
+    arrow chains for predicate-valued UF (`P : Int → Prop`); it is
+    not accepted as a free-var carrier on its own (the LCtx walk
+    classifies Prop-typed locals as hypotheses, not free vars). -/
 partial def reifyType (ty : Expr) : MetaM TypeRef := do
   if ty.isConstOf ``Int then return "Int"
+  if ty.isProp then return "Prop"
   if let some n := matchBitVecType? ty then
     return s!"BitVec({n})"
   if ty.isArrow then

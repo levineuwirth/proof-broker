@@ -133,4 +133,33 @@ theorem uf_axiom_free
 
 #print axioms uf_axiom_free
 
+/-- Multi-arg UF: a binary uninterpreted function. Reifier walks
+    `Int → Int → Int` into the type-ref `"Int->Int->Int"` and the
+    SDK's `parse_arrow_type` splits to `(declare-fun f (Int Int) Int)`.
+    Closer: `subst_eqs` rewrites `b → a`, leaving `f a a = f a a`
+    for `rfl`. -/
+theorem uf_two_arg_axiom_free
+    (f : Int → Int → Int) (a b : Int) (h : a = b) : f a b = f a a := by
+  proof_broker
+
+#print axioms uf_two_arg_axiom_free
+
+/-- Composed / nested UF: function composition `f (g x)` with an
+    equality hypothesis. Reifier emits nested `App "UF.f" [App "UF.g" [x]]`;
+    closer chain (`subst_eqs; rfl`) handles the depth uniformly. -/
+theorem uf_composed_axiom_free
+    (f g : Int → Int) (x y : Int) (h : x = y) : f (g x) = f (g y) := by
+  proof_broker
+
+#print axioms uf_composed_axiom_free
+
+/-- Predicate-valued UF: `P : Int → Prop`, modus-ponens-style goal.
+    Exercises the reifier on `Prop` as an arrow codomain (SDK maps to
+    `Bool`) and the closer on a non-equality goal. -/
+theorem uf_predicate_axiom_free
+    (P : Int → Prop) (x y : Int) (hp : P x) (h : x = y) : P y := by
+  proof_broker
+
+#print axioms uf_predicate_axiom_free
+
 end ProofBroker.Test
