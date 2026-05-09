@@ -136,6 +136,41 @@ unfolding under reflexive reduction would have been zero. The
 generalizable form: in plugin code, reduction is opt-in per
 recognizer, not a top-of-function default.
 
+## Theories that don't transfer cheaply
+
+A finding from the BV reach work that landed after the original
+retro draft: not all SMT-LIB theories transfer at the same cost
+between source languages. The Lean BV vertical slice (commits
+`4ac4040`, `ab7a384`, `ecdc3eb`) shipped end-to-end without any
+new IR-shape questions because Lean's `BitVec n` is in core with
+`HAdd`/`HSub`/`HMul`/`<`/`<=` typeclass instances and
+`DecidableEq` — the reifier was a small typeclass-driven
+extension and `decide` closes axiom-free. Rocq Stdlib's
+counterpart, `Bvector := Vector.t bool` (`Stdlib.Vectors.Bvector`),
+is deprecated since 8.20, has only bitwise ops (`BVand` / `BVor`
+/ `BVxor`), and lacks bv-arithmetic entirely — there's no analog
+of `BitVec n`'s algebraic surface, and Stdlib offers no width-
+indexed BV type at all.
+
+To do BV on the Rocq side honestly we'd either bring in a third-
+party library (`coq-bbv` or similar) or roll our own refined-`Z`
+/ mod-2^n type plus operators and decidability instances. Both
+add code that isn't really comparable to the Lean side anyway —
+either a dep we don't otherwise need or a sidecar fiction that
+hand-waves at SMT-LIB BV semantics. Neither was the right move
+relative to current scope.
+
+The cross-system signal: the IR survives intact (the Lean side
+proved it BV-shape-capable; the SDK serializer is QF_BV-ready).
+The asymmetry is purely in source-language ergonomics — *what's
+already in the standard library*, not anything about how the
+broker's IR represents BV. Future fragments where Stdlib gaps
+look similar (UF, ARRAY) will land first on Lean for the same
+reason. The Rocq side will have to either pick up a Rocq-flavored
+BV library when one becomes idiomatic to depend on, or the
+broker grows a Rocq-specific roll-your-own. Recorded here so the
+next person to consider Rocq-BV doesn't repeat the surprise.
+
 ## Carried forward
 
 Term-mode reconstruction is the next direction the user signaled.
@@ -147,14 +182,19 @@ not just a certificate that one exists. Same play for Lean.
 
 Other open carries:
 
-- BV / UF reach: the SDK adapters' capability matchers already
-  declare the fragments. The Rocq reifier doesn't have to grow
-  symmetrically — a future bridge to a non-arithmetic theory
-  surfaces the next batch of cross-system stress.
-- A `coq.theory` → `rocq.theory` flip when dune's new build language
-  ships. One-line change, no new lessons.
-- The `#print axioms` / `Print Assumptions` discipline is the lever
-  that keeps the trust footprint honest as future closers grow. A
-  CI rule that fails the build if any `_axiom_free` theorem starts
-  carrying a non-allowlisted axiom would harden this; not yet in
-  place on either bridge.
+- BV reach: Lean side shipped (the BV vertical slice + comparison
+  ops, all axiom-free via `decide`). Rocq side deferred — see the
+  "Theories that don't transfer cheaply" section above. UF still
+  open on both sides; UF needs IR-level tracking for uninterpreted
+  function symbols, a different kind of work than BV's
+  reifier-extension shape.
+- AxiomCheck CI gate: shipped on the Lean side (commit `4bd79fe`).
+  `tools/check_axioms.py` parses `lake build` output for
+  `#print axioms` annotations and fails CI if any allowlisted
+  theorem grows beyond `tools/axiom_allowlist.json`'s ceiling.
+  Rocq's `Print Assumptions` doesn't tag the theorem name in its
+  output, so positional pairing against the `.v` source is the
+  only way; deferred. The `Print Assumptions` lines remain in
+  build output for human inspection.
+- A `coq.theory` → `rocq.theory` flip when dune's new build
+  language ships. One-line change, no new lessons.
