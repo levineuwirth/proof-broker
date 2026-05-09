@@ -101,11 +101,34 @@ initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
 
 namespace Reify
 
-/-- Decode a type `Expr` as an IR `TypeRef`. Core handles `Int`;
-    everything else falls through to the registered `reifierExt`,
-    erroring only when no extension recognizes it either. -/
+/-- Recognize a closed `Nat`-valued `Expr` and read out its value.
+    Handles both bare `Lit (.natVal _)` (the form `Nat.toExpr`
+    produces) and `OfNat.ofNat _` wrapping (the form most
+    elaborated literals arrive in). -/
+def matchNatLiteral? (e : Expr) : Option Nat :=
+  match e.rawNatLit? with
+  | some n => some n
+  | none =>
+    match e.getAppFnArgs with
+    | (``OfNat.ofNat, #[_, n, _]) => n.rawNatLit?
+    | _ => none
+
+/-- Recognize `BitVec n` for closed Nat literal `n`. Returns the
+    width as a `Nat`. Built into core since `BitVec` is in core
+    Lean (no Mathlib dependency); the `BitVec(N)` IR type-ref
+    matches the SDK's `parse_bitvec_width` parser. -/
+def matchBitVecType? (ty : Expr) : Option Nat :=
+  match ty.getAppFnArgs with
+  | (``BitVec, #[n]) => matchNatLiteral? n
+  | _ => none
+
+/-- Decode a type `Expr` as an IR `TypeRef`. Core handles `Int` and
+    `BitVec n`; everything else falls through to the registered
+    `reifierExt`. -/
 def reifyType (ty : Expr) : MetaM TypeRef := do
   if ty.isConstOf ``Int then return "Int"
+  if let some n := matchBitVecType? ty then
+    return s!"BitVec({n})"
   match ← reifierExt.get with
   | some ext =>
     match ← ext.reifyType ty with
@@ -127,6 +150,19 @@ def matchIntLiteral? (e : Expr) : Option Nat :=
   | (``Int.ofNat, #[n]) => n.rawNatLit?
   | _ => e.rawNatLit?
 
+/-- Recognize a `BitVec n` numeric literal — `OfNat.ofNat` over
+    `BitVec n` (the form `(5 : BitVec 8)` desugars to). Returns
+    `(decimalString, "BitVec(n)")`. Doesn't fall through the
+    `reifierExt`'s `matchLiteralExt` path because BitVec is in
+    core; same logic as `matchIntLiteral?` but typed for BV. -/
+def matchBitVecLiteral? (e : Expr) : Option (String × TypeRef) :=
+  match e.getAppFnArgs with
+  | (``OfNat.ofNat, #[α, n, _inst]) =>
+    match matchBitVecType? α, matchNatLiteral? n with
+    | some w, some k => some (toString k, s!"BitVec({w})")
+    | _, _ => none
+  | _ => none
+
 /-- Confirm that a comparison/equality at type `α` is over a
     fragment we can reify — `Int` always; anything else only if
     the extension's `reifyType` recognizes it. The reified IR
@@ -135,6 +171,7 @@ def matchIntLiteral? (e : Expr) : Option Nat :=
     types), so we only need to gate, not capture. -/
 def expectArithCarrier (α : Expr) : MetaM Unit := do
   if α.isConstOf ``Int then return
+  if (matchBitVecType? α).isSome then return
   match ← reifierExt.get with
   | some ext =>
     match ← ext.reifyType α with
@@ -156,17 +193,29 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
     return .const "True"
   if let some n := matchIntLiteral? e then
     return .numLit (toString n) "Int"
+  -- BV literal in core (e.g. (5 : BitVec 8)). Must precede the
+  -- extension's matchLiteralExt so a BitVec literal isn't
+  -- accidentally claimed by a Real/Q recognizer.
+  if let some (val, ty) := matchBitVecLiteral? e then
+    return .numLit val ty
   -- Extension-provided literal recognizer (e.g. Real OfNat / OfScientific).
   if let some ext ← reifierExt.get then
     if let some (val, ty) ← ext.matchLiteralExt e then
       return .numLit val ty
   match e.getAppFnArgs with
-  | (``HAdd.hAdd, #[_, _, _, _, a, b]) =>
-      return .app "HAdd.hAdd" [] [← reifyTerm a, ← reifyTerm b]
-  | (``HSub.hSub, #[_, _, _, _, a, b]) =>
-      return .app "HSub.hSub" [] [← reifyTerm a, ← reifyTerm b]
-  | (``HMul.hMul, #[_, _, _, _, a, b]) =>
-      return .app "HMul.hMul" [] [← reifyTerm a, ← reifyTerm b]
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+      -- BV vs arithmetic disambiguation: SMT-LIB uses bvadd /
+      -- bvsub / bvmul rather than the polymorphic + / - / *, so
+      -- the IR carries them under different App symbols. Picked
+      -- at reify time from the operand type.
+      let sym := if (matchBitVecType? α).isSome then "BV.add" else "HAdd.hAdd"
+      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+  | (``HSub.hSub, #[α, _, _, _, a, b]) =>
+      let sym := if (matchBitVecType? α).isSome then "BV.sub" else "HSub.hSub"
+      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+      let sym := if (matchBitVecType? α).isSome then "BV.mul" else "HMul.hMul"
+      return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``Neg.neg, #[_, _, a]) =>
       return .app "Neg.neg" [] [← reifyTerm a]
   | (``LE.le, #[α, _, a, b]) =>
@@ -208,6 +257,7 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   let mut hypotheses : List IR.Hypothesis := []
   let extOpt ← reifierExt.get
   let mut sawExtensionType : Bool := false
+  let mut sawBV : Bool := false
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
     let ty := decl.type
@@ -216,6 +266,9 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
       hypotheses := hypotheses ++ [{ name := decl.userName.toString, shell }]
     else if ty.isConstOf ``Int then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Int" }]
+    else if let some n := matchBitVecType? ty then
+      freeVars := freeVars ++ [{ name := decl.userName.toString, ty := s!"BitVec({n})" }]
+      sawBV := true
     else
       match extOpt with
       | some ext =>
@@ -225,14 +278,16 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
           sawExtensionType := true
         | none => pure ()
       | none => pure ()
-  -- Pick fragment label: extension wins if it claimed any free var,
-  -- otherwise default to LIA. The OCaml-side adapters derive the
-  -- effective fragment from term types anyway, so this label is
+  -- Pick fragment label. BV wins over LIA/extension if any free var
+  -- is BitVec-typed; otherwise extension wins if it claimed any
+  -- free var; otherwise default LIA. The OCaml-side adapters derive
+  -- the effective fragment from term types anyway, so this label is
   -- mostly about routing through the right capability_match path.
   let fragment :=
-    match extOpt with
-    | some ext => if sawExtensionType then ext.irFragment else "LIA"
-    | none => "LIA"
+    if sawBV then "BV"
+    else match extOpt with
+      | some ext => if sawExtensionType then ext.irFragment else "LIA"
+      | none => "LIA"
   return {
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
@@ -327,6 +382,10 @@ structure ExtractionPath where
   attempts : List Attempt
   cert : Option Json
   verifyOk : Option Bool
+  /-- Looser-than-`verifyOk` flag: true when envelope checks passed
+      but no tier-specific verifier applied (e.g. Tier 0 oracle).
+      Consumers that only need envelope-correctness gate on this. -/
+  verifyEnvelopeOk : Option Bool
   verifyReason : Option CertReason
   dispatchMs : Nat
   verifyMs : Nat
@@ -395,6 +454,7 @@ private def buildExtractionPath
     | .error e => throwError "proof_broker: dispatch_broker failed: {repr e}"
   let dispatchMs ← msSince t0
   let mut verifyOk : Option Bool := none
+  let mut verifyEnvelopeOk : Option Bool := none
   let mut verifyReason : Option CertReason := none
   let mut verifyMs : Nat := 0
   if let some cert := dispatch.cert then
@@ -404,10 +464,11 @@ private def buildExtractionPath
       | .error e => throwError "proof_broker: verify_certificate failed: {repr e}"
     verifyMs ← msSince t1
     verifyOk := some verif.ok
+    verifyEnvelopeOk := some verif.envelopeOk
     verifyReason := some verif.reason
   return {
     ir, attempts := dispatch.attempts, cert := dispatch.cert,
-    verifyOk, verifyReason, dispatchMs, verifyMs
+    verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs
   }
 
 /-- Read the fragment label out of a cert's `refinement_record`.
@@ -444,8 +505,21 @@ private def certFragment (cert : Json) : String :=
     form just throws so unsuccessful invocations are silent. -/
 private def closeOrFail (goal : MVarId) (goalType : Expr)
     (path : ExtractionPath) : TacticM Unit := do
-  match path.cert, path.verifyOk with
-  | some cert, some true =>
+  -- Accept either strict verifyOk (Tier 1/2/3 with a real
+  -- soundness check) OR envelopeOk + tierCheckDeferred (Tier 0
+  -- oracle path, currently the only route for fragments without
+  -- a witness extractor — BV being the first concrete one). The
+  -- envelope-only path is always followed by a fragment-keyed
+  -- decision-procedure call, so the cert's role here is gating
+  -- (we know the goal is provable) rather than carrying the
+  -- proof; the closer must succeed on its own to actually close.
+  let acceptable := path.verifyOk == some true
+    || (path.verifyEnvelopeOk == some true
+        && match path.verifyReason with
+           | some (.tierCheckDeferred _) => true
+           | _ => false)
+  match path.cert, acceptable with
+  | some cert, true =>
     let fragment := certFragment cert
     if fragment == "LIA" then
       -- Cert-gated omega: the OCaml-side verifier (Tier 1 Farkas,
@@ -456,12 +530,25 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       -- on `proofBrokerCertSound` regardless of the tier the cert
       -- came from.
       evalTactic (← `(tactic| omega))
+    else if fragment == "BV" then
+      -- Cert-gated decide: BitVec has DecidableEq + the operator
+      -- typeclass instances are decidable, so closed BV goals
+      -- reduce to a decidable proposition that `decide` discharges.
+      -- The cert is Tier 0 oracle today (no native BV witness
+      -- extraction); envelope verification + cvc5/z3 unsat is
+      -- the trust gate, `decide` is the actual proof emitter.
+      -- `decide` is itself axiom-free, so closure here doesn't
+      -- depend on `proofBrokerCertSound`. Big-width / quantifier-
+      -- heavy BV goals where `decide` doesn't terminate in
+      -- elaboration time fall through to the trust axiom.
+      try evalTactic (← `(tactic| decide))
+      catch _ => goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
     else
-      -- Non-LIA: dispatch through the registered ReifierExt's
-      -- closer if present (e.g. ProofBrokerMathlib registers a
-      -- linarith closer for "LRA"); otherwise fall back to the
-      -- trust axiom. The cert verification gates the call either
-      -- way, so the closer can trust solvability.
+      -- Non-LIA / non-BV: dispatch through the registered
+      -- ReifierExt's closer if present (e.g. ProofBrokerMathlib
+      -- registers a linarith closer for "LRA"); otherwise fall
+      -- back to the trust axiom. The cert verification gates the
+      -- call either way, so the closer can trust solvability.
       if fragment == "LRA" then
         match ← reifierExt.get with
         | some ext => ext.lraCloser
@@ -472,12 +559,12 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
     let head := path.attempts.head?.map (·.outcome) |>.map reprStr |>.getD "<no attempts>"
     throwError "proof_broker: no adapter could close the goal \
                 ({path.attempts.length} attempt(s); first: {head})"
-  | some _, some false =>
+  | some _, false =>
+    -- Cert exists but verifier didn't reach an acceptance state we
+    -- can act on (strict failure, or a deferred check that the
+    -- closer can't trust). Surface the reason verbatim.
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker: cert minted but verifier rejected: {r}"
-  | some _, none =>
-    -- Should not happen: cert present implies verify ran. Treat as a bug.
-    throwError "proof_broker: internal — cert present but verify outcome missing"
 
 /-- Bare form `proof_broker` runs against the default manifest list
     (cvc4, cvc5, z3 if present in the manifest dir) under

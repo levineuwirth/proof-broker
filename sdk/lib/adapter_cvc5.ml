@@ -110,6 +110,7 @@ let resources_now ~timeout_ms : Certificate.resources = {
 let fragment_of_logic = function
   | "QF_LIA" -> "LIA"
   | "QF_LRA" -> "LRA"
+  | "QF_BV"  -> "BV"
   | other -> other
 
 let mk_refinement_record

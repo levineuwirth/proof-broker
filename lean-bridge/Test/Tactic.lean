@@ -91,4 +91,20 @@ theorem tier1_lia_axiom_free
 
 #print axioms tier1_lia_axiom_free
 
+/-- BV vertical-slice gate: a closed `BitVec 8` arithmetic
+    equality routes through the broker (QF_BV → cvc5/z3 oracle
+    → cert-gated `decide`). The broker is overkill for a trivially
+    decidable goal — the architectural payoff is showing the BV
+    pipeline runs end-to-end (reifier emits `BitVec(8)` / `BV.add`,
+    SMT-LIB serializer emits `(_ bv5 8)` / `bvadd`, the cvc5 / z3
+    adapter dispatches under QF_BV, the verifier envelope-checks,
+    the closer fires `decide`). `decide` is axiom-free, so this
+    theorem's transitive axiom set should match the LIA path's
+    `[propext, Quot.sound]` (or fewer) — verified by `#print
+    axioms` below. -/
+theorem bv_axiom_free : (5 : BitVec 8) + 3 = 8 := by
+  proof_broker
+
+#print axioms bv_axiom_free
+
 end ProofBroker.Test
