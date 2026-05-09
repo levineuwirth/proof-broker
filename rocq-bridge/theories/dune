@@ -1,0 +1,5 @@
+(coq.theory
+ (name ProofBroker)
+ (package proof_broker_rocq)
+ (theories Stdlib)
+ (plugins proof_broker_rocq.plugin))

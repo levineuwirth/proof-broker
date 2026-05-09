@@ -1,0 +1,9 @@
+DECLARE PLUGIN "proof_broker_rocq.plugin"
+
+{
+open Ltac_plugin
+}
+
+TACTIC EXTEND ProofBrokerTest
+| [ "proof_broker_test" ] -> { Pb_rocq_main.run_default }
+END

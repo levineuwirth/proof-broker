@@ -5,7 +5,7 @@ description:
   "OCaml implementation of the Proof Broker SDK per spec v1.0. Hosts the IR rewriter, certificate verifier core, dispatcher, and cache. The Rocq plugin links this library directly; the Lean plugin invokes it via a C-FFI shim with serialized-data marshaling."
 depends: [
   "ocaml" {>= "5.0"}
-  "dune" {>= "3.0"}
+  "dune" {>= "3.21"}
   "yojson" {>= "3.0"}
   "digestif" {>= "1.0"}
   "zarith" {>= "1.13"}
@@ -26,3 +26,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+x-maintenance-intent: ["(latest)"]
