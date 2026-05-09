@@ -242,6 +242,69 @@ allocating buffer to the Phase 1 spec revision checkpoint, which has
 been chronically under-budgeted in similar projects. Recommendation: (b),
 unless Phase 5 is tracking ahead by Phase 4 exit.
 
+#### 2.5.1 Phase 4 outcome (post-completion notes)
+
+Phase 4 has shipped end-to-end. `rocq-bridge/` hosts a Rocq plugin
+that direct-links the SDK, reifies LIA + LRA goals into the same
+`Ir.t` Lean produces, dispatches through the same broker, verifies
+the same way, and closes via cert-gated `lia` / `lra` (Phase 4.5)
+or term-mode reconstruction (Phase 4.6). The plugin-cost prediction
+held — total Rocq-side engineering effort came in close to the
+1-month estimate, dominated by Rocq plugin API spelunking rather
+than IR work. Specific friction surfaced and recorded in
+`RETROSPECTIVES/phase-4.md`: the `whd_all`-vs-folded-definition trap
+(twice — `Z.ge` and `IZR`), `Global.env`-during-init prohibition,
+and dune's `(using rocq …)` extension being announced but
+unimplemented.
+
+The schema-fit prediction also held — at LOW in practice, not the
+HIGH the original §2.5 anticipated. The IR survived the second
+source language without restructuring; the typeclass-flavored shell
+vocabulary (`HAdd.hAdd`, `LE.le`, …) ports verbatim from Lean to
+Rocq's `Z` arithmetic. The `examples/example1-lia-typeclass.json`
+fixture round-trips through both bridges identically.
+
+What the probe surfaced instead is a different class of risk that
+the original §2.5 didn't name: **theory-portability asymmetry driven
+by source-language standard libraries.** Lean's `BitVec n` is in
+core with full typeclass-overloaded arithmetic + `DecidableEq`,
+making BV reach a 30-minute reifier extension on the Lean side that
+closes axiom-free via `decide`. Rocq Stdlib's `Bvector` is
+deprecated, has only bitwise ops, and lacks any width-indexed BV
+type — so the Rocq BV slice was deferred. The asymmetry isn't about
+the IR; it's about what each home system's standard library
+provides. UF reach has the same shape: shipped on Lean
+(closes axiom-free via `subst_eqs; rfl`), pending on Rocq.
+
+**Carried scope.** Three follow-on pieces went in alongside the
+core probe and weren't in the original §2.5 envelope:
+
+* **Term-mode Tier 1 Farkas reconstruction** (Rocq):
+  `proof_broker_term` builds an explicit Rocq proof term from a
+  Tier 1 Farkas witness's coefficients via a `farkas_le_2` helper
+  + `ring`. The cert IS the proof — no `lia` along this path. The
+  Lean side has the same play queued but not yet wired.
+* **AxiomCheck CI gate** (`tools/check_axioms.py`): parses build
+  output for Lean's `#print axioms` and Rocq's `Print Assumptions`
+  blocks, fails CI if any allowlisted theorem grows beyond
+  `tools/axiom_allowlist.json`'s ceiling. Currently 6 Lean + 11
+  Rocq theorems pinned, all axiom-free or carrying only documented
+  core axioms.
+* **rocq-bridge CI job**: standalone CI lane that installs
+  `rocq-runtime` + cvc5 + z3 and runs the Rocq build under the
+  same trust-footprint gate.
+
+These shifted what would have been Phase 5 work earlier — the
+buffer-to-Phase-5 calendar effect noted above is not realized; the
+saved Phase 4 month was spent on the carried-scope items rather
+than added to slack.
+
+**Risk-register update for §2.7's slack accounting:** the
+calendar-neutral / slack-negative summary still holds — we have not
+gained slack relative to the original v1.0 plan. The shape of the
+slack-spending shifted (CI / trust-footprint gating absorbed it
+instead of cross-platform packaging), but the total isn't different.
+
 ### 2.6 Phase 5 (Polish)
 
 **New risk: Cross-platform OCaml runtime distribution for Lean users.

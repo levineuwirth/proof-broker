@@ -171,6 +171,31 @@ BV library when one becomes idiomatic to depend on, or the
 broker grows a Rocq-specific roll-your-own. Recorded here so the
 next person to consider Rocq-BV doesn't repeat the surprise.
 
+**UF confirmed the prediction**, and was even cleaner on the Lean
+side than BV. Lean's first-order function types (`T → R`) are
+just `Expr.forallE` with non-dependent body — no separate
+typeclass machinery to reify. The reifier walks the arrow chain,
+emits `Int->Int` style type-refs, and the SDK serializer turns
+them into `(declare-fun f (T1) R)` SMT-LIB output. Closure goes
+through Lean's `subst_eqs; rfl` chain for the canonical
+`f x = f y` from `x = y` shape — axiom-free. Rocq UF was
+deferred for the same reason BV was: Rocq Stdlib lacks a clean
+idiom for unmaintained-but-finitely-quantified function symbols
+in user-facing tactic land. The deferral is logged in the
+"Carried forward" list below; the prediction that Stdlib content
+drives reach asymmetry is corroborated.
+
+**Repeated-bug lesson**: a `fragment_of_logic` mismatch between
+the SDK's SMT-LIB-flavored logic strings (`QF_LIA`, `QF_BV`,
+`QF_UFLIA`) and the bridges' bare-fragment expectations (`LIA`,
+`BV`, `UF`) silently routed each fragment through the trust
+axiom rather than the cert-gated closer. Found three times
+across the BV / UF slices — once per fragment add. Lesson
+recorded here because the next person adding a fragment will
+hit it the fourth time unless the per-adapter
+`fragment_of_logic` copies get consolidated into a shared
+`Smtlib.fragment_of_logic` (see Phase 4.5 carried-forward).
+
 ## Carried forward
 
 Term-mode reconstruction is the next direction the user signaled.
@@ -182,12 +207,27 @@ not just a certificate that one exists. Same play for Lean.
 
 Other open carries:
 
-- BV reach: Lean side shipped (the BV vertical slice + comparison
-  ops, all axiom-free via `decide`). Rocq side deferred — see the
-  "Theories that don't transfer cheaply" section above. UF still
-  open on both sides; UF needs IR-level tracking for uninterpreted
-  function symbols, a different kind of work than BV's
-  reifier-extension shape.
+- BV / UF reach: Lean side shipped for both (BV vertical slice +
+  comparison ops, all axiom-free via `decide`; UF axiom-free via
+  `subst_eqs; rfl`). Rocq side deferred — see the "Theories that
+  don't transfer cheaply" section above for the Stdlib-content
+  argument. UF on Rocq has the same shape as BV on Rocq: the
+  bridge would need a roll-your-own or a third-party library
+  Stdlib doesn't currently offer.
+- Term-mode reconstruction: shipped on Rocq's side (`a495e34`).
+  `proof_broker_term [z3]` builds a `farkas_le_2`-applied proof
+  term from the cert's coefficients; `ring` discharges the
+  polynomial identity. The cert IS the proof, no `lia` invoked.
+  Lean's symmetric play hasn't been written yet — Lean's `omega`
+  is already axiom-free, so the architectural payoff is smaller
+  there.
+- `fragment_of_logic` consolidation: the BV / UF / Term-mode work
+  surfaced the same per-adapter mapping leak three times in a row
+  (`QF_BV` → `BV`, `QF_UFLIA` → `UF`, etc., each requiring three
+  identical `function | "QF_X" -> "X" | ...` patches across
+  `adapter_cvc4.ml` / `adapter_cvc5.ml` / `adapter_z3.ml`). The
+  fix is mechanical — a shared `Smtlib.fragment_of_logic` the
+  three adapters call into. Not yet done.
 - AxiomCheck gate: shipped end-to-end on the Lean side
   (`4bd79fe` for Lean parser + CI wiring) and the Rocq side
   (this commit, dev-mode only — see below). The script parses
