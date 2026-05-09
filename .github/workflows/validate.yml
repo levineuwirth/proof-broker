@@ -49,13 +49,21 @@ jobs:
         run: pip install -r tools/requirements.txt
 
       - name: Install SDK deps
-        run: opam install -y --deps-only --with-test ./sdk
+        # The opam files (proof_broker.opam, proof_broker_rocq.opam)
+        # live at repo root after the Phase 1 workspace merge; pre-
+        # merge this read `./sdk`. Pointing at the .opam file
+        # directly avoids a directory-scan-relies-on-cwd surprise.
+        run: opam install -y --deps-only --with-test ./proof_broker.opam
 
       - name: Build SDK
-        run: opam exec -- dune build
+        # `dune build sdk` constrains the build to the SDK subtree —
+        # rocq-bridge is built in its own job (which installs rocq-
+        # runtime + cvc5/z3); leaving it out here keeps this job's
+        # dep surface minimal.
+        run: opam exec -- dune build sdk
 
       - name: Run SDK tests
-        run: opam exec -- dune runtest
+        run: opam exec -- dune runtest sdk
 
       - name: Cross-tool agreement (OCaml round-trip → Python validator)
         run: python tools/test_cross_tool.py
@@ -84,10 +92,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install SDK deps
-        run: opam install -y --deps-only --with-test ./sdk
+        run: opam install -y --deps-only --with-test ./proof_broker.opam
 
       - name: Build SDK shared object
-        run: opam exec -- dune build
+        run: opam exec -- dune build sdk
 
       - name: Install elan (Lean toolchain manager)
         run: |
@@ -100,9 +108,61 @@ jobs:
         working-directory: lean-bridge
         run: lake build 2>&1 | tee ../lake_build.log
 
-      - name: Trust-footprint gate (axiom allowlist)
-        run: python tools/check_axioms.py --build-output lake_build.log
+      - name: Trust-footprint gate (axiom allowlist, Lean side)
+        run: python tools/check_axioms.py --build-output lake_build.log --bridge lean
 
       - name: Run Lean ↔ C ↔ OCaml round-trip
         working-directory: lean-bridge
         run: lake exe roundtripTest
+
+  rocq-bridge:
+    runs-on: ubuntu-latest
+    needs: sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.4"
+          dune-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install z3 (apt)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y z3
+          z3 --version
+
+      - name: Install cvc5 (GitHub static release)
+        # Pinned static-build release from the cvc5/cvc5 repo. The
+        # SDK's manifest-cvc5.json declares adapter_version 1.3.3;
+        # the cert.backend.version field records whatever the
+        # binary reports at dispatch time — the verifier doesn't
+        # compare those, so a CI-pinned 1.3.0 satisfies the gate
+        # against a manifest pinned to 1.3.3.
+        env:
+          CVC5_VERSION: "1.3.0"
+        run: |
+          curl -sSL "https://github.com/cvc5/cvc5/releases/download/cvc5-${CVC5_VERSION}/cvc5-Linux-x86_64-static.zip" -o /tmp/cvc5.zip
+          unzip -q /tmp/cvc5.zip -d /tmp/cvc5
+          sudo install -m 755 /tmp/cvc5/cvc5-Linux-x86_64-static/bin/cvc5 /usr/local/bin/cvc5
+          cvc5 --version
+
+      - name: Install SDK + rocq-bridge deps
+        # proof_broker_rocq pulls in rocq-runtime (>= 9.0); proof_broker
+        # pulls the OCaml SDK deps. Both opam files at repo root.
+        run: opam install -y --deps-only --with-test ./proof_broker.opam ./proof_broker_rocq.opam
+
+      - name: Build SDK + rocq-bridge
+        # dune build with no path scope builds everything reachable
+        # from the workspace root; for this job that's both sdk and
+        # rocq-bridge. Capture stdout+stderr so the trust-footprint
+        # gate can parse the Print Assumptions output of every .v
+        # file in rocq-bridge/theories/.
+        run: opam exec -- dune build > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
+
+      - name: Trust-footprint gate (axiom allowlist, Rocq side)
+        run: python tools/check_axioms.py --build-output rocq_build.log --bridge rocq

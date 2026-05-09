@@ -1,7 +1,7 @@
 {
-  "_comment": "Allowed axioms per *_axiom_free / pb_*_axiom_free / helper-lemma theorem across both bridges. Lean keys use qualified names (e.g. ProofBroker.Test.foo); Rocq keys are unqualified (e.g. pb_lia_axiom_free) because Rocq's Print Assumptions doesn't include the qualifier. The CI gate (tools/check_axioms.py) parses build output for Lean's '#print axioms' annotations and Rocq's `Print <name>.` + `Print Assumptions <name>.` paired blocks. Adding a new closure path is a deliberate decision — if it grows the trust footprint, this file documents the new ceiling. See RETROSPECTIVES/phase-4.md.",
+  "_comment": "Allowed axioms per *_axiom_free / pb_*_axiom_free / helper-lemma theorem, partitioned by source bridge. Lean keys use qualified names (e.g. ProofBroker.Test.foo); Rocq keys are unqualified (e.g. pb_lia_axiom_free) because Rocq's Print Assumptions doesn't include the qualifier. The CI gate (tools/check_axioms.py --bridge=lean|rocq|both) parses build output for Lean's '#print axioms' annotations and Rocq's `Print <name>.` + `Print Assumptions <name>.` paired blocks. Per-bridge partitioning lets each CI job (lean-bridge / rocq-bridge) check only its own theorems — the other bridge's missing theorems aren't a regression for that job. Adding a new closure path is a deliberate decision — if it grows the trust footprint, this file documents the new ceiling. See RETROSPECTIVES/phase-4.md.",
 
-  "theorems": {
+  "lean": {
     "ProofBroker.Test.lia_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
@@ -11,8 +11,10 @@
     "ProofBroker.Test.bv_compare_axiom_free":
       [],
     "ProofBroker.TestMathlib.lra_axiom_free":
-      ["propext", "Classical.choice", "Quot.sound"],
+      ["propext", "Classical.choice", "Quot.sound"]
+  },
 
+  "rocq": {
     "farkas_le_2":
       [],
     "le_to_le0":

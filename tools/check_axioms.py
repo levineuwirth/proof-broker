@@ -167,13 +167,23 @@ def parse_rocq_axioms(text: str) -> dict[str, set[str]]:
     return out
 
 
-def load_allowlist() -> dict[str, set[str]]:
-    with ALLOWLIST_PATH.open() as f:
+def load_allowlist(bridge: str, path: Path = ALLOWLIST_PATH) -> dict[str, set[str]]:
+    """Load theorems from the allowlist filtered by bridge.
+
+    [bridge] is one of "lean", "rocq", or "both". The allowlist
+    JSON has top-level "lean" and "rocq" keys whose values are
+    name → axiom-list dicts.
+    """
+    with path.open() as f:
         data = json.load(f)
-    return {
-        name: set(axs)
-        for name, axs in data.get("theorems", {}).items()
-    }
+    out: dict[str, set[str]] = {}
+    if bridge in ("lean", "both"):
+        for name, axs in data.get("lean", {}).items():
+            out[name] = set(axs)
+    if bridge in ("rocq", "both"):
+        for name, axs in data.get("rocq", {}).items():
+            out[name] = set(axs)
+    return out
 
 
 def check(actual: dict[str, set[str]],
@@ -211,6 +221,13 @@ def main() -> int:
         "--allowlist", type=Path, default=ALLOWLIST_PATH,
         help="Path to the allowlist JSON. Defaults to tools/axiom_allowlist.json."
     )
+    p.add_argument(
+        "--bridge", choices=["lean", "rocq", "both"], default="both",
+        help="Which bridge's theorems to check. CI's lean-bridge job "
+             "passes --bridge=lean (Rocq theorems aren't expected in "
+             "its build output); rocq-bridge passes --bridge=rocq; "
+             "default is both."
+    )
     args = p.parse_args()
 
     if args.build_output is not None:
@@ -218,34 +235,31 @@ def main() -> int:
     else:
         text = sys.stdin.read()
 
-    lean = parse_lean_axioms(text)
-    rocq = parse_rocq_axioms(text)
-    # Merge: theorem names are unique across the two source languages
-    # (Lean uses qualified `ProofBroker.Test.foo`; Rocq uses bare
-    # `foo`). On the off-chance of a collision, prefer Lean's parse —
-    # it's more rigid (the regex matches Lean's exact format).
-    actual = {**rocq, **lean}
+    actual: dict[str, set[str]] = {}
+    if args.bridge in ("lean", "both"):
+        actual.update(parse_lean_axioms(text))
+    if args.bridge in ("rocq", "both"):
+        # Rocq parser keys are unqualified; Lean keys are qualified.
+        # On the off chance both parsers find the same name (shouldn't
+        # happen in practice), Lean's parse already sat in [actual]
+        # and rocq's would overwrite — guard with no-overwrite.
+        rocq = parse_rocq_axioms(text)
+        for name, axs in rocq.items():
+            actual.setdefault(name, axs)
+
     if not actual:
         # No axiom-related output at all. That's suspicious — either
-        # the build didn't run the relevant theorems or both parsers
+        # the build didn't run the relevant theorems or the parser(s)
         # regressed against an output-format change.
         print(
-            "FAIL: no #print axioms / Print Assumptions output found "
-            "in input. The build probably didn't run, or output "
-            "formats changed.",
+            f"FAIL: no axiom output found in input for bridge="
+            f"{args.bridge}. The build probably didn't run, or output "
+            f"formats changed.",
             file=sys.stderr,
         )
         return 1
 
-    if args.allowlist != ALLOWLIST_PATH:
-        with args.allowlist.open() as f:
-            data = json.load(f)
-        allowed = {
-            name: set(axs)
-            for name, axs in data.get("theorems", {}).items()
-        }
-    else:
-        allowed = load_allowlist()
+    allowed = load_allowlist(args.bridge, path=args.allowlist)
 
     errors = check(actual, allowed)
     if errors:
