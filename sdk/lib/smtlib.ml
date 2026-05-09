@@ -444,6 +444,23 @@ type script = {
   logic : string;
 }
 
+(** Map an SMT-LIB-flavored logic string ([QF_LIA] / [QF_BV] /
+    [QF_UFLIA] / ...) to the bare-fragment label the IR's
+    [logic_classification.first_order_fragment] (and the bridge-side
+    [closeOrFail]) expects. Each adapter's
+    [Refinement_record.fragment] flows through here so the cvc4 /
+    cvc5 / z3 adapters don't drift apart on the mapping. The
+    fall-through preserves the SMT-LIB string verbatim, which is
+    the right behavior for a logic the bridges don't yet have a
+    short label for — capability_match's match-by-string still
+    works against manifests that advertise the long form. *)
+let fragment_of_logic = function
+  | "QF_LIA"   -> "LIA"
+  | "QF_LRA"   -> "LRA"
+  | "QF_BV"    -> "BV"
+  | "QF_UF" | "QF_UFLIA" | "QF_UFLRA" -> "UF"
+  | other -> other
+
 (** Choose an SMT-LIB logic from the IR's actual term types.
 
     A free-var-only scan misses closed Real-arithmetic goals

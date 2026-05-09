@@ -118,14 +118,11 @@ let resources_now ~timeout_ms : Certificate.resources = {
   budget_consumed = None;
 }
 
-let fragment_of_logic = function
-  | "QF_LIA"   -> "LIA"
-  | "QF_LRA"   -> "LRA"
-  | "QF_BV"    -> "BV"
-  | "QF_UF" | "QF_UFLIA" | "QF_UFLRA" -> "UF"
-  | other -> other
-
-(** Build the refinement record from refinement output + chosen logic. *)
+(** Build the refinement record from refinement output + chosen logic.
+    The SMT-LIB-flavored [logic] string flows through
+    [Smtlib.fragment_of_logic] to produce the bare-fragment label
+    the bridges expect ([QF_LIA] -> [LIA] etc.); see Smtlib for the
+    mapping table. *)
 let mk_refinement_record
       ~adapter_version
       (specs : Refinement_record.specialization list)
@@ -135,7 +132,7 @@ let mk_refinement_record
     adapter = "cvc4";
     adapter_version;
     specializations = specs;
-    fragment = fragment_of_logic logic;
+    fragment = Smtlib.fragment_of_logic logic;
     auxiliary = Some (`Assoc [ "smtlib_logic", `String logic ]);
   }
 

@@ -107,12 +107,9 @@ let resources_now ~timeout_ms : Certificate.resources = {
   budget_consumed = None;
 }
 
-let fragment_of_logic = function
-  | "QF_LIA"   -> "LIA"
-  | "QF_LRA"   -> "LRA"
-  | "QF_BV"    -> "BV"
-  | "QF_UF" | "QF_UFLIA" | "QF_UFLRA" -> "UF"
-  | other -> other
+(* Fragment-name mapping ([QF_LIA] -> [LIA] etc.) lives in
+   [Smtlib.fragment_of_logic] so all three adapters share one
+   table — see Smtlib for the source-of-truth comment. *)
 
 let mk_refinement_record
       ~adapter_version
@@ -123,7 +120,7 @@ let mk_refinement_record
     adapter = "cvc5";
     adapter_version;
     specializations = specs;
-    fragment = fragment_of_logic logic;
+    fragment = Smtlib.fragment_of_logic logic;
     auxiliary = Some (`Assoc [ "smtlib_logic", `String logic ]);
   }
 

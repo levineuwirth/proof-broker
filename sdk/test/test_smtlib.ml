@@ -516,6 +516,36 @@ let test_emit_logic_uflia () =
   | Ok script -> Alcotest.(check string) "QF_UFLIA" "QF_UFLIA" script.logic
   | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
 
+(* --- fragment_of_logic shared mapping ------------------------------- *)
+
+let test_fol_lia () =
+  Alcotest.(check string) "QF_LIA → LIA"
+    "LIA" (Smtlib.fragment_of_logic "QF_LIA")
+
+let test_fol_lra () =
+  Alcotest.(check string) "QF_LRA → LRA"
+    "LRA" (Smtlib.fragment_of_logic "QF_LRA")
+
+let test_fol_bv () =
+  Alcotest.(check string) "QF_BV → BV"
+    "BV" (Smtlib.fragment_of_logic "QF_BV")
+
+let test_fol_uflia () =
+  Alcotest.(check string) "QF_UF → UF"
+    "UF" (Smtlib.fragment_of_logic "QF_UF");
+  Alcotest.(check string) "QF_UFLIA → UF"
+    "UF" (Smtlib.fragment_of_logic "QF_UFLIA");
+  Alcotest.(check string) "QF_UFLRA → UF"
+    "UF" (Smtlib.fragment_of_logic "QF_UFLRA")
+
+let test_fol_unknown () =
+  (* Identity passthrough preserves the SMT-LIB string verbatim
+     for fragments without a short label. capability_match's
+     match-by-string still works against manifests advertising
+     the long form. *)
+  Alcotest.(check string) "QF_AUFLIRA passes through"
+    "QF_AUFLIRA" (Smtlib.fragment_of_logic "QF_AUFLIRA")
+
 let () =
   Alcotest.run "smtlib" [
     "term emission", [
@@ -596,5 +626,12 @@ let () =
       Alcotest.test_case "UF symbol app" `Quick test_emit_uf_app;
       Alcotest.test_case "QF_UFLIA logic with UF + Int"
         `Quick test_emit_logic_uflia;
+    ];
+    "fragment_of_logic", [
+      Alcotest.test_case "QF_LIA → LIA" `Quick test_fol_lia;
+      Alcotest.test_case "QF_LRA → LRA" `Quick test_fol_lra;
+      Alcotest.test_case "QF_BV → BV" `Quick test_fol_bv;
+      Alcotest.test_case "QF_UFLIA → UF" `Quick test_fol_uflia;
+      Alcotest.test_case "unknown logic → identity" `Quick test_fol_unknown;
     ];
   ]
