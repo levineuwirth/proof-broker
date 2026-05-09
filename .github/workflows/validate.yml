@@ -52,10 +52,10 @@ jobs:
         run: opam install -y --deps-only --with-test ./sdk
 
       - name: Build SDK
-        run: opam exec -- dune build --root=sdk
+        run: opam exec -- dune build
 
       - name: Run SDK tests
-        run: opam exec -- dune runtest --root=sdk
+        run: opam exec -- dune runtest
 
       - name: Cross-tool agreement (OCaml round-trip → Python validator)
         run: python tools/test_cross_tool.py
@@ -76,11 +76,18 @@ jobs:
           ocaml-compiler: "5.4"
           dune-cache: true
 
+      # Python is needed for the trust-footprint gate
+      # (tools/check_axioms.py); the standard library is enough, no
+      # third-party deps.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install SDK deps
         run: opam install -y --deps-only --with-test ./sdk
 
       - name: Build SDK shared object
-        run: opam exec -- dune build --root=sdk
+        run: opam exec -- dune build
 
       - name: Install elan (Lean toolchain manager)
         run: |
@@ -91,7 +98,10 @@ jobs:
 
       - name: Build Lean bridge (auto-installs toolchain via lean-toolchain)
         working-directory: lean-bridge
-        run: lake build
+        run: lake build 2>&1 | tee ../lake_build.log
+
+      - name: Trust-footprint gate (axiom allowlist)
+        run: python tools/check_axioms.py --build-output lake_build.log
 
       - name: Run Lean ↔ C ↔ OCaml round-trip
         working-directory: lean-bridge

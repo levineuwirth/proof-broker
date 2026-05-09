@@ -1,0 +1,16 @@
+{
+  "_comment": "Allowed axioms per Lean theorem named *_axiom_free. The CI gate (tools/check_axioms.py) parses `lake build` output for Lean's '#print axioms' annotations and fails if any theorem here has actual axioms beyond what's listed, or disappears from the output entirely. Adding a new closure path to the tactic is a deliberate decision — if it grows the trust footprint, this file documents the new ceiling. See RETROSPECTIVES/phase-4.md.",
+
+  "theorems": {
+    "ProofBroker.Test.lia_axiom_free":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.tier1_lia_axiom_free":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.bv_axiom_free":
+      [],
+    "ProofBroker.Test.bv_compare_axiom_free":
+      [],
+    "ProofBroker.TestMathlib.lra_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"]
+  }
+}
