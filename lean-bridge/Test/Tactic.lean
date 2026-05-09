@@ -107,4 +107,14 @@ theorem bv_axiom_free : (5 : BitVec 8) + 3 = 8 := by
 
 #print axioms bv_axiom_free
 
+/-- BV comparison ops (`<` / `<=`) over `BitVec` resolve to the
+    unsigned variants in Lean's typeclass setup, so the reifier
+    emits `BV.ult` / `BV.ule` rather than the polymorphic `LT.lt`
+    / `LE.le`. The closer's `decide` path discharges this just as
+    cleanly as the additive case. -/
+theorem bv_compare_axiom_free : (3 : BitVec 8) < 5 := by
+  proof_broker
+
+#print axioms bv_compare_axiom_free
+
 end ProofBroker.Test

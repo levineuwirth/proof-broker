@@ -220,16 +220,22 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       return .app "Neg.neg" [] [← reifyTerm a]
   | (``LE.le, #[α, _, a, b]) =>
       expectArithCarrier α
-      return .app "LE.le" [] [← reifyTerm a, ← reifyTerm b]
+      -- Lean's [<=] over BitVec resolves to BitVec.ule (unsigned).
+      -- Signed comparisons need [BitVec.sle] written explicitly.
+      let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
+      return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``LT.lt, #[α, _, a, b]) =>
       expectArithCarrier α
-      return .app "LT.lt" [] [← reifyTerm a, ← reifyTerm b]
+      let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
+      return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``GE.ge, #[α, _, a, b]) =>
       expectArithCarrier α
-      return .app "LE.le" [] [← reifyTerm b, ← reifyTerm a]
+      let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
+      return .app sym [] [← reifyTerm b, ← reifyTerm a]
   | (``GT.gt, #[α, _, a, b]) =>
       expectArithCarrier α
-      return .app "LT.lt" [] [← reifyTerm b, ← reifyTerm a]
+      let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
+      return .app sym [] [← reifyTerm b, ← reifyTerm a]
   | (``Eq, #[α, a, b]) =>
       let tref ← reifyType α
       return .eq tref (← reifyTerm a) (← reifyTerm b)
@@ -241,6 +247,29 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       return .not_ (← reifyTerm a)
   | _ =>
       throwError "proof_broker: unsupported expression: {e}"
+
+/-- True iff any subterm carries a `BitVec(N)` type tag, on a
+    `numLit` or an `eq`'s `ty` field. Mirrors the SDK's
+    `Smtlib.shell_mentions_bv` so the Lean-side fragment derivation
+    matches the OCaml-side one for closed-BV-term goals (no
+    BitVec free vars, just BV literals + ops). Without this, a
+    goal like `(3 : BitVec 8) < 5` has no BV-typed locals and
+    the fragment label silently degrades to `"LIA"`, then
+    `capability_match` accepts a non-BV adapter (e.g. cvc4 whose
+    manifest only advertises LIA/LRA) and dispatch fails. -/
+partial def shellMentionsBV : ShellTerm → Bool
+  | .var _ | .const _ => false
+  | .numLit _ ty =>
+    ty.startsWith "BitVec("
+  | .eq ty a b =>
+    ty.startsWith "BitVec(" || shellMentionsBV a || shellMentionsBV b
+  | .app _ _ args => args.any shellMentionsBV
+  | .and_ a b | .or_ a b => shellMentionsBV a || shellMentionsBV b
+  | .implies a b => shellMentionsBV a || shellMentionsBV b
+  | .not_ a => shellMentionsBV a
+  | .forall_ _ _ b | .exists_ _ _ b => shellMentionsBV b
+  | .lambda _ b => shellMentionsBV b
+  | .opaque_ _ => false
 
 /-- Reify the goal + Prop-typed hypotheses + Int-typed free variables
     of `mvarId` into an IR document tagged for the LIA fragment.
@@ -279,12 +308,17 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
         | none => pure ()
       | none => pure ()
   -- Pick fragment label. BV wins over LIA/extension if any free var
-  -- is BitVec-typed; otherwise extension wins if it claimed any
-  -- free var; otherwise default LIA. The OCaml-side adapters derive
-  -- the effective fragment from term types anyway, so this label is
-  -- mostly about routing through the right capability_match path.
+  -- is BitVec-typed OR any goal/hypothesis term mentions a BV type
+  -- tag — capability_match keys on this label, so closed-BV-term
+  -- goals (no BitVec free vars, just BV literals + ops) need to
+  -- carry "BV" too or cvc4-style LIA-only manifests would
+  -- spuriously match. Otherwise extension wins if it claimed any
+  -- free var; otherwise default LIA.
+  let bvInTerms :=
+    shellMentionsBV goalShell
+    || hypotheses.any (fun h => shellMentionsBV h.shell)
   let fragment :=
-    if sawBV then "BV"
+    if sawBV || bvInTerms then "BV"
     else match extOpt with
       | some ext => if sawExtensionType then ext.irFragment else "LIA"
       | none => "LIA"

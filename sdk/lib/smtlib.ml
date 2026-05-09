@@ -182,10 +182,16 @@ let arith_target = function
   | _ -> None
 
 (** BV-flavored symbol mapping. Same shape as [arith_target] but for
-    QF_BV operators. The Phase-4-equivalent BV reach is intentionally
-    minimal here: just enough to ship the [BV.add] / Eq vertical
-    slice. Add bvsub / bvmul / bvand / bvor / bvxor / bvult / bvule
-    / bvslt / bvsle when a consumer needs them. *)
+    QF_BV operators. Comparisons follow SMT-LIB's split between
+    unsigned and signed: [bvult] / [bvule] interpret the operands
+    as non-negative integers, [bvslt] / [bvsle] as 2's-complement
+    signed. The Lean side's typeclass [<] / [<=] over BitVec
+    resolves to the unsigned variants by default; signed
+    comparisons need to be written with [BitVec.slt] / [BitVec.sle]
+    directly. The reverse direction symbols ([>], [>=]) get
+    flipped to the [<] / [<=] form by the reifier rather than
+    needing dedicated [bvugt] / [bvuge] etc. mappings here, mirroring
+    how [arith_target] handles [GT.gt] / [GE.ge]. *)
 let bv_target = function
   | "BV.add" -> Some ("bvadd", "BV.add")
   | "BV.sub" -> Some ("bvsub", "BV.sub")
@@ -193,6 +199,10 @@ let bv_target = function
   | "BV.and" -> Some ("bvand", "BV.and")
   | "BV.or"  -> Some ("bvor",  "BV.or")
   | "BV.xor" -> Some ("bvxor", "BV.xor")
+  | "BV.ult" -> Some ("bvult", "BV.ult")
+  | "BV.ule" -> Some ("bvule", "BV.ule")
+  | "BV.slt" -> Some ("bvslt", "BV.slt")
+  | "BV.sle" -> Some ("bvsle", "BV.sle")
   | _ -> None
 
 (** Format a numeric literal value string into SMT-LIB grammar.

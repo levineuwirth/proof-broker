@@ -412,6 +412,22 @@ let test_emit_bvadd () =
   Alcotest.(check string) "(bvadd x (_ bv3 8))"
     "(bvadd x (_ bv3 8))" (emit_term_ok t)
 
+let test_emit_bvult () =
+  let t = Ir.App {
+    symbol = "BV.ult"; type_args = [];
+    args = [ Var { name = "x" }; Num_lit { value = "5"; ty = bv8 } ];
+  } in
+  Alcotest.(check string) "(bvult x (_ bv5 8))"
+    "(bvult x (_ bv5 8))" (emit_term_ok t)
+
+let test_emit_bvsle () =
+  let t = Ir.App {
+    symbol = "BV.sle"; type_args = [];
+    args = [ Num_lit { value = "0"; ty = bv8 }; Var { name = "x" } ];
+  } in
+  Alcotest.(check string) "(bvsle (_ bv0 8) x)"
+    "(bvsle (_ bv0 8) x)" (emit_term_ok t)
+
 let test_emit_bv_eq () =
   let t = Ir.Eq {
     ty = bv8;
@@ -508,6 +524,8 @@ let () =
       Alcotest.test_case "BitVec(8) sort" `Quick test_emit_bv_sort;
       Alcotest.test_case "BV literal" `Quick test_emit_bv_literal;
       Alcotest.test_case "bvadd" `Quick test_emit_bvadd;
+      Alcotest.test_case "bvult" `Quick test_emit_bvult;
+      Alcotest.test_case "bvsle" `Quick test_emit_bvsle;
       Alcotest.test_case "BV equality" `Quick test_emit_bv_eq;
       Alcotest.test_case "QF_BV logic" `Quick test_emit_logic_bv;
       Alcotest.test_case "negative BV literal rejected"
