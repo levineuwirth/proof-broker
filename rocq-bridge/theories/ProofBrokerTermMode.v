@@ -1,56 +1,26 @@
 (** Helper lemmas for term-mode Tier 1 Farkas reconstruction.
 
-    The plugin's term-mode closer (planned, not yet wired — see
-    "Pickup state" below) takes a Farkas witness JSON (coefficients
-    keyed by hypothesis name) and builds an application of one of
-    these lemmas. The cert IS the proof, not a certificate that one
-    exists. No call to [lia]/[lra] is made along this path; the
-    closer's trust footprint is exactly these lemmas plus [ring]
-    (used to discharge the polynomial identity that the linear-
-    combination sum equals the cert's residual constant K).
+    The plugin's term-mode closer ([rocq-bridge/src/term_mode.ml],
+    surfaced as the [proof_broker_term] tactic) takes a Farkas
+    witness JSON (coefficients keyed by hypothesis name) and builds
+    an application of [farkas_le_n] from a goal-state-derived
+    linear combination. The cert IS the proof, not a certificate
+    that one exists. No call to [lia]/[lra] is made along this
+    path; the closer's trust footprint is exactly these lemmas
+    plus [ring] (used to discharge the polynomial identity that
+    [c1*a1 + c2*a2 = K]).
 
     Everything here is axiom-free: only [Stdlib.ZArith.BinInt] and
-    [Stdlib.ZArith.Zorder] are touched. [Print Assumptions] of any
+    [Stdlib.ZArith.Zorder] are touched, plus [Pos2Z.is_pos] for the
+    positive-Z ordering witnesses. [Print Assumptions] of any
     theorem that funnels through [farkas_le_n] reports "Closed
     under the global context".
 
-    Pickup state. Phase 0 of the plan (the Plan agent's writeup,
-    captured in conversation) is done: [proof_broker_verbose [z3]]
-    on the example1 LIA goal mints a Tier 1 Farkas cert with
-    witness coefficients [(H2, 1); (H1, 1)] (no [neg_goal] entry —
-    the goal is [False], so the broker omits it). Phase 1 is also
-    done: this file. The OCaml-side term builder ([term_mode.ml])
-    is unwritten; what blocks it isn't the design but the
-    plugin-API spelunking — three concrete dead-ends from the
-    half-written attempt:
-
-      1. [Pos2Z.is_pos] (which gives [0 < Zpos p]) is not a
-         registered [Rocqlib.lib_ref], so reaching it from the
-         plugin needs either an explicit [Register Pos2Z.is_pos as
-         proof_broker.term_mode.pos_is_pos] here, or an alternative
-         construction of [0 < K] that lives entirely behind helpers
-         we register.
-
-      2. [Hc1 : 0 <= c1] for a positive integer coefficient [c1]
-         needs its own builder — most ergonomic is to add
-         [pos_is_nonneg : forall p, 0 <= Zpos p] here, registered.
-         The c=0 case (rare in practice, since the cert dedup
-         strips zero coefficients) would use [Z.le_refl 0].
-
-      3. [Heq : c1*a1 + c2*a2 = K] is left as an evar and closed
-         by sequencing [Refine.refine] with a [ring] tactic call.
-         Concretely: [Proofview.tclTHEN (Refine.refine ...) ring].
-         The ring invocation pattern mirrors [invoke_lia] in
-         [pb_rocq_main.ml] (parse "ring" through Procq, intern,
-         eval) — a one-liner once the sequencing shape is right.
-
-    The plan's helper-arity dimension is also outstanding: only
-    arity-2 is here. Arities 3..N are mechanical copies (Lemma
-    farkas_le_3 (a1 a2 a3) ...). One could write a generic
-    list-shaped lemma, but the plan called fixed-arity simpler at
-    the [EConstr.mkApp] site, and the SDK's witness-coefficient
-    counts in practice are small (Tier 1 Farkas typically arity
-    ≤ 5). *)
+    Arity scope: arity 2 only today, matching the smallest non-
+    trivial Farkas cert (e.g. example1's [forall x : Z, x >= 5 ->
+    x <= 3 -> False] with witness [(H2,1); (H1,1)]). Arities 3..N
+    are mechanical copies of [farkas_le_2] — write them when a
+    cert in practice exceeds arity 2. *)
 
 From Stdlib Require Import ZArith.
 
@@ -68,6 +38,23 @@ Proof. intros H. apply Z.sub_nonpos. apply Z.ge_le. exact H. Qed.
 
 Register le_to_le0 as proof_broker.term_mode.le_to_le0.
 Register ge_to_le0 as proof_broker.term_mode.ge_to_le0.
+
+(** Coefficient-witness builders. [Pos2Z.is_pos] is in Stdlib but
+    isn't a registered [Rocqlib.lib_ref], so the plugin can't reach
+    it directly; aliasing here under proof_broker.term_mode.* gives
+    the plugin a stable handle. [pos_is_nonneg] composes it with
+    [Z.lt_le_incl] to satisfy the [0 <= c_i] coefficient hypothesis
+    in [farkas_le_n] — Tier 1 Farkas certs use non-negative integer
+    coefficients (z3 emits them as [Zpos p]), so this is the
+    coefficient-witness builder the OCaml side reaches for. *)
+Lemma pos_is_pos (p : positive) : 0 < Zpos p.
+Proof. exact (Pos2Z.is_pos p). Qed.
+
+Lemma pos_is_nonneg (p : positive) : 0 <= Zpos p.
+Proof. exact (Z.lt_le_incl _ _ (Pos2Z.is_pos p)). Qed.
+
+Register pos_is_pos as proof_broker.term_mode.pos_is_pos.
+Register pos_is_nonneg as proof_broker.term_mode.pos_is_nonneg.
 
 (** Farkas combine, arity 2. Hypotheses are pre-normalized to
     [a <= 0] form by the OCaml side (via [le_to_le0] / [ge_to_le0]
@@ -106,3 +93,9 @@ Print Assumptions le_to_le0.
 
 Print ge_to_le0.
 Print Assumptions ge_to_le0.
+
+Print pos_is_pos.
+Print Assumptions pos_is_pos.
+
+Print pos_is_nonneg.
+Print Assumptions pos_is_nonneg.

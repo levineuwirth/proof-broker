@@ -34,3 +34,16 @@ TACTIC EXTEND ProofBrokerVerbose
 | [ "proof_broker_verbose" "[" ne_ident_list_sep(names, ",") "]" ] ->
     { Pb_rocq_main.run_verbose (Some names) }
 END
+
+(* [proof_broker_term [adapters]?] — term-mode closer. Builds an
+   actual Rocq proof term from the cert's Farkas witness instead of
+   delegating to lia. Restricts dispatch to z3 by default (only
+   adapter that mints Tier 1 farkas certs natively, which is what
+   the term builder consumes). Out-of-scope cases (non-Le hypotheses,
+   higher arities) raise; the user explicitly opted into term mode
+   by typing [proof_broker_term] over plain [proof_broker]. *)
+TACTIC EXTEND ProofBrokerTerm
+| [ "proof_broker_term" ] -> { Pb_rocq_main.run_close_term None }
+| [ "proof_broker_term" "[" ne_ident_list_sep(names, ",") "]" ] ->
+    { Pb_rocq_main.run_close_term (Some names) }
+END

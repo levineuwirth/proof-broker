@@ -228,3 +228,39 @@ let run_verbose (names : Names.Id.t list option) : unit Proofview.tactic =
         Feedback.msg_notice (Pp.str summary)))
     in
     Proofview.tclTHEN print_then_close (close_or_fail path))
+
+(* --- term-mode entry point ---------------------------------------- *)
+
+let run_close_term (names : Names.Id.t list option) : unit Proofview.tactic =
+  Proofview.Goal.enter (fun gl ->
+    let path = build_path gl names in
+    match path.cert, path.verify_reason with
+    | None, _ ->
+      CErrors.user_err Pp.(
+        str "proof_broker_term: no cert minted; attempts: " ++
+        str (attempts_summary path.attempts))
+    | Some cert, Some Verified_farkas ->
+      (match cert.payload with
+       | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
+         (try Term_mode.close_term path.ir witness_data
+          with Term_mode.Unsupported msg ->
+            CErrors.user_err Pp.(
+              str (Printf.sprintf
+                     "proof_broker_term: %s — fall back to plain \
+                      proof_broker if you want lia-based closure"
+                     msg)))
+       | _ ->
+         CErrors.user_err Pp.(
+           str "proof_broker_term: cert payload is not a Tier 1 Farkas \
+                witness — only that shape has a term builder today"))
+    | Some _, Some r ->
+      let kind = Proof_broker.Verifier.kind_of_reason r in
+      CErrors.user_err Pp.(
+        str (Printf.sprintf
+               "proof_broker_term: verify reason %s — term-mode closer \
+                requires verified_farkas (try [proof_broker_term [z3]] \
+                to force a Tier 1 Farkas adapter)"
+               kind))
+    | Some _, None ->
+      CErrors.user_err Pp.(
+        str "proof_broker_term: internal — cert present without verify"))

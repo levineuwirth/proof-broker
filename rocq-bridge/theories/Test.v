@@ -7,6 +7,7 @@
     as Lean's [omega] path. *)
 
 From Stdlib Require Import ZArith Lia Reals Lra.
+From ProofBroker Require Import ProofBrokerTermMode.
 
 Declare ML Module "proof_broker_rocq.plugin".
 
@@ -49,6 +50,20 @@ Theorem pb_lia_z3 : forall x : Z, x >= 5 -> x <= 3 -> False.
 Proof.
   intros x H1 H2.
   proof_broker_verbose [z3].
+Qed.
+
+(** Term-mode closer: instead of routing the verified cert to lia,
+    reconstruct the goal proof from the Tier 1 Farkas witness's
+    coefficients. The cert IS the proof along this path —
+    [farkas_le_2] from ProofBrokerTermMode.v is the load-bearing
+    lemma, [ring] discharges the polynomial identity. No lia /
+    lra call. Forces [z3] explicitly because z3 is the only
+    adapter that mints Tier 1 farkas natively (cvc5 mints Tier 3
+    alethe-2024 which the term builder doesn't yet consume). *)
+Theorem pb_term_axiom_free : forall x : Z, x >= 5 -> x <= 3 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
 Qed.
 
 (** Verbose + explicit list. *)
@@ -109,3 +124,6 @@ Print Assumptions pb_lia_verbose.
 
 Print pb_lra_axiom_free.
 Print Assumptions pb_lra_axiom_free.
+
+Print pb_term_axiom_free.
+Print Assumptions pb_term_axiom_free.

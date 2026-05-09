@@ -28,3 +28,13 @@ val run_test : Names.Id.t list option -> unit Proofview.tactic
 val run_verbose : Names.Id.t list option -> unit Proofview.tactic
 (** Dispatch + verify + multi-line summary + close (or error).
     Mirrors Lean's [proof_broker?] verbose form. *)
+
+val run_close_term : Names.Id.t list option -> unit Proofview.tactic
+(** Term-mode closer: dispatch + verify + reconstruct the goal
+    proof from the cert's Tier 1 Farkas witness. No [lia]/[lra]
+    call along this path; the cert IS the proof. Falls through
+    to [CErrors.user_err] (not the trust axiom) on cert shapes
+    outside [Term_mode.close_term]'s scope (non-Tier-1 cert,
+    arity > 2, non-Le hypotheses, etc.) — the user explicitly
+    opted into term mode by typing [proof_broker_term] over
+    plain [proof_broker]. *)

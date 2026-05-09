@@ -21,6 +21,10 @@
       [],
     "ge_to_le0":
       [],
+    "pos_is_pos":
+      [],
+    "pos_is_nonneg":
+      [],
     "pb_lia_axiom_free":
       [],
     "pb_lia_explicit_list":
@@ -31,6 +35,8 @@
       [
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"
-      ]
+      ],
+    "pb_term_axiom_free":
+      []
   }
 }
