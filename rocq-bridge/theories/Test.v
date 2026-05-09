@@ -6,7 +6,7 @@
     to Stdlib's [lia] under cert-gating — same trust discipline
     as Lean's [omega] path. *)
 
-From Stdlib Require Import ZArith Lia.
+From Stdlib Require Import ZArith Lia Reals Lra.
 
 Declare ML Module "proof_broker_rocq.plugin".
 
@@ -58,14 +58,33 @@ Proof.
   lia.
 Qed.
 
+(** LRA Farkas: x >= 5, x <= 3 ⊢ False over R. Tests the LRA closer
+    end-to-end — reifier emits Real-typed free var, broker dispatches
+    LRA-capable adapter, cert.refinement_record.fragment is "LRA",
+    and [closer_for_fragment] routes to Stdlib's [lra] (parsed from
+    "lra" through Procq, same idiom [lia] uses).
+
+    Rocq does NOT split this into a separate opt-in package the way
+    Lean splits ProofBrokerMathlib — the cost-of-import asymmetry
+    that drove Lean's split (Mathlib is heavy) doesn't exist here:
+    Reals + Lra are in Stdlib already. *)
+Open Scope R_scope.
+Theorem pb_lra_axiom_free : forall x : R, x >= 5 -> x <= 3 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker.
+Qed.
+Close Scope R_scope.
+
 (** Axiom-footprint check, mirroring lean-bridge/Test/Tactic.lean's
     [#print axioms] discipline. The closer routes through Stdlib's
-    [lia], which is axiom-free in the same sense Lean's [omega] is —
-    cert-gated calls introduce no [proofBrokerCertSound]-style trust
-    axiom. Each named theorem above closes without dependencies on
-    any axiom, so [Print Assumptions] reports "Closed under the
-    global context" — even cleaner than Lean's [propext, Quot.sound]
-    footprint. *)
+    [lia] (LIA path) or [lra] (LRA path); both are axiom-free in the
+    same sense Lean's [omega] / [linarith] are. Cert-gated calls
+    introduce no [proofBrokerCertSound]-style trust axiom. Each
+    named theorem closes without dependencies on any axiom, so
+    [Print Assumptions] reports "Closed under the global context" —
+    even cleaner than Lean's [propext, Quot.sound] footprint. *)
 Print Assumptions pb_lia_axiom_free.
 Print Assumptions pb_lia_explicit_list.
 Print Assumptions pb_lia_verbose.
+Print Assumptions pb_lra_axiom_free.

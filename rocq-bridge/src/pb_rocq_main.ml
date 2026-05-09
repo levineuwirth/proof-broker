@@ -136,18 +136,43 @@ let render_path (p : path) : string =
     ([ "proof_broker:"; ir_line; dispatch_line ]
      @ attempt_lines @ [ cert_line; verify_line ])
 
-(* --- closure logic (cert-gated lia) -------------------------------- *)
+(* --- closure logic (cert-gated lia / lra) -------------------------- *)
 
-let invoke_lia : unit Proofview.tactic =
+(* Invoke a registered Stdlib tactic by parsing its name through the
+   Ltac entry. The string-parse round trip is the idiom for calling
+   a name-resolved tactic from an OCaml plugin (see
+   tacentries.ml:494 in rocq-runtime). [Goal.enter] defers the
+   parse/intern so [Global.env] doesn't fire during plugin module
+   init. *)
+let invoke_named_tactic (name : string) : unit Proofview.tactic =
   Proofview.Goal.enter (fun _ ->
     let raw =
-      Procq.parse_string Ltac_plugin.Pltac.tactic "lia"
+      Procq.parse_string Ltac_plugin.Pltac.tactic name
     in
     let glob =
       Ltac_plugin.Tacintern.intern_pure_tactic
         (Ltac_plugin.Tacintern.make_empty_glob_sign ~strict:false) raw
     in
     Ltac_plugin.Tacinterp.eval_tactic glob)
+
+let invoke_lia = invoke_named_tactic "lia"
+let invoke_lra = invoke_named_tactic "lra"
+
+(* Map cert fragment to a closer tactic. Mirrors the Lean side's
+   [closeOrFail] dispatch. The cert-verification gate keeps both
+   paths sound; [lia] / [lra] are themselves axiom-free, so closures
+   along these paths don't introduce a trust axiom. *)
+let closer_for_fragment fragment : unit Proofview.tactic =
+  match fragment with
+  | "LIA" -> invoke_lia
+  | "LRA" -> invoke_lra
+  | other ->
+    CErrors.user_err Pp.(
+      str (Printf.sprintf
+             "proof_broker: closer for fragment %s not yet wired (LIA + \
+              LRA are the only fragments with a cert-gated closer in \
+              the core plugin)"
+             other))
 
 let close_or_fail (p : path) : unit Proofview.tactic =
   match p.cert, p.verify_reason with
@@ -160,15 +185,7 @@ let close_or_fail (p : path) : unit Proofview.tactic =
     (match r with
      | Verified_envelope | Verified_farkas
      | Verified_case_split | Verified_tier3 ->
-       let fragment = cert.refinement_record.fragment in
-       if fragment = "LIA" then invoke_lia
-       else
-         CErrors.user_err Pp.(
-           str (Printf.sprintf
-                  "proof_broker: closer for fragment %s not yet wired (LIA \
-                   only in the core plugin; LRA is a future opt-in symmetric \
-                   to Lean's ProofBrokerMathlib)"
-                  fragment))
+       closer_for_fragment cert.refinement_record.fragment
      | _ ->
        CErrors.user_err Pp.(
          str (Printf.sprintf
