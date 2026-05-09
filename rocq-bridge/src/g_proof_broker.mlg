@@ -2,12 +2,35 @@ DECLARE PLUGIN "proof_broker_rocq.plugin"
 
 {
 open Ltac_plugin
+open Stdarg
 }
 
+(* [proof_broker_test [adapters]?] — debug form: dispatch + verify,
+   then print summary; does NOT close. Useful for inspecting what
+   the broker minted without trusting the closer. *)
 TACTIC EXTEND ProofBrokerTest
-| [ "proof_broker_test" ] -> { Pb_rocq_main.run_test }
+| [ "proof_broker_test" ] -> { Pb_rocq_main.run_test None }
+| [ "proof_broker_test" "[" ne_ident_list_sep(names, ",") "]" ] ->
+    { Pb_rocq_main.run_test (Some names) }
 END
 
+(* [proof_broker [adapters]?] — closing form. Bare invocation uses
+   default manifests sorted by tier descending; bracketed list
+   respects the user's order verbatim (filter + priority lever),
+   matching Lean's [proof_broker [cvc5, z3]] discipline. *)
 TACTIC EXTEND ProofBroker
-| [ "proof_broker" ] -> { Pb_rocq_main.run_close }
+| [ "proof_broker" ] -> { Pb_rocq_main.run_close None }
+| [ "proof_broker" "[" ne_ident_list_sep(names, ",") "]" ] ->
+    { Pb_rocq_main.run_close (Some names) }
+END
+
+(* [proof_broker_verbose [adapters]?] — verbose form mirroring
+   Lean's [proof_broker?]. Prints multi-line extraction-path
+   summary (IR shape, attempts, cert, verify) before closing.
+   Rocq doesn't accept ? in tactic identifiers, so the suffix is
+   [_verbose] rather than [?]. *)
+TACTIC EXTEND ProofBrokerVerbose
+| [ "proof_broker_verbose" ] -> { Pb_rocq_main.run_verbose None }
+| [ "proof_broker_verbose" "[" ne_ident_list_sep(names, ",") "]" ] ->
+    { Pb_rocq_main.run_verbose (Some names) }
 END

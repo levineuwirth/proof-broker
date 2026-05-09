@@ -2,7 +2,7 @@
  (name proof_broker_rocq_plugin)
  (public_name proof_broker_rocq.plugin)
  (synopsis "Proof Broker Rocq plugin — direct-linked OCaml SDK consumer")
- (libraries proof_broker rocq-runtime.plugins.ltac)
+ (libraries proof_broker rocq-runtime.plugins.ltac unix)
  ; rocq pp-mlg generates code with unused-var bindings (e.g. the
  ; tactic-interpreter `ist` argument); silence those linter classes
  ; on the generated file's lib.

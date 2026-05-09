@@ -48,3 +48,14 @@ let load_default () : Proof_broker.Manifest.t list =
       str "; set PROOF_BROKER_EXAMPLES_DIR or run from a directory " ++
       str "whose parent has examples/manifest-*.json");
   manifests
+
+let load_named (names : string list) : Proof_broker.Manifest.t list =
+  let dir = resolve_examples_dir () in
+  List.map (fun name ->
+    match load_one dir name with
+    | Some m -> m
+    | None ->
+      CErrors.user_err Pp.(
+        str (Printf.sprintf
+               "proof_broker: manifest-%s.json not found in %s" name dir)))
+    names
