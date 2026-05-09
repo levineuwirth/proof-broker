@@ -12,13 +12,13 @@ Builds:
   success is the test.
 
 The exe links dynamically against the dune-built proof_broker_ffi.so
-sitting in ../sdk/_build/default/ffi (relative to this lakefile's dir).
+sitting in ../_build/default/sdk/ffi (relative to this lakefile's dir).
 We pass `-l:proof_broker_ffi.so` so the linker accepts the bare filename
 (no `lib` prefix), and an `$ORIGIN`-relative `-rpath` so the produced
 binary self-resolves the .so without LD_LIBRARY_PATH at runtime.
 
-Pre-condition: `opam exec -- dune build --root=sdk` has populated
-sdk/_build/default/ffi/proof_broker_ffi.so before `lake build` is run.
+Pre-condition: `opam exec -- dune build` has populated
+_build/default/sdk/ffi/proof_broker_ffi.so before `lake build` is run.
 -/
 
 import Lake
@@ -44,9 +44,9 @@ require «mathlib» from git
     `proof_broker_ffi.so` references libc/pthread symbols indirectly
     via OCaml's runtime; see `sdk/FFI_CONVENTIONS.md` "Toolchain notes". -/
 def ffiLinkArgs : Array String := #[
-  "-L../sdk/_build/default/ffi",
+  "-L../_build/default/sdk/ffi",
   "-l:proof_broker_ffi.so",
-  "-Wl,-rpath,$ORIGIN/../../../../sdk/_build/default/ffi",
+  "-Wl,-rpath,$ORIGIN/../../../../_build/default/sdk/ffi",
   "-Wl,--allow-shlib-undefined"
 ]
 
@@ -98,7 +98,7 @@ extern_lib «libpbglue» pkg := do
 lean_exe roundtripTest where
   root := `Main
   -- If linking fails with errors like "undefined reference: pthread_*@GLIBC_2.X
-  -- referenced by ../sdk/_build/default/ffi/proof_broker_ffi.so (disallowed by
+  -- referenced by ../_build/default/sdk/ffi/proof_broker_ffi.so (disallowed by
   -- --no-allow-shlib-undefined)", see sdk/FFI_CONVENTIONS.md "Toolchain notes"
   -- — the --allow-shlib-undefined flag below is the documented fix.
   moreLinkArgs := ffiLinkArgs
@@ -114,14 +114,14 @@ lean_exe roundtripTest where
     `ProofBroker` is precompiled) resolves under `dlopen`. Both
     paths are cwd-relative; the build must be invoked from
     `lean-bridge/`. The OCaml-side FFI .so must already exist —
-    run `opam exec -- dune build --root=sdk` first. -/
+    run `opam exec -- dune build` first. -/
 @[default_target]
 lean_lib ProofBrokerTest where
   roots := #[`Test.Tactic]
   precompileModules := false
   moreLeanArgs := #[
     "--load-dynlib=.lake/build/lib/libpbglue.so",
-    "--load-dynlib=../sdk/_build/default/ffi/proof_broker_ffi.so"
+    "--load-dynlib=../_build/default/sdk/ffi/proof_broker_ffi.so"
   ]
 
 /-- Mathlib-flavored opt-in extension. Importing
@@ -144,7 +144,7 @@ lean_lib ProofBrokerTestMathlib where
   precompileModules := false
   moreLeanArgs := #[
     "--load-dynlib=.lake/build/lib/libpbglue.so",
-    "--load-dynlib=../sdk/_build/default/ffi/proof_broker_ffi.so",
+    "--load-dynlib=../_build/default/sdk/ffi/proof_broker_ffi.so",
     libLakeSharedDynlibArg
   ]
 

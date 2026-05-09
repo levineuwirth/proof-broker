@@ -11,8 +11,8 @@ cert-gating, same contract as `omega` for LIA.
 Build success of this lib is the test.
 
 Pre-condition: cwd = `lean-bridge/` (manifest loader points at
-`../examples/`); `opam exec -- dune build --root=sdk` populated
-the FFI .so.
+`../examples/`); `opam exec -- dune build` (run from repo root)
+populated the FFI .so.
 -/
 
 import ProofBrokerMathlib
