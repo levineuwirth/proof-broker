@@ -40,6 +40,17 @@ Proof.
   proof_broker_verbose.
 Qed.
 
+(** Explicit [z3] dispatch — surfaces what tier/format z3 mints for
+    the example1 LIA shape. Used as the empirical input for the
+    term-mode closer's plan: term-mode reconstructs Tier 1 Farkas
+    witnesses, so we need to confirm z3 mints Tier 1 (and not Tier
+    3 alethe-2024 the way cvc5 does). *)
+Theorem pb_lia_z3 : forall x : Z, x >= 5 -> x <= 3 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_verbose [z3].
+Qed.
+
 (** Verbose + explicit list. *)
 Theorem pb_lia_verbose_list : forall x : Z, x >= 5 -> x <= 3 -> False.
 Proof.
