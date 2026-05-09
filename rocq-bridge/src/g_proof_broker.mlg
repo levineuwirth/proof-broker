@@ -5,5 +5,9 @@ open Ltac_plugin
 }
 
 TACTIC EXTEND ProofBrokerTest
-| [ "proof_broker_test" ] -> { Pb_rocq_main.run_default }
+| [ "proof_broker_test" ] -> { Pb_rocq_main.run_test }
+END
+
+TACTIC EXTEND ProofBroker
+| [ "proof_broker" ] -> { Pb_rocq_main.run_close }
 END

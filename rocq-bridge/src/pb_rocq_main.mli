@@ -1,18 +1,27 @@
 (** Proof Broker Rocq plugin — vernac/tactic entry points.
 
-    Phase 4 architectural probe: a Rocq tactic that reifies the
-    current goal + Prop hypotheses into the proof_broker IR,
-    dispatches through the broker, and prints the cert tier /
-    format / verify reason. Does NOT close the goal yet (Phase 4.5).
-    The point is to validate that the IR is genuinely cross-system
-    by running a second source language (Rocq's [Constr]) through
-    the same dispatch + verify pipeline that Lean uses.
+    Phase 4 architectural probe + Phase 4.5 closer: the Rocq plugin
+    reifies the current goal into the proof_broker IR, dispatches
+    through the broker, verifies the cert, and (in [run_close])
+    closes the goal via [lia] under cert-gating — same trust
+    discipline as Lean's [omega] path.
 
-    Failure modes (cert=[None] from dispatch, or verify reason !=
-    [Verified_*]) raise [CErrors.user_err] so the test [.v] file
-    fails-loudly during [rocq compile]. *)
+    Trust footprint mirrors Lean's [Tactic.lean] header. The OCaml
+    verifier accepting the cert gates the [lia] call, and [lia]
+    itself is axiom-free (it's Stdlib's micromega LIA decision
+    procedure), so closures along this path don't introduce a
+    cert-trust axiom. Non-LIA fragments are out of scope here and
+    surface as a hard error; LRA opt-in via [lra] is the symmetric
+    extension to Lean's Mathlib-flavored [linarith] closer. *)
 
-val run_default : unit Proofview.tactic
-(** [proof_broker_test] tactic: walk the current goal, reify into
-    [Ir.t], dispatch through the broker, print the result. Phase 2
-    stub: just confirms the plugin loaded by emitting a notice. *)
+val run_test : unit Proofview.tactic
+(** [proof_broker_test]: dispatch + verify, then print a one-line
+    summary via [Feedback.msg_notice]. Does NOT close the goal —
+    leaves it open for inspection. Useful for debugging the
+    reifier or the cert path. *)
+
+val run_close : unit Proofview.tactic
+(** [proof_broker]: dispatch + verify + close. On a verified LIA
+    cert, hands the goal to Stdlib's [lia]; on any other outcome
+    (no cert, verifier rejected, non-LIA fragment) raises
+    [CErrors.user_err] so the failure surfaces during [rocq compile]. *)
