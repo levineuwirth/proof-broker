@@ -1,31 +1,41 @@
 #!/usr/bin/env python3
-"""Trust-footprint gate for Lean-side `*_axiom_free` theorems.
+"""Trust-footprint gate for `*_axiom_free` theorems.
 
-Reads `lake build` output (from stdin or a file), parses Lean's
-`#print axioms` annotations, and compares each allowlisted theorem
-against `tools/axiom_allowlist.json`. Fails if any theorem grows
-beyond its allowed axioms — the closure path silently started
-relying on a new trust assumption — or disappears from the output
-entirely (test removed without updating the allowlist).
+Reads build output (from stdin or a file), parses both Lean's
+`#print axioms` annotations and Rocq's `Print Assumptions` blocks,
+and compares each allowlisted theorem against
+`tools/axiom_allowlist.json`. Fails if any theorem grows beyond
+its allowed axioms — the closure path silently started relying on
+a new trust assumption — or disappears from the output entirely
+(test removed without updating the allowlist).
+
+Lean's #print axioms tags the theorem name in its output; Rocq's
+Print Assumptions does not. To pair Rocq theorems with their
+axiom signatures we rely on a `Print <name>.` line preceding each
+`Print Assumptions <name>.` in the .v source — that emits a
+`<name> = ...` marker in the build output the parser can anchor
+on. The .v files under rocq-bridge/theories/ already follow this
+convention; new ones must too if they want to be allowlisted.
 
 The allowlist is a strict ceiling: actual axioms must be a subset
-of allowed. Matching is by set, so axiom ordering in Lean's output
-doesn't matter. Theorems found in the build output that aren't
-allowlisted are ignored — the gate cares about declared axiom-free
-theorems, not every theorem in the world.
-
-Rocq isn't checked here. Rocq's `Print Assumptions` doesn't tag
-the theorem name in its output (it prints "Closed under the
-global context" or "Axioms: ..." with no preamble identifier),
-so a positional pairing against the .v source would be the only
-way. Deferred to a future iteration; the Rocq side's `Print
-Assumptions` lines remain present in build output for human
-inspection. See RETROSPECTIVES/phase-4.md.
+of allowed. Matching is by set, so axiom ordering in either
+language's output doesn't matter. Theorems found in the build
+output that aren't allowlisted are ignored — the gate cares about
+declared axiom-free theorems, not every theorem in the world.
 
 Usage:
+    # Lean only (CI mode):
     lake build 2>&1 | python tools/check_axioms.py
-    python tools/check_axioms.py < build.log
+    # Both bridges, locally:
+    (lake build 2>&1; opam exec -- dune build rocq-bridge 2>&1) \\
+        | python tools/check_axioms.py
     python tools/check_axioms.py --build-output build.log
+
+CI integration: the validate.yml workflow runs the gate against
+captured `lake build` output in the lean-bridge job. A rocq-bridge
+job that builds the Rocq side under CI (rocq-runtime + cvc5/z3
+install) doesn't exist yet; until it does, the Rocq parsing path
+is dev-mode only. See RETROSPECTIVES/phase-4.md.
 """
 from __future__ import annotations
 
@@ -64,6 +74,96 @@ def parse_lean_axioms(text: str) -> dict[str, set[str]]:
         out[m.group("name")] = axs
     for m in RE_AXIOMS_NONE.finditer(text):
         out[m.group("name")] = set()
+    return out
+
+
+# Rocq's `Print <name>` emits a body line starting with `<name> = `;
+# this is the marker we use to associate the subsequent
+# `Print Assumptions` block with a theorem name. (Rocq's
+# `Print Assumptions` alone doesn't include the name in its output.)
+RE_ROCQ_MARKER = re.compile(r"^([A-Za-z_][\w'.]*) =\s*$")
+# Inside an `Axioms:` block, each axiom name occupies a line of the
+# form `<name> :` at column 0, with the axiom's type indented on
+# subsequent lines. Block ends at end-of-input, a new marker line,
+# a `Closed under` line, or an unindented non-matching line.
+RE_ROCQ_AXIOM_NAME = re.compile(r"^([A-Za-z_][\w'.]*) :\s*$")
+RE_ROCQ_CLOSED = re.compile(r"^Closed under the global context\s*$")
+RE_ROCQ_AXIOMS_START = re.compile(r"^Axioms:\s*$")
+
+
+def parse_rocq_axioms(text: str) -> dict[str, set[str]]:
+    """Pair Rocq's Print + Print Assumptions output via marker lines.
+
+    State machine:
+      SEEKING        no current theorem; look for a `<name> =` marker.
+      EXPECT_RESULT  marker seen; skip body / type / Arguments lines
+                     until we hit `Closed under` or `Axioms:`.
+      IN_AXIOMS      collecting axiom names from a multi-line block;
+                     end on a new marker, `Closed under`, or an
+                     unindented non-matching line.
+
+    A `Print` without a corresponding `Print Assumptions` is
+    silently ignored (the marker is dropped when the next
+    interesting event arrives).
+    """
+    out: dict[str, set[str]] = {}
+    state = "SEEKING"
+    current_name: str | None = None
+    axiom_set: set[str] | None = None
+
+    def flush_axioms() -> None:
+        nonlocal current_name, axiom_set
+        if current_name is not None and axiom_set is not None:
+            out[current_name] = axiom_set
+        current_name = None
+        axiom_set = None
+
+    for line in text.splitlines():
+        m_marker = RE_ROCQ_MARKER.match(line)
+        m_closed = RE_ROCQ_CLOSED.match(line)
+        m_ax_start = RE_ROCQ_AXIOMS_START.match(line)
+
+        if state == "SEEKING":
+            if m_marker:
+                current_name = m_marker.group(1)
+                state = "EXPECT_RESULT"
+        elif state == "EXPECT_RESULT":
+            if m_closed:
+                if current_name is not None:
+                    out[current_name] = set()
+                current_name = None
+                state = "SEEKING"
+            elif m_ax_start:
+                axiom_set = set()
+                state = "IN_AXIOMS"
+            elif m_marker:
+                # Previous Print had no Print Assumptions; switch to new.
+                current_name = m_marker.group(1)
+            # else: skip body / type / Arguments lines.
+        elif state == "IN_AXIOMS":
+            m_ax = RE_ROCQ_AXIOM_NAME.match(line)
+            if m_marker:
+                flush_axioms()
+                current_name = m_marker.group(1)
+                state = "EXPECT_RESULT"
+            elif m_closed:
+                # Shouldn't normally appear mid-Axioms block; flush + restart.
+                flush_axioms()
+                state = "SEEKING"
+            elif m_ax:
+                if axiom_set is not None:
+                    axiom_set.add(m_ax.group(1))
+            elif line.startswith(" ") or not line.strip():
+                # Type body or blank — part of the current axiom; skip.
+                pass
+            else:
+                # Unrecognized non-indented line: assume the Axioms block
+                # ended (e.g. the next vernac's output started). Flush.
+                flush_axioms()
+                state = "SEEKING"
+
+    if state == "IN_AXIOMS":
+        flush_axioms()
     return out
 
 
@@ -118,14 +218,21 @@ def main() -> int:
     else:
         text = sys.stdin.read()
 
-    actual = parse_lean_axioms(text)
+    lean = parse_lean_axioms(text)
+    rocq = parse_rocq_axioms(text)
+    # Merge: theorem names are unique across the two source languages
+    # (Lean uses qualified `ProofBroker.Test.foo`; Rocq uses bare
+    # `foo`). On the off-chance of a collision, prefer Lean's parse —
+    # it's more rigid (the regex matches Lean's exact format).
+    actual = {**rocq, **lean}
     if not actual:
-        # No #print axioms output at all. That's suspicious — either
-        # the build didn't run the relevant theorems or the parser
+        # No axiom-related output at all. That's suspicious — either
+        # the build didn't run the relevant theorems or both parsers
         # regressed against an output-format change.
         print(
-            "FAIL: no #print axioms output found in input. The build "
-            "probably didn't run, or Lean's output format changed.",
+            "FAIL: no #print axioms / Print Assumptions output found "
+            "in input. The build probably didn't run, or output "
+            "formats changed.",
             file=sys.stderr,
         )
         return 1

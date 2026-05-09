@@ -188,13 +188,16 @@ Other open carries:
   open on both sides; UF needs IR-level tracking for uninterpreted
   function symbols, a different kind of work than BV's
   reifier-extension shape.
-- AxiomCheck CI gate: shipped on the Lean side (commit `4bd79fe`).
-  `tools/check_axioms.py` parses `lake build` output for
-  `#print axioms` annotations and fails CI if any allowlisted
-  theorem grows beyond `tools/axiom_allowlist.json`'s ceiling.
-  Rocq's `Print Assumptions` doesn't tag the theorem name in its
-  output, so positional pairing against the `.v` source is the
-  only way; deferred. The `Print Assumptions` lines remain in
-  build output for human inspection.
+- AxiomCheck gate: shipped end-to-end on the Lean side
+  (`4bd79fe` for Lean parser + CI wiring) and the Rocq side
+  (this commit, dev-mode only — see below). The script parses
+  Lean's `#print axioms` annotations directly and Rocq's `Print
+  Assumptions` blocks via a `Print <name>.` marker added to the
+  `.v` files, since Rocq's own output doesn't tag the theorem
+  name. CI runs Lean side only; the Rocq side requires a
+  rocq-bridge job that installs rocq-runtime + cvc5 + z3, which
+  doesn't exist yet — when it does, the gate plugs in by piping
+  the captured build output through `tools/check_axioms.py` the
+  same way the Lean side does.
 - A `coq.theory` → `rocq.theory` flip when dune's new build
   language ships. One-line change, no new lessons.

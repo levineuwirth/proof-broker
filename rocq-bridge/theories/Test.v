@@ -95,7 +95,17 @@ Close Scope R_scope.
     named theorem closes without dependencies on any axiom, so
     [Print Assumptions] reports "Closed under the global context" —
     even cleaner than Lean's [propext, Quot.sound] footprint. *)
+(* [Print <name>.] markers anchor each [Print Assumptions] block in
+   build output for [tools/check_axioms.py]; see
+   ProofBrokerTermMode.v's note for context. *)
+Print pb_lia_axiom_free.
 Print Assumptions pb_lia_axiom_free.
+
+Print pb_lia_explicit_list.
 Print Assumptions pb_lia_explicit_list.
+
+Print pb_lia_verbose.
 Print Assumptions pb_lia_verbose.
+
+Print pb_lra_axiom_free.
 Print Assumptions pb_lra_axiom_free.

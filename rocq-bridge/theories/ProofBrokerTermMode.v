@@ -92,8 +92,17 @@ Register farkas_le_2 as proof_broker.term_mode.farkas_le_2.
 
 (** Trust-footprint check: every helper above closes under the
     global context (axiom-free). Build-time [Print Assumptions]
-    surfaces this in the dune output — same gate the existing
-    Test.v theorems use. *)
+    surfaces this in the dune output. The [Print <name>.] line
+    immediately preceding each is the marker that
+    [tools/check_axioms.py] uses to pair theorem names with their
+    [Print Assumptions] block — Rocq's [Print Assumptions] alone
+    doesn't include the theorem name in its output, so we need
+    the explicit [Print] to anchor the parse. *)
+Print farkas_le_2.
 Print Assumptions farkas_le_2.
+
+Print le_to_le0.
 Print Assumptions le_to_le0.
+
+Print ge_to_le0.
 Print Assumptions ge_to_le0.
