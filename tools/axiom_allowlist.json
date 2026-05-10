@@ -16,6 +16,8 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_gt_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_eq_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.bv_axiom_free":
       [],
     "ProofBroker.Test.bv_compare_axiom_free":

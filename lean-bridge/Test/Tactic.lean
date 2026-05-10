@@ -174,6 +174,19 @@ theorem pb_term_gt_axiom_free
 
 #print axioms pb_term_gt_axiom_free
 
+/-- Term-mode with equality goal: the closer pre-splits via
+    `Int.le_antisymm` (since `¬(a = b)` is a disjunction outside
+    single-witness Farkas scope) and runs the existing ≤-shape
+    term-mode on each direction. Two solver dispatches, two
+    `farkasGoalLe2` applications, one `Int.le_antisymm`. The
+    axiom footprint stays `[propext, Quot.sound]` — splitting
+    adds no new trust delta over the single-direction case. -/
+theorem pb_term_eq_axiom_free
+    (n : Int) (h1 : n ≤ 5) (h2 : 5 ≤ n) : n = 5 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_eq_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated

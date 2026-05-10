@@ -336,7 +336,11 @@ partial def shellMentionsUF : ShellTerm → Bool
     is silently ignored (the goal/Prop reifier will trip on them if
     they're actually referenced). -/
 def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
-  let goalType ← mvarId.getType
+  -- Instantiate metavariables in the goal type. `apply`-introduced
+  -- subgoals may carry deferred unification metavars in their types;
+  -- without this, `reifyTerm` sees `?_uniq.N` (pretty-prints as the
+  -- user-facing name) and the FVar branch falls through.
+  let goalType ← Lean.instantiateMVars (← mvarId.getType)
   let goalShell ← reifyTerm goalType
   let mut freeVars : List FreeVar := []
   let mut hypotheses : List IR.Hypothesis := []
@@ -1029,16 +1033,14 @@ def evalProofBrokerQ : Tactic := fun stx => do
   logInfo (renderPath path)
   closeOrFail goal goalType path
 
-@[tactic proofBrokerTerm]
-def evalProofBrokerTerm : Tactic := fun stx => do
-  let goal ← getMainGoal
+/-- Single-goal term-mode pipeline: build the IR + dispatch + verify
+    + close the given mvar. Extracted so the equality-goal split
+    can run it twice (once per direction of `Int.le_antisymm`)
+    without re-parsing the adapter list. -/
+private def runTermModeOnGoal
+    (goal : MVarId) (adapterNames? : Option (List String))
+    (preferHigherTier : Bool) : TacticM Unit := do
   let goalType ← goal.getType
-  let (adapterNames?, preferHigherTier) ← match stx with
-    | `(tactic| proof_broker_term [$names,*]) =>
-        parseAdapterList (some names.getElems)
-    | `(tactic| proof_broker_term) =>
-        parseAdapterList none
-    | _ => throwError "proof_broker_term: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
   let cert ← match path.cert with
     | some c => pure c
@@ -1049,5 +1051,38 @@ def evalProofBrokerTerm : Tactic := fun stx => do
                  accept it (reason: {r}); term-mode requires a verified \
                  Tier 1 Farkas cert"
   closeViaTermMode goal goalType cert
+
+/-- Match an Int equality goal `Eq Int a b`. Returns `(a, b)` if so;
+    `none` otherwise. The closer pre-splits equality goals via
+    `Int.le_antisymm` because `¬(a = b)` is a disjunction
+    (`a < b ∨ b < a`) outside single-witness Farkas scope —
+    splitting trades one cert for two, but each direction is a
+    plain Int ≤ goal the existing term-mode handles axiom-free. -/
+private def matchIntEqGoal? (goalType : Expr) : Option (Expr × Expr) :=
+  match goalType.getAppFnArgs with
+  | (``Eq, #[α, a, b]) =>
+    if α.isConstOf ``Int then some (a, b) else none
+  | _ => none
+
+@[tactic proofBrokerTerm]
+def evalProofBrokerTerm : Tactic := fun stx => do
+  let goal ← getMainGoal
+  let goalType ← goal.getType
+  let (adapterNames?, preferHigherTier) ← match stx with
+    | `(tactic| proof_broker_term [$names,*]) =>
+        parseAdapterList (some names.getElems)
+    | `(tactic| proof_broker_term) =>
+        parseAdapterList none
+    | _ => throwError "proof_broker_term: malformed invocation"
+  match matchIntEqGoal? goalType with
+  | some _ =>
+    evalTactic (← `(tactic| apply Int.le_antisymm))
+    let subgoals ← getGoals
+    for sg in subgoals do
+      setGoals [sg]
+      runTermModeOnGoal sg adapterNames? preferHigherTier
+    setGoals []
+  | none =>
+    runTermModeOnGoal goal adapterNames? preferHigherTier
 
 end ProofBroker.Tactic
