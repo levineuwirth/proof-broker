@@ -836,26 +836,63 @@ private def closeViaTermModeFalse
     closeOmegaSubgoal hposMV.mvarId!
     goal.assign term
 
-/-- Term-mode closer, non-False arity-2 path. Goal must be
-    `b ≤ c` over `Int`; the witness has one real-hypothesis entry
-    and one `neg_goal` entry. The proof term is `farkasGoalLe2`,
-    which internally wraps `Decidable.byContradiction` (via
-    `Int.decLe`, axiom-free) and folds the contradiction
-    construction into `farkasContradict`. The strict-positivity
-    subgoal again goes through `omega` on a literal-coefficient
-    polynomial identity — no goal-side LIA discharge. -/
+/-- The four LIA-goal shapes the non-False term-mode handles. Each
+    routes to one of two `TermMode` helpers via instance reduction:
+    `≥` reduces to `≤` swapped, `>` reduces to `<` swapped. The
+    `kind` field tracks whether the neg-goal normalized form
+    carries the LIA +1 trick (`≤` / `≥` do; `<` / `>` don't) so
+    the closer builds the right `heq` polynomial. -/
+private inductive GoalKind
+  | le   -- b ≤ c   (helper farkasGoalLe2, +1 trick)
+  | lt   -- b < c   (helper farkasGoalLt2, no +1)
+deriving Repr
+
+/-- Match an Int LIA-comparison goal. Returns `(b, c, kind)` where
+    `b`, `c` are the helper's named arguments — for `≥` / `>` the
+    SDK has already swapped the operands at IR-build time, and
+    `GE.ge / GT.gt` reduce definitionally to `LE.le b a / LT.lt b a`
+    so the proof term we build for the swapped shape unifies with
+    the original Lean goal via instance reduction.
+
+    Returns `none` for shapes outside the LIA-comparison vocabulary
+    (notably `Eq` — non-Tier-1, needs Tier 2 case-split). -/
+private def matchLiaGoal? (goalType : Expr)
+    : Option (Expr × Expr × GoalKind) :=
+  match goalType.getAppFnArgs with
+  | (``LE.le, #[α, _, b, c]) =>
+    if α.isConstOf ``Int then some (b, c, .le) else none
+  | (``LT.lt, #[α, _, b, c]) =>
+    if α.isConstOf ``Int then some (b, c, .lt) else none
+  | (``GE.ge, #[α, _, a, b]) =>
+    -- a ≥ b ≡ b ≤ a; the helper takes (b, c) where c is the upper
+    -- bound, so map (a, b) → (b := b, c := a).
+    if α.isConstOf ``Int then some (b, a, .le) else none
+  | (``GT.gt, #[α, _, a, b]) =>
+    -- a > b ≡ b < a; same swap as ≥.
+    if α.isConstOf ``Int then some (b, a, .lt) else none
+  | _ => none
+
+/-- Term-mode closer, non-False arity-2 path. Goal must be one of
+    the four LIA-comparison shapes over `Int` (`≤` / `<` / `≥` /
+    `>`); the witness has one real-hypothesis entry and one
+    `neg_goal` entry. The proof term is `farkasGoalLe2` or
+    `farkasGoalLt2`, each wrapping `Decidable.byContradiction` (via
+    `Int.decLe` / `Int.decLt`, axiom-free) and folding the
+    contradiction construction back into `farkasContradict`. The
+    strict-positivity subgoal again goes through `omega` on a
+    literal-coefficient polynomial identity — no goal-side LIA
+    discharge. -/
 private def closeViaTermModeWithNegGoal
     (goal : MVarId) (goalType : Expr)
     (realEntry : String × Int) (cng : Int) : TacticM Unit := do
   let (realName, c1) := realEntry
-  let (b, c) := match goalType.getAppFnArgs with
-    | (``LE.le, #[α, _, b, c]) =>
-      if α.isConstOf ``Int then (b, c)
-      else (Expr.const ``False [], Expr.const ``False [])
-    | _ => (Expr.const ``False [], Expr.const ``False [])
-  if b.isConstOf ``False then
-    throwError "proof_broker_term: non-False goal must have shape \
-                 (_ ≤ _ : Int); got {goalType}"
+  let (b, c, kind) ← match matchLiaGoal? goalType with
+    | some t => pure t
+    | none =>
+      throwError "proof_broker_term: non-False goal must have shape \
+                   (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _) over Int; \
+                   got {goalType}. Equality goals need Tier 2 \
+                   case-split (the negation is a disjunction)."
   goal.withContext do
     let (fv, ty) ← fvarOfName realName
     let (a1, h1') ← normalizeHypothesis fv ty
@@ -865,14 +902,22 @@ private def closeViaTermModeWithNegGoal
     let hcng ← buildNonnegProof cng
     let zero := intLitExpr 0
     let one := intLitExpr 1
-    let cPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[c, one]
-    let negGoalNorm ← Lean.Meta.mkAppM ``HSub.hSub #[cPlus1, b]
+    -- Neg-goal compiled form: (c + 1 - b) for ≤/≥, (c - b) for </>.
+    let negGoalNorm ← match kind with
+      | .le =>
+        let cPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[c, one]
+        Lean.Meta.mkAppM ``HSub.hSub #[cPlus1, b]
+      | .lt =>
+        Lean.Meta.mkAppM ``HSub.hSub #[c, b]
     let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
     let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[cngExpr, negGoalNorm]
     let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
     let heqTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
     let heqMV ← Lean.Meta.mkFreshExprMVar heqTy
-    let term ← Lean.Meta.mkAppM ``ProofBroker.TermMode.farkasGoalLe2
+    let helperName : Name := match kind with
+      | .le => ``ProofBroker.TermMode.farkasGoalLe2
+      | .lt => ``ProofBroker.TermMode.farkasGoalLt2
+    let term ← Lean.Meta.mkAppM helperName
       #[h1', hc1, hcng, heqMV]
     closeOmegaSubgoal heqMV.mvarId!
     goal.assign term
@@ -900,6 +945,9 @@ private def closeViaTermMode (goal : MVarId) (goalType : Expr)
                    not False ({goalType}); cert/goal mismatch"
     closeViaTermModeFalse goal entries
   | some (_, cng) =>
+    if goalType.isConstOf ``False then
+      throwError "proof_broker_term: witness names neg_goal but goal is \
+                   False ({goalType}); cert/goal mismatch"
     let real := entries.find? (fun e => e.1 != "neg_goal")
     let realEntry ← match real with
       | some e => pure e

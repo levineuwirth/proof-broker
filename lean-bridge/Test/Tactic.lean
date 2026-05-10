@@ -147,6 +147,33 @@ theorem pb_term_goal_axiom_free
 
 #print axioms pb_term_goal_axiom_free
 
+/-- Term-mode with strict-`<` goal: closer routes through
+    `farkasGoalLt2` (no LIA +1 trick — `¬(n < 5) ↔ 5 ≤ n` via
+    `Int.not_lt`). -/
+theorem pb_term_lt_axiom_free
+    (n : Int) (h : n ≤ 4) : n < 5 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_lt_axiom_free
+
+/-- Term-mode with `≥` goal: `GE.ge n 4` reduces by instance to
+    `LE.le 4 n`, so the closer routes through `farkasGoalLe2` with
+    arg swap and the resulting `4 ≤ n` proof term unifies with the
+    `n ≥ 4` goal definitionally. -/
+theorem pb_term_ge_axiom_free
+    (n : Int) (h : 5 ≤ n) : n ≥ 4 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_ge_axiom_free
+
+/-- Term-mode with strict-`>` goal: `GT.gt n 3` reduces to
+    `LT.lt 3 n`; same routing as `≥` but through `farkasGoalLt2`. -/
+theorem pb_term_gt_axiom_free
+    (n : Int) (h : 5 ≤ n) : n > 3 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_gt_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated

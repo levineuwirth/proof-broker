@@ -81,4 +81,22 @@ theorem farkasGoalLe2
       Int.sub_nonpos_of_le (Int.add_one_le_of_lt (Int.lt_of_not_ge hng))
     farkasContradict h1 hng_le hc1 hcng heq
 
+/-- Farkas reconstruction for a strict goal `b < c`. Same shape as
+    `farkasGoalLe2` but without the +1 trick — `¬(b < c) ↔ c ≤ b`
+    (`Int.not_lt`) compiles directly to `c - b ≤ 0`, matching the
+    SDK's [lift_le_pair c b] for `Not (LT.lt b c)`. `≥` and `>`
+    over `Int` reduce to swapped `≤` / `<` by instance reduction
+    (`GE.ge a b ↘ LE.le b a`, `GT.gt a b ↘ LT.lt b a`), so the
+    closer routes them through these two helpers with swapped
+    args rather than needing four lemmas. -/
+theorem farkasGoalLt2
+    {b c : Int} {a1 : Int} (h1 : a1 ≤ 0)
+    {c1 cng : Int} (hc1 : 0 ≤ c1) (hcng : 0 ≤ cng)
+    (heq : 0 < c1 * a1 + cng * (c - b))
+    : b < c :=
+  Decidable.byContradiction fun hng =>
+    let hng_le : c - b ≤ 0 :=
+      Int.sub_nonpos_of_le (Int.not_lt.mp hng)
+    farkasContradict h1 hng_le hc1 hcng heq
+
 end ProofBroker.TermMode
