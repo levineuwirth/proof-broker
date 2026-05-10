@@ -66,6 +66,64 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Term-mode with a non-[False] goal of shape [_ <= _ : Z]. The
+    witness has one real-hypothesis entry plus a [neg_goal] slot
+    the closer discharges via [farkas_le_goal_2] (which wraps the
+    constructive decider [Z_le_gt_dec] — axiom-free). Mirror of
+    Lean's [pb_term_goal_axiom_free]. *)
+Theorem pb_term_goal_axiom_free :
+  forall n : Z, n <= 5 -> n <= 6.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+(** Term-mode with strict-[<] goal: closer routes through
+    [farkas_lt_goal_2] (no LIA +1 trick — [~ (b < c) ≡ c <= b]
+    via [Z.ge_le]). *)
+Theorem pb_term_lt_axiom_free :
+  forall n : Z, n <= 4 -> n < 5.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+(** Term-mode with [>=] goal: [Z.ge] doesn't reduce to swapped
+    [Z.le] the way Lean's instance reduction does, so
+    [run_close_term] applies [Z.le_ge] first, leaving a [<=]
+    subgoal that routes through [farkas_le_goal_2]. *)
+Theorem pb_term_ge_axiom_free :
+  forall n : Z, 5 <= n -> n >= 4.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+(** Term-mode with strict-[>] goal: closer applies [Z.lt_gt]
+    first, leaving a [<] subgoal that routes through
+    [farkas_lt_goal_2]. *)
+Theorem pb_term_gt_axiom_free :
+  forall n : Z, 5 <= n -> n > 3.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+(** Term-mode with equality goal: the closer pre-splits via
+    [Z.le_antisymm] (since [~ (a = b)] is a disjunction outside
+    single-witness Farkas scope) and runs the existing [<=]-shape
+    term-mode on each direction. Two solver dispatches, two
+    [farkas_le_goal_2] applications, one [Z.le_antisymm] wrapper.
+    The axiom footprint stays "Closed under the global context" —
+    splitting adds no new trust delta over the single-direction
+    case. Mirror of Lean's [pb_term_eq_axiom_free]. *)
+Theorem pb_term_eq_axiom_free :
+  forall n : Z, n <= 5 -> 5 <= n -> n = 5.
+Proof.
+  intros n H1 H2.
+  proof_broker_term [z3].
+Qed.
+
 (** Verbose + explicit list. *)
 Theorem pb_lia_verbose_list : forall x : Z, x >= 5 -> x <= 3 -> False.
 Proof.
@@ -167,6 +225,21 @@ Print Assumptions pb_lra_axiom_free.
 
 Print pb_term_axiom_free.
 Print Assumptions pb_term_axiom_free.
+
+Print pb_term_goal_axiom_free.
+Print Assumptions pb_term_goal_axiom_free.
+
+Print pb_term_lt_axiom_free.
+Print Assumptions pb_term_lt_axiom_free.
+
+Print pb_term_ge_axiom_free.
+Print Assumptions pb_term_ge_axiom_free.
+
+Print pb_term_gt_axiom_free.
+Print Assumptions pb_term_gt_axiom_free.
+
+Print pb_term_eq_axiom_free.
+Print Assumptions pb_term_eq_axiom_free.
 
 Print pb_uf_axiom_free.
 Print Assumptions pb_uf_axiom_free.

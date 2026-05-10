@@ -20,7 +20,16 @@
     trivial Farkas cert (e.g. example1's [forall x : Z, x >= 5 ->
     x <= 3 -> False] with witness [(H2,1); (H1,1)]). Arities 3..N
     are mechanical copies of [farkas_le_2] — write them when a
-    cert in practice exceeds arity 2. *)
+    cert in practice exceeds arity 2.
+
+    Goal-shape scope: [False], [<=], [<] handled directly here;
+    [>=] / [>] / [=] handled at the closer level (pb_rocq_main.ml)
+    by applying [Z.le_ge] / [Z.lt_gt] / [Z.le_antisymm] first, so
+    the recursive descent lands in one of the three shapes above.
+    Mirrors Lean's design except Lean's [GE.ge a b ↘ LE.le b a]
+    reduces by instance — Rocq's [Z.ge] is defined via [Z.compare]
+    rather than as an alias, so the explicit normalization step is
+    required. *)
 
 From Stdlib Require Import ZArith.
 
@@ -77,6 +86,60 @@ Qed.
     via [Rocqlib.lib_ref "proof_broker.term_mode.farkas_le_2"]. *)
 Register farkas_le_2 as proof_broker.term_mode.farkas_le_2.
 
+(** Farkas reconstruction for a non-[False] goal of shape [b <= c].
+    Mirror of Lean's [farkasGoalLe2] from [ProofBroker.TermMode] —
+    wraps the constructive decidability witness [Z_le_gt_dec], then
+    normalizes the negated goal [c < b] through [c + 1 <= b]
+    ([Z.le_succ_l] + [Z.add_1_r]) to the SDK's compiled
+    [Le (c + 1 - b)] shape (the LIA +1-trick image of [¬(b <= c)]).
+    Delegates to [farkas_le_2] with arity 2: one real hypothesis
+    (the [a1] slot) plus the synthetic neg-goal slot.
+    The [Heq] premise (polynomial identity [c1*a1 + cng*(c+1-b) = K])
+    is discharged by [ring] at closer-build time, just as in
+    [farkas_le_2]. *)
+Lemma farkas_le_goal_2
+  (b c : Z) (a1 : Z) (H1 : a1 <= 0)
+  (c1 cng : Z) (Hc1 : 0 <= c1) (Hcng : 0 <= cng)
+  (K : Z) (HK : 0 < K)
+  (Heq : c1 * a1 + cng * (c + 1 - b) = K)
+  : b <= c.
+Proof.
+  destruct (Z_le_gt_dec b c) as [Hle | Hgt]; [exact Hle | exfalso].
+  apply Z.gt_lt in Hgt.
+  apply Z.le_succ_l in Hgt.
+  rewrite <- Z.add_1_r in Hgt.
+  apply (proj2 (Z.sub_nonpos (c + 1) b)) in Hgt.
+  exact (farkas_le_2 a1 (c + 1 - b) H1 Hgt c1 cng Hc1 Hcng K HK Heq).
+Qed.
+
+(** Farkas reconstruction for a strict goal [b < c]. Same shape as
+    [farkas_le_goal_2] but without the +1 trick — [~ (b < c)] becomes
+    [c <= b] directly via [Z_lt_ge_dec] + [Z.ge_le], so the synthetic
+    neg-goal slot compiles to [Le (c - b)]. Matches the SDK's
+    [lift_le_pair c b] for the negation of [LT.lt b c].
+
+    [>=] and [>] over [Z] do NOT reduce to swapped [<=] / [<] the
+    way Lean's instance reduction does (Rocq's [Z.ge] / [Z.gt] are
+    defined via [Z.compare] rather than as aliases). The Rocq closer
+    [pb_rocq_main.run_close_term] handles them by applying
+    [Z.le_ge] / [Z.lt_gt] first, leaving a [<=] / [<] subgoal that
+    routes through these two helpers. *)
+Lemma farkas_lt_goal_2
+  (b c : Z) (a1 : Z) (H1 : a1 <= 0)
+  (c1 cng : Z) (Hc1 : 0 <= c1) (Hcng : 0 <= cng)
+  (K : Z) (HK : 0 < K)
+  (Heq : c1 * a1 + cng * (c - b) = K)
+  : b < c.
+Proof.
+  destruct (Z_lt_ge_dec b c) as [Hlt | Hge]; [exact Hlt | exfalso].
+  apply Z.ge_le in Hge.
+  apply (proj2 (Z.sub_nonpos c b)) in Hge.
+  exact (farkas_le_2 a1 (c - b) H1 Hge c1 cng Hc1 Hcng K HK Heq).
+Qed.
+
+Register farkas_le_goal_2 as proof_broker.term_mode.farkas_le_goal_2.
+Register farkas_lt_goal_2 as proof_broker.term_mode.farkas_lt_goal_2.
+
 (** Trust-footprint check: every helper above closes under the
     global context (axiom-free). Build-time [Print Assumptions]
     surfaces this in the dune output. The [Print <name>.] line
@@ -87,6 +150,12 @@ Register farkas_le_2 as proof_broker.term_mode.farkas_le_2.
     the explicit [Print] to anchor the parse. *)
 Print farkas_le_2.
 Print Assumptions farkas_le_2.
+
+Print farkas_le_goal_2.
+Print Assumptions farkas_le_goal_2.
+
+Print farkas_lt_goal_2.
+Print Assumptions farkas_lt_goal_2.
 
 Print le_to_le0.
 Print Assumptions le_to_le0.

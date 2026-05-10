@@ -253,36 +253,74 @@ let run_verbose (names : Names.Id.t list option) : unit Proofview.tactic =
 
 (* --- term-mode entry point ---------------------------------------- *)
 
-let run_close_term (names : Names.Id.t list option) : unit Proofview.tactic =
+(* Single-goal term-mode pipeline: build IR + dispatch + verify +
+   close. Extracted as a separate function so the recursive dispatch
+   in [run_close_term] can call it after applying a goal-normalization
+   tactic (Z.le_ge / Z.lt_gt / Z.le_antisymm), letting each post-
+   normalization subgoal trigger its own fresh solver dispatch.
+   Mirrors lean-bridge's [runTermModeOnGoal]. *)
+let run_close_term_single (gl : Proofview.Goal.t)
+    (names : Names.Id.t list option) : unit Proofview.tactic =
+  let path = build_path gl names in
+  match path.cert, path.verify_reason with
+  | None, _ ->
+    CErrors.user_err Pp.(
+      str "proof_broker_term: no cert minted; attempts: " ++
+      str (attempts_summary path.attempts))
+  | Some cert, Some Verified_farkas ->
+    (match cert.payload with
+     | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
+       (try Term_mode.close_term path.ir witness_data
+        with Term_mode.Unsupported msg ->
+          CErrors.user_err Pp.(
+            str (Printf.sprintf
+                   "proof_broker_term: %s — fall back to plain \
+                    proof_broker if you want lia-based closure"
+                   msg)))
+     | _ ->
+       CErrors.user_err Pp.(
+         str "proof_broker_term: cert payload is not a Tier 1 Farkas \
+              witness — only that shape has a term builder today"))
+  | Some _, Some r ->
+    let kind = Proof_broker.Verifier.kind_of_reason r in
+    CErrors.user_err Pp.(
+      str (Printf.sprintf
+             "proof_broker_term: verify reason %s — term-mode closer \
+              requires verified_farkas (try [proof_broker_term [z3]] \
+              to force a Tier 1 Farkas adapter)"
+             kind))
+  | Some _, None ->
+    CErrors.user_err Pp.(
+      str "proof_broker_term: internal — cert present without verify")
+
+(* Term-mode entry point with goal-shape dispatch. For [>=] / [>] /
+   [=] goals we normalize first (apply [Z.le_ge] / [Z.lt_gt] /
+   [Z.le_antisymm]) and recurse — each post-normalization subgoal
+   triggers a fresh solver dispatch via [run_close_term_single].
+
+   Equality goals split into two [<=] subgoals (one per direction
+   of [Z.le_antisymm]); both are closed by separate Tier 1 Farkas
+   certs, matching lean-bridge's [evalProofBrokerTerm] equality path.
+   The two-dispatch cost is the price of staying inside single-
+   witness Farkas scope — [~(a = b)] is the disjunction
+   [a < b \/ b < a] and would need Tier 2 case-split to handle in
+   one shot. *)
+let rec run_close_term (names : Names.Id.t list option) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
-    let path = build_path gl names in
-    match path.cert, path.verify_reason with
-    | None, _ ->
-      CErrors.user_err Pp.(
-        str "proof_broker_term: no cert minted; attempts: " ++
-        str (attempts_summary path.attempts))
-    | Some cert, Some Verified_farkas ->
-      (match cert.payload with
-       | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
-         (try Term_mode.close_term path.ir witness_data
-          with Term_mode.Unsupported msg ->
-            CErrors.user_err Pp.(
-              str (Printf.sprintf
-                     "proof_broker_term: %s — fall back to plain \
-                      proof_broker if you want lia-based closure"
-                     msg)))
-       | _ ->
-         CErrors.user_err Pp.(
-           str "proof_broker_term: cert payload is not a Tier 1 Farkas \
-                witness — only that shape has a term builder today"))
-    | Some _, Some r ->
-      let kind = Proof_broker.Verifier.kind_of_reason r in
-      CErrors.user_err Pp.(
-        str (Printf.sprintf
-               "proof_broker_term: verify reason %s — term-mode closer \
-                requires verified_farkas (try [proof_broker_term [z3]] \
-                to force a Tier 1 Farkas adapter)"
-               kind))
-    | Some _, None ->
-      CErrors.user_err Pp.(
-        str "proof_broker_term: internal — cert present without verify"))
+    let sigma = Proofview.Goal.sigma gl in
+    let goal_ty = Proofview.Goal.concl gl in
+    match Term_mode.goal_kind sigma goal_ty with
+    | Some (Term_mode.Goal_eq _) ->
+      Proofview.tclTHEN
+        (invoke_named_tactic "apply Z.le_antisymm")
+        (run_close_term names)
+    | Some (Term_mode.Goal_ge _) ->
+      Proofview.tclTHEN
+        (invoke_named_tactic "apply Z.le_ge")
+        (run_close_term names)
+    | Some (Term_mode.Goal_gt _) ->
+      Proofview.tclTHEN
+        (invoke_named_tactic "apply Z.lt_gt")
+        (run_close_term names)
+    | _ ->
+      run_close_term_single gl names)

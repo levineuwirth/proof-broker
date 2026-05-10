@@ -58,6 +58,20 @@
       ],
     "pb_term_axiom_free":
       [],
+    "pb_term_goal_axiom_free":
+      [],
+    "pb_term_lt_axiom_free":
+      [],
+    "pb_term_ge_axiom_free":
+      [],
+    "pb_term_gt_axiom_free":
+      [],
+    "pb_term_eq_axiom_free":
+      [],
+    "farkas_le_goal_2":
+      [],
+    "farkas_lt_goal_2":
+      [],
     "pb_uf_axiom_free":
       [],
     "pb_uf_two_arg_axiom_free":
