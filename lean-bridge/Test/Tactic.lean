@@ -132,6 +132,21 @@ theorem pb_term_axiom_free
 
 #print axioms pb_term_axiom_free
 
+/-- Term-mode Tier 1 Farkas with a non-`False` goal. The witness
+    has one real-hypothesis entry plus a `neg_goal` slot the closer
+    discharges via `farkasGoalLe2` (which wraps
+    `Decidable.byContradiction` over `Int.decLe`, axiom-free). The
+    cert minted by z3 carries coefficients on both `h` and
+    `neg_goal`; the closer builds the proof term explicitly,
+    omega-discharging only the strict-positivity polynomial
+    identity. The `[propext, Quot.sound]` footprint matches the
+    omega-closure path — no `Classical.choice`. -/
+theorem pb_term_goal_axiom_free
+    (n : Int) (h : n ≤ 5) : n ≤ 6 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_goal_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated

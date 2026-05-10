@@ -781,6 +781,12 @@ private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     throwError "proof_broker_term: hypothesis shape outside Int ≤/≥ \
                  (got type {hypTy})"
 
+/-- Build an `Int` literal `Expr` for `c`. Uses `Lean.toExpr` so the
+    resulting `Expr` is the elaborated `@OfNat.ofNat Int n instOfNat`
+    form `omega` recognizes — `Int.ofNat`-wrapped literals stay
+    opaque to omega's linear-arith solver. -/
+private def intLitExpr (c : Int) : Expr := Lean.toExpr c
+
 /-- Build a proof of `0 ≤ c` for a literal integer `c` using `decide`.
     Closed under `Int.decLe` for nonnegative literals; throws if the
     coefficient is negative. -/
@@ -788,47 +794,38 @@ private def buildNonnegProof (c : Int) : MetaM Expr := do
   if c < 0 then
     throwError "proof_broker_term: negative coefficient {c} (cert verifier \
                  should have caught this earlier)"
-  let cExpr := mkApp (.const ``Int.ofNat []) (mkNatLit c.toNat)
-  let zeroExpr := mkApp (.const ``Int.ofNat []) (mkNatLit 0)
-  let goalTy ← Lean.Meta.mkAppM ``LE.le #[zeroExpr, cExpr]
-  let proof ← Lean.Meta.mkAppOptM ``Decidable.decide #[goalTy, none]
-  -- A simpler path: just return `(by decide)`-style proof via `mkDecide`.
-  let _ := proof
+  let goalTy ← Lean.Meta.mkAppM ``LE.le #[intLitExpr 0, intLitExpr c]
   Lean.Meta.mkDecideProof goalTy
 
-/-- Term-mode closer for arity-2 LIA Farkas witnesses. Goal must be
-    `False`; the witness must reference exactly two hypotheses;
-    coefficients must be nonnegative integers; hypothesis types must
-    each be `_ ≤ _ : Int`. Discharges the strictly-positive
-    linear-combination subgoal via `omega`. The full proof term
-    is `farkasContradict h1' h2' (by decide) (by decide) (by omega)`,
-    with the witness's coefficients flowing through the omega
-    metavariable's elaborated value. -/
-private def closeViaTermMode (goal : MVarId) (goalType : Expr)
-    (cert : Json) : TacticM Unit := do
-  unless goalType.isConstOf ``False do
-    throwError "proof_broker_term: goal is not False (got {goalType}); \
-                 the arity-2 starter slice handles direct-False goals only"
-  let entries ← parseFarkasCoefficients cert
-  unless entries.length == 2 do
-    throwError "proof_broker_term: arity {entries.length} witness — only \
-                 arity 2 wired today"
+/-- Discharge `omegaGoal` (a fresh metavariable carrying the
+    polynomial-identity-style strict-positivity subgoal) by running
+    `omega` against it in isolation. Restores the caller's goal
+    list afterward. The original term-mode goal is left to the
+    caller to `assign`. -/
+private def closeOmegaSubgoal (omegaMV : MVarId) : TacticM Unit := do
+  let prevGoals ← getGoals
+  setGoals [omegaMV]
+  evalTactic (← `(tactic| omega))
+  setGoals prevGoals
+
+/-- Term-mode closer, False-goal arity-2 path. Both witness entries
+    name real hypotheses; the proof term is `farkasContradict` with
+    every coefficient flowing through as an Int literal and the
+    strict-positivity subgoal discharged by `omega`. -/
+private def closeViaTermModeFalse
+    (goal : MVarId) (entries : List (String × Int)) : TacticM Unit := do
   let [(name1, c1), (name2, c2)] := entries
     | throwError "proof_broker_term: unexpected entry count after arity check"
-  if name1 == "neg_goal" || name2 == "neg_goal" then
-    throwError "proof_broker_term: witness names neg_goal — non-False \
-                 goals not yet wired (use proof_broker for omega-discharge)"
   goal.withContext do
     let (fv1, ty1) ← fvarOfName name1
     let (fv2, ty2) ← fvarOfName name2
     let (a1, h1') ← normalizeHypothesis fv1 ty1
     let (a2, h2') ← normalizeHypothesis fv2 ty2
-    let c1Expr := mkApp (.const ``Int.ofNat []) (mkNatLit c1.toNat)
-    let c2Expr := mkApp (.const ``Int.ofNat []) (mkNatLit c2.toNat)
+    let c1Expr := intLitExpr c1
+    let c2Expr := intLitExpr c2
     let hc1 ← buildNonnegProof c1
     let hc2 ← buildNonnegProof c2
-    -- Build hpos type and metavariable, discharge via omega.
-    let zero := mkApp (.const ``Int.ofNat []) (mkNatLit 0)
+    let zero := intLitExpr 0
     let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
     let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[c2Expr, a2]
     let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
@@ -836,13 +833,79 @@ private def closeViaTermMode (goal : MVarId) (goalType : Expr)
     let hposMV ← Lean.Meta.mkFreshExprMVar hposTy
     let term ← Lean.Meta.mkAppM ``ProofBroker.TermMode.farkasContradict
       #[h1', h2', hc1, hc2, hposMV]
-    -- Close the omega subgoal first.
-    let omegaGoal := hposMV.mvarId!
-    let prevGoals ← getGoals
-    setGoals [omegaGoal]
-    evalTactic (← `(tactic| omega))
-    setGoals prevGoals
+    closeOmegaSubgoal hposMV.mvarId!
     goal.assign term
+
+/-- Term-mode closer, non-False arity-2 path. Goal must be
+    `b ≤ c` over `Int`; the witness has one real-hypothesis entry
+    and one `neg_goal` entry. The proof term is `farkasGoalLe2`,
+    which internally wraps `Decidable.byContradiction` (via
+    `Int.decLe`, axiom-free) and folds the contradiction
+    construction into `farkasContradict`. The strict-positivity
+    subgoal again goes through `omega` on a literal-coefficient
+    polynomial identity — no goal-side LIA discharge. -/
+private def closeViaTermModeWithNegGoal
+    (goal : MVarId) (goalType : Expr)
+    (realEntry : String × Int) (cng : Int) : TacticM Unit := do
+  let (realName, c1) := realEntry
+  let (b, c) := match goalType.getAppFnArgs with
+    | (``LE.le, #[α, _, b, c]) =>
+      if α.isConstOf ``Int then (b, c)
+      else (Expr.const ``False [], Expr.const ``False [])
+    | _ => (Expr.const ``False [], Expr.const ``False [])
+  if b.isConstOf ``False then
+    throwError "proof_broker_term: non-False goal must have shape \
+                 (_ ≤ _ : Int); got {goalType}"
+  goal.withContext do
+    let (fv, ty) ← fvarOfName realName
+    let (a1, h1') ← normalizeHypothesis fv ty
+    let c1Expr := intLitExpr c1
+    let cngExpr := intLitExpr cng
+    let hc1 ← buildNonnegProof c1
+    let hcng ← buildNonnegProof cng
+    let zero := intLitExpr 0
+    let one := intLitExpr 1
+    let cPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[c, one]
+    let negGoalNorm ← Lean.Meta.mkAppM ``HSub.hSub #[cPlus1, b]
+    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
+    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[cngExpr, negGoalNorm]
+    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
+    let heqTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
+    let heqMV ← Lean.Meta.mkFreshExprMVar heqTy
+    let term ← Lean.Meta.mkAppM ``ProofBroker.TermMode.farkasGoalLe2
+      #[h1', hc1, hcng, heqMV]
+    closeOmegaSubgoal heqMV.mvarId!
+    goal.assign term
+
+/-- Term-mode closer for arity-2 LIA Farkas witnesses. Branches on
+    whether the witness names `neg_goal`:
+    * No `neg_goal`: goal must be `False`, both entries name real
+      hypotheses, build via `farkasContradict`.
+    * With `neg_goal`: goal must be `(_ ≤ _ : Int)`, one entry names
+      a real hypothesis and one names `neg_goal`, build via
+      `farkasGoalLe2` (which wraps `Decidable.byContradiction`).
+    All coefficients must be nonnegative integers; hypothesis types
+    must be `(_ ≤ _ : Int)`. -/
+private def closeViaTermMode (goal : MVarId) (goalType : Expr)
+    (cert : Json) : TacticM Unit := do
+  let entries ← parseFarkasCoefficients cert
+  unless entries.length == 2 do
+    throwError "proof_broker_term: arity {entries.length} witness — only \
+                 arity 2 wired today"
+  let negEntry := entries.find? (fun e => e.1 == "neg_goal")
+  match negEntry with
+  | none =>
+    unless goalType.isConstOf ``False do
+      throwError "proof_broker_term: witness lacks neg_goal but goal is \
+                   not False ({goalType}); cert/goal mismatch"
+    closeViaTermModeFalse goal entries
+  | some (_, cng) =>
+    let real := entries.find? (fun e => e.1 != "neg_goal")
+    let realEntry ← match real with
+      | some e => pure e
+      | none => throwError "proof_broker_term: witness has neg_goal but no \
+                              real-hypothesis companion (arity-2 expected)"
+    closeViaTermModeWithNegGoal goal goalType realEntry cng
 
 /-- Bare form `proof_broker` runs against the default manifest list
     (cvc4, cvc5, z3 if present in the manifest dir) under

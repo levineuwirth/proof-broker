@@ -56,4 +56,29 @@ theorem farkasContradict
   let ssum : c1 * a1 + c2 * a2 ≤ 0 := Int.add_nonpos s1 s2
   absurd hpos (Int.not_lt_of_ge ssum)
 
+/-- Farkas reconstruction for a non-`False` goal of shape `b ≤ c`.
+    Wraps `Decidable.byContradiction` over the goal (`Int.decLe`
+    makes ≤ decidable, so no `Classical.choice`); the introduced
+    `hng : ¬(b ≤ c)` is normalized to the SDK's compiled `Le` form
+    (`c + 1 - b ≤ 0`, the LIA +1-trick image of `b ≤ c`'s negation)
+    via the `Int.lt_of_not_ge / add_one_le_of_lt / sub_nonpos_of_le`
+    chain, then plugged into `farkasContradict` along with one
+    LCtx-derived normalized hypothesis. Arity 2: one real
+    hypothesis + the `neg_goal` slot from the witness.
+
+    The `heq` premise (strict-positivity of the Farkas linear
+    combination) is discharged by `omega` at closer-build time, just
+    as in `farkasContradict` — omega here only sees a literal-coefficient
+    polynomial identity over symbolic `a1` and `b`, `c`, NOT the original
+    LIA goal. -/
+theorem farkasGoalLe2
+    {b c : Int} {a1 : Int} (h1 : a1 ≤ 0)
+    {c1 cng : Int} (hc1 : 0 ≤ c1) (hcng : 0 ≤ cng)
+    (heq : 0 < c1 * a1 + cng * (c + 1 - b))
+    : b ≤ c :=
+  Decidable.byContradiction fun hng =>
+    let hng_le : c + 1 - b ≤ 0 :=
+      Int.sub_nonpos_of_le (Int.add_one_le_of_lt (Int.lt_of_not_ge hng))
+    farkasContradict h1 hng_le hc1 hcng heq
+
 end ProofBroker.TermMode
