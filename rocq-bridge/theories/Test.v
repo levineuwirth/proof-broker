@@ -160,6 +160,31 @@ Proof.
 Qed.
 Close Scope R_scope.
 
+(** Term-mode Tier 2 case-split: a goal with a disjunctive
+    hypothesis [(x <= 0) \/ (x >= 10)] under [1 <= x <= 9] closes
+    by destruct + per-branch Farkas. cvc5 mints a Tier 2
+    [case_split_farkas] cert (adapter priority prefers case-split
+    over Tier 3 alethe when the IR has a disjunctive hypothesis),
+    and the bridge closer destructs the disjunction in the Coq
+    context + applies the matching lemma's Tier 1 Farkas witness
+    per branch via [r_farkas_le_2]. No [lra] call along this path
+    — the cert IS the proof, both at the case-split structure level
+    and at the per-branch arithmetic level. Trust footprint is the
+    R-typed term-mode helpers (which carry the standard LRA axiom
+    pair [ClassicalDedekindReals.sig_forall_dec],
+    [FunctionalExtensionality.functional_extensionality_dep] from
+    Stdlib's [Reals]) + [ring] for the per-branch polynomial
+    identity. Mirror of the SDK's [test_extract_case_split]
+    fixture, end-to-end through the adapter. *)
+Open Scope R_scope.
+Theorem pb_term_case_split_axiom_free :
+  forall x : R, (x <= 0 \/ x >= 10) -> x >= 1 -> x <= 9 -> False.
+Proof.
+  intros x H_disj H_low H_high.
+  proof_broker_term [cvc5].
+Qed.
+Close Scope R_scope.
+
 (** UF reach: arity-1 congruence, mirroring Lean's
     [uf_axiom_free]. The reifier walks [f : Z -> Z] into a free_var
     with [ty = "Int->Int"], the SDK serializer emits
@@ -240,6 +265,9 @@ Print Assumptions pb_term_gt_axiom_free.
 
 Print pb_term_eq_axiom_free.
 Print Assumptions pb_term_eq_axiom_free.
+
+Print pb_term_case_split_axiom_free.
+Print Assumptions pb_term_case_split_axiom_free.
 
 Print pb_uf_axiom_free.
 Print Assumptions pb_uf_axiom_free.

@@ -262,6 +262,15 @@ let run_verbose (names : Names.Id.t list option) : unit Proofview.tactic =
 let run_close_term_single (gl : Proofview.Goal.t)
     (names : Names.Id.t list option) : unit Proofview.tactic =
   let path = build_path gl names in
+  let wrap_unsupported tac =
+    try tac
+    with Term_mode.Unsupported msg ->
+      CErrors.user_err Pp.(
+        str (Printf.sprintf
+               "proof_broker_term: %s — fall back to plain \
+                proof_broker if you want lia-based closure"
+               msg))
+  in
   match path.cert, path.verify_reason with
   | None, _ ->
     CErrors.user_err Pp.(
@@ -270,24 +279,39 @@ let run_close_term_single (gl : Proofview.Goal.t)
   | Some cert, Some Verified_farkas ->
     (match cert.payload with
      | Tier1_witness { witness_kind = Farkas; witness_data; _ } ->
-       (try Term_mode.close_term path.ir witness_data
-        with Term_mode.Unsupported msg ->
-          CErrors.user_err Pp.(
-            str (Printf.sprintf
-                   "proof_broker_term: %s — fall back to plain \
-                    proof_broker if you want lia-based closure"
-                   msg)))
+       wrap_unsupported (Term_mode.close_term path.ir witness_data)
      | _ ->
        CErrors.user_err Pp.(
          str "proof_broker_term: cert payload is not a Tier 1 Farkas \
-              witness — only that shape has a term builder today"))
+              witness for a verified_farkas reason"))
+  | Some cert, Some Verified_case_split ->
+    (* Tier 2 case-split: cert payload is a [Tier2_lemma_list] with
+       [strategy_hint = "case_split_farkas"]. Closer destructs the
+       disjunctive IR hypothesis and applies the matching lemma's
+       Tier 1 Farkas witness per branch via the existing term-mode
+       machinery. The verifier has already re-checked every per-
+       branch witness against the IR extended with the case
+       hypothesis, so we trust the partition + arithmetic; the
+       term-mode reconstruction makes the trust footprint
+       proof-term-visible (no [lra] / [lia] on the per-branch
+       arithmetic). *)
+    (match cert.payload with
+     | Tier2_lemma_list { lemmas_used; strategy_hint = "case_split_farkas";
+                          structural_hint } ->
+       wrap_unsupported
+         (Term_mode.close_term_case_split path.ir lemmas_used structural_hint)
+     | _ ->
+       CErrors.user_err Pp.(
+         str "proof_broker_term: cert is verified_case_split but payload \
+              isn't a Tier 2 case_split_farkas lemma list"))
   | Some _, Some r ->
     let kind = Proof_broker.Verifier.kind_of_reason r in
     CErrors.user_err Pp.(
       str (Printf.sprintf
              "proof_broker_term: verify reason %s — term-mode closer \
-              requires verified_farkas (try [proof_broker_term [z3]] \
-              to force a Tier 1 Farkas adapter)"
+              requires verified_farkas or verified_case_split (try \
+              [proof_broker_term [z3]] / [proof_broker_term [cvc5]] to \
+              force a structurally-extractable adapter)"
              kind))
   | Some _, None ->
     CErrors.user_err Pp.(

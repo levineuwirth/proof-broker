@@ -57,6 +57,23 @@ val close_term :
 (** [close_term ir witness] reifies the witness into an applied
     [farkas_le_2] / [farkas_le_goal_2] / [farkas_lt_goal_2] term and
     refines the goal with it, then discharges the residual
-    polynomial-identity subgoal with [ring]. Raises [Unsupported _]
-    if the cert shape is outside arity-2 LIA coverage (and the
-    caller wraps it as [CErrors.user_err]). *)
+    polynomial-identity subgoal with [ring]. Picks the type universe
+    (Z or R) from [Farkas.effective_fragment ir] — LRA uses the
+    R-typed [r_farkas_le_2] helper; otherwise the Z-typed helpers.
+    Raises [Unsupported _] if the cert shape is outside arity-2
+    coverage (and the caller wraps it as [CErrors.user_err]). *)
+
+val close_term_case_split :
+  Proof_broker.Ir.t -> Yojson.Safe.t list -> Yojson.Safe.t option ->
+  unit Proofview.tactic
+(** [close_term_case_split ir lemmas_used structural_hint] closes a
+    goal whose cert is a Tier 2 [case_split_farkas] payload. Reads
+    the structural hint to find the disjunctive IR hypothesis,
+    destructs it in the Coq context, and per branch applies the
+    matching lemma's Tier 1 Farkas witness via [close_term] (with
+    the IR extended by the case hypothesis named "case"). The
+    SDK's [Verifier.match_disjunct_index] is the bridge between
+    cert lemma case shapes and destruct branch order.
+
+    Scope: arity-2 disjunctive hypothesis ([A \/ B]) only. Higher
+    arity is mechanical. *)

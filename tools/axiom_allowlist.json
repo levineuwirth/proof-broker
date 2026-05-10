@@ -72,6 +72,36 @@
       [],
     "farkas_lt_goal_2":
       [],
+    "pb_term_case_split_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_farkas_le_2":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_le_to_le0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_ge_to_le0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_pos_is_pos":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_pos_is_nonneg":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
     "pb_uf_axiom_free":
       [],
     "pb_uf_two_arg_axiom_free":

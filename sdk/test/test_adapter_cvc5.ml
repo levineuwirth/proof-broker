@@ -329,23 +329,25 @@ let case_split_ir () : Ir.t =
     ~hypotheses:[ h_disj; h_low; h_high ]
     (Const { name = "False" })
 
-let test_dispatch_case_split_mints_tier3 () =
+let test_dispatch_case_split_mints_tier2 () =
   with_cvc5 @@ fun () ->
   let ir = case_split_ir () in
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
-    (* The Tier 3 walker now handles every rule cvc5 emits on this
-       case-split shape (la_generic inside subproofs, the
-       [subproof] discharge close, propositional bookkeeping like
-       [implies_neg1/2], [and_pos], [reordering], [contraction],
-       [not_and], [or], [symm], plus the trust/arithmetic block
-       and the structural batch). The strict Tier 3 gate accepts
-       the full proof, so the dispatch ladder mints Tier 3
-       alethe-2024 instead of falling through to the Tier 2
-       case-split extractor. *)
-    Alcotest.(check int) "tier=3" 3 cert.tier;
-    Alcotest.(check string) "format=alethe-2024"
-      "alethe-2024" cert.format
+    (* The adapter prefers Tier 2 case-split over Tier 3 alethe
+       whenever the IR has a disjunctive hypothesis the proof
+       partitions. The case-split cert carries the per-disjunct
+       Farkas witnesses explicitly, which a term-mode closer can
+       consume directly (destruct + apply farkas_le_2 per branch);
+       Tier 3's opaque trace would force the LRA closer to handle
+       Boolean structure itself, which neither Lean's [linarith]
+       nor Rocq's [lra] does. The Tier 3 walker still succeeds on
+       this proof shape — that path is the fallback when
+       extract_case_split_payload returns Error (no disjunctive
+       hypothesis in the IR). *)
+    Alcotest.(check int) "tier=2" 2 cert.tier;
+    Alcotest.(check string) "format=case_split_farkas"
+      "case_split_farkas" cert.format
   | Failed f ->
     Alcotest.fail
       (Printf.sprintf "expected Cert, got Failed(%s: %s)"
@@ -358,10 +360,10 @@ let test_case_split_cert_envelope_verifies () =
   match Adapter_cvc5.dispatch ir with
   | Cert cert ->
     (match Verifier.verify cert ir with
-     | Verified_tier3 -> ()
+     | Verified_case_split -> ()
      | other ->
        Alcotest.fail
-         (Printf.sprintf "verifier rejected Tier 3 cert: %s — %s"
+         (Printf.sprintf "verifier rejected Tier 2 case-split cert: %s — %s"
             (Verifier.kind_of_reason other)
             (Verifier.detail_of_reason other)))
   | Failed f ->
@@ -436,9 +438,9 @@ let () =
         `Quick test_lra_farkas_cert_envelope_verifies;
     ];
     "case_split", [
-      Alcotest.test_case "case-split shape now mints Tier 3 alethe cert"
-        `Quick test_dispatch_case_split_mints_tier3;
-      Alcotest.test_case "Tier 3 case-split cert envelope-verifies"
+      Alcotest.test_case "case-split shape mints Tier 2 case_split_farkas cert"
+        `Quick test_dispatch_case_split_mints_tier2;
+      Alcotest.test_case "Tier 2 case-split cert verifies"
         `Quick test_case_split_cert_envelope_verifies;
     ];
     "tier3", [

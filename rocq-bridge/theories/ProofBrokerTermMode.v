@@ -31,7 +31,7 @@
     rather than as an alias, so the explicit normalization step is
     required. *)
 
-From Stdlib Require Import ZArith.
+From Stdlib Require Import ZArith Reals.
 
 Open Scope Z_scope.
 
@@ -140,6 +140,81 @@ Qed.
 Register farkas_le_goal_2 as proof_broker.term_mode.farkas_le_goal_2.
 Register farkas_lt_goal_2 as proof_broker.term_mode.farkas_lt_goal_2.
 
+(** ============================================================
+    Real-typed (LRA) Tier 1 Farkas reconstruction.
+
+    Mirror of the Z-typed helpers above, scaled up to [R]. The
+    [r_farkas_le_2] helper is the load-bearing lemma for the Tier 2
+    case-split closer (term_mode.ml::close_term_case_split): each
+    branch's proof term is [r_farkas_le_2] applied to the matching
+    lemma's Farkas coefficients, with the case hypothesis introduced
+    by [destruct] flowing through as the second [<= 0] premise.
+
+    Direct Stdlib R lemmas only — no [lra] tactic inside the helper
+    proofs themselves, so the trust footprint stays narrow (the same
+    way the Z helpers use [Z.mul_nonneg_nonpos] etc. directly rather
+    than [lia]). [lra] elsewhere (the existing [proof_broker]
+    decide-procedure LRA closer) is unaffected. *)
+
+Open Scope R_scope.
+
+Lemma r_le_to_le0 (a b : R) : a <= b -> a - b <= 0.
+Proof.
+  intros H.
+  apply (Rplus_le_compat_r (- b)) in H.
+  rewrite Rplus_opp_r in H.
+  unfold Rminus. exact H.
+Qed.
+
+Lemma r_ge_to_le0 (a b : R) : a >= b -> b - a <= 0.
+Proof. intros H. apply r_le_to_le0. apply Rge_le. exact H. Qed.
+
+Register r_le_to_le0 as proof_broker.term_mode.r_le_to_le0.
+Register r_ge_to_le0 as proof_broker.term_mode.r_ge_to_le0.
+
+Lemma r_mul_nonneg_nonpos (c a : R) (Hc : 0 <= c) (Ha : a <= 0) : c * a <= 0.
+Proof.
+  rewrite <- (Rmult_0_r c).
+  apply Rmult_le_compat_l; assumption.
+Qed.
+
+Lemma r_farkas_le_2
+  (a1 a2 : R) (H1 : a1 <= 0) (H2 : a2 <= 0)
+  (c1 c2 : R) (Hc1 : 0 <= c1) (Hc2 : 0 <= c2)
+  (K : R) (HK : 0 < K) (Heq : c1 * a1 + c2 * a2 = K)
+  : False.
+Proof.
+  assert (S1 : c1 * a1 <= 0) by (apply r_mul_nonneg_nonpos; assumption).
+  assert (S2 : c2 * a2 <= 0) by (apply r_mul_nonneg_nonpos; assumption).
+  assert (Ssum : c1 * a1 + c2 * a2 <= 0).
+  { rewrite <- Rplus_0_r. apply Rplus_le_compat; assumption. }
+  rewrite Heq in Ssum.
+  exact (Rlt_irrefl 0 (Rlt_le_trans 0 K 0 HK Ssum)).
+Qed.
+
+Register r_farkas_le_2 as proof_broker.term_mode.r_farkas_le_2.
+
+(** Real-typed positive-literal coefficient witness: a closed positive
+    rational [p/q] flows through as [0 < IZR p / IZR q] (or [0 < IZR n]
+    for integer coefficients). The Tier 2 case-split path uses
+    integer coefficients today (cvc5's [la_generic :args (1/1 1/1 1/1)]
+    in the fixture), so this lemma covers the [Zpos]-derived
+    coefficient slot via a trivial [<-] reduction; the OCaml side
+    constructs the matching [IZR (Zpos p)] EConstr and the proof
+    follows. *)
+Lemma r_pos_is_pos (p : positive) : 0 < IZR (Zpos p).
+Proof. apply IZR_lt. exact (Pos2Z.is_pos p). Qed.
+
+Lemma r_pos_is_nonneg (p : positive) : 0 <= IZR (Zpos p).
+Proof. apply Rlt_le. exact (r_pos_is_pos p). Qed.
+
+Register r_pos_is_pos as proof_broker.term_mode.r_pos_is_pos.
+Register r_pos_is_nonneg as proof_broker.term_mode.r_pos_is_nonneg.
+
+Close Scope R_scope.
+
+Open Scope Z_scope.
+
 (** Trust-footprint check: every helper above closes under the
     global context (axiom-free). Build-time [Print Assumptions]
     surfaces this in the dune output. The [Print <name>.] line
@@ -168,3 +243,18 @@ Print Assumptions pos_is_pos.
 
 Print pos_is_nonneg.
 Print Assumptions pos_is_nonneg.
+
+Print r_farkas_le_2.
+Print Assumptions r_farkas_le_2.
+
+Print r_le_to_le0.
+Print Assumptions r_le_to_le0.
+
+Print r_ge_to_le0.
+Print Assumptions r_ge_to_le0.
+
+Print r_pos_is_pos.
+Print Assumptions r_pos_is_pos.
+
+Print r_pos_is_nonneg.
+Print Assumptions r_pos_is_nonneg.

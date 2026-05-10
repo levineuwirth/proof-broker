@@ -397,27 +397,40 @@ let dispatch (ir : Ir.t) : Adapter.result =
                            ~proof)
                  | _ -> None)
             in
+            (* Priority:
+                 1. Tier 2 case-split — only succeeds when the IR has
+                    a disjunctive hypothesis the proof partitions. The
+                    cert carries the per-disjunct Farkas witnesses
+                    explicitly, so a term-mode closer can destruct +
+                    apply farkas_le_2 per branch (vs. Tier 3's opaque
+                    trace which a generic LRA closer like linarith /
+                    lra can't case-split through).
+                 2. Tier 1 plain Farkas — when the proof closes
+                    monolithically via one la_generic.
+                 3. Tier 3 alethe-2024 — full step trace; fallback
+                    when neither structural extractor matches.
+                 4. Tier 0 oracle — last resort. *)
             let cert =
               match extract_proof_body stdout with
               | None -> try_internal_closer ()
               | Some proof_str ->
-                (match try_tier3 proof_str with
-                 | Some t3 -> t3
-                 | None ->
+                (match Alethe_farkas.extract_case_split_payload ir proof_str with
+                 | Ok (lemmas, disjunctive_hyp) ->
+                   mint_case_split_cert
+                     ~adapter_version:version
+                     ~original_ir:ir
+                     ~specs:refinement.specializations
+                     ~logic:script.logic
+                     ~timeout_ms
+                     ~lemmas
+                     ~disjunctive_hyp
+                 | Error _ ->
                    (match Alethe_farkas.extract ir proof_str with
                     | Ok witness -> mk_farkas witness
                     | Error _ ->
-                      (match Alethe_farkas.extract_case_split_payload ir proof_str with
-                       | Ok (lemmas, disjunctive_hyp) ->
-                         mint_case_split_cert
-                           ~adapter_version:version
-                           ~original_ir:ir
-                           ~specs:refinement.specializations
-                           ~logic:script.logic
-                           ~timeout_ms
-                           ~lemmas
-                           ~disjunctive_hyp
-                       | Error _ -> try_internal_closer ())))
+                      (match try_tier3 proof_str with
+                       | Some t3 -> t3
+                       | None -> try_internal_closer ())))
             in
             Cert cert
           | Sat, _ -> Failed Sat_returned

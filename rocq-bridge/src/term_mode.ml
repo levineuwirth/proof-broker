@@ -2,6 +2,8 @@ module Cert = Proof_broker.Certificate
 module Farkas = Proof_broker.Farkas
 module L = Proof_broker.Linear_arith
 module Ir = Proof_broker.Ir
+module Verifier = Proof_broker.Verifier
+module Alethe_farkas = Proof_broker.Alethe_farkas
 
 exception Unsupported of string
 let unsupported fmt = Printf.ksprintf (fun s -> raise (Unsupported s)) fmt
@@ -18,13 +20,23 @@ let safe_constr_of_ref s : EConstr.t option =
 (* Helpers registered in ProofBrokerTermMode.v. Kept lazy so module
    init doesn't hit Global.env (the same trap the reifier wraps
    around — see the Phase 4 retro). *)
-let r_le_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.le_to_le0")
-let r_ge_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.ge_to_le0")
-let r_farkas_le_2     = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_2")
-let r_farkas_le_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_goal_2")
-let r_farkas_lt_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_lt_goal_2")
-let r_pos_is_pos      = lazy (safe_constr_of_ref "proof_broker.term_mode.pos_is_pos")
-let r_pos_is_nonneg   = lazy (safe_constr_of_ref "proof_broker.term_mode.pos_is_nonneg")
+
+(* Z-typed helpers. *)
+let z_le_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.le_to_le0")
+let z_ge_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.ge_to_le0")
+let z_farkas_le_2     = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_2")
+let z_farkas_le_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_goal_2")
+let z_farkas_lt_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_lt_goal_2")
+let z_pos_is_pos      = lazy (safe_constr_of_ref "proof_broker.term_mode.pos_is_pos")
+let z_pos_is_nonneg   = lazy (safe_constr_of_ref "proof_broker.term_mode.pos_is_nonneg")
+
+(* R-typed helpers (mirror of the Z ones for the LRA Tier 1 / Tier 2
+   case-split paths). *)
+let r_le_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_le_to_le0")
+let r_ge_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_ge_to_le0")
+let r_farkas_le_2_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_le_2")
+let r_pos_is_pos_ref    = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_pos")
+let r_pos_is_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_nonneg")
 
 (* Z + positive constructors for building literal Constr. *)
 let r_Z0   = lazy (safe_constr_of_ref "num.Z.Z0")
@@ -39,23 +51,36 @@ let r_Zgt  = lazy (safe_constr_of_ref "num.Z.gt")
 let r_Z    = lazy (safe_constr_of_ref "num.Z.type")
 let r_eq   = lazy (safe_constr_of_ref "core.eq.type")
 let r_False = lazy (safe_constr_of_ref "core.False.type")
+let r_or    = lazy (safe_constr_of_ref "core.or.type")
 let r_xH   = lazy (safe_constr_of_ref "num.pos.xH")
 let r_xO   = lazy (safe_constr_of_ref "num.pos.xO")
 let r_xI   = lazy (safe_constr_of_ref "num.pos.xI")
+
+(* R atoms. *)
+let r_R       = lazy (safe_constr_of_ref "reals.R.type")
+let r_R0      = lazy (safe_constr_of_ref "reals.R.R0")
+let r_Rplus   = lazy (safe_constr_of_ref "reals.R.Rplus")
+let r_Rminus  = lazy (safe_constr_of_ref "reals.R.Rminus")
+let r_Rmult   = lazy (safe_constr_of_ref "reals.R.Rmult")
+let r_Rle     = lazy (safe_constr_of_ref "reals.R.Rle")
+let r_Rlt     = lazy (safe_constr_of_ref "reals.R.Rlt")
+let r_Rge     = lazy (safe_constr_of_ref "reals.R.Rge")
+let r_Rgt     = lazy (safe_constr_of_ref "reals.R.Rgt")
+let r_IZR     = lazy (safe_constr_of_ref "reals.R.IZR")
 
 let force lz =
   match Lazy.force lz with
   | Some t -> t
   | None ->
     unsupported "term_mode: a required lib_ref isn't bound — make sure \
-                 ProofBrokerTermMode.v is imported and ZArith is in scope"
+                 ProofBrokerTermMode.v is imported and ZArith / Reals are in scope"
 
 let eq_ref sigma a (lz : EConstr.t option Lazy.t) : bool =
   match Lazy.force lz with
   | Some c -> EConstr.eq_constr_nounivs sigma a c
   | None -> false
 
-(* --- positive / Z literal construction ----------------------------- *)
+(* --- positive literal construction --------------------------------- *)
 
 (* positive_constr_of_z : Z.t > 0 → EConstr representing the matching
    [positive] term using xH/xO/xI. *)
@@ -70,33 +95,98 @@ let rec positive_constr_of_z (n : Z.t) : EConstr.t =
 (* z_constr : Z.t → EConstr at type Z. Only handles non-negative
    here; the only callers (coefficients, residual K) are >= 0 in
    the cert shapes we accept. *)
-let z_constr (n : Z.t) : EConstr.t =
+let z_lit (n : Z.t) : EConstr.t =
   if Z.sign n < 0 then
     unsupported "term_mode: negative Z literal in cert (got %s)"
       (Z.to_string n);
   if Z.sign n = 0 then force r_Z0
   else EConstr.mkApp (force r_Zpos, [| positive_constr_of_z n |])
 
+(* r_lit : Z.t → EConstr at type R, via [IZR (Zpos p)] / [0%R]. *)
+let r_lit (n : Z.t) : EConstr.t =
+  if Z.sign n < 0 then
+    unsupported "term_mode: negative literal (got %s)" (Z.to_string n);
+  if Z.sign n = 0 then force r_R0
+  else
+    let z_econstr =
+      EConstr.mkApp (force r_Zpos, [| positive_constr_of_z n |])
+    in
+    EConstr.mkApp (force r_IZR, [| z_econstr |])
+
+(* --- type universe ------------------------------------------------- *)
+
+(* A type universe (Z or R) packages the Stdlib refs and registered
+   helpers under one record, so [close_term_false] / [close_term_goal]
+   / [close_term_case_split] are universe-polymorphic over Z and R.
+   The dispatch picks the universe by inspecting [Farkas.effective_fragment]
+   of the IR being closed: "LRA" → [r_universe], otherwise [z_universe].
+   *)
+type universe = {
+  name : string;
+  ty : EConstr.t;
+  le : EConstr.t;
+  ge : EConstr.t;
+  add : EConstr.t;
+  sub : EConstr.t;
+  mul : EConstr.t;
+  lit : Z.t -> EConstr.t;
+  le_to_le0 : EConstr.t;
+  ge_to_le0 : EConstr.t;
+  farkas_le_2 : EConstr.t;
+  pos_is_pos : Z.t -> EConstr.t;
+  pos_is_nonneg : Z.t -> EConstr.t;
+}
+
+let z_universe () : universe = {
+  name = "Z";
+  ty = force r_Z;
+  le = force r_Zle;
+  ge = force r_Zge;
+  add = force r_Zadd;
+  sub = force r_Zsub;
+  mul = force r_Zmul;
+  lit = z_lit;
+  le_to_le0 = force z_le_to_le0;
+  ge_to_le0 = force z_ge_to_le0;
+  farkas_le_2 = force z_farkas_le_2;
+  pos_is_pos = (fun n ->
+    EConstr.mkApp (force z_pos_is_pos, [| positive_constr_of_z n |]));
+  pos_is_nonneg = (fun n ->
+    EConstr.mkApp (force z_pos_is_nonneg, [| positive_constr_of_z n |]));
+}
+
+let r_universe () : universe = {
+  name = "R";
+  ty = force r_R;
+  le = force r_Rle;
+  ge = force r_Rge;
+  add = force r_Rplus;
+  sub = force r_Rminus;
+  mul = force r_Rmult;
+  lit = r_lit;
+  le_to_le0 = force r_le_to_le0_ref;
+  ge_to_le0 = force r_ge_to_le0_ref;
+  farkas_le_2 = force r_farkas_le_2_ref;
+  pos_is_pos = (fun n ->
+    EConstr.mkApp (force r_pos_is_pos_ref, [| positive_constr_of_z n |]));
+  pos_is_nonneg = (fun n ->
+    EConstr.mkApp (force r_pos_is_nonneg_ref, [| positive_constr_of_z n |]));
+}
+
+let universe_for_ir (ir : Ir.t) : universe =
+  match Farkas.effective_fragment ir with
+  | "LRA" -> r_universe ()
+  | _ -> z_universe ()
+
 (* --- goal kind ----------------------------------------------------- *)
 
-(* The six goal shapes term-mode recognizes. [Goal_false] / [Goal_le]
-   / [Goal_lt] are handled directly here; [Goal_ge] / [Goal_gt] /
-   [Goal_eq] are normalized to one of the three above by the
-   recursive run_close_term in pb_rocq_main.ml before close_term
-   sees them.
-
-   Mirrors lean-bridge's [matchLiaGoal?] / [matchIntEqGoal?] —
-   distinction is that Lean's [GE.ge a b ↘ LE.le b a] reduces by
-   instance, so Lean's reifier emits [LE.le b a] directly. Rocq's
-   [Z.ge] is a distinct constant (defined via [Z.compare]) so we
-   route the normalization through the closer level. *)
 type goal_kind =
   | Goal_false
-  | Goal_le of EConstr.t * EConstr.t  (* b, c such that goal = (b <= c) *)
-  | Goal_lt of EConstr.t * EConstr.t  (* b, c such that goal = (b < c) *)
-  | Goal_ge of EConstr.t * EConstr.t  (* b, c such that goal = (b >= c) *)
-  | Goal_gt of EConstr.t * EConstr.t  (* b, c such that goal = (b > c) *)
-  | Goal_eq of EConstr.t * EConstr.t  (* a, b such that goal = (a = b : Z) *)
+  | Goal_le of EConstr.t * EConstr.t
+  | Goal_lt of EConstr.t * EConstr.t
+  | Goal_ge of EConstr.t * EConstr.t
+  | Goal_gt of EConstr.t * EConstr.t
+  | Goal_eq of EConstr.t * EConstr.t
 
 let goal_kind sigma (ty : EConstr.t) : goal_kind option =
   if eq_ref sigma ty r_False then Some Goal_false
@@ -112,12 +202,6 @@ let goal_kind sigma (ty : EConstr.t) : goal_kind option =
 
 (* --- witness parsing ----------------------------------------------- *)
 
-(* Witness shape (per sdk/FFI_CONVENTIONS.md):
-     {"coefficients": [{"hypothesis": <name>, "coefficient": <ratstr>}, ...]}
-   We accept only integer coefficients here; rationals from a
-   future LRA Tier 1 path would need clear-denominators logic
-   (multiply both K and every c_i through by lcm of denominators —
-   the cert remains valid, Farkas is scale-stable). *)
 let parse_witness (w : Yojson.Safe.t) : (string * Z.t) list =
   match w with
   | `Assoc kv ->
@@ -148,12 +232,6 @@ let parse_witness (w : Yojson.Safe.t) : (string * Z.t) list =
 
 (* --- residual K via SDK's Farkas linearizer ------------------------ *)
 
-(* Compute K = constant value of [Σ c_i * f_i] where each f_i is the
-   normalized [Le f_i] form of the named hypothesis. Delegates to
-   the SDK's [Farkas.lookup_hypothesis] so the reserved name
-   [neg_goal] resolves to the IR's goal-negation shell — the same
-   path the verifier uses, which keeps the K we compute here
-   consistent with the K the verifier validated. *)
 let compute_residual (ir : Ir.t)
     (entries : (string * Z.t) list) : Z.t =
   let fragment = Farkas.effective_fragment ir in
@@ -187,37 +265,38 @@ let compute_residual (ir : Ir.t)
                  should have caught this earlier)" (Z.to_string k_rat.num);
   k_rat.num
 
-(* --- per-hypothesis (a_i, h_i' : a_i <= 0) construction ------------ *)
+(* --- per-hypothesis normalization ---------------------------------- *)
 
-(* For a Rocq hypothesis [h : Z.le a b] or [h : Z.ge a b], produce
-   the EConstr pair [(a_econstr, proof : a_econstr <= 0)] using
-   [le_to_le0] / [ge_to_le0] from ProofBrokerTermMode.v.
-
-   Mirror Farkas.compile_hypothesis's direction conventions:
-     [Z.le a b]  → f = a - b
-     [Z.ge a b]  → f = b - a *)
-let normalize_hypothesis env sigma (id : Names.Id.t)
+(* For a hypothesis [h : T.le a b] or [h : T.ge a b] over T ∈ {Z, R},
+   produce the EConstr pair [(a_econstr, proof : a_econstr <= 0)]
+   using the universe's [le_to_le0] / [ge_to_le0]. Detection is by
+   the inner [le] / [ge] ref. *)
+let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
   : EConstr.t * EConstr.t =
   let decl = Environ.lookup_named id env in
   let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
   let h_term = EConstr.mkVar id in
   match EConstr.kind sigma ty with
   | App (head, [| a; b |]) ->
-    if eq_ref sigma head r_Zle then
-      let a_minus_b = EConstr.mkApp (force r_Zsub, [| a; b |]) in
-      let proof =
-        EConstr.mkApp (force r_le_to_le0, [| a; b; h_term |])
-      in
+    let head_matches lz =
+      match Lazy.force lz with
+      | Some c -> EConstr.eq_constr_nounivs sigma head c
+      | None -> false
+    in
+    let is_le = head_matches r_Zle || head_matches r_Rle in
+    let is_ge = head_matches r_Zge || head_matches r_Rge in
+    if is_le then
+      let a_minus_b = EConstr.mkApp (u.sub, [| a; b |]) in
+      let proof = EConstr.mkApp (u.le_to_le0, [| a; b; h_term |]) in
       (a_minus_b, proof)
-    else if eq_ref sigma head r_Zge then
-      let b_minus_a = EConstr.mkApp (force r_Zsub, [| b; a |]) in
-      let proof =
-        EConstr.mkApp (force r_ge_to_le0, [| a; b; h_term |])
-      in
+    else if is_ge then
+      let b_minus_a = EConstr.mkApp (u.sub, [| b; a |]) in
+      let proof = EConstr.mkApp (u.ge_to_le0, [| a; b; h_term |]) in
       (b_minus_a, proof)
     else
-      unsupported "term_mode: hypothesis %s has shape outside Z.le / Z.ge"
-        (Names.Id.to_string id)
+      unsupported "term_mode: hypothesis %s has shape outside %s.le / %s.ge \
+                   (head not recognized for this universe)"
+        (Names.Id.to_string id) u.name u.name
   | _ ->
     unsupported "term_mode: hypothesis %s is not a binary application"
       (Names.Id.to_string id)
@@ -241,15 +320,9 @@ let check_positive_coef ~slot (cz : Z.t) =
                  only positive integers wired today"
       slot (Z.to_string cz)
 
-let nonneg_proof_of (cz : Z.t) : EConstr.t =
-  EConstr.mkApp (force r_pos_is_nonneg, [| positive_constr_of_z cz |])
+(* --- False-goal closer --------------------------------------------- *)
 
-let pos_proof_of (cz : Z.t) : EConstr.t =
-  EConstr.mkApp (force r_pos_is_pos, [| positive_constr_of_z cz |])
-
-(* --- False-goal closer (existing behavior) ------------------------- *)
-
-let close_term_false env sigma (ir : Ir.t)
+let close_term_false (u : universe) env sigma (ir : Ir.t)
     (entries : (string * Z.t) list) : unit Proofview.tactic =
   let (name1, c1z), (name2, c2z) =
     match entries with [a; b] -> (a, b) | _ -> assert false
@@ -258,26 +331,26 @@ let close_term_false env sigma (ir : Ir.t)
   check_positive_coef ~slot:"c2" c2z;
   let id1 = Names.Id.of_string name1 in
   let id2 = Names.Id.of_string name2 in
-  let (a1, h1) = normalize_hypothesis env sigma id1 in
-  let (a2, h2) = normalize_hypothesis env sigma id2 in
-  let c1 = z_constr c1z in
-  let c2 = z_constr c2z in
+  let (a1, h1) = normalize_hypothesis u env sigma id1 in
+  let (a2, h2) = normalize_hypothesis u env sigma id2 in
+  let c1 = u.lit c1z in
+  let c2 = u.lit c2z in
   let k_z = compute_residual ir entries in
-  let k_constr = z_constr k_z in
-  let hk = pos_proof_of k_z in
-  let hc1 = nonneg_proof_of c1z in
-  let hc2 = nonneg_proof_of c2z in
+  let k_constr = u.lit k_z in
+  let hk = u.pos_is_pos k_z in
+  let hc1 = u.pos_is_nonneg c1z in
+  let hc2 = u.pos_is_nonneg c2z in
   let refine_tac : unit Proofview.tactic =
     Refine.refine ~typecheck:true (fun sigma ->
       let heq_type =
-        let mul x y = EConstr.mkApp (force r_Zmul, [| x; y |]) in
-        let add x y = EConstr.mkApp (force r_Zadd, [| x; y |]) in
+        let mul x y = EConstr.mkApp (u.mul, [| x; y |]) in
+        let add x y = EConstr.mkApp (u.add, [| x; y |]) in
         let lhs = add (mul c1 a1) (mul c2 a2) in
-        EConstr.mkApp (force r_eq, [| force r_Z; lhs; k_constr |])
+        EConstr.mkApp (force r_eq, [| u.ty; lhs; k_constr |])
       in
       let sigma, heq_evar = Evarutil.new_evar env sigma heq_type in
       let term =
-        EConstr.mkApp (force r_farkas_le_2,
+        EConstr.mkApp (u.farkas_le_2,
           [| a1; a2; h1; h2;
              c1; c2; hc1; hc2;
              k_constr; hk; heq_evar |])
@@ -286,39 +359,39 @@ let close_term_false env sigma (ir : Ir.t)
   in
   Proofview.tclTHEN refine_tac invoke_ring
 
-(* --- non-False goal closer (Le / Lt) ------------------------------- *)
+(* --- non-False goal closer (Le / Lt over Z only) ------------------- *)
 
-(* Generalized goal-closer for both [Le] and [Lt] cases. The two
-   shapes differ only in:
-     - which helper to apply ([farkas_le_goal_2] vs [farkas_lt_goal_2]),
-     - the synthesized neg-goal-norm EConstr ([c + 1 - b] vs [c - b]),
-   so we pass both as parameters. *)
+(* Goal closer for [b <= c] / [b < c] uses the Z-typed goal helpers
+   [farkas_le_goal_2] / [farkas_lt_goal_2]. R-typed goal helpers are
+   future scope — the LRA Tier 2 case-split path doesn't need them
+   today (the per-branch goal stays [False] after destruct). *)
 let close_term_goal env sigma (ir : Ir.t)
     ~helper ~neg_norm
     (b : EConstr.t) (c : EConstr.t)
     (real_name : string) (c1z : Z.t) (cng_z : Z.t)
     : unit Proofview.tactic =
   let _ = b in let _ = c in
+  let u = z_universe () in
   check_positive_coef ~slot:"c1" c1z;
   check_positive_coef ~slot:"neg_goal" cng_z;
   let id1 = Names.Id.of_string real_name in
-  let (a1, h1) = normalize_hypothesis env sigma id1 in
-  let c1 = z_constr c1z in
-  let cng = z_constr cng_z in
+  let (a1, h1) = normalize_hypothesis u env sigma id1 in
+  let c1 = u.lit c1z in
+  let cng = u.lit cng_z in
   let k_z =
     compute_residual ir [(real_name, c1z); ("neg_goal", cng_z)]
   in
-  let k_constr = z_constr k_z in
-  let hk = pos_proof_of k_z in
-  let hc1 = nonneg_proof_of c1z in
-  let hcng = nonneg_proof_of cng_z in
+  let k_constr = u.lit k_z in
+  let hk = u.pos_is_pos k_z in
+  let hc1 = u.pos_is_nonneg c1z in
+  let hcng = u.pos_is_nonneg cng_z in
   let refine_tac : unit Proofview.tactic =
     Refine.refine ~typecheck:true (fun sigma ->
       let heq_type =
-        let mul x y = EConstr.mkApp (force r_Zmul, [| x; y |]) in
-        let add x y = EConstr.mkApp (force r_Zadd, [| x; y |]) in
+        let mul x y = EConstr.mkApp (u.mul, [| x; y |]) in
+        let add x y = EConstr.mkApp (u.add, [| x; y |]) in
         let lhs = add (mul c1 a1) (mul cng neg_norm) in
-        EConstr.mkApp (force r_eq, [| force r_Z; lhs; k_constr |])
+        EConstr.mkApp (force r_eq, [| u.ty; lhs; k_constr |])
       in
       let sigma, heq_evar = Evarutil.new_evar env sigma heq_type in
       let term =
@@ -331,26 +404,17 @@ let close_term_goal env sigma (ir : Ir.t)
   in
   Proofview.tclTHEN refine_tac invoke_ring
 
-(* Build EConstr [c + 1 - b] for the [<=]-goal neg-goal slot.
-   Matches the LIA +1-trick image of [~(b <= c)] ≡ [c + 1 <= b]
-   ≡ [c + 1 - b <= 0] that [farkas_le_goal_2] expects. *)
 let neg_norm_le b c : EConstr.t =
-  let one = z_constr Z.one in
+  let one = z_lit Z.one in
   let c_plus_1 = EConstr.mkApp (force r_Zadd, [| c; one |]) in
   EConstr.mkApp (force r_Zsub, [| c_plus_1; b |])
 
-(* Build EConstr [c - b] for the [<]-goal neg-goal slot. Matches
-   [~(b < c)] ≡ [c <= b] ≡ [c - b <= 0]. *)
 let neg_norm_lt b c : EConstr.t =
   EConstr.mkApp (force r_Zsub, [| c; b |])
 
-(* --- top-level closer ---------------------------------------------- *)
+(* --- top-level Tier 1 closer --------------------------------------- *)
 
 let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
-  (* Catch [Unsupported] inside the tactic so it surfaces as a
-     well-shaped [CErrors.user_err] rather than a Rocq Anomaly. The
-     caller in pb_rocq_main can't catch this from outside —
-     Goal.enter defers execution past the try/with stack frame. *)
   Proofview.Goal.enter (fun gl ->
     try
     let env = Proofview.Goal.env gl in
@@ -364,14 +428,15 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
     let neg_entry = List.find_opt (fun (n, _) -> n = "neg_goal") entries in
     let real_entries = List.filter (fun (n, _) -> n <> "neg_goal") entries in
     let kind = goal_kind sigma goal_ty in
+    let u = universe_for_ir ir in
     match kind, neg_entry with
     | Some Goal_false, None ->
-      close_term_false env sigma ir entries
+      close_term_false u env sigma ir entries
     | Some (Goal_le (b, c)), Some (_, cng_z) ->
       (match real_entries with
        | [(real_name, c1z)] ->
          close_term_goal env sigma ir
-           ~helper:(force r_farkas_le_goal_2)
+           ~helper:(force z_farkas_le_goal_2)
            ~neg_norm:(neg_norm_le b c)
            b c real_name c1z cng_z
        | _ ->
@@ -382,7 +447,7 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
       (match real_entries with
        | [(real_name, c1z)] ->
          close_term_goal env sigma ir
-           ~helper:(force r_farkas_lt_goal_2)
+           ~helper:(force z_farkas_lt_goal_2)
            ~neg_norm:(neg_norm_lt b c)
            b c real_name c1z cng_z
        | _ ->
@@ -402,5 +467,142 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
     | None, _ ->
       unsupported "term_mode: goal shape not recognized (expected False, \
                    _ <= _, _ < _, _ >= _, _ > _, or _ = _ over Z)"
+    with Unsupported msg ->
+      CErrors.user_err Pp.(str (Printf.sprintf "proof_broker_term: %s" msg)))
+
+(* --- Tier 2 case-split closer -------------------------------------- *)
+
+(* Parse one cert lemma object into (case_shell, witness). *)
+let parse_case_lemma (j : Yojson.Safe.t) : Ir.shell_term * Yojson.Safe.t =
+  match j with
+  | `Assoc fields ->
+    (match List.assoc_opt "case" fields, List.assoc_opt "witness" fields with
+     | Some case_json, Some witness_json ->
+       let case_shell =
+         try Proof_broker.Codec.shell_of_json case_json
+         with _ ->
+           unsupported "term_mode: lemma's 'case' isn't a valid shell"
+       in
+       (case_shell, witness_json)
+     | _ ->
+       unsupported "term_mode: lemma missing 'case' or 'witness' field")
+  | _ ->
+    unsupported "term_mode: lemma entry not a JSON object"
+
+let parse_disjunctive_hyp_name (sh : Yojson.Safe.t option) : string =
+  match sh with
+  | Some (`Assoc kvs) ->
+    (match List.assoc_opt "disjunctive_hypothesis" kvs with
+     | Some (`String s) -> s
+     | _ ->
+       unsupported "term_mode: structural_hint missing \
+                    'disjunctive_hypothesis' string")
+  | _ ->
+    unsupported "term_mode: structural_hint is required for Tier 2 \
+                 case-split"
+
+(* Order the parsed lemmas by which disjunct each one matches.
+   Returns a list of (case_shell, witness) in disjunct-index order
+   (i.e. position 0 is the left disjunct of the destruct pattern,
+   position 1 is the right, ...).
+
+   Bridges the SDK's [Verifier.match_disjunct_index] (which works on
+   compiled linear forms, so it absorbs sign-equivalent rewrites
+   between the cert's case and the IR's disjunct) to the bridge's
+   per-branch destruct ordering. *)
+let order_lemmas_by_disjunct ~fragment
+    (lemmas : (Ir.shell_term * Yojson.Safe.t) list)
+    (disjuncts : Ir.shell_term list)
+  : (Ir.shell_term * Yojson.Safe.t) list =
+  let n = List.length disjuncts in
+  let by_index = Array.make n None in
+  List.iter (fun (case_shell, witness) ->
+    match Verifier.match_disjunct_index ~fragment case_shell disjuncts with
+    | Some i ->
+      if by_index.(i) <> None then
+        unsupported "term_mode: two lemmas match the same disjunct (index %d)" i;
+      by_index.(i) <- Some (case_shell, witness)
+    | None ->
+      unsupported "term_mode: a lemma's case doesn't match any disjunct"
+  ) lemmas;
+  Array.to_list by_index
+  |> List.mapi (fun i o ->
+       match o with
+       | Some p -> p
+       | None ->
+         unsupported "term_mode: disjunct index %d has no matching lemma" i)
+
+(* Build the per-branch closure tactic for one (case, witness) pair.
+   After [destruct hyp as [case | case | ...]], the current Coq context
+   has [case : <disjunct>] in scope. We extend the IR with a hypothesis
+   named "case" (matching what the SDK verifier did), then call the
+   existing Tier 1 [close_term] on the extended IR + lemma's witness.
+   The witness references [case] by that name; lookup resolves to the
+   destruct-introduced Coq hypothesis. *)
+let per_branch_close (ir : Ir.t)
+    (case_shell : Ir.shell_term) (witness : Yojson.Safe.t)
+  : unit Proofview.tactic =
+  let extended_ir : Ir.t = {
+    ir with
+    context = { ir.context with
+      hypotheses = ir.context.hypotheses
+                   @ [ { Ir.name = "case"; shell = case_shell } ]
+    }
+  } in
+  close_term extended_ir witness
+
+(* Invoke a tactic by parsing its string form (same idiom the
+   reifier wrapping around [Procq.parse_string] uses). *)
+let invoke_tactic (src : string) : unit Proofview.tactic =
+  Proofview.Goal.enter (fun _ ->
+    let raw = Procq.parse_string Ltac_plugin.Pltac.tactic src in
+    let glob =
+      Ltac_plugin.Tacintern.intern_pure_tactic
+        (Ltac_plugin.Tacintern.make_empty_glob_sign ~strict:false) raw
+    in
+    Ltac_plugin.Tacinterp.eval_tactic glob)
+
+(* Tier 2 case-split closer entry point.
+
+   Scope today: arity-2 disjunctive hypothesis ([A \/ B]) of LIA /
+   LRA atoms, each closed by one Tier 1 Farkas witness. Higher arity
+   (e.g. [A \/ B \/ C]) needs a destruct pattern of corresponding
+   nesting and the SDK's [disjuncts_of] flattens to a list — we
+   restrict to arity 2 here, matching the existing fixture, and the
+   extension is mechanical. *)
+let close_term_case_split (ir : Ir.t)
+    (lemmas_used : Yojson.Safe.t list)
+    (structural_hint : Yojson.Safe.t option)
+  : unit Proofview.tactic =
+  Proofview.Goal.enter (fun _gl ->
+    try
+      let hyp_name = parse_disjunctive_hyp_name structural_hint in
+      let disj_hyp =
+        match
+          List.find_opt (fun (h : Ir.hypothesis) -> h.name = hyp_name)
+            ir.context.hypotheses
+        with
+        | Some h -> h
+        | None ->
+          unsupported "term_mode: disjunctive hypothesis %s not in IR" hyp_name
+      in
+      let disjuncts = Alethe_farkas.disjuncts_of disj_hyp.shell in
+      if List.length disjuncts <> 2 then
+        unsupported "term_mode: only arity-2 disjunctive hypotheses wired \
+                     today (got %d disjuncts)" (List.length disjuncts);
+      let parsed = List.map parse_case_lemma lemmas_used in
+      if List.length parsed <> List.length disjuncts then
+        unsupported "term_mode: lemma count (%d) doesn't match disjunct \
+                     count (%d)" (List.length parsed) (List.length disjuncts);
+      let fragment = Farkas.effective_fragment ir in
+      let ordered = order_lemmas_by_disjunct ~fragment parsed disjuncts in
+      let branches =
+        List.map (fun (case_shell, witness) ->
+          per_branch_close ir case_shell witness) ordered
+      in
+      let destruct_tac =
+        invoke_tactic (Printf.sprintf "destruct %s as [case | case]" hyp_name)
+      in
+      Proofview.tclTHEN destruct_tac (Proofview.tclDISPATCH branches)
     with Unsupported msg ->
       CErrors.user_err Pp.(str (Printf.sprintf "proof_broker_term: %s" msg)))
