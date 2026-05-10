@@ -158,19 +158,32 @@ let invoke_named_tactic (name : string) : unit Proofview.tactic =
 let invoke_lia = invoke_named_tactic "lia"
 let invoke_lra = invoke_named_tactic "lra"
 
+(* UF closer chain. Tries [congruence] first (handles equality goals
+   like [f x = f y] from [x = y], [f a b = f a a] from [a = b],
+   [f (g x) = f (g y)] from [x = y]); falls back to
+   [subst; assumption] for predicate-shape modus-ponens
+   ([P y] from [P x] and [x = y]). Both arms are axiom-free in Rocq
+   Stdlib; the [Print Assumptions] line on UF tests should report
+   "Closed under the global context". *)
+let invoke_uf =
+  invoke_named_tactic
+    "first [ congruence | (subst; assumption) | (subst; reflexivity) ]"
+
 (* Map cert fragment to a closer tactic. Mirrors the Lean side's
-   [closeOrFail] dispatch. The cert-verification gate keeps both
-   paths sound; [lia] / [lra] are themselves axiom-free, so closures
-   along these paths don't introduce a trust axiom. *)
+   [closeOrFail] dispatch. The cert-verification gate keeps these
+   paths sound; [lia] / [lra] / the UF chain are themselves
+   axiom-free, so closures along these paths don't introduce a trust
+   axiom. *)
 let closer_for_fragment fragment : unit Proofview.tactic =
   match fragment with
   | "LIA" -> invoke_lia
   | "LRA" -> invoke_lra
+  | "UF" -> invoke_uf
   | other ->
     CErrors.user_err Pp.(
       str (Printf.sprintf
-             "proof_broker: closer for fragment %s not yet wired (LIA + \
-              LRA are the only fragments with a cert-gated closer in \
+             "proof_broker: closer for fragment %s not yet wired (LIA, \
+              LRA, UF are the fragments with a cert-gated closer in \
               the core plugin)"
              other))
 
@@ -185,6 +198,15 @@ let close_or_fail (p : path) : unit Proofview.tactic =
     (match r with
      | Verified_envelope | Verified_farkas
      | Verified_case_split | Verified_tier3 ->
+       closer_for_fragment cert.refinement_record.fragment
+     | Tier_check_deferred _ ->
+       (* Tier 0 oracle path: no soundness verifier ran but the
+          envelope checked out and the solver returned [unsat]. The
+          fragment-keyed closer is the actual proof emitter
+          (congruence / decide / etc.); the cert's role is gating
+          (we know the goal is provable) rather than carrying the
+          proof. Mirror lean-bridge's [closeOrFail] envelope-only
+          acceptance — the trust footprint is identical. *)
        closer_for_fragment cert.refinement_record.fragment
      | _ ->
        CErrors.user_err Pp.(

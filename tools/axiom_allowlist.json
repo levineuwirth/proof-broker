@@ -47,6 +47,14 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "pb_term_axiom_free":
+      [],
+    "pb_uf_axiom_free":
+      [],
+    "pb_uf_two_arg_axiom_free":
+      [],
+    "pb_uf_composed_axiom_free":
+      [],
+    "pb_uf_predicate_axiom_free":
       []
   }
 }

@@ -1,4 +1,5 @@
 module Ir = Proof_broker.Ir
+module Smtlib = Proof_broker.Smtlib
 
 (* --- lib_ref-resolved Constr atoms ---------------------------------- *)
 
@@ -118,6 +119,34 @@ let reify_r_literal env sigma t : string option =
     reify_z_literal env sigma z
   | _ -> None
 
+(* --- type reification (UF support) --------------------------------- *)
+
+(* Structural arrow check: a [Prod (_, _, body)] is an arrow iff the
+   bound variable does NOT occur in [body] (true Pi types are
+   dependent and out of scope). *)
+let is_arrow_type sigma ty =
+  match EConstr.kind sigma ty with
+  | Prod (_, _, body) -> EConstr.Vars.noccurn sigma 1 body
+  | _ -> false
+
+(* Decode a type [Constr] as an IR [type_ref] string. Mirrors
+   [ProofBroker.Reify.reifyType] in lean-bridge: handles [Z]/[R]/Prop
+   plus arrow chains [T1 → T2 → ... → R] (encoded as
+   [T1->T2->...->R]). The arrow encoding is the SDK's UF convention
+   — [Smtlib.parse_arrow_type] + [emit_decls] turn this into
+   [(declare-fun f (T1 T2) R)] SMT-LIB output. *)
+let rec reify_type env sigma ty : string option =
+  if eq_ref sigma ty r_Z then Some "Int"
+  else if eq_ref sigma ty r_R then Some "Real"
+  else if Termops.is_Prop sigma ty then Some "Prop"
+  else
+    match EConstr.kind sigma ty with
+    | Prod (_, dom, body) when EConstr.Vars.noccurn sigma 1 body ->
+      (match reify_type env sigma dom, reify_type env sigma body with
+       | Some d, Some r -> Some (d ^ "->" ^ r)
+       | _ -> None)
+    | _ -> None
+
 (* --- term reification ---------------------------------------------- *)
 
 let bin sym a b : Ir.shell_term =
@@ -193,6 +222,24 @@ and reify_app env sigma head args full =
     Ir.Or { left = r 0; right = r 1 }
   else if head_is r_not && nargs = 1 then
     Ir.Not { operand = r 0 }
+  else if EConstr.isVar sigma head && nargs > 0 then
+    (* UF fallback: head is a local Var whose declared type is an
+       arrow chain. Emit [App { symbol = "UF.<name>" }]; the SDK's
+       [Smtlib.emit_decls] picks up the matching arrow-typed
+       free_var declaration and renders [(declare-fun ...)] +
+       application sites. The codomain may be any type
+       [reify_type] accepts, including [Prop] for predicate-valued
+       UF (see lean-bridge mirror). *)
+    let head_ty = Retyping.get_type_of env sigma head in
+    if is_arrow_type sigma head_ty then
+      let name = Names.Id.to_string (EConstr.destVar sigma head) in
+      let args_list =
+        Array.to_list (Array.map (fun a -> reify_term env sigma a) args)
+      in
+      Ir.App { symbol = "UF." ^ name; type_args = []; args = args_list }
+    else
+      reify_error "unsupported application head: %s"
+        (pp_econstr env sigma full)
   else
     reify_error "unsupported application head: %s"
       (pp_econstr env sigma full)
@@ -201,16 +248,37 @@ and reify_app env sigma head args full =
 
 let plugin_version = "0.1"
 
-(* Promote LIA → LRA when any free var carries a Real type tag.
-   Mirrors Lean's logic_classification.first_order_fragment derivation:
-   the fragment is determined by the IR contents, not pre-set. *)
-let logic_for (free_vars : Ir.free_var list) : Ir.logic_classification =
-  let any_real = List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
-    free_vars in
+(* Pick the fragment label from the IR contents (free vars +
+   shells). Precedence:
+     UF  — any arrow-typed free var, OR any [App "UF.<name>"] in
+           the goal/hypotheses (so closed UF-term goals carry the
+           label even when the function symbol comes from a
+           larger lemma's free_var rather than a direct local).
+     LRA — any Real free var.
+     LIA — default.
+   Mirrors lean-bridge's [Reify.buildIR] precedence. *)
+let logic_for (ir : Ir.t) : Ir.logic_classification =
+  let any_uf =
+    List.exists
+      (fun (fv : Ir.free_var) -> Option.has_some (Smtlib.parse_arrow_type fv.ty))
+      ir.context.free_vars
+    || Smtlib.shell_mentions_uf ir.goal.shell
+    || List.exists (fun (h : Ir.hypothesis) -> Smtlib.shell_mentions_uf h.shell)
+         ir.context.hypotheses
+  in
+  let any_real =
+    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
+      ir.context.free_vars
+  in
+  let frag =
+    if any_uf then "UF"
+    else if any_real then "LRA"
+    else "LIA"
+  in
   {
     order = "first_order";
     features_used = [];
-    first_order_fragment = if any_real then "LRA" else "LIA";
+    first_order_fragment = frag;
     decidable_theory = None;
   }
 
@@ -237,26 +305,48 @@ let build_ir gl : Ir.t =
       free_vars := { Ir.name = Names.Id.to_string id; ty = "Int" } :: !free_vars
     else if eq_ref sigma ty r_R then
       free_vars := { Ir.name = Names.Id.to_string id; ty = "Real" } :: !free_vars
+    else if is_arrow_type sigma ty then
+      (* Function-typed local: UF candidate. Encode the type as the
+         arrow chain the SDK serializer parses; codomain may be a
+         primitive (Int/Real) or Prop (predicate-valued UF). *)
+      (match reify_type env sigma ty with
+       | Some tref ->
+         free_vars := { Ir.name = Names.Id.to_string id; ty = tref } :: !free_vars
+       | None ->
+         (* arrow-shaped but at least one component outside Z/R/Prop —
+            skip silently; if the goal references it the reifier will
+            error there with a useful message. *)
+         ())
     else if Termops.is_Prop sigma (Retyping.get_type_of env sigma ty) then
       let shell = reify_term env sigma ty in
       hypotheses := { Ir.name = Names.Id.to_string id; shell } :: !hypotheses
-    (* else: not a LIA/LRA-relevant local; skip silently. *)
+    (* else: not a LIA/LRA/UF-relevant local; skip silently. *)
   ) (List.rev named);
   let free_vars = List.rev !free_vars in
-  {
+  let hypotheses = List.rev !hypotheses in
+  let ir : Ir.t = {
     ir_version = "1.0";
     source_system = { name = "rocq"; version = plugin_version };
     tier = "goal";
-    logic_classification = logic_for free_vars;
+    (* Filled in below — needs the goal+hypotheses to be in scope so
+       [shell_mentions_uf] can detect UF symbols introduced by closed
+       UF-term goals. *)
+    logic_classification = {
+      order = "first_order";
+      features_used = [];
+      first_order_fragment = "LIA";
+      decidable_theory = None;
+    };
     goal = { shell = goal_shell; payloads = None };
     context = {
       type_vars = [];
       free_vars;
-      hypotheses = List.rev !hypotheses;
+      hypotheses;
       library_slice = None;
     };
     type_metadata = [];
     definitional_metadata = [];
     library_provenance = [];
     user_directives = None;
-  }
+  } in
+  { ir with logic_classification = logic_for ir }
