@@ -201,6 +201,66 @@ Proof.
 Qed.
 Close Scope R_scope.
 
+(** Term-mode LRA (Real-typed) non-[False] comparison goals.
+
+    Mirrors the Z-typed [pb_term_goal_axiom_free] / [pb_term_lt_axiom_free]
+    / [pb_term_ge_axiom_free] / [pb_term_gt_axiom_free] /
+    [pb_term_eq_axiom_free] suite but over [R]. The closer routes
+    through [r_farkas_le_goal_2] / [r_farkas_lt_goal_2] (no LIA +1
+    trick over R — the helpers weaken the negated goal from strict
+    [<] to non-strict [<=] internally via [Rlt_le]). [>=] / [>] / [=]
+    goals normalize through [Rle_ge] / [Rlt_gt] / [Rle_antisym] (the
+    R-typed mirrors of [Z.le_ge] etc.) before recursing.
+
+    Pinned through [z3] because z3 mints native Tier 1 Farkas for
+    LRA; cvc5 prefers Tier 3 alethe-2024 here. Trust footprint is
+    the standard LRA pair [ClassicalDedekindReals.sig_forall_dec] +
+    [FunctionalExtensionality.functional_extensionality_dep] pulled
+    in by Stdlib's [Reals] — same as [pb_lra_axiom_free] and the
+    case-split test.
+
+    The simple constants here (e.g. [5], [6]) elaborate as [IZR Z.pos
+    p] over R; the reifier walks them as Real-typed numLit literals,
+    matching the SDK's literal-elaboration discipline for LRA. *)
+Open Scope R_scope.
+
+Theorem pb_lra_term_goal_axiom_free :
+  forall n : R, n <= 5 -> n <= 6.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+Theorem pb_lra_term_lt_axiom_free :
+  forall n : R, n <= 4 -> n < 5.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+Theorem pb_lra_term_ge_axiom_free :
+  forall n : R, 5 <= n -> n >= 4.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+Theorem pb_lra_term_gt_axiom_free :
+  forall n : R, 5 <= n -> n > 3.
+Proof.
+  intros n H.
+  proof_broker_term [z3].
+Qed.
+
+Theorem pb_lra_term_eq_axiom_free :
+  forall n : R, n <= 5 -> 5 <= n -> n = 5.
+Proof.
+  intros n H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+Close Scope R_scope.
+
 (** Term-mode Tier 2 case-split: a goal with a disjunctive
     hypothesis [(x <= 0) \/ (x >= 10)] under [1 <= x <= 9] closes
     by destruct + per-branch Farkas. cvc5 mints a Tier 2
@@ -315,6 +375,21 @@ Print Assumptions pb_term_gt_axiom_free.
 
 Print pb_term_eq_axiom_free.
 Print Assumptions pb_term_eq_axiom_free.
+
+Print pb_lra_term_goal_axiom_free.
+Print Assumptions pb_lra_term_goal_axiom_free.
+
+Print pb_lra_term_lt_axiom_free.
+Print Assumptions pb_lra_term_lt_axiom_free.
+
+Print pb_lra_term_ge_axiom_free.
+Print Assumptions pb_lra_term_ge_axiom_free.
+
+Print pb_lra_term_gt_axiom_free.
+Print Assumptions pb_lra_term_gt_axiom_free.
+
+Print pb_lra_term_eq_axiom_free.
+Print Assumptions pb_lra_term_eq_axiom_free.
 
 Print pb_term_case_split_axiom_free.
 Print Assumptions pb_term_case_split_axiom_free.

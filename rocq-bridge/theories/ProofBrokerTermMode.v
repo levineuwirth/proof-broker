@@ -267,6 +267,71 @@ Register r_farkas_contradict_n as proof_broker.term_mode.r_farkas_contradict_n.
 Register r_mul_nonneg_nonpos as proof_broker.term_mode.r_mul_nonneg_nonpos.
 Register r_add_nonpos as proof_broker.term_mode.r_add_nonpos.
 
+(** Real-typed Farkas reconstruction for a non-[False] goal of shape
+    [b <= c]. The signature is strict-aware: [Hcng : 0 < cng] (strict
+    coefficient on the neg_goal slot) and [HK : 0 <= K] (non-strict
+    residual). Over R the negation of [b <= c] is the strict
+    [c < b] (compiled by the SDK as [Lt (c - b)] under LRA), and the
+    Farkas combination from a strict premise with a positive coefficient
+    is itself strictly less than 0. That strictness is what produces
+    the contradiction against [0 <= K] — even when [K = 0], the
+    trivial-equality case ([n <= 5] ⊢ [n <= 5] gives [(n-5)+(5-n) = 0]).
+    The Z-side helper [farkas_le_goal_2] doesn't need this because
+    the LIA +1 trick shifts the residual to [K > 0]; over R there's
+    no such shift, so the strictness path is load-bearing.
+
+    The decider is constructive over R ([Rle_dec] from [Stdlib.Reals]),
+    so no [Classical] beyond what [r_farkas_le_2] already pulls in.
+    The [Heq] premise (polynomial identity [c1*a1 + cng*(c-b) = K])
+    is discharged by [ring] at closer-build time. *)
+Lemma r_farkas_le_goal_2
+  (b c : R) (a1 : R) (H1 : a1 <= 0)
+  (c1 cng : R) (Hc1 : 0 <= c1) (Hcng : 0 < cng)
+  (K : R) (HK : 0 <= K)
+  (Heq : c1 * a1 + cng * (c - b) = K)
+  : b <= c.
+Proof.
+  destruct (Rle_dec b c) as [Hle | Hngt]; [exact Hle | exfalso].
+  apply Rnot_le_lt in Hngt.
+  (* Hngt : c < b *)
+  assert (S1 : c1 * a1 <= 0)
+    by (apply r_mul_nonneg_nonpos; assumption).
+  assert (S2 : cng * (c - b) < 0).
+  { apply (Rmult_lt_compat_l cng c b Hcng) in Hngt.
+    (* Hngt : cng * c < cng * b *)
+    replace (cng * (c - b)) with (cng * c - cng * b) by ring.
+    apply Rlt_minus. exact Hngt. }
+  assert (Ssum : c1 * a1 + cng * (c - b) < 0).
+  { replace 0 with (0 + 0) by ring.
+    apply Rplus_le_lt_compat; assumption. }
+  rewrite Heq in Ssum.
+  (* Ssum : K < 0 *)
+  exact (Rlt_irrefl 0 (Rle_lt_trans 0 K 0 HK Ssum)).
+Qed.
+
+(** Real-typed Farkas reconstruction for a strict goal [b < c]. The
+    negation of [b < c] over R is [c <= b] directly (no strictness
+    flip, no +1), which [Rnot_lt_le] gives us, and [r_le_to_le0]
+    normalizes to [c - b <= 0]. The compiled neg-goal shape thus
+    matches [Le (c - b)] — same as the SDK's [lift_le_pair c b]
+    output for [Not (LT.lt b c)] under any fragment. *)
+Lemma r_farkas_lt_goal_2
+  (b c : R) (a1 : R) (H1 : a1 <= 0)
+  (c1 cng : R) (Hc1 : 0 <= c1) (Hcng : 0 <= cng)
+  (K : R) (HK : 0 < K)
+  (Heq : c1 * a1 + cng * (c - b) = K)
+  : b < c.
+Proof.
+  destruct (Rlt_dec b c) as [Hlt | Hnlt]; [exact Hlt | exfalso].
+  apply Rnot_lt_le in Hnlt.
+  (* Hnlt : c <= b *)
+  pose proof (r_le_to_le0 c b Hnlt) as H2.
+  exact (r_farkas_le_2 a1 (c - b) H1 H2 c1 cng Hc1 Hcng K HK Heq).
+Qed.
+
+Register r_farkas_le_goal_2 as proof_broker.term_mode.r_farkas_le_goal_2.
+Register r_farkas_lt_goal_2 as proof_broker.term_mode.r_farkas_lt_goal_2.
+
 (** Real-typed positive-literal coefficient witness: a closed positive
     rational [p/q] flows through as [0 < IZR p / IZR q] (or [0 < IZR n]
     for integer coefficients). The Tier 2 case-split path uses
@@ -283,6 +348,19 @@ Proof. apply Rlt_le. exact (r_pos_is_pos p). Qed.
 
 Register r_pos_is_pos as proof_broker.term_mode.r_pos_is_pos.
 Register r_pos_is_nonneg as proof_broker.term_mode.r_pos_is_nonneg.
+
+(** Real-typed [0 <= 0] witness. Needed for the LRA Le-goal closer
+    when the Farkas residual [K] is exactly zero (the trivial-equality
+    case [n <= 5 ⊢ n <= 5] post-Rle_antisym): there's no [+1] trick
+    over R to push [K] strictly positive, so the strict-aware
+    [r_farkas_le_goal_2] takes [0 <= K] and that premise has to be
+    built for [K = 0] specifically (the existing [r_pos_is_nonneg]
+    only builds [0 <= IZR (Zpos p)] for [p : positive] — no zero
+    representation). *)
+Lemma r_zero_nonneg : (0 <= 0)%R.
+Proof. apply Rle_refl. Qed.
+
+Register r_zero_nonneg as proof_broker.term_mode.r_zero_nonneg.
 
 Close Scope R_scope.
 
@@ -326,6 +404,12 @@ Print Assumptions pos_is_nonneg.
 Print r_farkas_le_2.
 Print Assumptions r_farkas_le_2.
 
+Print r_farkas_le_goal_2.
+Print Assumptions r_farkas_le_goal_2.
+
+Print r_farkas_lt_goal_2.
+Print Assumptions r_farkas_lt_goal_2.
+
 Print r_le_to_le0.
 Print Assumptions r_le_to_le0.
 
@@ -337,6 +421,9 @@ Print Assumptions r_pos_is_pos.
 
 Print r_pos_is_nonneg.
 Print Assumptions r_pos_is_nonneg.
+
+Print r_zero_nonneg.
+Print Assumptions r_zero_nonneg.
 
 Print farkas_contradict_n.
 Print Assumptions farkas_contradict_n.

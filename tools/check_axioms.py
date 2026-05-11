@@ -81,7 +81,13 @@ def parse_lean_axioms(text: str) -> dict[str, set[str]]:
 # this is the marker we use to associate the subsequent
 # `Print Assumptions` block with a theorem name. (Rocq's
 # `Print Assumptions` alone doesn't include the name in its output.)
-RE_ROCQ_MARKER = re.compile(r"^([A-Za-z_][\w'.]*) =\s*$")
+# Two output shapes accepted:
+#   * Standard multi-line: `<name> =\n` then a [fun ... =>] body on the
+#     next lines. The original anchor.
+#   * Compact one-line: `<name> = <term>` when the proof term elaborates
+#     as a bare application — eg [r_zero_nonneg = Rle_refl 0]. The
+#     content after `=` is ignored; the capture is the name in both cases.
+RE_ROCQ_MARKER = re.compile(r"^([A-Za-z_][\w'.]*) =(?:\s.*)?$")
 # Inside an `Axioms:` block, each axiom name occupies a line of the
 # form `<name> :` at column 0, with the axiom's type indented on
 # subsequent lines. Block ends at end-of-input, a new marker line,

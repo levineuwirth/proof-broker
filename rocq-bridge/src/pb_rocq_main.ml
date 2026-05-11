@@ -318,12 +318,15 @@ let run_close_term_single (gl : Proofview.Goal.t)
       str "proof_broker_term: internal — cert present without verify")
 
 (* Term-mode entry point with goal-shape dispatch. For [>=] / [>] /
-   [=] goals we normalize first (apply [Z.le_ge] / [Z.lt_gt] /
-   [Z.le_antisymm]) and recurse — each post-normalization subgoal
-   triggers a fresh solver dispatch via [run_close_term_single].
+   [=] goals we normalize first and recurse — each post-normalization
+   subgoal triggers a fresh solver dispatch via [run_close_term_single].
 
-   Equality goals split into two [<=] subgoals (one per direction
-   of [Z.le_antisymm]); both are closed by separate Tier 1 Farkas
+   Universe-aware: [Z.le_ge] / [Z.lt_gt] / [Z.le_antisymm] for [Z];
+   [Rle_ge] / [Rlt_gt] / [Rle_antisym] for [R]. The universe tag is
+   the discriminator embedded in [goal_kind]'s comparator variants.
+
+   Equality goals split into two [<=] subgoals (one per direction of
+   the antisymmetry lemma); both are closed by separate Tier 1 Farkas
    certs, matching lean-bridge's [evalProofBrokerTerm] equality path.
    The two-dispatch cost is the price of staying inside single-
    witness Farkas scope — [~(a = b)] is the disjunction
@@ -333,18 +336,28 @@ let rec run_close_term (names : Names.Id.t list option) : unit Proofview.tactic 
   Proofview.Goal.enter (fun gl ->
     let sigma = Proofview.Goal.sigma gl in
     let goal_ty = Proofview.Goal.concl gl in
+    let antisym_tac = function
+      | Term_mode.U_Z -> "apply Z.le_antisymm"
+      | Term_mode.U_R -> "apply Rle_antisym"
+    and ge_tac = function
+      | Term_mode.U_Z -> "apply Z.le_ge"
+      | Term_mode.U_R -> "apply Rle_ge"
+    and gt_tac = function
+      | Term_mode.U_Z -> "apply Z.lt_gt"
+      | Term_mode.U_R -> "apply Rlt_gt"
+    in
     match Term_mode.goal_kind sigma goal_ty with
-    | Some (Term_mode.Goal_eq _) ->
+    | Some (Term_mode.Goal_eq (_, _, tag)) ->
       Proofview.tclTHEN
-        (invoke_named_tactic "apply Z.le_antisymm")
+        (invoke_named_tactic (antisym_tac tag))
         (run_close_term names)
-    | Some (Term_mode.Goal_ge _) ->
+    | Some (Term_mode.Goal_ge (_, _, tag)) ->
       Proofview.tclTHEN
-        (invoke_named_tactic "apply Z.le_ge")
+        (invoke_named_tactic (ge_tac tag))
         (run_close_term names)
-    | Some (Term_mode.Goal_gt _) ->
+    | Some (Term_mode.Goal_gt (_, _, tag)) ->
       Proofview.tclTHEN
-        (invoke_named_tactic "apply Z.lt_gt")
+        (invoke_named_tactic (gt_tac tag))
         (run_close_term names)
     | _ ->
       run_close_term_single gl names)

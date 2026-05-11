@@ -33,24 +33,34 @@
 
 exception Unsupported of string
 
+(** Goal-comparator type universe tag. Discriminates Z- vs R-typed
+    comparators so the dispatcher in [pb_rocq_main.run_close_term]
+    picks the right normalization tactic ([Z.le_ge] vs [Rle_ge] etc.)
+    and [close_term] picks the right helper + neg_norm shape (+1 trick
+    for LIA only). *)
+type universe_tag = U_Z | U_R
+
 (** Goal shapes term-mode recognizes. Mirrors lean-bridge's
     [matchLiaGoal?] / [matchIntEqGoal?] but as an explicit sum
     because Rocq's [Z.ge] / [Z.gt] don't reduce to swapped [Z.le]
-    / [Z.lt] the way Lean's instance reduction does. *)
+    / [Z.lt] the way Lean's instance reduction does. Comparator
+    constructors carry a [universe_tag] so the recursive dispatcher
+    can pick the matching Z- vs R-specific normalization step. *)
 type goal_kind =
   | Goal_false
-  | Goal_le of EConstr.t * EConstr.t
-  | Goal_lt of EConstr.t * EConstr.t
-  | Goal_ge of EConstr.t * EConstr.t
-  | Goal_gt of EConstr.t * EConstr.t
-  | Goal_eq of EConstr.t * EConstr.t
+  | Goal_le of EConstr.t * EConstr.t * universe_tag
+  | Goal_lt of EConstr.t * EConstr.t * universe_tag
+  | Goal_ge of EConstr.t * EConstr.t * universe_tag
+  | Goal_gt of EConstr.t * EConstr.t * universe_tag
+  | Goal_eq of EConstr.t * EConstr.t * universe_tag
 
 val goal_kind : Evd.evar_map -> EConstr.t -> goal_kind option
 (** [goal_kind sigma ty] classifies a goal type [ty]. Used by
     [pb_rocq_main.run_close_term] to decide whether to apply a
-    normalization step ([Z.le_ge] for [>=], [Z.lt_gt] for [>],
-    [Z.le_antisymm] for [=]) before invoking [close_term], and by
-    [close_term] itself to dispatch to the matching helper. *)
+    normalization step ([Z.le_ge] / [Z.lt_gt] / [Z.le_antisymm] for
+    Z; [Rle_ge] / [Rlt_gt] / [Rle_antisym] for R) before invoking
+    [close_term], and by [close_term] itself to dispatch to the
+    matching universe-specific helper. *)
 
 val close_term :
   Proof_broker.Ir.t -> Yojson.Safe.t -> unit Proofview.tactic

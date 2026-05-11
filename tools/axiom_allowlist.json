@@ -119,6 +119,46 @@
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
+    "pb_lra_term_goal_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_lt_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_ge_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_gt_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_eq_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_farkas_le_goal_2":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_farkas_lt_goal_2":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_zero_nonneg":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
     "r_farkas_le_2":
       [
         "ClassicalDedekindReals.sig_forall_dec",
