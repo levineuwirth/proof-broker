@@ -134,11 +134,19 @@
       [],
     "pb_term_lt_mixed_axiom_free":
       [],
+    "pb_term_arity3_goal_axiom_free":
+      [],
+    "pb_term_arity3_lt_axiom_free":
+      [],
     "farkas_contradict_n":
       [],
     "z_mul_nonneg_nonpos":
       [],
     "z_add_nonpos":
+      [],
+    "z_le_via_lt":
+      [],
+    "z_lt_via_le":
       [],
     "r_farkas_contradict_n":
       [
@@ -250,6 +258,26 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "r_farkas_lt_goal_2_strict_a1":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_arity3_goal_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_arity3_lt_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_le_via_lt":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_lt_via_le":
       [
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"

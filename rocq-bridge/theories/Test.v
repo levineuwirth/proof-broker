@@ -154,14 +154,38 @@ Qed.
     [Z.le_antisymm] (since [~ (a = b)] is a disjunction outside
     single-witness Farkas scope) and runs the existing [<=]-shape
     term-mode on each direction. Two solver dispatches, two
-    [farkas_le_goal_2] applications, one [Z.le_antisymm] wrapper.
-    The axiom footprint stays "Closed under the global context" —
-    splitting adds no new trust delta over the single-direction
-    case. Mirror of Lean's [pb_term_eq_axiom_free]. *)
+    comparison-goal closures, one [Z.le_antisymm] wrapper. The axiom
+    footprint stays "Closed under the global context" — splitting
+    adds no new trust delta over the single-direction case. Mirror
+    of Lean's [pb_term_eq_axiom_free]. *)
 Theorem pb_term_eq_axiom_free :
   forall n : Z, n <= 5 -> 5 <= n -> n = 5.
 Proof.
   intros n H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Arity-3 comparison goal (Z, Le): transitive chain
+    [x ≤ y ∧ y ≤ 5 ⊢ x ≤ 6]. The unified closer applies
+    [z_le_via_lt], introduces [neg_goal : 6 < x], and feeds the
+    full arity-3 witness (H1 + H2 + neg_goal) through the existing
+    arity-N False-fold. No special arity-2 helper involved — same
+    code path as the False-goal arity-3 test, just with one extra
+    Le entry coming from the (+1-trick-normalized) neg_goal. *)
+Theorem pb_term_arity3_goal_axiom_free :
+  forall x y : Z, x <= y -> y <= 5 -> x <= 6.
+Proof.
+  intros x y H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Arity-3 comparison goal (Z, Lt): same shape with strict goal
+    [x < 6]. The wrapper is [z_lt_via_le], neg_goal compiles as
+    Le (no +1 trick on the [c <= b] negation of [b < c]). *)
+Theorem pb_term_arity3_lt_axiom_free :
+  forall x y : Z, x <= y -> y <= 4 -> x < 5.
+Proof.
+  intros x y H1 H2.
   proof_broker_term [z3].
 Qed.
 
@@ -256,6 +280,32 @@ Theorem pb_lra_term_eq_axiom_free :
   forall n : R, n <= 5 -> 5 <= n -> n = 5.
 Proof.
   intros n H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Arity-3 comparison goal (R, Le): transitive chain
+    [x ≤ y ∧ y ≤ 5 ⊢ x ≤ 6]. Mirrors [pb_term_arity3_goal_axiom_free]
+    over R. The unified closer applies [r_le_via_lt], introduces
+    [neg_goal : 6 < x] (strict over R), and feeds the arity-3
+    witness through the strict-aware False-fold. The strictness
+    from the Lt-shaped neg_goal entry threads through via
+    [r_add_le_lt] at the final fold step. *)
+Theorem pb_lra_term_arity3_goal_axiom_free :
+  forall x y : R, x <= y -> y <= 5 -> x <= 6.
+Proof.
+  intros x y H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Arity-3 comparison goal (R, Lt): strict goal [x < 5] from a
+    Le-chain. The wrapper is [r_lt_via_le], neg_goal compiles as
+    Le (R has no +1 trick; [c <= b] is the natural negation of
+    [b < c]). All entries Le, fold stays in the non-strict path
+    until contradicting K > 0 via [r_farkas_contradict_n]. *)
+Theorem pb_lra_term_arity3_lt_axiom_free :
+  forall x y : R, x <= y -> y <= 4 -> x < 5.
+Proof.
+  intros x y H1 H2.
   proof_broker_term [z3].
 Qed.
 
@@ -460,6 +510,12 @@ Print Assumptions pb_term_gt_axiom_free.
 Print pb_term_eq_axiom_free.
 Print Assumptions pb_term_eq_axiom_free.
 
+Print pb_term_arity3_goal_axiom_free.
+Print Assumptions pb_term_arity3_goal_axiom_free.
+
+Print pb_term_arity3_lt_axiom_free.
+Print Assumptions pb_term_arity3_lt_axiom_free.
+
 Print pb_lra_term_goal_axiom_free.
 Print Assumptions pb_lra_term_goal_axiom_free.
 
@@ -474,6 +530,12 @@ Print Assumptions pb_lra_term_gt_axiom_free.
 
 Print pb_lra_term_eq_axiom_free.
 Print Assumptions pb_lra_term_eq_axiom_free.
+
+Print pb_lra_term_arity3_goal_axiom_free.
+Print Assumptions pb_lra_term_arity3_goal_axiom_free.
+
+Print pb_lra_term_arity3_lt_axiom_free.
+Print Assumptions pb_lra_term_arity3_lt_axiom_free.
 
 Print pb_lra_term_lt_hyp_axiom_free.
 Print Assumptions pb_lra_term_lt_hyp_axiom_free.

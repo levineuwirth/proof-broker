@@ -192,6 +192,34 @@ Qed.
 Register farkas_le_goal_2 as proof_broker.term_mode.farkas_le_goal_2.
 Register farkas_lt_goal_2 as proof_broker.term_mode.farkas_lt_goal_2.
 
+(** Arity-N comparison-goal wrappers (Z). Convert a comparison goal
+    into an implication-False shape so the closer can introduce the
+    negated goal as a regular hypothesis and delegate to the existing
+    arity-N False-fold. The arity-2 helpers above [farkas_le_goal_2] /
+    [farkas_lt_goal_2] are a sound but specialized case of this
+    pattern; the unified path handles any arity by feeding [neg_goal]
+    into the same fold as the witness's real-hypothesis entries.
+
+    Soundness rests on classical decidability of [<=] / [<] on [Z]
+    ([Z_le_gt_dec] / [Z_lt_ge_dec], both from Stdlib's [ZArith]) —
+    same deciders the arity-2 helpers use, so no new trust. *)
+Lemma z_le_via_lt (b c : Z) (H : c < b -> False) : b <= c.
+Proof.
+  destruct (Z_le_gt_dec b c) as [Hle | Hgt]; [exact Hle | exfalso].
+  apply Z.gt_lt in Hgt.
+  exact (H Hgt).
+Qed.
+
+Lemma z_lt_via_le (b c : Z) (H : c <= b -> False) : b < c.
+Proof.
+  destruct (Z_lt_ge_dec b c) as [Hlt | Hge]; [exact Hlt | exfalso].
+  apply Z.ge_le in Hge.
+  exact (H Hge).
+Qed.
+
+Register z_le_via_lt as proof_broker.term_mode.z_le_via_lt.
+Register z_lt_via_le as proof_broker.term_mode.z_lt_via_le.
+
 (** ============================================================
     Real-typed (LRA) Tier 1 Farkas reconstruction.
 
@@ -488,6 +516,27 @@ Qed.
 Register r_farkas_lt_goal_2_strict_a1
   as proof_broker.term_mode.r_farkas_lt_goal_2_strict_a1.
 
+(** Arity-N comparison-goal wrappers (R). Mirror of [z_le_via_lt] /
+    [z_lt_via_le] over the reals. Uses [Rle_dec] / [Rlt_dec] for
+    constructive decidability — same deciders as the arity-2 R
+    helpers ([r_farkas_le_goal_2] etc.), so no new trust. *)
+Lemma r_le_via_lt (b c : R) (H : c < b -> False) : b <= c.
+Proof.
+  destruct (Rle_dec b c) as [Hle | Hngt]; [exact Hle | exfalso].
+  apply Rnot_le_lt in Hngt.
+  exact (H Hngt).
+Qed.
+
+Lemma r_lt_via_le (b c : R) (H : c <= b -> False) : b < c.
+Proof.
+  destruct (Rlt_dec b c) as [Hlt | Hnlt]; [exact Hlt | exfalso].
+  apply Rnot_lt_le in Hnlt.
+  exact (H Hnlt).
+Qed.
+
+Register r_le_via_lt as proof_broker.term_mode.r_le_via_lt.
+Register r_lt_via_le as proof_broker.term_mode.r_lt_via_le.
+
 Close Scope R_scope.
 
 Open Scope Z_scope.
@@ -592,3 +641,15 @@ Print Assumptions r_farkas_contradict_n.
 
 Print r_add_nonpos.
 Print Assumptions r_add_nonpos.
+
+Print z_le_via_lt.
+Print Assumptions z_le_via_lt.
+
+Print z_lt_via_le.
+Print Assumptions z_lt_via_le.
+
+Print r_le_via_lt.
+Print Assumptions r_le_via_lt.
+
+Print r_lt_via_le.
+Print Assumptions r_lt_via_le.
