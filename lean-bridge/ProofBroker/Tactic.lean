@@ -84,6 +84,18 @@ axiom proofBrokerCertSound : ∀ (P : Prop), P
       verifier already accepted the proof), so the closer can
       delegate to e.g. `linarith` and the resulting proof term
       is axiom-free.
+    * `tier2CaseSplitCloser` is the term-mode closer for Tier 2
+      `case_split_farkas` certs over LRA. The cert payload carries
+      per-disjunct Farkas witnesses keyed on a `case` hypothesis
+      name; the closer destructs the disjunctive IR hypothesis and
+      applies the matching witness per branch via Mathlib-side
+      Real-typed `rFarkasContradict` helpers. Core delegates here
+      whenever the cert payload is a Tier 2 case-split lemma list
+      and the fragment is the extension's `irFragment` (LRA). LIA
+      Tier 2 isn't reachable today (cvc5's adapter only mints Tier 2
+      case-split for LRA goals), but if a future adapter does, core
+      would handle that path directly without consulting the
+      extension.
     * `irFragment` is the IR's `firstOrderFragment` label to use
       when the extension is active and any free var is in an
       extension-recognized type. Core picks `"LIA"` by default. -/
@@ -92,6 +104,13 @@ structure ReifierExt where
   freeVarType : Expr → MetaM (Option TypeRef)
   matchLiteralExt : Expr → MetaM (Option (String × TypeRef))
   lraCloser : TacticM Unit
+  /-- Tier 2 case-split closer. Arguments:
+      `cert` — the full cert JSON (extension parses `payload.lemmas_used`
+      and `payload.structural_hint.disjunctive_hypothesis`),
+      `ir` — the IR the cert is over (needed to look up the
+      disjunctive hypothesis shell + extend per branch with the
+      case hypothesis matching the SDK's "case" name). -/
+  tier2CaseSplitCloser : Lean.Json → IR → TacticM Unit
   irFragment : String
 
 initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
@@ -1033,10 +1052,23 @@ def evalProofBrokerQ : Tactic := fun stx => do
   logInfo (renderPath path)
   closeOrFail goal goalType path
 
+/-- Read the cert's payload strategy_hint, returning `""` if absent. -/
+private def certStrategyHint (cert : Json) : String :=
+  (cert.getObjVal? "payload"
+    |>.bind (·.getObjValAs? String "strategy_hint")).toOption.getD ""
+
 /-- Single-goal term-mode pipeline: build the IR + dispatch + verify
     + close the given mvar. Extracted so the equality-goal split
     can run it twice (once per direction of `Int.le_antisymm`)
-    without re-parsing the adapter list. -/
+    without re-parsing the adapter list.
+
+    Dispatches on cert payload:
+    * Tier 1 Farkas → `closeViaTermMode` (Int-typed today).
+    * Tier 2 `case_split_farkas` → registered extension's
+      `tier2CaseSplitCloser` (LRA-only today; LIA Tier 2 isn't
+      reachable since no adapter mints it). The extension parses
+      `payload.lemmas_used` and `payload.structural_hint`, destructs
+      the disjunctive hypothesis, and applies per-branch Farkas. -/
 private def runTermModeOnGoal
     (goal : MVarId) (adapterNames? : Option (List String))
     (preferHigherTier : Bool) : TacticM Unit := do
@@ -1049,8 +1081,20 @@ private def runTermModeOnGoal
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker_term: cert was minted but verifier did not \
                  accept it (reason: {r}); term-mode requires a verified \
-                 Tier 1 Farkas cert"
-  closeViaTermMode goal goalType cert
+                 Tier 1 Farkas or Tier 2 case-split cert"
+  -- Strategy-hint dispatch. Tier 2 case-split delegates to the
+  -- registered ReifierExt; Tier 1 Farkas and anything else falls
+  -- through to the core Int-typed term-mode closer.
+  if certStrategyHint cert == "case_split_farkas" then
+    match ← reifierExt.get with
+    | some ext => ext.tier2CaseSplitCloser cert path.ir
+    | none =>
+      throwError "proof_broker_term: Tier 2 case_split_farkas cert \
+                   minted but no extension closer registered (import \
+                   `ProofBrokerMathlib` for the LRA case-split term \
+                   builder)"
+  else
+    closeViaTermMode goal goalType cert
 
 /-- Match an Int equality goal `Eq Int a b`. Returns `(a, b)` if so;
     `none` otherwise. The closer pre-splits equality goals via

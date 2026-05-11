@@ -50,7 +50,7 @@ inductive ShellTerm where
   | const    (name : String)
   | numLit   (value : String) (ty : TypeRef)
   | opaque_  (payloadId : String)
-deriving Inhabited
+deriving Inhabited, BEq
 
 structure Goal where
   shell : ShellTerm

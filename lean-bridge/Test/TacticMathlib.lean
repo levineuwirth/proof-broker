@@ -45,4 +45,26 @@ theorem lra_axiom_free
 
 #print axioms lra_axiom_free
 
+/-- Term-mode Tier 2 case-split over LRA: a goal with a
+    disjunctive hypothesis `(x ≤ 0) ∨ (x ≥ 10)` under
+    `1 ≤ x ≤ 9` closes by destruct + per-branch Farkas. cvc5
+    mints a Tier 2 `case_split_farkas` cert (adapter priority
+    prefers case-split over Tier 3 alethe when the IR has a
+    disjunctive hypothesis). The bridge closer destructs the
+    disjunction in the Lean LCtx and applies the matching
+    lemma's Tier 1 Farkas witness per branch via
+    `rFarkasContradict`. No `linarith` call on the per-branch
+    arithmetic — only on the narrow strict-positivity
+    polynomial-identity subgoal, same role `omega` plays in
+    the Int term-mode closer. Trust footprint matches the
+    existing `lra_axiom_free`: `[propext, Classical.choice,
+    Quot.sound]` (the Mathlib LRA baseline). Mirror of Rocq's
+    `pb_term_case_split_axiom_free`. -/
+theorem pb_term_case_split_axiom_free
+    (x : Real) (h_disj : x ≤ 0 ∨ x ≥ 10) (h_low : x ≥ 1) (h_high : x ≤ 9)
+    : False := by
+  proof_broker_term [cvc5]
+
+#print axioms pb_term_case_split_axiom_free
+
 end ProofBroker.TestMathlib

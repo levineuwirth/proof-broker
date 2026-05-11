@@ -9,4 +9,5 @@ Mathlib build cost.
 -/
 
 import ProofBroker
+import ProofBrokerMathlib.TermMode
 import ProofBrokerMathlib.Tactic

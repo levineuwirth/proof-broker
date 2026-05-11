@@ -31,6 +31,14 @@
     "ProofBroker.Test.uf_predicate_axiom_free":
       [],
     "ProofBroker.TestMathlib.lra_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rFarkasContradict":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rLeToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rGeToLe0":
       ["propext", "Classical.choice", "Quot.sound"]
   },
 
