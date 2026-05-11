@@ -259,6 +259,41 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Term-mode LRA strict-[<] hypotheses (False-goal). Strict
+    hypotheses over R don't get the LIA +1 trick — there's no discrete
+    domain to lift into — so the normalizer leaves them in strict
+    [a < 0] form via [r_lt_to_lt0], and the fold tracks strictness
+    state to pick [r_mul_pos_neg] + [r_add_*] combinators. Final
+    contradiction step is [r_farkas_contradict_n_strict] when any
+    premise is strict (allows [K = 0] when strictness alone carries
+    the contradiction).
+
+    Two-strict, arity-2: [5 < x ∧ x < 5 ⊢ False] gives linear sum
+    [(5 - x) + (x - 5) = 0], K = 0; strictness from both premises
+    closes via [r_farkas_contradict_n_strict]. Mirror of Z's
+    [pb_term_lt_hyp_axiom_free]. *)
+Theorem pb_lra_term_lt_hyp_axiom_free :
+  forall x : R, 5 < x -> x < 5 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Mixed strict + non-strict, arity-3: [1 ≤ x ∧ x ≤ y ∧ y < 1 ⊢ False].
+    z3's witness has (Le, Le, Lt) — two non-strict premises and one
+    strict. The fold threads strictness through:
+      acc starts non-strict (entry 1 Le) → Le;
+      acc + entry 2 Le → Le (via [r_add_nonpos]);
+      acc + entry 3 Lt → Lt (via [r_add_le_lt]).
+    Linear sum collapses to zero — strictness from the [y < 1] premise
+    is what closes the gap. *)
+Theorem pb_lra_term_lt_mixed_axiom_free :
+  forall x y : R, 1 <= x -> x <= y -> y < 1 -> False.
+Proof.
+  intros x y H1 H2 H3.
+  proof_broker_term [z3].
+Qed.
+
 Close Scope R_scope.
 
 (** Term-mode Tier 2 case-split: a goal with a disjunctive
@@ -390,6 +425,12 @@ Print Assumptions pb_lra_term_gt_axiom_free.
 
 Print pb_lra_term_eq_axiom_free.
 Print Assumptions pb_lra_term_eq_axiom_free.
+
+Print pb_lra_term_lt_hyp_axiom_free.
+Print Assumptions pb_lra_term_lt_hyp_axiom_free.
+
+Print pb_lra_term_lt_mixed_axiom_free.
+Print Assumptions pb_lra_term_lt_mixed_axiom_free.
 
 Print pb_term_case_split_axiom_free.
 Print Assumptions pb_term_case_split_axiom_free.

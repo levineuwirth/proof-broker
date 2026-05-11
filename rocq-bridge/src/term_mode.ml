@@ -32,6 +32,20 @@ let r_farkas_lt_goal_2_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_lt_goal_2")
 let r_zero_nonneg_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_zero_nonneg")
+let r_lt_to_lt0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_lt_to_lt0")
+let r_gt_to_lt0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_gt_to_lt0")
+let r_mul_pos_neg_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_mul_pos_neg")
+let r_add_le_lt_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_add_le_lt")
+let r_add_lt_le_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_add_lt_le")
+let r_add_neg_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_add_neg")
+let r_farkas_contradict_n_strict_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_contradict_n_strict")
 let z_farkas_le_2     = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_2")
 let z_farkas_le_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_goal_2")
 let z_farkas_lt_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_lt_goal_2")
@@ -160,6 +174,18 @@ type universe = {
      strict hypotheses to the same [a' <= 0] form [<=] / [>=] take. *)
   lt_to_le0 : EConstr.t option;
   gt_to_le0 : EConstr.t option;
+  (* Strict-aware Farkas fold building blocks. [Some _] only on
+     universes where strict premises survive normalization as [a < 0]
+     rather than getting folded into [a <= 0] via the LIA +1 trick —
+     i.e. R only today (Z's [lt_to_le0]/[gt_to_le0] do the fold, so
+     these stay [None] on Z and the strict-aware path is unreachable). *)
+  lt_to_lt0 : EConstr.t option;
+  gt_to_lt0 : EConstr.t option;
+  mul_pos_neg : EConstr.t option;
+  add_le_lt : EConstr.t option;
+  add_lt_le : EConstr.t option;
+  add_neg : EConstr.t option;
+  farkas_contradict_n_strict : EConstr.t option;
 }
 
 let z_universe () : universe = {
@@ -183,6 +209,16 @@ let z_universe () : universe = {
   farkas_contradict_n = force z_farkas_contradict_n;
   lt_to_le0 = Some (force z_lt_to_le0);
   gt_to_le0 = Some (force z_gt_to_le0);
+  (* Z folds strict into Le via the +1 trick at [lt_to_le0] /
+     [gt_to_le0] time, so the strict-aware fold path is unused
+     on Z and these stay [None]. *)
+  lt_to_lt0 = None;
+  gt_to_lt0 = None;
+  mul_pos_neg = None;
+  add_le_lt = None;
+  add_lt_le = None;
+  add_neg = None;
+  farkas_contradict_n_strict = None;
 }
 
 let r_universe () : universe = {
@@ -204,12 +240,20 @@ let r_universe () : universe = {
   mul_nonneg_nonpos = force r_mul_nonneg_nonpos_ref;
   add_nonpos = force r_add_nonpos_ref;
   farkas_contradict_n = force r_farkas_contradict_n_ref;
-  (* R strict-[<] / [>] would need a strict-aware contradiction
-     variant (no +1 trick over the reals); not wired yet, so strict
-     hypotheses over LRA surface as [Unsupported] from the matcher
-     below rather than silently weakening to [<=]. *)
+  (* R strict-[<] / [>] preserve strictness through the fold (no +1
+     trick over the reals) via the strict-aware path below. The Le-form
+     [lt_to_le0]/[gt_to_le0] stay [None] because we don't weaken — the
+     normalizer returns the strict [a - b < 0] form via [lt_to_lt0]/
+     [gt_to_lt0] and the fold tracks strictness from there. *)
   lt_to_le0 = None;
   gt_to_le0 = None;
+  lt_to_lt0 = Some (force r_lt_to_lt0_ref);
+  gt_to_lt0 = Some (force r_gt_to_lt0_ref);
+  mul_pos_neg = Some (force r_mul_pos_neg_ref);
+  add_le_lt = Some (force r_add_le_lt_ref);
+  add_lt_le = Some (force r_add_lt_le_ref);
+  add_neg = Some (force r_add_neg_ref);
+  farkas_contradict_n_strict = Some (force r_farkas_contradict_n_strict_ref);
 }
 
 let universe_for_ir (ir : Ir.t) : universe =
@@ -344,16 +388,30 @@ let compute_residual ?(require_strict=true) (ir : Ir.t)
 
 (* --- per-hypothesis normalization ---------------------------------- *)
 
+(* Normalized hypothesis output: linear-form LHS [expr], proof term,
+   and a [strict] flag distinguishing the Le-shape [expr <= 0] from
+   the Lt-shape [expr < 0]. The Z universe always returns
+   [strict = false] (the +1 trick folds [<] / [>] into Le); the R
+   universe returns [strict = true] for [Rlt] / [Rgt] heads and
+   [strict = false] for [Rle] / [Rge]. *)
+type normalized_hyp = {
+  expr : EConstr.t;
+  proof : EConstr.t;
+  strict : bool;
+}
+
 (* For a hypothesis [h : T.le a b] / [h : T.ge a b] / [h : T.lt a b] /
-   [h : T.gt a b] over T ∈ {Z, R}, produce the EConstr pair
-   [(a_econstr, proof : a_econstr <= 0)] using the universe's
-   [le_to_le0] / [ge_to_le0] / [lt_to_le0] / [gt_to_le0]. Detection
-   is by the inner head ref. Strict shapes ([<] / [>]) are only
-   accepted on universes wiring the +1-trick helpers — i.e. Z today,
-   not R (LRA strict requires a strict-aware [farkas_contradict_n]
-   variant, future scope). *)
+   [h : T.gt a b] over T ∈ {Z, R}, produce a [normalized_hyp] using
+   the universe's normalization helpers. Detection is by the inner
+   head ref. Strict shapes route through different paths per universe:
+
+     * Z (LIA): [lt_to_le0] / [gt_to_le0] (+1 trick), strict = false.
+     * R (LRA): [lt_to_lt0] / [gt_to_lt0] (strictness preserving),
+                strict = true; the strict-aware fold in the caller
+                picks the right [mul_*] / [add_*] / [contradict_n_*]
+                combinators from there. *)
 let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
-  : EConstr.t * EConstr.t =
+  : normalized_hyp =
   let decl = Environ.lookup_named id env in
   let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
   let h_term = EConstr.mkVar id in
@@ -370,36 +428,47 @@ let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
     let is_gt = head_matches r_Zgt || head_matches r_Rgt in
     let one = u.lit Z.one in
     if is_le then
-      let a_minus_b = EConstr.mkApp (u.sub, [| a; b |]) in
+      let expr = EConstr.mkApp (u.sub, [| a; b |]) in
       let proof = EConstr.mkApp (u.le_to_le0, [| a; b; h_term |]) in
-      (a_minus_b, proof)
+      { expr; proof; strict = false }
     else if is_ge then
-      let b_minus_a = EConstr.mkApp (u.sub, [| b; a |]) in
+      let expr = EConstr.mkApp (u.sub, [| b; a |]) in
       let proof = EConstr.mkApp (u.ge_to_le0, [| a; b; h_term |]) in
-      (b_minus_a, proof)
+      { expr; proof; strict = false }
     else if is_lt then
-      (match u.lt_to_le0 with
-       | Some lemma ->
-         let a_plus_1 = EConstr.mkApp (u.add, [| a; one |]) in
-         let lhs = EConstr.mkApp (u.sub, [| a_plus_1; b |]) in
+      (* Prefer the strict-preserving path when the universe has it
+         ([lt_to_lt0], R); otherwise fall back to the LIA +1 trick
+         ([lt_to_le0], Z). *)
+      (match u.lt_to_lt0, u.lt_to_le0 with
+       | Some lemma, _ ->
+         let expr = EConstr.mkApp (u.sub, [| a; b |]) in
          let proof = EConstr.mkApp (lemma, [| a; b; h_term |]) in
-         (lhs, proof)
-       | None ->
+         { expr; proof; strict = true }
+       | None, Some lemma ->
+         let a_plus_1 = EConstr.mkApp (u.add, [| a; one |]) in
+         let expr = EConstr.mkApp (u.sub, [| a_plus_1; b |]) in
+         let proof = EConstr.mkApp (lemma, [| a; b; h_term |]) in
+         { expr; proof; strict = false }
+       | None, None ->
          unsupported "term_mode: strict [<] hypothesis %s on %s — \
-                      strict-aware Farkas over this universe isn't wired \
-                      (no +1 trick over non-discrete domains)"
+                      neither strict-aware nor +1-trick normalization \
+                      is wired on this universe"
            (Names.Id.to_string id) u.name)
     else if is_gt then
-      (match u.gt_to_le0 with
-       | Some lemma ->
-         let b_plus_1 = EConstr.mkApp (u.add, [| b; one |]) in
-         let lhs = EConstr.mkApp (u.sub, [| b_plus_1; a |]) in
+      (match u.gt_to_lt0, u.gt_to_le0 with
+       | Some lemma, _ ->
+         let expr = EConstr.mkApp (u.sub, [| b; a |]) in
          let proof = EConstr.mkApp (lemma, [| a; b; h_term |]) in
-         (lhs, proof)
-       | None ->
+         { expr; proof; strict = true }
+       | None, Some lemma ->
+         let b_plus_1 = EConstr.mkApp (u.add, [| b; one |]) in
+         let expr = EConstr.mkApp (u.sub, [| b_plus_1; a |]) in
+         let proof = EConstr.mkApp (lemma, [| a; b; h_term |]) in
+         { expr; proof; strict = false }
+       | None, None ->
          unsupported "term_mode: strict [>] hypothesis %s on %s — \
-                      strict-aware Farkas over this universe isn't wired \
-                      (no +1 trick over non-discrete domains)"
+                      neither strict-aware nor +1-trick normalization \
+                      is wired on this universe"
            (Names.Id.to_string id) u.name)
     else
       unsupported "term_mode: hypothesis %s has shape outside \
@@ -432,53 +501,120 @@ let check_positive_coef ~slot (cz : Z.t) =
 (* --- False-goal closer --------------------------------------------- *)
 
 (* General-arity False-goal closer. Folds the witness's coefficient
-   list left-to-right:
+   list left-to-right, tracking strictness:
 
-     1. For each (name, c): normalize hypothesis to `a ≤ 0` form,
-        build `c * a` and a proof `c * a ≤ 0` via mul_nonneg_nonpos.
-     2. Left-associative sum: `s_{i+1} = s_i + c_{i+1}*a_{i+1}`,
-        with proof `s_{i+1} ≤ 0` via add_nonpos.
-     3. Apply farkas_contradict_n with the final sum, computed K
-        (numerical residual), and an evar for the polynomial
-        identity `s = K` closed by ring.
+     1. For each (name, c): normalize hypothesis to either [a ≤ 0]
+        (Le-form, [strict=false]) or [a < 0] (Lt-form, [strict=true],
+        R only). Build [c * a] with proof [c * a ≤ 0] via
+        [mul_nonneg_nonpos] or [c * a < 0] via [mul_pos_neg].
+     2. Left-associative sum: accumulator [(s_i, s_i_proof, s_strict)].
+        Each step picks the [add_*] combinator from the 4-way cross
+        product (acc_strict × prod_strict):
+          Le+Le→Le ([add_nonpos]); Le+Lt→Lt ([add_le_lt]);
+          Lt+Le→Lt ([add_lt_le]); Lt+Lt→Lt ([add_neg]).
+     3. Dispatch on final [s_strict]:
+          false: [farkas_contradict_n] with [0 < K].
+          true:  [farkas_contradict_n_strict] with [0 ≤ K]; K may be 0
+                 (the [(h1 : 5 < x) (h2 : x < 5) ⊢ False] case has
+                 [(5 - x) + (x - 5) = 0] as the linear sum, with
+                 strictness from h1 and h2 carrying the contradiction).
 
-   Arity 1 is the degenerate single-product case (no add step);
-   arity 2 produces a proof shape equivalent to the legacy
-   farkas_le_2 path but built via fold; arity N ≥ 3 is the new
-   reach this refactor unlocks. *)
+   Z always stays in the Le-form branch ([strict] is forced false via
+   the +1 trick at normalization time); R can land in either branch. *)
 let close_term_false (u : universe) env sigma (ir : Ir.t)
     (entries : (string * Z.t) list) : unit Proofview.tactic =
   let n = List.length entries in
   if n < 1 then
     unsupported "term_mode: empty witness — arity ≥ 1 required";
   List.iter (fun (name, c) -> check_positive_coef ~slot:name c) entries;
-  (* Normalize each entry: get (c_econstr, hc_proof, a_econstr, ha_proof). *)
+  (* Normalize each entry. Builds (c_econstr, h_c_proof, a_econstr,
+     h_a_proof, a_strict) per entry — the [h_c] proof varies with
+     [a_strict] (strict premise needs [0 < c] from [pos_is_pos] so
+     the product is strictly negative; Le premise uses [0 <= c]). *)
   let normalized = List.map (fun (name, c) ->
     let id = Names.Id.of_string name in
-    let (a, h_a) = normalize_hypothesis u env sigma id in
+    let { expr = a; proof = h_a; strict = a_strict } =
+      normalize_hypothesis u env sigma id
+    in
     let c_econstr = u.lit c in
-    let h_c = u.pos_is_nonneg c in
-    (c_econstr, h_c, a, h_a)) entries in
-  (* Build (c_i * a_i, proof: c_i * a_i ≤ 0) for each entry. *)
-  let products = List.map (fun (c_econstr, h_c, a, h_a) ->
-    let prod = EConstr.mkApp (u.mul, [| c_econstr; a |]) in
-    let proof = EConstr.mkApp (u.mul_nonneg_nonpos,
-      [| c_econstr; a; h_c; h_a |]) in
-    (prod, proof)) normalized in
-  (* Left-associative fold: sum the products, accumulating the
-     `≤ 0` proof step by step. *)
-  let (sum_econstr, sum_proof) = match products with
-    | [] -> assert false
-    | (p0, h0) :: rest ->
-      List.fold_left (fun (acc_e, acc_h) (p, h) ->
-        let new_sum = EConstr.mkApp (u.add, [| acc_e; p |]) in
-        let new_proof = EConstr.mkApp (u.add_nonpos,
-          [| acc_e; p; acc_h; h |]) in
-        (new_sum, new_proof)) (p0, h0) rest
+    let h_c =
+      if a_strict then u.pos_is_pos c else u.pos_is_nonneg c
+    in
+    (c_econstr, h_c, a, h_a, a_strict)) entries in
+  (* Build (c_i * a_i, proof: c_i * a_i ≤ 0 OR < 0, prod_strict). *)
+  let need_mul_pos_neg () =
+    match u.mul_pos_neg with
+    | Some lemma -> lemma
+    | None ->
+      unsupported "term_mode: strict premise on universe %s but \
+                   [mul_pos_neg] not wired" u.name
   in
-  let k_z = compute_residual ir entries in
+  let products = List.map (fun (c_econstr, h_c, a, h_a, a_strict) ->
+    let prod = EConstr.mkApp (u.mul, [| c_econstr; a |]) in
+    let proof =
+      if a_strict then
+        EConstr.mkApp (need_mul_pos_neg (),
+          [| c_econstr; a; h_c; h_a |])
+      else
+        EConstr.mkApp (u.mul_nonneg_nonpos,
+          [| c_econstr; a; h_c; h_a |])
+    in
+    (prod, proof, a_strict)) normalized in
+  (* Left-associative fold: (acc, acc_proof, acc_strict). The add
+     combinator depends on (acc_strict, prod_strict). *)
+  let pick_add acc_strict prod_strict =
+    match acc_strict, prod_strict with
+    | false, false -> u.add_nonpos
+    | false, true ->
+      (match u.add_le_lt with
+       | Some l -> l
+       | None ->
+         unsupported "term_mode: Le+Lt sum step but [add_le_lt] not \
+                      wired on universe %s" u.name)
+    | true, false ->
+      (match u.add_lt_le with
+       | Some l -> l
+       | None ->
+         unsupported "term_mode: Lt+Le sum step but [add_lt_le] not \
+                      wired on universe %s" u.name)
+    | true, true ->
+      (match u.add_neg with
+       | Some l -> l
+       | None ->
+         unsupported "term_mode: Lt+Lt sum step but [add_neg] not \
+                      wired on universe %s" u.name)
+  in
+  let (sum_econstr, sum_proof, sum_strict) = match products with
+    | [] -> assert false
+    | (p0, h0, s0) :: rest ->
+      List.fold_left (fun (acc_e, acc_h, acc_s) (p, h, ps) ->
+        let new_sum = EConstr.mkApp (u.add, [| acc_e; p |]) in
+        let add_lemma = pick_add acc_s ps in
+        let new_proof = EConstr.mkApp (add_lemma,
+          [| acc_e; p; acc_h; h |]) in
+        (new_sum, new_proof, acc_s || ps)) (p0, h0, s0) rest
+  in
+  let k_z =
+    compute_residual ~require_strict:(not sum_strict) ir entries
+  in
   let k_constr = u.lit k_z in
-  let hk = u.pos_is_pos k_z in
+  let hk =
+    if sum_strict then
+      (* Strict-aware contradiction: [0 ≤ K], may be zero. *)
+      if Z.sign k_z = 0 then force r_zero_nonneg_ref
+      else u.pos_is_nonneg k_z
+    else u.pos_is_pos k_z
+  in
+  let contradict_lemma =
+    if sum_strict then
+      (match u.farkas_contradict_n_strict with
+       | Some l -> l
+       | None ->
+         unsupported "term_mode: strict-aware fold reached final step \
+                      but [farkas_contradict_n_strict] not wired on \
+                      universe %s" u.name)
+    else u.farkas_contradict_n
+  in
   let refine_tac : unit Proofview.tactic =
     Refine.refine ~typecheck:true (fun sigma ->
       let heq_type =
@@ -486,7 +622,7 @@ let close_term_false (u : universe) env sigma (ir : Ir.t)
       in
       let sigma, heq_evar = Evarutil.new_evar env sigma heq_type in
       let term =
-        EConstr.mkApp (u.farkas_contradict_n,
+        EConstr.mkApp (contradict_lemma,
           [| sum_econstr; k_constr; sum_proof; hk; heq_evar |])
       in
       (sigma, term))
@@ -539,7 +675,16 @@ let close_term_goal (u : universe) env sigma (ir : Ir.t)
   check_positive_coef ~slot:"c1" c1z;
   check_positive_coef ~slot:"neg_goal" cng_z;
   let id1 = Names.Id.of_string real_name in
-  let (a1, h1) = normalize_hypothesis u env sigma id1 in
+  let { expr = a1; proof = h1; strict = h1_strict } =
+    normalize_hypothesis u env sigma id1
+  in
+  if h1_strict then
+    unsupported "term_mode: strict [<] / [>] hypothesis %s on a \
+                 comparison-goal closer is out of scope (only False-goal \
+                 supports strict premises today — comparison-goal needs \
+                 a strict-aware variant of [farkas_le_goal_2] / \
+                 [farkas_lt_goal_2], future scope)"
+      real_name;
   let c1 = u.lit c1z in
   let cng = u.lit cng_z in
   let require_strict = match proof_shape with

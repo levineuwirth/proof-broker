@@ -362,6 +362,76 @@ Proof. apply Rle_refl. Qed.
 
 Register r_zero_nonneg as proof_broker.term_mode.r_zero_nonneg.
 
+(** Strict-[<] hypothesis normalization for R: produce [a - b < 0]
+    (strict) rather than the [le0]-style weakening. The Z-side
+    [lt_to_le0] uses the LIA +1 trick to fold strictness into [Le];
+    there's no analog over R, so the strict-aware fold path
+    preserves [<] all the way to the contradiction step. *)
+Lemma r_lt_to_lt0 (a b : R) : a < b -> a - b < 0.
+Proof. intros H. apply Rlt_minus. exact H. Qed.
+
+Lemma r_gt_to_lt0 (a b : R) : a > b -> b - a < 0.
+Proof. intros H. apply Rgt_lt in H. apply Rlt_minus. exact H. Qed.
+
+Register r_lt_to_lt0 as proof_broker.term_mode.r_lt_to_lt0.
+Register r_gt_to_lt0 as proof_broker.term_mode.r_gt_to_lt0.
+
+(** Strict-aware Farkas building blocks. The fold tracks strictness
+    state per accumulator step; each combination (Le+Le | Le+Lt | Lt+Le
+    | Lt+Lt) picks the matching [add_*] lemma. Once any premise is
+    strict, the result is strict (Lt-preserving). The dispatch at the
+    end of the fold picks between [r_farkas_contradict_n] (all Le
+    premises, requires [0 < K]) and [r_farkas_contradict_n_strict]
+    (at least one Lt premise with positive coefficient, allows
+    [0 ≤ K]). *)
+Lemma r_mul_pos_neg (c a : R) (Hc : 0 < c) (Ha : a < 0) : c * a < 0.
+Proof.
+  apply (Rmult_lt_compat_l c a 0 Hc) in Ha.
+  rewrite Rmult_0_r in Ha.
+  exact Ha.
+Qed.
+
+Lemma r_add_le_lt (x y : R) (Hx : x <= 0) (Hy : y < 0) : x + y < 0.
+Proof.
+  replace 0 with (0 + 0) by ring.
+  apply Rplus_le_lt_compat; assumption.
+Qed.
+
+Lemma r_add_lt_le (x y : R) (Hx : x < 0) (Hy : y <= 0) : x + y < 0.
+Proof.
+  replace 0 with (0 + 0) by ring.
+  apply Rplus_lt_le_compat; assumption.
+Qed.
+
+Lemma r_add_neg (x y : R) (Hx : x < 0) (Hy : y < 0) : x + y < 0.
+Proof.
+  replace 0 with (0 + 0) by ring.
+  apply Rplus_lt_compat; assumption.
+Qed.
+
+(** Strict-aware contradiction step. Counterpart to
+    [r_farkas_contradict_n] (which takes [Hs : s <= 0] and [HK : 0 < K]):
+    here the strict premise comes from at least one [Lt]-compiled
+    hypothesis with positive coefficient, giving [s < 0]; in exchange
+    [K] only needs to be non-negative (a Farkas residual of exactly
+    zero is fine when strictness carries the contradiction, eg
+    [(h1 : 5 < x) (h2 : x < 5) ⊢ False] where the linear combination
+    constant is zero but the inequality is strict). *)
+Lemma r_farkas_contradict_n_strict
+  (s K : R) (Hs : s < 0) (HK : 0 <= K) (Heq : s = K) : False.
+Proof.
+  rewrite Heq in Hs.
+  (* Hs : K < 0 *)
+  exact (Rlt_irrefl 0 (Rle_lt_trans 0 K 0 HK Hs)).
+Qed.
+
+Register r_mul_pos_neg as proof_broker.term_mode.r_mul_pos_neg.
+Register r_add_le_lt as proof_broker.term_mode.r_add_le_lt.
+Register r_add_lt_le as proof_broker.term_mode.r_add_lt_le.
+Register r_add_neg as proof_broker.term_mode.r_add_neg.
+Register r_farkas_contradict_n_strict
+  as proof_broker.term_mode.r_farkas_contradict_n_strict.
+
 Close Scope R_scope.
 
 Open Scope Z_scope.
@@ -424,6 +494,27 @@ Print Assumptions r_pos_is_nonneg.
 
 Print r_zero_nonneg.
 Print Assumptions r_zero_nonneg.
+
+Print r_lt_to_lt0.
+Print Assumptions r_lt_to_lt0.
+
+Print r_gt_to_lt0.
+Print Assumptions r_gt_to_lt0.
+
+Print r_mul_pos_neg.
+Print Assumptions r_mul_pos_neg.
+
+Print r_add_le_lt.
+Print Assumptions r_add_le_lt.
+
+Print r_add_lt_le.
+Print Assumptions r_add_lt_le.
+
+Print r_add_neg.
+Print Assumptions r_add_neg.
+
+Print r_farkas_contradict_n_strict.
+Print Assumptions r_farkas_contradict_n_strict.
 
 Print farkas_contradict_n.
 Print Assumptions farkas_contradict_n.

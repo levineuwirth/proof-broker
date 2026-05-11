@@ -159,6 +159,51 @@
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
+    "r_lt_to_lt0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_gt_to_lt0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_mul_pos_neg":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_add_le_lt":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_add_lt_le":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_add_neg":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_farkas_contradict_n_strict":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_lt_hyp_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_lt_mixed_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
     "r_farkas_le_2":
       [
         "ClassicalDedekindReals.sig_forall_dec",
