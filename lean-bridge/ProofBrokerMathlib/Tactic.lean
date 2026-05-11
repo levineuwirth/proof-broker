@@ -136,43 +136,68 @@ private def fvarOfName (name : String) : MetaM (Expr × Expr) := do
   | [] => throwError "proof_broker_term: hypothesis '{name}' not in scope"
   | _ => throwError "proof_broker_term: hypothesis '{name}' is ambiguous (shadowed)"
 
-/-- Recognize a `Real` `≤` / `≥` shape in a hypothesis type.
-    Returns `(direction, lhs, rhs)` where `direction = true` for
-    `≤` (use `rLeToLe0`), `false` for `≥` (use `rGeToLe0`).
-    Lean's `≥` desugars to `LE.le b a`, so we only see `LE.le`
-    here in practice — the explicit `GE.ge` branch is for
-    robustness. -/
-private def matchRealBound? (ty : Expr) : Option (Bool × Expr × Expr) :=
+/-- The four hypothesis-shape kinds the LRA term-mode closer
+    normalizes. Mirror of core's `HypKind` but Real-typed. -/
+private inductive HypKindReal
+  | le | ge | lt | gt
+deriving Repr
+
+/-- Recognize a `Real` comparison shape in a hypothesis type. Returns
+    `(kind, lhs, rhs)` where the kind picks the normalization helper
+    and the strictness flag for the fold. -/
+private def matchRealBound? (ty : Expr) : Option (HypKindReal × Expr × Expr) :=
   match ty.getAppFnArgs with
   | (``LE.le, #[α, _, a, b]) =>
-    if α.isConstOf ``Real then some (true, a, b) else none
+    if α.isConstOf ``Real then some (.le, a, b) else none
   | (``GE.ge, #[α, _, a, b]) =>
-    if α.isConstOf ``Real then some (false, a, b) else none
+    if α.isConstOf ``Real then some (.ge, a, b) else none
+  | (``LT.lt, #[α, _, a, b]) =>
+    if α.isConstOf ``Real then some (.lt, a, b) else none
+  | (``GT.gt, #[α, _, a, b]) =>
+    if α.isConstOf ``Real then some (.gt, a, b) else none
   | _ => none
 
-/-- Real-typed `normalizeHypothesis`: from `(h : a ≤ b : Real)` or
-    `(h : a ≥ b : Real)` build the pair `((a - b, b - a respectively),
-    proof : <that> ≤ 0)` via `rLeToLe0` / `rGeToLe0`. Both shapes
-    arise in practice — destruct of `Or { LE.le x 0; LE.le 10 x }`
-    leaves the second branch's `hCase` typed at the original
-    disjunct shape `LE.le 10 x`, fine; the un-destructed
-    hypotheses `h_low : x ≥ 1` and `h_high : x ≤ 9` carry the
-    user-written `GE.ge` head. -/
+/-- Normalized hypothesis output: linear-form LHS, proof of
+    `(expr ≤ 0)` or `(expr < 0)`, and a `strict` flag distinguishing
+    Le-shape from Lt-shape. Strict shapes arise from `Real` `<` / `>`
+    hypotheses; the Le-shape helpers `rLeToLe0` / `rGeToLe0` keep
+    `strict=false`, the Lt-shape helpers `rLtToLt0` / `rGtToLt0`
+    set `strict=true`. -/
+private structure NormalizedHypReal where
+  expr : Expr
+  proof : Expr
+  strict : Bool
+
+/-- Real-typed `normalizeHypothesis`: from `(h : a ≤ b : Real)` /
+    `(h : a ≥ b : Real)` / `(h : a < b : Real)` / `(h : a > b : Real)`
+    build a `NormalizedHypReal`. Strict shapes go through
+    `rLtToLt0` / `rGtToLt0` (no LIA +1 trick over R — the strict-aware
+    fold path consumes the `a < 0` proof directly). -/
 private def normalizeHypothesisReal (hypFV : Expr) (hypTy : Expr)
-    : MetaM (Expr × Expr) := do
+    : MetaM NormalizedHypReal := do
   match matchRealBound? hypTy with
-  | some (true, a, b) =>
-    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+  | some (.le, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
     let proof ← Lean.Meta.mkAppM
                   ``ProofBrokerMathlib.TermMode.rLeToLe0 #[hypFV]
-    return (normExpr, proof)
-  | some (false, a, b) =>
-    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    return ⟨expr, proof, false⟩
+  | some (.ge, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
     let proof ← Lean.Meta.mkAppM
                   ``ProofBrokerMathlib.TermMode.rGeToLe0 #[hypFV]
-    return (normExpr, proof)
+    return ⟨expr, proof, false⟩
+  | some (.lt, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermMode.rLtToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | some (.gt, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermMode.rGtToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
   | _ =>
-    throwError "proof_broker_term: hypothesis shape outside Real ≤/≥ \
+    throwError "proof_broker_term: hypothesis shape outside Real ≤/≥/</> \
                  (got type {hypTy})"
 
 /-- Build a Real literal Expr from a nonnegative Int via
@@ -204,6 +229,24 @@ private def buildNonnegProofReal (cExpr : Expr) : TacticM Expr := do
   setGoals prevGoals
   Lean.instantiateMVars mv
 
+/-- Strict counterpart of `buildNonnegProofReal`: build a proof of
+    `(0 < c : Real)` for a strictly-positive literal c. Used when
+    the strict-aware fold encounters a Lt premise — the coefficient
+    side of the product needs `0 < c` strict (not just `0 ≤ c`) for
+    the product to be strict via `rMulPosNeg`. norm_num discharges
+    literal-positivity trivially. -/
+private def buildPosProofReal (cExpr : Expr) : TacticM Expr := do
+  let realTy := mkConst ``Real
+  let zero ← Lean.Meta.mkAppOptM ``OfNat.ofNat
+                #[some realTy, some (mkNatLit 0), none]
+  let goalTy ← Lean.Meta.mkAppM ``LT.lt #[zero, cExpr]
+  let mv ← Lean.Meta.mkFreshExprMVar goalTy
+  let prevGoals ← getGoals
+  setGoals [mv.mvarId!]
+  evalTactic (← `(tactic| norm_num))
+  setGoals prevGoals
+  Lean.instantiateMVars mv
+
 /-- Discharge a `linarith` subgoal in isolation. Restores the
     caller's goal list afterward. Used to close the narrow
     strict-positivity polynomial identity left as an evar inside
@@ -214,17 +257,14 @@ private def closeLinarithSubgoal (mv : MVarId) : TacticM Unit := do
   evalTactic (← `(tactic| linarith))
   setGoals prevGoals
 
-/-- Real-typed per-branch closer. Given the current goal (which
-    must be `False`), an arity-2 entry list `[(name1, c1),
-    (name2, c2)]`, and an optional name-override map (used to
-    redirect the witness's "case" name to the destruct-bound
-    hypothesis), build the `rFarkasContradict` proof term.
-
-    The narrow `0 < c1*a1 + c2*a2` subgoal goes through
-    `linarith`. linarith here is solving a literal-coefficient
-    polynomial identity over symbolic differences, not the
-    original LRA goal — the same narrow role `omega` plays in
-    core's Int closer. -/
+/-- Real-typed per-branch / False-goal closer. Strict-aware fold:
+    each entry's strictness flag (from `NormalizedHypReal.strict`)
+    threads through the mul/add steps. With at least one strict
+    premise (Lt-compiled, positive coef), the sum is strictly
+    negative and `rFarkasContradictNStrict` closes against `0 ≤ sum`
+    (linarith). All-Le premises take the standard
+    `rFarkasContradictN` path against `0 < sum` (linarith again).
+    Mirror of Rocq's `close_term_false` with strict tracking. -/
 private def closeViaTermModeFalseReal
     (goal : MVarId)
     (entries : List (String × Int))
@@ -237,33 +277,171 @@ private def closeViaTermModeFalseReal
       match overrides.find? (fun (n, _, _) => n == name) with
       | some (_, fv, ty) => return (fv, ty)
       | none => fvarOfName name
-    -- Normalize each entry to (cExpr, hcProof, aExpr, haProof).
+    -- Normalize each entry. Builds (cExpr, hc_proof, expr, h_proof, strict)
+    -- per entry — hc is strict (0 < c) if the premise is strict (Lt),
+    -- non-strict (0 ≤ c) otherwise. Strict premise + strict coef →
+    -- product is strict via rMulPosNeg.
     let normalized ← entries.mapM fun (name, c) => do
       let (fv, ty) ← resolve name
-      let (a, ha) ← normalizeHypothesisReal fv ty
+      let normHyp ← normalizeHypothesisReal fv ty
       let cExpr ← realLitExpr c
-      let hc ← buildNonnegProofReal cExpr
-      return (cExpr, hc, a, ha)
-    -- Build (c_i * a_i, proof c_i * a_i ≤ 0) for each.
-    let products ← normalized.mapM fun (cExpr, hc, a, ha) => do
+      let hc ← if normHyp.strict then buildPosProofReal cExpr
+               else buildNonnegProofReal cExpr
+      return (cExpr, hc, normHyp.expr, normHyp.proof, normHyp.strict)
+    -- Build (c_i * a_i, proof, prod_strict). Strict premise picks
+    -- rMulPosNeg (gives Lt); non-strict picks mul_nonpos_of_nonneg_of_nonpos
+    -- (gives Le).
+    let products ← normalized.mapM fun (cExpr, hc, a, ha, strict) => do
       let prod ← Lean.Meta.mkAppM ``HMul.hMul #[cExpr, a]
-      let proof ← Lean.Meta.mkAppM
-                    ``mul_nonpos_of_nonneg_of_nonpos #[hc, ha]
-      return (prod, proof)
-    -- Left-associative fold: sum + `≤ 0` proof.
-    let (sum, sumProof) ← match products with
+      let proof ←
+        if strict then
+          Lean.Meta.mkAppM ``ProofBrokerMathlib.TermMode.rMulPosNeg #[hc, ha]
+        else
+          Lean.Meta.mkAppM ``mul_nonpos_of_nonneg_of_nonpos #[hc, ha]
+      return (prod, proof, strict)
+    -- Left-associative fold tracking strictness. Picks the right
+    -- add_* combinator from the 4-way cross product:
+    --   Le+Le → Le (add_nonpos); Le+Lt → Lt (rAddLeLt);
+    --   Lt+Le → Lt (rAddLtLe); Lt+Lt → Lt (rAddNeg).
+    let pickAdd (accStrict prodStrict : Bool) : Name :=
+      match accStrict, prodStrict with
+      | false, false => ``add_nonpos
+      | false, true  => ``ProofBrokerMathlib.TermMode.rAddLeLt
+      | true,  false => ``ProofBrokerMathlib.TermMode.rAddLtLe
+      | true,  true  => ``ProofBrokerMathlib.TermMode.rAddNeg
+    let (sum, sumProof, sumStrict) ← match products with
       | [] => throwError "proof_broker_term: empty fold (internal)"
-      | (p0, h0) :: rest =>
-        rest.foldlM (fun (accE, accH) (p, h) => do
+      | (p0, h0, s0) :: rest =>
+        rest.foldlM (fun (accE, accH, accS) (p, h, ps) => do
           let newSum ← Lean.Meta.mkAppM ``HAdd.hAdd #[accE, p]
-          let newProof ← Lean.Meta.mkAppM ``add_nonpos #[accH, h]
-          return (newSum, newProof)) (p0, h0)
+          let newProof ← Lean.Meta.mkAppM (pickAdd accS ps) #[accH, h]
+          return (newSum, newProof, accS || ps)) (p0, h0, s0)
+    -- Dispatch on final strictness. Strict path uses
+    -- rFarkasContradictNStrict (s < 0 ∧ 0 ≤ s → False); standard path
+    -- uses rFarkasContradictN (s ≤ 0 ∧ 0 < s → False). Both close the
+    -- residual positivity / non-negativity claim via linarith.
     let zero ← realLitExpr 0
-    let hposTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
-    let hposMV ← Lean.Meta.mkFreshExprMVar hposTy
-    let term ← Lean.Meta.mkAppM
-                 ``ProofBrokerMathlib.TermMode.rFarkasContradictN
-                 #[sum, sumProof, hposMV]
+    let (residualTy, contradictName) :=
+      if sumStrict then
+        (``LE.le, ``ProofBrokerMathlib.TermMode.rFarkasContradictNStrict)
+      else
+        (``LT.lt, ``ProofBrokerMathlib.TermMode.rFarkasContradictN)
+    let residualGoalTy ← Lean.Meta.mkAppM residualTy #[zero, sum]
+    let residualMV ← Lean.Meta.mkFreshExprMVar residualGoalTy
+    let term ← Lean.Meta.mkAppM contradictName
+                 #[sum, sumProof, residualMV]
+    closeLinarithSubgoal residualMV.mvarId!
+    goal.assign term
+
+/-- LRA comparison-goal kinds. Mirror of core's `GoalKind` but
+    Real-typed; `≥` and `>` reduce to swapped `≤` and `<` by Lean's
+    instance setup for Real, so the matcher swaps operands and feeds
+    into the Le / Lt helpers. -/
+private inductive RealGoalKind
+  | le | lt
+deriving Repr
+
+/-- Match a Real comparison goal. Returns `(b, c, kind)` where the
+    helper takes `(b, c)` as named args. For `≥` / `>`, the SDK has
+    already swapped operands at IR-build time, and Real's instance
+    reduction lets `b ≤ a` proof unify with `a ≥ b` goal definitionally
+    (same trick the core Int side uses). Eq is not matched here — the
+    outer dispatcher handles it via `apply le_antisymm` split. -/
+private def matchRealGoal? (goalType : Expr)
+    : Option (Expr × Expr × RealGoalKind) :=
+  match goalType.getAppFnArgs with
+  | (``LE.le, #[α, _, b, c]) =>
+    if α.isConstOf ``Real then some (b, c, .le) else none
+  | (``LT.lt, #[α, _, b, c]) =>
+    if α.isConstOf ``Real then some (b, c, .lt) else none
+  | (``GE.ge, #[α, _, a, b]) =>
+    -- a ≥ b ≡ b ≤ a
+    if α.isConstOf ``Real then some (b, a, .le) else none
+  | (``GT.gt, #[α, _, a, b]) =>
+    -- a > b ≡ b < a
+    if α.isConstOf ``Real then some (b, a, .lt) else none
+  | _ => none
+
+/-- Real-typed comparison-goal closer. Mirror of the Rocq
+    `close_term_goal` for LRA, with branching on hypothesis
+    strictness:
+      * Le-goal × Le a1: use `rFarkasGoalLe2` (strict-aware on cng).
+      * Le-goal × strict a1: weaken a1 via `rStrictNegToNonpos`,
+        then same as above.
+      * Lt-goal × Le a1: `rFarkasGoalLt2` (standard, requires hpos
+        strict-positive).
+      * Lt-goal × strict a1: `rFarkasGoalLt2StrictA1` (strict-aware
+        on c1; hpos non-strict-nonneg).
+    The `hpos` premise is the polynomial-positivity / non-negativity
+    claim closed by linarith on the witness's linear combination. -/
+private def closeViaTermModeRealGoal
+    (goal : MVarId) (goalType : Expr)
+    (realEntry : String × Int) (cng : Int) : TacticM Unit := do
+  let (realName, c1) := realEntry
+  let (b, c, kind) ← match matchRealGoal? goalType with
+    | some t => pure t
+    | none =>
+      throwError "proof_broker_term: non-False Real goal must have \
+                   shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); \
+                   got {goalType}"
+  goal.withContext do
+    let (fv, ty) ← fvarOfName realName
+    let normHyp ← normalizeHypothesisReal fv ty
+    let h1Strict := normHyp.strict
+    let a1 := normHyp.expr
+    let c1Expr ← realLitExpr c1
+    let cngExpr ← realLitExpr cng
+    let negGoalNorm ← Lean.Meta.mkAppM ``HSub.hSub #[c, b]
+    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
+    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[cngExpr, negGoalNorm]
+    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
+    let zero ← realLitExpr 0
+    -- Dispatch table on (kind, h1Strict):
+    -- * (.le, false / true): rFarkasGoalLe2 with (h1, hc1=nonneg,
+    --   hcng=pos, hpos=nonneg). h1 weakened from Lt to Le if needed
+    --   (information-preserving: strictness in Le-goal comes from
+    --   neg_goal's Lt-shape, not a1).
+    -- * (.lt, false): rFarkasGoalLt2 with (h1=Le, hc1=nonneg,
+    --   hcng=nonneg, hpos=pos).
+    -- * (.lt, true): rFarkasGoalLt2StrictA1 with (h1=Lt, hc1=pos,
+    --   hcng=nonneg, hpos=nonneg).
+    let (helperName, h1, hc1, hcng, hposTyHead) :=
+      match kind, h1Strict with
+      | .le, false =>
+        (``ProofBrokerMathlib.TermMode.rFarkasGoalLe2,
+         normHyp.proof,
+         (false, c1Expr),   -- 0 ≤ c1
+         (true,  cngExpr),  -- 0 < cng
+         ``LE.le)            -- 0 ≤ hpos
+      | .le, true =>
+        -- Weaken h1 from Lt to Le via rStrictNegToNonpos
+        let h1' := Expr.app (Expr.app (mkConst ``ProofBrokerMathlib.TermMode.rStrictNegToNonpos)
+                                       a1) normHyp.proof
+        (``ProofBrokerMathlib.TermMode.rFarkasGoalLe2,
+         h1',
+         (false, c1Expr),
+         (true,  cngExpr),
+         ``LE.le)
+      | .lt, false =>
+        (``ProofBrokerMathlib.TermMode.rFarkasGoalLt2,
+         normHyp.proof,
+         (false, c1Expr),
+         (false, cngExpr),
+         ``LT.lt)            -- 0 < hpos
+      | .lt, true =>
+        (``ProofBrokerMathlib.TermMode.rFarkasGoalLt2StrictA1,
+         normHyp.proof,
+         (true,  c1Expr),    -- 0 < c1
+         (false, cngExpr),
+         ``LE.le)            -- 0 ≤ hpos
+    let buildCoefProof (s : Bool × Expr) : TacticM Expr :=
+      if s.1 then buildPosProofReal s.2 else buildNonnegProofReal s.2
+    let hc1Proof ← buildCoefProof hc1
+    let hcngProof ← buildCoefProof hcng
+    let hposGoalTy ← Lean.Meta.mkAppM hposTyHead #[zero, sum]
+    let hposMV ← Lean.Meta.mkFreshExprMVar hposGoalTy
+    let term ← Lean.Meta.mkAppM helperName
+                 #[h1, hc1Proof, hcngProof, hposMV]
     closeLinarithSubgoal hposMV.mvarId!
     goal.assign term
 
@@ -381,6 +559,81 @@ private def closeViaCaseSplitReal (cert : Json) (ir : IR) : TacticM Unit := do
     throwError "proof_broker_term: rcases produced {subgoals.length} \
                  subgoals (expected 2 for arity-2 case-split)"
 
+/- ============================================================
+   Tier 1 LRA closer (top-level dispatcher)
+
+   Called from core's `runTermModeOnGoal` when the cert is a verified
+   Tier 1 Farkas witness and the IR's fragment is LRA. Handles both
+   False-goal and comparison-goal cases — equality goals are
+   pre-split via `apply le_antisymm` in core's `evalProofBrokerTerm`,
+   so the closer only sees False / Le / Lt / Ge / Gt shapes here.
+   ============================================================ -/
+
+/-- Parse a Tier 1 Farkas cert's `payload.witness_data.coefficients`
+    into `(name, coef)` pairs. Mirror of core's `parseFarkasCoefficients`;
+    duplicated here because core's version is `private`. -/
+private def parseFarkasCoefficientsReal (cert : Json)
+    : TacticM (List (String × Int)) := do
+  let payload ← match cert.getObjVal? "payload" with
+    | .ok j => pure j
+    | .error e => throwError "proof_broker_term: cert missing payload: {e}"
+  let witnessKind := (payload.getObjValAs? String "witness_kind").toOption.getD ""
+  unless witnessKind == "farkas" do
+    throwError "proof_broker_term: cert is not a Farkas witness (kind={witnessKind})"
+  let witnessData ← match payload.getObjVal? "witness_data" with
+    | .ok j => pure j
+    | .error e => throwError "proof_broker_term: cert missing witness_data: {e}"
+  parseWitnessCoefficients witnessData
+
+/-- Tier 1 LRA closer entry point. Wired into
+    `ProofBroker.Tactic.ReifierExt.tier1FarkasCloser` via the
+    initialize block below. Dispatches by goal shape:
+    * `False`: `closeViaTermModeFalseReal` (strict-aware fold).
+    * `_ ≤ _` / `_ < _` / `_ ≥ _` / `_ > _` over `Real`:
+      `closeViaTermModeRealGoal` with strict-aware h1 handling.
+    * Anything else surfaces a clear error. -/
+private def closeViaTermModeReal (cert : Json) (_ir : IR) : TacticM Unit := do
+  let entries ← parseFarkasCoefficientsReal cert
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
+  let negEntry := entries.find? (fun e => e.1 == "neg_goal")
+  let goal ← getMainGoal
+  -- Instantiate mvars: post-`apply le_antisymm`, the subgoal's type
+  -- carries the unification mvar for the LE typeclass instance, and
+  -- `matchRealGoal?`'s `α.isConstOf ``Real` check fails against the
+  -- mvar. The instantiation pins it to `Real`.
+  let goalType ← Lean.instantiateMVars (← goal.getType)
+  match negEntry with
+  | none =>
+    unless goalType.isConstOf ``False do
+      throwError "proof_broker_term: witness lacks neg_goal but goal is \
+                   not False ({goalType}); cert/goal mismatch"
+    closeViaTermModeFalseReal goal entries
+  | some (_, cng) =>
+    if goalType.isConstOf ``False then
+      throwError "proof_broker_term: witness names neg_goal but goal is \
+                   False; cert/goal mismatch"
+    -- Comparison-goal: arity-2 only (one real hypothesis + neg_goal).
+    -- Higher arity on non-False goals would need farkasGoalLeN helpers
+    -- — out of scope for this iteration (matches the Int side's scope).
+    unless entries.length == 2 do
+      throwError "proof_broker_term: arity {entries.length} non-False \
+                   LRA witness — only arity 2 wired for comparison goals"
+    let real := entries.find? (fun e => e.1 != "neg_goal")
+    let realEntry ← match real with
+      | some e => pure e
+      | none =>
+        throwError "proof_broker_term: witness has neg_goal but no \
+                     real-hypothesis companion (arity-2 expected)"
+    closeViaTermModeRealGoal goal goalType realEntry cng
+
+/-- Equality-goal antisym split tactic for LRA. Wired into core's
+    `evalProofBrokerTerm` via the `tier1EqSplit` slot. Applies
+    Mathlib's generic `le_antisymm`, leaving two `≤` subgoals that
+    core dispatches via fresh solver runs. -/
+private def lraEqSplit : TacticM Unit := do
+  evalTactic (← `(tactic| apply le_antisymm))
+
 initialize do
   ProofBroker.Tactic.reifierExt.set (some {
     reifyType := reifyTypeMathlib,
@@ -388,6 +641,8 @@ initialize do
     matchLiteralExt := matchRealLiteral?,
     lraCloser := lraCloseWithLinarith,
     tier2CaseSplitCloser := closeViaCaseSplitReal,
+    tier1FarkasCloser := closeViaTermModeReal,
+    tier1EqSplit := lraEqSplit,
     irFragment := "LRA",
   })
 

@@ -60,9 +60,152 @@ theorem rFarkasContradictN
     (s : Real) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
   absurd hpos (not_lt.mpr hsum)
 
+/-- Strict-[<] hypothesis normalization for `Real`: produces `a - b < 0`
+    (strict) rather than the weakened `≤ 0` form. Mirror of Rocq's
+    `r_lt_to_lt0`. The LRA strict-aware fold path consumes this directly
+    (no LIA +1 trick over R). -/
+theorem rLtToLt0 {a b : Real} (h : a < b) : a - b < 0 :=
+  sub_neg_of_lt h
+
+/-- Mirror of `rLtToLt0` for `>`. Lean's `GT.gt a b` reduces to
+    `LT.lt b a` by instance; the explicit form is here for parity
+    with `rGeToLe0` (and because the dispatcher matches `GT.gt` /
+    `LT.lt` heads separately). -/
+theorem rGtToLt0 {a b : Real} (h : a > b) : b - a < 0 :=
+  sub_neg_of_lt h
+
+/-- Strict-aware product step: with `0 < c` strict and `a < 0` strict,
+    the product `c * a < 0` is strict. Mirror of Rocq's
+    `r_mul_pos_neg`. Used when the witness has a Lt-compiled premise
+    with a positive coefficient — strictness flows into the fold. -/
+theorem rMulPosNeg {c a : Real} (hc : 0 < c) (ha : a < 0) : c * a < 0 :=
+  mul_neg_of_pos_of_neg hc ha
+
+/-- Strict-aware sum step: Le + Lt → Lt. Used by the fold when the
+    accumulator is non-strict (`acc ≤ 0`) and the next product is
+    strict (`prod < 0`). Mirror of Rocq's `r_add_le_lt`. -/
+theorem rAddLeLt {x y : Real} (hx : x ≤ 0) (hy : y < 0) : x + y < 0 := by
+  have := add_lt_add_of_le_of_lt hx hy
+  simpa using this
+
+/-- Strict-aware sum step: Lt + Le → Lt. Mirror of Rocq's
+    `r_add_lt_le`. -/
+theorem rAddLtLe {x y : Real} (hx : x < 0) (hy : y ≤ 0) : x + y < 0 := by
+  have := add_lt_add_of_lt_of_le hx hy
+  simpa using this
+
+/-- Strict-aware sum step: Lt + Lt → Lt. Mirror of Rocq's
+    `r_add_neg`. -/
+theorem rAddNeg {x y : Real} (hx : x < 0) (hy : y < 0) : x + y < 0 := by
+  have := add_lt_add hx hy
+  simpa using this
+
+/-- Strict-aware general-arity contradiction step. Mirror of Rocq's
+    `r_farkas_contradict_n_strict`. Triggered when at least one
+    premise in the Farkas combination is strict (Lt-compiled) with
+    positive coefficient — the sum is strictly negative, so the
+    residual `K` only needs to be non-negative for the contradiction
+    (in particular, `K = 0` is permitted when strictness alone
+    carries the contradiction, eg `5 < x ∧ x < 5 ⊢ False`). -/
+theorem rFarkasContradictNStrict
+    (s : Real) (hsum : s < 0) (hpos : 0 ≤ s) : False :=
+  absurd hsum (not_lt.mpr hpos)
+
+/-- Real-typed `0 ≤ 0` witness. Mirror of Rocq's `r_zero_nonneg`.
+    Needed when the strict-aware path produces `K = 0` (eg the
+    trivial-equality case in the Le-goal post-`le_antisymm` split,
+    or the strict-only False-goal). -/
+theorem rZeroNonneg : (0 : Real) ≤ 0 := le_refl 0
+
+/-- Weakening helper for the comparison-goal Le-path: convert
+    strict `a < 0` to non-strict `a ≤ 0`. Sound here because the
+    Le-goal closer derives its contradiction from the neg_goal's
+    Lt-shape over R, not from `a1`'s strictness; weakening loses
+    no information for that path. Mirror of Rocq's
+    `r_strict_neg_to_nonpos`. -/
+theorem rStrictNegToNonpos {a : Real} (h : a < 0) : a ≤ 0 :=
+  le_of_lt h
+
+/-- Real-typed Farkas reconstruction for a non-`False` goal of shape
+    `b ≤ c`. Strict-aware on `cng` (the neg_goal coefficient): with
+    `hcng : 0 < cng` strict and the negated goal compiled as `Lt(c-b)`
+    (since `¬(b ≤ c) ≡ c < b` over R), the combination
+    `cng * (c - b) < 0` is strict, and combined with `c1 * a1 ≤ 0`
+    we get a strict sum — contradicting `0 ≤ c1*a1 + cng*(c-b)`.
+    Collapsed K+Heq form (matches `rFarkasContradict` convention):
+    the closer builds `hpos` as an evar and discharges via `linarith`,
+    instead of splitting into separate K-positivity + ring-identity
+    steps the way Rocq's `r_farkas_le_goal_2` does. Mirror of Rocq's
+    `r_farkas_le_goal_2`. -/
+theorem rFarkasGoalLe2
+    {b c : Real} {a1 : Real} (h1 : a1 ≤ 0)
+    {c1 cng : Real} (hc1 : 0 ≤ c1) (hcng : 0 < cng)
+    (hpos : 0 ≤ c1 * a1 + cng * (c - b))
+    : b ≤ c := by
+  by_contra hngt
+  have hngt : c < b := lt_of_not_ge hngt
+  have hcb : c - b < 0 := sub_neg_of_lt hngt
+  have s1 : c1 * a1 ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hc1 h1
+  have s2 : cng * (c - b) < 0 := mul_neg_of_pos_of_neg hcng hcb
+  have ssum : c1 * a1 + cng * (c - b) < 0 := rAddLeLt s1 s2
+  exact absurd ssum (not_lt.mpr hpos)
+
+/-- Real-typed Farkas reconstruction for a strict goal `b < c`.
+    Standard (non-strict-aware) shape: `0 ≤ cng`, `0 < hpos`. The
+    negated goal `¬(b < c) ≡ c ≤ b` compiles as `Le(c-b)`, so the
+    Farkas sum is non-strict and requires the witness's linear
+    combination to be strictly positive. With strict `a1` (R Lt
+    hypothesis), routing instead picks `rFarkasGoalLt2StrictA1`
+    below. Mirror of Rocq's `r_farkas_lt_goal_2`. -/
+theorem rFarkasGoalLt2
+    {b c : Real} {a1 : Real} (h1 : a1 ≤ 0)
+    {c1 cng : Real} (hc1 : 0 ≤ c1) (hcng : 0 ≤ cng)
+    (hpos : 0 < c1 * a1 + cng * (c - b))
+    : b < c := by
+  by_contra hnlt
+  have hnlt : c ≤ b := not_lt.mp hnlt
+  have hcb : c - b ≤ 0 := sub_nonpos_of_le hnlt
+  have s1 : c1 * a1 ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hc1 h1
+  have s2 : cng * (c - b) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hcng hcb
+  have ssum : c1 * a1 + cng * (c - b) ≤ 0 := add_nonpos s1 s2
+  exact absurd hpos (not_lt.mpr ssum)
+
+/-- Real-typed Farkas reconstruction for strict goal `b < c` with
+    strict-`<` real hypothesis (`h1 : a1 < 0`). The standard
+    `rFarkasGoalLt2` requires the combination to be strictly positive;
+    with strict `a1` the trivial-K=0 case (eg `(h : 0 < x) ⊢ 0 < x`)
+    needs the strictness to flow through the sum: strict `c1 * a1 < 0`
+    via `rMulPosNeg`, then `Lt + Le → Lt` via `rAddLtLe`, yielding
+    the strict-aware contradiction with `0 ≤ c1*a1 + cng*(c-b)`.
+    Mirror of Rocq's `r_farkas_lt_goal_2_strict_a1`. -/
+theorem rFarkasGoalLt2StrictA1
+    {b c : Real} {a1 : Real} (h1 : a1 < 0)
+    {c1 cng : Real} (hc1 : 0 < c1) (hcng : 0 ≤ cng)
+    (hpos : 0 ≤ c1 * a1 + cng * (c - b))
+    : b < c := by
+  by_contra hnlt
+  have hnlt : c ≤ b := not_lt.mp hnlt
+  have hcb : c - b ≤ 0 := sub_nonpos_of_le hnlt
+  have s1 : c1 * a1 < 0 := mul_neg_of_pos_of_neg hc1 h1
+  have s2 : cng * (c - b) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hcng hcb
+  have ssum : c1 * a1 + cng * (c - b) < 0 := rAddLtLe s1 s2
+  exact absurd ssum (not_lt.mpr hpos)
+
 #print axioms rFarkasContradict
 #print axioms rFarkasContradictN
 #print axioms rLeToLe0
 #print axioms rGeToLe0
+#print axioms rLtToLt0
+#print axioms rGtToLt0
+#print axioms rMulPosNeg
+#print axioms rAddLeLt
+#print axioms rAddLtLe
+#print axioms rAddNeg
+#print axioms rFarkasContradictNStrict
+#print axioms rZeroNonneg
+#print axioms rStrictNegToNonpos
+#print axioms rFarkasGoalLe2
+#print axioms rFarkasGoalLt2
+#print axioms rFarkasGoalLt2StrictA1
 
 end ProofBrokerMathlib.TermMode

@@ -47,6 +47,56 @@
     "ProofBrokerMathlib.TermMode.rLeToLe0":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rGeToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rLtToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rGtToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rMulPosNeg":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rAddLeLt":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rAddLtLe":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rAddNeg":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rFarkasContradictNStrict":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rZeroNonneg":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rStrictNegToNonpos":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rFarkasGoalLe2":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rFarkasGoalLt2":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rFarkasGoalLt2StrictA1":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_arity3_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_lt_hyp_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_lt_mixed_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_goal_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_lt_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_ge_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_gt_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_eq_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_le_goal_strict_a1_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_lt_goal_strict_a1_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_ge_goal_strict_a1_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_gt_goal_strict_a1_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"]
   },
 

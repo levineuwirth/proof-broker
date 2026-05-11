@@ -111,6 +111,27 @@ structure ReifierExt where
       disjunctive hypothesis shell + extend per branch with the
       case hypothesis matching the SDK's "case" name). -/
   tier2CaseSplitCloser : Lean.Json → IR → TacticM Unit
+  /-- Tier 1 Farkas closer for the extension's fragment. Called when
+      the cert is a verified Tier 1 Farkas witness and the IR's
+      first-order fragment matches the extension's `irFragment`
+      (eg LRA). Handles both False-goal and comparison-goal cases —
+      the extension's closer is responsible for goal-shape dispatch
+      (False vs ≤ / < / ≥ / > / =) within those branches. Core
+      delegates here instead of running its own Int-only closer
+      whenever the extension claims the fragment, so Int / LIA goals
+      stay on the core path. Equality goals are pre-split by core
+      before this is invoked (see `tier1EqSplit`). -/
+  tier1FarkasCloser : Lean.Json → IR → TacticM Unit
+  /-- Equality-goal split tactic for the extension's fragment.
+      Invoked by core's `evalProofBrokerTerm` when the goal is an
+      `Eq α a b` with `α` claimed by `reifyType`. The extension's
+      tactic typically calls `apply le_antisymm` (the Mathlib
+      generic, not `Int.le_antisymm` — that's the core-Int path's
+      antisym lemma and lives outside the extension's scope).
+      Core relies on the extension for this because the antisym
+      lemma name isn't resolvable in core (Mathlib-free), and using
+      a syntax quotation here would surface as `le_antisymm✝`. -/
+  tier1EqSplit : TacticM Unit
   irFragment : String
 
 initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
@@ -1128,13 +1149,17 @@ private def certStrategyHint (cert : Json) : String :=
     can run it twice (once per direction of `Int.le_antisymm`)
     without re-parsing the adapter list.
 
-    Dispatches on cert payload:
-    * Tier 1 Farkas → `closeViaTermMode` (Int-typed today).
+    Dispatches on (cert payload × IR fragment):
     * Tier 2 `case_split_farkas` → registered extension's
       `tier2CaseSplitCloser` (LRA-only today; LIA Tier 2 isn't
-      reachable since no adapter mints it). The extension parses
-      `payload.lemmas_used` and `payload.structural_hint`, destructs
-      the disjunctive hypothesis, and applies per-branch Farkas. -/
+      reachable since no adapter mints it).
+    * Tier 1 Farkas, IR fragment matches extension's `irFragment`
+      (eg LRA) → extension's `tier1FarkasCloser`. The extension
+      handles its own goal-shape dispatch (False vs ≤ / < / ≥ / > / =)
+      and any pre-normalization. Core delegates here whenever an
+      extension is registered for the fragment, so Int / LIA goals
+      stay on the core path.
+    * Tier 1 Farkas, anything else → core `closeViaTermMode` (Int). -/
 private def runTermModeOnGoal
     (goal : MVarId) (adapterNames? : Option (List String))
     (preferHigherTier : Bool) : TacticM Unit := do
@@ -1148,9 +1173,6 @@ private def runTermModeOnGoal
     throwError "proof_broker_term: cert was minted but verifier did not \
                  accept it (reason: {r}); term-mode requires a verified \
                  Tier 1 Farkas or Tier 2 case-split cert"
-  -- Strategy-hint dispatch. Tier 2 case-split delegates to the
-  -- registered ReifierExt; Tier 1 Farkas and anything else falls
-  -- through to the core Int-typed term-mode closer.
   if certStrategyHint cert == "case_split_farkas" then
     match ← reifierExt.get with
     | some ext => ext.tier2CaseSplitCloser cert path.ir
@@ -1160,7 +1182,18 @@ private def runTermModeOnGoal
                    `ProofBrokerMathlib` for the LRA case-split term \
                    builder)"
   else
-    closeViaTermMode goal goalType cert
+    -- Tier 1 Farkas: delegate to extension if it claims the
+    -- fragment; otherwise core's Int closer.
+    let fragment := path.ir.logicClassification.firstOrderFragment
+    let extOpt ← reifierExt.get
+    match extOpt with
+    | some ext =>
+      if fragment == ext.irFragment then
+        ext.tier1FarkasCloser cert path.ir
+      else
+        closeViaTermMode goal goalType cert
+    | none =>
+      closeViaTermMode goal goalType cert
 
 /-- Match an Int equality goal `Eq Int a b`. Returns `(a, b)` if so;
     `none` otherwise. The closer pre-splits equality goals via
@@ -1174,6 +1207,22 @@ private def matchIntEqGoal? (goalType : Expr) : Option (Expr × Expr) :=
     if α.isConstOf ``Int then some (a, b) else none
   | _ => none
 
+/-- Match an extension-claimed equality goal `Eq α a b` where the
+    extension's `reifyType` recognizes `α`. Returns the type
+    expression `α` if matched; `none` otherwise. Used to dispatch
+    Real eq goals (and any future extension-typed eq) through the
+    generic `le_antisymm` split. -/
+private def matchExtensionEqGoal? (goalType : Expr) : MetaM (Option Expr) := do
+  match goalType.getAppFnArgs with
+  | (``Eq, #[α, _, _]) =>
+    match ← reifierExt.get with
+    | some ext =>
+      match ← ext.reifyType α with
+      | some _ => return some α
+      | none => return none
+    | none => return none
+  | _ => return none
+
 @[tactic proofBrokerTerm]
 def evalProofBrokerTerm : Tactic := fun stx => do
   let goal ← getMainGoal
@@ -1184,6 +1233,13 @@ def evalProofBrokerTerm : Tactic := fun stx => do
     | `(tactic| proof_broker_term) =>
         parseAdapterList none
     | _ => throwError "proof_broker_term: malformed invocation"
+  -- Equality-goal split. Int uses Int.le_antisymm directly (core's
+  -- Int.le_antisymm is in scope here). Extension-claimed types
+  -- delegate the antisym apply to the extension via its `tier1EqSplit`
+  -- slot (the Mathlib `le_antisymm` isn't visible from core's
+  -- Mathlib-free scope; embedding it in a syntax quotation here
+  -- surfaces as `le_antisymm✝`). Each direction is a ≤ subgoal that
+  -- triggers a fresh solver dispatch via `runTermModeOnGoal`.
   match matchIntEqGoal? goalType with
   | some _ =>
     evalTactic (← `(tactic| apply Int.le_antisymm))
@@ -1193,6 +1249,21 @@ def evalProofBrokerTerm : Tactic := fun stx => do
       runTermModeOnGoal sg adapterNames? preferHigherTier
     setGoals []
   | none =>
-    runTermModeOnGoal goal adapterNames? preferHigherTier
+    match ← matchExtensionEqGoal? goalType with
+    | some _ =>
+      -- Delegate the antisym apply to the extension (Mathlib-side
+      -- `le_antisymm` isn't visible from core's Mathlib-free scope).
+      match ← reifierExt.get with
+      | some ext =>
+        ext.tier1EqSplit
+        let subgoals ← getGoals
+        for sg in subgoals do
+          setGoals [sg]
+          runTermModeOnGoal sg adapterNames? preferHigherTier
+        setGoals []
+      | none =>
+        runTermModeOnGoal goal adapterNames? preferHigherTier
+    | none =>
+      runTermModeOnGoal goal adapterNames? preferHigherTier
 
 end ProofBroker.Tactic
