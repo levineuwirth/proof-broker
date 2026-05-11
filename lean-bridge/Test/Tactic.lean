@@ -189,6 +189,32 @@ theorem pb_term_gt_axiom_free
 
 #print axioms pb_term_gt_axiom_free
 
+/-- Term-mode with strict-`<` hypotheses (no comparison goal). The
+    normalizer routes each `h : a < b` through `ltToLe0` (LIA +1
+    trick: `(a + 1) - b ≤ 0`), then the False-goal fold runs as
+    usual. Two strict hypotheses → witness `[(h1, 1), (h2, 1)]`,
+    residual `K = 2`. Mirror of Rocq's `pb_term_lt_hyp_axiom_free`.
+    `Int.add_one_le_of_lt` + `Int.sub_nonpos_of_le` (the building
+    blocks of `ltToLe0`) are axiom-free, so closure stays at
+    `[propext, Quot.sound]`. -/
+theorem pb_term_lt_hyp_axiom_free
+    (x : Int) (h1 : 5 < x) (h2 : x < 5) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_lt_hyp_axiom_free
+
+/-- Term-mode mixing strict and non-strict hypotheses on a transitive
+    chain. Strict `0 < x` and `y < 1` use the +1 trick; non-strict
+    `x ≤ y` uses plain `leToLe0`. Demonstrates that the fold treats
+    them uniformly once normalized — the witness arity rises to 3
+    (`farkasContradictN`'s territory) and coefficients flow through
+    explicitly. -/
+theorem pb_term_lt_mixed_axiom_free
+    (x y : Int) (h1 : 0 < x) (h2 : x ≤ y) (h3 : y < 1) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_lt_mixed_axiom_free
+
 /-- Term-mode with equality goal: the closer pre-splits via
     `Int.le_antisymm` (since `¬(a = b)` is a disjunction outside
     single-witness Farkas scope) and runs the existing ≤-shape

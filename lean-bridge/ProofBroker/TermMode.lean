@@ -40,6 +40,23 @@ theorem leToLe0 {a b : Int} (h : a ≤ b) : a - b ≤ 0 :=
 theorem geToLe0 {a b : Int} (h : a ≥ b) : b - a ≤ 0 :=
   Int.sub_nonpos_of_le h
 
+/-- Strict-`<` normalization, +1 trick: `a < b` over `Int` is
+    equivalent to `a + 1 ≤ b` (discrete domain), so the canonical
+    `a' ≤ 0` form is `(a + 1) - b ≤ 0`. Matches the SDK's
+    `lift_strict_pair` for LIA in `farkas.ml` — when the closer's
+    OCaml-side `compute_residual` calls `compile_hypothesis` on a
+    strict `<`, it gets back `Le (a-b+1)`, and the residual sum
+    lines up with what this proof term emits. -/
+theorem ltToLe0 {a b : Int} (h : a < b) : (a + 1) - b ≤ 0 :=
+  Int.sub_nonpos_of_le (Int.add_one_le_of_lt h)
+
+/-- Mirror of `ltToLe0` for `>`. Lean's `GT.gt a b` reduces to
+    `LT.lt b a` by instance, so the closer could route `>` through
+    `ltToLe0` after a syntactic swap; we provide this directly so
+    `normalizeHypothesis` doesn't have to manage the reduction. -/
+theorem gtToLe0 {a b : Int} (h : a > b) : (b + 1) - a ≤ 0 :=
+  ltToLe0 h
+
 /-- Farkas contradiction, arity 2. Hypotheses are pre-normalized to
     `a ≤ 0` form by the OCaml side via `leToLe0` / `geToLe0`. The
     `hpos` premise is discharged by `omega` at closer-build time —

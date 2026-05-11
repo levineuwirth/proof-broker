@@ -14,6 +14,10 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_lt_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_lt_hyp_axiom_free":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_lt_mixed_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_ge_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_gt_axiom_free":
@@ -53,6 +57,10 @@
       [],
     "ge_to_le0":
       [],
+    "lt_to_le0":
+      [],
+    "gt_to_le0":
+      [],
     "pos_is_pos":
       [],
     "pos_is_nonneg":
@@ -71,6 +79,10 @@
     "pb_term_axiom_free":
       [],
     "pb_term_arity3_axiom_free":
+      [],
+    "pb_term_lt_hyp_axiom_free":
+      [],
+    "pb_term_lt_mixed_axiom_free":
       [],
     "farkas_contradict_n":
       [],

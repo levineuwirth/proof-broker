@@ -81,6 +81,32 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Term-mode with strict-[<] hypotheses (no comparison goal). The
+    normalizer routes each [h : a < b] through [lt_to_le0] (LIA +1
+    trick: [(a + 1) - b <= 0]), then the False-goal fold runs as
+    usual. Two strict hypotheses → witness [(H1, 1); (H2, 1)],
+    residual [K = 2]. Mirror of Lean's
+    [pb_term_lt_hyp_axiom_free]. *)
+Theorem pb_term_lt_hyp_axiom_free :
+  forall x : Z, 5 < x -> x < 5 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Term-mode mixing strict and non-strict hypotheses on a transitive
+    chain. Strict [0 < x] and [y < 1] use the +1 trick; non-strict
+    [x <= y] uses plain [le_to_le0]. Demonstrates that the fold treats
+    them uniformly once normalized — the witness arity rises to 3
+    ([farkas_contradict_n]'s territory) and coefficients flow through
+    explicitly. *)
+Theorem pb_term_lt_mixed_axiom_free :
+  forall x y : Z, 0 < x -> x <= y -> y < 1 -> False.
+Proof.
+  intros x y H1 H2 H3.
+  proof_broker_term [z3].
+Qed.
+
 (** Term-mode with a non-[False] goal of shape [_ <= _ : Z]. The
     witness has one real-hypothesis entry plus a [neg_goal] slot
     the closer discharges via [farkas_le_goal_2] (which wraps the
@@ -268,6 +294,12 @@ Print Assumptions pb_term_axiom_free.
 
 Print pb_term_arity3_axiom_free.
 Print Assumptions pb_term_arity3_axiom_free.
+
+Print pb_term_lt_hyp_axiom_free.
+Print Assumptions pb_term_lt_hyp_axiom_free.
+
+Print pb_term_lt_mixed_axiom_free.
+Print Assumptions pb_term_lt_mixed_axiom_free.
 
 Print pb_term_goal_axiom_free.
 Print Assumptions pb_term_goal_axiom_free.

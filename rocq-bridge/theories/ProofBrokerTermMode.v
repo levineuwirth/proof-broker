@@ -45,8 +45,32 @@ Proof. intros H. apply Z.sub_nonpos. exact H. Qed.
 Lemma ge_to_le0 (a b : Z) : a >= b -> b - a <= 0.
 Proof. intros H. apply Z.sub_nonpos. apply Z.ge_le. exact H. Qed.
 
+(** Strict-[<] normalization, +1 trick: [a < b] over [Z] is equivalent
+    to [a + 1 <= b] (discrete-domain), so the canonical [a' <= 0] form
+    is [(a + 1) - b <= 0]. Matches the SDK's [lift_strict_pair] for
+    LIA in [farkas.ml] — when the closer's [compute_residual] calls
+    [compile_hypothesis] on a strict [<], it gets back [Le (a-b+1)]
+    and the residual sum lines up with what the proof term emits. *)
+Lemma lt_to_le0 (a b : Z) : a < b -> (a + 1) - b <= 0.
+Proof.
+  intros H.
+  apply Z.sub_nonpos.
+  rewrite Z.add_1_r.
+  apply Z.le_succ_l.
+  exact H.
+Qed.
+
+(** Mirror of [lt_to_le0] for [>]. Rocq's [Z.gt] doesn't reduce to
+    swapped [<] (it's defined via [Z.compare]), so the +1 trick has
+    to be re-applied here rather than going through [lt_to_le0]
+    after a syntactic swap; we still delegate the heavy lifting. *)
+Lemma gt_to_le0 (a b : Z) : a > b -> (b + 1) - a <= 0.
+Proof. intros H. apply Z.gt_lt in H. exact (lt_to_le0 b a H). Qed.
+
 Register le_to_le0 as proof_broker.term_mode.le_to_le0.
 Register ge_to_le0 as proof_broker.term_mode.ge_to_le0.
+Register lt_to_le0 as proof_broker.term_mode.lt_to_le0.
+Register gt_to_le0 as proof_broker.term_mode.gt_to_le0.
 
 (** Coefficient-witness builders. [Pos2Z.is_pos] is in Stdlib but
     isn't a registered [Rocqlib.lib_ref], so the plugin can't reach
@@ -286,6 +310,12 @@ Print Assumptions le_to_le0.
 
 Print ge_to_le0.
 Print Assumptions ge_to_le0.
+
+Print lt_to_le0.
+Print Assumptions lt_to_le0.
+
+Print gt_to_le0.
+Print Assumptions gt_to_le0.
 
 Print pos_is_pos.
 Print Assumptions pos_is_pos.

@@ -24,6 +24,8 @@ let safe_constr_of_ref s : EConstr.t option =
 (* Z-typed helpers. *)
 let z_le_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.le_to_le0")
 let z_ge_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.ge_to_le0")
+let z_lt_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.lt_to_le0")
+let z_gt_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.gt_to_le0")
 let z_farkas_le_2     = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_2")
 let z_farkas_le_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_goal_2")
 let z_farkas_lt_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_lt_goal_2")
@@ -145,6 +147,13 @@ type universe = {
   mul_nonneg_nonpos : EConstr.t;
   add_nonpos : EConstr.t;
   farkas_contradict_n : EConstr.t;
+  (* Strict-[<] / [>] normalization, [None] on universes where the
+     +1 trick is unsound (any non-discrete domain, [R] in particular).
+     [Some lemma] means the universe wires [lemma : a < b -> (a + 1) - b <= 0]
+     (and the swapped variant for [>]) so the closer can normalize
+     strict hypotheses to the same [a' <= 0] form [<=] / [>=] take. *)
+  lt_to_le0 : EConstr.t option;
+  gt_to_le0 : EConstr.t option;
 }
 
 let z_universe () : universe = {
@@ -166,6 +175,8 @@ let z_universe () : universe = {
   mul_nonneg_nonpos = force z_mul_nonneg_nonpos;
   add_nonpos = force z_add_nonpos;
   farkas_contradict_n = force z_farkas_contradict_n;
+  lt_to_le0 = Some (force z_lt_to_le0);
+  gt_to_le0 = Some (force z_gt_to_le0);
 }
 
 let r_universe () : universe = {
@@ -187,6 +198,12 @@ let r_universe () : universe = {
   mul_nonneg_nonpos = force r_mul_nonneg_nonpos_ref;
   add_nonpos = force r_add_nonpos_ref;
   farkas_contradict_n = force r_farkas_contradict_n_ref;
+  (* R strict-[<] / [>] would need a strict-aware contradiction
+     variant (no +1 trick over the reals); not wired yet, so strict
+     hypotheses over LRA surface as [Unsupported] from the matcher
+     below rather than silently weakening to [<=]. *)
+  lt_to_le0 = None;
+  gt_to_le0 = None;
 }
 
 let universe_for_ir (ir : Ir.t) : universe =
@@ -283,10 +300,14 @@ let compute_residual (ir : Ir.t)
 
 (* --- per-hypothesis normalization ---------------------------------- *)
 
-(* For a hypothesis [h : T.le a b] or [h : T.ge a b] over T ∈ {Z, R},
-   produce the EConstr pair [(a_econstr, proof : a_econstr <= 0)]
-   using the universe's [le_to_le0] / [ge_to_le0]. Detection is by
-   the inner [le] / [ge] ref. *)
+(* For a hypothesis [h : T.le a b] / [h : T.ge a b] / [h : T.lt a b] /
+   [h : T.gt a b] over T ∈ {Z, R}, produce the EConstr pair
+   [(a_econstr, proof : a_econstr <= 0)] using the universe's
+   [le_to_le0] / [ge_to_le0] / [lt_to_le0] / [gt_to_le0]. Detection
+   is by the inner head ref. Strict shapes ([<] / [>]) are only
+   accepted on universes wiring the +1-trick helpers — i.e. Z today,
+   not R (LRA strict requires a strict-aware [farkas_contradict_n]
+   variant, future scope). *)
 let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
   : EConstr.t * EConstr.t =
   let decl = Environ.lookup_named id env in
@@ -301,6 +322,9 @@ let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
     in
     let is_le = head_matches r_Zle || head_matches r_Rle in
     let is_ge = head_matches r_Zge || head_matches r_Rge in
+    let is_lt = head_matches r_Zlt || head_matches r_Rlt in
+    let is_gt = head_matches r_Zgt || head_matches r_Rgt in
+    let one = u.lit Z.one in
     if is_le then
       let a_minus_b = EConstr.mkApp (u.sub, [| a; b |]) in
       let proof = EConstr.mkApp (u.le_to_le0, [| a; b; h_term |]) in
@@ -309,10 +333,35 @@ let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
       let b_minus_a = EConstr.mkApp (u.sub, [| b; a |]) in
       let proof = EConstr.mkApp (u.ge_to_le0, [| a; b; h_term |]) in
       (b_minus_a, proof)
+    else if is_lt then
+      (match u.lt_to_le0 with
+       | Some lemma ->
+         let a_plus_1 = EConstr.mkApp (u.add, [| a; one |]) in
+         let lhs = EConstr.mkApp (u.sub, [| a_plus_1; b |]) in
+         let proof = EConstr.mkApp (lemma, [| a; b; h_term |]) in
+         (lhs, proof)
+       | None ->
+         unsupported "term_mode: strict [<] hypothesis %s on %s — \
+                      strict-aware Farkas over this universe isn't wired \
+                      (no +1 trick over non-discrete domains)"
+           (Names.Id.to_string id) u.name)
+    else if is_gt then
+      (match u.gt_to_le0 with
+       | Some lemma ->
+         let b_plus_1 = EConstr.mkApp (u.add, [| b; one |]) in
+         let lhs = EConstr.mkApp (u.sub, [| b_plus_1; a |]) in
+         let proof = EConstr.mkApp (lemma, [| a; b; h_term |]) in
+         (lhs, proof)
+       | None ->
+         unsupported "term_mode: strict [>] hypothesis %s on %s — \
+                      strict-aware Farkas over this universe isn't wired \
+                      (no +1 trick over non-discrete domains)"
+           (Names.Id.to_string id) u.name)
     else
-      unsupported "term_mode: hypothesis %s has shape outside %s.le / %s.ge \
+      unsupported "term_mode: hypothesis %s has shape outside \
+                   %s.le / %s.ge / %s.lt / %s.gt \
                    (head not recognized for this universe)"
-        (Names.Id.to_string id) u.name u.name
+        (Names.Id.to_string id) u.name u.name u.name u.name
   | _ ->
     unsupported "term_mode: hypothesis %s is not a binary application"
       (Names.Id.to_string id)

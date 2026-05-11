@@ -773,35 +773,69 @@ private def fvarOfName (name : String) : MetaM (Expr × Expr) := do
   | [] => throwError "proof_broker_term: hypothesis '{name}' not in scope"
   | _ => throwError "proof_broker_term: hypothesis '{name}' is ambiguous (shadowed)"
 
-/-- Recognize an `Int` `≤` / `≥` / `<` / `>` shape in a hypothesis
-    type. Returns `(direction, lhs, rhs)` where direction picks the
-    normalization helper to apply. Lean's `≥` desugars to
-    `LE.le b a`, so we pattern-match on `LE.le`/`LT.lt` only —
-    anything else is out of scope for the arity-2 starter slice. -/
-private def matchIntBound? (ty : Expr) : Option (Bool × Expr × Expr) :=
+/-- The four hypothesis-shape kinds the term-mode closer normalizes
+    to the canonical `a' ≤ 0` form:
+    * `.le` — `(h : a ≤ b)` → `a - b ≤ 0`
+    * `.ge` — `(h : a ≥ b)` → `b - a ≤ 0`
+    * `.lt` — `(h : a < b)` → `(a + 1) - b ≤ 0` (LIA +1 trick)
+    * `.gt` — `(h : a > b)` → `(b + 1) - a ≤ 0` (LIA +1 trick)
+
+    Lean's `GE.ge` / `GT.gt` are `def`-defined rather than typeclass
+    aliases, so they don't auto-reduce to swapped `≤` / `<`; the
+    matcher matches them explicitly. -/
+private inductive HypKind
+  | le | ge | lt | gt
+deriving Repr
+
+/-- Recognize an `Int` comparison shape in a hypothesis type. Returns
+    `(kind, lhs, rhs)` where the kind picks the normalization helper
+    to apply (see `HypKind` for the form). All four shapes are
+    matched explicitly — `getAppFnArgs` doesn't reduce
+    `GE.ge` / `GT.gt`. -/
+private def matchIntBound? (ty : Expr) : Option (HypKind × Expr × Expr) :=
   match ty.getAppFnArgs with
   | (``LE.le, #[α, _, a, b]) =>
-    if α.isConstOf ``Int then some (true, a, b) else none
-  | (``LT.lt, #[α, _, _, _]) =>
-    -- Strict bounds need a different normalization (`a < b → a + 1 ≤ b`)
-    -- the arity-2 slice doesn't yet wire — surface as unsupported.
-    let _ := α
-    none
+    if α.isConstOf ``Int then some (.le, a, b) else none
+  | (``GE.ge, #[α, _, a, b]) =>
+    if α.isConstOf ``Int then some (.ge, a, b) else none
+  | (``LT.lt, #[α, _, a, b]) =>
+    if α.isConstOf ``Int then some (.lt, a, b) else none
+  | (``GT.gt, #[α, _, a, b]) =>
+    if α.isConstOf ``Int then some (.gt, a, b) else none
   | _ => none
 
-/-- Given a hypothesis `(h : a ≤ b)` with `a b : Int`, build an
-    `Expr` of type `a - b ≤ 0` by applying `leToLe0`. Returns
-    `(a - b)` as an Expr alongside the proof so the caller can
-    reference both. -/
+/-- Given a hypothesis `(h : <shape> : Int)`, build an `Expr` of
+    type `a' ≤ 0` for the kind-specific normalized LHS `a'`, using
+    `leToLe0` / `geToLe0` / `ltToLe0` / `gtToLe0`. Returns `(a', proof)`
+    so the caller can reference both. Strict shapes apply the LIA
+    +1 trick — sound only over discrete domains; the Mathlib-side
+    Real path doesn't reach this matcher (its closer normalizes
+    against the Real-typed universe instead). -/
 private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     : MetaM (Expr × Expr) := do
   match matchIntBound? hypTy with
-  | some (true, a, b) =>
+  | some (.le, a, b) =>
     let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
     let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.leToLe0 #[hypFV]
     return (normExpr, proof)
-  | _ =>
-    throwError "proof_broker_term: hypothesis shape outside Int ≤/≥ \
+  | some (.ge, a, b) =>
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.geToLe0 #[hypFV]
+    return (normExpr, proof)
+  | some (.lt, a, b) =>
+    let one := Lean.toExpr (1 : Int)
+    let aPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[a, one]
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[aPlus1, b]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.ltToLe0 #[hypFV]
+    return (normExpr, proof)
+  | some (.gt, a, b) =>
+    let one := Lean.toExpr (1 : Int)
+    let bPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[b, one]
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[bPlus1, a]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.gtToLe0 #[hypFV]
+    return (normExpr, proof)
+  | none =>
+    throwError "proof_broker_term: hypothesis shape outside Int ≤/≥/</> \
                  (got type {hypTy})"
 
 /-- Build an `Int` literal `Expr` for `c`. Uses `Lean.toExpr` so the
