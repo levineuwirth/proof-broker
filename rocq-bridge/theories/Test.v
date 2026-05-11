@@ -279,6 +279,55 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Term-mode LRA strict-[<] hypothesis on a Le-goal: [(h : 0 < x) ⊢ 0 ≤ x].
+    Witness [(h, 1), (neg_goal, 1)] gives linear sum [(0 - x) + (x - 0) = 0],
+    K = 0. The closer weakens [h : 0 < x] to [h : 0 <= x] via
+    [r_strict_neg_to_nonpos], then routes through the existing
+    [r_farkas_le_goal_2] strict-aware path — strictness on the
+    contradiction side comes from the neg_goal's Lt-shape over R, so
+    losing [a1]'s strictness on weakening costs nothing. *)
+Theorem pb_lra_term_le_goal_strict_a1_axiom_free :
+  forall x : R, 0 < x -> 0 <= x.
+Proof.
+  intros x H.
+  proof_broker_term [z3].
+Qed.
+
+(** Strict-[<] hypothesis on a Lt-goal: [(h : 0 < x) ⊢ 0 < x] (trivially
+    equivalent to [h], but exercises the closer end-to-end). Witness
+    sum is exactly zero [(0 - x) + (x - 0) = 0], K = 0 — the
+    standard [r_farkas_lt_goal_2] path can't close this because it
+    needs K > 0 strictly, so the dispatcher routes to
+    [r_farkas_lt_goal_2_strict_a1] which preserves [a1]'s strictness
+    through the proof (via [r_mul_pos_neg]) and gets the contradiction
+    from the strict combination [c1 * a1 < 0] + [cng * (c - b) ≤ 0]. *)
+Theorem pb_lra_term_lt_goal_strict_a1_axiom_free :
+  forall x : R, 0 < x -> 0 < x.
+Proof.
+  intros x H.
+  proof_broker_term [z3].
+Qed.
+
+(** Strict-[<] hypothesis on a [≥] goal. Closer applies [Rle_ge]
+    first, leaving a [≤] subgoal that routes through the Le-goal
+    weakening path. *)
+Theorem pb_lra_term_ge_goal_strict_a1_axiom_free :
+  forall x : R, 0 < x -> x >= 0.
+Proof.
+  intros x H.
+  proof_broker_term [z3].
+Qed.
+
+(** Strict-[<] hypothesis on a [>] goal. Closer applies [Rlt_gt]
+    first, leaving a [<] subgoal that routes through the strict-a1
+    Lt-goal path. *)
+Theorem pb_lra_term_gt_goal_strict_a1_axiom_free :
+  forall x : R, 0 < x -> x > 0.
+Proof.
+  intros x H.
+  proof_broker_term [z3].
+Qed.
+
 (** Mixed strict + non-strict, arity-3: [1 ≤ x ∧ x ≤ y ∧ y < 1 ⊢ False].
     z3's witness has (Le, Le, Lt) — two non-strict premises and one
     strict. The fold threads strictness through:
@@ -431,6 +480,18 @@ Print Assumptions pb_lra_term_lt_hyp_axiom_free.
 
 Print pb_lra_term_lt_mixed_axiom_free.
 Print Assumptions pb_lra_term_lt_mixed_axiom_free.
+
+Print pb_lra_term_le_goal_strict_a1_axiom_free.
+Print Assumptions pb_lra_term_le_goal_strict_a1_axiom_free.
+
+Print pb_lra_term_lt_goal_strict_a1_axiom_free.
+Print Assumptions pb_lra_term_lt_goal_strict_a1_axiom_free.
+
+Print pb_lra_term_ge_goal_strict_a1_axiom_free.
+Print Assumptions pb_lra_term_ge_goal_strict_a1_axiom_free.
+
+Print pb_lra_term_gt_goal_strict_a1_axiom_free.
+Print Assumptions pb_lra_term_gt_goal_strict_a1_axiom_free.
 
 Print pb_term_case_split_axiom_free.
 Print Assumptions pb_term_case_split_axiom_free.

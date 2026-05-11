@@ -194,6 +194,36 @@
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
+    "r_strict_neg_to_nonpos":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_farkas_lt_goal_2_strict_a1":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_le_goal_strict_a1_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_lt_goal_strict_a1_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_ge_goal_strict_a1_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_gt_goal_strict_a1_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
     "pb_lra_term_lt_hyp_axiom_free":
       [
         "ClassicalDedekindReals.sig_forall_dec",

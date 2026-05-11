@@ -46,6 +46,10 @@ let r_add_neg_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_add_neg")
 let r_farkas_contradict_n_strict_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_contradict_n_strict")
+let r_strict_neg_to_nonpos_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_strict_neg_to_nonpos")
+let r_farkas_lt_goal_2_strict_a1_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_lt_goal_2_strict_a1")
 let z_farkas_le_2     = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_2")
 let z_farkas_le_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_le_goal_2")
 let z_farkas_lt_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_lt_goal_2")
@@ -631,25 +635,25 @@ let close_term_false (u : universe) env sigma (ir : Ir.t)
 
 (* --- non-False goal closer (Le / Lt over Z only) ------------------- *)
 
-(* Proof-shape choice for the comparison-goal helper:
+(* Proof-shape choice for the comparison-goal helper. Picks which
+   coefficient / residual slot is strict (0 < ...) vs non-strict
+   (0 ≤ ...). All three shapes use the same overall helper signature
+   [(b, c, a1, h1, c1, cng, hc1, hcng, K, hk, heq)]; the proof-shape
+   only changes how [hc1], [hcng], and [hk] are constructed and
+   whether compute_residual permits [K = 0].
 
-     * [PS_K_strict]   (Z helpers, R Lt-goal):
-         [hcng = u.pos_is_nonneg cng_z]  (0 ≤ cng)
-         [hk   = u.pos_is_pos k_z]       (0 < K)
-         compute_residual requires K > 0
-     * [PS_cng_strict] (R Le-goal only):
-         [hcng = u.pos_is_pos cng_z]     (0 < cng — strictness comes
-                                          from the LRA neg_goal Lt-shape,
-                                          which is what produces the
-                                          contradiction when [K = 0])
-         [hk   = u.pos_is_nonneg k_z]    (0 ≤ K — may be zero in the
-                                          trivial-equality case)
-         compute_residual allows K = 0
-
-   PS_cng_strict is the strict-aware path that handles the LRA Le-goal
-   trivial-equality case (eg [n ≤ 5] ⊢ [n ≤ 5] post-Rle_antisym, where
-   the Farkas residual is exactly zero — no LIA +1 trick over R). *)
-type goal_proof_shape = PS_K_strict | PS_cng_strict
+     * [PS_K_strict]   (Z helpers, R Lt-goal with non-strict a1):
+         hc1 nonneg, hcng nonneg, hk strict; require K > 0.
+     * [PS_cng_strict] (R Le-goal, any a1 strictness):
+         hc1 nonneg, hcng strict, hk nonneg; allow K = 0. The
+         strict-aware contradiction comes from the neg_goal's
+         Lt-shape over R; this works for both [a1 ≤ 0] and
+         (weakened) [a1 < 0] inputs.
+     * [PS_c1_strict]  (R Lt-goal with strict a1):
+         hc1 strict, hcng nonneg, hk nonneg; allow K = 0. The
+         strict-aware contradiction comes from [a1]'s strictness
+         flowing through [r_mul_pos_neg]. *)
+type goal_proof_shape = PS_K_strict | PS_cng_strict | PS_c1_strict
 
 (* Goal closer for [b <= c] / [b < c] — universe-polymorphic, callers
    pass the universe explicitly (chosen from the [goal_kind]'s
@@ -667,7 +671,7 @@ type goal_proof_shape = PS_K_strict | PS_cng_strict
    The Tier 2 case-split path's per-branch goals stay [False] after
    destruct, so they go through [close_term_false], not this closer. *)
 let close_term_goal (u : universe) env sigma (ir : Ir.t)
-    ~helper ~neg_norm ~(proof_shape : goal_proof_shape)
+    ~helper ~neg_norm ~(proof_shape : goal_proof_shape) ~weaken_h1
     (b : EConstr.t) (c : EConstr.t)
     (real_name : string) (c1z : Z.t) (cng_z : Z.t)
     : unit Proofview.tactic =
@@ -678,39 +682,49 @@ let close_term_goal (u : universe) env sigma (ir : Ir.t)
   let { expr = a1; proof = h1; strict = h1_strict } =
     normalize_hypothesis u env sigma id1
   in
-  if h1_strict then
-    unsupported "term_mode: strict [<] / [>] hypothesis %s on a \
-                 comparison-goal closer is out of scope (only False-goal \
-                 supports strict premises today — comparison-goal needs \
-                 a strict-aware variant of [farkas_le_goal_2] / \
-                 [farkas_lt_goal_2], future scope)"
-      real_name;
+  (* Strict-[<] hypothesis (R only) routing. Two paths:
+     * [weaken_h1 = true]: weaken [a1 < 0] to [a1 ≤ 0] via
+       r_strict_neg_to_nonpos, then proceed with the standard helper
+       (Le-goal: strictness comes from the neg_goal's Lt-shape, not
+       from a1, so weakening is information-preserving here).
+     * [weaken_h1 = false]: keep [a1 < 0] strict; caller has picked
+       a strict-a1-aware helper (r_farkas_lt_goal_2_strict_a1) +
+       PS_c1_strict proof shape.
+     For non-strict a1, weaken_h1 is a no-op. *)
+  let h1 =
+    if h1_strict && weaken_h1 then
+      EConstr.mkApp (force r_strict_neg_to_nonpos_ref, [| a1; h1 |])
+    else h1
+  in
   let c1 = u.lit c1z in
   let cng = u.lit cng_z in
   let require_strict = match proof_shape with
     | PS_K_strict -> true
-    | PS_cng_strict -> false
+    | PS_cng_strict | PS_c1_strict -> false
   in
   let k_z =
     compute_residual ~require_strict ir
       [(real_name, c1z); ("neg_goal", cng_z)]
   in
   let k_constr = u.lit k_z in
-  (* Per [proof_shape]: K_strict path uses pos_is_pos for K, pos_is_nonneg
-     for cng (Z standard); cng_strict path swaps them (R Le-goal). The
-     cng_strict path also has to handle [k_z = 0] specifically since
+  (* Per [proof_shape]: K_strict path uses pos_is_pos for K,
+     pos_is_nonneg for cng / c1 (Z standard).
+     cng_strict swaps to strict cng + nonneg K (R Le-goal).
+     c1_strict swaps to strict c1 + nonneg K (R Lt-goal with strict a1).
+     The non-strict K paths must handle [k_z = 0] specifically since
      pos_is_nonneg / pos_is_pos both require a [positive] argument. *)
-  let (hcng, hk) = match proof_shape with
-    | PS_K_strict ->
-      (u.pos_is_nonneg cng_z, u.pos_is_pos k_z)
-    | PS_cng_strict ->
-      let hk =
-        if Z.sign k_z = 0 then force r_zero_nonneg_ref
-        else u.pos_is_nonneg k_z
-      in
-      (u.pos_is_pos cng_z, hk)
+  let hk_nonneg () =
+    if Z.sign k_z = 0 then force r_zero_nonneg_ref
+    else u.pos_is_nonneg k_z
   in
-  let hc1 = u.pos_is_nonneg c1z in
+  let (hc1, hcng, hk) = match proof_shape with
+    | PS_K_strict ->
+      (u.pos_is_nonneg c1z, u.pos_is_nonneg cng_z, u.pos_is_pos k_z)
+    | PS_cng_strict ->
+      (u.pos_is_nonneg c1z, u.pos_is_pos cng_z, hk_nonneg ())
+    | PS_c1_strict ->
+      (u.pos_is_pos c1z, u.pos_is_nonneg cng_z, hk_nonneg ())
+  in
   let refine_tac : unit Proofview.tactic =
     Refine.refine ~typecheck:true (fun sigma ->
       let heq_type =
@@ -766,11 +780,12 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
        normalization comes from [universe_for_ir ir] above and must
        agree with the tag — for non-degenerate IRs they always
        agree (LRA fragment ↔ Real-typed comparator), so we trust [u]. *)
-    let goal_dispatch ~slot ~helper ~neg_norm ~proof_shape b c
+    let goal_dispatch ~slot ~helper ~neg_norm ~proof_shape ~weaken_h1 b c
         real_name c1z cng_z =
       match real_entries with
       | [(rn, c1z')] when rn = real_name && Z.equal c1z' c1z ->
         close_term_goal u env sigma ir ~helper ~neg_norm ~proof_shape
+          ~weaken_h1
           b c real_name c1z cng_z
       | _ ->
         unsupported "term_mode: arity-2 %s goal expects one real-hypothesis \
@@ -782,6 +797,27 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
       | [(real_name, c1z)] -> Some (real_name, c1z)
       | _ -> None
     in
+    (* Detect whether the named real hypothesis has a strict head over
+       R ([Rlt] / [Rgt]). Used to dispatch the Lt-goal × strict-a1 case
+       to the dedicated [r_farkas_lt_goal_2_strict_a1] (the strict-a1
+       path needs a [Lt + Le → Lt] sum step, not the Le + Le path the
+       standard [r_farkas_lt_goal_2] takes). Z hypotheses always return
+       false because Z's [<] / [>] fold to [Le] via the +1 trick at
+       [normalize_hypothesis] time. *)
+    let real_hyp_is_strict_R real_name =
+      let id = Names.Id.of_string real_name in
+      let decl = Environ.lookup_named id env in
+      let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
+      match EConstr.kind sigma ty with
+      | App (head, _) ->
+        let head_matches lz =
+          match Lazy.force lz with
+          | Some c -> EConstr.eq_constr_nounivs sigma head c
+          | None -> false
+        in
+        head_matches r_Rlt || head_matches r_Rgt
+      | _ -> false
+    in
     match kind, neg_entry with
     | Some Goal_false, None ->
       close_term_false u env sigma ir entries
@@ -792,6 +828,7 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
            ~helper:(force z_farkas_le_goal_2)
            ~neg_norm:(neg_norm_z_le b c)
            ~proof_shape:PS_K_strict
+           ~weaken_h1:false
            b c real_name c1z cng_z
        | None ->
          unsupported "term_mode: arity-2 ≤ goal expects exactly one real \
@@ -803,29 +840,49 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
            ~helper:(force z_farkas_lt_goal_2)
            ~neg_norm:(neg_norm_z_lt b c)
            ~proof_shape:PS_K_strict
+           ~weaken_h1:false
            b c real_name c1z cng_z
        | None ->
          unsupported "term_mode: arity-2 < goal expects exactly one real \
                        entry (got %d)" (List.length real_entries))
     | Some (Goal_le (b, c, U_R)), Some (_, cng_z) ->
+      (* R Le-goal: strict-aware path via PS_cng_strict. The strictness
+         on the contradiction side comes from the neg_goal's Lt-shape,
+         not from a1, so we can weaken a strict a1 [a1 < 0] to [a1 ≤ 0]
+         here ([weaken_h1:true]) without losing information. *)
       (match single_real_entry () with
        | Some (real_name, c1z) ->
          goal_dispatch ~slot:"≤ (R)"
            ~helper:(force r_farkas_le_goal_2_ref)
            ~neg_norm:(neg_norm_r b c)
            ~proof_shape:PS_cng_strict
+           ~weaken_h1:true
            b c real_name c1z cng_z
        | None ->
          unsupported "term_mode: arity-2 ≤ (R) goal expects exactly one real \
                        entry (got %d)" (List.length real_entries))
     | Some (Goal_lt (b, c, U_R)), Some (_, cng_z) ->
+      (* R Lt-goal: branches on hypothesis strictness. With Le a1, the
+         neg_goal is Le-shape too over R, sum is Le, K > 0 required —
+         standard [r_farkas_lt_goal_2]. With strict a1, the strictness
+         needs to flow into the sum ([Lt + Le → Lt]) so K can be 0 in
+         the trivial-K-zero case — dedicated [r_farkas_lt_goal_2_strict_a1]. *)
       (match single_real_entry () with
        | Some (real_name, c1z) ->
-         goal_dispatch ~slot:"< (R)"
-           ~helper:(force r_farkas_lt_goal_2_ref)
-           ~neg_norm:(neg_norm_r b c)
-           ~proof_shape:PS_K_strict
-           b c real_name c1z cng_z
+         if real_hyp_is_strict_R real_name then
+           goal_dispatch ~slot:"< (R, strict a1)"
+             ~helper:(force r_farkas_lt_goal_2_strict_a1_ref)
+             ~neg_norm:(neg_norm_r b c)
+             ~proof_shape:PS_c1_strict
+             ~weaken_h1:false
+             b c real_name c1z cng_z
+         else
+           goal_dispatch ~slot:"< (R)"
+             ~helper:(force r_farkas_lt_goal_2_ref)
+             ~neg_norm:(neg_norm_r b c)
+             ~proof_shape:PS_K_strict
+             ~weaken_h1:false
+             b c real_name c1z cng_z
        | None ->
          unsupported "term_mode: arity-2 < (R) goal expects exactly one real \
                        entry (got %d)" (List.length real_entries))

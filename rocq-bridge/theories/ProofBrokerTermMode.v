@@ -432,6 +432,62 @@ Register r_add_neg as proof_broker.term_mode.r_add_neg.
 Register r_farkas_contradict_n_strict
   as proof_broker.term_mode.r_farkas_contradict_n_strict.
 
+(** Weakening helper for the comparison-goal closer: when the witness
+    names a strict-[<] / strict-[>] hypothesis, [normalize_hypothesis]
+    on the OCaml side returns a proof of [a < 0] rather than [a ≤ 0],
+    and the existing Le-goal helper ([r_farkas_le_goal_2]) expects
+    Le-form. Weakening via [Rlt_le] is sound because the Le-goal
+    closer's strict-aware path derives the contradiction from the
+    neg_goal's [Lt] shape, not from [a1]'s strictness — so dropping
+    [a1]'s strictness loses no information for this closer. (The
+    Lt-goal closer is different — see [r_farkas_lt_goal_2_strict_a1]
+    below.) *)
+Lemma r_strict_neg_to_nonpos (a : R) (h : a < 0) : a <= 0.
+Proof. apply Rlt_le. exact h. Qed.
+
+Register r_strict_neg_to_nonpos
+  as proof_broker.term_mode.r_strict_neg_to_nonpos.
+
+(** Strict-[<]-hypothesis Lt-goal closer. The Lt-goal's neg_goal is
+    Le-shape over R ([¬(b < c) ≡ c ≤ b]), so the existing
+    [r_farkas_lt_goal_2] (which assumes everything Le) produces a Le
+    sum and requires [K > 0]. When the real hypothesis is strict
+    ([h : a1 < 0]), we lose strictness on weakening and the
+    trivial-K=0 case fails — eg [(h : 0 < x) ⊢ 0 < x] would have
+    [(−x) + x = 0] as the sum.
+
+    This variant keeps [a1]'s strictness through the proof: with
+    [Hc1 : 0 < c1] strict and [H1 : a1 < 0] strict, the product
+    [c1 * a1 < 0] via [r_mul_pos_neg]. The neg_goal product
+    [cng * (c - b) ≤ 0] is non-strict ([cng] may be zero, neg_goal
+    Le-compiled). Sum: [Lt + Le → Lt] via [r_add_lt_le], yielding
+    [c1*a1 + cng*(c-b) < 0]. Combined with [HK : 0 ≤ K] (which can
+    even be [K = 0]), we get the standard strict-aware contradiction. *)
+Lemma r_farkas_lt_goal_2_strict_a1
+  (b c : R) (a1 : R) (H1 : a1 < 0)
+  (c1 cng : R) (Hc1 : 0 < c1) (Hcng : 0 <= cng)
+  (K : R) (HK : 0 <= K)
+  (Heq : c1 * a1 + cng * (c - b) = K)
+  : b < c.
+Proof.
+  destruct (Rlt_dec b c) as [Hlt | Hnlt]; [exact Hlt | exfalso].
+  apply Rnot_lt_le in Hnlt.
+  (* Hnlt : c <= b *)
+  pose proof (r_le_to_le0 c b Hnlt) as H2.
+  (* H2 : c - b <= 0 *)
+  assert (S1 : c1 * a1 < 0)
+    by (apply r_mul_pos_neg; assumption).
+  assert (S2 : cng * (c - b) <= 0)
+    by (apply r_mul_nonneg_nonpos; assumption).
+  assert (Ssum : c1 * a1 + cng * (c - b) < 0)
+    by (apply r_add_lt_le; assumption).
+  rewrite Heq in Ssum.
+  exact (Rlt_irrefl 0 (Rle_lt_trans 0 K 0 HK Ssum)).
+Qed.
+
+Register r_farkas_lt_goal_2_strict_a1
+  as proof_broker.term_mode.r_farkas_lt_goal_2_strict_a1.
+
 Close Scope R_scope.
 
 Open Scope Z_scope.
@@ -515,6 +571,12 @@ Print Assumptions r_add_neg.
 
 Print r_farkas_contradict_n_strict.
 Print Assumptions r_farkas_contradict_n_strict.
+
+Print r_strict_neg_to_nonpos.
+Print Assumptions r_strict_neg_to_nonpos.
+
+Print r_farkas_lt_goal_2_strict_a1.
+Print Assumptions r_farkas_lt_goal_2_strict_a1.
 
 Print farkas_contradict_n.
 Print Assumptions farkas_contradict_n.
