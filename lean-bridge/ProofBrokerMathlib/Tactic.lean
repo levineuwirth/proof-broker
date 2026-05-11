@@ -230,30 +230,40 @@ private def closeViaTermModeFalseReal
     (entries : List (String × Int))
     (overrides : List (String × Expr × Expr) := [])
     : TacticM Unit := do
-  let [(name1, c1), (name2, c2)] := entries
-    | throwError "proof_broker_term: per-branch witness arity {entries.length} ≠ 2"
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
   goal.withContext do
     let resolve (name : String) : MetaM (Expr × Expr) := do
       match overrides.find? (fun (n, _, _) => n == name) with
       | some (_, fv, ty) => return (fv, ty)
       | none => fvarOfName name
-    let (fv1, ty1) ← resolve name1
-    let (fv2, ty2) ← resolve name2
-    let (a1, h1') ← normalizeHypothesisReal fv1 ty1
-    let (a2, h2') ← normalizeHypothesisReal fv2 ty2
-    let c1Expr ← realLitExpr c1
-    let c2Expr ← realLitExpr c2
-    let hc1 ← buildNonnegProofReal c1Expr
-    let hc2 ← buildNonnegProofReal c2Expr
+    -- Normalize each entry to (cExpr, hcProof, aExpr, haProof).
+    let normalized ← entries.mapM fun (name, c) => do
+      let (fv, ty) ← resolve name
+      let (a, ha) ← normalizeHypothesisReal fv ty
+      let cExpr ← realLitExpr c
+      let hc ← buildNonnegProofReal cExpr
+      return (cExpr, hc, a, ha)
+    -- Build (c_i * a_i, proof c_i * a_i ≤ 0) for each.
+    let products ← normalized.mapM fun (cExpr, hc, a, ha) => do
+      let prod ← Lean.Meta.mkAppM ``HMul.hMul #[cExpr, a]
+      let proof ← Lean.Meta.mkAppM
+                    ``mul_nonpos_of_nonneg_of_nonpos #[hc, ha]
+      return (prod, proof)
+    -- Left-associative fold: sum + `≤ 0` proof.
+    let (sum, sumProof) ← match products with
+      | [] => throwError "proof_broker_term: empty fold (internal)"
+      | (p0, h0) :: rest =>
+        rest.foldlM (fun (accE, accH) (p, h) => do
+          let newSum ← Lean.Meta.mkAppM ``HAdd.hAdd #[accE, p]
+          let newProof ← Lean.Meta.mkAppM ``add_nonpos #[accH, h]
+          return (newSum, newProof)) (p0, h0)
     let zero ← realLitExpr 0
-    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
-    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[c2Expr, a2]
-    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
     let hposTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
     let hposMV ← Lean.Meta.mkFreshExprMVar hposTy
     let term ← Lean.Meta.mkAppM
-                 ``ProofBrokerMathlib.TermMode.rFarkasContradict
-                 #[h1', h2', hc1, hc2, hposMV]
+                 ``ProofBrokerMathlib.TermMode.rFarkasContradictN
+                 #[sum, sumProof, hposMV]
     closeLinarithSubgoal hposMV.mvarId!
     goal.assign term
 

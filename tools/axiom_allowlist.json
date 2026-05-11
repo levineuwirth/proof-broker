@@ -8,6 +8,8 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_arity3_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_goal_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_lt_axiom_free":
@@ -35,6 +37,8 @@
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rFarkasContradict":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rFarkasContradictN":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rLeToLe0":
       ["propext", "Classical.choice", "Quot.sound"],
@@ -66,6 +70,24 @@
       ],
     "pb_term_axiom_free":
       [],
+    "pb_term_arity3_axiom_free":
+      [],
+    "farkas_contradict_n":
+      [],
+    "z_mul_nonneg_nonpos":
+      [],
+    "z_add_nonpos":
+      [],
+    "r_farkas_contradict_n":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_add_nonpos":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
     "pb_term_goal_axiom_free":
       [],
     "pb_term_lt_axiom_free":

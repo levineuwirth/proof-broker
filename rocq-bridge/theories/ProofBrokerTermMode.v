@@ -86,6 +86,34 @@ Qed.
     via [Rocqlib.lib_ref "proof_broker.term_mode.farkas_le_2"]. *)
 Register farkas_le_2 as proof_broker.term_mode.farkas_le_2.
 
+(** General-arity contradiction step. The OCaml-side closer builds
+    [s = c1*a1 + c2*a2 + ... + cN*aN] (left-associative), proves
+    [s <= 0] by folding [Z.mul_nonneg_nonpos] + [Z.add_nonpos_nonpos]
+    over the entries, computes [K] numerically from the witness, and
+    applies this lemma. The polynomial identity [s = K] is
+    discharged by [ring] as before. Generalizes [farkas_le_2] to
+    any arity (including 1, where the fold degenerates to a single
+    product). *)
+Lemma farkas_contradict_n
+  (s K : Z) (Hs : s <= 0) (HK : 0 < K) (Heq : s = K) : False.
+Proof.
+  rewrite Heq in Hs.
+  exact (Z.lt_irrefl 0 (Z.lt_le_trans 0 K 0 HK Hs)).
+Qed.
+
+(** Building blocks for the fold. Stable re-exports of Stdlib
+    lemmas with names the OCaml side can resolve via [Rocqlib.lib_ref]
+    (the Stdlib names aren't all registered as lib_refs). *)
+Lemma z_mul_nonneg_nonpos (c a : Z) (Hc : 0 <= c) (Ha : a <= 0) : c * a <= 0.
+Proof. apply Z.mul_nonneg_nonpos; assumption. Qed.
+
+Lemma z_add_nonpos (x y : Z) (Hx : x <= 0) (Hy : y <= 0) : x + y <= 0.
+Proof. apply Z.add_nonpos_nonpos; assumption. Qed.
+
+Register farkas_contradict_n as proof_broker.term_mode.farkas_contradict_n.
+Register z_mul_nonneg_nonpos as proof_broker.term_mode.z_mul_nonneg_nonpos.
+Register z_add_nonpos as proof_broker.term_mode.z_add_nonpos.
+
 (** Farkas reconstruction for a non-[False] goal of shape [b <= c].
     Mirror of Lean's [farkasGoalLe2] from [ProofBroker.TermMode] —
     wraps the constructive decidability witness [Z_le_gt_dec], then
@@ -194,6 +222,27 @@ Qed.
 
 Register r_farkas_le_2 as proof_broker.term_mode.r_farkas_le_2.
 
+(** General-arity Real contradiction step. Mirror of
+    [farkas_contradict_n] over [R], used by the Tier 1 Farkas + Tier 2
+    case-split closers on LRA goals when the witness exceeds arity 2. *)
+Lemma r_farkas_contradict_n
+  (s K : R) (Hs : s <= 0) (HK : 0 < K) (Heq : s = K) : False.
+Proof.
+  rewrite Heq in Hs.
+  exact (Rlt_irrefl 0 (Rlt_le_trans 0 K 0 HK Hs)).
+Qed.
+
+(** Real-typed building blocks for the fold. *)
+Lemma r_add_nonpos (x y : R) (Hx : x <= 0) (Hy : y <= 0) : x + y <= 0.
+Proof.
+  rewrite <- Rplus_0_r.
+  apply Rplus_le_compat; assumption.
+Qed.
+
+Register r_farkas_contradict_n as proof_broker.term_mode.r_farkas_contradict_n.
+Register r_mul_nonneg_nonpos as proof_broker.term_mode.r_mul_nonneg_nonpos.
+Register r_add_nonpos as proof_broker.term_mode.r_add_nonpos.
+
 (** Real-typed positive-literal coefficient witness: a closed positive
     rational [p/q] flows through as [0 < IZR p / IZR q] (or [0 < IZR n]
     for integer coefficients). The Tier 2 case-split path uses
@@ -258,3 +307,18 @@ Print Assumptions r_pos_is_pos.
 
 Print r_pos_is_nonneg.
 Print Assumptions r_pos_is_nonneg.
+
+Print farkas_contradict_n.
+Print Assumptions farkas_contradict_n.
+
+Print z_mul_nonneg_nonpos.
+Print Assumptions z_mul_nonneg_nonpos.
+
+Print z_add_nonpos.
+Print Assumptions z_add_nonpos.
+
+Print r_farkas_contradict_n.
+Print Assumptions r_farkas_contradict_n.
+
+Print r_add_nonpos.
+Print Assumptions r_add_nonpos.

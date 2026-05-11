@@ -29,6 +29,9 @@ let z_farkas_le_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas
 let z_farkas_lt_goal_2 = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_lt_goal_2")
 let z_pos_is_pos      = lazy (safe_constr_of_ref "proof_broker.term_mode.pos_is_pos")
 let z_pos_is_nonneg   = lazy (safe_constr_of_ref "proof_broker.term_mode.pos_is_nonneg")
+let z_farkas_contradict_n = lazy (safe_constr_of_ref "proof_broker.term_mode.farkas_contradict_n")
+let z_mul_nonneg_nonpos   = lazy (safe_constr_of_ref "proof_broker.term_mode.z_mul_nonneg_nonpos")
+let z_add_nonpos          = lazy (safe_constr_of_ref "proof_broker.term_mode.z_add_nonpos")
 
 (* R-typed helpers (mirror of the Z ones for the LRA Tier 1 / Tier 2
    case-split paths). *)
@@ -37,6 +40,9 @@ let r_ge_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_ge_
 let r_farkas_le_2_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_le_2")
 let r_pos_is_pos_ref    = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_pos")
 let r_pos_is_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_nonneg")
+let r_farkas_contradict_n_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_contradict_n")
+let r_mul_nonneg_nonpos_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.r_mul_nonneg_nonpos")
+let r_add_nonpos_ref          = lazy (safe_constr_of_ref "proof_broker.term_mode.r_add_nonpos")
 
 (* Z + positive constructors for building literal Constr. *)
 let r_Z0   = lazy (safe_constr_of_ref "num.Z.Z0")
@@ -135,6 +141,10 @@ type universe = {
   farkas_le_2 : EConstr.t;
   pos_is_pos : Z.t -> EConstr.t;
   pos_is_nonneg : Z.t -> EConstr.t;
+  (* Arity-N fold building blocks. *)
+  mul_nonneg_nonpos : EConstr.t;
+  add_nonpos : EConstr.t;
+  farkas_contradict_n : EConstr.t;
 }
 
 let z_universe () : universe = {
@@ -153,6 +163,9 @@ let z_universe () : universe = {
     EConstr.mkApp (force z_pos_is_pos, [| positive_constr_of_z n |]));
   pos_is_nonneg = (fun n ->
     EConstr.mkApp (force z_pos_is_nonneg, [| positive_constr_of_z n |]));
+  mul_nonneg_nonpos = force z_mul_nonneg_nonpos;
+  add_nonpos = force z_add_nonpos;
+  farkas_contradict_n = force z_farkas_contradict_n;
 }
 
 let r_universe () : universe = {
@@ -171,6 +184,9 @@ let r_universe () : universe = {
     EConstr.mkApp (force r_pos_is_pos_ref, [| positive_constr_of_z n |]));
   pos_is_nonneg = (fun n ->
     EConstr.mkApp (force r_pos_is_nonneg_ref, [| positive_constr_of_z n |]));
+  mul_nonneg_nonpos = force r_mul_nonneg_nonpos_ref;
+  add_nonpos = force r_add_nonpos_ref;
+  farkas_contradict_n = force r_farkas_contradict_n_ref;
 }
 
 let universe_for_ir (ir : Ir.t) : universe =
@@ -322,38 +338,63 @@ let check_positive_coef ~slot (cz : Z.t) =
 
 (* --- False-goal closer --------------------------------------------- *)
 
+(* General-arity False-goal closer. Folds the witness's coefficient
+   list left-to-right:
+
+     1. For each (name, c): normalize hypothesis to `a ≤ 0` form,
+        build `c * a` and a proof `c * a ≤ 0` via mul_nonneg_nonpos.
+     2. Left-associative sum: `s_{i+1} = s_i + c_{i+1}*a_{i+1}`,
+        with proof `s_{i+1} ≤ 0` via add_nonpos.
+     3. Apply farkas_contradict_n with the final sum, computed K
+        (numerical residual), and an evar for the polynomial
+        identity `s = K` closed by ring.
+
+   Arity 1 is the degenerate single-product case (no add step);
+   arity 2 produces a proof shape equivalent to the legacy
+   farkas_le_2 path but built via fold; arity N ≥ 3 is the new
+   reach this refactor unlocks. *)
 let close_term_false (u : universe) env sigma (ir : Ir.t)
     (entries : (string * Z.t) list) : unit Proofview.tactic =
-  let (name1, c1z), (name2, c2z) =
-    match entries with [a; b] -> (a, b) | _ -> assert false
+  let n = List.length entries in
+  if n < 1 then
+    unsupported "term_mode: empty witness — arity ≥ 1 required";
+  List.iter (fun (name, c) -> check_positive_coef ~slot:name c) entries;
+  (* Normalize each entry: get (c_econstr, hc_proof, a_econstr, ha_proof). *)
+  let normalized = List.map (fun (name, c) ->
+    let id = Names.Id.of_string name in
+    let (a, h_a) = normalize_hypothesis u env sigma id in
+    let c_econstr = u.lit c in
+    let h_c = u.pos_is_nonneg c in
+    (c_econstr, h_c, a, h_a)) entries in
+  (* Build (c_i * a_i, proof: c_i * a_i ≤ 0) for each entry. *)
+  let products = List.map (fun (c_econstr, h_c, a, h_a) ->
+    let prod = EConstr.mkApp (u.mul, [| c_econstr; a |]) in
+    let proof = EConstr.mkApp (u.mul_nonneg_nonpos,
+      [| c_econstr; a; h_c; h_a |]) in
+    (prod, proof)) normalized in
+  (* Left-associative fold: sum the products, accumulating the
+     `≤ 0` proof step by step. *)
+  let (sum_econstr, sum_proof) = match products with
+    | [] -> assert false
+    | (p0, h0) :: rest ->
+      List.fold_left (fun (acc_e, acc_h) (p, h) ->
+        let new_sum = EConstr.mkApp (u.add, [| acc_e; p |]) in
+        let new_proof = EConstr.mkApp (u.add_nonpos,
+          [| acc_e; p; acc_h; h |]) in
+        (new_sum, new_proof)) (p0, h0) rest
   in
-  check_positive_coef ~slot:"c1" c1z;
-  check_positive_coef ~slot:"c2" c2z;
-  let id1 = Names.Id.of_string name1 in
-  let id2 = Names.Id.of_string name2 in
-  let (a1, h1) = normalize_hypothesis u env sigma id1 in
-  let (a2, h2) = normalize_hypothesis u env sigma id2 in
-  let c1 = u.lit c1z in
-  let c2 = u.lit c2z in
   let k_z = compute_residual ir entries in
   let k_constr = u.lit k_z in
   let hk = u.pos_is_pos k_z in
-  let hc1 = u.pos_is_nonneg c1z in
-  let hc2 = u.pos_is_nonneg c2z in
   let refine_tac : unit Proofview.tactic =
     Refine.refine ~typecheck:true (fun sigma ->
       let heq_type =
-        let mul x y = EConstr.mkApp (u.mul, [| x; y |]) in
-        let add x y = EConstr.mkApp (u.add, [| x; y |]) in
-        let lhs = add (mul c1 a1) (mul c2 a2) in
-        EConstr.mkApp (force r_eq, [| u.ty; lhs; k_constr |])
+        EConstr.mkApp (force r_eq, [| u.ty; sum_econstr; k_constr |])
       in
       let sigma, heq_evar = Evarutil.new_evar env sigma heq_type in
       let term =
-        EConstr.mkApp (u.farkas_le_2,
-          [| a1; a2; h1; h2;
-             c1; c2; hc1; hc2;
-             k_constr; hk; heq_evar |])
+        EConstr.mkApp (u.farkas_contradict_n,
+          [| sum_econstr; k_constr; sum_proof; hk; heq_evar |])
       in
       (sigma, term))
   in
@@ -421,10 +462,8 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
     let sigma = Proofview.Goal.sigma gl in
     let goal_ty = Proofview.Goal.concl gl in
     let entries = parse_witness witness in
-    if List.length entries <> 2 then
-      unsupported "term_mode: arity %d witness — only arity 2 wired today \
-                   (higher arities are mechanical farkas_le_n copies)"
-        (List.length entries);
+    if List.length entries < 1 then
+      unsupported "term_mode: empty witness — arity ≥ 1 required";
     let neg_entry = List.find_opt (fun (n, _) -> n = "neg_goal") entries in
     let real_entries = List.filter (fun (n, _) -> n <> "neg_goal") entries in
     let kind = goal_kind sigma goal_ty in

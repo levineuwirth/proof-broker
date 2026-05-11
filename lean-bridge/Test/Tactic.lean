@@ -132,6 +132,21 @@ theorem pb_term_axiom_free
 
 #print axioms pb_term_axiom_free
 
+/-- Term-mode arity-3 Tier 1 Farkas. The fold-based closer builds
+    `c1*a1 + c2*a2 + c3*a3 ≤ 0` step by step via
+    `Int.mul_nonpos_of_nonneg_of_nonpos` + `Int.add_nonpos`, then
+    applies `farkasContradictN` to discharge the strict-positivity
+    with `omega`. Lifts the closer's arity ceiling from 2 to N
+    (every entry in the witness flows through as an explicit Int
+    literal coefficient in the proof term). z3 mints the
+    3-coefficient Farkas witness for this transitive chain. Mirror
+    of Rocq's `pb_term_arity3_axiom_free`. -/
+theorem pb_term_arity3_axiom_free
+    (x y : Int) (h1 : 5 ≤ x) (h2 : x ≤ y) (h3 : y ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_arity3_axiom_free
+
 /-- Term-mode Tier 1 Farkas with a non-`False` goal. The witness
     has one real-hypothesis entry plus a `neg_goal` slot the closer
     discharges via `farkasGoalLe2` (which wraps

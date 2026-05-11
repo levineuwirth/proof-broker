@@ -831,31 +831,55 @@ private def closeOmegaSubgoal (omegaMV : MVarId) : TacticM Unit := do
   evalTactic (← `(tactic| omega))
   setGoals prevGoals
 
-/-- Term-mode closer, False-goal arity-2 path. Both witness entries
-    name real hypotheses; the proof term is `farkasContradict` with
-    every coefficient flowing through as an Int literal and the
-    strict-positivity subgoal discharged by `omega`. -/
+/-- Term-mode closer, False-goal arity-N path. Folds the witness's
+    coefficient list:
+
+      1. For each `(name, c)`: normalize hypothesis to `a ≤ 0`,
+         build `c * a` and a proof via
+         `Int.mul_nonpos_of_nonneg_of_nonpos`.
+      2. Left-associative fold sums the products, accumulating
+         `s_i ≤ 0` via `Int.add_nonpos`.
+      3. Apply `farkasContradictN` with the final sum + an evar
+         for `0 < s` discharged by `omega` (a literal-coefficient
+         polynomial-identity check, narrower than a goal-side
+         omega call).
+
+    Arity 1 degenerates to a single product; arity 2 produces the
+    same shape `farkasContradict` does; arity N ≥ 3 is the new
+    reach. -/
 private def closeViaTermModeFalse
     (goal : MVarId) (entries : List (String × Int)) : TacticM Unit := do
-  let [(name1, c1), (name2, c2)] := entries
-    | throwError "proof_broker_term: unexpected entry count after arity check"
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
   goal.withContext do
-    let (fv1, ty1) ← fvarOfName name1
-    let (fv2, ty2) ← fvarOfName name2
-    let (a1, h1') ← normalizeHypothesis fv1 ty1
-    let (a2, h2') ← normalizeHypothesis fv2 ty2
-    let c1Expr := intLitExpr c1
-    let c2Expr := intLitExpr c2
-    let hc1 ← buildNonnegProof c1
-    let hc2 ← buildNonnegProof c2
+    -- Normalize each entry to (cExpr, hcProof, aExpr, haProof).
+    let normalized ← entries.mapM fun (name, c) => do
+      let (fv, ty) ← fvarOfName name
+      let (a, ha) ← normalizeHypothesis fv ty
+      let cExpr := intLitExpr c
+      let hc ← buildNonnegProof c
+      return (cExpr, hc, a, ha)
+    -- Build (c_i * a_i, proof c_i * a_i ≤ 0) for each.
+    let products ← normalized.mapM fun (cExpr, hc, a, ha) => do
+      let prod ← Lean.Meta.mkAppM ``HMul.hMul #[cExpr, a]
+      let proof ← Lean.Meta.mkAppM
+                    ``Int.mul_nonpos_of_nonneg_of_nonpos #[hc, ha]
+      return (prod, proof)
+    -- Left-associative fold: sum + ≤ 0 proof.
+    let (sum, sumProof) ← match products with
+      | [] => throwError "proof_broker_term: empty fold (internal)"
+      | (p0, h0) :: rest =>
+        rest.foldlM (fun (accE, accH) (p, h) => do
+          let newSum ← Lean.Meta.mkAppM ``HAdd.hAdd #[accE, p]
+          let newProof ← Lean.Meta.mkAppM ``Int.add_nonpos #[accH, h]
+          return (newSum, newProof)) (p0, h0)
+    -- Build hpos evar (0 < sum), closed by omega.
     let zero := intLitExpr 0
-    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
-    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[c2Expr, a2]
-    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
     let hposTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
     let hposMV ← Lean.Meta.mkFreshExprMVar hposTy
-    let term ← Lean.Meta.mkAppM ``ProofBroker.TermMode.farkasContradict
-      #[h1', h2', hc1, hc2, hposMV]
+    let term ← Lean.Meta.mkAppM
+                 ``ProofBroker.TermMode.farkasContradictN
+                 #[sum, sumProof, hposMV]
     closeOmegaSubgoal hposMV.mvarId!
     goal.assign term
 
@@ -957,9 +981,8 @@ private def closeViaTermModeWithNegGoal
 private def closeViaTermMode (goal : MVarId) (goalType : Expr)
     (cert : Json) : TacticM Unit := do
   let entries ← parseFarkasCoefficients cert
-  unless entries.length == 2 do
-    throwError "proof_broker_term: arity {entries.length} witness — only \
-                 arity 2 wired today"
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
   let negEntry := entries.find? (fun e => e.1 == "neg_goal")
   match negEntry with
   | none =>
@@ -968,9 +991,18 @@ private def closeViaTermMode (goal : MVarId) (goalType : Expr)
                    not False ({goalType}); cert/goal mismatch"
     closeViaTermModeFalse goal entries
   | some (_, cng) =>
+    -- Non-False goal: the comparison-goal closer
+    -- (`closeViaTermModeWithNegGoal`) is arity-2-only today (one real
+    -- hypothesis + neg_goal). Higher arity on non-False goals would
+    -- need a farkasGoalLeN helper — out of scope for this iteration.
     if goalType.isConstOf ``False then
       throwError "proof_broker_term: witness names neg_goal but goal is \
                    False ({goalType}); cert/goal mismatch"
+    unless entries.length == 2 do
+      throwError "proof_broker_term: arity {entries.length} non-False \
+                   witness — only arity 2 wired for comparison goals \
+                   (False-goal arity-N landed; comparison-goal arity-N \
+                   needs farkasGoalLeN helper)"
     let real := entries.find? (fun e => e.1 != "neg_goal")
     let realEntry ← match real with
       | some e => pure e

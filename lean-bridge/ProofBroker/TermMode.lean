@@ -99,4 +99,15 @@ theorem farkasGoalLt2
       Int.sub_nonpos_of_le (Int.not_lt.mp hng)
     farkasContradict h1 hng_le hc1 hcng heq
 
+/-- General-arity contradiction step. The OCaml-side closer builds
+    `s = c1*a1 + c2*a2 + ... + cN*aN` (left-associative) and proves
+    `s ≤ 0` by folding `Int.mul_nonpos_of_nonneg_of_nonpos` +
+    `Int.add_nonpos` over the witness's entries — both `Int.*`
+    lemmas are axiom-free, and so is this contradiction step.
+    Generalizes `farkasContradict` to any arity (`farkasContradict`
+    is the special case where the fold is one mul + one add). -/
+theorem farkasContradictN
+    (s : Int) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
+  absurd hpos (Int.not_lt_of_ge hsum)
+
 end ProofBroker.TermMode

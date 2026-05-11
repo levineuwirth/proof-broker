@@ -51,7 +51,17 @@ theorem rFarkasContradict
   let ssum : c1 * a1 + c2 * a2 ≤ 0 := add_nonpos s1 s2
   absurd hpos (not_lt.mpr ssum)
 
+/-- General-arity contradiction step over Real. Mirrors
+    `ProofBroker.TermMode.farkasContradictN`. The OCaml-side closer
+    builds `s = c1*a1 + ... + cN*aN` and proves `s ≤ 0` by folding
+    `mul_nonpos_of_nonneg_of_nonpos` + `add_nonpos` over the
+    witness; this lemma turns that into `False` from `0 < s`. -/
+theorem rFarkasContradictN
+    (s : Real) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
+  absurd hpos (not_lt.mpr hsum)
+
 #print axioms rFarkasContradict
+#print axioms rFarkasContradictN
 #print axioms rLeToLe0
 #print axioms rGeToLe0
 

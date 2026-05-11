@@ -66,6 +66,21 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Term-mode arity-3 Tier 1 Farkas: 3-hypothesis chain that omega
+    closes via transitive reasoning. The fold-based closer builds
+    `c1*a1 + c2*a2 + c3*a3 ≤ 0` step by step via
+    `z_mul_nonneg_nonpos` + `z_add_nonpos`, then applies
+    `farkas_contradict_n` to discharge the strict-positivity. Lifts
+    the closer's arity ceiling from 2 to N. Note: this concrete
+    chain `x ≥ 5, x ≤ y, y ≤ 3 ⊢ False` requires z3 to extract a
+    3-coefficient witness; cvc5 may produce a different proof shape. *)
+Theorem pb_term_arity3_axiom_free :
+  forall x y : Z, x >= 5 -> x <= y -> y <= 3 -> False.
+Proof.
+  intros x y H1 H2 H3.
+  proof_broker_term [z3].
+Qed.
+
 (** Term-mode with a non-[False] goal of shape [_ <= _ : Z]. The
     witness has one real-hypothesis entry plus a [neg_goal] slot
     the closer discharges via [farkas_le_goal_2] (which wraps the
@@ -250,6 +265,9 @@ Print Assumptions pb_lra_axiom_free.
 
 Print pb_term_axiom_free.
 Print Assumptions pb_term_axiom_free.
+
+Print pb_term_arity3_axiom_free.
+Print Assumptions pb_term_arity3_axiom_free.
 
 Print pb_term_goal_axiom_free.
 Print Assumptions pb_term_goal_axiom_free.
