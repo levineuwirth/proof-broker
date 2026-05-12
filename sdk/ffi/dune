@@ -21,3 +21,15 @@
  (foreign_stubs
   (language c)
   (names proof_broker_shim)))
+
+; Install proof_broker_ffi.so into the proof_broker package's lib
+; directory so downstream consumers (the Lean plugin's lakefile, third-
+; party Lean projects depending on this bridge) can resolve it via
+; `opam var proof_broker:lib` instead of hardcoding a path into the
+; OCaml workspace's _build tree. First half of the Phase 6 distribution
+; scaffold per RETROSPECTIVES/phase-5.md "Cross-platform OCaml runtime
+; distribution".
+(install
+ (section lib)
+ (files proof_broker_ffi.so)
+ (package proof_broker))

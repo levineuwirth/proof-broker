@@ -24,6 +24,15 @@ OCAML_INC="$(opam exec -- ocamlc -where)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# dl* functions live in libdl on Linux but in libSystem on macOS — no
+# separate -ldl flag exists on Darwin and passing one may break the
+# link. Select the platform-appropriate trailing libraries.
+case "$(uname -s)" in
+  Linux)  EXTRA_LIBS=(-lm -lpthread -ldl) ;;
+  Darwin) EXTRA_LIBS=(-lm -lpthread) ;;
+  *)      EXTRA_LIBS=(-lm -lpthread) ;;
+esac
+
 # -Wl,-rpath sets the loader search path so the test exe can find the .so
 # without LD_LIBRARY_PATH gymnastics. The .so has no SONAME, so the linker
 # records its bare basename in DT_NEEDED.
@@ -32,6 +41,6 @@ cc -std=c11 -Wall -Wextra -O2 \
    "$SRC" "$SO" \
    -Wl,-rpath,"$(dirname "$SO")" \
    -o "$TMP/test_shim" \
-   -lm -lpthread -ldl
+   "${EXTRA_LIBS[@]}"
 
 "$TMP/test_shim" "$EXAMPLE"

@@ -71,6 +71,60 @@ jobs:
       - name: FFI shim smoke test (C ↔ OCaml)
         run: bash sdk/ffi/test/run.sh
 
+  sdk-cross-platform:
+    # Cross-platform build + install verification. The primary `sdk`
+    # job above runs on Linux x86 and is the prerequisite for the
+    # bridge jobs; this matrix is independent — its purpose is to
+    # surface platform-specific build breakage on macOS / ARM Linux
+    # before users hit it, and to validate the `(install ...)` stanza
+    # in sdk/ffi/dune that routes `proof_broker_ffi.so` to the package
+    # lib directory. No `needs:` edge feeds out of this job, so a
+    # macOS / ARM failure doesn't block the rest of the workflow.
+    # First half of the Phase 6 distribution scaffold per
+    # `RETROSPECTIVES/phase-5.md` carried-forward "Cross-platform
+    # OCaml runtime distribution".
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04-arm
+            label: linux-aarch64
+          - os: macos-13
+            label: macos-x86_64
+          - os: macos-14
+            label: macos-aarch64
+    runs-on: ${{ matrix.os }}
+    name: sdk-cross-platform (${{ matrix.label }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.4"
+          dune-cache: true
+
+      - name: Install SDK deps
+        run: opam install -y --deps-only --with-test ./proof_broker.opam
+
+      - name: Build SDK
+        run: opam exec -- dune build sdk
+
+      - name: Run SDK tests
+        run: opam exec -- dune runtest sdk
+
+      - name: FFI shim smoke test (C ↔ OCaml)
+        run: bash sdk/ffi/test/run.sh
+
+      - name: Verify `dune install` lands proof_broker_ffi.so in lib/proof_broker/
+        # The install stanza in sdk/ffi/dune is the production-ready
+        # path that decouples the Lean lakefile from the dev `_build`
+        # tree. Verify it works on each target platform.
+        run: |
+          tmp=$(mktemp -d)
+          opam exec -- dune install --prefix="$tmp" proof_broker
+          test -f "$tmp/lib/proof_broker/proof_broker_ffi.so"
+          echo "OK: proof_broker_ffi.so installed at $tmp/lib/proof_broker/"
+
   lean-bridge:
     runs-on: ubuntu-latest
     needs: sdk
