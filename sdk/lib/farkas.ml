@@ -225,7 +225,16 @@ let effective_fragment (ir : Ir.t) : string =
          ir.context.hypotheses
   in
   if any_real_free_var || any_real_term then "LRA"
-  else ir.logic_classification.first_order_fragment
+  else
+    (* Typeclass fixtures with universal type-var metadata leave
+       [first_order_fragment] as ["none"] pending refinement; default
+       to LIA so the refinement pipeline runs (refinement picks a host
+       type per the embedding tags, which is the actual classifier
+       for these IRs). Matches the legacy per-adapter [pick_fragment]
+       behavior for non-Real IRs. *)
+    match ir.logic_classification.first_order_fragment with
+    | "" | "none" -> "LIA"
+    | frag -> frag
 
 (* --- main entry ------------------------------------------------------ *)
 

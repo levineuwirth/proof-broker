@@ -527,6 +527,112 @@ let test_verify_lra_strict_negative_coef_rejected () =
   | Negative_coefficient { hypothesis = "h1"; _ } -> ()
   | _ -> Alcotest.fail "expected Negative_coefficient on strict h1"
 
+(** Multi-variable LRA Farkas with genuinely-rational multipliers spanning
+    three free variables. Counterpart to [test_verify_with_rational_coefs]
+    (which scales a single-variable single-axis witness by 1/2): this
+    fixture has each multiplier come from a *different* denominator so the
+    LCD of the coefficient set is non-trivial (LCM(2,3,6,1) = 6).
+
+    cvc5 and z3 normalize Farkas multipliers to integers for the LRA goal
+    shapes our bridges have tried in practice, so the bridge-level
+    `pb_lra_term_rational_axiom_free` regression tests trip the LCD = 1
+    short-circuit inside `Linear_arith.clear_denominators_list`. This
+    synthetic SDK test exercises the rational-arithmetic path of
+    `Farkas.verify` directly, demonstrating that a multi-variable witness
+    with coefficients (1/2, 1/3, 1/6, 1) combines to a strict contradiction
+    end-to-end. (The Rocq term-mode closer would route the same witness
+    through `clear_denominators_list` to scale it to (3, 2, 1, 6) for the
+    integer-coefficient proof term it builds; `Farkas.verify` itself works
+    in rationals natively and doesn't need that step.)
+
+    IR:
+        h1: 2x <= 1
+        h2: 3y <= 1
+        h3: 6z <= 1
+        h4: 2 <= x + y + z
+        |- False
+
+    Farkas combination:
+        c_h1 = 1/2:  (1/2) * (2x - 1)      = x - 1/2
+        c_h2 = 1/3:  (1/3) * (3y - 1)      = y - 1/3
+        c_h3 = 1/6:  (1/6) * (6z - 1)      = z - 1/6
+        c_h4 = 1:    (1)   * (2 - x - y - z) = 2 - x - y - z
+
+    Sum: -1/2 - 1/3 - 1/6 + 2 = 1, i.e. 1 <= 0. Residual K = 1 > 0. *)
+let test_verify_multivariable_rational_coefs () =
+  let x = Ir.Var { name = "x" } in
+  let y = Ir.Var { name = "y" } in
+  let z = Ir.Var { name = "z" } in
+  let real_lit n = Ir.Num_lit { value = string_of_int n; ty = "Real" } in
+  let mul k v =
+    Ir.App { symbol = "HMul.hMul"; type_args = []; args = [ real_lit k; v ] }
+  in
+  let add a b =
+    Ir.App { symbol = "HAdd.hAdd"; type_args = []; args = [ a; b ] }
+  in
+  let one = real_lit 1 in
+  let two = real_lit 2 in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ mul 2 x; one ] };
+  } in
+  let h2 : Ir.hypothesis = {
+    name = "h2";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ mul 3 y; one ] };
+  } in
+  let h3 : Ir.hypothesis = {
+    name = "h3";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ mul 6 z; one ] };
+  } in
+  let h4 : Ir.hypothesis = {
+    name = "h4";
+    shell = App {
+      symbol = "LE.le"; type_args = []; args = [ two; add x (add y z) ];
+    };
+  } in
+  let ir =
+    make_lra_ir ~hypotheses:[ h1; h2; h3; h4 ] (Const { name = "False" })
+  in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "h1"; "coefficient", `String "1/2" ];
+      `Assoc [ "hypothesis", `String "h2"; "coefficient", `String "1/3" ];
+      `Assoc [ "hypothesis", `String "h3"; "coefficient", `String "1/6" ];
+      `Assoc [ "hypothesis", `String "h4"; "coefficient", `String "1" ];
+    ];
+  ] in
+  (match Farkas.verify ir witness with
+   | Verified -> ()
+   | other ->
+     let detail = match other with
+       | Not_contradictory { residual } ->
+         Printf.sprintf "Not_contradictory(%s)" residual
+       | _ -> "(other)"
+     in
+     Alcotest.fail
+       (Printf.sprintf "multi-variable rational cert rejected: %s" detail));
+  (* Also sanity-check that the closer's descaling would produce the
+     expected integer coefficients. The Rocq term-mode closer calls
+     `clear_denominators_list` on the parsed witness; running the same
+     function here on the same (string * rational) list demonstrates the
+     scaling result the closer would feed into its proof-term builder. *)
+  let parsed =
+    [ "h1", { L.num = Z.of_int 1; den = Z.of_int 2 };
+      "h2", { L.num = Z.of_int 1; den = Z.of_int 3 };
+      "h3", { L.num = Z.of_int 1; den = Z.of_int 6 };
+      "h4", { L.num = Z.of_int 1; den = Z.of_int 1 } ]
+  in
+  let scaled, lcd = L.clear_denominators_list parsed in
+  Alcotest.(check string) "LCD = 6" "6" (Z.to_string lcd);
+  let assert_coef name expected =
+    let actual = Z.to_string (List.assoc name scaled) in
+    Alcotest.(check string) (name ^ " scaled coef") expected actual
+  in
+  assert_coef "h1" "3";
+  assert_coef "h2" "2";
+  assert_coef "h3" "1";
+  assert_coef "h4" "6"
+
 let test_verify_with_rational_coefs () =
   (* Same Farkas combination, scaled by 2: coefs 2, 2, 2 ⇒ residual 2 ⇒ contradiction. *)
   let witness : Yojson.Safe.t = `Assoc [
@@ -580,6 +686,8 @@ let () =
       Alcotest.test_case "empty coefficient list" `Quick test_verify_empty_witness;
       Alcotest.test_case "neg_goal alone is non-contradictory" `Quick test_verify_neg_goal_lookup;
       Alcotest.test_case "rational coefficients" `Quick test_verify_with_rational_coefs;
+      Alcotest.test_case "multi-variable rational coefficients (LCD=6)"
+        `Quick test_verify_multivariable_rational_coefs;
     ];
     "verify (LRA strict)", [
       Alcotest.test_case "two strict witnesses, residual 0"
