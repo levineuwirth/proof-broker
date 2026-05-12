@@ -249,16 +249,25 @@ has shifted that scope to Phase 6:
   `Linear_arith.clear_denominators_list`'s scaling path would validate
   the new path more directly. The current bridge-level coverage is
   regression-only.
-- **Reifier widening for unsupported solver-emitted shapes.** Term-mode
-  covers LIA + LRA today. The reifier accepts a defined set of
-  arithmetic shapes (HMul, HAdd, HSub, OfNat, OfScientific over Real,
-  comparisons, Eq, And, Or, Not, UF). A scan for what solvers emit
-  that the reifier currently rejects — division literals, mixed
-  Int/Real, conditional expressions — would surface real gaps. Higher
-  fragments (QF_BV, QF_UF) need a different proof-construction
-  strategy than Farkas; the open question is whether the universe-
-  polymorphic record idiom generalizes beyond linear arithmetic or
-  whether each non-arithmetic theory needs its own closer.
+- **Reifier widening for unsupported solver-emitted shapes.** Audit
+  completed in the post-Phase-5 cleanup arc: the speculatively-named
+  gaps (division literal as `App` node, conditional expressions,
+  mixed Int/Real coercions) are not exercised by any solver emission
+  in our fixture set. All real cvc5 / z3 proofs we hold today route
+  through paths the reifier handles — rationals as `"n/d"` strings,
+  standard arithmetic ops, plain integer and real literals. The
+  audit's main finding is the meta-finding: this carried-forward
+  item was speculative scaffolding for a *predicted* class of gaps,
+  not *observed* breakage. Defensive guard landed: `compile_hypothesis`
+  now surfaces "conditional expression (ite) in operand — Farkas
+  requires linear arithmetic" instead of the generic "non-linear
+  arithmetic operand" when an `ite` appears, so the day a solver
+  does emit one the diagnostic points at the actual blocker. Further
+  widening deferred until a real emission surfaces a real gap. The
+  bigger design question — whether the universe-polymorphic record
+  idiom generalizes beyond LIA + LRA, or whether QF_BV / QF_UF need
+  their own closers — remains open and is the right anchor for
+  Phase 7 if non-arithmetic theories enter scope.
 - **Lean dynamic-syntax idiom for variable-length sepBy1.** Currently
   using string + `runParserCategory` round-trip for arity-N rcases.
   A more direct macro-level approach (via `Lean.Syntax.SepArray` or

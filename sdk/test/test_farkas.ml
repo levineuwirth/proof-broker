@@ -633,6 +633,41 @@ let test_verify_multivariable_rational_coefs () =
   assert_coef "h3" "1";
   assert_coef "h4" "6"
 
+(** Solvers don't emit conditional expressions inside hypothesis atoms
+    for the LIA / LRA goal shapes our bridges work with today, but if
+    one ever does, the rejection path should name the specific blocker
+    rather than the generic "non-linear arithmetic operand". This test
+    pins the diagnostic — defensive guard from the Phase 5 reifier
+    gap audit (no observed gaps; preserve a clear error for the day
+    one surfaces). *)
+let test_compile_hypothesis_ite_rejected_with_clear_message () =
+  let x = Ir.Var { name = "x" } in
+  let zero = Ir.Num_lit { value = "0"; ty = "Int" } in
+  let one = Ir.Num_lit { value = "1"; ty = "Int" } in
+  let neg_x = Ir.App {
+    symbol = "Int.neg"; type_args = []; args = [ x ];
+  } in
+  let cond = Ir.App {
+    symbol = "LT.lt"; type_args = []; args = [ zero; x ];
+  } in
+  (* (ite (0 < x) x (-x)) -- the absolute value of x, classically non-
+     linear-arithmetic. *)
+  let abs_x = Ir.App {
+    symbol = "ite"; type_args = []; args = [ cond; x; neg_x ];
+  } in
+  let hyp_shell : Ir.shell_term = App {
+    symbol = "LE.le"; type_args = []; args = [ abs_x; one ];
+  } in
+  match Farkas.compile_hypothesis hyp_shell with
+  | Ok _ -> Alcotest.fail "expected error for ite-containing hypothesis"
+  | Error msg ->
+    Alcotest.(check bool)
+      "rejection names the construct (ite)" true
+      (String.length msg > 0
+       && (try
+             let _ = Str.search_forward (Str.regexp "ite") msg 0 in true
+           with Not_found -> false))
+
 let test_verify_with_rational_coefs () =
   (* Same Farkas combination, scaled by 2: coefs 2, 2, 2 ⇒ residual 2 ⇒ contradiction. *)
   let witness : Yojson.Safe.t = `Assoc [
@@ -674,6 +709,8 @@ let () =
       Alcotest.test_case "Not(LE.le) under LRA" `Quick test_compile_not_le_lra;
       Alcotest.test_case "Not(LT.lt) under LRA" `Quick test_compile_not_lt_lra;
       Alcotest.test_case "unsupported shape" `Quick test_compile_unsupported;
+      Alcotest.test_case "ite-in-operand error names the construct"
+        `Quick test_compile_hypothesis_ite_rejected_with_clear_message;
     ];
     "verify", [
       Alcotest.test_case "example1 cert verifies" `Quick test_verify_example1;

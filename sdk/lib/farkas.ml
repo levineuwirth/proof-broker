@@ -106,6 +106,42 @@ type compiled =
   | Lt of Linear_arith.t
   | Eq of Linear_arith.t
 
+(** Walk a shell term looking for constructs that are well-formed IR
+    but inherently outside Farkas's linear-arithmetic reach. Returns a
+    short human-readable description of the first such construct found,
+    or [None] if the term is structurally compatible (whether or not
+    [linearize] currently succeeds on it). Used to enrich
+    [compile_hypothesis]'s rejection diagnostic — "conditional
+    expression (ite)" beats the generic "non-linear arithmetic operand"
+    when something concrete is to blame. Extend the match arms here
+    as new gap audits identify additional shapes worth diagnosing
+    specifically. *)
+let rec contains_unsupported_construct (t : Ir.shell_term) : string option =
+  match t with
+  | App { symbol = "ite" | "If.ite" | "if" | "ite_then_else"; _ } ->
+    Some "conditional expression (ite)"
+  | App { args; _ } -> List.find_map contains_unsupported_construct args
+  | Not { operand } -> contains_unsupported_construct operand
+  | Eq { left; right; _ } ->
+    (match contains_unsupported_construct left with
+     | Some _ as r -> r
+     | None -> contains_unsupported_construct right)
+  | _ -> None
+
+(** Pick the most useful error string when both operands of a
+    comparison fail to linearize: name the specific Farkas-incompatible
+    construct if one is present, otherwise fall back to the generic
+    "non-linear arithmetic operand". *)
+let nonlinear_reason a b =
+  match contains_unsupported_construct a with
+  | Some s ->
+    Printf.sprintf "%s in operand — Farkas requires linear arithmetic" s
+  | None ->
+    (match contains_unsupported_construct b with
+     | Some s ->
+       Printf.sprintf "%s in operand — Farkas requires linear arithmetic" s
+     | None -> "non-linear arithmetic operand")
+
 (** Compile a hypothesis shell to a [compiled] form. Returns the
     raw [Ir.shell_term] structure as a [Nonlinear] detail if anything
     fails to linearize; this lets the caller surface a useful error
@@ -124,12 +160,12 @@ let compile_hypothesis ?(fragment = "LIA") (shell : Ir.shell_term)
   let lift_le_pair a b =
     match linearize a, linearize b with
     | Some la, Some lb -> Ok (Le (Linear_arith.sub la lb))
-    | _ -> Error "non-linear arithmetic operand"
+    | _ -> Error (nonlinear_reason a b)
   in
   let lift_eq_pair a b =
     match linearize a, linearize b with
     | Some la, Some lb -> Ok (Eq (Linear_arith.sub la lb))
-    | _ -> Error "non-linear arithmetic operand"
+    | _ -> Error (nonlinear_reason a b)
   in
   (* Compile [a < b] under the active fragment: strict [Lt(a-b)] for
      LRA, or [Le(a-b+1)] under the LIA +1 trick. *)
@@ -141,7 +177,7 @@ let compile_hypothesis ?(fragment = "LIA") (shell : Ir.shell_term)
       else
         Ok (Le (Linear_arith.add f
                   (Linear_arith.const Linear_arith.rat_one)))
-    | _ -> Error "non-linear arithmetic operand"
+    | _ -> Error (nonlinear_reason a b)
   in
   match shell with
   | Eq { left; right; _ } ->
