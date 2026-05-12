@@ -204,17 +204,8 @@ let mint_farkas_cert
 
 let version = "1.8"
 
-(** Pick the LIA/LRA target fragment from the IR's free-var sorts.
-    Falls back to LIA when there are no Real free vars. *)
-let pick_fragment (ir : Ir.t) : string =
-  let has_real =
-    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
-      ir.context.free_vars
-  in
-  if has_real then "LRA" else "LIA"
-
 let dispatch (ir : Ir.t) : Adapter.result =
-  let fragment = pick_fragment ir in
+  let fragment = Farkas.effective_fragment ir in
   match Refinement.run ~fragment ir with
   | Error err ->
     Failed (Unsupported_ir {

@@ -56,6 +56,16 @@ let host_type_of_fragment = function
   | "LRA" -> Some "Real"
   | _ -> None
 
+(** Fragments that have no host type to substitute into — refinement
+    is a no-op for them. UF and BV emit declarations / bv-typed sorts
+    directly; there's no universal-type-var rewriting to do. Listing
+    them explicitly preserves the loud-failure contract for truly
+    unknown fragments while letting the adapter layer pass these
+    through without a special case. *)
+let is_no_substitution_fragment = function
+  | "UF" | "BV" -> true
+  | _ -> false
+
 (** Pattern the [theory_classification_tags] entry must match for a
     type variable to be considered a refinement candidate for
     [host_type]: ["embeds_into:<HOST>_for_universal_<FRAGMENT>"]. *)
@@ -289,7 +299,6 @@ type t = {
     in primitive shape. *)
 let run ~fragment (ir : Ir.t) : (t, error) result =
   match host_type_of_fragment fragment with
-  | None -> Error (Unknown_fragment fragment)
   | Some host_type ->
     let type_subst, type_specs =
       type_specs_from_metadata ~fragment ~host_type ir in
@@ -299,3 +308,6 @@ let run ~fragment (ir : Ir.t) : (t, error) result =
       refined_ir;
       specializations = type_specs @ method_specs;
     }
+  | None when is_no_substitution_fragment fragment ->
+    Ok { refined_ir = ir; specializations = [] }
+  | None -> Error (Unknown_fragment fragment)

@@ -300,15 +300,8 @@ let extract_proof_body (stdout : string) : string option =
     backend.version stay synchronized. *)
 let version = "1.3.3"
 
-let pick_fragment (ir : Ir.t) : string =
-  let has_real =
-    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
-      ir.context.free_vars
-  in
-  if has_real then "LRA" else "LIA"
-
 let dispatch (ir : Ir.t) : Adapter.result =
-  let fragment = pick_fragment ir in
+  let fragment = Farkas.effective_fragment ir in
   match Refinement.run ~fragment ir with
   | Error err ->
     Failed (Unsupported_ir {

@@ -9,7 +9,8 @@
     * Type substitution actually applies to the IR: [alpha] in
       free_vars becomes [Int]; [alpha] in NumLit type tags becomes
       [Int]; [alpha] in Eq's [ty] field becomes [Int].
-    * Unknown fragment returns Unknown_fragment error.
+    * Unknown fragment returns Unknown_fragment error; recognized
+      no-substitution fragments (UF, BV) pass through as no-ops.
     * LRA target on the same fixture (with theory_classification_tag
       [embeds_into:Int_for_universal_LRA] absent): no
       type_specialization (the tag for LRA isn't there). *)
@@ -58,9 +59,33 @@ let test_no_metadata_is_no_op () =
 
 let test_unknown_fragment_errors () =
   let ir = make_ir (Var { name = "p" }) in
-  match Refinement.run ~fragment:"BV" ir with
-  | Error (Unknown_fragment "BV") -> ()
+  match Refinement.run ~fragment:"NotAFragment" ir with
+  | Error (Unknown_fragment "NotAFragment") -> ()
   | _ -> Alcotest.fail "expected Unknown_fragment"
+
+(* UF and BV are recognized as fragments with no host-type
+   substitution rules. They must pass through refinement as a no-op
+   rather than erroring — the adapter layer relies on this so it can
+   pass the bridge-built fragment label straight through without a
+   special case for non-arithmetic fragments. *)
+let test_no_substitution_fragments_passthrough () =
+  let ir = make_ir
+    ~free_vars:[ { name = "n"; ty = "Int" } ]
+    (Var { name = "n" }) in
+  List.iter (fun fragment ->
+    match Refinement.run ~fragment ir with
+    | Ok r ->
+      Alcotest.(check int)
+        (fragment ^ ": no specs") 0 (List.length r.specializations);
+      let identical =
+        Yojson.Safe.equal (Codec.to_json r.refined_ir) (Codec.to_json ir)
+      in
+      Alcotest.(check bool)
+        (fragment ^ ": refined_ir = ir") true identical
+    | Error e ->
+      Alcotest.fail
+        (fragment ^ ": unexpected error: " ^ Refinement.detail_of_error e)
+  ) ["UF"; "BV"]
 
 let test_alpha_type_var_substituted () =
   let alpha_meta = `Assoc [
@@ -274,6 +299,8 @@ let () =
         `Quick test_no_metadata_is_no_op;
       Alcotest.test_case "unknown fragment errors"
         `Quick test_unknown_fragment_errors;
+      Alcotest.test_case "no-substitution fragments pass through"
+        `Quick test_no_substitution_fragments_passthrough;
       Alcotest.test_case "alpha → Int via type_metadata"
         `Quick test_alpha_type_var_substituted;
       Alcotest.test_case "library_slice entries refined alongside hyps"

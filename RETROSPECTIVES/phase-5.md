@@ -264,7 +264,20 @@ has shifted that scope to Phase 6:
   A more direct macro-level approach (via `Lean.Syntax.SepArray` or
   similar) would simplify the case-split closer and any future
   dynamic-pattern code.
-- **`fragment_of_logic` consolidation.** Carried forward from Phase 4.
-  Still not done. The Phase 5 term-mode work didn't surface it again,
-  but it's still the right cleanup — the next adapter add will pay
-  for it.
+- **`fragment_of_logic` consolidation.** Carried forward from Phase 4,
+  resolved in the post-Phase-5 cleanup arc. The Phase 4 fix consolidated
+  the SMT-LIB-string → bare-fragment map (`Smtlib.fragment_of_logic`);
+  the remaining gap was at IR-build time — each of the three SMT adapters
+  shipped its own 5-line `pick_fragment` doing an incomplete Real-vs-LIA
+  detection that ignored the bridge's pre-classified
+  `logic_classification.first_order_fragment`. Removed all three copies
+  and routed the dispatchers through `Farkas.effective_fragment`, which
+  already honors the bridge's classification and adds a Real-subterm
+  safety net. Surfaced (and fixed) one downstream consequence:
+  `Refinement.run` was hyper-conservative about fragment names —
+  errored on UF/BV instead of treating them as no-substitution
+  fragments. Added an explicit no-substitution-fragments whitelist and
+  a test that asserts the pass-through. Phase 4's prediction that "the
+  next adapter add will pay for it" was right: the broken classifier
+  was masked by every adapter independently downgrading to LIA, so
+  the gap was latent until forced.
