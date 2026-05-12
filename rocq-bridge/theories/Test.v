@@ -208,6 +208,19 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Not-hypothesis in the witness: [(h1 : ~ x <= 5) (h2 : x <= 3) |- False].
+    [~ x <= 5] semantically means [x > 5]. Combined with [h2 : x <= 3],
+    contradiction. The closer routes the Not hypothesis through
+    [z_not_le_to_le0] to get [(5 + 1) - x <= 0] (LIA +1 trick on the
+    strict [5 < x] derived from the negation), then folds with h2's
+    [x - 3 <= 0] to produce a strictly-positive sum. *)
+Theorem pb_term_not_hyp_axiom_free :
+  forall x : Z, ~ x <= 5 -> x <= 3 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
 (** Verbose + explicit list. *)
 Theorem pb_lia_verbose_list : forall x : Z, x >= 5 -> x <= 3 -> False.
 Proof.
@@ -356,6 +369,18 @@ Qed.
     on the coefficient sign. *)
 Theorem pb_lra_term_eq_hyp_axiom_free :
   forall x : R, x = 5 -> x <= 3 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Not-hypothesis in the witness (R): mirror of Z's
+    [pb_term_not_hyp_axiom_free]. [~ x <= 5] over R compiles to
+    the strict [5 < x] (no +1 trick over R). The closer's strict-
+    aware fold threads strictness through via [r_not_le_to_lt0] +
+    [r_mul_pos_neg] / [r_add_lt_le]. *)
+Theorem pb_lra_term_not_hyp_axiom_free :
+  forall x : R, ~ (x <= 5)%R -> (x <= 3)%R -> False.
 Proof.
   intros x H1 H2.
   proof_broker_term [z3].
@@ -571,6 +596,9 @@ Print Assumptions pb_term_arity3_lt_axiom_free.
 Print pb_term_eq_hyp_axiom_free.
 Print Assumptions pb_term_eq_hyp_axiom_free.
 
+Print pb_term_not_hyp_axiom_free.
+Print Assumptions pb_term_not_hyp_axiom_free.
+
 Print pb_lra_term_goal_axiom_free.
 Print Assumptions pb_lra_term_goal_axiom_free.
 
@@ -597,6 +625,9 @@ Print Assumptions pb_lra_term_rational_axiom_free.
 
 Print pb_lra_term_eq_hyp_axiom_free.
 Print Assumptions pb_lra_term_eq_hyp_axiom_free.
+
+Print pb_lra_term_not_hyp_axiom_free.
+Print Assumptions pb_lra_term_not_hyp_axiom_free.
 
 Print pb_lra_term_lt_hyp_axiom_free.
 Print Assumptions pb_lra_term_lt_hyp_axiom_free.

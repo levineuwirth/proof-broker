@@ -268,6 +268,21 @@ theorem pb_term_eq_hyp_axiom_free
 
 #print axioms pb_term_eq_hyp_axiom_free
 
+/-- Not-hypothesis in the witness: `(h1 : ¬(x ≤ 5)) (h2 : x ≤ 3) ⊢ False`.
+    `¬(x ≤ 5)` semantically means `x > 5`. Combined with `h2 : x ≤ 3`,
+    contradiction. The closer routes the Not hypothesis through
+    `notLeToLe0` to get `(5 + 1) - x ≤ 0 = 6 - x ≤ 0` (LIA +1 trick on
+    the strict `5 < x` derived from the negation), then folds with h2's
+    `x - 3 ≤ 0` to produce a strictly-positive sum `6 - x + x - 3 = 3
+    > 0`. Trust footprint: `[propext, Quot.sound]` from omega-closed
+    polynomial-identity subgoals; the Not helpers themselves are
+    axiom-free via omega. -/
+theorem pb_term_not_hyp_axiom_free
+    (x : Int) (h1 : ¬(x ≤ 5)) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_not_hyp_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated

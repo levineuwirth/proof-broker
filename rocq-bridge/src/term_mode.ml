@@ -29,6 +29,14 @@ let z_gt_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.gt_to_l
 let z_eq_to_le0_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.z_eq_to_le0")
 let z_eq_to_le0_flipped_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.z_eq_to_le0_flipped")
+let z_not_le_to_le0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_not_le_to_le0")
+let z_not_ge_to_le0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_not_ge_to_le0")
+let z_not_lt_to_le0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_not_lt_to_le0")
+let z_not_gt_to_le0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_not_gt_to_le0")
 let r_zero_nonneg_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_zero_nonneg")
 let r_lt_to_lt0_ref =
@@ -59,6 +67,14 @@ let r_ge_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_ge_
 let r_eq_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_eq_to_le0")
 let r_eq_to_le0_flipped_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_eq_to_le0_flipped")
+let r_not_le_to_lt0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_not_le_to_lt0")
+let r_not_ge_to_lt0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_not_ge_to_lt0")
+let r_not_lt_to_le0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_not_lt_to_le0")
+let r_not_gt_to_le0_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_not_gt_to_le0")
 let r_farkas_le_2_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_le_2")
 let r_pos_is_pos_ref    = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_pos")
 let r_pos_is_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_nonneg")
@@ -80,6 +96,7 @@ let r_Z    = lazy (safe_constr_of_ref "num.Z.type")
 let r_eq   = lazy (safe_constr_of_ref "core.eq.type")
 let r_False = lazy (safe_constr_of_ref "core.False.type")
 let r_or    = lazy (safe_constr_of_ref "core.or.type")
+let r_not   = lazy (safe_constr_of_ref "core.not.type")
 let r_xH   = lazy (safe_constr_of_ref "num.pos.xH")
 let r_xO   = lazy (safe_constr_of_ref "num.pos.xO")
 let r_xI   = lazy (safe_constr_of_ref "num.pos.xI")
@@ -181,6 +198,22 @@ type universe = {
      witness's signed coefficient is negative. *)
   eq_to_le0 : EConstr.t;
   eq_to_le0_flipped : EConstr.t;
+  (* Not-hypothesis normalization. Each takes [h : ~ (a <op> b)] and
+     produces the matching normalized form:
+       * [not_le_to_le0]: [~ a <= b] → [(b + 1) - a <= 0] (Z, +1 trick)
+                          or [b - a < 0] (R, strict preserved).
+       * [not_ge_to_le0]: [~ a >= b] → [(a + 1) - b <= 0] (Z)
+                          or [a - b < 0] (R).
+       * [not_lt_to_le0]: [~ a < b] → [b - a <= 0] (both, loose).
+       * [not_gt_to_le0]: [~ a > b] → [a - b <= 0] (both, loose).
+     [not_strict_inner_produces_lt] tracks whether the strict-inner
+     negations ([~ <=] / [~ >=]) yield a Lt-form output (true on R,
+     false on Z). *)
+  not_le_to_le0 : EConstr.t;
+  not_ge_to_le0 : EConstr.t;
+  not_lt_to_le0 : EConstr.t;
+  not_gt_to_le0 : EConstr.t;
+  not_strict_inner_produces_lt : bool;
   (* Strict-aware Farkas fold building blocks. [Some _] only on
      universes where strict premises survive normalization as [a < 0]
      rather than getting folded into [a <= 0] via the LIA +1 trick —
@@ -218,6 +251,11 @@ let z_universe () : universe = {
   gt_to_le0 = Some (force z_gt_to_le0);
   eq_to_le0 = force z_eq_to_le0_ref;
   eq_to_le0_flipped = force z_eq_to_le0_flipped_ref;
+  not_le_to_le0 = force z_not_le_to_le0_ref;
+  not_ge_to_le0 = force z_not_ge_to_le0_ref;
+  not_lt_to_le0 = force z_not_lt_to_le0_ref;
+  not_gt_to_le0 = force z_not_gt_to_le0_ref;
+  not_strict_inner_produces_lt = false;
   (* Z folds strict into Le via the +1 trick at [lt_to_le0] /
      [gt_to_le0] time, so the strict-aware fold path is unused
      on Z and these stay [None]. *)
@@ -258,6 +296,11 @@ let r_universe () : universe = {
   gt_to_le0 = None;
   eq_to_le0 = force r_eq_to_le0_ref;
   eq_to_le0_flipped = force r_eq_to_le0_flipped_ref;
+  not_le_to_le0 = force r_not_le_to_lt0_ref;
+  not_ge_to_le0 = force r_not_ge_to_lt0_ref;
+  not_lt_to_le0 = force r_not_lt_to_le0_ref;
+  not_gt_to_le0 = force r_not_gt_to_le0_ref;
+  not_strict_inner_produces_lt = true;
   lt_to_lt0 = Some (force r_lt_to_lt0_ref);
   gt_to_lt0 = Some (force r_gt_to_lt0_ref);
   mul_pos_neg = Some (force r_mul_pos_neg_ref);
@@ -466,6 +509,64 @@ let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
       let expr = EConstr.mkApp (u.sub, [| a; b |]) in
       let proof = EConstr.mkApp (u.eq_to_le0, [| a; b; h_term |]) in
       { expr; proof; strict = false }
+  | App (head, [| inner |]) when eq_ref sigma head r_not ->
+    (* Not-hypothesis [h : ~ (a <op> b)]. Dispatch by inner head;
+       each negation has a fixed conversion direction and the
+       resulting form's strictness depends on the universe (Z folds
+       strict via +1; R preserves strict via [lt_to_lt0] /
+       [gt_to_lt0]-style). *)
+    let one = u.lit Z.one in
+    (match EConstr.kind sigma inner with
+     | App (inner_head, [| a; b |]) ->
+       let head_matches lz =
+         match Lazy.force lz with
+         | Some c -> EConstr.eq_constr_nounivs sigma inner_head c
+         | None -> false
+       in
+       let is_le = head_matches r_Zle || head_matches r_Rle in
+       let is_ge = head_matches r_Zge || head_matches r_Rge in
+       let is_lt = head_matches r_Zlt || head_matches r_Rlt in
+       let is_gt = head_matches r_Zgt || head_matches r_Rgt in
+       if is_le then
+         (* [~ a <= b] → Z: [(b + 1) - a <= 0]; R: [b - a < 0]. *)
+         let expr =
+           if u.not_strict_inner_produces_lt then
+             EConstr.mkApp (u.sub, [| b; a |])
+           else
+             let b_plus_1 = EConstr.mkApp (u.add, [| b; one |]) in
+             EConstr.mkApp (u.sub, [| b_plus_1; a |])
+         in
+         let proof = EConstr.mkApp (u.not_le_to_le0, [| a; b; h_term |]) in
+         { expr; proof; strict = u.not_strict_inner_produces_lt }
+       else if is_ge then
+         (* [~ a >= b] → Z: [(a + 1) - b <= 0]; R: [a - b < 0]. *)
+         let expr =
+           if u.not_strict_inner_produces_lt then
+             EConstr.mkApp (u.sub, [| a; b |])
+           else
+             let a_plus_1 = EConstr.mkApp (u.add, [| a; one |]) in
+             EConstr.mkApp (u.sub, [| a_plus_1; b |])
+         in
+         let proof = EConstr.mkApp (u.not_ge_to_le0, [| a; b; h_term |]) in
+         { expr; proof; strict = u.not_strict_inner_produces_lt }
+       else if is_lt then
+         (* [~ a < b] → [b - a <= 0] (loose, both Z and R). *)
+         let expr = EConstr.mkApp (u.sub, [| b; a |]) in
+         let proof = EConstr.mkApp (u.not_lt_to_le0, [| a; b; h_term |]) in
+         { expr; proof; strict = false }
+       else if is_gt then
+         (* [~ a > b] → [a - b <= 0] (loose, both Z and R). *)
+         let expr = EConstr.mkApp (u.sub, [| a; b |]) in
+         let proof = EConstr.mkApp (u.not_gt_to_le0, [| a; b; h_term |]) in
+         { expr; proof; strict = false }
+       else
+         unsupported "term_mode: Not-hypothesis %s on %s has unrecognized \
+                      inner head (expected ≤/≥/</>)"
+           (Names.Id.to_string id) u.name
+     | _ ->
+       unsupported "term_mode: Not-hypothesis %s on %s has non-binary inner \
+                    operand"
+         (Names.Id.to_string id) u.name)
   | App (head, [| a; b |]) ->
     let head_matches lz =
       match Lazy.force lz with

@@ -147,6 +147,21 @@ theorem eqToLe0 {a b : Int} (h : a = b) : a - b ≤ 0 :=
 theorem eqToLe0Flipped {a b : Int} (h : a = b) : b - a ≤ 0 :=
   Int.sub_nonpos_of_le (Int.le_of_eq h.symm)
 
+/-- Not-hypothesis normalization (LIA). Solver-emitted certs can
+    reference hypotheses in negated form `(h : ¬(a ≤ b))` etc. —
+    the SDK accepts these via `Farkas.compile_hypothesis`'s `Not`
+    branch, which compiles `¬(a ≤ b)` to `b < a` (strict, then
+    folded via the LIA +1 trick to `(b + 1) - a ≤ 0`). The bridge
+    closer applies one of these helpers based on the inner head
+    of the negation. All four are axiom-free via `omega`. -/
+theorem notLeToLe0 {a b : Int} (h : ¬(a ≤ b)) : (b + 1) - a ≤ 0 := by omega
+
+theorem notGeToLe0 {a b : Int} (h : ¬(a ≥ b)) : (a + 1) - b ≤ 0 := by omega
+
+theorem notLtToLe0 {a b : Int} (h : ¬(a < b)) : b - a ≤ 0 := by omega
+
+theorem notGtToLe0 {a b : Int} (h : ¬(a > b)) : a - b ≤ 0 := by omega
+
 /-- Arity-N comparison-goal wrappers (Int). Convert a comparison goal
     into a `(neg_form → False)` shape so the closer can introduce the
     negated goal as a regular hypothesis and delegate to the existing

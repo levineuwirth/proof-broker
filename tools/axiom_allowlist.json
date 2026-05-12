@@ -16,6 +16,8 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_eq_hyp_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_not_hyp_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_goal_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_lt_axiom_free":
@@ -93,6 +95,16 @@
     "ProofBrokerMathlib.TermMode.rEqToLe0":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rEqToLe0Flipped":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rNotLeToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rNotGeToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rNotLtToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rNotGtToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_not_hyp_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
@@ -175,6 +187,16 @@
     "z_eq_to_le0_flipped":
       [],
     "pb_term_eq_hyp_axiom_free":
+      [],
+    "pb_term_not_hyp_axiom_free":
+      [],
+    "z_not_le_to_le0":
+      [],
+    "z_not_ge_to_le0":
+      [],
+    "z_not_lt_to_le0":
+      [],
+    "z_not_gt_to_le0":
       [],
     "r_farkas_contradict_n":
       [
@@ -316,6 +338,31 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "r_eq_to_le0_flipped":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_not_le_to_lt0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_not_ge_to_lt0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_not_lt_to_le0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "r_not_gt_to_le0":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_not_hyp_axiom_free":
       [
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"

@@ -243,6 +243,31 @@ Proof. subst. rewrite Z.sub_diag. apply Z.le_refl. Qed.
 Register z_eq_to_le0 as proof_broker.term_mode.z_eq_to_le0.
 Register z_eq_to_le0_flipped as proof_broker.term_mode.z_eq_to_le0_flipped.
 
+(** Not-hypothesis normalization (Z). Solver-emitted certs can
+    reference hypotheses in negated form `(h : ~ a <= b)` etc. —
+    the SDK accepts these via [Farkas.compile_hypothesis]'s [Not]
+    branch, which compiles `~ (a <= b)` to `b < a` (strict, then
+    folded via the LIA +1 trick to `(b + 1) - a <= 0`). The bridge
+    closer applies one of these helpers based on the inner head of
+    the negation. All four route through existing helpers, keeping
+    the axiom-free trust footprint. *)
+Lemma z_not_le_to_le0 (a b : Z) (h : ~ a <= b) : (b + 1) - a <= 0.
+Proof. apply lt_to_le0. apply Z.gt_lt. apply Znot_le_gt. exact h. Qed.
+
+Lemma z_not_ge_to_le0 (a b : Z) (h : ~ a >= b) : (a + 1) - b <= 0.
+Proof. apply lt_to_le0. apply Znot_ge_lt. exact h. Qed.
+
+Lemma z_not_lt_to_le0 (a b : Z) (h : ~ a < b) : b - a <= 0.
+Proof. apply le_to_le0. apply Z.ge_le. apply Znot_lt_ge. exact h. Qed.
+
+Lemma z_not_gt_to_le0 (a b : Z) (h : ~ a > b) : a - b <= 0.
+Proof. apply le_to_le0. apply Znot_gt_le. exact h. Qed.
+
+Register z_not_le_to_le0 as proof_broker.term_mode.z_not_le_to_le0.
+Register z_not_ge_to_le0 as proof_broker.term_mode.z_not_ge_to_le0.
+Register z_not_lt_to_le0 as proof_broker.term_mode.z_not_lt_to_le0.
+Register z_not_gt_to_le0 as proof_broker.term_mode.z_not_gt_to_le0.
+
 (** ============================================================
     Real-typed (LRA) Tier 1 Farkas reconstruction.
 
@@ -573,6 +598,28 @@ Proof. subst. rewrite Rminus_diag. apply Rle_refl. Qed.
 Register r_eq_to_le0 as proof_broker.term_mode.r_eq_to_le0.
 Register r_eq_to_le0_flipped as proof_broker.term_mode.r_eq_to_le0_flipped.
 
+(** Not-hypothesis normalization (R). Mirror of [z_not_le_to_le0]
+    family over the reals. Strictness is preserved (no +1 trick over
+    R) — the strict inner inequality from negation reaches the
+    closer's strict-aware fold via [Rlt_minus]; the loose forms route
+    through the existing [r_le_to_le0]. *)
+Lemma r_not_le_to_lt0 (a b : R) (h : ~ (a <= b)%R) : (b - a < 0)%R.
+Proof. apply Rlt_minus. apply Rnot_le_lt. exact h. Qed.
+
+Lemma r_not_ge_to_lt0 (a b : R) (h : ~ (a >= b)%R) : (a - b < 0)%R.
+Proof. apply Rlt_minus. apply Rnot_ge_lt. exact h. Qed.
+
+Lemma r_not_lt_to_le0 (a b : R) (h : ~ (a < b)%R) : (b - a <= 0)%R.
+Proof. apply r_le_to_le0. apply Rnot_lt_le. exact h. Qed.
+
+Lemma r_not_gt_to_le0 (a b : R) (h : ~ (a > b)%R) : (a - b <= 0)%R.
+Proof. apply r_le_to_le0. apply Rnot_gt_le. exact h. Qed.
+
+Register r_not_le_to_lt0 as proof_broker.term_mode.r_not_le_to_lt0.
+Register r_not_ge_to_lt0 as proof_broker.term_mode.r_not_ge_to_lt0.
+Register r_not_lt_to_le0 as proof_broker.term_mode.r_not_lt_to_le0.
+Register r_not_gt_to_le0 as proof_broker.term_mode.r_not_gt_to_le0.
+
 Close Scope R_scope.
 
 Open Scope Z_scope.
@@ -701,3 +748,27 @@ Print Assumptions r_eq_to_le0.
 
 Print r_eq_to_le0_flipped.
 Print Assumptions r_eq_to_le0_flipped.
+
+Print z_not_le_to_le0.
+Print Assumptions z_not_le_to_le0.
+
+Print z_not_ge_to_le0.
+Print Assumptions z_not_ge_to_le0.
+
+Print z_not_lt_to_le0.
+Print Assumptions z_not_lt_to_le0.
+
+Print z_not_gt_to_le0.
+Print Assumptions z_not_gt_to_le0.
+
+Print r_not_le_to_lt0.
+Print Assumptions r_not_le_to_lt0.
+
+Print r_not_ge_to_lt0.
+Print Assumptions r_not_ge_to_lt0.
+
+Print r_not_lt_to_le0.
+Print Assumptions r_not_lt_to_le0.
+
+Print r_not_gt_to_le0.
+Print Assumptions r_not_gt_to_le0.

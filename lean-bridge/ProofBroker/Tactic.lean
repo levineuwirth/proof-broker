@@ -877,6 +877,25 @@ private def matchIntEqHyp? (ty : Expr) : Option (Expr × Expr) :=
     if α.isConstOf ``Int then some (a, b) else none
   | _ => none
 
+/-- Detect an Int Not-hypothesis: `h : ¬(a <op> b)` for
+    `<op> ∈ {≤, ≥, <, >}`. Returns the inner kind + operands. The
+    closer applies the matching `notLeToLe0` / `notGeToLe0` /
+    `notLtToLe0` / `notGtToLe0` helper to normalize. -/
+private def matchIntNotBound? (ty : Expr) : Option (HypKind × Expr × Expr) :=
+  match ty.getAppFnArgs with
+  | (``Not, #[inner]) =>
+    match inner.getAppFnArgs with
+    | (``LE.le, #[α, _, a, b]) =>
+      if α.isConstOf ``Int then some (.le, a, b) else none
+    | (``GE.ge, #[α, _, a, b]) =>
+      if α.isConstOf ``Int then some (.ge, a, b) else none
+    | (``LT.lt, #[α, _, a, b]) =>
+      if α.isConstOf ``Int then some (.lt, a, b) else none
+    | (``GT.gt, #[α, _, a, b]) =>
+      if α.isConstOf ``Int then some (.gt, a, b) else none
+    | _ => none
+  | _ => none
+
 /-- Given a hypothesis `(h : <shape> : Int)` and a flip flag, build
     an `Expr` of type `a' ≤ 0` for the kind-specific normalized LHS
     `a'`. The flip flag is meaningful only on Eq hypotheses — for
@@ -896,6 +915,32 @@ private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
       let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
       let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.eqToLe0 #[hypFV]
       return (normExpr, proof)
+  | none =>
+  match matchIntNotBound? hypTy with
+  | some (.le, a, b) =>
+    -- ¬(a ≤ b) → b < a → (b + 1) - a ≤ 0 via LIA +1 trick.
+    let one := Lean.toExpr (1 : Int)
+    let bPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[b, one]
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[bPlus1, a]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.notLeToLe0 #[hypFV]
+    return (normExpr, proof)
+  | some (.ge, a, b) =>
+    -- ¬(a ≥ b) → a < b → (a + 1) - b ≤ 0.
+    let one := Lean.toExpr (1 : Int)
+    let aPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[a, one]
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[aPlus1, b]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.notGeToLe0 #[hypFV]
+    return (normExpr, proof)
+  | some (.lt, a, b) =>
+    -- ¬(a < b) → b ≤ a → b - a ≤ 0 (loose, no +1).
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.notLtToLe0 #[hypFV]
+    return (normExpr, proof)
+  | some (.gt, a, b) =>
+    -- ¬(a > b) → a ≤ b → a - b ≤ 0 (loose, no +1).
+    let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.notGtToLe0 #[hypFV]
+    return (normExpr, proof)
   | none =>
   match matchIntBound? hypTy with
   | some (.le, a, b) =>

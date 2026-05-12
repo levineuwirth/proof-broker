@@ -177,6 +177,23 @@ private def matchRealEqHyp? (ty : Expr) : Option (Expr × Expr) :=
     if α.isConstOf ``Real then some (a, b) else none
   | _ => none
 
+/-- Detect a Real Not-hypothesis: `h : ¬(a <op> b)` for
+    `<op> ∈ {≤, ≥, <, >}`. Returns the inner kind + operands. -/
+private def matchRealNotBound? (ty : Expr) : Option (HypKindReal × Expr × Expr) :=
+  match ty.getAppFnArgs with
+  | (``Not, #[inner]) =>
+    match inner.getAppFnArgs with
+    | (``LE.le, #[α, _, a, b]) =>
+      if α.isConstOf ``Real then some (.le, a, b) else none
+    | (``GE.ge, #[α, _, a, b]) =>
+      if α.isConstOf ``Real then some (.ge, a, b) else none
+    | (``LT.lt, #[α, _, a, b]) =>
+      if α.isConstOf ``Real then some (.lt, a, b) else none
+    | (``GT.gt, #[α, _, a, b]) =>
+      if α.isConstOf ``Real then some (.gt, a, b) else none
+    | _ => none
+  | _ => none
+
 /-- Real-typed `normalizeHypothesis`: from `(h : a ≤ b : Real)` /
     `(h : a ≥ b : Real)` / `(h : a < b : Real)` / `(h : a > b : Real)` /
     `(h : a = b : Real)` build a `NormalizedHypReal`. Strict shapes
@@ -199,6 +216,32 @@ private def normalizeHypothesisReal (hypFV : Expr) (hypTy : Expr)
       let proof ← Lean.Meta.mkAppM
                     ``ProofBrokerMathlib.TermMode.rEqToLe0 #[hypFV]
       return ⟨expr, proof, false⟩
+  | none =>
+  match matchRealNotBound? hypTy with
+  | some (.le, a, b) =>
+    -- ¬(a ≤ b) → b < a → b - a < 0 (strict over R; no +1 trick).
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermMode.rNotLeToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | some (.ge, a, b) =>
+    -- ¬(a ≥ b) → a < b → a - b < 0 (strict).
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermMode.rNotGeToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | some (.lt, a, b) =>
+    -- ¬(a < b) → b ≤ a → b - a ≤ 0 (loose).
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermMode.rNotLtToLe0 #[hypFV]
+    return ⟨expr, proof, false⟩
+  | some (.gt, a, b) =>
+    -- ¬(a > b) → a ≤ b → a - b ≤ 0 (loose).
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermMode.rNotGtToLe0 #[hypFV]
+    return ⟨expr, proof, false⟩
   | none =>
   match matchRealBound? hypTy with
   | some (.le, a, b) =>

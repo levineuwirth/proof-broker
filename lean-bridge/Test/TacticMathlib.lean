@@ -259,4 +259,15 @@ theorem pb_lra_term_eq_hyp_axiom_free
 
 #print axioms pb_lra_term_eq_hyp_axiom_free
 
+/-- Not-hypothesis in the witness (Real): mirror of Int's
+    `pb_term_not_hyp_axiom_free`. `¬(x ≤ 5)` over Real compiles to
+    the strict `5 < x` (no +1 trick — R doesn't have a discrete
+    domain). The closer's strict-aware fold threads this strictness
+    through via `rNotLeToLt0` + `rMulPosNeg` / `rAddLtLe`. -/
+theorem pb_lra_term_not_hyp_axiom_free
+    (x : Real) (h1 : ¬(x ≤ 5)) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_lra_term_not_hyp_axiom_free
+
 end ProofBroker.TestMathlib

@@ -206,6 +206,24 @@ theorem rEqToLe0 {a b : Real} (h : a = b) : a - b ≤ 0 :=
 theorem rEqToLe0Flipped {a b : Real} (h : a = b) : b - a ≤ 0 :=
   sub_nonpos_of_le (le_of_eq h.symm)
 
+/-- Not-hypothesis normalization (LRA). Mirror of core's `notLeToLe0`
+    family but strictness-preserving over Real (no +1 trick).
+    `¬(a ≤ b)` over Real means `b < a`; with no discrete domain to
+    shift into, the normalized form is the strict `b - a < 0`. The
+    strict-aware fold in the closer threads this strictness through
+    via `rMulPosNeg` / `rAddLeLt` etc. -/
+theorem rNotLeToLt0 {a b : Real} (h : ¬(a ≤ b)) : b - a < 0 :=
+  sub_neg_of_lt (not_le.mp h)
+
+theorem rNotGeToLt0 {a b : Real} (h : ¬(a ≥ b)) : a - b < 0 :=
+  sub_neg_of_lt (not_le.mp h)
+
+theorem rNotLtToLe0 {a b : Real} (h : ¬(a < b)) : b - a ≤ 0 :=
+  sub_nonpos_of_le (not_lt.mp h)
+
+theorem rNotGtToLe0 {a b : Real} (h : ¬(a > b)) : a - b ≤ 0 :=
+  sub_nonpos_of_le (not_lt.mp h)
+
 /-- Arity-N comparison-goal wrappers (Real). Convert a comparison
     goal into a `(neg_form → False)` shape so the closer can
     introduce the negated goal as a regular hypothesis and delegate
@@ -246,5 +264,9 @@ theorem rLtViaLe {b c : Real} (h : c ≤ b → False) : b < c := by
 #print axioms rLtViaLe
 #print axioms rEqToLe0
 #print axioms rEqToLe0Flipped
+#print axioms rNotLeToLt0
+#print axioms rNotGeToLt0
+#print axioms rNotLtToLe0
+#print axioms rNotGtToLe0
 
 end ProofBrokerMathlib.TermMode
