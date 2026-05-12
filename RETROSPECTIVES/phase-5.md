@@ -268,11 +268,19 @@ has shifted that scope to Phase 6:
   idiom generalizes beyond LIA + LRA, or whether QF_BV / QF_UF need
   their own closers — remains open and is the right anchor for
   Phase 7 if non-arithmetic theories enter scope.
-- **Lean dynamic-syntax idiom for variable-length sepBy1.** Currently
-  using string + `runParserCategory` round-trip for arity-N rcases.
-  A more direct macro-level approach (via `Lean.Syntax.SepArray` or
-  similar) would simplify the case-split closer and any future
-  dynamic-pattern code.
+- **Lean dynamic-syntax idiom for variable-length sepBy1.** Resolved
+  in the post-Phase-5 cleanup arc. The string + `runParserCategory`
+  round-trip in `closeViaCaseSplitReal` (LRA case-split closer) is
+  replaced with the canonical TSyntax splice form
+  `$[$pats]|*`: build an `Array (TSyntax `rcasesPat)` of the right
+  length (one `hCase`-named pattern per disjunct), splice into the
+  `rcases ... with` tactic via quotation. The Phase 5 comment in
+  this code path claimed "recursive TSyntax quotation hits trouble
+  with the Med category's sepBy1 shape" — the trouble was using the
+  wrong category name in the inner quotation, not the splice
+  mechanism itself. Net: 7 lines of string-assembly + parser
+  invocation + explicit error case becomes 4 lines of direct AST
+  construction. No runtime parse, no error-path to handle.
 - **`fragment_of_logic` consolidation.** Carried forward from Phase 4,
   resolved in the post-Phase-5 cleanup arc. The Phase 4 fix consolidated
   the SMT-LIB-string → bare-fragment map (`Smtlib.fragment_of_logic`);

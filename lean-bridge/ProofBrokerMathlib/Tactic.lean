@@ -575,20 +575,18 @@ private def closeViaCaseSplitReal (cert : Json) (ir : IR) : TacticM Unit := do
                    shape divergence?)"
   let perDisjunctEntries ← disjuncts.mapM findLemma
   -- Build an arity-N rcases tactic dynamically. Each leaf disjunct
-  -- gets a `hCase` name; `rcases` handles the right-associated `Or`
-  -- nesting via its `|`-separated pattern (see Init/RCases.lean's
-  -- [rcasesPatMed := sepBy1(rcasesPat, " | ")] grammar). String
-  -- assembly + [Parser.runParserCategory] is the most direct way to
-  -- splice a dynamically-sized `sepBy1` into a tactic; recursive
-  -- TSyntax quotation hits trouble with the `Med` category's
-  -- sepBy1 shape.
-  let pat := String.intercalate " | " (List.replicate nDisjuncts "hCase")
-  let cmdStr := s!"rcases {hypName} with {pat}"
-  let stx ← match Lean.Parser.runParserCategory (← getEnv) `tactic cmdStr with
-    | .ok s => pure s
-    | .error e =>
-      throwError "proof_broker_term: failed to construct arity-{nDisjuncts} \
-                   rcases tactic: {e}"
+  -- gets the same name `hCase` (rcases binds it per-branch in the
+  -- corresponding subgoal); rcases handles the right-associated `Or`
+  -- nesting via its `|`-separated pattern from `Init/RCases.lean`'s
+  -- `rcasesPatMed := sepBy1(rcasesPat, " | ")` grammar. The
+  -- `$[$pats]|*` splice form is the direct way to feed a runtime-
+  -- sized array of patterns into the `|`-separated sepBy1 without
+  -- a string + parser round-trip.
+  let pats : Array (TSyntax `rcasesPat) ←
+    (List.replicate nDisjuncts ()).toArray.mapM (fun _ =>
+      `(rcasesPat| hCase))
+  let hypIdent := mkIdent hypName.toName
+  let stx ← `(tactic| rcases $hypIdent:term with $[$pats]|*)
   let mainGoal ← getMainGoal
   mainGoal.withContext do
     let _ ← match (← getLCtx).findFromUserName? hypName.toName with
