@@ -1,0 +1,55 @@
+; Synthetic arity-3 Tier 2 case-split proof fixture.
+;
+; This is not a cvc5-emitted proof. cvc5's current Alethe backend
+; doesn't produce arity-3+ case-split proofs for the LRA goal shapes
+; we've tried — it falls back to Tier 0 oracle. This fixture is a
+; hand-written minimal-shape proof that contains exactly the
+; structural elements `Alethe_farkas.extract_case_split` needs:
+;
+;   * an outer assume that names the disjunctive hypothesis
+;   * outer assumes for the supporting linear hypotheses
+;   * three subproofs (anchor … step … :rule subproof :discharge …),
+;     each locally assuming one disjunct and running a single
+;     la_generic step whose `:args` are the Farkas multipliers for
+;     that branch
+;
+; The extractor doesn't consume the top-level orchestration glue
+; (resolution chains, implies_neg, contraction, etc.) that real cvc5
+; proofs interleave between subproofs; it only walks the subproof-close
+; steps and the la_generic inside each. So this fixture omits the glue
+; and just produces the three subproofs back-to-back. That's enough to
+; exercise the arity-N path in `extract_case_split` end-to-end.
+;
+; Goal (matches `make_case_split_arity3_ir` in test_alethe_farkas.ml):
+;     (x <= 0) \/ (x >= 10) \/ (y >= 5)    ← h_disj
+;     x >= 1                               ← h_x_low
+;     x <= 9                               ← h_x_high
+;     y <= 4                               ← h_y_high
+;     ⊢ False
+;
+; Per-branch Farkas combinations (each yields a positive residual):
+;     Branch 1: 1*(x <= 0) + 1*(x >= 1) = (x) + (1 - x) = 1 > 0
+;     Branch 2: 1*(x >= 10) + 1*(x <= 9) = (10 - x) + (x - 9) = 1 > 0
+;     Branch 3: 1*(y >= 5) + 1*(y <= 4) = (5 - y) + (y - 4) = 1 > 0
+
+(
+(assume a0 (or (<= x 0/1) (or (>= x 10/1) (>= y 5/1))))
+(assume a1 (>= x 1/1))
+(assume a2 (<= x 9/1))
+(assume a3 (<= y 4/1))
+
+(anchor :step t1)
+(assume t1.a0 (<= x 0/1))
+(step t1.t0 (cl (not (<= x 0/1)) (not (>= x 1/1))) :rule la_generic :args (1/1 1/1))
+(step t1 (cl false) :rule subproof :discharge (t1.a0))
+
+(anchor :step t2)
+(assume t2.a0 (>= x 10/1))
+(step t2.t0 (cl (not (>= x 10/1)) (not (<= x 9/1))) :rule la_generic :args (1/1 1/1))
+(step t2 (cl false) :rule subproof :discharge (t2.a0))
+
+(anchor :step t3)
+(assume t3.a0 (>= y 5/1))
+(step t3.t0 (cl (not (>= y 5/1)) (not (<= y 4/1))) :rule la_generic :args (1/1 1/1))
+(step t3 (cl false) :rule subproof :discharge (t3.a0))
+)

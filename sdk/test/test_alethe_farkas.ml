@@ -269,6 +269,115 @@ let test_extract_case_split () =
             (Verifier.kind_of_reason other)
             (Verifier.detail_of_reason other)))
 
+(** IR for the arity-3 case-split fixture:
+    [(or (<= x 0) (or (>= x 10) (>= y 5))), x >= 1, x <= 9, y <= 4 ⊢ False].
+    Three disjuncts, each Farkas-closable against the matching outer
+    hypothesis. cvc5 doesn't emit arity-3+ case-split proofs for LRA
+    today (it falls back to Tier 0 oracle), so the arity-N path in
+    `Alethe_farkas.extract_case_split` couldn't be exercised end-to-
+    end from bridge-level tests alone. This IR + the matching
+    `alethe-case-split-arity3.proof` fixture covers it directly at
+    the SDK layer. Phase-5 carried-forward item. *)
+let make_case_split_arity3_ir () : Ir.t =
+  let x = real_var "x" in
+  let y = real_var "y" in
+  let zero = real_const "0" in
+  let one = real_const "1" in
+  let four = real_const "4" in
+  let five = real_const "5" in
+  let nine = real_const "9" in
+  let ten = real_const "10" in
+  let h_disj : Ir.hypothesis = {
+    name = "h_disj";
+    shell = Or {
+      left = App { symbol = "<="; type_args = []; args = [ x; zero ] };
+      right = Or {
+        left = App { symbol = ">="; type_args = []; args = [ x; ten ] };
+        right = App { symbol = ">="; type_args = []; args = [ y; five ] };
+      };
+    };
+  } in
+  let h_x_low : Ir.hypothesis = {
+    name = "h_x_low";
+    shell = App { symbol = ">="; type_args = []; args = [ x; one ] };
+  } in
+  let h_x_high : Ir.hypothesis = {
+    name = "h_x_high";
+    shell = App { symbol = "<="; type_args = []; args = [ x; nine ] };
+  } in
+  let h_y_high : Ir.hypothesis = {
+    name = "h_y_high";
+    shell = App { symbol = "<="; type_args = []; args = [ y; four ] };
+  } in
+  {
+    ir_version = "1.0";
+    source_system = { name = "test"; version = "0.0" };
+    tier = "goal";
+    logic_classification = lra_logic;
+    goal = {
+      shell = Const { name = "False" };
+      payloads = None;
+    };
+    context = {
+      type_vars = [];
+      free_vars = [
+        { name = "x"; ty = "Real" };
+        { name = "y"; ty = "Real" };
+      ];
+      hypotheses = [ h_disj; h_x_low; h_x_high; h_y_high ];
+      library_slice = None;
+    };
+    type_metadata = [];
+    definitional_metadata = [];
+    library_provenance = [];
+    user_directives = None;
+  }
+
+let test_extract_case_split_arity3 () =
+  let proof_str = load_fixture "alethe-case-split-arity3.proof" in
+  let ir = make_case_split_arity3_ir () in
+  match Alethe_farkas.extract_case_split_payload ir proof_str with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "arity-3 case-split extract failed: %s — %s"
+                     (Alethe_farkas.error_kind e)
+                     (Alethe_farkas.error_detail e))
+  | Ok (lemmas, hyp_name) ->
+    Alcotest.(check string) "disjunctive hyp = h_disj" "h_disj" hyp_name;
+    Alcotest.(check int) "three lemmas" 3 (List.length lemmas);
+    let cert : Certificate.t = {
+      cert_version = "1.0";
+      tier = 2;
+      format = "case_split_farkas";
+      goal = ir.goal;
+      dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
+      rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+      backend = {
+        name = "synthetic"; version = "0.0";
+        config_hash = "sha256:" ^ String.make 64 '0';
+      };
+      resources = {
+        wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+      };
+      refinement_record = {
+        adapter = "synthetic"; adapter_version = "0.0";
+        specializations = []; fragment = "LRA"; auxiliary = None;
+      };
+      payload = Tier2_lemma_list {
+        lemmas_used = lemmas;
+        strategy_hint = "case_split_farkas";
+        structural_hint = Some (`Assoc [
+          "disjunctive_hypothesis", `String hyp_name;
+        ]);
+      };
+    } in
+    (match Verifier.verify cert ir with
+     | Verified_case_split -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "arity-3 case-split verifier rejected lemmas: %s — %s"
+            (Verifier.kind_of_reason other)
+            (Verifier.detail_of_reason other)))
+
 let test_no_la_generic () =
   (* A proof that contains only assumes and a trivial closing
      resolution — no la_generic. Build it inline. *)
@@ -298,5 +407,7 @@ let () =
     "case_split", [
       Alcotest.test_case "extract + verify case-split witness"
         `Quick test_extract_case_split;
+      Alcotest.test_case "extract + verify arity-3 case-split witness"
+        `Quick test_extract_case_split_arity3;
     ];
   ]
