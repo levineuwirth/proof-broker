@@ -10,15 +10,22 @@ post-spec engineering decisions (notably the OCaml language flip).
 
 ## Status
 
-Phases 0 (Foundations), 1 (Skeleton), 2 (Core), and 4 (Rocq probe)
-have shipped end-to-end. Phase 3 (Breadth) and Phase 5 (Polish) are
-in progress / open. See `delta.md §2` for per-phase status and
-`RETROSPECTIVES/phase-{0,4}.md` for retrospectives. Trust footprint
-of the shipped tactics is gated by `tools/check_axioms.py` against
-`tools/axiom_allowlist.json` — every `*_axiom_free` theorem in
-`lean-bridge/Test/Tactic.lean` and `rocq-bridge/theories/Test.v`
-either closes axiom-free or pulls only the documented Lean / Rocq
-core axioms.
+Phases 0 (Foundations), 1 (Skeleton), 2 (Core), 4 (Rocq probe), and
+5 (term-mode parity) have shipped end-to-end. Phase 3 (Breadth) is
+in progress; Phase 6 (cross-platform distribution + polish) carries
+the displaced original-Phase-5 scope. See `delta.md §2` for per-phase
+status and `RETROSPECTIVES/phase-{0,4,5}.md` for retrospectives.
+Term-mode reconstruction (Phase 5 deliverable) covers the full Tier 1
++ Tier 2 Farkas cert vocabulary on both bridges — comparison goals
+(≤ / < / ≥ / > / =), all four inequality hypothesis shapes plus
+their negations, equality hypotheses with signed coefficients,
+rational coefficients, arity-N premises, and arity-N disjunctions in
+the Tier 2 case-split path. Trust footprint of the shipped tactics
+is gated by `tools/check_axioms.py` against `tools/axiom_allowlist.json`
+— every `*_axiom_free` theorem in `lean-bridge/Test/Tactic.lean` and
+`rocq-bridge/theories/Test.v` either closes axiom-free or pulls only
+the documented Lean / Rocq core axioms (150 entries gated at Phase 5
+close).
 
 ## Layout
 

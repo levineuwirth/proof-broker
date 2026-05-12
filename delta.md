@@ -307,8 +307,21 @@ instead of cross-platform packaging), but the total isn't different.
 
 ### 2.6 Phase 5 (Polish)
 
-**New risk: Cross-platform OCaml runtime distribution for Lean users.
-Severity: MED.**
+**Update (post-completion): Phase 5 scope shifted to term-mode parity.**
+The Phase 4 retrospective carried forward term-mode reconstruction —
+translating Farkas / case-split witnesses directly into Lean / Rocq
+proof terms rather than routing verified certs to `lia` / `lra` /
+`omega` / `linarith` — as the next direction. That carried-forward
+work expanded into a full term-mode parity push that consumed the
+Phase 5 calendar slot: end-to-end Tier 1 + Tier 2 reach across LIA +
+LRA, the full inequality vocabulary including negations, equality
+hypotheses with signed coefficients, rational coefficient support,
+arity-N premises and arity-N case-split disjunctions. See
+`RETROSPECTIVES/phase-5.md` for the post-mortem. The cross-platform
+distribution work originally budgeted here moves to Phase 6.
+
+**Original Phase 5 scope, deferred to Phase 6:** Cross-platform OCaml
+runtime distribution for Lean users. Severity: MED.
 
 Lean users typically do not have an OCaml toolchain installed.
 The Lean plugin must ship a precompiled bundle including the OCaml
@@ -318,12 +331,14 @@ distribution for macOS, Windows-specific complications around the
 OCaml/Windows ecosystem.
 
 **Mitigation:** the distribution bundle scaffold from Phase 0 is the
-foundation. Phase 5 work is to harden it (signing, package manager
+foundation. Phase 6 work is to harden it (signing, package manager
 integration, update mechanisms). If Phase 0 cuts corners on the
-scaffold, Phase 5 inherits a larger problem.
+scaffold, Phase 6 inherits a larger problem.
 
-**Phase 5 duration estimate: revised to 3 months** (from 2 months in
-roadmap v1.0). The added month covers cross-platform distribution work.
+**Phase 5 duration: held to original 3-month estimate** (term-mode
+reach + polish landed inside the calendar slot). Phase 6 inherits the
+cross-platform distribution work as a fresh 1-month allocation that
+wasn't reflected in roadmap v1.0.
 
 ### 2.7 Total duration and budget
 
