@@ -24,10 +24,12 @@ Everything here is axiom-free: only `Init.Data.Int.Order` is touched.
 `#print axioms` of any theorem that funnels through `farkasContradict`
 reports "does not depend on any axioms".
 
-Arity scope: arity 2 only today, matching the smallest non-trivial
-Farkas cert (e.g. `5 ≤ x ∧ x ≤ 3 ⊢ False` with witness
-`[(h1, 1), (h2, 1)]`). Arities 3..N are mechanical copies — write
-them when a cert in practice exceeds arity 2.
+Arity scope: arity-2 `farkasContradict` anchors the binary fixture;
+arities 3..N are handled by `farkasContradictN` over a left-associative
+sum the OCaml-side closer builds and discharges by `omega`. Comparison
+goals (`≤`, `<`, `≥`, `>`, `=`) reach the same fold via the wrapper
+helpers (`intLeViaLt` / `intLtViaLe`) which convert each goal shape
+to an implication-False whose body the closer recurses into.
 -/
 
 namespace ProofBroker.TermMode
@@ -72,49 +74,6 @@ theorem farkasContradict
   let s2 : c2 * a2 ≤ 0 := Int.mul_nonpos_of_nonneg_of_nonpos hc2 h2
   let ssum : c1 * a1 + c2 * a2 ≤ 0 := Int.add_nonpos s1 s2
   absurd hpos (Int.not_lt_of_ge ssum)
-
-/-- Farkas reconstruction for a non-`False` goal of shape `b ≤ c`.
-    Wraps `Decidable.byContradiction` over the goal (`Int.decLe`
-    makes ≤ decidable, so no `Classical.choice`); the introduced
-    `hng : ¬(b ≤ c)` is normalized to the SDK's compiled `Le` form
-    (`c + 1 - b ≤ 0`, the LIA +1-trick image of `b ≤ c`'s negation)
-    via the `Int.lt_of_not_ge / add_one_le_of_lt / sub_nonpos_of_le`
-    chain, then plugged into `farkasContradict` along with one
-    LCtx-derived normalized hypothesis. Arity 2: one real
-    hypothesis + the `neg_goal` slot from the witness.
-
-    The `heq` premise (strict-positivity of the Farkas linear
-    combination) is discharged by `omega` at closer-build time, just
-    as in `farkasContradict` — omega here only sees a literal-coefficient
-    polynomial identity over symbolic `a1` and `b`, `c`, NOT the original
-    LIA goal. -/
-theorem farkasGoalLe2
-    {b c : Int} {a1 : Int} (h1 : a1 ≤ 0)
-    {c1 cng : Int} (hc1 : 0 ≤ c1) (hcng : 0 ≤ cng)
-    (heq : 0 < c1 * a1 + cng * (c + 1 - b))
-    : b ≤ c :=
-  Decidable.byContradiction fun hng =>
-    let hng_le : c + 1 - b ≤ 0 :=
-      Int.sub_nonpos_of_le (Int.add_one_le_of_lt (Int.lt_of_not_ge hng))
-    farkasContradict h1 hng_le hc1 hcng heq
-
-/-- Farkas reconstruction for a strict goal `b < c`. Same shape as
-    `farkasGoalLe2` but without the +1 trick — `¬(b < c) ↔ c ≤ b`
-    (`Int.not_lt`) compiles directly to `c - b ≤ 0`, matching the
-    SDK's [lift_le_pair c b] for `Not (LT.lt b c)`. `≥` and `>`
-    over `Int` reduce to swapped `≤` / `<` by instance reduction
-    (`GE.ge a b ↘ LE.le b a`, `GT.gt a b ↘ LT.lt b a`), so the
-    closer routes them through these two helpers with swapped
-    args rather than needing four lemmas. -/
-theorem farkasGoalLt2
-    {b c : Int} {a1 : Int} (h1 : a1 ≤ 0)
-    {c1 cng : Int} (hc1 : 0 ≤ c1) (hcng : 0 ≤ cng)
-    (heq : 0 < c1 * a1 + cng * (c - b))
-    : b < c :=
-  Decidable.byContradiction fun hng =>
-    let hng_le : c - b ≤ 0 :=
-      Int.sub_nonpos_of_le (Int.not_lt.mp hng)
-    farkasContradict h1 hng_le hc1 hcng heq
 
 /-- General-arity contradiction step. The OCaml-side closer builds
     `s = c1*a1 + c2*a2 + ... + cN*aN` (left-associative) and proves
@@ -165,15 +124,12 @@ theorem notGtToLe0 {a b : Int} (h : ¬(a > b)) : a - b ≤ 0 := by omega
 /-- Arity-N comparison-goal wrappers (Int). Convert a comparison goal
     into a `(neg_form → False)` shape so the closer can introduce the
     negated goal as a regular hypothesis and delegate to the existing
-    arity-N False-fold. The arity-2 helpers `farkasGoalLe2` /
-    `farkasGoalLt2` above are a sound but specialized case of this
-    pattern; the unified path handles any arity by feeding `neg_goal`
-    into the same fold as the witness's real-hypothesis entries.
+    arity-N False-fold; the same fold then consumes `neg_goal`
+    alongside the witness's real-hypothesis entries at any arity.
 
     Both wrappers are axiom-free: `Decidable.byContradiction` resolves
     via `Int.decLe` / `Int.decLt`, and `Int.lt_of_not_ge` / `Int.not_lt`
-    are themselves axiom-free in `Init.Data.Int.Order`. Same trust
-    footprint as the arity-2 helpers. -/
+    are themselves axiom-free in `Init.Data.Int.Order`. -/
 theorem intLeViaLt {b c : Int} (h : c < b → False) : b ≤ c :=
   Decidable.byContradiction fun hng =>
     h (Int.lt_of_not_ge hng)

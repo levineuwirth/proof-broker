@@ -161,11 +161,11 @@ let r_lit (n : Z.t) : EConstr.t =
 (* --- type universe ------------------------------------------------- *)
 
 (* A type universe (Z or R) packages the Stdlib refs and registered
-   helpers under one record, so [close_term_false] / [close_term_goal]
-   / [close_term_case_split] are universe-polymorphic over Z and R.
-   The dispatch picks the universe by inspecting [Farkas.effective_fragment]
-   of the IR being closed: "LRA" → [r_universe], otherwise [z_universe].
-   *)
+   helpers under one record, so [close_term_false] /
+   [close_term_comparison] / [close_term_case_split] are universe-
+   polymorphic over Z and R. The dispatch picks the universe by
+   inspecting [Farkas.effective_fragment] of the IR being closed:
+   "LRA" → [r_universe], otherwise [z_universe]. *)
 type universe = {
   name : string;
   ty : EConstr.t;
@@ -320,8 +320,9 @@ let universe_for_ir (ir : Ir.t) : universe =
 (* Goal universe tag: discriminates Z- vs R-typed comparators so the
    dispatcher in pb_rocq_main.run_close_term picks the right
    normalization tactic ([Z.le_ge] vs [Rle_ge] etc.) and term_mode's
-   [close_term] picks the right helper ([z_farkas_le_goal_2] vs
-   [r_farkas_le_goal_2]) and neg_norm shape (+1 trick for LIA only). *)
+   [close_term_comparison] picks the right wrapper helper
+   ([z_le_via_lt] vs [r_le_via_lt]) and neg_norm shape (+1 trick for
+   LIA only). *)
 type universe_tag = U_Z | U_R
 
 type goal_kind =
@@ -834,10 +835,7 @@ let close_term_false (u : universe) env sigma (ir : Ir.t)
    delegating to [close_term_false]. The arity-N strict-aware fold
    in [close_term_false] handles all premises uniformly — including
    [neg_goal], whose normalization (Z: +1 trick; R: strict-
-   preserving) flows through the existing per-universe machinery.
-   Subsumes the arity-2-specific helpers ([farkas_le_goal_2],
-   [r_farkas_le_goal_2], etc.) since the fold reduces to the same
-   contradiction when there's exactly one real entry plus neg_goal. *)
+   preserving) flows through the existing per-universe machinery. *)
 let close_term_comparison (u : universe) (ir : Ir.t)
     (entries : (string * Z.t) list)
     (tag : universe_tag) (goal_shape : [`Le | `Lt])

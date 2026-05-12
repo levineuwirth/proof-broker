@@ -2,34 +2,32 @@
 
     Walks a Farkas witness JSON the SDK already produced (verified
     by [Verifier.verify]'s envelope check), reifies each entry into
-    a Rocq proof of [a_i <= 0], and builds an application of the
-    matching helper from [theories/ProofBrokerTermMode.v] that
-    closes the goal directly:
+    a Rocq proof of [a_i <= 0] (or [a_i < 0] on the strict-aware R
+    path), and builds an application of the matching arity-N
+    contradiction helper from [theories/ProofBrokerTermMode.v]
+    ([farkas_contradict_n] / [r_farkas_contradict_n] /
+    [r_farkas_contradict_n_strict]) that closes the goal directly.
 
-    * [False] goals → [farkas_le_2] with both witness slots naming
-      real hypotheses.
-    * [b <= c] / [b < c] goals → [farkas_le_goal_2] /
-      [farkas_lt_goal_2]; one witness slot names a real hypothesis,
-      the other is the reserved [neg_goal] slot and the synthesized
-      neg-goal-norm EConstr ([c + 1 - b] or [c - b]) replaces the
-      [a2] slot inside the helper.
+    For non-[False] comparison goals ([<=], [<], [>=], [>], [=]),
+    the closer first applies a wrapper ([z_le_via_lt] / [z_lt_via_le]
+    on Z; [r_le_via_lt] / [r_lt_via_le] on R, with the dispatcher
+    in [pb_rocq_main.run_close_term] applying [Z.le_ge] / [Z.lt_gt]
+    / [Z.le_antisymm] beforehand for [>=] / [>] / [=]) to convert
+    the goal to an implication-False whose body recurses into the
+    same arity-N False-fold with [neg_goal] introduced as an extra
+    hypothesis-side entry.
 
-    [>=] / [>] / [=] goals are normalized to one of the three shapes
-    above by [pb_rocq_main.run_close_term] (applying [Z.le_ge] /
-    [Z.lt_gt] / [Z.le_antisymm] before recursing) — close_term itself
-    rejects them as an internal invariant.
+    The polynomial identity [s = K] (left-associative sum equals the
+    Farkas residual) is left as an evar and discharged by [ring]; no
+    [lia]/[lra] call along this path. Trust footprint: the helpers
+    in [theories/ProofBrokerTermMode.v] plus [ring]'s reflective
+    normalization. Both are axiom-free.
 
-    The polynomial identity [c1*a1 + c?*?? = K] is left as an evar
-    and discharged by [ring]; no [lia]/[lra] call along this path.
-    Trust footprint: the helpers in [theories/ProofBrokerTermMode.v]
-    plus [ring]'s reflective normalization. Both are axiom-free.
-
-    Scope of this iteration: arity-2 LIA Farkas with hypotheses of
-    shape [Z.le a b] / [Z.ge a b]. Higher arities and the [Lt]-
-    compiled hypotheses (the +1 LIA strict-inequality trick on the
-    hypothesis side) are mechanical follow-ups against the same
-    machinery; raise [Unsupported] when out of scope so the caller
-    can fall back to [lia]. *)
+    Coverage: arity-N Farkas certs on LIA and LRA, all five comparison
+    goal shapes, all four inequality hypothesis shapes plus their
+    negations, and Eq hypotheses with signed coefficients. Raises
+    [Unsupported] for cert shapes outside this coverage so the caller
+    can fall back to [lia] / [lra]. *)
 
 exception Unsupported of string
 
@@ -65,13 +63,14 @@ val goal_kind : Evd.evar_map -> EConstr.t -> goal_kind option
 val close_term :
   Proof_broker.Ir.t -> Yojson.Safe.t -> unit Proofview.tactic
 (** [close_term ir witness] reifies the witness into an applied
-    [farkas_le_2] / [farkas_le_goal_2] / [farkas_lt_goal_2] term and
-    refines the goal with it, then discharges the residual
-    polynomial-identity subgoal with [ring]. Picks the type universe
-    (Z or R) from [Farkas.effective_fragment ir] — LRA uses the
-    R-typed [r_farkas_le_2] helper; otherwise the Z-typed helpers.
-    Raises [Unsupported _] if the cert shape is outside arity-2
-    coverage (and the caller wraps it as [CErrors.user_err]). *)
+    [farkas_contradict_n] (or R-typed counterpart) term and refines
+    the goal with it, then discharges the residual polynomial-identity
+    subgoal with [ring]. Comparison-goal shapes ([<=], [<], [>=], [>],
+    [=]) are routed through a wrapper that introduces the negated
+    goal and recurses into the same fold. Picks the type universe
+    (Z or R) from [Farkas.effective_fragment ir]. Raises [Unsupported _]
+    if the cert shape is out of coverage (and the caller wraps it as
+    [CErrors.user_err]). *)
 
 val close_term_case_split :
   Proof_broker.Ir.t -> Yojson.Safe.t list -> Yojson.Safe.t option ->
@@ -85,5 +84,7 @@ val close_term_case_split :
     SDK's [Verifier.match_disjunct_index] is the bridge between
     cert lemma case shapes and destruct branch order.
 
-    Scope: arity-2 disjunctive hypothesis ([A \/ B]) only. Higher
-    arity is mechanical. *)
+    Coverage: arity-N disjunctive hypothesis ([A \/ B \/ C \/ ...]),
+    flattened by [Alethe_farkas.disjuncts_of] on the SDK side and
+    destructed via a nested OrAndIntroPattern generated at
+    closer-build time. *)

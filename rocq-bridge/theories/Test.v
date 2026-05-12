@@ -108,10 +108,10 @@ Proof.
 Qed.
 
 (** Term-mode with a non-[False] goal of shape [_ <= _ : Z]. The
-    witness has one real-hypothesis entry plus a [neg_goal] slot
-    the closer discharges via [farkas_le_goal_2] (which wraps the
-    constructive decider [Z_le_gt_dec] — axiom-free). Mirror of
-    Lean's [pb_term_goal_axiom_free]. *)
+    witness has one real-hypothesis entry plus a [neg_goal] slot the
+    closer discharges via the [z_le_via_lt] wrapper (constructive
+    decider [Z_le_gt_dec], axiom-free), then folds into the arity-N
+    False-path. Mirror of Lean's [pb_term_goal_axiom_free]. *)
 Theorem pb_term_goal_axiom_free :
   forall n : Z, n <= 5 -> n <= 6.
 Proof.
@@ -119,9 +119,9 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
-(** Term-mode with strict-[<] goal: closer routes through
-    [farkas_lt_goal_2] (no LIA +1 trick — [~ (b < c) ≡ c <= b]
-    via [Z.ge_le]). *)
+(** Term-mode with strict-[<] goal: closer routes through the
+    [z_lt_via_le] wrapper into the arity-N fold (no LIA +1 trick —
+    [~ (b < c) ≡ c <= b] via [Z.ge_le]). *)
 Theorem pb_term_lt_axiom_free :
   forall n : Z, n <= 4 -> n < 5.
 Proof.
@@ -132,7 +132,7 @@ Qed.
 (** Term-mode with [>=] goal: [Z.ge] doesn't reduce to swapped
     [Z.le] the way Lean's instance reduction does, so
     [run_close_term] applies [Z.le_ge] first, leaving a [<=]
-    subgoal that routes through [farkas_le_goal_2]. *)
+    subgoal that routes through the [z_le_via_lt] wrapper. *)
 Theorem pb_term_ge_axiom_free :
   forall n : Z, 5 <= n -> n >= 4.
 Proof.
@@ -141,8 +141,8 @@ Proof.
 Qed.
 
 (** Term-mode with strict-[>] goal: closer applies [Z.lt_gt]
-    first, leaving a [<] subgoal that routes through
-    [farkas_lt_goal_2]. *)
+    first, leaving a [<] subgoal that routes through the
+    [z_lt_via_le] wrapper. *)
 Theorem pb_term_gt_axiom_free :
   forall n : Z, 5 <= n -> n > 3.
 Proof.
@@ -262,11 +262,12 @@ Close Scope R_scope.
     Mirrors the Z-typed [pb_term_goal_axiom_free] / [pb_term_lt_axiom_free]
     / [pb_term_ge_axiom_free] / [pb_term_gt_axiom_free] /
     [pb_term_eq_axiom_free] suite but over [R]. The closer routes
-    through [r_farkas_le_goal_2] / [r_farkas_lt_goal_2] (no LIA +1
-    trick over R — the helpers weaken the negated goal from strict
-    [<] to non-strict [<=] internally via [Rlt_le]). [>=] / [>] / [=]
-    goals normalize through [Rle_ge] / [Rlt_gt] / [Rle_antisym] (the
-    R-typed mirrors of [Z.le_ge] etc.) before recursing.
+    through the [r_le_via_lt] / [r_lt_via_le] wrappers into the
+    arity-N strict-aware fold (no LIA +1 trick over R — strictness on
+    neg_goal flows in naturally via [Rnot_le_lt] / [Rnot_lt_le]).
+    [>=] / [>] / [=] goals normalize through [Rle_ge] / [Rlt_gt] /
+    [Rle_antisym] (the R-typed mirrors of [Z.le_ge] etc.) before
+    recursing.
 
     Pinned through [z3] because z3 mints native Tier 1 Farkas for
     LRA; cvc5 prefers Tier 3 alethe-2024 here. Trust footprint is
@@ -408,11 +409,9 @@ Qed.
 
 (** Term-mode LRA strict-[<] hypothesis on a Le-goal: [(h : 0 < x) ⊢ 0 ≤ x].
     Witness [(h, 1), (neg_goal, 1)] gives linear sum [(0 - x) + (x - 0) = 0],
-    K = 0. The closer weakens [h : 0 < x] to [h : 0 <= x] via
-    [r_strict_neg_to_nonpos], then routes through the existing
-    [r_farkas_le_goal_2] strict-aware path — strictness on the
-    contradiction side comes from the neg_goal's Lt-shape over R, so
-    losing [a1]'s strictness on weakening costs nothing. *)
+    K = 0. The unified strict-aware fold consumes the Lt-normalized
+    [h] directly ([r_lt_to_lt0 → a - b < 0]) and combines it with the
+    neg_goal's Lt-shape over R; no weakening required. *)
 Theorem pb_lra_term_le_goal_strict_a1_axiom_free :
   forall x : R, 0 < x -> 0 <= x.
 Proof.
@@ -423,11 +422,11 @@ Qed.
 (** Strict-[<] hypothesis on a Lt-goal: [(h : 0 < x) ⊢ 0 < x] (trivially
     equivalent to [h], but exercises the closer end-to-end). Witness
     sum is exactly zero [(0 - x) + (x - 0) = 0], K = 0 — the
-    standard [r_farkas_lt_goal_2] path can't close this because it
-    needs K > 0 strictly, so the dispatcher routes to
-    [r_farkas_lt_goal_2_strict_a1] which preserves [a1]'s strictness
-    through the proof (via [r_mul_pos_neg]) and gets the contradiction
-    from the strict combination [c1 * a1 < 0] + [cng * (c - b) ≤ 0]. *)
+    strict-aware fold preserves [a1]'s strictness through the proof
+    (via [r_mul_pos_neg]) and gets the contradiction from the strict
+    combination [c1 * a1 < 0] + [cng * (c - b) ≤ 0], closed by
+    [r_farkas_contradict_n_strict] (which permits K = 0 when strictness
+    on the sum carries the contradiction). *)
 Theorem pb_lra_term_lt_goal_strict_a1_axiom_free :
   forall x : R, 0 < x -> 0 < x.
 Proof.

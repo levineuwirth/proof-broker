@@ -16,20 +16,14 @@
     theorem that funnels through [farkas_le_n] reports "Closed
     under the global context".
 
-    Arity scope: arity 2 only today, matching the smallest non-
-    trivial Farkas cert (e.g. example1's [forall x : Z, x >= 5 ->
-    x <= 3 -> False] with witness [(H2,1); (H1,1)]). Arities 3..N
-    are mechanical copies of [farkas_le_2] — write them when a
-    cert in practice exceeds arity 2.
-
-    Goal-shape scope: [False], [<=], [<] handled directly here;
-    [>=] / [>] / [=] handled at the closer level (pb_rocq_main.ml)
-    by applying [Z.le_ge] / [Z.lt_gt] / [Z.le_antisymm] first, so
-    the recursive descent lands in one of the three shapes above.
-    Mirrors Lean's design except Lean's [GE.ge a b ↘ LE.le b a]
-    reduces by instance — Rocq's [Z.ge] is defined via [Z.compare]
-    rather than as an alias, so the explicit normalization step is
-    required. *)
+    Arity scope: arity-2 [farkas_le_2] anchors the binary fixture;
+    arities 3..N are handled by [farkas_contradict_n] over a
+    left-associative sum the OCaml-side closer builds and discharges
+    by [ring]. Comparison goals ([<=], [<], [>=], [>], [=]) reach
+    the same fold via the wrapper helpers below ([z_le_via_lt] /
+    [z_lt_via_le] for Z; [r_le_via_lt] / [r_lt_via_le] for R), which
+    convert each goal shape to an implication-False whose body the
+    closer recurses into. *)
 
 From Stdlib Require Import ZArith Reals.
 
@@ -138,71 +132,15 @@ Register farkas_contradict_n as proof_broker.term_mode.farkas_contradict_n.
 Register z_mul_nonneg_nonpos as proof_broker.term_mode.z_mul_nonneg_nonpos.
 Register z_add_nonpos as proof_broker.term_mode.z_add_nonpos.
 
-(** Farkas reconstruction for a non-[False] goal of shape [b <= c].
-    Mirror of Lean's [farkasGoalLe2] from [ProofBroker.TermMode] —
-    wraps the constructive decidability witness [Z_le_gt_dec], then
-    normalizes the negated goal [c < b] through [c + 1 <= b]
-    ([Z.le_succ_l] + [Z.add_1_r]) to the SDK's compiled
-    [Le (c + 1 - b)] shape (the LIA +1-trick image of [¬(b <= c)]).
-    Delegates to [farkas_le_2] with arity 2: one real hypothesis
-    (the [a1] slot) plus the synthetic neg-goal slot.
-    The [Heq] premise (polynomial identity [c1*a1 + cng*(c+1-b) = K])
-    is discharged by [ring] at closer-build time, just as in
-    [farkas_le_2]. *)
-Lemma farkas_le_goal_2
-  (b c : Z) (a1 : Z) (H1 : a1 <= 0)
-  (c1 cng : Z) (Hc1 : 0 <= c1) (Hcng : 0 <= cng)
-  (K : Z) (HK : 0 < K)
-  (Heq : c1 * a1 + cng * (c + 1 - b) = K)
-  : b <= c.
-Proof.
-  destruct (Z_le_gt_dec b c) as [Hle | Hgt]; [exact Hle | exfalso].
-  apply Z.gt_lt in Hgt.
-  apply Z.le_succ_l in Hgt.
-  rewrite <- Z.add_1_r in Hgt.
-  apply (proj2 (Z.sub_nonpos (c + 1) b)) in Hgt.
-  exact (farkas_le_2 a1 (c + 1 - b) H1 Hgt c1 cng Hc1 Hcng K HK Heq).
-Qed.
-
-(** Farkas reconstruction for a strict goal [b < c]. Same shape as
-    [farkas_le_goal_2] but without the +1 trick — [~ (b < c)] becomes
-    [c <= b] directly via [Z_lt_ge_dec] + [Z.ge_le], so the synthetic
-    neg-goal slot compiles to [Le (c - b)]. Matches the SDK's
-    [lift_le_pair c b] for the negation of [LT.lt b c].
-
-    [>=] and [>] over [Z] do NOT reduce to swapped [<=] / [<] the
-    way Lean's instance reduction does (Rocq's [Z.ge] / [Z.gt] are
-    defined via [Z.compare] rather than as aliases). The Rocq closer
-    [pb_rocq_main.run_close_term] handles them by applying
-    [Z.le_ge] / [Z.lt_gt] first, leaving a [<=] / [<] subgoal that
-    routes through these two helpers. *)
-Lemma farkas_lt_goal_2
-  (b c : Z) (a1 : Z) (H1 : a1 <= 0)
-  (c1 cng : Z) (Hc1 : 0 <= c1) (Hcng : 0 <= cng)
-  (K : Z) (HK : 0 < K)
-  (Heq : c1 * a1 + cng * (c - b) = K)
-  : b < c.
-Proof.
-  destruct (Z_lt_ge_dec b c) as [Hlt | Hge]; [exact Hlt | exfalso].
-  apply Z.ge_le in Hge.
-  apply (proj2 (Z.sub_nonpos c b)) in Hge.
-  exact (farkas_le_2 a1 (c - b) H1 Hge c1 cng Hc1 Hcng K HK Heq).
-Qed.
-
-Register farkas_le_goal_2 as proof_broker.term_mode.farkas_le_goal_2.
-Register farkas_lt_goal_2 as proof_broker.term_mode.farkas_lt_goal_2.
-
 (** Arity-N comparison-goal wrappers (Z). Convert a comparison goal
     into an implication-False shape so the closer can introduce the
     negated goal as a regular hypothesis and delegate to the existing
-    arity-N False-fold. The arity-2 helpers above [farkas_le_goal_2] /
-    [farkas_lt_goal_2] are a sound but specialized case of this
-    pattern; the unified path handles any arity by feeding [neg_goal]
-    into the same fold as the witness's real-hypothesis entries.
+    arity-N False-fold; the same fold then consumes [neg_goal]
+    alongside the witness's real-hypothesis entries at any arity.
 
-    Soundness rests on classical decidability of [<=] / [<] on [Z]
-    ([Z_le_gt_dec] / [Z_lt_ge_dec], both from Stdlib's [ZArith]) —
-    same deciders the arity-2 helpers use, so no new trust. *)
+    Soundness rests on constructive decidability of [<=] / [<] on
+    [Z] ([Z_le_gt_dec] / [Z_lt_ge_dec], both from Stdlib's
+    [ZArith]). *)
 Lemma z_le_via_lt (b c : Z) (H : c < b -> False) : b <= c.
 Proof.
   destruct (Z_le_gt_dec b c) as [Hle | Hgt]; [exact Hle | exfalso].
@@ -343,71 +281,6 @@ Register r_farkas_contradict_n as proof_broker.term_mode.r_farkas_contradict_n.
 Register r_mul_nonneg_nonpos as proof_broker.term_mode.r_mul_nonneg_nonpos.
 Register r_add_nonpos as proof_broker.term_mode.r_add_nonpos.
 
-(** Real-typed Farkas reconstruction for a non-[False] goal of shape
-    [b <= c]. The signature is strict-aware: [Hcng : 0 < cng] (strict
-    coefficient on the neg_goal slot) and [HK : 0 <= K] (non-strict
-    residual). Over R the negation of [b <= c] is the strict
-    [c < b] (compiled by the SDK as [Lt (c - b)] under LRA), and the
-    Farkas combination from a strict premise with a positive coefficient
-    is itself strictly less than 0. That strictness is what produces
-    the contradiction against [0 <= K] — even when [K = 0], the
-    trivial-equality case ([n <= 5] ⊢ [n <= 5] gives [(n-5)+(5-n) = 0]).
-    The Z-side helper [farkas_le_goal_2] doesn't need this because
-    the LIA +1 trick shifts the residual to [K > 0]; over R there's
-    no such shift, so the strictness path is load-bearing.
-
-    The decider is constructive over R ([Rle_dec] from [Stdlib.Reals]),
-    so no [Classical] beyond what [r_farkas_le_2] already pulls in.
-    The [Heq] premise (polynomial identity [c1*a1 + cng*(c-b) = K])
-    is discharged by [ring] at closer-build time. *)
-Lemma r_farkas_le_goal_2
-  (b c : R) (a1 : R) (H1 : a1 <= 0)
-  (c1 cng : R) (Hc1 : 0 <= c1) (Hcng : 0 < cng)
-  (K : R) (HK : 0 <= K)
-  (Heq : c1 * a1 + cng * (c - b) = K)
-  : b <= c.
-Proof.
-  destruct (Rle_dec b c) as [Hle | Hngt]; [exact Hle | exfalso].
-  apply Rnot_le_lt in Hngt.
-  (* Hngt : c < b *)
-  assert (S1 : c1 * a1 <= 0)
-    by (apply r_mul_nonneg_nonpos; assumption).
-  assert (S2 : cng * (c - b) < 0).
-  { apply (Rmult_lt_compat_l cng c b Hcng) in Hngt.
-    (* Hngt : cng * c < cng * b *)
-    replace (cng * (c - b)) with (cng * c - cng * b) by ring.
-    apply Rlt_minus. exact Hngt. }
-  assert (Ssum : c1 * a1 + cng * (c - b) < 0).
-  { replace 0 with (0 + 0) by ring.
-    apply Rplus_le_lt_compat; assumption. }
-  rewrite Heq in Ssum.
-  (* Ssum : K < 0 *)
-  exact (Rlt_irrefl 0 (Rle_lt_trans 0 K 0 HK Ssum)).
-Qed.
-
-(** Real-typed Farkas reconstruction for a strict goal [b < c]. The
-    negation of [b < c] over R is [c <= b] directly (no strictness
-    flip, no +1), which [Rnot_lt_le] gives us, and [r_le_to_le0]
-    normalizes to [c - b <= 0]. The compiled neg-goal shape thus
-    matches [Le (c - b)] — same as the SDK's [lift_le_pair c b]
-    output for [Not (LT.lt b c)] under any fragment. *)
-Lemma r_farkas_lt_goal_2
-  (b c : R) (a1 : R) (H1 : a1 <= 0)
-  (c1 cng : R) (Hc1 : 0 <= c1) (Hcng : 0 <= cng)
-  (K : R) (HK : 0 < K)
-  (Heq : c1 * a1 + cng * (c - b) = K)
-  : b < c.
-Proof.
-  destruct (Rlt_dec b c) as [Hlt | Hnlt]; [exact Hlt | exfalso].
-  apply Rnot_lt_le in Hnlt.
-  (* Hnlt : c <= b *)
-  pose proof (r_le_to_le0 c b Hnlt) as H2.
-  exact (r_farkas_le_2 a1 (c - b) H1 H2 c1 cng Hc1 Hcng K HK Heq).
-Qed.
-
-Register r_farkas_le_goal_2 as proof_broker.term_mode.r_farkas_le_goal_2.
-Register r_farkas_lt_goal_2 as proof_broker.term_mode.r_farkas_lt_goal_2.
-
 (** Real-typed positive-literal coefficient witness: a closed positive
     rational [p/q] flows through as [0 < IZR p / IZR q] (or [0 < IZR n]
     for integer coefficients). The Tier 2 case-split path uses
@@ -425,14 +298,13 @@ Proof. apply Rlt_le. exact (r_pos_is_pos p). Qed.
 Register r_pos_is_pos as proof_broker.term_mode.r_pos_is_pos.
 Register r_pos_is_nonneg as proof_broker.term_mode.r_pos_is_nonneg.
 
-(** Real-typed [0 <= 0] witness. Needed for the LRA Le-goal closer
-    when the Farkas residual [K] is exactly zero (the trivial-equality
-    case [n <= 5 ⊢ n <= 5] post-Rle_antisym): there's no [+1] trick
-    over R to push [K] strictly positive, so the strict-aware
-    [r_farkas_le_goal_2] takes [0 <= K] and that premise has to be
-    built for [K = 0] specifically (the existing [r_pos_is_nonneg]
-    only builds [0 <= IZR (Zpos p)] for [p : positive] — no zero
-    representation). *)
+(** Real-typed [0 <= 0] witness. Needed for the LRA closer when the
+    Farkas residual [K] is exactly zero (the trivial-equality case
+    [n <= 5 ⊢ n <= 5] post-Rle_antisym): there's no [+1] trick over R
+    to push [K] strictly positive, so the strict-aware fold takes
+    [0 <= K] and that premise has to be built for [K = 0] specifically
+    (the existing [r_pos_is_nonneg] only builds [0 <= IZR (Zpos p)]
+    for [p : positive] — no zero representation). *)
 Lemma r_zero_nonneg : (0 <= 0)%R.
 Proof. apply Rle_refl. Qed.
 
@@ -508,66 +380,9 @@ Register r_add_neg as proof_broker.term_mode.r_add_neg.
 Register r_farkas_contradict_n_strict
   as proof_broker.term_mode.r_farkas_contradict_n_strict.
 
-(** Weakening helper for the comparison-goal closer: when the witness
-    names a strict-[<] / strict-[>] hypothesis, [normalize_hypothesis]
-    on the OCaml side returns a proof of [a < 0] rather than [a ≤ 0],
-    and the existing Le-goal helper ([r_farkas_le_goal_2]) expects
-    Le-form. Weakening via [Rlt_le] is sound because the Le-goal
-    closer's strict-aware path derives the contradiction from the
-    neg_goal's [Lt] shape, not from [a1]'s strictness — so dropping
-    [a1]'s strictness loses no information for this closer. (The
-    Lt-goal closer is different — see [r_farkas_lt_goal_2_strict_a1]
-    below.) *)
-Lemma r_strict_neg_to_nonpos (a : R) (h : a < 0) : a <= 0.
-Proof. apply Rlt_le. exact h. Qed.
-
-Register r_strict_neg_to_nonpos
-  as proof_broker.term_mode.r_strict_neg_to_nonpos.
-
-(** Strict-[<]-hypothesis Lt-goal closer. The Lt-goal's neg_goal is
-    Le-shape over R ([¬(b < c) ≡ c ≤ b]), so the existing
-    [r_farkas_lt_goal_2] (which assumes everything Le) produces a Le
-    sum and requires [K > 0]. When the real hypothesis is strict
-    ([h : a1 < 0]), we lose strictness on weakening and the
-    trivial-K=0 case fails — eg [(h : 0 < x) ⊢ 0 < x] would have
-    [(−x) + x = 0] as the sum.
-
-    This variant keeps [a1]'s strictness through the proof: with
-    [Hc1 : 0 < c1] strict and [H1 : a1 < 0] strict, the product
-    [c1 * a1 < 0] via [r_mul_pos_neg]. The neg_goal product
-    [cng * (c - b) ≤ 0] is non-strict ([cng] may be zero, neg_goal
-    Le-compiled). Sum: [Lt + Le → Lt] via [r_add_lt_le], yielding
-    [c1*a1 + cng*(c-b) < 0]. Combined with [HK : 0 ≤ K] (which can
-    even be [K = 0]), we get the standard strict-aware contradiction. *)
-Lemma r_farkas_lt_goal_2_strict_a1
-  (b c : R) (a1 : R) (H1 : a1 < 0)
-  (c1 cng : R) (Hc1 : 0 < c1) (Hcng : 0 <= cng)
-  (K : R) (HK : 0 <= K)
-  (Heq : c1 * a1 + cng * (c - b) = K)
-  : b < c.
-Proof.
-  destruct (Rlt_dec b c) as [Hlt | Hnlt]; [exact Hlt | exfalso].
-  apply Rnot_lt_le in Hnlt.
-  (* Hnlt : c <= b *)
-  pose proof (r_le_to_le0 c b Hnlt) as H2.
-  (* H2 : c - b <= 0 *)
-  assert (S1 : c1 * a1 < 0)
-    by (apply r_mul_pos_neg; assumption).
-  assert (S2 : cng * (c - b) <= 0)
-    by (apply r_mul_nonneg_nonpos; assumption).
-  assert (Ssum : c1 * a1 + cng * (c - b) < 0)
-    by (apply r_add_lt_le; assumption).
-  rewrite Heq in Ssum.
-  exact (Rlt_irrefl 0 (Rle_lt_trans 0 K 0 HK Ssum)).
-Qed.
-
-Register r_farkas_lt_goal_2_strict_a1
-  as proof_broker.term_mode.r_farkas_lt_goal_2_strict_a1.
-
 (** Arity-N comparison-goal wrappers (R). Mirror of [z_le_via_lt] /
     [z_lt_via_le] over the reals. Uses [Rle_dec] / [Rlt_dec] for
-    constructive decidability — same deciders as the arity-2 R
-    helpers ([r_farkas_le_goal_2] etc.), so no new trust. *)
+    constructive decidability, both from [Stdlib.Reals]. *)
 Lemma r_le_via_lt (b c : R) (H : c < b -> False) : b <= c.
 Proof.
   destruct (Rle_dec b c) as [Hle | Hngt]; [exact Hle | exfalso].
@@ -635,12 +450,6 @@ Open Scope Z_scope.
 Print farkas_le_2.
 Print Assumptions farkas_le_2.
 
-Print farkas_le_goal_2.
-Print Assumptions farkas_le_goal_2.
-
-Print farkas_lt_goal_2.
-Print Assumptions farkas_lt_goal_2.
-
 Print le_to_le0.
 Print Assumptions le_to_le0.
 
@@ -661,12 +470,6 @@ Print Assumptions pos_is_nonneg.
 
 Print r_farkas_le_2.
 Print Assumptions r_farkas_le_2.
-
-Print r_farkas_le_goal_2.
-Print Assumptions r_farkas_le_goal_2.
-
-Print r_farkas_lt_goal_2.
-Print Assumptions r_farkas_lt_goal_2.
 
 Print r_le_to_le0.
 Print Assumptions r_le_to_le0.
@@ -703,12 +506,6 @@ Print Assumptions r_add_neg.
 
 Print r_farkas_contradict_n_strict.
 Print Assumptions r_farkas_contradict_n_strict.
-
-Print r_strict_neg_to_nonpos.
-Print Assumptions r_strict_neg_to_nonpos.
-
-Print r_farkas_lt_goal_2_strict_a1.
-Print Assumptions r_farkas_lt_goal_2_strict_a1.
 
 Print farkas_contradict_n.
 Print Assumptions farkas_contradict_n.

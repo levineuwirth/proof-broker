@@ -14,12 +14,13 @@ etc. directly rather than `omega`). `linarith` elsewhere (the
 existing `proof_broker` decide-procedure LRA closer registered by
 `ProofBrokerMathlib.Tactic`) is unaffected.
 
-Arity scope: arity 2 only today, matching the smallest non-trivial
-Farkas cert. Arities 3..N are mechanical copies — write them when
-a cert in practice exceeds arity 2. Goal-shape scope: `False` only;
-non-`False` LRA goals would mirror `farkasGoalLe2` / `farkasGoalLt2`
-from the Int side but aren't needed for the Tier 2 case-split path
-(per-branch goal stays `False`).
+Arity scope: arity-2 `rFarkasContradict` anchors the binary fixture;
+arities 3..N are handled by `rFarkasContradictN` /
+`rFarkasContradictNStrict` over a left-associative sum the OCaml-side
+closer builds. Comparison goals (`≤`, `<`, `≥`, `>`, `=`) reach the
+same fold via the wrapper helpers (`rLeViaLt` / `rLtViaLe`) which
+convert each goal shape to an implication-False whose body the closer
+recurses into.
 -/
 
 import Mathlib.Data.Real.Basic
@@ -117,80 +118,6 @@ theorem rFarkasContradictNStrict
     or the strict-only False-goal). -/
 theorem rZeroNonneg : (0 : Real) ≤ 0 := le_refl 0
 
-/-- Weakening helper for the comparison-goal Le-path: convert
-    strict `a < 0` to non-strict `a ≤ 0`. Sound here because the
-    Le-goal closer derives its contradiction from the neg_goal's
-    Lt-shape over R, not from `a1`'s strictness; weakening loses
-    no information for that path. Mirror of Rocq's
-    `r_strict_neg_to_nonpos`. -/
-theorem rStrictNegToNonpos {a : Real} (h : a < 0) : a ≤ 0 :=
-  le_of_lt h
-
-/-- Real-typed Farkas reconstruction for a non-`False` goal of shape
-    `b ≤ c`. Strict-aware on `cng` (the neg_goal coefficient): with
-    `hcng : 0 < cng` strict and the negated goal compiled as `Lt(c-b)`
-    (since `¬(b ≤ c) ≡ c < b` over R), the combination
-    `cng * (c - b) < 0` is strict, and combined with `c1 * a1 ≤ 0`
-    we get a strict sum — contradicting `0 ≤ c1*a1 + cng*(c-b)`.
-    Collapsed K+Heq form (matches `rFarkasContradict` convention):
-    the closer builds `hpos` as an evar and discharges via `linarith`,
-    instead of splitting into separate K-positivity + ring-identity
-    steps the way Rocq's `r_farkas_le_goal_2` does. Mirror of Rocq's
-    `r_farkas_le_goal_2`. -/
-theorem rFarkasGoalLe2
-    {b c : Real} {a1 : Real} (h1 : a1 ≤ 0)
-    {c1 cng : Real} (hc1 : 0 ≤ c1) (hcng : 0 < cng)
-    (hpos : 0 ≤ c1 * a1 + cng * (c - b))
-    : b ≤ c := by
-  by_contra hngt
-  have hngt : c < b := lt_of_not_ge hngt
-  have hcb : c - b < 0 := sub_neg_of_lt hngt
-  have s1 : c1 * a1 ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hc1 h1
-  have s2 : cng * (c - b) < 0 := mul_neg_of_pos_of_neg hcng hcb
-  have ssum : c1 * a1 + cng * (c - b) < 0 := rAddLeLt s1 s2
-  exact absurd ssum (not_lt.mpr hpos)
-
-/-- Real-typed Farkas reconstruction for a strict goal `b < c`.
-    Standard (non-strict-aware) shape: `0 ≤ cng`, `0 < hpos`. The
-    negated goal `¬(b < c) ≡ c ≤ b` compiles as `Le(c-b)`, so the
-    Farkas sum is non-strict and requires the witness's linear
-    combination to be strictly positive. With strict `a1` (R Lt
-    hypothesis), routing instead picks `rFarkasGoalLt2StrictA1`
-    below. Mirror of Rocq's `r_farkas_lt_goal_2`. -/
-theorem rFarkasGoalLt2
-    {b c : Real} {a1 : Real} (h1 : a1 ≤ 0)
-    {c1 cng : Real} (hc1 : 0 ≤ c1) (hcng : 0 ≤ cng)
-    (hpos : 0 < c1 * a1 + cng * (c - b))
-    : b < c := by
-  by_contra hnlt
-  have hnlt : c ≤ b := not_lt.mp hnlt
-  have hcb : c - b ≤ 0 := sub_nonpos_of_le hnlt
-  have s1 : c1 * a1 ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hc1 h1
-  have s2 : cng * (c - b) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hcng hcb
-  have ssum : c1 * a1 + cng * (c - b) ≤ 0 := add_nonpos s1 s2
-  exact absurd hpos (not_lt.mpr ssum)
-
-/-- Real-typed Farkas reconstruction for strict goal `b < c` with
-    strict-`<` real hypothesis (`h1 : a1 < 0`). The standard
-    `rFarkasGoalLt2` requires the combination to be strictly positive;
-    with strict `a1` the trivial-K=0 case (eg `(h : 0 < x) ⊢ 0 < x`)
-    needs the strictness to flow through the sum: strict `c1 * a1 < 0`
-    via `rMulPosNeg`, then `Lt + Le → Lt` via `rAddLtLe`, yielding
-    the strict-aware contradiction with `0 ≤ c1*a1 + cng*(c-b)`.
-    Mirror of Rocq's `r_farkas_lt_goal_2_strict_a1`. -/
-theorem rFarkasGoalLt2StrictA1
-    {b c : Real} {a1 : Real} (h1 : a1 < 0)
-    {c1 cng : Real} (hc1 : 0 < c1) (hcng : 0 ≤ cng)
-    (hpos : 0 ≤ c1 * a1 + cng * (c - b))
-    : b < c := by
-  by_contra hnlt
-  have hnlt : c ≤ b := not_lt.mp hnlt
-  have hcb : c - b ≤ 0 := sub_nonpos_of_le hnlt
-  have s1 : c1 * a1 < 0 := mul_neg_of_pos_of_neg hc1 h1
-  have s2 : cng * (c - b) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hcng hcb
-  have ssum : c1 * a1 + cng * (c - b) < 0 := rAddLtLe s1 s2
-  exact absurd ssum (not_lt.mpr hpos)
-
 /-- Eq-hypothesis normalization (Real). Mirror of core's `eqToLe0`
     for `Int`. Folds `h : a = b` into the existing strict-aware
     Le-only fold via `a - b ≤ 0`. Solver-emitted certs apply
@@ -225,15 +152,14 @@ theorem rNotGtToLe0 {a b : Real} (h : ¬(a > b)) : a - b ≤ 0 :=
   sub_nonpos_of_le (not_lt.mp h)
 
 /-- Arity-N comparison-goal wrappers (Real). Convert a comparison
-    goal into a `(neg_form → False)` shape so the closer can
-    introduce the negated goal as a regular hypothesis and delegate
-    to the existing arity-N strict-aware False-fold. Mirror of Rocq's
-    `r_le_via_lt` / `r_lt_via_le`. The arity-2-specific helpers
-    `rFarkasGoalLe2` / `rFarkasGoalLt2` / `rFarkasGoalLt2StrictA1`
-    above are sound but specialized; the unified path subsumes all
-    three via the strict-aware fold (strictness from neg_goal's
-    Lt-shape on the Le-goal path; from a1's Lt-shape on the strict-a1
-    Lt-goal path; from neither on the standard Lt-goal path). -/
+    goal into a `(neg_form → False)` shape so the closer can introduce
+    the negated goal as a regular hypothesis and delegate to the
+    existing arity-N strict-aware False-fold. Mirror of Rocq's
+    `r_le_via_lt` / `r_lt_via_le`. The strict-aware fold subsumes all
+    three previous arity-2 paths in one go: strictness flows in from
+    neg_goal's Lt-shape on the Le-goal path, from a1's Lt-shape on the
+    strict-a1 Lt-goal path, and from neither on the standard Lt-goal
+    path. -/
 theorem rLeViaLt {b c : Real} (h : c < b → False) : b ≤ c := by
   by_contra hng
   have hng : c < b := lt_of_not_ge hng
@@ -256,10 +182,6 @@ theorem rLtViaLe {b c : Real} (h : c ≤ b → False) : b < c := by
 #print axioms rAddNeg
 #print axioms rFarkasContradictNStrict
 #print axioms rZeroNonneg
-#print axioms rStrictNegToNonpos
-#print axioms rFarkasGoalLe2
-#print axioms rFarkasGoalLt2
-#print axioms rFarkasGoalLt2StrictA1
 #print axioms rLeViaLt
 #print axioms rLtViaLe
 #print axioms rEqToLe0

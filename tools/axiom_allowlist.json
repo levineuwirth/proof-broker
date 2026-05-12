@@ -72,14 +72,6 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rZeroNonneg":
       ["propext", "Classical.choice", "Quot.sound"],
-    "ProofBrokerMathlib.TermMode.rStrictNegToNonpos":
-      ["propext", "Classical.choice", "Quot.sound"],
-    "ProofBrokerMathlib.TermMode.rFarkasGoalLe2":
-      ["propext", "Classical.choice", "Quot.sound"],
-    "ProofBrokerMathlib.TermMode.rFarkasGoalLt2":
-      ["propext", "Classical.choice", "Quot.sound"],
-    "ProofBrokerMathlib.TermMode.rFarkasGoalLt2StrictA1":
-      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rLeViaLt":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rLtViaLe":
@@ -218,10 +210,6 @@
       [],
     "pb_term_eq_axiom_free":
       [],
-    "farkas_le_goal_2":
-      [],
-    "farkas_lt_goal_2":
-      [],
     "pb_term_case_split_axiom_free":
       [
         "ClassicalDedekindReals.sig_forall_dec",
@@ -248,16 +236,6 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "pb_lra_term_eq_axiom_free":
-      [
-        "ClassicalDedekindReals.sig_forall_dec",
-        "FunctionalExtensionality.functional_extensionality_dep"
-      ],
-    "r_farkas_le_goal_2":
-      [
-        "ClassicalDedekindReals.sig_forall_dec",
-        "FunctionalExtensionality.functional_extensionality_dep"
-      ],
-    "r_farkas_lt_goal_2":
       [
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"
@@ -298,16 +276,6 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "r_farkas_contradict_n_strict":
-      [
-        "ClassicalDedekindReals.sig_forall_dec",
-        "FunctionalExtensionality.functional_extensionality_dep"
-      ],
-    "r_strict_neg_to_nonpos":
-      [
-        "ClassicalDedekindReals.sig_forall_dec",
-        "FunctionalExtensionality.functional_extensionality_dep"
-      ],
-    "r_farkas_lt_goal_2_strict_a1":
       [
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"

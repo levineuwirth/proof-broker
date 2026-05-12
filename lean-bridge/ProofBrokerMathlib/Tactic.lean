@@ -648,9 +648,7 @@ private def parseFarkasCoefficientsReal (cert : Json)
     regular hypothesis, and delegating to `closeViaTermModeFalseReal`.
     The arity-N strict-aware fold handles all premises — including
     `neg_goal` whose strict (Le-goal) or non-strict (Lt-goal)
-    normalization threads through naturally. Subsumes the arity-2
-    helpers `rFarkasGoalLe2` / `rFarkasGoalLt2` /
-    `rFarkasGoalLt2StrictA1`. -/
+    normalization threads through naturally. -/
 private def closeViaTermModeRealComparison
     (goal : MVarId) (goalType : Expr)
     (entries : List (String × Int)) : TacticM Unit := do

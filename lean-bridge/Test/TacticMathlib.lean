@@ -115,7 +115,7 @@ theorem pb_lra_term_lt_mixed_axiom_free
 #print axioms pb_lra_term_lt_mixed_axiom_free
 
 /-- LRA comparison goal `(≤)`: `(h : n ≤ 5) ⊢ n ≤ 6`. The closer
-    routes through `rFarkasGoalLe2` (strict-aware on cng — the
+    routes through `rLeViaLt` and the strict-aware fold (the
     neg_goal's Lt-shape over R is what produces the strict sum). -/
 theorem pb_lra_term_goal_axiom_free
     (n : Real) (h : n ≤ 5) : n ≤ 6 := by
@@ -125,7 +125,7 @@ theorem pb_lra_term_goal_axiom_free
 
 /-- LRA comparison goal `(<)`: `(h : n ≤ 4) ⊢ n < 5`. The neg_goal
     `¬(n < 5) ≡ 5 ≤ n` compiles as Le over R, so the closer routes
-    through `rFarkasGoalLt2` (standard non-strict path, K > 0). -/
+    through `rLtViaLe` and the standard non-strict fold (K > 0). -/
 theorem pb_lra_term_lt_axiom_free
     (n : Real) (h : n ≤ 4) : n < 5 := by
   proof_broker_term [z3]
@@ -133,8 +133,8 @@ theorem pb_lra_term_lt_axiom_free
 #print axioms pb_lra_term_lt_axiom_free
 
 /-- LRA comparison goal `(≥)`: `(h : 5 ≤ n) ⊢ n ≥ 4`. Lean's
-    instance reduction unifies the proof of `4 ≤ n` (built by
-    `rFarkasGoalLe2`) with the `n ≥ 4` goal, so no explicit
+    instance reduction unifies the proof of `4 ≤ n` (built via the
+    `rLeViaLt` wrapper) with the `n ≥ 4` goal, so no explicit
     `Rle_ge`-style normalization tactic is needed (Rocq does need
     it because Z.ge / R.ge don't reduce). -/
 theorem pb_lra_term_ge_axiom_free
@@ -144,7 +144,7 @@ theorem pb_lra_term_ge_axiom_free
 #print axioms pb_lra_term_ge_axiom_free
 
 /-- LRA comparison goal `(>)`: `(h : 5 ≤ n) ⊢ n > 3`. Same instance
-    reduction trick as `≥`, routes through `rFarkasGoalLt2`. -/
+    reduction trick as `≥`, routes through `rLtViaLe`. -/
 theorem pb_lra_term_gt_axiom_free
     (n : Real) (h : 5 ≤ n) : n > 3 := by
   proof_broker_term [z3]
@@ -156,7 +156,7 @@ theorem pb_lra_term_gt_axiom_free
     extension's `reifyType`, applies `le_antisymm` (Mathlib's
     generic version, not `Int.le_antisymm`), and recurses on each
     direction. The trivial-K=0 case for each direction routes
-    through `rFarkasGoalLe2`'s strict-aware path. Mirror of Rocq's
+    through `rLeViaLt` and the strict-aware fold. Mirror of Rocq's
     `pb_lra_term_eq_axiom_free`. -/
 theorem pb_lra_term_eq_axiom_free
     (n : Real) (h1 : n ≤ 5) (h2 : 5 ≤ n) : n = 5 := by
@@ -189,10 +189,9 @@ theorem pb_lra_term_arity3_lt_axiom_free
 #print axioms pb_lra_term_arity3_lt_axiom_free
 
 /-- Strict-`<` hypothesis on a Le-goal: `(h : 0 < x) ⊢ 0 ≤ x`. The
-    closer weakens `h` via `rStrictNegToNonpos` and routes through
-    `rFarkasGoalLe2`'s standard path; weakening is information-
-    preserving here because the Le-goal's strict-aware contradiction
-    comes from the neg_goal's Lt-shape, not from `a1`. -/
+    unified strict-aware fold consumes the Lt-normalized `h` directly
+    (`rLtToLt0 → a - b < 0`) and combines it with the neg_goal's
+    Lt-shape; no weakening required. -/
 theorem pb_lra_term_le_goal_strict_a1_axiom_free
     (x : Real) (h : 0 < x) : 0 ≤ x := by
   proof_broker_term [z3]
@@ -200,10 +199,11 @@ theorem pb_lra_term_le_goal_strict_a1_axiom_free
 #print axioms pb_lra_term_le_goal_strict_a1_axiom_free
 
 /-- Strict-`<` hypothesis on a Lt-goal: `(h : 0 < x) ⊢ 0 < x`. Linear
-    sum is exactly zero; strictness must flow through `a1` via the
-    dedicated `rFarkasGoalLt2StrictA1` (the standard `rFarkasGoalLt2`
-    would require K > 0 strictly and can't close this trivial-K=0
-    case). -/
+    sum is exactly zero; strictness flows through `a1` via the
+    strict-aware fold (`rMulPosNeg` on the strict premise → `rAddLtLe`
+    on the neg_goal accumulator), letting `rFarkasContradictNStrict`
+    close with `0 ≤ K` (K = 0 permitted because strictness on the sum
+    carries the contradiction). -/
 theorem pb_lra_term_lt_goal_strict_a1_axiom_free
     (x : Real) (h : 0 < x) : 0 < x := by
   proof_broker_term [z3]
@@ -220,8 +220,8 @@ theorem pb_lra_term_ge_goal_strict_a1_axiom_free
 #print axioms pb_lra_term_ge_goal_strict_a1_axiom_free
 
 /-- Strict-`<` hypothesis on a Gt-goal: `(h : 0 < x) ⊢ x > 0`. Same
-    as the Lt-goal variant via instance reduction; routes through
-    `rFarkasGoalLt2StrictA1`. -/
+    as the Lt-goal variant via instance reduction; the strict-aware
+    fold carries the strictness on the trivial-K=0 sum. -/
 theorem pb_lra_term_gt_goal_strict_a1_axiom_free
     (x : Real) (h : 0 < x) : x > 0 := by
   proof_broker_term [z3]

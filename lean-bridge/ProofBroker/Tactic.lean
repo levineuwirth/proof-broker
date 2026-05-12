@@ -1064,15 +1064,14 @@ private def closeViaTermModeFalse
     closeOmegaSubgoal hposMV.mvarId!
     goal.assign term
 
-/-- The four LIA-goal shapes the non-False term-mode handles. Each
-    routes to one of two `TermMode` helpers via instance reduction:
-    `≥` reduces to `≤` swapped, `>` reduces to `<` swapped. The
-    `kind` field tracks whether the neg-goal normalized form
-    carries the LIA +1 trick (`≤` / `≥` do; `<` / `>` don't) so
-    the closer builds the right `heq` polynomial. -/
+/-- The four LIA-goal shapes the non-False term-mode handles. `≥`
+    reduces to `≤` swapped and `>` to `<` swapped by instance
+    reduction; the `kind` field tracks whether the neg-goal normalized
+    form carries the LIA +1 trick (`≤` / `≥` do; `<` / `>` don't) so
+    the closer builds the right `hpos` polynomial. -/
 private inductive GoalKind
-  | le   -- b ≤ c   (helper farkasGoalLe2, +1 trick)
-  | lt   -- b < c   (helper farkasGoalLt2, no +1)
+  | le   -- b ≤ c   (+1 trick)
+  | lt   -- b < c   (no +1)
 deriving Repr
 
 /-- Match an Int LIA-comparison goal. Returns `(b, c, kind)` where
@@ -1105,10 +1104,9 @@ private def matchLiaGoal? (goalType : Expr)
     applying a wrapper of shape `(c <(=) b → False) → b <(=) c`,
     introducing `neg_goal` as a regular Coq hypothesis, and
     delegating to `closeViaTermModeFalse`. The arity-N strict-aware
-    fold in `closeViaTermModeFalse` handles all premises uniformly
-    — including `neg_goal`, whose +1-trick normalization flows
-    through the existing per-universe machinery. Subsumes the
-    arity-2 `farkasGoalLe2` / `farkasGoalLt2` path. -/
+    fold in `closeViaTermModeFalse` handles all premises uniformly —
+    including `neg_goal`, whose +1-trick normalization flows through
+    the existing per-universe machinery. -/
 private def closeViaTermModeComparison
     (goal : MVarId) (goalType : Expr)
     (entries : List (String × Int)) : TacticM Unit := do

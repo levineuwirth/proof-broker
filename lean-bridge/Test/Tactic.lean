@@ -149,22 +149,22 @@ theorem pb_term_arity3_axiom_free
 
 /-- Term-mode Tier 1 Farkas with a non-`False` goal. The witness
     has one real-hypothesis entry plus a `neg_goal` slot the closer
-    discharges via `farkasGoalLe2` (which wraps
-    `Decidable.byContradiction` over `Int.decLe`, axiom-free). The
-    cert minted by z3 carries coefficients on both `h` and
-    `neg_goal`; the closer builds the proof term explicitly,
-    omega-discharging only the strict-positivity polynomial
-    identity. The `[propext, Quot.sound]` footprint matches the
-    omega-closure path — no `Classical.choice`. -/
+    discharges via the unified `intLeViaLt` wrapper (which wraps
+    `Decidable.byContradiction` over `Int.decLe`, axiom-free) then
+    folds into the arity-N False-fold. The cert minted by z3 carries
+    coefficients on both `h` and `neg_goal`; the closer builds the
+    proof term explicitly, omega-discharging only the strict-
+    positivity polynomial identity. The `[propext, Quot.sound]`
+    footprint matches the omega-closure path — no `Classical.choice`. -/
 theorem pb_term_goal_axiom_free
     (n : Int) (h : n ≤ 5) : n ≤ 6 := by
   proof_broker_term [z3]
 
 #print axioms pb_term_goal_axiom_free
 
-/-- Term-mode with strict-`<` goal: closer routes through
-    `farkasGoalLt2` (no LIA +1 trick — `¬(n < 5) ↔ 5 ≤ n` via
-    `Int.not_lt`). -/
+/-- Term-mode with strict-`<` goal: closer routes through the
+    `intLtViaLe` wrapper into the arity-N fold (no LIA +1 trick —
+    `¬(n < 5) ↔ 5 ≤ n` via `Int.not_lt`). -/
 theorem pb_term_lt_axiom_free
     (n : Int) (h : n ≤ 4) : n < 5 := by
   proof_broker_term [z3]
@@ -172,8 +172,8 @@ theorem pb_term_lt_axiom_free
 #print axioms pb_term_lt_axiom_free
 
 /-- Term-mode with `≥` goal: `GE.ge n 4` reduces by instance to
-    `LE.le 4 n`, so the closer routes through `farkasGoalLe2` with
-    arg swap and the resulting `4 ≤ n` proof term unifies with the
+    `LE.le 4 n`, so the closer routes through `intLeViaLt` with arg
+    swap and the resulting `4 ≤ n` proof term unifies with the
     `n ≥ 4` goal definitionally. -/
 theorem pb_term_ge_axiom_free
     (n : Int) (h : 5 ≤ n) : n ≥ 4 := by
@@ -182,7 +182,7 @@ theorem pb_term_ge_axiom_free
 #print axioms pb_term_ge_axiom_free
 
 /-- Term-mode with strict-`>` goal: `GT.gt n 3` reduces to
-    `LT.lt 3 n`; same routing as `≥` but through `farkasGoalLt2`. -/
+    `LT.lt 3 n`; same routing as `≥` but through `intLtViaLe`. -/
 theorem pb_term_gt_axiom_free
     (n : Int) (h : 5 ≤ n) : n > 3 := by
   proof_broker_term [z3]
@@ -219,9 +219,9 @@ theorem pb_term_lt_mixed_axiom_free
     `Int.le_antisymm` (since `¬(a = b)` is a disjunction outside
     single-witness Farkas scope) and runs the existing ≤-shape
     term-mode on each direction. Two solver dispatches, two
-    `farkasGoalLe2` applications, one `Int.le_antisymm`. The
-    axiom footprint stays `[propext, Quot.sound]` — splitting
-    adds no new trust delta over the single-direction case. -/
+    `intLeViaLt`-routed applications, one `Int.le_antisymm`. The
+    axiom footprint stays `[propext, Quot.sound]` — splitting adds
+    no new trust delta over the single-direction case. -/
 theorem pb_term_eq_axiom_free
     (n : Int) (h1 : n ≤ 5) (h2 : 5 ≤ n) : n = 5 := by
   proof_broker_term [z3]

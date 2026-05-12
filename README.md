@@ -24,8 +24,8 @@ the Tier 2 case-split path. Trust footprint of the shipped tactics
 is gated by `tools/check_axioms.py` against `tools/axiom_allowlist.json`
 — every `*_axiom_free` theorem in `lean-bridge/Test/Tactic.lean` and
 `rocq-bridge/theories/Test.v` either closes axiom-free or pulls only
-the documented Lean / Rocq core axioms (150 entries gated at Phase 5
-close).
+the documented Lean / Rocq core axioms (140 entries after the
+post-Phase-5 dead-code cleanup; Phase 5 closed at 150).
 
 ## Layout
 
