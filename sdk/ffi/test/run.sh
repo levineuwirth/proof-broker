@@ -57,4 +57,16 @@ cc -std=c11 -Wall -Wextra -O2 \
    -o "$TMP/test_shim" \
    "${EXTRA_LIBS[@]}"
 
+# macOS dyld doesn't honor `-Wl,-rpath` the way Linux ld.so does when
+# the dylib's install_name is a relative path (dune's shared_object
+# mode emits proof_broker_ffi.so with a relative install_name like
+# `sdk/ffi/proof_broker_ffi.so`). Rewrite the test_shim's LC_LOAD_DYLIB
+# entry to the absolute path so the load actually resolves at runtime.
+# Linux ld.so resolves bare basenames against RPATH directly; no
+# install_name_tool needed there.
+if [ "$(uname -s)" = "Darwin" ]; then
+  OLD_NAME="$(otool -D "$SO" | tail -n 1)"
+  install_name_tool -change "$OLD_NAME" "$SO" "$TMP/test_shim"
+fi
+
 "$TMP/test_shim" "$EXAMPLE"
