@@ -508,11 +508,18 @@ private def closeViaCaseSplitReal (cert : Json) (ir : IR) : TacticM Unit := do
     | none =>
       throwError "proof_broker_term: disjunctive hypothesis '{hypName}' \
                    not in IR context"
-  -- Today: arity-2 only (binary `Or`). Higher arity is mechanical.
-  let (leftDisj, rightDisj) ← match disjHyp.shell with
-    | .or_ l r => pure (l, r)
-    | _ =>
-      throwError "proof_broker_term: hypothesis '{hypName}' is not Or-shaped"
+  -- Flatten nested binary `Or` into a flat disjunct list. Mirror
+  -- of the SDK's [Alethe_farkas.disjuncts_of]. Right-associated
+  -- nesting `A ∨ (B ∨ C)` flattens to `[A; B; C]`.
+  let rec flattenDisjuncts (s : ShellTerm) : List ShellTerm :=
+    match s with
+    | .or_ l r => flattenDisjuncts l ++ flattenDisjuncts r
+    | _ => [s]
+  let disjuncts := flattenDisjuncts disjHyp.shell
+  let nDisjuncts := disjuncts.length
+  if nDisjuncts < 2 then
+    throwError "proof_broker_term: disjunctive hypothesis '{hypName}' \
+                 has {nDisjuncts} disjuncts (expected ≥ 2)"
   -- Shape-match each disjunct to a lemma. Structural BEq on
   -- ShellTerm — the cert's case shells come from the same SDK that
   -- emitted the IR's disjuncts, so they should match exactly.
@@ -523,38 +530,47 @@ private def closeViaCaseSplitReal (cert : Json) (ir : IR) : TacticM Unit := do
       throwError "proof_broker_term: no Tier 2 lemma matches one of the \
                    disjuncts (BEq lookup failed — adapter / disjunct \
                    shape divergence?)"
-  let leftEntries ← findLemma leftDisj
-  let rightEntries ← findLemma rightDisj
-  -- Destruct the disjunctive hypothesis. We use `rcases` so each
-  -- branch's introduced hypothesis carries a stable user-name
-  -- ("hCase") we can then redirect the witness's `"case"` lookups
-  -- to via the closer's overrides map.
+  let perDisjunctEntries ← disjuncts.mapM findLemma
+  -- Build an arity-N rcases tactic dynamically. Each leaf disjunct
+  -- gets a `hCase` name; `rcases` handles the right-associated `Or`
+  -- nesting via its `|`-separated pattern (see Init/RCases.lean's
+  -- [rcasesPatMed := sepBy1(rcasesPat, " | ")] grammar). String
+  -- assembly + [Parser.runParserCategory] is the most direct way to
+  -- splice a dynamically-sized `sepBy1` into a tactic; recursive
+  -- TSyntax quotation hits trouble with the `Med` category's
+  -- sepBy1 shape.
+  let pat := String.intercalate " | " (List.replicate nDisjuncts "hCase")
+  let cmdStr := s!"rcases {hypName} with {pat}"
+  let stx ← match Lean.Parser.runParserCategory (← getEnv) `tactic cmdStr with
+    | .ok s => pure s
+    | .error e =>
+      throwError "proof_broker_term: failed to construct arity-{nDisjuncts} \
+                   rcases tactic: {e}"
   let mainGoal ← getMainGoal
   mainGoal.withContext do
-    let hypFV ← match (← getLCtx).findFromUserName? hypName.toName with
+    let _ ← match (← getLCtx).findFromUserName? hypName.toName with
       | some d => pure (Expr.fvar d.fvarId)
       | none =>
         throwError "proof_broker_term: disjunctive hypothesis '{hypName}' \
                      not in Lean LCtx (IR vs Lean context drift?)"
-    let hypIdent := mkIdent hypName.toName
-    evalTactic (← `(tactic| rcases $hypIdent:term with hCase | hCase))
-    let _ := hypFV
-  -- Two subgoals now; dispatch each to closeViaTermModeFalseReal
-  -- with the "case" name overridden to the destruct-bound hCase.
+    evalTactic stx
+  -- N subgoals now; dispatch each to closeViaTermModeFalseReal with
+  -- the "case" name overridden to the destruct-bound hCase. Subgoal
+  -- ordering follows rcases's left-to-right traversal, which matches
+  -- the disjunct order produced by `flattenDisjuncts`.
   let subgoals ← getGoals
-  match subgoals with
-  | [g1, g2] =>
-    let runBranch (g : MVarId) (entries : List (String × Int)) : TacticM Unit := do
-      setGoals [g]
-      g.withContext do
-        let (hCaseFV, hCaseTy) ← fvarOfName "hCase"
-        closeViaTermModeFalseReal g entries [("case", hCaseFV, hCaseTy)]
-    runBranch g1 leftEntries
-    runBranch g2 rightEntries
-    setGoals []
-  | _ =>
+  if subgoals.length != nDisjuncts then
     throwError "proof_broker_term: rcases produced {subgoals.length} \
-                 subgoals (expected 2 for arity-2 case-split)"
+                 subgoals (expected {nDisjuncts} for arity-{nDisjuncts} \
+                 case-split)"
+  let runBranch (g : MVarId) (entries : List (String × Int)) : TacticM Unit := do
+    setGoals [g]
+    g.withContext do
+      let (hCaseFV, hCaseTy) ← fvarOfName "hCase"
+      closeViaTermModeFalseReal g entries [("case", hCaseFV, hCaseTy)]
+  for (g, entries) in subgoals.zip perDisjunctEntries do
+    runBranch g entries
+  setGoals []
 
 /- ============================================================
    Tier 1 LRA closer (top-level dispatcher)

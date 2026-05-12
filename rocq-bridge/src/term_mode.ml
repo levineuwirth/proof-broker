@@ -904,21 +904,37 @@ let close_term_case_split (ir : Ir.t)
           unsupported "term_mode: disjunctive hypothesis %s not in IR" hyp_name
       in
       let disjuncts = Alethe_farkas.disjuncts_of disj_hyp.shell in
-      if List.length disjuncts <> 2 then
-        unsupported "term_mode: only arity-2 disjunctive hypotheses wired \
-                     today (got %d disjuncts)" (List.length disjuncts);
+      let n_disjuncts = List.length disjuncts in
+      if n_disjuncts < 2 then
+        unsupported "term_mode: disjunctive hypothesis has %d disjuncts \
+                     (expected ≥ 2)" n_disjuncts;
       let parsed = List.map parse_case_lemma lemmas_used in
-      if List.length parsed <> List.length disjuncts then
+      if List.length parsed <> n_disjuncts then
         unsupported "term_mode: lemma count (%d) doesn't match disjunct \
-                     count (%d)" (List.length parsed) (List.length disjuncts);
+                     count (%d)" (List.length parsed) n_disjuncts;
       let fragment = Farkas.effective_fragment ir in
       let ordered = order_lemmas_by_disjunct ~fragment parsed disjuncts in
       let branches =
         List.map (fun (case_shell, witness) ->
           per_branch_close ir case_shell witness) ordered
       in
+      (* Build an arity-N destruct pattern. Rocq's [destruct] on
+         a right-associated chain [A \/ (B \/ (C \/ ...))] requires a
+         matching nested OrAndIntroPattern. For [n] disjuncts:
+           n=2: [case | case]
+           n=3: [case | [case | case]]
+           n=4: [case | [case | [case | case]]]
+         The pattern recurses on the right child to mirror the [Or]
+         tree's right-spine. Verified empirically — the flat form
+         [case | case | case] errors with "expects a disjunctive
+         pattern with 2 branches" since each [Or] node is binary. *)
+      let rec build_destruct_pattern n =
+        if n <= 2 then "case | case"
+        else Printf.sprintf "case | [%s]" (build_destruct_pattern (n - 1))
+      in
+      let pattern = build_destruct_pattern n_disjuncts in
       let destruct_tac =
-        invoke_tactic (Printf.sprintf "destruct %s as [case | case]" hyp_name)
+        invoke_tactic (Printf.sprintf "destruct %s as [%s]" hyp_name pattern)
       in
       Proofview.tclTHEN destruct_tac (Proofview.tclDISPATCH branches)
     with Unsupported msg ->
