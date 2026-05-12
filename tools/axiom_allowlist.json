@@ -10,6 +10,10 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_arity3_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_arity3_goal_axiom_free":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_term_arity3_lt_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_goal_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_lt_axiom_free":
@@ -71,6 +75,14 @@
     "ProofBrokerMathlib.TermMode.rFarkasGoalLt2":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rFarkasGoalLt2StrictA1":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rLeViaLt":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermMode.rLtViaLe":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_arity3_goal_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_arity3_lt_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],

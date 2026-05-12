@@ -228,6 +228,28 @@ theorem pb_term_eq_axiom_free
 
 #print axioms pb_term_eq_axiom_free
 
+/-- Arity-3 comparison goal (LIA, Le): transitive chain
+    `x ≤ y ∧ y ≤ 5 ⊢ x ≤ 6`. The unified closer applies
+    `intLeViaLt`, introduces `neg_goal : 6 < x`, and feeds the
+    full arity-3 witness (h1 + h2 + neg_goal) through the existing
+    arity-N False-fold. No special arity-2 helper involved — same
+    code path as the False-goal arity-3 test, just with one extra
+    Le entry coming from the (+1-trick-normalized) neg_goal. -/
+theorem pb_term_arity3_goal_axiom_free
+    (x y : Int) (h1 : x ≤ y) (h2 : y ≤ 5) : x ≤ 6 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_arity3_goal_axiom_free
+
+/-- Arity-3 comparison goal (LIA, Lt): same shape with strict goal.
+    Wrapper is `intLtViaLe`, neg_goal compiles as Le (no +1 trick on
+    the `c ≤ b` negation of `b < c`). -/
+theorem pb_term_arity3_lt_axiom_free
+    (x y : Int) (h1 : x ≤ y) (h2 : y ≤ 4) : x < 5 := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_arity3_lt_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated

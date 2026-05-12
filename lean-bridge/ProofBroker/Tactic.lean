@@ -974,20 +974,18 @@ private def matchLiaGoal? (goalType : Expr)
     if α.isConstOf ``Int then some (b, a, .lt) else none
   | _ => none
 
-/-- Term-mode closer, non-False arity-2 path. Goal must be one of
-    the four LIA-comparison shapes over `Int` (`≤` / `<` / `≥` /
-    `>`); the witness has one real-hypothesis entry and one
-    `neg_goal` entry. The proof term is `farkasGoalLe2` or
-    `farkasGoalLt2`, each wrapping `Decidable.byContradiction` (via
-    `Int.decLe` / `Int.decLt`, axiom-free) and folding the
-    contradiction construction back into `farkasContradict`. The
-    strict-positivity subgoal again goes through `omega` on a
-    literal-coefficient polynomial identity — no goal-side LIA
-    discharge. -/
-private def closeViaTermModeWithNegGoal
+/-- Unified arity-N comparison-goal closer. Converts `b ≤ c` /
+    `b < c` (and their `≥` / `>` swapped forms) to `False` by
+    applying a wrapper of shape `(c <(=) b → False) → b <(=) c`,
+    introducing `neg_goal` as a regular Coq hypothesis, and
+    delegating to `closeViaTermModeFalse`. The arity-N strict-aware
+    fold in `closeViaTermModeFalse` handles all premises uniformly
+    — including `neg_goal`, whose +1-trick normalization flows
+    through the existing per-universe machinery. Subsumes the
+    arity-2 `farkasGoalLe2` / `farkasGoalLt2` path. -/
+private def closeViaTermModeComparison
     (goal : MVarId) (goalType : Expr)
-    (realEntry : String × Int) (cng : Int) : TacticM Unit := do
-  let (realName, c1) := realEntry
+    (entries : List (String × Int)) : TacticM Unit := do
   let (b, c, kind) ← match matchLiaGoal? goalType with
     | some t => pure t
     | none =>
@@ -995,44 +993,28 @@ private def closeViaTermModeWithNegGoal
                    (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _) over Int; \
                    got {goalType}. Equality goals need Tier 2 \
                    case-split (the negation is a disjunction)."
-  goal.withContext do
-    let (fv, ty) ← fvarOfName realName
-    let (a1, h1') ← normalizeHypothesis fv ty
-    let c1Expr := intLitExpr c1
-    let cngExpr := intLitExpr cng
-    let hc1 ← buildNonnegProof c1
-    let hcng ← buildNonnegProof cng
-    let zero := intLitExpr 0
-    let one := intLitExpr 1
-    -- Neg-goal compiled form: (c + 1 - b) for ≤/≥, (c - b) for </>.
-    let negGoalNorm ← match kind with
-      | .le =>
-        let cPlus1 ← Lean.Meta.mkAppM ``HAdd.hAdd #[c, one]
-        Lean.Meta.mkAppM ``HSub.hSub #[cPlus1, b]
-      | .lt =>
-        Lean.Meta.mkAppM ``HSub.hSub #[c, b]
-    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
-    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[cngExpr, negGoalNorm]
-    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
-    let heqTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
-    let heqMV ← Lean.Meta.mkFreshExprMVar heqTy
-    let helperName : Name := match kind with
-      | .le => ``ProofBroker.TermMode.farkasGoalLe2
-      | .lt => ``ProofBroker.TermMode.farkasGoalLt2
-    let term ← Lean.Meta.mkAppM helperName
-      #[h1', hc1, hcng, heqMV]
-    closeOmegaSubgoal heqMV.mvarId!
+  let (wrapperName, negHead) := match kind with
+    | .le => (``ProofBroker.TermMode.intLeViaLt, ``LT.lt)
+    | .lt => (``ProofBroker.TermMode.intLtViaLe, ``LE.le)
+  let bodyMV ← goal.withContext do
+    let negTy ← Lean.Meta.mkAppM negHead #[c, b]
+    let bodyTy ← mkArrow negTy (mkConst ``False)
+    let bodyMV ← Lean.Meta.mkFreshExprMVar bodyTy
+    let term ← Lean.Meta.mkAppOptM wrapperName
+                 #[some b, some c, some bodyMV]
     goal.assign term
+    return bodyMV
+  let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
+  closeViaTermModeFalse newGoal entries
 
-/-- Term-mode closer for arity-2 LIA Farkas witnesses. Branches on
-    whether the witness names `neg_goal`:
-    * No `neg_goal`: goal must be `False`, both entries name real
-      hypotheses, build via `farkasContradict`.
-    * With `neg_goal`: goal must be `(_ ≤ _ : Int)`, one entry names
-      a real hypothesis and one names `neg_goal`, build via
-      `farkasGoalLe2` (which wraps `Decidable.byContradiction`).
-    All coefficients must be nonnegative integers; hypothesis types
-    must be `(_ ≤ _ : Int)`. -/
+/-- Term-mode closer for LIA Farkas witnesses. Branches on whether
+    the witness names `neg_goal`:
+    * No `neg_goal`: goal must be `False`, all entries name real
+      hypotheses; the strict-aware arity-N fold closes via
+      `farkasContradictN`.
+    * With `neg_goal`: goal must be a comparison shape over `Int`;
+      the unified path applies the appropriate wrapper, introduces
+      `neg_goal`, and recurses into the same arity-N False-fold. -/
 private def closeViaTermMode (goal : MVarId) (goalType : Expr)
     (cert : Json) : TacticM Unit := do
   let entries ← parseFarkasCoefficients cert
@@ -1045,25 +1027,11 @@ private def closeViaTermMode (goal : MVarId) (goalType : Expr)
       throwError "proof_broker_term: witness lacks neg_goal but goal is \
                    not False ({goalType}); cert/goal mismatch"
     closeViaTermModeFalse goal entries
-  | some (_, cng) =>
-    -- Non-False goal: the comparison-goal closer
-    -- (`closeViaTermModeWithNegGoal`) is arity-2-only today (one real
-    -- hypothesis + neg_goal). Higher arity on non-False goals would
-    -- need a farkasGoalLeN helper — out of scope for this iteration.
+  | some _ =>
     if goalType.isConstOf ``False then
       throwError "proof_broker_term: witness names neg_goal but goal is \
                    False ({goalType}); cert/goal mismatch"
-    unless entries.length == 2 do
-      throwError "proof_broker_term: arity {entries.length} non-False \
-                   witness — only arity 2 wired for comparison goals \
-                   (False-goal arity-N landed; comparison-goal arity-N \
-                   needs farkasGoalLeN helper)"
-    let real := entries.find? (fun e => e.1 != "neg_goal")
-    let realEntry ← match real with
-      | some e => pure e
-      | none => throwError "proof_broker_term: witness has neg_goal but no \
-                              real-hypothesis companion (arity-2 expected)"
-    closeViaTermModeWithNegGoal goal goalType realEntry cng
+    closeViaTermModeComparison goal goalType entries
 
 /-- Bare form `proof_broker` runs against the default manifest list
     (cvc4, cvc5, z3 if present in the manifest dir) under

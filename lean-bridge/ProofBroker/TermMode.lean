@@ -127,4 +127,24 @@ theorem farkasContradictN
     (s : Int) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
   absurd hpos (Int.not_lt_of_ge hsum)
 
+/-- Arity-N comparison-goal wrappers (Int). Convert a comparison goal
+    into a `(neg_form → False)` shape so the closer can introduce the
+    negated goal as a regular hypothesis and delegate to the existing
+    arity-N False-fold. The arity-2 helpers `farkasGoalLe2` /
+    `farkasGoalLt2` above are a sound but specialized case of this
+    pattern; the unified path handles any arity by feeding `neg_goal`
+    into the same fold as the witness's real-hypothesis entries.
+
+    Both wrappers are axiom-free: `Decidable.byContradiction` resolves
+    via `Int.decLe` / `Int.decLt`, and `Int.lt_of_not_ge` / `Int.not_lt`
+    are themselves axiom-free in `Init.Data.Int.Order`. Same trust
+    footprint as the arity-2 helpers. -/
+theorem intLeViaLt {b c : Int} (h : c < b → False) : b ≤ c :=
+  Decidable.byContradiction fun hng =>
+    h (Int.lt_of_not_ge hng)
+
+theorem intLtViaLe {b c : Int} (h : c ≤ b → False) : b < c :=
+  Decidable.byContradiction fun hng =>
+    h (Int.not_lt.mp hng)
+
 end ProofBroker.TermMode

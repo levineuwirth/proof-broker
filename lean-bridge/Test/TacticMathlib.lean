@@ -164,6 +164,30 @@ theorem pb_lra_term_eq_axiom_free
 
 #print axioms pb_lra_term_eq_axiom_free
 
+/-- Arity-3 comparison goal (LRA, Le): transitive chain
+    `x ≤ y ∧ y ≤ 5 ⊢ x ≤ 6`. Mirrors `pb_term_arity3_goal_axiom_free`
+    over Real. The unified closer applies `rLeViaLt`, introduces
+    `neg_goal : 6 < x` (strict over Real), and feeds the arity-3
+    witness through the strict-aware False-fold. Strictness from
+    the Lt-shaped neg_goal entry threads through via `rAddLeLt` at
+    the final fold step. -/
+theorem pb_lra_term_arity3_goal_axiom_free
+    (x y : Real) (h1 : x ≤ y) (h2 : y ≤ 5) : x ≤ 6 := by
+  proof_broker_term [z3]
+
+#print axioms pb_lra_term_arity3_goal_axiom_free
+
+/-- Arity-3 comparison goal (LRA, Lt): strict goal from a Le-chain.
+    Wrapper is `rLtViaLe`, neg_goal compiles as Le (Real has no
+    +1 trick; `c ≤ b` is the natural negation of `b < c`). All
+    entries Le, fold stays in the non-strict path until contradicting
+    `0 < sum` via `rFarkasContradictN`. -/
+theorem pb_lra_term_arity3_lt_axiom_free
+    (x y : Real) (h1 : x ≤ y) (h2 : y ≤ 4) : x < 5 := by
+  proof_broker_term [z3]
+
+#print axioms pb_lra_term_arity3_lt_axiom_free
+
 /-- Strict-`<` hypothesis on a Le-goal: `(h : 0 < x) ⊢ 0 ≤ x`. The
     closer weakens `h` via `rStrictNegToNonpos` and routes through
     `rFarkasGoalLe2`'s standard path; weakening is information-

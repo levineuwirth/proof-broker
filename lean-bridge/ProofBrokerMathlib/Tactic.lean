@@ -362,89 +362,6 @@ private def matchRealGoal? (goalType : Expr)
     if α.isConstOf ``Real then some (b, a, .lt) else none
   | _ => none
 
-/-- Real-typed comparison-goal closer. Mirror of the Rocq
-    `close_term_goal` for LRA, with branching on hypothesis
-    strictness:
-      * Le-goal × Le a1: use `rFarkasGoalLe2` (strict-aware on cng).
-      * Le-goal × strict a1: weaken a1 via `rStrictNegToNonpos`,
-        then same as above.
-      * Lt-goal × Le a1: `rFarkasGoalLt2` (standard, requires hpos
-        strict-positive).
-      * Lt-goal × strict a1: `rFarkasGoalLt2StrictA1` (strict-aware
-        on c1; hpos non-strict-nonneg).
-    The `hpos` premise is the polynomial-positivity / non-negativity
-    claim closed by linarith on the witness's linear combination. -/
-private def closeViaTermModeRealGoal
-    (goal : MVarId) (goalType : Expr)
-    (realEntry : String × Int) (cng : Int) : TacticM Unit := do
-  let (realName, c1) := realEntry
-  let (b, c, kind) ← match matchRealGoal? goalType with
-    | some t => pure t
-    | none =>
-      throwError "proof_broker_term: non-False Real goal must have \
-                   shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); \
-                   got {goalType}"
-  goal.withContext do
-    let (fv, ty) ← fvarOfName realName
-    let normHyp ← normalizeHypothesisReal fv ty
-    let h1Strict := normHyp.strict
-    let a1 := normHyp.expr
-    let c1Expr ← realLitExpr c1
-    let cngExpr ← realLitExpr cng
-    let negGoalNorm ← Lean.Meta.mkAppM ``HSub.hSub #[c, b]
-    let prod1 ← Lean.Meta.mkAppM ``HMul.hMul #[c1Expr, a1]
-    let prod2 ← Lean.Meta.mkAppM ``HMul.hMul #[cngExpr, negGoalNorm]
-    let sum ← Lean.Meta.mkAppM ``HAdd.hAdd #[prod1, prod2]
-    let zero ← realLitExpr 0
-    -- Dispatch table on (kind, h1Strict):
-    -- * (.le, false / true): rFarkasGoalLe2 with (h1, hc1=nonneg,
-    --   hcng=pos, hpos=nonneg). h1 weakened from Lt to Le if needed
-    --   (information-preserving: strictness in Le-goal comes from
-    --   neg_goal's Lt-shape, not a1).
-    -- * (.lt, false): rFarkasGoalLt2 with (h1=Le, hc1=nonneg,
-    --   hcng=nonneg, hpos=pos).
-    -- * (.lt, true): rFarkasGoalLt2StrictA1 with (h1=Lt, hc1=pos,
-    --   hcng=nonneg, hpos=nonneg).
-    let (helperName, h1, hc1, hcng, hposTyHead) :=
-      match kind, h1Strict with
-      | .le, false =>
-        (``ProofBrokerMathlib.TermMode.rFarkasGoalLe2,
-         normHyp.proof,
-         (false, c1Expr),   -- 0 ≤ c1
-         (true,  cngExpr),  -- 0 < cng
-         ``LE.le)            -- 0 ≤ hpos
-      | .le, true =>
-        -- Weaken h1 from Lt to Le via rStrictNegToNonpos
-        let h1' := Expr.app (Expr.app (mkConst ``ProofBrokerMathlib.TermMode.rStrictNegToNonpos)
-                                       a1) normHyp.proof
-        (``ProofBrokerMathlib.TermMode.rFarkasGoalLe2,
-         h1',
-         (false, c1Expr),
-         (true,  cngExpr),
-         ``LE.le)
-      | .lt, false =>
-        (``ProofBrokerMathlib.TermMode.rFarkasGoalLt2,
-         normHyp.proof,
-         (false, c1Expr),
-         (false, cngExpr),
-         ``LT.lt)            -- 0 < hpos
-      | .lt, true =>
-        (``ProofBrokerMathlib.TermMode.rFarkasGoalLt2StrictA1,
-         normHyp.proof,
-         (true,  c1Expr),    -- 0 < c1
-         (false, cngExpr),
-         ``LE.le)            -- 0 ≤ hpos
-    let buildCoefProof (s : Bool × Expr) : TacticM Expr :=
-      if s.1 then buildPosProofReal s.2 else buildNonnegProofReal s.2
-    let hc1Proof ← buildCoefProof hc1
-    let hcngProof ← buildCoefProof hcng
-    let hposGoalTy ← Lean.Meta.mkAppM hposTyHead #[zero, sum]
-    let hposMV ← Lean.Meta.mkFreshExprMVar hposGoalTy
-    let term ← Lean.Meta.mkAppM helperName
-                 #[h1, hc1Proof, hcngProof, hposMV]
-    closeLinarithSubgoal hposMV.mvarId!
-    goal.assign term
-
 /-- Parse the cert's `payload.structural_hint.disjunctive_hypothesis`
     into the IR hypothesis name string. -/
 private def parseDisjunctiveHypName (cert : Json) : TacticM String := do
@@ -585,12 +502,45 @@ private def parseFarkasCoefficientsReal (cert : Json)
     | .error e => throwError "proof_broker_term: cert missing witness_data: {e}"
   parseWitnessCoefficients witnessData
 
+/-- Unified arity-N comparison-goal closer (LRA). Converts `b ≤ c` /
+    `b < c` (and their `≥` / `>` swapped forms) over `Real` to
+    `False` by applying a wrapper of shape
+    `(c <(=) b → False) → b <(=) c`, introducing `neg_goal` as a
+    regular hypothesis, and delegating to `closeViaTermModeFalseReal`.
+    The arity-N strict-aware fold handles all premises — including
+    `neg_goal` whose strict (Le-goal) or non-strict (Lt-goal)
+    normalization threads through naturally. Subsumes the arity-2
+    helpers `rFarkasGoalLe2` / `rFarkasGoalLt2` /
+    `rFarkasGoalLt2StrictA1`. -/
+private def closeViaTermModeRealComparison
+    (goal : MVarId) (goalType : Expr)
+    (entries : List (String × Int)) : TacticM Unit := do
+  let (b, c, kind) ← match matchRealGoal? goalType with
+    | some t => pure t
+    | none =>
+      throwError "proof_broker_term: non-False Real goal must have \
+                   shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); \
+                   got {goalType}"
+  let (wrapperName, negHead) := match kind with
+    | .le => (``ProofBrokerMathlib.TermMode.rLeViaLt, ``LT.lt)
+    | .lt => (``ProofBrokerMathlib.TermMode.rLtViaLe, ``LE.le)
+  let bodyMV ← goal.withContext do
+    let negTy ← Lean.Meta.mkAppM negHead #[c, b]
+    let bodyTy ← mkArrow negTy (mkConst ``False)
+    let bodyMV ← Lean.Meta.mkFreshExprMVar bodyTy
+    let term ← Lean.Meta.mkAppOptM wrapperName
+                 #[some b, some c, some bodyMV]
+    goal.assign term
+    return bodyMV
+  let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
+  closeViaTermModeFalseReal newGoal entries
+
 /-- Tier 1 LRA closer entry point. Wired into
     `ProofBroker.Tactic.ReifierExt.tier1FarkasCloser` via the
     initialize block below. Dispatches by goal shape:
     * `False`: `closeViaTermModeFalseReal` (strict-aware fold).
     * `_ ≤ _` / `_ < _` / `_ ≥ _` / `_ > _` over `Real`:
-      `closeViaTermModeRealGoal` with strict-aware h1 handling.
+      `closeViaTermModeRealComparison` (unified arity-N path).
     * Anything else surfaces a clear error. -/
 private def closeViaTermModeReal (cert : Json) (_ir : IR) : TacticM Unit := do
   let entries ← parseFarkasCoefficientsReal cert
@@ -609,23 +559,11 @@ private def closeViaTermModeReal (cert : Json) (_ir : IR) : TacticM Unit := do
       throwError "proof_broker_term: witness lacks neg_goal but goal is \
                    not False ({goalType}); cert/goal mismatch"
     closeViaTermModeFalseReal goal entries
-  | some (_, cng) =>
+  | some _ =>
     if goalType.isConstOf ``False then
       throwError "proof_broker_term: witness names neg_goal but goal is \
                    False; cert/goal mismatch"
-    -- Comparison-goal: arity-2 only (one real hypothesis + neg_goal).
-    -- Higher arity on non-False goals would need farkasGoalLeN helpers
-    -- — out of scope for this iteration (matches the Int side's scope).
-    unless entries.length == 2 do
-      throwError "proof_broker_term: arity {entries.length} non-False \
-                   LRA witness — only arity 2 wired for comparison goals"
-    let real := entries.find? (fun e => e.1 != "neg_goal")
-    let realEntry ← match real with
-      | some e => pure e
-      | none =>
-        throwError "proof_broker_term: witness has neg_goal but no \
-                     real-hypothesis companion (arity-2 expected)"
-    closeViaTermModeRealGoal goal goalType realEntry cng
+    closeViaTermModeRealComparison goal goalType entries
 
 /-- Equality-goal antisym split tactic for LRA. Wired into core's
     `evalProofBrokerTerm` via the `tier1EqSplit` slot. Applies

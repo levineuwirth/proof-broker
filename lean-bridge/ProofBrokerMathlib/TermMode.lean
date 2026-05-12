@@ -191,6 +191,26 @@ theorem rFarkasGoalLt2StrictA1
   have ssum : c1 * a1 + cng * (c - b) < 0 := rAddLtLe s1 s2
   exact absurd ssum (not_lt.mpr hpos)
 
+/-- Arity-N comparison-goal wrappers (Real). Convert a comparison
+    goal into a `(neg_form → False)` shape so the closer can
+    introduce the negated goal as a regular hypothesis and delegate
+    to the existing arity-N strict-aware False-fold. Mirror of Rocq's
+    `r_le_via_lt` / `r_lt_via_le`. The arity-2-specific helpers
+    `rFarkasGoalLe2` / `rFarkasGoalLt2` / `rFarkasGoalLt2StrictA1`
+    above are sound but specialized; the unified path subsumes all
+    three via the strict-aware fold (strictness from neg_goal's
+    Lt-shape on the Le-goal path; from a1's Lt-shape on the strict-a1
+    Lt-goal path; from neither on the standard Lt-goal path). -/
+theorem rLeViaLt {b c : Real} (h : c < b → False) : b ≤ c := by
+  by_contra hng
+  have hng : c < b := lt_of_not_ge hng
+  exact h hng
+
+theorem rLtViaLe {b c : Real} (h : c ≤ b → False) : b < c := by
+  by_contra hng
+  have hng : c ≤ b := not_lt.mp hng
+  exact h hng
+
 #print axioms rFarkasContradict
 #print axioms rFarkasContradictN
 #print axioms rLeToLe0
@@ -207,5 +227,7 @@ theorem rFarkasGoalLt2StrictA1
 #print axioms rFarkasGoalLe2
 #print axioms rFarkasGoalLt2
 #print axioms rFarkasGoalLt2StrictA1
+#print axioms rLeViaLt
+#print axioms rLtViaLe
 
 end ProofBrokerMathlib.TermMode
