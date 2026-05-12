@@ -750,9 +750,51 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
    Term-mode closer (Tier 1 Farkas reconstruction)
    ============================================================ -/
 
+/-- Parse a coefficient string into `(numerator, denominator)`.
+    Accepts plain integers ("5", "-3"), rationals ("1/2", "-3/4"),
+    and canonicalizes negative denominators by flipping the
+    numerator's sign. Returns `none` on parse failure or zero
+    denominator. Decimal forms (eg "0.5") are not handled here —
+    SDK-side, solvers that emit Real-typed coefficients almost
+    always serialize as fractions, and the Linear_arith parser
+    used SDK-side is authoritative for any decimal handling. -/
+private def parseRatString (s : String) : Option (Int × Int) :=
+  match s.splitOn "/" with
+  | [n] =>
+    match n.toInt? with
+    | some i => some (i, 1)
+    | none => none
+  | [n, d] =>
+    match n.toInt?, d.toInt? with
+    | some i, some j =>
+      if j == 0 then none
+      else if j < 0 then some (-i, -j)
+      else some (i, j)
+    | _, _ => none
+  | _ => none
+
+/-- Clear denominators across a list of `(label, num, den)` entries.
+    Computes the LCM of all denominators (via `Nat.lcm` over
+    `natAbs`, safe because every entry's denominator is positive)
+    and scales each numerator by `LCM / den`. Mirror of the SDK's
+    `Linear_arith.clear_denominators_list`. Soundness: multiplying
+    every Farkas coefficient by a single positive integer preserves
+    each premise's compiled non-positivity, scales the residual sum
+    by the same factor (sign preserved), and leaves premise
+    strictness unchanged. The closer's `omega`-discharged residual
+    sees the integer-scaled linear combination. -/
+private def clearDenominators
+    (entries : List (String × Int × Int)) : List (String × Int) :=
+  let lcdNat : Nat :=
+    entries.foldl (fun acc (_, _, d) => Nat.lcm acc d.natAbs) 1
+  let lcd : Int := lcdNat
+  entries.map fun (name, n, d) => (name, n * (lcd / d))
+
 /-- Read coefficient strings out of `cert.payload.witness_data.coefficients`.
-    Returns `(name, coef-as-Int)` per entry. Errors if the cert isn't a
-    Tier 1 Farkas envelope or any coefficient isn't an integer string. -/
+    Returns `(name, coef-as-Int)` per entry — solver-emitted rational
+    coefficients are normalized to integers via LCM-of-denominators
+    scaling here. Errors if the cert isn't a Tier 1 Farkas envelope
+    or a coefficient string fails rational parsing. -/
 private def parseFarkasCoefficients (cert : Json)
     : TacticM (List (String × Int)) := do
   let payload ← match cert.getObjVal? "payload" with
@@ -770,16 +812,17 @@ private def parseFarkasCoefficients (cert : Json)
   let arr ← match coeffsJ.getArr? with
     | .ok a => pure a
     | .error e => throwError "proof_broker_term: coefficients not array: {e}"
-  arr.toList.mapM fun entry => do
+  let rats ← arr.toList.mapM fun entry => do
     let name := (entry.getObjValAs? String "hypothesis").toOption.getD ""
     let coefStr := (entry.getObjValAs? String "coefficient").toOption.getD ""
     if name == "" then throwError "proof_broker_term: witness entry missing hypothesis"
-    let coef ← match coefStr.toInt? with
-      | some n => pure n
+    let (n, d) ← match parseRatString coefStr with
+      | some pair => pure pair
       | none => throwError
-          "proof_broker_term: non-integer coefficient '{coefStr}' \
-           (rationals not yet wired)"
-    pure (name, coef)
+          "proof_broker_term: malformed coefficient '{coefStr}' \
+           (expected integer or n/d)"
+    pure (name, n, d)
+  pure (clearDenominators rats)
 
 /-- Look up a hypothesis by user-name in the LCtx, returning the
     `(FVar Expr, type Expr)` pair. Throws if not found or shadowed

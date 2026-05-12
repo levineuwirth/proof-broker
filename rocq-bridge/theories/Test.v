@@ -309,6 +309,27 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** LRA Farkas with leading-coefficient hypotheses, exercising the
+    parser's rational-coefficient path end-to-end. Goal:
+    [2*x <= 1 /\ x >= 1 |- False]. The Farkas combination cancels [x]
+    with [c1=1, c2=2] (or any positive rational scale of this ratio);
+    whatever the solver emits, [parse_witness] routes through
+    [Linear_arith.clear_denominators_list] to integer coefficients
+    before the closer builds the proof term.
+
+    Regression test for the rational widening: solvers' alethe
+    emitters (notably cvc5's [:la_generic :args (1/1 1/1 1/1)])
+    serialize even integer coefficients as fractions, so the closer
+    must accept them. Even when scaled coefficients are integers,
+    the LCD = 1 short-circuit of clear_denominators_list exercises
+    the path. *)
+Theorem pb_lra_term_rational_axiom_free :
+  forall x : R, 2 * x <= 1 -> x >= 1 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
 (** Term-mode LRA strict-[<] hypotheses (False-goal). Strict
     hypotheses over R don't get the LIA +1 trick — there's no discrete
     domain to lift into — so the normalizer leaves them in strict
@@ -536,6 +557,9 @@ Print Assumptions pb_lra_term_arity3_goal_axiom_free.
 
 Print pb_lra_term_arity3_lt_axiom_free.
 Print Assumptions pb_lra_term_arity3_lt_axiom_free.
+
+Print pb_lra_term_rational_axiom_free.
+Print Assumptions pb_lra_term_rational_axiom_free.
 
 Print pb_lra_term_lt_hyp_axiom_free.
 Print Assumptions pb_lra_term_lt_hyp_axiom_free.

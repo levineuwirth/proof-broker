@@ -84,6 +84,8 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_arity3_lt_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_lra_term_rational_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_arity3_axiom_free":
@@ -280,6 +282,11 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "pb_lra_term_arity3_lt_axiom_free":
+      [
+        "ClassicalDedekindReals.sig_forall_dec",
+        "FunctionalExtensionality.functional_extensionality_dep"
+      ],
+    "pb_lra_term_rational_axiom_free":
       [
         "ClassicalDedekindReals.sig_forall_dec",
         "FunctionalExtensionality.functional_extensionality_dep"

@@ -397,23 +397,59 @@ private def parseTier2LemmasUsed (cert : Json)
       | .error e => throwError "proof_broker_term: lemma case shell parse error: {e}"
     return (caseShell, witnessJ)
 
+/-- Parse a coefficient string into `(numerator, denominator)`.
+    Mirror of core's `parseRatString` — duplicated because both are
+    `private` to their namespaces. -/
+private def parseRatStringReal (s : String) : Option (Int × Int) :=
+  match s.splitOn "/" with
+  | [n] =>
+    match n.toInt? with
+    | some i => some (i, 1)
+    | none => none
+  | [n, d] =>
+    match n.toInt?, d.toInt? with
+    | some i, some j =>
+      if j == 0 then none
+      else if j < 0 then some (-i, -j)
+      else some (i, j)
+    | _, _ => none
+  | _ => none
+
+/-- Clear denominators across a list of `(label, num, den)` entries.
+    Mirror of core's `clearDenominators`. The scaled coefficients
+    flow into the strict-aware fold's product / sum chain and into
+    `linarith`-discharged residual subgoal — `linarith` over `Real`
+    handles integer-scaled rationals identically to the original
+    rational form, so the trust footprint is unchanged. -/
+private def clearDenominatorsReal
+    (entries : List (String × Int × Int)) : List (String × Int) :=
+  let lcdNat : Nat :=
+    entries.foldl (fun acc (_, _, d) => Nat.lcm acc d.natAbs) 1
+  let lcd : Int := lcdNat
+  entries.map fun (name, n, d) => (name, n * (lcd / d))
+
 /-- Parse a Farkas witness JSON into a coefficient list. Mirror
     of core's `parseFarkasCoefficients` but takes the witness
-    directly (already pulled out of the Tier 2 lemma). -/
+    directly (already pulled out of the Tier 2 lemma). Solver-
+    emitted rational coefficients (cvc5/z3 routinely emit `1/2`-
+    style coefficients over LRA) are normalized to integers via
+    LCM-of-denominators scaling, preserving the contradiction
+    structure of the Farkas combination. -/
 private def parseWitnessCoefficients (witness : Json)
     : TacticM (List (String × Int)) := do
   let arr ← match witness.getObjVal? "coefficients" >>= (·.getArr?) with
     | .ok a => pure a
     | .error e => throwError "proof_broker_term: witness coefficients not array: {e}"
-  arr.toList.mapM fun entry => do
+  let rats ← arr.toList.mapM fun entry => do
     let name := (entry.getObjValAs? String "hypothesis").toOption.getD ""
     let coefStr := (entry.getObjValAs? String "coefficient").toOption.getD ""
     if name == "" then throwError "proof_broker_term: witness entry missing hypothesis"
-    match coefStr.toInt? with
-    | some n => pure (name, n)
+    match parseRatStringReal coefStr with
+    | some (n, d) => pure (name, n, d)
     | none =>
-      throwError "proof_broker_term: non-integer coefficient '{coefStr}' \
-                   (rationals not yet wired)"
+      throwError "proof_broker_term: malformed coefficient '{coefStr}' \
+                   (expected integer or n/d)"
+  pure (clearDenominatorsReal rats)
 
 /-- Tier 2 case-split closer entry point (LRA). Wired into
     `ProofBroker.Tactic.ReifierExt.tier2CaseSplitCloser` via the

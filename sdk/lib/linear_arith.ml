@@ -140,6 +140,41 @@ let rat_of_string (s : string) : rational option =
           else Some (mk_rat_z num den)
         with _ -> None))
 
+(** Clear denominators across a list of (label, rational) entries.
+    Computes the LCM of all denominators, scales every numerator by
+    (LCM / den), returning an integer-coefficient list and the LCM
+    scale factor.
+
+    Used by the term-mode closers to convert solver-emitted rational
+    Farkas witnesses into the integer-coefficient form their
+    universe-polymorphic builders expect. Soundness: multiplying
+    every coefficient in a Farkas combination by a single positive
+    constant [D] (a) preserves each premise's compiled non-positivity
+    ([D * c_i >= 0] for [c_i >= 0]; products [D*c_i*a_i] still
+    satisfy [<= 0]); (b) scales the linear sum by [D] uniformly
+    ([D*K] has the same sign as [K]); (c) preserves strictness state
+    in the strict-aware fold (premise strictness is independent of
+    its coefficient). The closer's contradiction step uses the
+    scaled K, which differs from the original only by a positive
+    multiplicative factor.
+
+    Returns [(scaled_entries, lcd)] where each [(label, n)] has
+    [n = num * (lcd / den)] for the original entry's rational
+    [num / den], and [lcd] is the LCM of all denominators. *)
+let clear_denominators_list (entries : (string * rational) list)
+  : (string * Z.t) list * Z.t =
+  let lcd =
+    List.fold_left
+      (fun acc (_, r) -> Z.lcm acc r.den)
+      Z.one entries
+  in
+  let scaled =
+    List.map
+      (fun (label, r) -> (label, Z.mul r.num (Z.div lcd r.den)))
+      entries
+  in
+  (scaled, lcd)
+
 (* --- linear forms ---------------------------------------------------- *)
 
 (** A linear form: [Σ c_i * x_i + k] where [x_i] are named variables

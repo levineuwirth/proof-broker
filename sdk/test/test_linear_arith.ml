@@ -215,6 +215,41 @@ let test_linform_merge_three () =
   Alcotest.(check (list string)) "sorted [a;b;c]" [ "a"; "b"; "c" ]
     (List.map fst f.coeffs)
 
+(* --- clear_denominators_list ----------------------------------------- *)
+
+let test_clear_denoms_all_integer () =
+  (* lcd = 1, scaled output equals numerators. *)
+  let entries = [ ("a", r 3 1); ("b", r 5 1); ("c", r 7 1) ] in
+  let scaled, lcd = clear_denominators_list entries in
+  Alcotest.(check int) "lcd = 1" 1 (Z.to_int lcd);
+  Alcotest.(check (list (pair string int))) "unchanged"
+    [ ("a", 3); ("b", 5); ("c", 7) ]
+    (List.map (fun (n, c) -> (n, Z.to_int c)) scaled)
+
+let test_clear_denoms_mixed () =
+  (* 1/2, 1/3, 1/6 → lcd = 6, scaled = [3; 2; 1]. *)
+  let entries = [ ("a", r 1 2); ("b", r 1 3); ("c", r 1 6) ] in
+  let scaled, lcd = clear_denominators_list entries in
+  Alcotest.(check int) "lcd = 6" 6 (Z.to_int lcd);
+  Alcotest.(check (list (pair string int))) "scaled to [3;2;1]"
+    [ ("a", 3); ("b", 2); ("c", 1) ]
+    (List.map (fun (n, c) -> (n, Z.to_int c)) scaled)
+
+let test_clear_denoms_preserves_negatives () =
+  (* -1/2, 3/4 → lcd = 4, scaled = [-2; 3]. *)
+  let entries = [ ("a", r (-1) 2); ("b", r 3 4) ] in
+  let scaled, lcd = clear_denominators_list entries in
+  Alcotest.(check int) "lcd = 4" 4 (Z.to_int lcd);
+  Alcotest.(check (list (pair string int))) "scaled to [-2;3]"
+    [ ("a", -2); ("b", 3) ]
+    (List.map (fun (n, c) -> (n, Z.to_int c)) scaled)
+
+let test_clear_denoms_empty () =
+  let scaled, lcd = clear_denominators_list [] in
+  Alcotest.(check int) "lcd = 1 on empty" 1 (Z.to_int lcd);
+  Alcotest.(check (list (pair string int))) "empty output" []
+    (List.map (fun (n, c) -> (n, Z.to_int c)) scaled)
+
 let () =
   Alcotest.run "linear_arith" [
     "rationals", [
@@ -244,5 +279,15 @@ let () =
       Alcotest.test_case "scale by zero" `Quick test_linform_scale_zero;
       Alcotest.test_case "is_constant" `Quick test_linform_is_constant;
       Alcotest.test_case "three-way merge stays sorted" `Quick test_linform_merge_three;
+    ];
+    "clear_denominators_list", [
+      Alcotest.test_case "all integer → no scaling"
+        `Quick test_clear_denoms_all_integer;
+      Alcotest.test_case "mixed 1/2 1/3 1/6 → lcd=6"
+        `Quick test_clear_denoms_mixed;
+      Alcotest.test_case "negative numerators preserved"
+        `Quick test_clear_denoms_preserves_negatives;
+      Alcotest.test_case "empty input → lcd=1"
+        `Quick test_clear_denoms_empty;
     ];
   ]

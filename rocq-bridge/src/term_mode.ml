@@ -305,33 +305,47 @@ let universe_of_tag = function
 
 (* --- witness parsing ----------------------------------------------- *)
 
+(* Parse the witness into rational coefficients first, then call the
+   SDK's [clear_denominators_list] to scale every coefficient by the
+   LCM of denominators. Solver-emitted LRA Farkas witnesses routinely
+   carry rationals (eg cvc5 emits 1/2-style coefficients when the
+   combination requires fractional scaling); the closer's universe-
+   polymorphic builders expect integer coefficients, so we clear once
+   here and the rest of the pipeline doesn't need to know.
+
+   Soundness rests on the SDK helper's invariant: multiplying every
+   coefficient by a single positive integer preserves each premise's
+   compiled non-positivity, scales the residual K by the same factor
+   (sign preserved), and leaves strictness state untouched. The
+   closer's contradiction step uses the scaled K. *)
 let parse_witness (w : Yojson.Safe.t) : (string * Z.t) list =
-  match w with
-  | `Assoc kv ->
-    (match List.assoc_opt "coefficients" kv with
-     | Some (`List xs) ->
-       List.map (function
-         | `Assoc fields ->
-           let h = match List.assoc_opt "hypothesis" fields with
-             | Some (`String s) -> s
-             | _ -> unsupported "term_mode: witness entry missing 'hypothesis' string"
-           in
-           let c_str = match List.assoc_opt "coefficient" fields with
-             | Some (`String s) -> s
-             | _ -> unsupported "term_mode: witness entry missing 'coefficient' string"
-           in
-           let r = match L.rat_of_string c_str with
-             | Some r -> r
-             | None -> unsupported "term_mode: bad coefficient %s" c_str
-           in
-           if not (Z.equal r.den Z.one) then
-             unsupported "term_mode: rational coefficient %s; integer-only \
-                          for now (clear-denominators not yet wired)" c_str;
-           (h, r.num)
-         | _ -> unsupported "term_mode: witness entry not an object")
-         xs
-     | _ -> unsupported "term_mode: witness missing 'coefficients' list")
-  | _ -> unsupported "term_mode: witness is not a JSON object"
+  let entries_q : (string * L.rational) list =
+    match w with
+    | `Assoc kv ->
+      (match List.assoc_opt "coefficients" kv with
+       | Some (`List xs) ->
+         List.map (function
+           | `Assoc fields ->
+             let h = match List.assoc_opt "hypothesis" fields with
+               | Some (`String s) -> s
+               | _ -> unsupported "term_mode: witness entry missing 'hypothesis' string"
+             in
+             let c_str = match List.assoc_opt "coefficient" fields with
+               | Some (`String s) -> s
+               | _ -> unsupported "term_mode: witness entry missing 'coefficient' string"
+             in
+             let r = match L.rat_of_string c_str with
+               | Some r -> r
+               | None -> unsupported "term_mode: bad coefficient %s" c_str
+             in
+             (h, r)
+           | _ -> unsupported "term_mode: witness entry not an object")
+           xs
+       | _ -> unsupported "term_mode: witness missing 'coefficients' list")
+    | _ -> unsupported "term_mode: witness is not a JSON object"
+  in
+  let scaled, _lcd = L.clear_denominators_list entries_q in
+  scaled
 
 (* --- residual K via SDK's Farkas linearizer ------------------------ *)
 

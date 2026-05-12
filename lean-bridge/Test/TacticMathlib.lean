@@ -228,4 +228,24 @@ theorem pb_lra_term_gt_goal_strict_a1_axiom_free
 
 #print axioms pb_lra_term_gt_goal_strict_a1_axiom_free
 
+/-- LRA Farkas with leading-coefficient hypotheses, exercising the
+    parser's rational-coefficient path end-to-end. Goal:
+    `2*x ≤ 1 ∧ x ≥ 1 ⊢ False`. The Farkas combination cancels `x`
+    with `c1=1, c2=2` (or any positive rational scale of this
+    ratio); whatever the solver emits, the unified parser routes
+    through `parseRatStringReal` + `clearDenominatorsReal` to
+    integer coefficients before the closer builds the proof term.
+
+    This is a regression test for the rational widening: solvers
+    that normalize Farkas coefficients internally still produce
+    `1/1`-style rationals in some emitter formats (cvc5's
+    `:la_generic :args (1/1 1/1 1/1)`), so the closer must accept
+    them. Even when scaled coefficients are integers, the path
+    exercises the LCD = 1 short-circuit of clearDenominators. -/
+theorem pb_lra_term_rational_axiom_free
+    (x : Real) (h1 : 2 * x ≤ 1) (h2 : x ≥ 1) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_lra_term_rational_axiom_free
+
 end ProofBroker.TestMathlib
