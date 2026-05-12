@@ -189,6 +189,25 @@ Proof.
   proof_broker_term [z3].
 Qed.
 
+(** Eq hypothesis in the witness: [(h1 : x = 5) (h2 : x <= 3) |- False].
+    Solver-emitted certs combine Eq hypotheses with signed coefficients
+    to capture both directions of the equality in a single witness slot.
+    For this goal the natural cert is [(h1, -1), (h2, 1)] with residual
+    K = 2 — the Eq contribution is 0 symbolically (since [x - 5 = 0]
+    from h1) but the linear-form combination needs the Eq slot to
+    cancel [x] against h2.
+
+    The closer pre-processes the signed coefficient: [c = -1] on an
+    Eq hyp triggers the flipped direction ([5 - x <= 0] via
+    [z_eq_to_le0_flipped]) with [|c| = 1] as the positive coefficient
+    in the fold. *)
+Theorem pb_term_eq_hyp_axiom_free :
+  forall x : Z, x = 5 -> x <= 3 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
 (** Verbose + explicit list. *)
 Theorem pb_lia_verbose_list : forall x : Z, x >= 5 -> x <= 3 -> False.
 Proof.
@@ -325,6 +344,18 @@ Qed.
     the path. *)
 Theorem pb_lra_term_rational_axiom_free :
   forall x : R, 2 * x <= 1 -> x >= 1 -> False.
+Proof.
+  intros x H1 H2.
+  proof_broker_term [z3].
+Qed.
+
+(** Eq hypothesis in the witness (R): mirror of Z's
+    [pb_term_eq_hyp_axiom_free]. The solver-emitted cert combines
+    [h1 : x = 5] with [h2 : x <= 3] to derive [False]; the Eq hyp
+    flows through [r_eq_to_le0] / [r_eq_to_le0_flipped] depending
+    on the coefficient sign. *)
+Theorem pb_lra_term_eq_hyp_axiom_free :
+  forall x : R, x = 5 -> x <= 3 -> False.
 Proof.
   intros x H1 H2.
   proof_broker_term [z3].
@@ -537,6 +568,9 @@ Print Assumptions pb_term_arity3_goal_axiom_free.
 Print pb_term_arity3_lt_axiom_free.
 Print Assumptions pb_term_arity3_lt_axiom_free.
 
+Print pb_term_eq_hyp_axiom_free.
+Print Assumptions pb_term_eq_hyp_axiom_free.
+
 Print pb_lra_term_goal_axiom_free.
 Print Assumptions pb_lra_term_goal_axiom_free.
 
@@ -560,6 +594,9 @@ Print Assumptions pb_lra_term_arity3_lt_axiom_free.
 
 Print pb_lra_term_rational_axiom_free.
 Print Assumptions pb_lra_term_rational_axiom_free.
+
+Print pb_lra_term_eq_hyp_axiom_free.
+Print Assumptions pb_lra_term_eq_hyp_axiom_free.
 
 Print pb_lra_term_lt_hyp_axiom_free.
 Print Assumptions pb_lra_term_lt_hyp_axiom_free.

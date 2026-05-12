@@ -26,6 +26,9 @@ let z_le_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.le_to_l
 let z_ge_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.ge_to_le0")
 let z_lt_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.lt_to_le0")
 let z_gt_to_le0       = lazy (safe_constr_of_ref "proof_broker.term_mode.gt_to_le0")
+let z_eq_to_le0_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.z_eq_to_le0")
+let z_eq_to_le0_flipped_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_eq_to_le0_flipped")
 let r_zero_nonneg_ref =
   lazy (safe_constr_of_ref "proof_broker.term_mode.r_zero_nonneg")
 let r_lt_to_lt0_ref =
@@ -53,6 +56,9 @@ let z_add_nonpos          = lazy (safe_constr_of_ref "proof_broker.term_mode.z_a
    case-split paths). *)
 let r_le_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_le_to_le0")
 let r_ge_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_ge_to_le0")
+let r_eq_to_le0_ref     = lazy (safe_constr_of_ref "proof_broker.term_mode.r_eq_to_le0")
+let r_eq_to_le0_flipped_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.r_eq_to_le0_flipped")
 let r_farkas_le_2_ref   = lazy (safe_constr_of_ref "proof_broker.term_mode.r_farkas_le_2")
 let r_pos_is_pos_ref    = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_pos")
 let r_pos_is_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.r_pos_is_nonneg")
@@ -168,6 +174,13 @@ type universe = {
      strict hypotheses to the same [a' <= 0] form [<=] / [>=] take. *)
   lt_to_le0 : EConstr.t option;
   gt_to_le0 : EConstr.t option;
+  (* Eq-hypothesis normalization. From [h : a = b], produce
+     [a - b <= 0] ([eq_to_le0]) or [b - a <= 0] ([eq_to_le0_flipped]).
+     Always available — both Z and R have closed-form proofs via
+     [sub_diag] + [le_refl]. The flipped variant is used when the
+     witness's signed coefficient is negative. *)
+  eq_to_le0 : EConstr.t;
+  eq_to_le0_flipped : EConstr.t;
   (* Strict-aware Farkas fold building blocks. [Some _] only on
      universes where strict premises survive normalization as [a < 0]
      rather than getting folded into [a <= 0] via the LIA +1 trick —
@@ -203,6 +216,8 @@ let z_universe () : universe = {
   farkas_contradict_n = force z_farkas_contradict_n;
   lt_to_le0 = Some (force z_lt_to_le0);
   gt_to_le0 = Some (force z_gt_to_le0);
+  eq_to_le0 = force z_eq_to_le0_ref;
+  eq_to_le0_flipped = force z_eq_to_le0_flipped_ref;
   (* Z folds strict into Le via the +1 trick at [lt_to_le0] /
      [gt_to_le0] time, so the strict-aware fold path is unused
      on Z and these stay [None]. *)
@@ -241,6 +256,8 @@ let r_universe () : universe = {
      [gt_to_lt0] and the fold tracks strictness from there. *)
   lt_to_le0 = None;
   gt_to_le0 = None;
+  eq_to_le0 = force r_eq_to_le0_ref;
+  eq_to_le0_flipped = force r_eq_to_le0_flipped_ref;
   lt_to_lt0 = Some (force r_lt_to_lt0_ref);
   gt_to_lt0 = Some (force r_gt_to_lt0_ref);
   mul_pos_neg = Some (force r_mul_pos_neg_ref);
@@ -372,10 +389,17 @@ let compute_residual ?(require_strict=true) (ir : Ir.t)
            OCaml side just constructs the linear-form scalar K. *)
         let scaled = L.scale (L.mk_rat_z coef Z.one) f in
         L.add acc scaled
-      | Ok (Eq _) ->
-        unsupported
-          "term_mode: hypothesis %s compiles to Eq — equality hypotheses \
-           in the witness aren't wired yet" name
+      | Ok (Eq f) ->
+        (* Eq compiles to a linear form that's exactly zero under the
+           hypothesis. Any signed coefficient is sound — Eq hypotheses
+           don't constrain sign because [c * 0 = 0] regardless of [c].
+           For residual computation we scale by the signed coefficient
+           (matches SDK [Farkas.verify]'s Eq branch); the closer side
+           reconstructs the same scaled contribution by either applying
+           [eq_to_le0] directly (positive coef) or after [eq_sym]
+           (negative coef → flipped direction). *)
+        let scaled = L.scale (L.mk_rat_z coef Z.one) f in
+        L.add acc scaled
       | Error e ->
         unsupported "term_mode: compile_hypothesis(%s) failed: %s" name e)
       L.zero entries
@@ -409,21 +433,39 @@ type normalized_hyp = {
 }
 
 (* For a hypothesis [h : T.le a b] / [h : T.ge a b] / [h : T.lt a b] /
-   [h : T.gt a b] over T ∈ {Z, R}, produce a [normalized_hyp] using
-   the universe's normalization helpers. Detection is by the inner
-   head ref. Strict shapes route through different paths per universe:
+   [h : T.gt a b] / [h : a = b] over T ∈ {Z, R}, produce a
+   [normalized_hyp] using the universe's normalization helpers.
+   Detection is by the inner head ref. Strict shapes route through
+   different paths per universe:
 
      * Z (LIA): [lt_to_le0] / [gt_to_le0] (+1 trick), strict = false.
      * R (LRA): [lt_to_lt0] / [gt_to_lt0] (strictness preserving),
                 strict = true; the strict-aware fold in the caller
                 picks the right [mul_*] / [add_*] / [contradict_n_*]
-                combinators from there. *)
+                combinators from there.
+
+   [flipped] controls Eq-hypothesis direction: [false] picks
+   [a - b <= 0] (matches positive coefficients), [true] picks
+   [b - a <= 0] (matches negative coefficients, after the caller
+   has converted to |c|). [flipped] is ignored on inequality
+   hypotheses — those have a unique normalized form. *)
 let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
+    ~(flipped : bool)
   : normalized_hyp =
   let decl = Environ.lookup_named id env in
   let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
   let h_term = EConstr.mkVar id in
   match EConstr.kind sigma ty with
+  | App (head, [| _ty_arg; a; b |]) when eq_ref sigma head r_eq ->
+    (* Eq hypothesis [h : a = b]. *)
+    if flipped then
+      let expr = EConstr.mkApp (u.sub, [| b; a |]) in
+      let proof = EConstr.mkApp (u.eq_to_le0_flipped, [| a; b; h_term |]) in
+      { expr; proof; strict = false }
+    else
+      let expr = EConstr.mkApp (u.sub, [| a; b |]) in
+      let proof = EConstr.mkApp (u.eq_to_le0, [| a; b; h_term |]) in
+      { expr; proof; strict = false }
   | App (head, [| a; b |]) ->
     let head_matches lz =
       match Lazy.force lz with
@@ -480,12 +522,25 @@ let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
            (Names.Id.to_string id) u.name)
     else
       unsupported "term_mode: hypothesis %s has shape outside \
-                   %s.le / %s.ge / %s.lt / %s.gt \
+                   %s.le / %s.ge / %s.lt / %s.gt / = \
                    (head not recognized for this universe)"
         (Names.Id.to_string id) u.name u.name u.name u.name
   | _ ->
-    unsupported "term_mode: hypothesis %s is not a binary application"
+    unsupported "term_mode: hypothesis %s is not a recognized comparison \
+                 or equality shape"
       (Names.Id.to_string id)
+
+(* Detect whether a hypothesis is an Eq shape. Used by the closer to
+   permit signed coefficients on Eq while keeping the positive-
+   coefficient invariant on inequalities. *)
+let is_eq_hypothesis env sigma (id : Names.Id.t) : bool =
+  try
+    let decl = Environ.lookup_named id env in
+    let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
+    match EConstr.kind sigma ty with
+    | App (head, [| _; _; _ |]) -> eq_ref sigma head r_eq
+    | _ -> false
+  with _ -> false
 
 (* --- tactic invocation by name ------------------------------------- *)
 
@@ -506,10 +561,25 @@ let invoke_ring : unit Proofview.tactic = invoke_tactic "ring"
 
 (* --- shared coefficient-witness builders --------------------------- *)
 
-let check_positive_coef ~slot (cz : Z.t) =
-  if Z.sign cz <= 0 then
-    unsupported "term_mode: non-positive coefficient on %s slot (got %s); \
-                 only positive integers wired today"
+(* Validate a witness entry's signed coefficient against its
+   hypothesis shape:
+   * c = 0: not allowed today (the caller filters these out before
+     calling this); zero coefficients contribute nothing to the
+     Farkas sum.
+   * c < 0 on Eq hypothesis: sound — use the flipped direction
+     [b - a <= 0] with [|c|] as the positive coefficient.
+   * c < 0 on inequality hypothesis: unsound (SDK rejects). The
+     bridge surfaces a clear error.
+   * c > 0: standard path. *)
+let check_signed_coef ~slot env sigma (cz : Z.t) (is_eq : bool) =
+  let _ = env in let _ = sigma in
+  let sign = Z.sign cz in
+  if sign = 0 then
+    unsupported "term_mode: zero coefficient on %s slot — should have been \
+                 filtered before reaching the closer" slot;
+  if sign < 0 && not is_eq then
+    unsupported "term_mode: negative coefficient on %s slot (got %s) but \
+                 hypothesis is not Eq — SDK should have rejected this cert"
       slot (Z.to_string cz)
 
 (* --- False-goal closer --------------------------------------------- *)
@@ -537,24 +607,36 @@ let check_positive_coef ~slot (cz : Z.t) =
    the +1 trick at normalization time); R can land in either branch. *)
 let close_term_false (u : universe) env sigma (ir : Ir.t)
     (entries : (string * Z.t) list) : unit Proofview.tactic =
-  let n = List.length entries in
-  if n < 1 then
-    unsupported "term_mode: empty witness — arity ≥ 1 required";
-  List.iter (fun (name, c) -> check_positive_coef ~slot:name c) entries;
+  (* Pre-process: drop zero-coefficient entries (they contribute
+     nothing to the Farkas sum), and split each remaining entry's
+     signed coefficient into (|c|, flipped). [flipped=true] is only
+     sound on Eq hypotheses — [check_signed_coef] enforces this. *)
+  let processed = List.filter_map (fun (name, c) ->
+    if Z.sign c = 0 then None
+    else
+      let id = Names.Id.of_string name in
+      let is_eq = is_eq_hypothesis env sigma id in
+      check_signed_coef ~slot:name env sigma c is_eq;
+      let flipped = Z.sign c < 0 in
+      let c_abs = Z.abs c in
+      Some (name, c_abs, flipped)) entries in
+  if List.length processed < 1 then
+    unsupported "term_mode: all coefficients are zero (or empty witness) — \
+                 arity ≥ 1 nonzero entry required";
   (* Normalize each entry. Builds (c_econstr, h_c_proof, a_econstr,
      h_a_proof, a_strict) per entry — the [h_c] proof varies with
      [a_strict] (strict premise needs [0 < c] from [pos_is_pos] so
      the product is strictly negative; Le premise uses [0 <= c]). *)
-  let normalized = List.map (fun (name, c) ->
+  let normalized = List.map (fun (name, c_abs, flipped) ->
     let id = Names.Id.of_string name in
     let { expr = a; proof = h_a; strict = a_strict } =
-      normalize_hypothesis u env sigma id
+      normalize_hypothesis u env sigma id ~flipped
     in
-    let c_econstr = u.lit c in
+    let c_econstr = u.lit c_abs in
     let h_c =
-      if a_strict then u.pos_is_pos c else u.pos_is_nonneg c
+      if a_strict then u.pos_is_pos c_abs else u.pos_is_nonneg c_abs
     in
-    (c_econstr, h_c, a, h_a, a_strict)) entries in
+    (c_econstr, h_c, a, h_a, a_strict)) processed in
   (* Build (c_i * a_i, proof: c_i * a_i ≤ 0 OR < 0, prod_strict). *)
   let need_mul_pos_neg () =
     match u.mul_pos_neg with

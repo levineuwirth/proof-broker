@@ -191,6 +191,21 @@ theorem rFarkasGoalLt2StrictA1
   have ssum : c1 * a1 + cng * (c - b) < 0 := rAddLtLe s1 s2
   exact absurd ssum (not_lt.mpr hpos)
 
+/-- Eq-hypothesis normalization (Real). Mirror of core's `eqToLe0`
+    for `Int`. Folds `h : a = b` into the existing strict-aware
+    Le-only fold via `a - b ≤ 0`. Solver-emitted certs apply
+    signed coefficients on Eq hypotheses to capture both directions;
+    the closer applies this to `h.symm` for negative coefficients
+    while keeping the positive-coefficient invariant on inequality
+    premises. -/
+theorem rEqToLe0 {a b : Real} (h : a = b) : a - b ≤ 0 :=
+  sub_nonpos_of_le (le_of_eq h)
+
+/-- Flipped variant for negative coefficients on Eq hypotheses
+    over Real. Same as `rEqToLe0` applied to `h.symm`. -/
+theorem rEqToLe0Flipped {a b : Real} (h : a = b) : b - a ≤ 0 :=
+  sub_nonpos_of_le (le_of_eq h.symm)
+
 /-- Arity-N comparison-goal wrappers (Real). Convert a comparison
     goal into a `(neg_form → False)` shape so the closer can
     introduce the negated goal as a regular hypothesis and delegate
@@ -229,5 +244,7 @@ theorem rLtViaLe {b c : Real} (h : c ≤ b → False) : b < c := by
 #print axioms rFarkasGoalLt2StrictA1
 #print axioms rLeViaLt
 #print axioms rLtViaLe
+#print axioms rEqToLe0
+#print axioms rEqToLe0Flipped
 
 end ProofBrokerMathlib.TermMode

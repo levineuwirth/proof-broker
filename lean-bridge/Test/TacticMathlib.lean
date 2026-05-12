@@ -248,4 +248,15 @@ theorem pb_lra_term_rational_axiom_free
 
 #print axioms pb_lra_term_rational_axiom_free
 
+/-- Eq hypothesis in the witness (Real): mirror of Int's
+    `pb_term_eq_hyp_axiom_free`. The solver-emitted cert combines
+    `h1 : x = 5` with `h2 : x ≤ 3` to derive `False`; the Eq hyp
+    flows through `rEqToLe0` / `rEqToLe0Flipped` depending on the
+    coefficient sign. -/
+theorem pb_lra_term_eq_hyp_axiom_free
+    (x : Real) (h1 : x = 5) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_lra_term_eq_hyp_axiom_free
+
 end ProofBroker.TestMathlib

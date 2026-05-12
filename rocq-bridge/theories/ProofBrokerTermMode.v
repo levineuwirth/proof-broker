@@ -220,6 +220,29 @@ Qed.
 Register z_le_via_lt as proof_broker.term_mode.z_le_via_lt.
 Register z_lt_via_le as proof_broker.term_mode.z_lt_via_le.
 
+(** Eq-hypothesis normalization (Z). From [h : a = b], produce
+    [a - b <= 0]. The contribution is exactly 0 (since [a - b = 0]
+    from [h]), but the symbolic Le-form lets Eq hypotheses fold
+    into the strict-aware Le-only fold without special-casing the
+    contradiction step. Solver-emitted certs apply signed
+    coefficients on Eq hypotheses to capture both directions of an
+    equality in a single witness slot; for negative coefficients
+    the closer routes through [z_eq_to_le0_flipped] (below) to get
+    the [b - a <= 0] direction, keeping the closer's positive-
+    coefficient invariant on inequality premises. *)
+Lemma z_eq_to_le0 (a b : Z) (h : a = b) : a - b <= 0.
+Proof. subst. rewrite Z.sub_diag. apply Z.le_refl. Qed.
+
+(** Flipped variant for negative coefficients on Eq hypotheses:
+    same lemma applied to [eq_sym h]. Folded into a single helper
+    so the OCaml-side closer doesn't need to plumb [eq_sym]'s
+    [lib_ref]. *)
+Lemma z_eq_to_le0_flipped (a b : Z) (h : a = b) : b - a <= 0.
+Proof. subst. rewrite Z.sub_diag. apply Z.le_refl. Qed.
+
+Register z_eq_to_le0 as proof_broker.term_mode.z_eq_to_le0.
+Register z_eq_to_le0_flipped as proof_broker.term_mode.z_eq_to_le0_flipped.
+
 (** ============================================================
     Real-typed (LRA) Tier 1 Farkas reconstruction.
 
@@ -537,6 +560,19 @@ Qed.
 Register r_le_via_lt as proof_broker.term_mode.r_le_via_lt.
 Register r_lt_via_le as proof_broker.term_mode.r_lt_via_le.
 
+(** Eq-hypothesis normalization (R). Mirror of [z_eq_to_le0] over
+    the reals. *)
+Lemma r_eq_to_le0 (a b : R) (h : a = b) : (a - b <= 0)%R.
+Proof. subst. rewrite Rminus_diag. apply Rle_refl. Qed.
+
+(** Flipped variant for negative coefficients on Eq hypotheses
+    over R. *)
+Lemma r_eq_to_le0_flipped (a b : R) (h : a = b) : (b - a <= 0)%R.
+Proof. subst. rewrite Rminus_diag. apply Rle_refl. Qed.
+
+Register r_eq_to_le0 as proof_broker.term_mode.r_eq_to_le0.
+Register r_eq_to_le0_flipped as proof_broker.term_mode.r_eq_to_le0_flipped.
+
 Close Scope R_scope.
 
 Open Scope Z_scope.
@@ -653,3 +689,15 @@ Print Assumptions r_le_via_lt.
 
 Print r_lt_via_le.
 Print Assumptions r_lt_via_le.
+
+Print z_eq_to_le0.
+Print Assumptions z_eq_to_le0.
+
+Print z_eq_to_le0_flipped.
+Print Assumptions z_eq_to_le0_flipped.
+
+Print r_eq_to_le0.
+Print Assumptions r_eq_to_le0.
+
+Print r_eq_to_le0_flipped.
+Print Assumptions r_eq_to_le0_flipped.

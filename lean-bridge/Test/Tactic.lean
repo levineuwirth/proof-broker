@@ -250,6 +250,24 @@ theorem pb_term_arity3_lt_axiom_free
 
 #print axioms pb_term_arity3_lt_axiom_free
 
+/-- Eq hypothesis in the witness: `(h1 : x = 5) (h2 : x ≤ 3) ⊢ False`.
+    Solver-emitted certs combine Eq hypotheses with signed coefficients
+    to capture both directions of the equality in a single witness slot.
+    For this goal the natural cert is `[(h1, -1), (h2, 1)]` with
+    residual K = 2 — the Eq contribution is 0 symbolically (since
+    `x - 5 = 0` from h1) but the linear-form combination needs the
+    Eq slot to cancel `x` against h2.
+
+    The closer pre-processes the signed coefficient: `c = -1` on an
+    Eq hyp triggers the flipped direction (`5 - x ≤ 0` via `eqToLe0Flipped`)
+    with `|c| = 1` as the positive coefficient in the fold. The rest
+    of the path is identical to the inequality-only case. -/
+theorem pb_term_eq_hyp_axiom_free
+    (x : Int) (h1 : x = 5) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_term_eq_hyp_axiom_free
+
 /-- UF vertical-slice gate: a congruence-style goal with an
     uninterpreted function `f : Int → Int` and an equality hypothesis
     routes through the broker (QF_UFLIA → cvc5 oracle → cert-gated

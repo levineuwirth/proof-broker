@@ -127,6 +127,26 @@ theorem farkasContradictN
     (s : Int) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
   absurd hpos (Int.not_lt_of_ge hsum)
 
+/-- Eq-hypothesis normalization: from `h : a = b`, produce
+    `a - b ≤ 0`. The contribution is exactly `0` (since `a - b = 0`
+    from `h`), but the symbolic Le-form lets Eq hypotheses fold into
+    the existing strict-aware Le-only fold without special-casing.
+    Solver-emitted certs use Eq with signed coefficients to capture
+    both directions of an equality in a single witness slot; the
+    bridge closer applies this to `h.symm` when the witness's
+    coefficient is negative, flipping the linear-form direction
+    while keeping the closer's positive-coefficient invariant on
+    inequality premises. -/
+theorem eqToLe0 {a b : Int} (h : a = b) : a - b ≤ 0 :=
+  Int.sub_nonpos_of_le (Int.le_of_eq h)
+
+/-- Flipped variant for negative coefficients on Eq hypotheses:
+    same lemma applied to `h.symm`. Folded into a single helper so
+    the closer doesn't need to construct `Eq.symm` as a separate
+    application. -/
+theorem eqToLe0Flipped {a b : Int} (h : a = b) : b - a ≤ 0 :=
+  Int.sub_nonpos_of_le (Int.le_of_eq h.symm)
+
 /-- Arity-N comparison-goal wrappers (Int). Convert a comparison goal
     into a `(neg_form → False)` shape so the closer can introduce the
     negated goal as a regular hypothesis and delegate to the existing

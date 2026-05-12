@@ -868,15 +868,35 @@ private def matchIntBound? (ty : Expr) : Option (HypKind × Expr × Expr) :=
     if α.isConstOf ``Int then some (.gt, a, b) else none
   | _ => none
 
-/-- Given a hypothesis `(h : <shape> : Int)`, build an `Expr` of
-    type `a' ≤ 0` for the kind-specific normalized LHS `a'`, using
-    `leToLe0` / `geToLe0` / `ltToLe0` / `gtToLe0`. Returns `(a', proof)`
-    so the caller can reference both. Strict shapes apply the LIA
-    +1 trick — sound only over discrete domains; the Mathlib-side
-    Real path doesn't reach this matcher (its closer normalizes
-    against the Real-typed universe instead). -/
+/-- Detect an Int Eq hypothesis: `h : a = b` with `a b : Int`. Used
+    by the closer to permit signed coefficients on Eq while keeping
+    the positive-coefficient invariant on inequalities. -/
+private def matchIntEqHyp? (ty : Expr) : Option (Expr × Expr) :=
+  match ty.getAppFnArgs with
+  | (``Eq, #[α, a, b]) =>
+    if α.isConstOf ``Int then some (a, b) else none
+  | _ => none
+
+/-- Given a hypothesis `(h : <shape> : Int)` and a flip flag, build
+    an `Expr` of type `a' ≤ 0` for the kind-specific normalized LHS
+    `a'`. The flip flag is meaningful only on Eq hypotheses — for
+    `h : a = b`, `flipped=false` gives `a - b ≤ 0` via `eqToLe0`
+    and `flipped=true` gives `b - a ≤ 0` via `eqToLe0Flipped`. For
+    inequality shapes, the flip flag is unused (callers should
+    never pass `true`; the closer enforces this upstream). -/
 private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
-    : MetaM (Expr × Expr) := do
+    (flipped : Bool) : MetaM (Expr × Expr) := do
+  match matchIntEqHyp? hypTy with
+  | some (a, b) =>
+    if flipped then
+      let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+      let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.eqToLe0Flipped #[hypFV]
+      return (normExpr, proof)
+    else
+      let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+      let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.eqToLe0 #[hypFV]
+      return (normExpr, proof)
+  | none =>
   match matchIntBound? hypTy with
   | some (.le, a, b) =>
     let normExpr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
@@ -899,7 +919,7 @@ private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     let proof ← Lean.Meta.mkAppM ``ProofBroker.TermMode.gtToLe0 #[hypFV]
     return (normExpr, proof)
   | none =>
-    throwError "proof_broker_term: hypothesis shape outside Int ≤/≥/</> \
+    throwError "proof_broker_term: hypothesis shape outside Int ≤/≥/</>/= \
                  (got type {hypTy})"
 
 /-- Build an `Int` literal `Expr` for `c`. Uses `Lean.toExpr` so the
@@ -950,10 +970,28 @@ private def closeViaTermModeFalse
   if entries.isEmpty then
     throwError "proof_broker_term: empty witness — arity ≥ 1 required"
   goal.withContext do
-    -- Normalize each entry to (cExpr, hcProof, aExpr, haProof).
-    let normalized ← entries.mapM fun (name, c) => do
+    -- Pre-process: drop zero-coefficient entries (they contribute
+    -- nothing), and split each remaining signed coefficient into
+    -- (|c|, flipped). [flipped=true] is sound only on Eq hypotheses;
+    -- inequality hypotheses with c < 0 surface a clear error.
+    let stepped ← entries.mapM fun (name, c) => do
+      if c == 0 then return none
       let (fv, ty) ← fvarOfName name
-      let (a, ha) ← normalizeHypothesis fv ty
+      let isEq := (matchIntEqHyp? ty).isSome
+      let flipped : Bool := decide (c < 0)
+      if flipped && !isEq then
+        throwError "proof_broker_term: negative coefficient {c} on \
+                     non-Eq hypothesis '{name}' — SDK verifier should \
+                     have rejected this cert"
+      let cAbs := if flipped then -c else c
+      return some (name, fv, ty, cAbs, flipped)
+    let processed := stepped.filterMap id
+    if processed.isEmpty then
+      throwError "proof_broker_term: all coefficients are zero — \
+                   need at least one nonzero entry"
+    -- Normalize each entry to (cExpr, hcProof, aExpr, haProof).
+    let normalized ← processed.mapM fun (_name, fv, ty, c, flipped) => do
+      let (a, ha) ← normalizeHypothesis fv ty flipped
       let cExpr := intLitExpr c
       let hc ← buildNonnegProof c
       return (cExpr, hc, a, ha)

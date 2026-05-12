@@ -168,13 +168,38 @@ private structure NormalizedHypReal where
   proof : Expr
   strict : Bool
 
+/-- Detect a Real Eq hypothesis: `h : a = b` with `a b : Real`.
+    Used by the closer to permit signed coefficients on Eq while
+    keeping the positive-coefficient invariant on inequalities. -/
+private def matchRealEqHyp? (ty : Expr) : Option (Expr × Expr) :=
+  match ty.getAppFnArgs with
+  | (``Eq, #[α, a, b]) =>
+    if α.isConstOf ``Real then some (a, b) else none
+  | _ => none
+
 /-- Real-typed `normalizeHypothesis`: from `(h : a ≤ b : Real)` /
-    `(h : a ≥ b : Real)` / `(h : a < b : Real)` / `(h : a > b : Real)`
-    build a `NormalizedHypReal`. Strict shapes go through
-    `rLtToLt0` / `rGtToLt0` (no LIA +1 trick over R — the strict-aware
-    fold path consumes the `a < 0` proof directly). -/
+    `(h : a ≥ b : Real)` / `(h : a < b : Real)` / `(h : a > b : Real)` /
+    `(h : a = b : Real)` build a `NormalizedHypReal`. Strict shapes
+    go through `rLtToLt0` / `rGtToLt0` (no LIA +1 trick over R — the
+    strict-aware fold path consumes the `a < 0` proof directly).
+    Eq hypotheses normalize via `rEqToLe0` (or `rEqToLe0Flipped`
+    for negative coefficients) — `strict = false` since `a = b →
+    a - b = 0 ≤ 0`. -/
 private def normalizeHypothesisReal (hypFV : Expr) (hypTy : Expr)
-    : MetaM NormalizedHypReal := do
+    (flipped : Bool) : MetaM NormalizedHypReal := do
+  match matchRealEqHyp? hypTy with
+  | some (a, b) =>
+    if flipped then
+      let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+      let proof ← Lean.Meta.mkAppM
+                    ``ProofBrokerMathlib.TermMode.rEqToLe0Flipped #[hypFV]
+      return ⟨expr, proof, false⟩
+    else
+      let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+      let proof ← Lean.Meta.mkAppM
+                    ``ProofBrokerMathlib.TermMode.rEqToLe0 #[hypFV]
+      return ⟨expr, proof, false⟩
+  | none =>
   match matchRealBound? hypTy with
   | some (.le, a, b) =>
     let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
@@ -197,7 +222,7 @@ private def normalizeHypothesisReal (hypFV : Expr) (hypTy : Expr)
                   ``ProofBrokerMathlib.TermMode.rGtToLt0 #[hypFV]
     return ⟨expr, proof, true⟩
   | _ =>
-    throwError "proof_broker_term: hypothesis shape outside Real ≤/≥/</> \
+    throwError "proof_broker_term: hypothesis shape outside Real ≤/≥/</>/= \
                  (got type {hypTy})"
 
 /-- Build a Real literal Expr from a nonnegative Int via
@@ -277,13 +302,32 @@ private def closeViaTermModeFalseReal
       match overrides.find? (fun (n, _, _) => n == name) with
       | some (_, fv, ty) => return (fv, ty)
       | none => fvarOfName name
+    -- Pre-process: drop zero-coefficient entries, split signed
+    -- coefficients into (|c|, flipped). [flipped=true] is sound only
+    -- on Eq hypotheses (Real Eq accepts signed coefs in the Farkas
+    -- sum because [c * 0 = 0] regardless of sign); inequality
+    -- hypotheses with c < 0 surface a clear error.
+    let stepped ← entries.mapM fun (name, c) => do
+      if c == 0 then return none
+      let (fv, ty) ← resolve name
+      let isEq := (matchRealEqHyp? ty).isSome
+      let flipped : Bool := decide (c < 0)
+      if flipped && !isEq then
+        throwError "proof_broker_term: negative coefficient {c} on \
+                     non-Eq Real hypothesis '{name}' — SDK verifier \
+                     should have rejected this cert"
+      let cAbs := if flipped then -c else c
+      return some (name, fv, ty, cAbs, flipped)
+    let processed := stepped.filterMap id
+    if processed.isEmpty then
+      throwError "proof_broker_term: all coefficients are zero — \
+                   need at least one nonzero entry"
     -- Normalize each entry. Builds (cExpr, hc_proof, expr, h_proof, strict)
     -- per entry — hc is strict (0 < c) if the premise is strict (Lt),
     -- non-strict (0 ≤ c) otherwise. Strict premise + strict coef →
     -- product is strict via rMulPosNeg.
-    let normalized ← entries.mapM fun (name, c) => do
-      let (fv, ty) ← resolve name
-      let normHyp ← normalizeHypothesisReal fv ty
+    let normalized ← processed.mapM fun (_name, fv, ty, c, flipped) => do
+      let normHyp ← normalizeHypothesisReal fv ty flipped
       let cExpr ← realLitExpr c
       let hc ← if normHyp.strict then buildPosProofReal cExpr
                else buildNonnegProofReal cExpr
