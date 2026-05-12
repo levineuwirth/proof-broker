@@ -46,13 +46,26 @@ from referencing.jsonschema import DRAFT202012  # noqa: E402
 
 
 def find_cli_binary() -> Path:
-    """Locate the dune-built CLI binary, preferring the absolute build path."""
-    candidate = SDK / "_build" / "default" / "bin" / "round_trip_cli.exe"
-    if candidate.exists():
-        return candidate
+    """Locate the dune-built CLI binary in either build layout.
+
+    Workspace-rooted (the layout `dune build sdk` from repo root produces)
+    is checked first since that's what the CI workflow and most local
+    invocations use. The sdk-rooted layout (`dune build --root=sdk`) is
+    retained as a fallback for back-compat with the Phase-0 sub-project
+    invocation pattern, which some local muscle memory may still use.
+    """
+    candidates = [
+        ROOT / "_build" / "default" / "sdk" / "bin" / "round_trip_cli.exe",
+        SDK / "_build" / "default" / "bin" / "round_trip_cli.exe",
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
     raise SystemExit(
-        f"CLI binary not found at {candidate}. "
-        "Run `dune build --root=sdk` first (with the proof-broker opam switch active)."
+        "CLI binary not found at any of:\n"
+        + "\n".join(f"  {c}" for c in candidates)
+        + "\nRun `opam exec -- dune build sdk` (workspace-rooted) or "
+        "`dune build --root=sdk` first (with the proof-broker opam switch active)."
     )
 
 

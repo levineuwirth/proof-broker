@@ -3,19 +3,33 @@
 # Build and run the C-side smoke test against the dune-built shared object.
 # Invoked from CI and runnable locally with the proof-broker opam switch active.
 #
-# Pre-condition: `opam exec -- dune build --root=sdk` has populated
-# sdk/_build/default/ffi/proof_broker_ffi.so.
+# Pre-condition: either `opam exec -- dune build sdk` (workspace-rooted,
+# what CI runs) or `opam exec -- dune build --root=sdk` (sdk-rooted,
+# Phase-0 sub-project invocation pattern) has populated the FFI shared
+# object somewhere under _build/. We check both layouts.
 
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../../.." && pwd)"
-SO="$ROOT/sdk/_build/default/ffi/proof_broker_ffi.so"
 SRC="$HERE/test_shim.c"
 EXAMPLE="$ROOT/examples/example1-lia-typeclass.json"
 
-if [ ! -f "$SO" ]; then
-  echo "missing $SO — run \`opam exec -- dune build --root=sdk\` first" >&2
+# Workspace-rooted build (dune build sdk from repo root) lands here:
+SO_WORKSPACE="$ROOT/_build/default/sdk/ffi/proof_broker_ffi.so"
+# Sdk-rooted build (dune build --root=sdk) lands here:
+SO_SDKROOT="$ROOT/sdk/_build/default/ffi/proof_broker_ffi.so"
+
+if [ -f "$SO_WORKSPACE" ]; then
+  SO="$SO_WORKSPACE"
+elif [ -f "$SO_SDKROOT" ]; then
+  SO="$SO_SDKROOT"
+else
+  echo "missing proof_broker_ffi.so — checked:" >&2
+  echo "  $SO_WORKSPACE" >&2
+  echo "  $SO_SDKROOT" >&2
+  echo "Run \`opam exec -- dune build sdk\` (workspace-rooted) or" >&2
+  echo "\`dune build --root=sdk\` first." >&2
   exit 1
 fi
 
