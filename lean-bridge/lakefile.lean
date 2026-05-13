@@ -11,14 +11,22 @@ Builds:
   closed end-to-end by `by proof_broker` against the broker. Build
   success is the test.
 
-The exe links dynamically against the dune-built proof_broker_ffi.so
-sitting in ../_build/default/sdk/ffi (relative to this lakefile's dir).
-We pass `-l:proof_broker_ffi.so` so the linker accepts the bare filename
-(no `lib` prefix), and an `$ORIGIN`-relative `-rpath` so the produced
-binary self-resolves the .so without LD_LIBRARY_PATH at runtime.
+The exe links dynamically against the dune-built proof_broker_ffi.so.
+At lakefile-eval time we discover where the .so lives, trying in
+order:
+  1. `$PROOF_BROKER_FFI_DIR` env var — explicit override.
+  2. `opam var proof_broker:lib` — the directory `opam install
+     proof_broker` populates (per the `(install ...)` stanza in
+     sdk/ffi/dune).
+  3. `../_build/default/sdk/ffi` — in-repo dev fallback when the
+     SDK has only been built (not installed). Pre-condition for
+     this path: `opam exec -- dune build` has populated the
+     workspace _build tree before `lake build` is run.
 
-Pre-condition: `opam exec -- dune build` has populated
-_build/default/sdk/ffi/proof_broker_ffi.so before `lake build` is run.
+The linker gets `-l:proof_broker_ffi.so` so it accepts the bare
+filename (no `lib` prefix), and an absolute `-rpath` pointing at the
+discovered directory so the produced binary self-resolves the .so
+without LD_LIBRARY_PATH at runtime.
 -/
 
 import Lake
@@ -36,6 +44,46 @@ package «proof-broker-bridge»
 require «mathlib» from git
   "https://github.com/leanprover-community/mathlib4" @ "v4.30.0-rc2"
 
+/-- Locate the directory containing `proof_broker_ffi.so`. Resolution
+    order:
+      1. `$PROOF_BROKER_FFI_DIR` env var (explicit override).
+      2. `opam var proof_broker:lib` — the install location populated
+         by the `(install ...)` stanza in `sdk/ffi/dune` after
+         `opam install proof_broker` (or `dune install`).
+      3. `../_build/default/sdk/ffi` — in-repo dev fallback when only
+         `opam exec -- dune build` has run.
+
+    The returned path is the directory that contains the .so, not
+    the .so itself. Callers append `proof_broker_ffi.so` as needed.
+    Falls all the way through to the dev path silently — the lib
+    will later fail to link/load with a clear error if the .so
+    really isn't anywhere on disk. -/
+unsafe def discoverFfiDirImpl : String :=
+  let attempt : BaseIO String := do
+    match (← IO.getEnv "PROOF_BROKER_FFI_DIR") with
+    | some d => pure d
+    | none =>
+      let opamResult ← (IO.Process.output {
+        cmd := "opam"
+        args := #["var", "proof_broker:lib"]
+      }).toBaseIO
+      match opamResult with
+      | .ok { stdout, exitCode := 0, .. } =>
+        let trimmed := stdout.trim
+        if trimmed.isEmpty then pure "../_build/default/sdk/ffi"
+        else pure trimmed
+      | _ => pure "../_build/default/sdk/ffi"
+  unsafeBaseIO attempt
+
+@[implemented_by discoverFfiDirImpl]
+opaque ffiDir : String
+
+/-- Absolute path to the FFI .so. Most call sites need the full
+    file path (eg. `--load-dynlib`), a couple need just the directory
+    (`-L`, `-rpath`); both forms come from `ffiDir`. -/
+def ffiSoPath : String :=
+  ffiDir ++ "/proof_broker_ffi.so"
+
 /-- Linker args needed to make the FFI symbols (`pb_lean_call` from
     libpbglue, `pb_ffi_call` from proof_broker_ffi.so) reachable from
     the `roundtripTest` exe at runtime.
@@ -44,9 +92,9 @@ require «mathlib» from git
     `proof_broker_ffi.so` references libc/pthread symbols indirectly
     via OCaml's runtime; see `sdk/FFI_CONVENTIONS.md` "Toolchain notes". -/
 def ffiLinkArgs : Array String := #[
-  "-L../_build/default/sdk/ffi",
+  s!"-L{ffiDir}",
   "-l:proof_broker_ffi.so",
-  "-Wl,-rpath,$ORIGIN/../../../../_build/default/sdk/ffi",
+  s!"-Wl,-rpath,{ffiDir}",
   "-Wl,--allow-shlib-undefined"
 ]
 
@@ -98,7 +146,7 @@ extern_lib «libpbglue» pkg := do
 lean_exe roundtripTest where
   root := `Main
   -- If linking fails with errors like "undefined reference: pthread_*@GLIBC_2.X
-  -- referenced by ../_build/default/sdk/ffi/proof_broker_ffi.so (disallowed by
+  -- referenced by proof_broker_ffi.so (disallowed by
   -- --no-allow-shlib-undefined)", see sdk/FFI_CONVENTIONS.md "Toolchain notes"
   -- — the --allow-shlib-undefined flag below is the documented fix.
   moreLinkArgs := ffiLinkArgs
@@ -121,7 +169,7 @@ lean_lib ProofBrokerTest where
   precompileModules := false
   moreLeanArgs := #[
     "--load-dynlib=.lake/build/lib/libpbglue.so",
-    "--load-dynlib=../_build/default/sdk/ffi/proof_broker_ffi.so"
+    s!"--load-dynlib={ffiSoPath}"
   ]
 
 /-- Mathlib-flavored opt-in extension. Importing
@@ -144,7 +192,7 @@ lean_lib ProofBrokerTestMathlib where
   precompileModules := false
   moreLeanArgs := #[
     "--load-dynlib=.lake/build/lib/libpbglue.so",
-    "--load-dynlib=../_build/default/sdk/ffi/proof_broker_ffi.so",
+    s!"--load-dynlib={ffiSoPath}",
     libLakeSharedDynlibArg
   ]
 
