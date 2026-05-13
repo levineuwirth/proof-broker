@@ -57,13 +57,17 @@ let host_type_of_fragment = function
   | _ -> None
 
 (** Fragments that have no host type to substitute into — refinement
-    is a no-op for them. UF and BV emit declarations / bv-typed sorts
-    directly; there's no universal-type-var rewriting to do. Listing
-    them explicitly preserves the loud-failure contract for truly
-    unknown fragments while letting the adapter layer pass these
-    through without a special case. *)
+    is a no-op for them. UF / BV / NIA / NRA / FOL / UFLIA / UFLRA all
+    emit their declarations or theory atoms directly; there's no
+    universal-type-var rewriting to do. The full list comes from
+    `registry/patterns-v1.json`'s `first_order_fragments` field
+    minus LIA and LRA (which have host-type substitution rules and
+    are handled by `host_type_of_fragment`). Listing them explicitly
+    preserves the loud-failure contract for truly unknown fragments
+    while letting the adapter layer pass these through without a
+    special case. *)
 let is_no_substitution_fragment = function
-  | "UF" | "BV" -> true
+  | "UF" | "BV" | "NIA" | "NRA" | "FOL" | "UFLIA" | "UFLRA" -> true
   | _ -> false
 
 (** Pattern the [theory_classification_tags] entry must match for a

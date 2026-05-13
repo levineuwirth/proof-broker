@@ -63,11 +63,13 @@ let test_unknown_fragment_errors () =
   | Error (Unknown_fragment "NotAFragment") -> ()
   | _ -> Alcotest.fail "expected Unknown_fragment"
 
-(* UF and BV are recognized as fragments with no host-type
-   substitution rules. They must pass through refinement as a no-op
-   rather than erroring — the adapter layer relies on this so it can
-   pass the bridge-built fragment label straight through without a
-   special case for non-arithmetic fragments. *)
+(* Non-arithmetic and nonlinear fragments are recognized as fragments
+   with no host-type substitution rules. They must pass through
+   refinement as a no-op rather than erroring — the adapter layer
+   relies on this so it can pass the bridge-built fragment label
+   straight through without a special case for non-substitution
+   fragments. The list matches `registry/patterns-v1.json` minus
+   LIA / LRA. *)
 let test_no_substitution_fragments_passthrough () =
   let ir = make_ir
     ~free_vars:[ { name = "n"; ty = "Int" } ]
@@ -85,7 +87,7 @@ let test_no_substitution_fragments_passthrough () =
     | Error e ->
       Alcotest.fail
         (fragment ^ ": unexpected error: " ^ Refinement.detail_of_error e)
-  ) ["UF"; "BV"]
+  ) ["UF"; "BV"; "NIA"; "NRA"; "FOL"; "UFLIA"; "UFLRA"]
 
 let test_alpha_type_var_substituted () =
   let alpha_meta = `Assoc [
