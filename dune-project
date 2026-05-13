@@ -29,8 +29,11 @@
   (ocaml (>= 5.0))
   dune
   proof_broker
-  ; rocq-runtime 9.2.0 dropped the `coqc` binary in favor of `rocq`.
-  ; Dune's `(using coq 0.8)` extension still expects `coqc`, so build
-  ; fails on rocq-runtime 9.2+. Pin to the last working line until
-  ; dune's `(using rocq ...)` ships and we migrate the dune-project.
-  (rocq-runtime (and (>= 9.0) (< 9.2)))))
+  ; rocq-runtime is the base runtime library (Constr, EConstr, Proofview
+  ; et al.) — it's what the plugin code links against. The `coqc` binary
+  ; (still expected by dune's `(using coq 0.8)` extension) lives in
+  ; coq-core, a separate compat package that wraps rocq's renamed
+  ; binary. Both are required at build time; depending only on
+  ; rocq-runtime leaves dune unable to find coqc on PATH.
+  (rocq-runtime (>= 9.0))
+  (coq-core (>= 9.0))))

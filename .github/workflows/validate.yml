@@ -106,12 +106,17 @@ jobs:
       - name: Install SDK deps
         run: opam install -y --deps-only --with-test ./proof_broker.opam
 
-      - name: Build SDK (incl. @install rules so proof_broker.install exists)
-        # `dune build sdk` only builds the sdk subtree; the install
-        # file (proof_broker.install) is a separate target generated
-        # by @install. Building both ensures `dune install` further
-        # down has the manifest it needs.
-        run: opam exec -- dune build sdk proof_broker.install
+      - name: Build SDK (incl. install rules so proof_broker.install exists)
+        # `dune build sdk` alone builds the sdk subtree but doesn't
+        # generate proof_broker.install. Adding `proof_broker.install`
+        # to the target list triggers the install-manifest generation,
+        # but scoping with --only-packages is required: a bare
+        # workspace target pulls in proof_broker_rocq too, which
+        # transitively needs coqc (not installed in the matrix; the
+        # rocq plugin is built only by the dedicated rocq-bridge job).
+        run: |
+          opam exec -- dune build --only-packages proof_broker \
+            sdk proof_broker.install
 
       - name: Run SDK tests
         run: opam exec -- dune runtest sdk
