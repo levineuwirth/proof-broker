@@ -89,8 +89,14 @@ jobs:
         include:
           - os: ubuntu-24.04-arm
             label: linux-aarch64
-          - os: macos-13
-            label: macos-x86_64
+          # macos-14 (Apple Silicon, M1) is the only macOS runner in the
+          # matrix today. macos-13 (Intel) was dropped after spending 4h
+          # queued without a runner ever attaching — GitHub Actions'
+          # Intel-macOS pool is severely backed up since Apple stopped
+          # selling Intel hardware. The macOS-specific code path the
+          # matrix exercises (install_name_tool dyld fix in
+          # sdk/ffi/test/run.sh) is already covered by macos-14;
+          # re-add macos-13 if Intel macOS becomes a deployment target.
           - os: macos-14
             label: macos-aarch64
     runs-on: ${{ matrix.os }}
