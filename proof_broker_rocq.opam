@@ -9,6 +9,7 @@ depends: [
   "proof_broker"
   "rocq-runtime" {>= "9.0"}
   "coq-core" {>= "9.0"}
+  "coq-stdlib" {>= "9.0"}
   "odoc" {with-doc}
 ]
 build: [

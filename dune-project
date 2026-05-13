@@ -33,7 +33,10 @@
   ; et al.) — it's what the plugin code links against. The `coqc` binary
   ; (still expected by dune's `(using coq 0.8)` extension) lives in
   ; coq-core, a separate compat package that wraps rocq's renamed
-  ; binary. Both are required at build time; depending only on
-  ; rocq-runtime leaves dune unable to find coqc on PATH.
+  ; binary. coq-stdlib provides the Stdlib theory the plugin's .v files
+  ; depend on (rocq-bridge/theories/dune has `(theories Stdlib)`); it
+  ; also makes `coqc --config` succeed, which dune calls during build.
+  ; All three are required at build time.
   (rocq-runtime (>= 9.0))
-  (coq-core (>= 9.0))))
+  (coq-core (>= 9.0))
+  (coq-stdlib (>= 9.0))))
