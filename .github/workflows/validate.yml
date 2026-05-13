@@ -154,18 +154,22 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install z3 (apt)
+      - name: Install z3 + cvc4 (apt)
         # The Lean test suite under Test/Tactic.lean uses
-        # `proof_broker_term [z3]` and `proof_broker [cvc5]` style
-        # tactics that shell out to the actual solver binaries at
-        # *compile time* during `lake build`. Without these on PATH,
-        # the tactic emits an error, Lean's error-recovery elaboration
-        # leaves a `sorry` in place, and every `*_axiom_free` theorem
-        # ends up with `sorryAx` in its trust footprint — failing the
-        # axiom-allowlist gate. Mirrors the rocq-bridge job's install.
+        # `proof_broker [z3]`, `proof_broker [cvc4]`, `proof_broker [cvc5]`,
+        # and `proof_broker_term [...]` style tactics that shell out to
+        # the actual solver binaries at *compile time* during `lake
+        # build`. Without these on PATH, the tactic emits an error,
+        # Lean's error-recovery elaboration leaves a `sorry` in place,
+        # and every `*_axiom_free` theorem ends up with `sorryAx` in
+        # its trust footprint — failing the axiom-allowlist gate.
+        # tier1_lia_axiom_free in particular is pinned to cvc4, gating
+        # the original Tier 1 Farkas-extraction path. Mirrors the
+        # rocq-bridge job's installs.
         run: |
           sudo apt-get update
-          sudo apt-get install -y z3
+          sudo apt-get install -y z3 cvc4
+          cvc4 --version | head -1
           z3 --version
 
       - name: Install cvc5 (GitHub static release)
@@ -219,7 +223,8 @@ jobs:
       - name: Install z3 (apt)
         run: |
           sudo apt-get update
-          sudo apt-get install -y z3
+          sudo apt-get install -y z3 cvc4
+          cvc4 --version | head -1
           z3 --version
 
       - name: Install cvc5 (GitHub static release)
