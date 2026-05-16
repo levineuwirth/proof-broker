@@ -345,3 +345,51 @@ architectural — a one-line link-flag tweak, not a packaging restructure.
   `LD_LIBRARY_PATH`. Production distribution will need a different
   story (per §2.1 distribution-bundle scaffold), but for development
   this keeps the layout obvious.
+
+### macOS code-signing & notarization
+
+`sdk/ffi/packaging/macos-sign.sh` signs `proof_broker_ffi.so` on Darwin;
+the `sdk-cross-platform` CI job runs it on the macos-aarch64 cell
+before the smoke test so every downstream consumer in that job loads
+a *signed* library (CI proves a signed `.so` still `dlopen`s through
+the C shim, not merely that signing exits 0). `codesign --verify
+--strict` inside the script reds the job on a broken signature.
+
+When signing matters: a `.so` **built locally** carries no
+`com.apple.quarantine` xattr, so Gatekeeper never evaluates it and an
+unsigned dev build loads fine. Signing only bites a **downloaded**
+artifact (browser/`curl` sets the quarantine xattr) — i.e. the future
+prebuilt-bundle path. The pipeline is in place ahead of that slice so
+the bundle work inherits a working signing step, not a fresh problem.
+
+Two auto-selected modes, no script edit needed:
+
+- **Ad-hoc** (`codesign --sign -`) — the default when no secrets are
+  present. Structurally valid, identity-less; runs on every PR/fork.
+  Does *not* satisfy Gatekeeper for a quarantined download.
+- **Developer ID** — active when `MACOS_CERT_P12_BASE64`,
+  `MACOS_CERT_PASSWORD`, and `MACOS_SIGN_IDENTITY` are set. Imports
+  the cert into an ephemeral keychain and signs with hardened runtime
+  + secure timestamp (the prerequisites for notarization).
+
+Credential matrix the maintainer must provision to enable real
+notarization (none of this can be created from inside the repo — it
+requires a paid Apple Developer Program membership):
+
+| Secret | Source |
+|---|---|
+| `MACOS_CERT_P12_BASE64` | "Developer ID Application" cert exported as `.p12`, base64-encoded |
+| `MACOS_CERT_PASSWORD` | the `.p12` export password |
+| `MACOS_SIGN_IDENTITY` | e.g. `Developer ID Application: Name (TEAMID)` |
+| `MACOS_NOTARY_KEY_BASE64` | App Store Connect API key `.p8`, base64-encoded |
+| `MACOS_NOTARY_KEY_ID` | the API key's Key ID |
+| `MACOS_NOTARY_ISSUER_ID` | the App Store Connect issuer UUID |
+
+Notarization deliberately does **not** target the loose `.so`:
+`xcrun stapler staple` can only attach a ticket to an app bundle,
+`.dmg`, or `.pkg`, never a bare dylib. For a loose dylib Gatekeeper
+fetches the ticket online, so notarizing the distribution *archive*
+transitively covers the contained `.so`. `macos-sign.sh
+--notarize-archive <zip|dmg|pkg>` is the credential-gated entry point
+the prebuilt-bundle slice will call on its archive; it skips cleanly
+(exit 0) when the notary secrets are absent so forks/PRs still pass.

@@ -143,6 +143,23 @@ jobs:
           opam exec -- dune build --only-packages proof_broker \
             sdk proof_broker.install
 
+      - name: Code-sign proof_broker_ffi.so (macOS)
+        if: runner.os == 'macOS'
+        # Ad-hoc by default (no secrets needed — runs on every PR/fork);
+        # Developer ID + hardened runtime + secure timestamp when the
+        # MACOS_CERT_* / MACOS_SIGN_IDENTITY secrets are provisioned.
+        # Signing the _build artifact *before* the smoke test and
+        # `dune install` means every downstream consumer in this job
+        # exercises a signed library — i.e. CI proves a signed .so
+        # still dlopen-loads through the C shim, not just that signing
+        # exits 0. `codesign --verify --strict` inside the script reds
+        # the job on a broken signature.
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: bash sdk/ffi/packaging/macos-sign.sh _build/default/sdk/ffi/proof_broker_ffi.so
+
       - name: Run SDK tests
         run: opam exec -- dune runtest sdk
 
@@ -153,11 +170,22 @@ jobs:
         # The install stanza in sdk/ffi/dune is the production-ready
         # path that decouples the Lean lakefile from the dev `_build`
         # tree. Verify it works on each target platform.
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
         run: |
           tmp=$(mktemp -d)
           opam exec -- dune install --prefix="$tmp" proof_broker
           test -f "$tmp/lib/proof_broker/proof_broker_ffi.so"
           echo "OK: proof_broker_ffi.so installed at $tmp/lib/proof_broker/"
+          # The installed copy is what a consumer actually loads. dune
+          # install copies bytes (signature travels with the Mach-O),
+          # but re-sign + strict-verify here so the *distributed*
+          # artifact is independently asserted, not just the _build one.
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            bash sdk/ffi/packaging/macos-sign.sh "$tmp/lib/proof_broker/proof_broker_ffi.so"
+          fi
 
   lean-bridge:
     runs-on: ubuntu-latest
