@@ -53,7 +53,18 @@ jobs:
         # live at repo root after the Phase 1 workspace merge; pre-
         # merge this read `./sdk`. Pointing at the .opam file
         # directly avoids a directory-scan-relies-on-cwd surprise.
-        run: opam install -y --deps-only --with-test ./proof_broker.opam
+        # Retry wrapper: GitHub release-asset fetches (ocaml-syntax-
+        # shims et al.) return transient 502s under CDN load — a clean
+        # dep set shouldn't fail a run on a flaky download. 3 attempts,
+        # 15s backoff.
+        run: |
+          n=0
+          until opam install -y --deps-only --with-test ./proof_broker.opam; do
+            n=$((n+1))
+            if [ "$n" -ge 3 ]; then echo "opam install failed after $n attempts" >&2; exit 1; fi
+            echo "opam install attempt $n hit a transient fetch error; retrying in 15s..." >&2
+            sleep 15
+          done
 
       - name: Build SDK
         # `dune build sdk` constrains the build to the SDK subtree —
@@ -110,7 +121,15 @@ jobs:
           dune-cache: true
 
       - name: Install SDK deps
-        run: opam install -y --deps-only --with-test ./proof_broker.opam
+        # See retry rationale in the `sdk` job's Install SDK deps step.
+        run: |
+          n=0
+          until opam install -y --deps-only --with-test ./proof_broker.opam; do
+            n=$((n+1))
+            if [ "$n" -ge 3 ]; then echo "opam install failed after $n attempts" >&2; exit 1; fi
+            echo "opam install attempt $n hit a transient fetch error; retrying in 15s..." >&2
+            sleep 15
+          done
 
       - name: Build SDK (incl. install rules so proof_broker.install exists)
         # `dune build sdk` alone builds the sdk subtree but doesn't
@@ -188,7 +207,15 @@ jobs:
           cvc5 --version
 
       - name: Install SDK deps
-        run: opam install -y --deps-only --with-test ./proof_broker.opam
+        # See retry rationale in the `sdk` job's Install SDK deps step.
+        run: |
+          n=0
+          until opam install -y --deps-only --with-test ./proof_broker.opam; do
+            n=$((n+1))
+            if [ "$n" -ge 3 ]; then echo "opam install failed after $n attempts" >&2; exit 1; fi
+            echo "opam install attempt $n hit a transient fetch error; retrying in 15s..." >&2
+            sleep 15
+          done
 
       - name: Build SDK shared object
         run: opam exec -- dune build sdk
@@ -251,7 +278,15 @@ jobs:
       - name: Install SDK + rocq-bridge deps
         # proof_broker_rocq pulls in rocq-runtime (>= 9.0); proof_broker
         # pulls the OCaml SDK deps. Both opam files at repo root.
-        run: opam install -y --deps-only --with-test ./proof_broker.opam ./proof_broker_rocq.opam
+        # See retry rationale in the `sdk` job's Install SDK deps step.
+        run: |
+          n=0
+          until opam install -y --deps-only --with-test ./proof_broker.opam ./proof_broker_rocq.opam; do
+            n=$((n+1))
+            if [ "$n" -ge 3 ]; then echo "opam install failed after $n attempts" >&2; exit 1; fi
+            echo "opam install attempt $n hit a transient fetch error; retrying in 15s..." >&2
+            sleep 15
+          done
 
       - name: Build SDK + rocq-bridge
         # dune build with no path scope builds everything reachable
