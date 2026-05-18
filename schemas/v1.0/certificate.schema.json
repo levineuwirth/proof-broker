@@ -295,9 +295,8 @@
     },
 
     "Payload_Tier4": {
-      "type": "object",
-      "description": "Reserved. Not implemented in v1.",
-      "additionalProperties": true
+      "description": "Tier 4 (foundational) is RESERVED and not implemented in v1. A tier-4 certificate is therefore not a valid v1 document: `not: {}` matches nothing, so any cert with tier == 4 fails validation rather than rubber-stamping an arbitrary payload — audit M2.",
+      "not": {}
     }
   }
 }

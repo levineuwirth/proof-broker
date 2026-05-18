@@ -448,6 +448,110 @@ def _trace_unknown_pass():
     assert_contains(w, "phantom_pass", "warning")
 
 
+# --- M1: rewrite-trace hash-chain continuity --------------------------------
+
+
+@register("M1 trace: broken chain between consecutive entries is an error")
+def _trace_chain_break():
+    bad = copy.deepcopy(TRACE3)
+    bad["entries"][0]["after_hash"] = "sha256:" + "f" * 64
+    e, _ = check_trace(bad, REGISTRY)
+    assert_contains(e, "chain break", "error")
+
+
+@register("M1 trace: entries[0].before_hash must equal initial_ir_hash")
+def _trace_initial_mismatch():
+    bad = copy.deepcopy(TRACE3)
+    bad["initial_ir_hash"] = "sha256:" + "a" * 64
+    e, _ = check_trace(bad, REGISTRY)
+    assert_contains(e, "initial_ir_hash", "error")
+
+
+@register("M1 trace: entries[-1].after_hash must equal final_ir_hash")
+def _trace_final_mismatch():
+    bad = copy.deepcopy(TRACE3)
+    bad["final_ir_hash"] = "sha256:" + "b" * 64
+    e, _ = check_trace(bad, REGISTRY)
+    assert_contains(e, "final_ir_hash", "error")
+
+
+@register("M1 trace: failed/no_op pass must leave the IR unchanged")
+def _trace_failed_must_not_mutate():
+    bad = copy.deepcopy(TRACE3)
+    # Mark a pass 'failed' but keep its (distinct) after_hash: the
+    # schema can't express "failed => after == before"; check.py must.
+    bad["entries"][0]["status"] = "failed"
+    e, _ = check_trace(bad, REGISTRY)
+    assert_contains(e, "must leave the IR", "error")
+
+
+@register("M1 trace: the shipped fixture chain is internally consistent")
+def _trace_fixture_chain_ok():
+    e, _ = check_trace(copy.deepcopy(TRACE3), REGISTRY)
+    assert_absent(e, "chain break", "error")
+    assert_absent(e, "initial_ir_hash", "error")
+    assert_absent(e, "final_ir_hash", "error")
+
+
+# --- M2: schemas reject unknown properties / tier-4 -------------------------
+
+
+def _schema_validator(filename: str) -> Draft202012Validator:
+    schema_dir = ROOT / "schemas" / "v1.0"
+    registry = Registry()
+    target = None
+    for path in sorted(schema_dir.glob("*.schema.json")):
+        with path.open() as f:
+            schema = json.load(f)
+        registry = registry.with_resource(
+            schema["$id"], Resource(contents=schema, specification=DRAFT202012)
+        )
+        if path.name == filename:
+            target = schema
+    assert target is not None, filename
+    return Draft202012Validator(target, registry=registry)
+
+
+@register("M2 schema: TypeConstructor rejects an unknown property")
+def _schema_typeconstructor_closed():
+    bad = copy.deepcopy(IR3)
+    ctor = bad["type_metadata"]["MyZMod_n"]["constructor"]
+    ctor["bogus_injected_key"] = "x"
+    errors = list(_schema_validator("ir.schema.json").iter_errors(bad))
+    assert errors, "expected ir.schema to reject an extra TypeConstructor key"
+
+
+@register("M2 schema: Specialization rejects an unknown property")
+def _schema_specialization_closed():
+    bad = copy.deepcopy(CERT1)
+    bad["refinement_record"]["specializations"][0]["typo_witnes"] = "oops"
+    errors = list(cert_schema_validator().iter_errors(bad))
+    assert errors, "expected refinement-record Specialization to be closed"
+
+
+@register("M2 schema: a tier-4 certificate is rejected (reserved)")
+def _schema_tier4_rejected():
+    bad = copy.deepcopy(CERT1)
+    bad["tier"] = 4
+    bad["payload"] = {"anything": True}
+    errors = list(cert_schema_validator().iter_errors(bad))
+    assert errors, "expected tier-4 certificate to be rejected"
+
+
+# --- M3: validate.py co-enforces the registry vocabulary --------------------
+
+
+@register("M3: validate.py wires the registry check for IR fixtures")
+def _validate_registry_wiring():
+    import validate as v
+    assert v.registry_check_for("example1-x.json") is check_ir_against_registry
+    assert v.registry_check_for("cert-x.json") is check_certificate
+    bad = copy.deepcopy(IR1)
+    bad["logic_classification"]["first_order_fragment"] = "NOT_A_FRAGMENT"
+    e, _ = check_ir_against_registry(bad, REGISTRY)
+    assert_contains(e, "unknown fragment", "error")
+
+
 # --- pytest entry point ------------------------------------------------------
 
 

@@ -318,9 +318,59 @@ def check_manifest(manifest, registry):
 def check_trace(trace, registry):
     errors, warnings = [], []
     pass_ids = {p["id"] for p in registry["rewriter_passes"]}
-    for entry in trace["entries"]:
+    entries = trace["entries"]
+    for entry in entries:
         if entry["pass"] not in pass_ids:
             warnings.append(f"trace pass '{entry['pass']}' not in registry.rewriter_passes")
+
+    # Hash-chain continuity (audit M1). The schema validates that each
+    # hash is a well-formed sha256:<64hex>; it cannot express that the
+    # per-pass hashes form a contiguous chain from initial_ir_hash to
+    # final_ir_hash. Without this a trace can claim to describe a
+    # rewrite of one IR while the segments don't actually connect —
+    # exactly the "fixture hashes don't even match across files" class
+    # of inconsistency. This is checkable without reproducing the
+    # OCaml canonicalization: it is pure within-document linkage.
+    init = trace["initial_ir_hash"]
+    final = trace["final_ir_hash"]
+    if not entries:
+        if init != final:
+            errors.append(
+                "empty trace must have initial_ir_hash == final_ir_hash "
+                f"(got {init} vs {final})"
+            )
+    else:
+        if entries[0]["before_hash"] != init:
+            errors.append(
+                f"entries[0].before_hash ({entries[0]['before_hash']}) "
+                f"!= initial_ir_hash ({init})"
+            )
+        if entries[-1]["after_hash"] != final:
+            errors.append(
+                f"entries[-1].after_hash ({entries[-1]['after_hash']}) "
+                f"!= final_ir_hash ({final})"
+            )
+        for i in range(len(entries) - 1):
+            a = entries[i]["after_hash"]
+            b = entries[i + 1]["before_hash"]
+            if a != b:
+                errors.append(
+                    f"trace chain break: entries[{i}].after_hash ({a}) "
+                    f"!= entries[{i + 1}].before_hash ({b})"
+                )
+        # The schema says a 'failed' pass leaves the IR untouched
+        # (after_hash == before_hash); a 'no_op' likewise made no
+        # changes. Enforce that invariant here (the schema cannot).
+        for i, entry in enumerate(entries):
+            st = entry.get("status")
+            if st in ("failed", "no_op") and \
+                    entry["after_hash"] != entry["before_hash"]:
+                errors.append(
+                    f"entries[{i}] status='{st}' must leave the IR "
+                    f"unchanged (after_hash == before_hash), got "
+                    f"{entry['before_hash']} -> {entry['after_hash']}"
+                )
+
     return errors, warnings
 
 
