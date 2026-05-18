@@ -373,7 +373,11 @@ jobs:
     steps:
       - name: Require every required job to have succeeded
         run: |
-          results='${{ join(needs.*.result, " ") }}'
+          # GitHub expression string literals MUST be single-quoted
+          # (double quotes are a workflow-parse error → 0-job failure).
+          # Single-quote the separator inside the expression, and use
+          # bash double-quotes for the assignment so the two don't clash.
+          results="${{ join(needs.*.result, ' ') }}"
           echo "dependency results: ${results}"
           ok=1
           for r in ${results}; do
