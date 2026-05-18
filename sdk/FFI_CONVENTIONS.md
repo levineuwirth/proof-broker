@@ -5,17 +5,24 @@ Phase-0 FFI spike (delta.md §2.1) and downstream Phase 1+ work.
 
 ## Wire format
 
-**JSON locked for v1.** CBOR sits behind a single
-`Codec.to_wire` / `Codec.of_wire` toggle but does not get switched
-on until profiling shows FFI marshaling at ≥10% of dispatch wall time
-on representative workloads. Below that threshold, JSON's diagnostic
-affordances — cat-able fixtures, readable CI logs, eyeball-debuggable
-error envelopes — outweigh wire-size and parse-cost wins. The
-Phase-0 spike measured ~54 µs/call, well below any plausible trigger.
+**JSON only for v1.** The wire format is JSON, full stop. CBOR
+remains a *possible* future change, gated on profiling showing FFI
+marshaling at ≥10% of dispatch wall time on representative workloads;
+below that, JSON's diagnostic affordances — cat-able fixtures,
+readable CI logs, eyeball-debuggable error envelopes — outweigh
+wire-size and parse-cost wins. The Phase-0 spike measured
+~54 µs/call, well below any plausible trigger.
 
-The codec abstraction means the eventual switch is a single point of
-change. The trigger is a measurable bar so the "should we move to
-CBOR yet" discussion does not recur every six months.
+**Correction (audit #18):** an earlier revision of this doc claimed
+CBOR "sits behind a single `Codec.to_wire` / `Codec.of_wire`
+toggle". No such toggle or codec-abstraction seam exists —
+`sdk/lib/codec.ml` exposes only `to_json` / `of_json` / `normalize`
+and the C shim marshals JSON strings directly. Switching to CBOR is
+therefore a real refactor (introduce a wire-format seam, add a CBOR
+codec, thread it through the shim and the Lean glue), **not** a
+one-line flip. The trigger condition above is still the policy; only
+the previously-implied "free switch" was wrong, and is recorded
+honestly here so the cost is budgeted rather than assumed.
 
 The IR document is the canonical example; the same convention applies to
 certificates, refinement records, traces, and every other artifact that

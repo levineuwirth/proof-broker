@@ -112,7 +112,10 @@ let run
       (match outcome with
        | Succeeded c -> cert := Some c
        | _ -> ());
-      attempts := !attempts @ [ { adapter = m.adapter; outcome } ]
+      (* Audit #18: prepend then reverse once — O(n) total, vs the
+         former [!attempts @ [..]] which is O(n²) over the manifest
+         list. Final order is unchanged (input/dispatch order). *)
+      attempts := { adapter = m.adapter; outcome } :: !attempts
     end)
     manifests;
-  { cert = !cert; attempts = !attempts }
+  { cert = !cert; attempts = List.rev !attempts }

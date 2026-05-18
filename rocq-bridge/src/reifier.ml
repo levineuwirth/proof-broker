@@ -214,7 +214,11 @@ and reify_app env sigma head args full =
     else
       reify_error
         "equality over unsupported type (LIA/LRA only): %s"
-        (pp_econstr (Global.env ()) sigma full)
+        (* Audit #18: use the passed [env] (the goal's local context),
+           not [Global.env ()] — every other error site here does, and
+           Global.env may lack section/local context, mis-printing the
+           offending term. *)
+        (pp_econstr env sigma full)
   end
   else if head_is r_and && nargs = 2 then
     Ir.And { left = r 0; right = r 1 }

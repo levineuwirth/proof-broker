@@ -272,33 +272,21 @@ let match_disjunct_index
          | Ok cd ->
            let res =
              let module L = Linear_arith in
-             let inv (r : L.rational) =
-               if L.rat_is_zero r then None else Some (L.rat_inv r)
-             in
-             let scale_factor (f1 : L.t) (f2 : L.t) : L.rational option =
-               match f2.coeffs, f1.coeffs with
-               | [], [] ->
-                 if L.rat_is_zero f2.const then
-                   if L.rat_is_zero f1.const then Some L.rat_one else None
-                 else if L.rat_is_zero f1.const then Some L.rat_zero
-                 else (match inv f2.const with
-                       | Some i -> Some (L.rat_mul f1.const i)
-                       | None -> None)
-               | [], _ :: _ -> None
-               | (n2, c2) :: _, _ ->
-                 (match List.assoc_opt n2 f1.coeffs, inv c2 with
-                  | Some c1, Some i ->
-                    let r = L.rat_mul c1 i in
-                    if L.scale r f2 = f1 then Some r else None
-                  | _ -> None)
-             in
+             (* Audit #18 (Q1): single source of truth for the
+                scalar-multiple match — [Alethe_farkas.scale_factor].
+                The former inline copy here was behaviourally
+                identical (canonical [Linear_arith.t] carries no zero
+                coefficients, so its guarded-inverse variant and
+                [scale_factor]'s direct [rat_inv] agree on every
+                reachable input); duplicating trust-critical scaling
+                logic only created drift risk. *)
              match cc, cd with
              | Le c, Le d | Lt c, Lt d ->
-               (match scale_factor c d with
+               (match Alethe_farkas.scale_factor c d with
                 | Some r when L.rat_is_pos r -> true
                 | _ -> false)
              | Eq c, Eq d ->
-               (match scale_factor c d with
+               (match Alethe_farkas.scale_factor c d with
                 | Some r when not (L.rat_is_zero r) -> true
                 | _ -> false)
              | _ -> false

@@ -980,12 +980,14 @@ let per_branch_close (ir : Ir.t)
 
 (* Tier 2 case-split closer entry point.
 
-   Scope today: arity-2 disjunctive hypothesis ([A \/ B]) of LIA /
-   LRA atoms, each closed by one Tier 1 Farkas witness. Higher arity
-   (e.g. [A \/ B \/ C]) needs a destruct pattern of corresponding
-   nesting and the SDK's [disjuncts_of] flattens to a list — we
-   restrict to arity 2 here, matching the existing fixture, and the
-   extension is mechanical. *)
+   Scope: an arity-N disjunctive hypothesis ([A \/ B], [A \/ B \/ C],
+   …) of LIA / LRA atoms, each branch closed by one Tier 1 Farkas
+   witness. [disjuncts_of] flattens the right-nested [Or] to a list;
+   [build_destruct_pattern n_disjuncts] emits the matching nested
+   destruct pattern and [order_lemmas_by_disjunct] aligns the
+   witnesses to the branches. Only arity < 2 is rejected. (Audit #18:
+   an earlier comment here said "restrict to arity 2"; that was stale
+   — the code has been arity-N.) *)
 let close_term_case_split (ir : Ir.t)
     (lemmas_used : Yojson.Safe.t list)
     (structural_hint : Yojson.Safe.t option)
