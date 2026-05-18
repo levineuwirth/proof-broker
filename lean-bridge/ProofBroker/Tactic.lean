@@ -14,24 +14,26 @@ Soundness footprint:
     gates the call — the OCaml-side verifier has already accepted
     the proof, so `omega` will succeed on the LIA goal. `omega`
     itself is axiom-free, so goals closed on this path do not
-    depend on `proofBrokerCertSound`. The fragment comes from the
-    cert's `refinement_record`.
-  * Anything else (`verifiedFarkas` over LRA, future BV / UF /
-    etc.) falls back to `proofBrokerCertSound`. Each is removable
-    per fragment: LRA needs a `linarith`-style closer (or Mathlib
-    if a future package allows it); other fragments need their
-    own decision procedure. Reifying the cert into a term-mode
-    Lean proof — Farkas combination from the Tier 1 witness, or
-    the Alethe walker for Tier 3 — is the principled finish, but
-    LIA goals don't need it because `omega` already discharges
-    them axiom-free.
+    depend on any axiom. The fragment comes from the cert's
+    `refinement_record`.
+  * Anything else (`verifiedFarkas` over LRA via the registered
+    `linarith` closer, BV via `decide`, UF via `subst_eqs`/`simp_all`)
+    closes with an axiom-free Lean tactic. If no sound closer can
+    discharge a certified goal, the tactic FAILS (`throwError`) and
+    leaves the goal open — it never closes via an admitted axiom.
+    Reifying the cert into a term-mode Lean proof — Farkas
+    combination from the Tier 1 witness, or the Alethe walker for
+    Tier 3 — is the principled finish; until a fragment has one,
+    an uncloseable certified goal is a tactic error, not a theorem.
   * Goal/hypothesis reification covers the LIA fragment only (Int with
     +, -, negation, multiplication by integer literal; ≤, <, =; ¬, ∧,
     ∨). Anything outside this fragment fails fast with a
     `proof_broker: unsupported …` error from the reifier.
 
-`proofBrokerCertSound` admits an arbitrary `P : Prop`; uses are gated
-by OCaml-side verifier acceptance. See per-reason removal notes above.
+There is NO trust axiom: the broker's verdict gates which closer is
+invoked, but the Lean proof term is always produced by an axiom-free
+tactic (`omega`/`decide`/`subst_eqs`/`linarith`). A certified goal
+with no sound closer is reported as a tactic failure (audit H1).
 -/
 
 import Lean
@@ -43,17 +45,15 @@ namespace ProofBroker.Tactic
 
 open Lean Lean.Elab.Tactic Lean.Meta ProofBroker.IR
 
-/-- Trust axiom keyed on a verified ProofBroker certificate.
-
-    Soundness footprint: the OCaml-side verifier (Tier 1 Farkas /
-    Tier 2 case-split / Tier 3 Alethe walker). Used by `proof_broker`
-    only on fragments without a Lean-side closer — every LIA goal
-    discharges via core `omega` regardless of which tier the cert
-    came from, so this axiom is currently exercised only on LRA
-    (and any non-arithmetic fragment a future adapter might add).
-    Each remaining usage is removable per fragment (see top-level
-    docstring). -/
-axiom proofBrokerCertSound : ∀ (P : Prop), P
+/- Audit H1: the former `axiom proofBrokerCertSound : ∀ (P : Prop), P`
+   was removed. It was an inconsistent axiom (it proves `False`) used
+   as an unconditional fallback when no Lean-side closer could
+   discharge a broker-certified goal. Kernel soundness for non-LIA
+   fragments rested entirely on a CI allowlist gate rather than on
+   Lean's kernel. The fallback sites now `throwError` instead, so an
+   uncloseable certified goal is a tactic failure — never an admitted
+   theorem. Reintroducing a closer for a fragment is the way to
+   discharge such goals; reintroducing the axiom is not. -/
 
 /- ============================================================
    Extension hook for non-LIA fragments
@@ -642,17 +642,22 @@ private def certFragment (cert : Json) : String :=
       floats cvc5's Tier 3 alethe-2024 path to the top — those
       `verifiedTier3` certs over LIA close axiom-free even though
       we don't have a Lean-side Alethe walker yet.
-    * Anything else `verif.ok = true` (LRA Tier 1 Farkas, future
-      BV / UF / etc.): `proofBrokerCertSound`. Removable per
-      fragment: LRA needs a `linarith`-style closer (or Mathlib);
-      others need their own decision procedure. Tier 3 reification
-      via a Lean-side Alethe walker is the principled finish, but
-      not needed for LIA Tier 3 — omega already nails that with
-      no axiom.
+    * Anything else `verif.ok = true` (LRA Tier 1 Farkas via the
+      registered `linarith` closer, BV via `decide`, UF via
+      `subst_eqs`/`simp_all`): an axiom-free Lean tactic. If none
+      can discharge the goal the tactic `throwError`s — the goal
+      is left open, never closed by an axiom (audit H1). Tier 3
+      reification via a Lean-side Alethe walker is the principled
+      finish for the not-yet-covered shapes; LIA Tier 3 doesn't
+      need it — omega already nails that axiom-free.
 
     The verbose form calls `logInfo` with `renderPath` first; the bare
     form just throws so unsuccessful invocations are silent. -/
-private def closeOrFail (goal : MVarId) (goalType : Expr)
+-- `_goal`/`_goalType` are retained in the signature (callers pass
+-- them) but unused since audit H1: every closer now operates on the
+-- tactic state (`omega`/`decide`/…) or `throwError`s — nothing
+-- assigns the metavariable directly anymore.
+private def closeOrFail (_goal : MVarId) (_goalType : Expr)
     (path : ExtractionPath) : TacticM Unit := do
   -- Accept either strict verifyOk (Tier 1/2/3 with a real
   -- soundness check) OR envelopeOk + tierCheckDeferred (Tier 0
@@ -676,8 +681,7 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       -- the verify reason indicates) has already accepted this
       -- proof, so omega will succeed on the LIA goal. omega itself
       -- is axiom-free, so the resulting proof term does not depend
-      -- on `proofBrokerCertSound` regardless of the tier the cert
-      -- came from.
+      -- on any axiom regardless of the tier the cert came from.
       evalTactic (← `(tactic| omega))
     else if fragment == "BV" then
       -- Cert-gated decide: BitVec has DecidableEq + the operator
@@ -687,11 +691,17 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       -- extraction); envelope verification + cvc5/z3 unsat is
       -- the trust gate, `decide` is the actual proof emitter.
       -- `decide` is itself axiom-free, so closure here doesn't
-      -- depend on `proofBrokerCertSound`. Big-width / quantifier-
-      -- heavy BV goals where `decide` doesn't terminate in
-      -- elaboration time fall through to the trust axiom.
+      -- depend on any axiom. Big-width / quantifier-heavy BV goals
+      -- where `decide` doesn't terminate in elaboration time are
+      -- reported as a tactic failure (no axiom fallback — audit H1).
       try evalTactic (← `(tactic| decide))
-      catch _ => goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+      catch _ =>
+        throwError "proof_broker: the broker certified this BV goal but \
+          Lean's `decide` could not discharge it (typically too wide or \
+          quantifier-heavy for elaboration-time evaluation). There is no \
+          Lean-side BV witness reconstruction yet, so the goal is left \
+          OPEN rather than closed by an unjustified axiom — this is a \
+          tactic failure, not an admitted theorem."
     else if fragment == "UF" then
       -- Cert-gated congruence: cvc5 / z3 already accepted the
       -- goal under QF_UFLIA / QF_UFLRA, so the goal is
@@ -722,7 +732,11 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       catch _ =>
         try evalTactic (← `(tactic| simp_all))
         catch _ =>
-          goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+          throwError "proof_broker: the broker certified this UF goal but \
+            the Lean closer chain (`subst_eqs; rfl`, then `simp_all`) \
+            could not discharge it. The goal is left OPEN rather than \
+            closed by an unjustified axiom — this is a tactic failure, \
+            not an admitted theorem."
     else
       -- Non-LIA / non-BV: dispatch through the registered
       -- ReifierExt's closer if present (e.g. ProofBrokerMathlib
@@ -732,9 +746,17 @@ private def closeOrFail (goal : MVarId) (goalType : Expr)
       if fragment == "LRA" then
         match ← reifierExt.get with
         | some ext => ext.lraCloser
-        | none => goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+        | none =>
+          throwError "proof_broker: the broker certified this LRA goal \
+            but no LRA closer is registered. `import ProofBrokerMathlib` \
+            to enable the linarith closer. The goal is left OPEN rather \
+            than closed by an unjustified axiom."
       else
-        goal.assign (mkApp (.const ``proofBrokerCertSound []) goalType)
+        throwError "proof_broker: the broker certified this goal for \
+          fragment '{fragment}', but there is no sound Lean-side closer \
+          for that fragment. The goal is left OPEN rather than closed by \
+          an unjustified axiom — implement a fragment closer (or a \
+          Tier-3 Alethe term reconstruction) to discharge it."
   | none, _ =>
     let head := path.attempts.head?.map (·.outcome) |>.map reprStr |>.getD "<no attempts>"
     throwError "proof_broker: no adapter could close the goal \
