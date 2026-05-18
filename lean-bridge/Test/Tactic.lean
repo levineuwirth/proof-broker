@@ -7,8 +7,10 @@ it to `runDispatchBroker` (consulting the cvc4/cvc5/z3 manifests
 under `examples/`), re-checks the minted Tier 1 Farkas cert via
 `runVerifyCertificate`, and closes the goal — for the LIA Tier 1
 case via core Lean's `omega` (axiom-free, gated on cert
-verification), for any other tier/fragment via the
-`proofBrokerCertSound` trust axiom (removable per-tier).
+verification), for other fragments via an axiom-free closer
+(`decide`/`subst_eqs`/`linarith`); a certified goal with no
+sound closer is a tactic failure, never an admitted theorem
+(audit H1 — the former trust axiom was removed).
 
 Build success of this library *is* the test: any failure to
 elaborate `by proof_broker` (no available adapter, cert that
@@ -73,7 +75,7 @@ example (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
     Alethe walker yet) the closer is `omega` because the goal is
     LIA — cert verification gates the call, omega does the rest.
     omega is axiom-free, so this theorem's transitive axiom set
-    must not contain `proofBrokerCertSound`; verified inline by
+    stays within the core-Lean ceiling; verified inline by
     `#print axioms` below. -/
 theorem lia_axiom_free
     (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by

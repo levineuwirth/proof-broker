@@ -36,8 +36,8 @@ example (x : Real) (h : x ≤ 3) : x ≤ 5 := by
 example (x y : Real) (h1 : x + y ≤ 10) (h2 : y ≥ 0) : x ≤ 10 := by
   proof_broker
 
-/-- Named LRA goal so `#print axioms` can confirm
-    `proofBrokerCertSound` is absent — the linarith closer is
+/-- Named LRA goal so `#print axioms` can confirm the footprint
+    stays within the core ceiling — the linarith closer is
     axiom-free same as omega's. -/
 theorem lra_axiom_free
     (x : Real) (h1 : x ≥ 5) (h2 : x ≤ 3) : False := by

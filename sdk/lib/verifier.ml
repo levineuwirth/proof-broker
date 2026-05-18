@@ -350,6 +350,24 @@ let verify_case_split
        Case_split_malformed {
          detail = Printf.sprintf "hypothesis %s not found in IR" hyp_name
        }
+     | Some hyp when (match hyp.shell with Ir.Or _ -> false | _ -> true) ->
+       (* Tier-2 case-split soundness rests on the named hypothesis
+          being the disjunction whose branches the lemmas close. The
+          extractor (Alethe_farkas.unique_disjunctive_target) only
+          ever emits case-split certs from a syntactic [Or _] hyp; the
+          verifier must require the same. A non-[Or] hypothesis would
+          flatten via [disjuncts_of] to the singleton [[hyp.shell]] —
+          a degenerate 1-branch "split" that, while not unsound on its
+          own (the hypothesis is in the context, so it reduces to a
+          Tier-1 proof), is outside the Tier-2 contract and would mask
+          a malformed cert as a structural proof. Reject it explicitly
+          so verify- and extract-side agree on what a case-split is. *)
+       Case_split_malformed {
+         detail = Printf.sprintf
+           "disjunctive_hypothesis '%s' is not a syntactic disjunction \
+            (Or); Tier-2 case-split requires the named hypothesis to be \
+            an Or of linear atoms" hyp_name
+       }
      | Some hyp ->
        let disjuncts = Alethe_farkas.disjuncts_of hyp.shell in
        let parsed = List.map parse_lemma lemmas in
@@ -359,9 +377,12 @@ let verify_case_split
                      \"witness\": farkas-witness}"
          }
        else
-         let lemmas_typed =
-           List.map (function Some p -> p | None -> assert false) parsed
-         in
+         (* [filter_map] rather than [List.map (... | None -> assert
+            false)]: the [exists Option.is_none] guard above already
+            makes a [None] unreachable here, but [assert false] on an
+            attacker-influenced list is a crash one refactor away.
+            [filter_map] is total and preserves order. *)
+         let lemmas_typed = List.filter_map Fun.id parsed in
          (* Partition check first: every case must match exactly one
             disjunct, and the cases must collectively cover every
             disjunct. Running this before per-branch Farkas
@@ -380,9 +401,8 @@ let verify_case_split
              detail = "one or more cases do not match any disjunct"
            }
          else
-           let indices =
-             List.map (function Some i -> i | None -> assert false) matched
-           in
+           (* Total: guarded by the [exists Option.is_none] above. *)
+           let indices = List.filter_map Fun.id matched in
            let n = List.length disjuncts in
            let covered = List.sort_uniq compare indices in
            if List.length covered <> n then

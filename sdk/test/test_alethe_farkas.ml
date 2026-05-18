@@ -394,6 +394,59 @@ let test_no_la_generic () =
          (Alethe_farkas.error_kind e))
   | Ok _ -> Alcotest.fail "expected error, got Ok"
 
+(** Audit H2 regression: the verifier must reject a Tier-2
+    case-split cert whose [disjunctive_hypothesis] names a real but
+    non-[Or] hypothesis, even when the per-branch witnesses would
+    otherwise close. Uses the genuine extracted lemmas but repoints
+    [structural_hint] at [h_low] ([x >= 1], a linear atom, not a
+    disjunction). Expect [Case_split_malformed], NOT
+    [Verified_case_split]. *)
+let test_case_split_rejects_non_or_hypothesis () =
+  let proof_str = load_fixture "alethe-case-split-x.proof" in
+  let ir = make_case_split_ir () in
+  match Alethe_farkas.extract_case_split_payload ir proof_str with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "fixture extract failed: %s — %s"
+                     (Alethe_farkas.error_kind e)
+                     (Alethe_farkas.error_detail e))
+  | Ok (lemmas, _real_hyp) ->
+    let cert : Certificate.t = {
+      cert_version = "1.0";
+      tier = 2;
+      format = "case_split_farkas";
+      goal = ir.goal;
+      dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
+      rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+      backend = {
+        name = "cvc5"; version = "1.3.3";
+        config_hash = "sha256:" ^ String.make 64 '0';
+      };
+      resources = {
+        wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+      };
+      refinement_record = {
+        adapter = "cvc5"; adapter_version = "1.3.3";
+        specializations = []; fragment = "LRA"; auxiliary = None;
+      };
+      payload = Tier2_lemma_list {
+        lemmas_used = lemmas;
+        strategy_hint = "case_split_farkas";
+        (* h_low is `x >= 1` — a real hypothesis, but NOT an Or. *)
+        structural_hint = Some (`Assoc [
+          "disjunctive_hypothesis", `String "h_low";
+        ]);
+      };
+    } in
+    (match Verifier.verify cert ir with
+     | Case_split_malformed _ -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf
+            "non-Or disjunctive_hypothesis must be rejected as \
+             case_split_malformed; got %s — %s"
+            (Verifier.kind_of_reason other)
+            (Verifier.detail_of_reason other)))
+
 let () =
   Alcotest.run "alethe_farkas" [
     "parse", [
@@ -409,5 +462,7 @@ let () =
         `Quick test_extract_case_split;
       Alcotest.test_case "extract + verify arity-3 case-split witness"
         `Quick test_extract_case_split_arity3;
+      Alcotest.test_case "reject non-Or disjunctive_hypothesis (audit H2)"
+        `Quick test_case_split_rejects_non_or_hypothesis;
     ];
   ]
