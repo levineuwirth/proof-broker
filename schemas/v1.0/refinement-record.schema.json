@@ -38,6 +38,8 @@
   "$defs": {
     "Specialization": {
       "type": "object",
+      "$comment": "Closed: every property is declared below; the allOf only adds conditional `required`, no new keys, so additionalProperties:false is safe and correct here — audit M2. The refinement record is replayed in reverse during lifting, so a typo'd soundness_witness/justification must not pass silently.",
+      "additionalProperties": false,
       "required": ["kind", "source", "target"],
       "properties": {
         "kind": {

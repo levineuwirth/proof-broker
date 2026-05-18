@@ -74,6 +74,7 @@
     "LogicClassification": {
       "type": "object",
       "additionalProperties": false,
+      "$comment": "features_used and first_order_fragment are intentionally open strings here. The CLOSED, authoritative vocabulary is registry/patterns-v1.json (logical_features[].id and first_order_fragments[].id + 'none'); duplicating the enum into this schema would create a second source of truth that drifts. tools/validate.py co-enforces the registry so `python tools/validate.py` alone rejects an unknown fragment/feature (it no longer requires the separate check.py step) — audit M3.",
       "required": ["order", "features_used", "first_order_fragment", "decidable_theory"],
       "properties": {
         "order": {
@@ -310,6 +311,8 @@
 
     "TypeConstructor": {
       "type": "object",
+      "$comment": "unevaluatedProperties (draft 2020-12) not additionalProperties: the construction-kind-specific keys are introduced by the allOf/if-then below, so additionalProperties:false would wrongly reject them. unevaluatedProperties:false closes the object while honoring those conditionally-applied subschemas — audit M2.",
+      "unevaluatedProperties": false,
       "required": ["name", "construction_kind"],
       "properties": {
         "name": { "$ref": "https://proof-broker.dev/schemas/v1.0/common.schema.json#/$defs/SymbolName" },
