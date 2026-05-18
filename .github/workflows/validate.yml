@@ -29,6 +29,9 @@ jobs:
       - name: Run cross-doc checker negative tests
         run: python tools/test_check.py
 
+      - name: Run trust-gate parser tests (axiom-check C2/C3)
+        run: python tools/test_check_axioms.py
+
   sdk:
     runs-on: ubuntu-latest
     steps:
@@ -257,7 +260,17 @@ jobs:
 
       - name: Build Lean bridge (auto-installs toolchain via lean-toolchain)
         working-directory: lean-bridge
-        run: lake build 2>&1 | tee ../lake_build.log
+        # `set -o pipefail` is REQUIRED: GitHub Actions runs `run:` as
+        # `bash -e` *without* pipefail, so `lake build | tee` would take
+        # tee's exit code (always 0) and a failing build — including the
+        # "solver missing → Lean error-recovery inserts `sorry`" mode the
+        # very next trust-footprint gate exists to catch — would pass CI
+        # silently. The tee is still needed so check_axioms.py can read
+        # the captured #print axioms output. Mirrors the rocq-bridge
+        # job's explicit failure propagation.
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee ../lake_build.log
 
       - name: Trust-footprint gate (axiom allowlist, Lean side)
         run: python tools/check_axioms.py --build-output lake_build.log --bridge lean

@@ -31,11 +31,24 @@ Usage:
         | python tools/check_axioms.py
     python tools/check_axioms.py --build-output build.log
 
-CI integration: the validate.yml workflow runs the gate against
-captured `lake build` output in the lean-bridge job. A rocq-bridge
-job that builds the Rocq side under CI (rocq-runtime + cvc5/z3
-install) doesn't exist yet; until it does, the Rocq parsing path
-is dev-mode only. See RETROSPECTIVES/phase-4.md.
+CI integration: validate.yml runs this gate in BOTH the lean-bridge
+job (`--bridge lean` on captured `lake build` output) and the
+rocq-bridge job (`--bridge rocq` on captured `dune build` output).
+Both are load-bearing soundness gates, not dev-mode conveniences.
+See RETROSPECTIVES/phase-4.md.
+
+Parser hardening (audit C2/C3): the Lean matchers are line-anchored
+to Lean's `info: <loc>: '<name>' ...` diagnostic prefix so a stray
+occurrence of the phrase elsewhere in the log (a source echo, a
+docstring) cannot downgrade a theorem to axiom-free; conflicting
+signals for one name poison that entry rather than silently letting
+"does not depend" win. The Rocq axiom-name matcher accepts the
+modern `<name> : <type>` single-line form (Coq/Rocq >= 9 prints the
+type inline), and an `Axioms:` block that parses to zero names is
+poisoned rather than recorded as axiom-free. A hard-deny set of
+known-unsound tokens (`sorryAx`, `sorry`, `lcProof`, ...) fails the
+gate regardless of allowlist contents, so a careless allowlist edit
+cannot whitelist `sorry`. Covered by tools/test_check_axioms.py.
 """
 from __future__ import annotations
 
@@ -50,30 +63,63 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ALLOWLIST_PATH = REPO_ROOT / "tools" / "axiom_allowlist.json"
 
 
+# Known-unsound axiom/proof tokens that must NEVER appear in an
+# allowlisted theorem's footprint, regardless of what the allowlist
+# says. Enforced in check() as a hard deny independent of the
+# subset comparison — defense in depth against a careless allowlist
+# edit that whitelists `sorryAx`. `sorry`/`sorryAx`/`lcProof` are
+# Lean's; the Rocq side has no analogous always-injected token
+# (admits surface as ordinary unexpected axioms caught by subset),
+# but the set is language-agnostic so anything matching is caught.
+HARD_DENY = frozenset({
+    "sorryAx", "sorry", "lcProof",
+    "Lean.ofReduceBool", "Lean.ofReduceNat", "Lean.trustCompiler",
+})
+
+# Poison token injected when parsing is ambiguous/failed for a name;
+# guarantees a loud, fail-closed error via the subset check rather
+# than a silent false "axiom-free".
+PARSE_POISON = "__check_axioms_parse_error__"
+
 # Lean's `#print axioms <name>` emits one of two info-level lines.
-# The "depends on axioms" form lists axioms inside `[...]`,
-# comma-separated. The "does not depend on any axioms" form is the
-# axiom-free signal.
+# Both are ANCHORED to Lean's diagnostic prefix — `info:
+# <path>:<line>:<col>: ` at the start of a line — so the phrase
+# embedded mid-line elsewhere in the log (a source echo in an error,
+# a string literal, a docstring) cannot match and downgrade a
+# theorem. The "depends on axioms" list may wrap across lines; the
+# `[^\]]*` body intentionally spans newlines until the closing `]`.
+_LEAN_PREFIX = r"^info: \S+:\d+:\d+: "
 RE_AXIOMS_LIST = re.compile(
-    r"'(?P<name>\S+)' depends on axioms: \[(?P<axs>[^\]]*)\]"
+    _LEAN_PREFIX + r"'(?P<name>\S+)' depends on axioms: \[(?P<axs>[^\]]*)\]",
+    re.MULTILINE,
 )
 RE_AXIOMS_NONE = re.compile(
-    r"'(?P<name>\S+)' does not depend on any axioms"
+    _LEAN_PREFIX + r"'(?P<name>\S+)' does not depend on any axioms\b",
+    re.MULTILINE,
 )
 
 
 def parse_lean_axioms(text: str) -> dict[str, set[str]]:
-    """Map theorem-name → set of axioms (empty for "does not depend")."""
+    """Map theorem-name → set of axioms (empty for "does not depend").
+
+    Single pass over both forms. If the same theorem name carries
+    conflicting signals (both a "depends on" and a "does not depend",
+    or two differing axiom lists), the entry is POISONED so the gate
+    fails loudly instead of silently taking whichever loop ran last.
+    """
     out: dict[str, set[str]] = {}
+
+    def record(name: str, axs: set[str]) -> None:
+        if name in out and out[name] != axs:
+            out[name] = {PARSE_POISON}
+        else:
+            out.setdefault(name, axs)
+
     for m in RE_AXIOMS_LIST.finditer(text):
-        axs = {
-            a.strip()
-            for a in m.group("axs").split(",")
-            if a.strip()
-        }
-        out[m.group("name")] = axs
+        axs = {a.strip() for a in m.group("axs").split(",") if a.strip()}
+        record(m.group("name"), axs)
     for m in RE_AXIOMS_NONE.finditer(text):
-        out[m.group("name")] = set()
+        record(m.group("name"), set())
     return out
 
 
@@ -88,11 +134,16 @@ def parse_lean_axioms(text: str) -> dict[str, set[str]]:
 #     as a bare application — eg [r_zero_nonneg = Rle_refl 0]. The
 #     content after `=` is ignored; the capture is the name in both cases.
 RE_ROCQ_MARKER = re.compile(r"^([A-Za-z_][\w'.]*) =(?:\s.*)?$")
-# Inside an `Axioms:` block, each axiom name occupies a line of the
-# form `<name> :` at column 0, with the axiom's type indented on
-# subsequent lines. Block ends at end-of-input, a new marker line,
-# a `Closed under` line, or an unindented non-matching line.
-RE_ROCQ_AXIOM_NAME = re.compile(r"^([A-Za-z_][\w'.]*) :\s*$")
+# Inside an `Axioms:` block, each axiom is introduced by a column-0
+# line `<name> : <type>`. Coq/Rocq >= 9 prints the type INLINE on
+# the same line (older/wrapped output put it on indented
+# continuation lines, which still start with whitespace and are
+# skipped by the `startswith(" ")` branch). Audit C3: the previous
+# `<name> :\s*$` pattern required the type to be absent and so
+# silently dropped every modern axiom line, recording the theorem
+# as axiom-free. Accept both: the colon may be followed by the type
+# or end the line.
+RE_ROCQ_AXIOM_NAME = re.compile(r"^([A-Za-z_][\w'.]*) :(?:\s|$)")
 RE_ROCQ_CLOSED = re.compile(r"^Closed under the global context\s*$")
 RE_ROCQ_AXIOMS_START = re.compile(r"^Axioms:\s*$")
 
@@ -120,7 +171,13 @@ def parse_rocq_axioms(text: str) -> dict[str, set[str]]:
     def flush_axioms() -> None:
         nonlocal current_name, axiom_set
         if current_name is not None and axiom_set is not None:
-            out[current_name] = axiom_set
+            # An `Axioms:` block that yielded zero names means the
+            # block had content we failed to parse (audit C3:
+            # output-format drift). Poison rather than silently
+            # record axiom-free, so the subset check fails loudly.
+            out[current_name] = (
+                axiom_set if axiom_set else {PARSE_POISON}
+            )
         current_name = None
         axiom_set = None
 
@@ -205,6 +262,24 @@ def check(actual: dict[str, set[str]],
             )
             continue
         actual_axs = actual[name]
+        if PARSE_POISON in actual_axs:
+            errors.append(
+                f"parse failure on '{name}': the axiom output for this "
+                f"theorem was ambiguous or in an unrecognized format and "
+                f"could not be trusted (conflicting Lean signals, or an "
+                f"unparsed Rocq Axioms block). Treated as a hard failure "
+                f"— fix the build-output capture or the parser; do NOT "
+                f"allowlist '{PARSE_POISON}'."
+            )
+            continue
+        denied = actual_axs & HARD_DENY
+        if denied:
+            errors.append(
+                f"UNSOUND footprint on '{name}': depends on "
+                f"{sorted(denied)} — a known-unsound token. This fails "
+                f"the gate regardless of the allowlist (hard deny)."
+            )
+            continue
         extra = actual_axs - allowed_axs
         if extra:
             errors.append(
