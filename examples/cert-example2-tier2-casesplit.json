@@ -1,0 +1,88 @@
+{
+  "cert_version": "1.0",
+  "tier": 2,
+  "format": "case_split_farkas",
+
+  "goal": {
+    "shell": { "node": "Const", "name": "False" }
+  },
+
+  "dispatch_context_hash": "sha256:0000000000000000000000000000000000000000000000000000000000c50200",
+  "rewrite_trace_hash":    "sha256:0000000000000000000000000000000000000000000000000000000000c50201",
+
+  "backend": {
+    "name": "cvc5",
+    "version": "1.2.0",
+    "config_hash": "sha256:0000000000000000000000000000000000000000000000000000000000c50202"
+  },
+
+  "resources": {
+    "wall_time_ms": 41,
+    "memory_peak_kb": 9216,
+    "budget_consumed": 0.004
+  },
+
+  "refinement_record": {
+    "adapter": "cvc5",
+    "adapter_version": "1.0",
+    "specializations": [
+      {
+        "kind": "method_specialization",
+        "source": "LE.le",
+        "target": "<=",
+        "justification": "specialization_targets[LRA]",
+        "soundness_witness": "linear_ordered_field_lra_embedding"
+      },
+      {
+        "kind": "method_specialization",
+        "source": "GE.ge",
+        "target": ">=",
+        "justification": "specialization_targets[LRA]",
+        "soundness_witness": "linear_ordered_field_lra_embedding"
+      }
+    ],
+    "fragment": "LRA",
+    "auxiliary": {
+      "smtlib_logic": "QF_LRA"
+    }
+  },
+
+  "payload": {
+    "lemmas_used": [
+      {
+        "case": {
+          "node": "App", "symbol": "<=", "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x" },
+            { "node": "NumLit", "value": "0", "type": "Real" }
+          ]
+        },
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "case",  "coefficient": "1" },
+            { "hypothesis": "h_low", "coefficient": "1" }
+          ]
+        }
+      },
+      {
+        "case": {
+          "node": "App", "symbol": ">=", "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x" },
+            { "node": "NumLit", "value": "10", "type": "Real" }
+          ]
+        },
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "case",   "coefficient": "1" },
+            { "hypothesis": "h_high", "coefficient": "1" }
+          ]
+        }
+      }
+    ],
+    "strategy_hint": "case_split_farkas",
+    "structural_hint": {
+      "disjunctive_hypothesis": "h_disj"
+    }
+  }
+}

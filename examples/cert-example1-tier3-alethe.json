@@ -1,0 +1,69 @@
+{
+  "cert_version": "1.0",
+  "tier": 3,
+  "format": "alethe-2024",
+
+  "goal": {
+    "shell": {
+      "node": "App", "symbol": "LE.le", "type_args": [],
+      "args": [
+        { "node": "Var", "name": "n" },
+        { "node": "NumLit", "value": "10", "type": "Int" }
+      ]
+    }
+  },
+
+  "dispatch_context_hash": "sha256:00000000000000000000000000000000000000000000000000000000a1e3a000",
+  "rewrite_trace_hash":    "sha256:00000000000000000000000000000000000000000000000000000000a1e3a001",
+
+  "backend": {
+    "name": "cvc5",
+    "version": "1.2.0",
+    "config_hash": "sha256:00000000000000000000000000000000000000000000000000000000a1e3a002"
+  },
+
+  "resources": {
+    "wall_time_ms": 103,
+    "memory_peak_kb": 13360,
+    "budget_consumed": 0.011
+  },
+
+  "refinement_record": {
+    "adapter": "cvc5",
+    "adapter_version": "1.0",
+    "specializations": [
+      {
+        "kind": "type_specialization",
+        "source": "alpha",
+        "target": "Int",
+        "justification": "embeds_into:Int_for_universal_LIA",
+        "soundness_witness": "linear_ordered_comm_ring_lia_embedding"
+      },
+      {
+        "kind": "method_specialization",
+        "source": "HAdd.hAdd",
+        "target": "+",
+        "justification": "specialization_targets[LIA]",
+        "soundness_witness": "linear_ordered_comm_ring_lia_embedding"
+      },
+      {
+        "kind": "method_specialization",
+        "source": "LE.le",
+        "target": "<=",
+        "justification": "specialization_targets[LIA]",
+        "soundness_witness": "linear_ordered_comm_ring_lia_embedding"
+      }
+    ],
+    "fragment": "LIA",
+    "auxiliary": {
+      "smtlib_logic": "QF_LIA"
+    }
+  },
+
+  "payload": {
+    "trace_format": "alethe-2024",
+    "trace_data": "(assume h1 (= (+ n m) 10))\n(assume h3 (>= m 0))\n(assume neg_goal (not (<= n 10)))\n(step t1 (cl (not (= (+ n m) 10)) (not (>= m 0)) (not (not (<= n 10))) false) :rule la_generic :args (1 1 1))\n(step t2 (cl (not (not (<= n 10))) (<= n 10)) :rule not_not)\n(step t3 (cl (<= n 10)) :rule resolution :premises (neg_goal t2))\n(step t4 (cl false) :rule resolution :premises (t1 h1 h3 t3))\n(step t5 (cl) :rule false :premises (t4))",
+    "trace_dialect_features": ["la_generic", "not_not", "resolution", "false"],
+    "trace_annotations": "Spec §12 Example 1 routed to a Tier 3 Alethe certificate (cvc5 --proof-format-mode=alethe). The single la_generic step carries the Farkas coefficients (1,1,1) over h1 (n+m=10), h3 (m>=0) and the negated goal (n>10); resolution closes the empty clause. Verifier path: Tier3_alethe symbolic replay."
+  }
+}
