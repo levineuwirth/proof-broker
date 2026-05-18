@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 /* Mirrors sdk/ffi/proof_broker_shim.h. Kept in lockstep manually —
  * if either signature drifts, the linker's still happy but behavior
@@ -28,14 +29,24 @@ extern int  pb_ffi_init(char **argv);
 extern int  pb_ffi_call(const char *method, const char *json_input, char **out);
 extern void pb_ffi_free(char *p);
 
-static int g_inited = 0;
+/* Audit M5: Lean elaboration can run on multiple worker threads
+ * (snapshot parallelism), so first-call init must be race-free, and
+ * pb_ffi_init's return code must not be discarded — running against
+ * an uninitialized OCaml runtime would be far worse than a clean
+ * failure. pthread_once serializes init; g_init_rc captures the
+ * shim's status for ensure_inited's caller to act on. */
+static pthread_once_t g_init_once = PTHREAD_ONCE_INIT;
+static int g_init_rc = 0;
 
-static void ensure_inited(void) {
-    if (g_inited) return;
+static void glue_init_once(void) {
     static char arg0[] = "proof_broker_lean";
     char *argv[] = { arg0, NULL };
-    pb_ffi_init(argv);
-    g_inited = 1;
+    g_init_rc = pb_ffi_init(argv);
+}
+
+static int ensure_inited(void) {
+    pthread_once(&g_init_once, glue_init_once);
+    return g_init_rc;
 }
 
 /* Synthetic envelope returned when the shim itself fails (rc != 0).
@@ -53,7 +64,13 @@ static lean_obj_res mk_shim_failure_envelope(int rc) {
 }
 
 LEAN_EXPORT lean_obj_res pb_lean_call(b_lean_obj_arg method_obj, b_lean_obj_arg input_obj) {
-    ensure_inited();
+    int init_rc = ensure_inited();
+    if (init_rc != 0) {
+        /* Fail closed: surface the init failure as a shim_failure
+         * envelope (the tactic then throws) rather than calling into
+         * an uninitialized runtime. */
+        return mk_shim_failure_envelope(init_rc);
+    }
 
     /* lean_string_cstr returns a NUL-terminated UTF-8 buffer owned by
      * the Lean object; valid for the duration of this call. */
