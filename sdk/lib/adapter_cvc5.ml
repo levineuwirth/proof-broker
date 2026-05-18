@@ -57,9 +57,14 @@ let run_solver ~timeout_ms (script : string) : string * string * int =
     "--proof-format-mode=alethe";
     Printf.sprintf "--tlimit-per=%d" timeout_ms;
   |] in
-  let cmd = String.concat " " (Array.to_list argv) in
+  (* No shell: [open_process_args_full] execvp's argv directly (no
+     [/bin/sh -c]); flags and the stdin SMT-LIB script never undergo
+     shell expansion. PATH-trust: argv.(0) ("cvc5") is resolved via
+     execvp against the inherited PATH — caller owns PATH trust (CI
+     installs the pinned solver; pass an absolute path in production
+     if PATH is untrusted). *)
   let stdout_ch, stdin_ch, stderr_ch =
-    Unix.open_process_full cmd (Unix.environment ())
+    Unix.open_process_args_full argv.(0) argv (Unix.environment ())
   in
   output_string stdin_ch script;
   close_out stdin_ch;

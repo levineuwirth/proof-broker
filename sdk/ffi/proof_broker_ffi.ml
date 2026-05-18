@@ -507,10 +507,27 @@ let check_alethe_step (input : string) : string =
 (* ---- dispatcher -------------------------------------------------- *)
 
 let dispatch (method_name : string) (input : string) : string =
-  match Hashtbl.find_opt registry method_name with
-  | Some handler -> handler input
-  | None ->
-    envelope_error ~kind:"unknown_method" ~message:method_name []
+  (* Catch-all (audit H4): handlers wrap [Decode_error]/[Json_error]
+     themselves, but anything else — [Stack_overflow] from a hostile
+     proof, [Failure]/[Invalid_argument] from a deep code path, an
+     [assert false] — would otherwise escape to the C shim as an
+     opaque, undiagnosable `-3`. Convert every escaping exception
+     into a structured [internal_error] envelope so the host always
+     gets an actionable result and never a process-level crash. *)
+  try
+    match Hashtbl.find_opt registry method_name with
+    | Some handler -> handler input
+    | None ->
+      envelope_error ~kind:"unknown_method" ~message:method_name []
+  with
+  | Stack_overflow ->
+    envelope_error ~kind:"internal_error"
+      ~message:"stack overflow handling request"
+      [ "method", `String method_name ]
+  | e ->
+    envelope_error ~kind:"internal_error"
+      ~message:(Printexc.to_string e)
+      [ "method", `String method_name ]
 
 let () =
   register_method "roundtrip_ir" roundtrip_ir;

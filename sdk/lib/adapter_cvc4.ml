@@ -14,8 +14,10 @@
     is the right answer for "envelope verified, no soundness
     check ran."
 
-    Process spawning. We use [Unix.open_process_full] with a fixed
-    argv (no shell parsing). The script is written to stdin and
+    Process spawning. We use [Unix.open_process_args_full], which
+    execvp's the argv array directly — no [/bin/sh -c], so no shell
+    word-splitting or metacharacter expansion on the flags or the
+    SMT-LIB script. The script is written to stdin and
     stdin is closed; cvc4 reads to EOF, prints its result on
     stdout, and exits. If cvc4 isn't on PATH, [Unix] raises an
     exception which we catch and surface as
@@ -66,9 +68,10 @@ let run_solver ~timeout_ms (script : string) : string * string * int =
     "--tlimit-per"; string_of_int timeout_ms;
     "--no-interactive";
   |] in
-  let cmd = String.concat " " (Array.to_list argv) in
+  (* No shell: see the module header. argv.(0) ("cvc4") is resolved
+     via execvp against the inherited PATH — caller owns PATH trust. *)
   let stdout_ch, stdin_ch, stderr_ch =
-    Unix.open_process_full cmd (Unix.environment ())
+    Unix.open_process_args_full argv.(0) argv (Unix.environment ())
   in
   output_string stdin_ch script;
   close_out stdin_ch;

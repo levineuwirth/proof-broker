@@ -95,7 +95,19 @@ let rat_to_string (r : rational) : string =
     silently parse as variable names rather than constants on the
     Alethe-Sexp side, which broke alignment against Real-typed IR
     hypotheses. *)
+(** Max length of a numeric literal accepted from (untrusted)
+    solver output. The decimal path computes [Z.pow 10 |frac|];
+    with [|frac|] taken verbatim from a solver atom, a literal like
+    ["0." ^ String.make 50_000_000 '9'] forces a multi-hundred-MB
+    bignum (plus quadratic [Z.of_string]) per atom — a memory/CPU
+    DoS from a hostile or buggy solver build. 4096 digits is far
+    beyond any coefficient a real Farkas/Alethe witness carries;
+    past it we reject the literal ([None]), which fails closed. *)
+let max_numeric_literal_len = 4096
+
 let rat_of_string (s : string) : rational option =
+  if String.length s > max_numeric_literal_len then None
+  else
   match String.index_opt s '/' with
   | Some i ->
     let n_str = String.sub s 0 i in
