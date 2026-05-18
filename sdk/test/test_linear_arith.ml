@@ -103,7 +103,32 @@ let test_rat_of_string () =
        (rat_of_string ("0." ^ String.make 5_000_000 '9')));
   (* A literal right at a normal size still parses. *)
   Alcotest.(check (option int)) "256-digit-ish still parses" (Some 0)
-    (Option.map ni (rat_of_string ("0." ^ String.make 256 '0')))
+    (Option.map ni (rat_of_string ("0." ^ String.make 256 '0')));
+  (* Audit M6: Z.of_string-extended forms must be rejected, not
+     silently reinterpreted (0x10 -> 16 etc.). *)
+  Alcotest.(check bool) "reject hex 0x10" true
+    (Option.is_none (rat_of_string "0x10"));
+  Alcotest.(check bool) "reject binary 0b101" true
+    (Option.is_none (rat_of_string "0b101"));
+  Alcotest.(check bool) "reject octal 0o17" true
+    (Option.is_none (rat_of_string "0o17"));
+  Alcotest.(check bool) "reject underscores 1_000" true
+    (Option.is_none (rat_of_string "1_000"));
+  Alcotest.(check bool) "reject leading + (integer)" true
+    (Option.is_none (rat_of_string "+5"));
+  Alcotest.(check bool) "reject leading + (decimal)" true
+    (Option.is_none (rat_of_string "+1.5"));
+  Alcotest.(check bool) "reject hex in numerator 0x1/2" true
+    (Option.is_none (rat_of_string "0x1/2"));
+  Alcotest.(check bool) "reject hex in fraction 1.0x0" true
+    (Option.is_none (rat_of_string "1.0x0"));
+  (* Regression: the canonical forms still parse after the gate. *)
+  Alcotest.(check (option int)) "still parses -3/4 (num)" (Some (-3))
+    (Option.map ni (rat_of_string "-3/4"));
+  Alcotest.(check (option int)) "still parses -1.25 (num)" (Some (-5))
+    (Option.map ni (rat_of_string "-1.25"));
+  Alcotest.(check (option int)) "still parses .5 (num)" (Some 1)
+    (Option.map ni (rat_of_string ".5"))
 
 let test_rat_to_string () =
   Alcotest.(check string) "0" "0" (rat_to_string rat_zero);

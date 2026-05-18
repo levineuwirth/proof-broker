@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 #define CAML_NAME_SPACE
 #include <caml/alloc.h>
@@ -36,21 +37,41 @@
 #include <caml/mlvalues.h>
 #include <caml/threads.h>
 
+/* Audit M5: init must be idempotent AND thread-safe. The previous
+ * `if (g_initialized) return 0;` over a plain int was a data race —
+ * two Lean worker threads racing the first FFI call could both pass
+ * the check and call caml_startup twice (undefined behavior) and
+ * double-release the runtime lock. pthread_once runs the init body
+ * exactly once with full happens-before to every caller, regardless
+ * of how many threads race in. g_argv is the argv for caml_startup;
+ * the sole in-tree caller (lean-bridge/c/glue.c) always passes the
+ * same constant argv, and only the first call's value is consumed,
+ * so publishing it before pthread_once is safe. */
+static pthread_once_t g_init_once = PTHREAD_ONCE_INIT;
+static char **g_argv = NULL;
 static int g_initialized = 0;
 
-int pb_ffi_init(char **argv) {
-    if (g_initialized) return 0;
+static void pb_ffi_init_once(void) {
     /* dune's (modes shared_object) emits a .so whose entry point is
-     * caml_startup; calling it from any thread that wants to invoke
-     * OCaml callbacks runs all module initializers, including the
-     * Callback.register call in proof_broker_ffi.ml. caml_startup
-     * leaves the calling thread holding the runtime-system lock; we
-     * release it here so subsequent pb_ffi_call invocations on any
-     * thread can acquire/release on a consistent footing. */
-    caml_startup(argv);
-    g_initialized = 1;
+     * caml_startup; it runs all module initializers, including the
+     * Callback.register in proof_broker_ffi.ml, and returns holding
+     * the runtime-system lock. We release it so subsequent
+     * pb_ffi_call invocations on any thread acquire/release on a
+     * consistent footing. */
+    caml_startup(g_argv);
     caml_release_runtime_system();
-    return 0;
+    g_initialized = 1;
+}
+
+int pb_ffi_init(char **argv) {
+    g_argv = argv;
+    pthread_once(&g_init_once, pb_ffi_init_once);
+    /* g_initialized is written inside the once-routine, which
+     * happens-before pthread_once returns on every thread. A zero
+     * here means caml_startup did not complete (it normally aborts
+     * the process on failure rather than returning, so this is a
+     * defensive signal, not the common path). */
+    return g_initialized ? 0 : -5;
 }
 
 /* Acquire-then-call wrapper around the OCaml dispatch closure. Split

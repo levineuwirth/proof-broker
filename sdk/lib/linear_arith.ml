@@ -105,6 +105,24 @@ let rat_to_string (r : rational) : string =
     past it we reject the literal ([None]), which fails closed. *)
 let max_numeric_literal_len = 4096
 
+(* Strict decimal grammar (audit M6). [Z.of_string] is permissive: it
+   accepts [0x1f], [0b101], [0o17], and [1_000] (underscores), and a
+   leading [+]. A solver-emitted coefficient string like ["0x10"]
+   would then silently parse as 16 rather than be rejected as
+   malformed — the value used would differ from the literal, breaking
+   certificate reproducibility/auditability. We gate every numeric
+   component through these before [Z.of_string] so only plain base-10
+   (optionally a single leading '-') is accepted; everything else is
+   [None]. Mirrors, in spirit, the cert schema's coefficient pattern
+   (optional minus, digits, optional slash-denominator). *)
+let is_unsigned_decimal (s : string) : bool =
+  s <> "" && String.for_all (fun c -> c >= '0' && c <= '9') s
+
+let is_signed_decimal (s : string) : bool =
+  if s = "" then false
+  else if s.[0] = '-' then is_unsigned_decimal (String.sub s 1 (String.length s - 1))
+  else is_unsigned_decimal s
+
 let rat_of_string (s : string) : rational option =
   if String.length s > max_numeric_literal_len then None
   else
@@ -112,6 +130,8 @@ let rat_of_string (s : string) : rational option =
   | Some i ->
     let n_str = String.sub s 0 i in
     let d_str = String.sub s (i + 1) (String.length s - i - 1) in
+    if not (is_signed_decimal n_str && is_unsigned_decimal d_str) then None
+    else
     (try
        let n = Z.of_string n_str in
        let d = Z.of_string d_str in
@@ -121,22 +141,30 @@ let rat_of_string (s : string) : rational option =
   | None ->
     (match String.index_opt s '.' with
      | None ->
+       if not (is_signed_decimal s) then None
+       else
        (try Some (mk_rat_z (Z.of_string s) Z.one)
         with _ -> None)
      | Some j ->
        let int_part = String.sub s 0 j in
        let frac_part = String.sub s (j + 1) (String.length s - j - 1) in
-       (* Sign-hoist: leading '-' (or '+') belongs on the whole rational,
-          not on the fractional digits. We strip it from int_part and
-          re-apply at the end. *)
+       (* Sign-hoist: a single leading '-' belongs on the whole
+          rational, not on the fractional digits. (Audit M6: '+' is
+          no longer accepted — SMT-LIB numerals don't carry it and
+          the cert-schema coefficient grammar forbids it.) *)
        let sign, int_digits =
          if String.length int_part > 0 && int_part.[0] = '-' then
            (Z.minus_one, String.sub int_part 1 (String.length int_part - 1))
-         else if String.length int_part > 0 && int_part.[0] = '+' then
-           (Z.one, String.sub int_part 1 (String.length int_part - 1))
          else
            (Z.one, int_part)
        in
+       (* Strict-digit gate: empty integer part (".5") and empty
+          fraction ("3.") stay valid (= 0); anything else must be
+          plain base-10, rejecting 0x/0b/0o/underscore forms before
+          they reach Z.of_string / Z.pow. *)
+       if not ((int_digits = "" || is_unsigned_decimal int_digits)
+               && (frac_part = "" || is_unsigned_decimal frac_part)) then None
+       else
        (try
           let int_z =
             if int_digits = "" then Z.zero else Z.of_string int_digits
