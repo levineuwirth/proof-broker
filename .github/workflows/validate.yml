@@ -247,10 +247,18 @@ jobs:
           z3 --version
 
       - name: Install cvc5 (GitHub static release)
+        # Audit M8: the cvc5 binary establishes the Lean-side trust
+        # footprint (cert-gated tactics shell out to it at lake-build
+        # time), so it must not be fetched unauthenticated. Pin the
+        # version AND verify the archive's SHA-256 before it touches
+        # the runner — a compromised/MITM'd release fails the job
+        # instead of silently changing the solver.
         env:
           CVC5_VERSION: "1.3.0"
+          CVC5_SHA256: "1e5a30c66f8fc3b65ddac69a3ac299bf03914cc58fc562e0ab6c730bf6bbfe6f"
         run: |
           curl -sSL "https://github.com/cvc5/cvc5/releases/download/cvc5-${CVC5_VERSION}/cvc5-Linux-x86_64-static.zip" -o /tmp/cvc5.zip
+          echo "${CVC5_SHA256}  /tmp/cvc5.zip" | sha256sum -c -
           unzip -q /tmp/cvc5.zip -d /tmp/cvc5
           sudo install -m 755 /tmp/cvc5/cvc5-Linux-x86_64-static/bin/cvc5 /usr/local/bin/cvc5
           cvc5 --version
@@ -270,8 +278,17 @@ jobs:
         run: opam exec -- dune build sdk
 
       - name: Install elan (Lean toolchain manager)
+        # Audit M8: was `curl | run` of elan-init.sh from the moving
+        # `master` ref (uncheckable, MITM-able). Pin to a release tag
+        # — a tagged ref is immutable, so the installer can be
+        # SHA-256-verified before execution. Bump ELAN_VERSION and
+        # ELAN_INIT_SHA256 together.
+        env:
+          ELAN_VERSION: "v4.2.1"
+          ELAN_INIT_SHA256: "4bacca9502cb89736fe63d2685abc2947cfbf34dc87673504f1bb4c43eda9264"
         run: |
-          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          curl -sSf "https://raw.githubusercontent.com/leanprover/elan/${ELAN_VERSION}/elan-init.sh" -o elan-init.sh
+          echo "${ELAN_INIT_SHA256}  elan-init.sh" | sha256sum -c -
           chmod +x elan-init.sh
           ./elan-init.sh -y --default-toolchain none
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
@@ -326,10 +343,14 @@ jobs:
         # binary reports at dispatch time — the verifier doesn't
         # compare those, so a CI-pinned 1.3.0 satisfies the gate
         # against a manifest pinned to 1.3.3.
+        # Audit M8: SHA-256-verified before use (same archive/hash as
+        # the lean-bridge job — keep both in sync on a version bump).
         env:
           CVC5_VERSION: "1.3.0"
+          CVC5_SHA256: "1e5a30c66f8fc3b65ddac69a3ac299bf03914cc58fc562e0ab6c730bf6bbfe6f"
         run: |
           curl -sSL "https://github.com/cvc5/cvc5/releases/download/cvc5-${CVC5_VERSION}/cvc5-Linux-x86_64-static.zip" -o /tmp/cvc5.zip
+          echo "${CVC5_SHA256}  /tmp/cvc5.zip" | sha256sum -c -
           unzip -q /tmp/cvc5.zip -d /tmp/cvc5
           sudo install -m 755 /tmp/cvc5/cvc5-Linux-x86_64-static/bin/cvc5 /usr/local/bin/cvc5
           cvc5 --version
