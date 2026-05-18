@@ -12,9 +12,14 @@ span multiple documents or require domain knowledge:
     - Every unbound App.symbol / Const.name resolves to definitional_metadata,
       library_provenance, or context.free_vars.
     - Every Opaque.payload_id is present in goal.payloads.
-    - logical_features, first_order_fragment, concept_tags,
-      theory_classification_tags, and abstract_axiom shape ids exist in
-      the patterns registry.
+    - logic_classification.features_used and .first_order_fragment are
+      registered (features list / first-order-fragment ids).
+    - definitional_metadata[*].concept_tag is a registered concept tag.
+    - type_metadata type_variable instances' theory_classification_tags
+      are registered theory tags.
+    - abstract_axioms given in the *string* "shape:detail" form have a
+      registered shape id. (The explicit-object form
+      {"shape": "explicit", ...} is NOT registry-checked — see below.)
     - Every entity referenced by name (class names, equivalence_proofs,
       elimination/equality principles, lifting witnesses, underlying
       function names) has a library_provenance entry. (Warning, not error.)
@@ -30,6 +35,26 @@ span multiple documents or require domain knowledge:
 
   Rewrite traces
     - Each entry's pass name is in registry.rewriter_passes. (Warning.)
+    - Hash-chain continuity: initial -> per-entry before/after chain ->
+      final, and a failed/no_op pass leaves the IR unchanged.
+
+NOT enforced (known, scoped gaps — documented so this docstring does
+not overclaim; audit M7. Closing these is behaviour-affecting and is
+tracked separately, not silently asserted here):
+  - Explicit-object abstract_axioms ({"shape": "explicit", ...}): the
+    shape id and any embedded shell term are not validated.
+  - TypeMetadata_Primitive.theory_tags: only the type_variable
+    instances' theory_classification_tags are registry-checked; the
+    primitive-level theory_tags field is not.
+  - collect_subshells does not descend into instances[].abstract_signature,
+    explicit abstract_axiom shells, or lifting_obligation subterms, so an
+    unresolved TypeRef/symbol hiding only there is not caught.
+  - Tier-0 and Tier-2 payload contents (e.g. Tier-2 library-lemma
+    content_hash) get no registry/hash cross-check; only the
+    refinement_record.fragment is validated for those tiers.
+  - No cross-document IR<->cert canonical-hash *equality* (would need
+    the OCaml codec canonicalization reproduced here); only the
+    within-trace hash chain above is enforced.
 
 Errors fail the run; warnings are surfaced but do not.
 """
@@ -82,7 +107,17 @@ def shell_iter(term, bound=frozenset()):
 
 
 def collect_subshells(ir):
-    """Yield every shell term embedded anywhere in the IR."""
+    """Yield the shell terms reachable through the document's primary
+    carriers: goal, hypotheses, library_slice, definitional_metadata
+    (definitional_equation / extensional_axiom / lifted underlying
+    function), and type_constructor_application constructors.
+
+    NOT exhaustive (audit M7): it does not descend into type_variable
+    instances' abstract_signature, explicit abstract_axiom shells, or
+    lifting_obligation subterms, so a TypeRef/symbol that appears ONLY
+    in one of those is not surfaced by check_ir. This is the
+    scoped-gap behaviour documented in the module docstring, stated
+    here too so the boundary is visible at the call site."""
     yield ir["goal"]["shell"]
     for h in ir["context"].get("hypotheses", []):
         yield h["shell"]
