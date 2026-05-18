@@ -26,8 +26,12 @@ The 54 µs/call JSON marshaling cost was on the comfortable side of the
 budget. Back-of-envelope, even a pathological 100-pass dispatch is 5 ms of
 FFI overhead — well inside any interactive use case. The CBOR question
 that loomed over delta §2.1 became a "switch later if profiling flags
-it" lever rather than a near-term decision, and the codec abstraction
-made that lever cheap to keep alive.
+it" lever rather than a near-term decision. (Correction, audit #18:
+this retro originally added "and the codec abstraction made that lever
+cheap to keep alive" — there is no such abstraction; the eventual
+CBOR switch is a real refactor, not a toggle. See
+`sdk/FFI_CONVENTIONS.md` §Wire format. The lever is still "switch
+later if profiling flags it"; its cost was understated.)
 
 ## Harder than expected
 

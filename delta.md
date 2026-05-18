@@ -143,7 +143,14 @@ distribution bundle scaffold establishes the per-platform build
 pipeline before any of the Lean plugin code that depends on it.
 
 **Supported platforms (v1):** macOS x86, macOS ARM, Linux x86, Linux
-ARM. **Windows is deferred to v2** unless implementation experience
+ARM. *(Audit #18 amendment, per §5: macOS-x86 has no CI coverage —
+the `macos-13` (Intel) matrix entry was dropped in commit `39ffd0f`
+after the GitHub Actions Intel-macOS runner pool stopped attaching;
+`sdk-cross-platform` exercises macOS-aarch64 + Linux-aarch64 only,
+with Linux-x86 via the primary `sdk` job. macOS-x86 remains a stated
+v1 support intent but is currently unverified by CI; re-add the
+runner if it becomes a real deployment target. Recorded here rather
+than silently revised.)* **Windows is deferred to v2** unless implementation experience
 shows the OCaml-on-Windows packaging story is materially better than
 the current state of the art; the Phase 5 estimate in §2.6 assumes the
 v1 platform list. If Windows is added back to v1, the Phase 5 estimate
@@ -290,6 +297,11 @@ core probe and weren't in the original §2.5 envelope:
   `tools/axiom_allowlist.json`'s ceiling. Currently 6 Lean + 11
   Rocq theorems pinned, all axiom-free or carrying only documented
   core axioms.
+  *(Audit #18: "6 Lean + 11 Rocq" is the Phase-4-close snapshot. The
+  count has since grown — see `tools/axiom_allowlist.json` for the
+  live ceiling; README §Status carries the current figure. This
+  §2.5.1 line is intentionally left as the frozen historical record
+  per §5's "the audit trail matters" discipline.)*
 * **rocq-bridge CI job**: standalone CI lane that installs
   `rocq-runtime` + cvc5 + z3 and runs the Rocq build under the
   same trust-footprint gate.
