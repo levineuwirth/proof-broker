@@ -9,9 +9,9 @@ jobs:
   schemas:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.12"
           cache: pip
@@ -35,14 +35,14 @@ jobs:
   sdk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.12"
           cache: pip
@@ -92,11 +92,19 @@ jobs:
     # surface platform-specific build breakage on macOS / ARM Linux
     # before users hit it, and to validate the `(install ...)` stanza
     # in sdk/ffi/dune that routes `proof_broker_ffi.so` to the package
-    # lib directory. No `needs:` edge feeds out of this job, so a
-    # macOS / ARM failure doesn't block the rest of the workflow.
-    # First half of the Phase 6 distribution scaffold per
-    # `RETROSPECTIVES/phase-5.md` carried-forward "Cross-platform
+    # lib directory. First half of the Phase 6 distribution scaffold
+    # per `RETROSPECTIVES/phase-5.md` carried-forward "Cross-platform
     # OCaml runtime distribution".
+    #
+    # Audit H5: this job has no `needs:` *out*-edge, but the terminal
+    # `ci-status` aggregate gate (bottom of file) depends on it, so a
+    # macOS / ARM failure now DOES block merge — branch protection
+    # should require only `ci-status`. `fail-fast: false` is kept so
+    # one platform's failure still lets the others report. If the
+    # GitHub macOS/ARM runner pool flakiness (see the macos-13 note
+    # below) becomes a recurring spurious-red problem, the policy
+    # decision is to move this job out of the `ci-status` needs list
+    # — not to silently re-hide its failures.
     strategy:
       fail-fast: false
       matrix:
@@ -116,9 +124,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: sdk-cross-platform (${{ matrix.label }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -157,10 +165,18 @@ jobs:
         # still dlopen-loads through the C shim, not just that signing
         # exits 0. `codesign --verify --strict` inside the script reds
         # the job on a broken signature.
+        #
+        # Secret gating (audit H5): the signing secrets are only
+        # injected on `push` (post-merge, trusted ref). On ANY
+        # `pull_request` — fork or same-repo — the expression resolves
+        # to '' so the secrets never enter the environment of
+        # PR-controlled code (macos-sign.sh is editable in the PR).
+        # PRs therefore always exercise the ad-hoc path; the
+        # Developer-ID path is validated on the protected branch only.
         env:
-          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
-          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
-          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          MACOS_CERT_P12_BASE64: ${{ github.event_name == 'push' && secrets.MACOS_CERT_P12_BASE64 || '' }}
+          MACOS_CERT_PASSWORD: ${{ github.event_name == 'push' && secrets.MACOS_CERT_PASSWORD || '' }}
+          MACOS_SIGN_IDENTITY: ${{ github.event_name == 'push' && secrets.MACOS_SIGN_IDENTITY || '' }}
         run: bash sdk/ffi/packaging/macos-sign.sh _build/default/sdk/ffi/proof_broker_ffi.so
 
       - name: Run SDK tests
@@ -173,10 +189,12 @@ jobs:
         # The install stanza in sdk/ffi/dune is the production-ready
         # path that decouples the Lean lakefile from the dev `_build`
         # tree. Verify it works on each target platform.
+        # Same audit-H5 secret gating as the code-sign step: secrets
+        # only on `push`, never in a pull_request context.
         env:
-          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
-          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
-          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          MACOS_CERT_P12_BASE64: ${{ github.event_name == 'push' && secrets.MACOS_CERT_P12_BASE64 || '' }}
+          MACOS_CERT_PASSWORD: ${{ github.event_name == 'push' && secrets.MACOS_CERT_PASSWORD || '' }}
+          MACOS_SIGN_IDENTITY: ${{ github.event_name == 'push' && secrets.MACOS_SIGN_IDENTITY || '' }}
         run: |
           tmp=$(mktemp -d)
           opam exec -- dune install --prefix="$tmp" proof_broker
@@ -194,11 +212,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: sdk
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
       # Rebuild the OCaml shim because artifacts don't carry between jobs;
       # cheap because the dune cache hits and the OCaml part is small.
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -206,7 +224,7 @@ jobs:
       # Python is needed for the trust-footprint gate
       # (tools/check_axioms.py); the standard library is enough, no
       # third-party deps.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.12"
 
@@ -283,14 +301,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: sdk
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.12"
 
@@ -339,3 +357,33 @@ jobs:
 
       - name: Trust-footprint gate (axiom allowlist, Rocq side)
         run: python tools/check_axioms.py --build-output rocq_build.log --bridge rocq
+
+  # Audit H5: single aggregate status. Before this, every job was an
+  # independent check and `sdk-cross-platform` had no downstream, so
+  # branch protection had to enumerate each job by name and a new or
+  # cross-platform job was unprotected by default. `ci-status` depends
+  # on every job and fails unless all concluded `success`, so branch
+  # protection only needs to require this one check; nothing can slip
+  # through by being added without updating protection rules.
+  ci-status:
+    name: ci-status
+    if: ${{ always() }}
+    needs: [schemas, sdk, sdk-cross-platform, lean-bridge, rocq-bridge]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every required job to have succeeded
+        run: |
+          results='${{ join(needs.*.result, " ") }}'
+          echo "dependency results: ${results}"
+          ok=1
+          for r in ${results}; do
+            if [ "${r}" != "success" ]; then
+              echo "::error::a required job concluded '${r}'"
+              ok=0
+            fi
+          done
+          if [ "${ok}" -ne 1 ]; then
+            echo "ci-status: one or more required jobs did not succeed" >&2
+            exit 1
+          fi
+          echo "ci-status: all required jobs succeeded"
