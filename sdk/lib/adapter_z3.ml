@@ -55,9 +55,16 @@ let run_solver ~timeout_ms (script : string) : string * string * int =
     "-in";
     Printf.sprintf "-t:%d" timeout_ms;
   |] in
-  let cmd = String.concat " " (Array.to_list argv) in
+  (* No shell: [open_process_args_full] execvp's [argv] directly, so
+     neither the solver flags nor the SMT-LIB script (written to
+     stdin, never to argv) can undergo shell word-splitting or
+     metacharacter expansion. PATH-trust: [argv.(0)] ("z3") is
+     unqualified and resolved via execvp against the inherited PATH;
+     the caller owns PATH trust (CI installs the pinned solver; a
+     production deployment with an untrusted PATH should pass an
+     absolute path here). *)
   let stdout_ch, stdin_ch, stderr_ch =
-    Unix.open_process_full cmd (Unix.environment ())
+    Unix.open_process_args_full argv.(0) argv (Unix.environment ())
   in
   output_string stdin_ch script;
   close_out stdin_ch;

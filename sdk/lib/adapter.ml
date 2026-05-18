@@ -80,6 +80,19 @@ type t = {
     five minutes so a pathological input can't pin a thread. *)
 let max_solver_wall_time_ms = 300_000  (* 5 minutes *)
 
+(** Hard ceiling on bytes retained from a child's stdout/stderr.
+    A hostile or buggy solver build can emit unbounded output (a
+    pathological proof, an infinite print loop); without a cap
+    [drain_subprocess_streams] would grow a [Buffer] until the
+    process OOMs — and through the FFI that takes the host (Lean)
+    process down with it. 256 MiB is far above any legitimate
+    Alethe/SMT-LIB proof in v1 scope; past it we keep reading (to
+    avoid a pipe-buffer deadlock) but stop storing, so the result
+    is truncated. Truncated output fails downstream parsing, which
+    is the intended fail-closed outcome (Tier-0 / sat fallback)
+    rather than memory exhaustion. *)
+let max_solver_output_bytes = 256 * 1024 * 1024
+
 (** Resolve a per-call solver timeout from an IR's user_directives,
     clamped into [[1, max_solver_wall_time_ms]]. The schema decoder
     already rejects negatives, but a [Some 0] still has to be
@@ -130,6 +143,12 @@ let drain_subprocess_streams
           active := List.filter (fun f -> f <> fd) !active
         else
           let buf = if fd = fd_out then buf_out else buf_err in
-          Buffer.add_subbytes buf chunk 0 n) ready
+          (* Bounded append: fill up to the cap, then keep draining
+             (discarding) so the child never blocks on a full pipe —
+             deadlock-safety must survive the cap. See
+             [max_solver_output_bytes]. *)
+          let room = max_solver_output_bytes - Buffer.length buf in
+          if room > 0 then
+            Buffer.add_subbytes buf chunk 0 (min n room)) ready
   done;
   (Buffer.contents buf_out, Buffer.contents buf_err)

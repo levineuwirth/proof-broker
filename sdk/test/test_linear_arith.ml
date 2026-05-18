@@ -92,7 +92,18 @@ let test_rat_of_string () =
   Alcotest.(check bool) "reject 1.2.3" true
     (Option.is_none (rat_of_string "1.2.3"));
   Alcotest.(check bool) "reject 1.x" true
-    (Option.is_none (rat_of_string "1.x"))
+    (Option.is_none (rat_of_string "1.x"));
+  (* Audit H4: an oversized numeric literal from (untrusted) solver
+     output must be rejected before it reaches [Z.pow 10 |frac|] /
+     [Z.of_string], not turned into a multi-hundred-MB bignum. *)
+  Alcotest.(check bool) "reject oversized integer literal" true
+    (Option.is_none (rat_of_string (String.make 5_000_000 '9')));
+  Alcotest.(check bool) "reject oversized decimal fraction" true
+    (Option.is_none
+       (rat_of_string ("0." ^ String.make 5_000_000 '9')));
+  (* A literal right at a normal size still parses. *)
+  Alcotest.(check (option int)) "256-digit-ish still parses" (Some 0)
+    (Option.map ni (rat_of_string ("0." ^ String.make 256 '0')))
 
 let test_rat_to_string () =
   Alcotest.(check string) "0" "0" (rat_to_string rat_zero);

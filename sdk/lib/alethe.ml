@@ -52,6 +52,17 @@ end
 
 exception Parse_error of string
 
+(** Max S-expression / named-ref nesting depth. Solver stdout is
+    untrusted (a hostile or buggy build, or a goal crafted to make
+    the solver emit deeply-nested output): unbounded recursion in
+    [parse_one]/[expand_one] would overflow the stack and crash the
+    process — and through the FFI, the host. Past this depth we
+    raise [Parse_error] (caught upstream → fail-closed) instead.
+    50k is orders of magnitude beyond any legitimate Alethe proof
+    in v1 scope. [parse]/[parse_string] additionally backstop
+    [Stack_overflow] in case any non-bounded recursion is reached. *)
+let max_parse_depth = 50_000
+
 let is_whitespace c = c = ' ' || c = '\t' || c = '\n' || c = '\r'
 let is_paren c = c = '(' || c = ')'
 
@@ -85,7 +96,9 @@ let tokenize (s : string) : string list =
   done;
   List.rev !toks
 
-let rec parse_one (toks : string list ref) : Sexp.t =
+let rec parse_one ?(depth = 0) (toks : string list ref) : Sexp.t =
+  if depth > max_parse_depth then
+    raise (Parse_error "S-expression nesting exceeds max_parse_depth");
   match !toks with
   | [] -> raise (Parse_error "unexpected EOF")
   | "(" :: rest ->
@@ -95,7 +108,7 @@ let rec parse_one (toks : string list ref) : Sexp.t =
       | [] -> raise (Parse_error "missing close paren")
       | ")" :: rest' -> toks := rest'; Sexp.List (List.rev acc)
       | _ ->
-        let item = parse_one toks in
+        let item = parse_one ~depth:(depth + 1) toks in
         loop (item :: acc)
     in
     loop []
@@ -109,12 +122,18 @@ let rec parse_one (toks : string list ref) : Sexp.t =
     of parens, so the result typically has a single [List] element
     whose contents are the [assume]/[step]/[anchor] commands. *)
 let parse_string (s : string) : Sexp.t list =
-  let toks = ref (tokenize s) in
-  let acc = ref [] in
-  while !toks <> [] do
-    acc := parse_one toks :: !acc
-  done;
-  List.rev !acc
+  try
+    let toks = ref (tokenize s) in
+    let acc = ref [] in
+    while !toks <> [] do
+      acc := parse_one toks :: !acc
+    done;
+    List.rev !acc
+  with Stack_overflow ->
+    (* Backstop: depth bounds should fire first, but any unbounded
+       recursion reached on hostile input becomes a typed parse
+       failure, never a process crash. *)
+    raise (Parse_error "stack overflow while parsing solver output")
 
 (* --- named-ref expansion --------------------------------------------- *)
 
@@ -134,24 +153,28 @@ let rec find_named_annotation = function
 
     Inner annotations are expanded first, so the table always holds
     fully-primitive terms. Self-referential names (illegal in
-    Alethe) would produce infinite recursion; we don't defend
-    against that. *)
+    Alethe) would otherwise produce infinite recursion on untrusted
+    solver output; [max_parse_depth] bounds it to a [Parse_error]. *)
 let rec expand_one
+    ?(depth = 0)
     (table : (string, Sexp.t) Hashtbl.t)
     (t : Sexp.t) : Sexp.t =
+  if depth > max_parse_depth then
+    raise (Parse_error "named-ref expansion exceeds max_parse_depth \
+                        (self-referential :named?)");
   match t with
   | Atom s ->
     (match Hashtbl.find_opt table s with
      | Some v -> v
      | None -> Atom s)
   | List (Atom "!" :: inner :: annots) ->
-    let stripped = expand_one table inner in
+    let stripped = expand_one ~depth:(depth + 1) table inner in
     (match find_named_annotation annots with
      | Some name -> Hashtbl.replace table name stripped
      | None -> ());
     stripped
   | List xs ->
-    List (List.map (expand_one table) xs)
+    List (List.map (expand_one ~depth:(depth + 1) table) xs)
 
 (* --- step extraction -------------------------------------------------- *)
 
@@ -282,10 +305,14 @@ let collect ~table (cmds : Sexp.t list)
     record assumes / steps / anchors with named-ref expansion
     applied. *)
 let parse (s : string) : proof =
-  let table = Hashtbl.create 64 in
-  let top = parse_string s in
-  let assumes, steps, anchors = collect ~table top in
-  { assumes; steps; anchors; table }
+  try
+    let table = Hashtbl.create 64 in
+    let top = parse_string s in
+    let assumes, steps, anchors = collect ~table top in
+    { assumes; steps; anchors; table }
+  with Stack_overflow ->
+    (* Backstop over collect / expand_one as well as parse_string. *)
+    raise (Parse_error "stack overflow while parsing solver output")
 
 (** Find every step whose [:rule] matches [name]. *)
 let steps_with_rule (p : proof) (name : string) : step list =

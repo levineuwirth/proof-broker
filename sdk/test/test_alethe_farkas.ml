@@ -447,10 +447,27 @@ let test_case_split_rejects_non_or_hypothesis () =
             (Verifier.kind_of_reason other)
             (Verifier.detail_of_reason other)))
 
+(* Audit H4: pathologically deep nesting in (untrusted) solver
+   output must surface as a typed [Alethe.Parse_error], never a
+   process-killing [Stack_overflow]. The string is far past
+   [Alethe.max_parse_depth] so the depth bound (not the
+   Stack_overflow backstop) is what fires. *)
+let test_alethe_deep_nesting_is_parse_error () =
+  let n = 200_000 in
+  let s = String.make n '(' ^ "x" ^ String.make n ')' in
+  match Alethe.parse s with
+  | exception Alethe.Parse_error _ -> ()
+  | exception Stack_overflow ->
+    Alcotest.fail "deep nesting raised Stack_overflow (should be \
+                   a bounded Parse_error)"
+  | _ -> Alcotest.fail "deep nesting unexpectedly parsed"
+
 let () =
   Alcotest.run "alethe_farkas" [
     "parse", [
       Alcotest.test_case "parse g4 fixture" `Quick test_parse_g4;
+      Alcotest.test_case "deep nesting -> Parse_error, not crash (H4)"
+        `Quick test_alethe_deep_nesting_is_parse_error;
     ];
     "extract", [
       Alcotest.test_case "extract g4 farkas witness" `Quick test_extract_g4;

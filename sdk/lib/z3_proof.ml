@@ -112,17 +112,25 @@ let resolve_lets (t : Sexp.t) : Sexp.t =
     envelope shape — callers can fall back to whichever non-Tier-1
     path is appropriate. *)
 let extract_proof_term (s : string) : Sexp.t option =
-  match parse_string s with
-  | [ Sexp.List forms ] ->
-    let proof_term =
-      List.find_map (fun form ->
-        match form with
-        | Sexp.List (Atom "proof" :: term :: _) -> Some term
-        | _ -> None)
-        forms
-    in
-    Option.map resolve_lets proof_term
-  | _ -> None
+  try
+    begin match parse_string s with
+    | [ Sexp.List forms ] ->
+      let proof_term =
+        List.find_map (fun form ->
+          match form with
+          | Sexp.List (Atom "proof" :: term :: _) -> Some term
+          | _ -> None)
+          forms
+      in
+      Option.map resolve_lets proof_term
+    | _ -> None
+    end
+  with Stack_overflow ->
+    (* Hostile/buggy z3 output: deep let-nesting or substitution
+       blow-up. Fail closed — no Tier-1 extraction, caller falls
+       back to the non-Tier-1 path (same as the envelope-mismatch
+       [None] case) rather than crashing the process / FFI host. *)
+    None
 
 (* --- Farkas th-lemma extraction -------------------------------------- *)
 
