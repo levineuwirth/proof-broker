@@ -33,9 +33,17 @@ configured chat-completions endpoint over a `curl` subprocess
 mints a Tier-3 `lean-tactic-script` cert that the verifier marks
 `Tier3_replay_deferred` — an untrusted oracle whose soundness
 rests entirely on the home-system kernel replaying the script
-(audit H1). The Lean-side script replayer and LLM-assisted Tier-3
-reconstruction (roadmap §Phase 3 #4) are the remaining Phase-3
-items, tracked separately.
+(audit H1). That home-side replayer has now landed too:
+`ProofBroker.Tactic`'s `replayLlmScriptOrFail` elaborates the
+script as `(by …)` against the goal, and accepts the result only
+if the *replayed* proof term's transitive axiom footprint is a
+subset of the classical allowlist (`propext`, `Classical.choice`,
+`Quot.sound`) — a hallucinated `sorry` (`sorryAx`),
+`native_decide` (`Lean.ofReduceBool`, compiler trust), or any
+bespoke axiom is a tactic failure, never an admitted theorem, so
+the LLM can never widen the trust base. LLM-assisted Tier-3
+reconstruction of un-replayable traces (roadmap §Phase 3 #4) is
+the one remaining Phase-3 item, tracked separately.
 Phase 6 (cross-platform distribution + polish) carries the displaced
 original-Phase-5 scope. See `delta.md §2` for per-phase status and
 `RETROSPECTIVES/phase-{0,4,5}.md` for retrospectives.

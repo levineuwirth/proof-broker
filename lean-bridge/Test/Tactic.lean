@@ -330,4 +330,53 @@ theorem uf_predicate_axiom_free
 
 #print axioms uf_predicate_axiom_free
 
+/- ============================================================
+   LLM-as-backend (roadmap §Phase 3 #3) — home-side replay closer.
+
+   `Adapter_llm` fail-closes without `PROOF_BROKER_LLM_ENDPOINT`,
+   so the live broker path can't run in CI. `llm_replay_test`
+   drives the *exact* `replayLlmScriptOrFail` closer the broker
+   uses for an LLM `lean-tactic-script` cert, feeding the string
+   as the cert payload — no network, no model. These tests pin the
+   audit-H1 contract: a script the home kernel accepts under the
+   classical footprint closes the goal; a `sorry`/`native_decide`/
+   non-closing/unparsable script is a tactic FAILURE, never an
+   admitted theorem.
+   ============================================================ -/
+
+/-- Positive: a script the kernel independently accepts (axiom-free
+    `omega`) closes the goal via the LLM-replay path. The proof
+    term is produced by Lean, not the cert (audit H1). -/
+theorem llm_replay_axiom_free (n : Int) (h : n + 1 = 3) : n = 2 := by
+  llm_replay_test "omega"
+
+#print axioms llm_replay_axiom_free
+
+/-- audit H1: a hallucinated `sorry` "closes" the goal but the
+    replay gate sees `sorryAx` outside the classical allowlist,
+    throws, and the goal is never admitted (`fail_if_success`
+    confirms the tactic errored; `rfl` then closes it honestly). -/
+example : (1 : Int) = 1 := by
+  fail_if_success (llm_replay_test "sorry")
+  rfl
+
+/-- audit H1: `native_decide` is compiler trust (`Lean.ofReduceBool`,
+    not kernel-checked) — REJECTED even though it would "close" the
+    goal. -/
+example : (2 + 2 : Nat) = 4 := by
+  fail_if_success (llm_replay_test "native_decide")
+  rfl
+
+/-- A script that runs without error but does not discharge the
+    goal is a tactic failure (goal left OPEN), not a silent pass. -/
+example : (1 : Int) = 1 := by
+  fail_if_success (llm_replay_test "skip")
+  rfl
+
+/-- A script that doesn't parse as a Lean `by` block is a tactic
+    failure, not an admitted theorem. -/
+example : True := by
+  fail_if_success (llm_replay_test "@@@ not lean @@@")
+  trivial
+
 end ProofBroker.Test
