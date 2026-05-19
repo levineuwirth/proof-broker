@@ -49,6 +49,14 @@ type reason =
   | Verified_farkas
   | Verified_case_split
   | Verified_tier3
+  (** Tier-3 TSTP (Vampire): the proof passed [Tier3_tptp]'s
+      provenance + DAG-structure gate. Distinct from
+      [Verified_tier3] (Alethe per-step re-derivation) because the
+      guarantee is genuinely weaker — see [Tier3_tptp]. It is still
+      a positive verdict: it gates the home-system's axiom-free
+      closer (the kernel check, per audit H1), exactly as
+      [Verified_farkas] gates [omega]. *)
+  | Verified_tier3_provenance
   | Hash_mismatch of {
       field : string;
       expected : string;
@@ -84,6 +92,7 @@ let kind_of_reason = function
   | Verified_farkas -> "verified_farkas"
   | Verified_case_split -> "verified_case_split"
   | Verified_tier3 -> "verified_tier3"
+  | Verified_tier3_provenance -> "verified_tier3_provenance"
   | Hash_mismatch _ -> "hash_mismatch"
   | Tier_payload_mismatch _ -> "tier_payload_mismatch"
   | Cert_version_mismatch _ -> "cert_version_mismatch"
@@ -108,6 +117,10 @@ let detail_of_reason = function
   | Verified_farkas -> ""
   | Verified_case_split -> ""
   | Verified_tier3 -> ""
+  | Verified_tier3_provenance ->
+    "tstp derivation: provenance + DAG-structure verified (no \
+     smuggled axioms, refutes the negated goal, reaches $false); \
+     inference steps not individually re-derived"
   | Case_split_malformed { detail } -> detail
   | Case_split_branch_failed { case_index; reason_kind } ->
     Printf.sprintf "branch %d failed: %s" case_index reason_kind
@@ -442,6 +455,19 @@ let reason_of_tier3 (v : Tier3_alethe.verify_result) : reason =
   | Step_failed { step_id; rule; detail } ->
     Tier3_step_failed { step_id; rule; detail }
 
+(** Map a [Tier3_tptp.verify_result] (Vampire TSTP) to the
+    verifier reason taxonomy. [Verified_provenance] becomes the
+    distinct [Verified_tier3_provenance] (honest about the weaker
+    guarantee); an unrecognized rule / structural failure reuses
+    the Tier-3 diagnostic variants. *)
+let reason_of_tier3_tptp (v : Tier3_tptp.verify_result) : reason =
+  match v with
+  | Verified_provenance -> Verified_tier3_provenance
+  | Unrecognized_rule { rule; node } ->
+    Tier3_unsupported_rule { rule; step_id = node }
+  | Structural_failure { node; detail } ->
+    Tier3_step_failed { step_id = node; rule = "<tstp-structure>"; detail }
+
 (** Full verification: envelope checks then tier-specific. Tier 1
     [farkas] dispatches to [Farkas.verify]; Tier 2 with
     [strategy_hint=case_split_farkas] dispatches to
@@ -471,6 +497,9 @@ let verify
      | Tier3_proof_trace { trace_format = "alethe-2024";
                            trace_data = `String proof_str; _ } ->
        reason_of_tier3 (Tier3_alethe.verify ir proof_str)
+     | Tier3_proof_trace { trace_format = ("tstp-fof" | "tstp-thf");
+                           trace_data = `String proof_str; _ } ->
+       reason_of_tier3_tptp (Tier3_tptp.verify ir proof_str)
      | Tier3_proof_trace { trace_format; _ } ->
        Tier3_unsupported_format { trace_format }
      | _ -> Tier_check_deferred { tier = cert.tier })

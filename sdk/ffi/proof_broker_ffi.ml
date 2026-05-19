@@ -167,12 +167,18 @@ let verify_certificate (input : string) : string =
        shape we don't understand (Unsupported_witness_kind) as
        proof of soundness. *)
     let soundness_ok = match reason with
-      | Verified_farkas | Verified_case_split | Verified_tier3 -> true
+      | Verified_farkas | Verified_case_split | Verified_tier3
+      (* Verified_tier3_provenance gates the home-system's
+         axiom-free closer (the kernel check, audit H1) exactly as
+         Verified_farkas gates omega; the weaker-than-Alethe
+         guarantee is carried honestly by the cert's
+         provenance_verified_only tag, not hidden here. *)
+      | Verified_tier3_provenance -> true
       | _ -> false
     in
     let env_ok = match reason with
       | Verified_envelope | Verified_farkas | Verified_case_split
-      | Verified_tier3
+      | Verified_tier3 | Verified_tier3_provenance
       | Tier_check_deferred _ | Unsupported_witness_kind _
       | Tier3_unsupported_format _ -> true
       | _ -> false
@@ -299,14 +305,15 @@ let run_pipeline (input : string) : string =
    IR couldn't be serialized to SMT-LIB). Genuine plumbing errors
    (input couldn't be parsed) still go through the error envelope.
 
-   Adapter registry. Ships cvc4, cvc5, and z3; the registry is
-   built-in (no manifest-driven loading yet). Adding adapters is a
-   one-line change. *)
+   Adapter registry. Ships cvc4, cvc5, z3, and vampire; the
+   registry is built-in (no manifest-driven loading yet). Adding
+   adapters is a one-line change. *)
 let adapter_registry : (string, Proof_broker.Adapter.t) Hashtbl.t =
-  let r = Hashtbl.create 4 in
+  let r = Hashtbl.create 8 in
   Hashtbl.replace r "cvc4" Proof_broker.Adapter_cvc4.adapter;
   Hashtbl.replace r "cvc5" Proof_broker.Adapter_cvc5.adapter;
   Hashtbl.replace r "z3" Proof_broker.Adapter_z3.adapter;
+  Hashtbl.replace r "vampire" Proof_broker.Adapter_vampire.adapter;
   r
 
 let dispatch_to_adapter (input : string) : string =

@@ -284,6 +284,11 @@ inductive CertReason where
   | verifiedFarkas
   | verifiedCaseSplit
   | verifiedTier3
+  /-- Tier-3 TSTP (Vampire): the OCaml `Tier3_tptp` provenance +
+      DAG-structure gate accepted the derivation. Weaker than
+      `verifiedTier3` (no per-step re-derivation); still a positive
+      verdict that gates the axiom-free home closer (audit H1). -/
+  | verifiedTier3Provenance
   | hashMismatch (detail : String)
   | tierPayloadMismatch (detail : String)
   | certVersionMismatch (detail : String)
@@ -329,6 +334,7 @@ private def parseCertReason (j : Json) : CertReason :=
   | "verified_farkas" => .verifiedFarkas
   | "verified_case_split" => .verifiedCaseSplit
   | "verified_tier3" => .verifiedTier3
+  | "verified_tier3_provenance" => .verifiedTier3Provenance
   | "hash_mismatch" => .hashMismatch detail
   | "tier_payload_mismatch" => .tierPayloadMismatch detail
   | "cert_version_mismatch" => .certVersionMismatch detail

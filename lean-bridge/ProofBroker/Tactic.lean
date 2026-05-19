@@ -133,8 +133,31 @@ structure ReifierExt where
       a syntax quotation here would surface as `le_antisymm✝`. -/
   tier1EqSplit : TacticM Unit
   irFragment : String
+  /-- Closer for a broker-certified higher-order / FOL goal
+      (fragment `"HOL"` / `"FOL"`), i.e. a Vampire Tier-3 TSTP
+      (`verifiedTier3Provenance`) or Tier-0 oracle cert. The cert
+      gates the call (the OCaml `Tier3_tptp` provenance check, or
+      Vampire's SZS Theorem, already accepted the goal as
+      provable), so the closer may delegate to general
+      automation — `ProofBrokerMathlib` registers `aesop` — and
+      the resulting Lean proof term is axiom-free (aesop builds a
+      kernel term; the cert never enters the trust footprint —
+      audit H1). With no extension registered, core `throwError`s
+      rather than admit, exactly as the LRA path does. -/
+  holCloser : TacticM Unit
 
 initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
+
+/-- Applied global constants encountered during reification that
+    are not connectives/quantifiers (e.g. `Function.comp`) — the
+    higher-order/FOL path treats them as uninterpreted symbols and
+    must declare them as IR `freeVars` so the TPTP serializer has a
+    monomorphic type. Threaded as a module ref because `reifyTerm`
+    is a standalone `def`; `buildIR` clears it on entry, folds the
+    collected `(name, typeRef)` pairs into `freeVars` on exit, and
+    nothing else touches it (single-goal reification is
+    sequential). -/
+initialize reifyConsts : IO.Ref (Array (String × TypeRef)) ← IO.mkRef #[]
 
 /- ============================================================
    Reifier: Lean Expr → ProofBroker IR ShellTerm
@@ -179,16 +202,19 @@ partial def reifyType (ty : Expr) : MetaM TypeRef := do
   if let some n := matchBitVecType? ty then
     return s!"BitVec({n})"
   if ty.isArrow then
-    -- Walk every arrow in the chain so [(T1 → T2) → R] becomes
-    -- `(T1->T2)->R` etc. — the SDK's parse_arrow_type splits on
-    -- the rightmost `->`, but we encode strictly left-to-right
-    -- which the parser accepts because all our UF types are
-    -- first-order (no higher-order arguments).
+    -- Walk every arrow in the chain. A domain that is *itself* an
+    -- arrow (a higher-order argument, e.g. the `(Nat→Nat)` in
+    -- `(Nat→Nat)→Prop`) is parenthesized so the encoding is
+    -- unambiguous: `(Nat->Nat)->Prop`. The SDK's TPTP
+    -- `parse_ty` handles these parens; the SMT `parse_arrow_type`
+    -- (rightmost-split, first-order only) is never reached for
+    -- higher-order goals because they route to Vampire, not SMT.
     let mut t := ty
     let mut parts : Array TypeRef := #[]
     while t.isArrow do
       let dom := t.bindingDomain!
-      parts := parts.push (← reifyType dom)
+      let d ← reifyType dom
+      parts := parts.push (if dom.isArrow then "(" ++ d ++ ")" else d)
       t := t.bindingBody!
     parts := parts.push (← reifyType t)
     return String.intercalate "->" parts.toList
@@ -196,8 +222,17 @@ partial def reifyType (ty : Expr) : MetaM TypeRef := do
   | some ext =>
     match ← ext.reifyType ty with
     | some t => return t
-    | none => throwError "proof_broker: unsupported type {ty}"
-  | none => throwError "proof_broker: unsupported type {ty}; LIA scope is Int only"
+    | none =>
+      -- A bare type constant the extension declined (e.g. `Nat`,
+      -- `String`, a user inductive) is an uninterpreted base sort
+      -- for the FOL/HOL (Vampire) path: the TPTP serializer
+      -- declares it as a `$tType`. Not reachable on the LIA/LRA
+      -- paths (Int/Real handled above / by the ext).
+      if ty.isConst then return toString ty.constName!
+      throwError "proof_broker: unsupported type {ty}"
+  | none =>
+    if ty.isConst then return toString ty.constName!
+    throwError "proof_broker: unsupported type {ty}; LIA scope is Int only"
 
 /-- Recognize an `OfNat.ofNat` / `Int.ofNat` literal at type `Int`
     and read out its raw `Nat` value. Returns `none` if the
@@ -265,6 +300,27 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   if let some ext ← reifierExt.get then
     if let some (val, ty) ← ext.matchLiteralExt e then
       return .numLit val ty
+  -- Implication / universal quantification (higher-order & FOL
+  -- reach). `A → B` is a non-dependent `forallE` (`isArrow`):
+  -- reify as `.implies`. `∀ (x : T), body` with the body
+  -- depending on `x`, or any non-Prop binder, is a real
+  -- quantifier: introduce the binder as a local so the bound
+  -- occurrences reify as `.var`, then `.forall_`. A dependent
+  -- Prop-binder (`∀ (_ : P), Q[_]`) collapses to `.implies`
+  -- ignoring the unused proof term — the LIA path never produced
+  -- these so behavior there is unchanged.
+  if e.isArrow then
+    return .implies (← reifyTerm e.bindingDomain!) (← reifyTerm e.bindingBody!)
+  if e.isForall then
+    return ← forallBoundedTelescope e (some 1) fun xs body => do
+      let x := xs[0]!
+      let decl := (← getLCtx).get! x.fvarId!
+      let dom := decl.type
+      if ← isProp dom then
+        return .implies (← reifyTerm dom) (← reifyTerm body)
+      else
+        let tref ← reifyType dom
+        return .forall_ decl.userName.toString tref (← reifyTerm body)
   match e.getAppFnArgs with
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
       -- BV vs arithmetic disambiguation: SMT-LIB uses bvadd /
@@ -324,6 +380,32 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
           let argList := e.getAppArgs.toList
           let reifiedArgs ← argList.mapM reifyTerm
           return .app s!"UF.{fname}" [] reifiedArgs
+      -- Higher-order / FOL: an applied (or nullary) global
+      -- constant that isn't a connective — e.g. `Function.comp`.
+      -- Treat it as an uninterpreted symbol: keep only the
+      -- explicit (non-type, non-instance) arguments, register the
+      -- constant with its monomorphic arrow type so `buildIR`
+      -- declares it as an IR `freeVar` (the TPTP serializer
+      -- requires a declaration), and emit a plain `.app`.
+      if fn.isConst then
+        let cname := toString fn.constName!
+        let allArgs := e.getAppArgs
+        let mut explicit : Array Expr := #[]
+        for a in allArgs do
+          let ta ← inferType a
+          let isType := ta.isSort
+          let isInst := (← Lean.Meta.isClass? ta).isSome
+          if !isType && !isInst then explicit := explicit.push a
+        let parenIfArrow (ex : Expr) (s : String) : String :=
+          if ex.isArrow then "(" ++ s ++ ")" else s
+        let argTyParts ← explicit.toList.mapM (fun a => do
+          let ta ← inferType a
+          return parenIfArrow ta (← reifyType ta))
+        let resTy ← inferType e
+        let tref := String.intercalate "->" (argTyParts ++ [← reifyType resTy])
+        reifyConsts.modify (·.push (cname, tref))
+        let reifiedArgs ← explicit.toList.mapM reifyTerm
+        return .app cname [] reifiedArgs
       throwError "proof_broker: unsupported expression: {e}"
 
 /-- True iff any subterm carries a `BitVec(N)` type tag, on a
@@ -380,6 +462,11 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   -- subgoals may carry deferred unification metavars in their types;
   -- without this, `reifyTerm` sees `?_uniq.N` (pretty-prints as the
   -- user-facing name) and the FVar branch falls through.
+  -- Reset the applied-constant accumulator; `reifyTerm` (on the
+  -- goal and each hypothesis below) pushes any non-connective
+  -- global constant it treats as uninterpreted (e.g.
+  -- `Function.comp`) so it can be declared as a `freeVar`.
+  reifyConsts.set #[]
   let goalType ← Lean.instantiateMVars (← mvarId.getType)
   let goalShell ← reifyTerm goalType
   let mut freeVars : List FreeVar := []
@@ -425,14 +512,34 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   --       this label is just for capability_match.
   --   Extension wins if it claimed any free var (Real → LRA).
   --   Otherwise default LIA.
+  -- Fold the applied global constants (`Function.comp`, …) into
+  -- freeVars so the TPTP serializer has a monomorphic declaration
+  -- for every applied symbol. Skip names already contributed by
+  -- the LCtx walk (a constant shadowing a local is not expected,
+  -- but dedup keeps the declaration set well-formed).
+  for (cname, ctref) in (← reifyConsts.get) do
+    if !(freeVars.any (fun fv => fv.name == cname)) then
+      freeVars := freeVars ++ [{ name := cname, ty := ctref }]
   let bvInTerms :=
     shellMentionsBV goalShell
     || hypotheses.any (fun h => shellMentionsBV h.shell)
   let ufInTerms :=
     shellMentionsUF goalShell
     || hypotheses.any (fun h => shellMentionsUF h.shell)
+  -- Higher-order: a freeVar whose type takes a function argument
+  -- (a parenthesized arrow domain, the only source of `(` in a
+  -- reified type-ref) — e.g. `P : (Nat->Nat)->Prop` or
+  -- `Function.comp : (Nat->Nat)->...`. Such goals route to
+  -- Vampire (THF): `order = higher_order` makes `capability_match`
+  -- skip the first-order SMT adapters, and `firstOrderFragment =
+  -- none` makes it skip the fragment check (the Vampire manifest
+  -- advertises FOL/HOL/UF; the cert's refinement fragment is the
+  -- closer key, set to "HOL" by the adapter for the THF dialect).
+  let isHO := freeVars.any (fun fv => fv.ty.any (· == '('))
+  let order := if isHO then "higher_order" else "first_order"
   let fragment :=
-    if sawBV || bvInTerms then "BV"
+    if isHO then "none"
+    else if sawBV || bvInTerms then "BV"
     else if sawUF || ufInTerms then "UF"
     else match extOpt with
       | some ext => if sawExtensionType then ext.irFragment else "LIA"
@@ -442,7 +549,7 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     sourceSystem := { name := "lean", version := "0.0" },
     tier := "goal",
     logicClassification := {
-      order := "first_order", featuresUsed := [],
+      order, featuresUsed := [],
       firstOrderFragment := fragment, decidableTheory := none
     },
     goal := { shell := goalShell, payloads := none },
@@ -481,7 +588,13 @@ private def loadManifestIfPresent (path : System.FilePath) : TacticM (Option Jso
 
 private def loadDefaultManifests : TacticM (List Json) := do
   let dir ← defaultManifestDir
-  let names := ["manifest-cvc4.json", "manifest-cvc5.json", "manifest-z3.json"]
+  -- vampire last: capability_match skips it for first-order LIA/LRA/BV
+  -- goals (its manifest advertises FOL/HOL/UF, not the arithmetic
+  -- fragments), and the higher-order goals it does serve have the
+  -- SMT adapters skipped via the order check — so ordering is for
+  -- determinism, not precedence.
+  let names := ["manifest-cvc4.json", "manifest-cvc5.json",
+                "manifest-z3.json", "manifest-vampire.json"]
   let mut result : List Json := []
   for n in names do
     if let some j ← loadManifestIfPresent (dir / n) then
@@ -751,6 +864,22 @@ private def closeOrFail (_goal : MVarId) (_goalType : Expr)
             but no LRA closer is registered. `import ProofBrokerMathlib` \
             to enable the linarith closer. The goal is left OPEN rather \
             than closed by an unjustified axiom."
+      else if fragment == "HOL" || fragment == "FOL" then
+        -- Vampire path: a Tier-3 TSTP (`verifiedTier3Provenance`)
+        -- or Tier-0 oracle cert over a higher-order / FOL goal.
+        -- The cert gates the call; the registered extension's
+        -- `holCloser` (ProofBrokerMathlib → `aesop`) emits the
+        -- actual kernel proof term, so closure is axiom-free and
+        -- the cert never enters the trust footprint (audit H1).
+        -- No extension ⇒ tactic failure, never an admitted axiom.
+        match ← reifierExt.get with
+        | some ext => ext.holCloser
+        | none =>
+          throwError "proof_broker: the broker certified this \
+            {fragment} goal but no higher-order closer is registered. \
+            `import ProofBrokerMathlib` to enable the aesop closer. \
+            The goal is left OPEN rather than closed by an unjustified \
+            axiom."
       else
         throwError "proof_broker: the broker certified this goal for \
           fragment '{fragment}', but there is no sound Lean-side closer \

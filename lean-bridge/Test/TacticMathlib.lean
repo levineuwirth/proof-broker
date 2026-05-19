@@ -270,4 +270,28 @@ theorem pb_lra_term_not_hyp_axiom_free
 
 #print axioms pb_lra_term_not_hyp_axiom_free
 
+/-- Phase-3 M3 exit criterion (roadmap §Phase 3): the worked
+    higher-order goal of `examples/example2-function-composition.json`,
+    closed end-to-end through the Vampire path.
+
+    `proof_broker` reifies this to a higher-order IR (`P` over a
+    function type, `Function.comp` as an uninterpreted symbol,
+    a `∀` over `Nat → Nat`, an equality at function type),
+    `order = higher_order` routes dispatch past the first-order
+    SMT adapters to Vampire, the THF problem is proved, the
+    minted Tier-3 `tstp-thf` cert re-verifies through
+    `Tier3_tptp`'s provenance gate (`verifiedTier3Provenance`),
+    and the registered `holCloser` (`aesop`) emits the kernel
+    proof term. Cert-gated and axiom-free — same H1 contract as
+    `omega` for LIA / `linarith` for LRA; the footprint stays
+    within the documented core ceiling (pinned in
+    `tools/axiom_allowlist.json`). -/
+theorem hol_function_composition_axiom_free
+    (f g : Nat → Nat) (P : (Nat → Nat) → Prop)
+    (h1 : ∀ h : Nat → Nat, P h → P (h ∘ h))
+    (h2 : P f) (h3 : f = g) : P (g ∘ g) := by
+  proof_broker
+
+#print axioms hol_function_composition_axiom_free
+
 end ProofBroker.TestMathlib
