@@ -136,6 +136,30 @@ is off the table absent a critical ecosystem failure (see §5).
 > (none exists yet); the Phase-0 lock is amended, not voided.
 > This note is the recorded decision §5 requires.
 
+> **Recorded reconsideration (Phase 3, LLM-as-backend transport).**
+> Same §5 discipline; same shape as the concurrent-dispatch note.
+> §2.1 named `cohttp-lwt-unix` as a reason `lwt` was chosen — the
+> HTTP client for the LLM-as-backend adapter (roadmap §Phase 3
+> #3). On building it, the HTTP transport is instead a **`curl`
+> subprocess**: it adds zero OCaml dependencies (vs. the
+> `cohttp`/`tls`/`x509`/`conduit`/`ca-certs` tree), reuses the
+> exact subprocess pattern every solver adapter already uses
+> (`open_process_args_full` + drain + parse), delegates TLS /
+> proxy / cert handling to the system, and is trivially mocked by
+> a local socket in tests — material for the "no LLM in CI"
+> policy (roadmap §11). The FFI boundary is synchronous and the
+> adapter makes a single blocking request, so `lwt`'s concurrency
+> would be unused here regardless.
+>
+> **Scope:** `curl` is the transport for the LLM adapter only.
+> `lwt` is *not* removed from the locked set — it remains the
+> designated runtime for any genuinely-async work that later
+> needs it; should that materialize, this note does not pre-empt
+> revisiting `cohttp-lwt-unix` for it specifically. The API key
+> is passed via `curl -K -` (config on stdin), never argv, so it
+> is not exposed to `ps`. This note is the recorded decision §5
+> requires.
+
 **New Phase 0 deliverable: FFI round-trip spike (week 1–2).** Before
 committing implementation effort downstream of the C-FFI assumption,
 build the smallest possible end-to-end round trip: a non-trivial IR
@@ -365,6 +389,39 @@ heterogeneous-dispatch + HO reach this validates) are complete.
 The remaining roadmap Phase-3 items (LLM-as-backend adapter,
 LLM-assisted reconstruction, concurrent dispatch) are untouched
 and tracked separately.
+
+**Concurrent dispatch shipped.** `Dispatch.run_parallel`
+(roadmap §Phase 3 #5): one `Thread` per capability-eligible
+adapter, mutex/condition mailbox, first-valid-wins with a grace
+window that prefers the highest `cert.tier`; latency-first at
+`grace_window_ms = 0`. The `Thread`-vs-`lwt` reconsideration is
+recorded in §2.1. Honest v1 cancellation (stop-waiting; orphans
+bounded by their per-call solver timeout) is documented in the
+driver, not silently approximated. FFI `dispatch_broker` uses it
+(2 s grace when `prefer_higher_tier`, else 0); C ABI unchanged.
+
+**LLM-as-backend adapter shipped (adapter-only slice).**
+`Adapter_llm` (roadmap §Phase 3 #3): env-configured
+(`PROOF_BROKER_LLM_ENDPOINT/_API_KEY/_MODEL`), fail-closed when
+unset, renders the IR as Lean surface syntax, prompts an
+OpenAI-chat-shaped endpoint over a **`curl` subprocess** (§2.1
+records the transport reconsideration; the key travels via
+`curl -K -`, never argv), and mints a Tier-3
+`lean-tactic-script` cert. Because an LLM is an untrusted
+oracle, `Verifier.verify` returns the new
+`Tier3_replay_deferred` reason — envelope-ok, explicitly *not* a
+soundness verdict; the cert carries an
+`unverified_until_kernel_replay` tag and an honest annotation.
+Tested without any network (mock local endpoint, forked
+one-shot responder, `curl`-gated) per the §11 "no LLM in CI"
+policy. **Deferred (separate slice):** the Lean-side
+script-replay closer that would actually close a goal from an
+LLM cert (kernel-checked, audit H1), and roadmap deliverable #4
+(LLM-assisted reconstruction of un-replayable Tier-3 traces).
+
+With these, Phase 3's structural surface is complete; only the
+Lean LLM-script closer and deliverable #4 remain, both
+inherently outside CI (no LLM endpoint) and tracked separately.
 
 ### 2.5 Phase 4 (Probe)
 

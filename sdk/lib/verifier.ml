@@ -83,6 +83,16 @@ type reason =
       detail : string;
     }
   | Tier3_unsupported_format of { trace_format : string }
+  (** A Tier-3 trace whose format the broker recognizes but
+      cannot soundness-check in OCaml because verification is the
+      home system's job — specifically [lean-tactic-script] from
+      the LLM adapter, which only Lean's kernel can re-check.
+      Envelope-verified (hashes / tier / dispatch context all
+      passed) but NOT a soundness verdict: the home-system replay
+      is the proof (audit H1). Distinct from
+      [Tier3_unsupported_format] (no replayer anywhere) and from
+      [Tier_check_deferred] (no tier verifier at all). *)
+  | Tier3_replay_deferred of { trace_format : string }
   | Unsupported_witness_kind of { kind : string }
   | Tier_check_deferred of { tier : int }
   | Other of { kind : string; detail : string }
@@ -108,6 +118,7 @@ let kind_of_reason = function
   | Tier3_unsupported_rule _ -> "tier3_unsupported_rule"
   | Tier3_step_failed _ -> "tier3_step_failed"
   | Tier3_unsupported_format _ -> "tier3_unsupported_format"
+  | Tier3_replay_deferred _ -> "tier3_replay_deferred"
   | Unsupported_witness_kind _ -> "unsupported_witness_kind"
   | Tier_check_deferred _ -> "tier_check_deferred"
   | Other { kind; _ } -> kind
@@ -133,6 +144,10 @@ let detail_of_reason = function
   | Tier3_unsupported_format { trace_format } ->
     Printf.sprintf "no Tier 3 verifier registered for trace_format=%s"
       trace_format
+  | Tier3_replay_deferred { trace_format } ->
+    Printf.sprintf
+      "trace_format=%s is replayed by the home-system kernel, not \
+       the broker (envelope verified)" trace_format
   | Hash_mismatch { field; expected; got } ->
     Printf.sprintf "%s: expected %s, got %s" field expected got
   | Tier_payload_mismatch { envelope_tier; payload_tier } ->
@@ -500,6 +515,11 @@ let verify
      | Tier3_proof_trace { trace_format = ("tstp-fof" | "tstp-thf");
                            trace_data = `String proof_str; _ } ->
        reason_of_tier3_tptp (Tier3_tptp.verify ir proof_str)
+     | Tier3_proof_trace { trace_format = "lean-tactic-script"; _ } ->
+       (* Untrusted LLM oracle output: only Lean's kernel can
+          re-check it. Envelope passed; defer the proof to the
+          home-system replay (audit H1). *)
+       Tier3_replay_deferred { trace_format = "lean-tactic-script" }
      | Tier3_proof_trace { trace_format; _ } ->
        Tier3_unsupported_format { trace_format }
      | _ -> Tier_check_deferred { tier = cert.tier })

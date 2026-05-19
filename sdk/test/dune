@@ -5,7 +5,8 @@
         test_smtlib test_adapter_cvc4 test_adapter_cvc5 test_adapter_z3
         test_refinement test_dispatch test_alethe_farkas test_farkas_search
         test_alethe_passthrough test_tier3_alethe test_z3_proof
-        test_tptp test_adapter_vampire test_tptp_proof test_tier3_tptp)
+        test_tptp test_adapter_vampire test_tptp_proof test_tier3_tptp
+        test_adapter_llm)
  (libraries proof_broker yojson alcotest str))
 
 ; test_round_trip resolves the reference IR fixtures (in repo/examples,
