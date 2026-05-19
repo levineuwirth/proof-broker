@@ -26,9 +26,16 @@ Vampire, axiom-free (footprint `[propext]`). Concurrent dispatch
 the capability-eligible adapters on threads, first-valid-wins
 with a grace window that prefers the highest tier (`delta.md
 §2.1` records the `Thread`-vs-`lwt` reconsideration). The
-remaining Phase-3 roadmap items — the LLM-as-backend adapter and
-LLM-assisted reconstruction — are untouched and tracked
-separately.
+LLM-as-backend adapter (roadmap §Phase 3 #3) has also landed:
+`Adapter_llm` renders the IR as Lean surface syntax, prompts a
+configured chat-completions endpoint over a `curl` subprocess
+(`delta.md §2.1` records the transport reconsideration), and
+mints a Tier-3 `lean-tactic-script` cert that the verifier marks
+`Tier3_replay_deferred` — an untrusted oracle whose soundness
+rests entirely on the home-system kernel replaying the script
+(audit H1). The Lean-side script replayer and LLM-assisted Tier-3
+reconstruction (roadmap §Phase 3 #4) are the remaining Phase-3
+items, tracked separately.
 Phase 6 (cross-platform distribution + polish) carries the displaced
 original-Phase-5 scope. See `delta.md §2` for per-phase status and
 `RETROSPECTIVES/phase-{0,4,5}.md` for retrospectives.
@@ -58,7 +65,10 @@ post-Phase-5 dead-code cleanup; Phase 5 closed at 150).
   dispatcher, cvc4/cvc5/z3 adapters, the Vampire ATP adapter
   (Phase 3 M1: TPTP-FOF/THF serializer + Tier-0 dispatch; M2:
   TSTP parser + fail-closed Tier-3 provenance verifier wired into
-  the certificate verifier), FFI shim used by Lean
+  the certificate verifier), the LLM-as-backend adapter
+  (curl-subprocess transport, env-configured, fail-closed),
+  the Thread-based concurrent dispatch driver, FFI shim used by
+  Lean
 - `lean-bridge/` — Lean 4 plugin: reifier (LIA + the Phase-3
   higher-order/FOL fragment), the `proof_broker` tactic, the
   optional `ProofBrokerMathlib` opt-in (LRA `linarith` closer +

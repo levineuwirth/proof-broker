@@ -304,6 +304,13 @@ inductive CertReason where
   | tier3UnsupportedRule (detail : String)
   | tier3StepFailed (detail : String)
   | tier3UnsupportedFormat (detail : String)
+  /-- A Tier-3 trace the broker recognizes but defers to the
+      home-system kernel (LLM `lean-tactic-script`): envelope-ok,
+      not a soundness verdict — replaying the script is the
+      proof (audit H1). The Lean-side script replayer is a
+      separate slice; until it lands this surfaces as an
+      uncloseable-but-honest verdict, never an axiom. -/
+  | tier3ReplayDeferred (detail : String)
   | unsupportedWitnessKind (detail : String)
   | tierCheckDeferred (detail : String)
   | otherCertReason (kind : String) (detail : String)
@@ -350,6 +357,7 @@ private def parseCertReason (j : Json) : CertReason :=
   | "tier3_unsupported_rule" => .tier3UnsupportedRule detail
   | "tier3_step_failed" => .tier3StepFailed detail
   | "tier3_unsupported_format" => .tier3UnsupportedFormat detail
+  | "tier3_replay_deferred" => .tier3ReplayDeferred detail
   | "unsupported_witness_kind" => .unsupportedWitnessKind detail
   | "tier_check_deferred" => .tierCheckDeferred detail
   | k => .otherCertReason k detail

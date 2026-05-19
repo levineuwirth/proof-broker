@@ -180,7 +180,9 @@ let verify_certificate (input : string) : string =
       | Verified_envelope | Verified_farkas | Verified_case_split
       | Verified_tier3 | Verified_tier3_provenance
       | Tier_check_deferred _ | Unsupported_witness_kind _
-      | Tier3_unsupported_format _ -> true
+      | Tier3_unsupported_format _
+      (* envelope-ok, soundness deferred to the home kernel *)
+      | Tier3_replay_deferred _ -> true
       | _ -> false
     in
     let payload = `Assoc [
@@ -305,7 +307,7 @@ let run_pipeline (input : string) : string =
    IR couldn't be serialized to SMT-LIB). Genuine plumbing errors
    (input couldn't be parsed) still go through the error envelope.
 
-   Adapter registry. Ships cvc4, cvc5, z3, and vampire; the
+   Adapter registry. Ships cvc4, cvc5, z3, vampire, and llm; the
    registry is built-in (no manifest-driven loading yet). Adding
    adapters is a one-line change. *)
 let adapter_registry : (string, Proof_broker.Adapter.t) Hashtbl.t =
@@ -314,6 +316,7 @@ let adapter_registry : (string, Proof_broker.Adapter.t) Hashtbl.t =
   Hashtbl.replace r "cvc5" Proof_broker.Adapter_cvc5.adapter;
   Hashtbl.replace r "z3" Proof_broker.Adapter_z3.adapter;
   Hashtbl.replace r "vampire" Proof_broker.Adapter_vampire.adapter;
+  Hashtbl.replace r "llm" Proof_broker.Adapter_llm.adapter;
   r
 
 let dispatch_to_adapter (input : string) : string =
