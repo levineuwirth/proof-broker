@@ -1153,16 +1153,16 @@ def runDispatchBrokerFlow (rootDir : System.FilePath) : IO Unit := do
   | other => fail s!"expected succeeded for cvc4, got {repr other}"
   IO.println "OK dispatch_broker: bv-fake skipped on type construction, cvc4 minted cert, attempts logged in order"
 
-/-- Two-backend priority test: hand the broker the example1 LIA IR
-    (both cvc4 and cvc5 can solve it) with manifests in two orders
-    and confirm the broker's tier preference behaves as documented.
-    Default [preferHigherTier := true]: cvc5 (max tier 3) wins
-    regardless of input order — [cvc4, cvc5] no longer makes cvc4
-    the winner because cvc5's higher-tier capability floats it to
-    the front. Opt-out [preferHigherTier := false]: input order is
-    respected verbatim, so the older "manifest order is the priority
-    lever" semantics is still available for latency-first policies.
-    Skipped if either binary is missing. -/
+/-- Two-backend concurrent-dispatch test: hand the broker the
+    example1 LIA IR (both cvc4 and cvc5 solve it) in two manifest
+    orders. The FFI broker races every eligible adapter
+    (`Dispatch.run_parallel`); `prefer_higher_tier := true` selects
+    the highest-tier cert (cvc5's Tier-3 alethe) within the grace
+    window regardless of input order, while the
+    `preferHigherTier := false` opt-out is latency-first (the first
+    cert to arrive wins — timing-dependent, so not asserted). In
+    both modes `attempts` has one entry per manifest in input
+    order. Skipped if either binary is missing. -/
 def runDispatchBrokerTwoBackendsFlow (rootDir : System.FilePath) : IO Unit := do
   unless ← cvc4Available do
     IO.println "[skip] cvc4 not on PATH; skipping two-backend broker flow"
@@ -1183,48 +1183,52 @@ def runDispatchBrokerTwoBackendsFlow (rootDir : System.FilePath) : IO Unit := do
   let ir ← match IR.fromJsonString raw with
     | .ok ir => pure ir
     | .error e => fail s!"could not parse example1: {e}"
-  -- Default: prefer higher tier. cvc5 wins regardless of input
-  -- order; cvc4 is sorted past it and never tried.
-  let r4 ← match runDispatchBroker ir [cvc4Manifest, cvc5Manifest] with
-    | .ok r => pure r
-    | .error e => fail s!"runDispatchBroker [cvc4, cvc5] error: {repr e}"
-  unless r4.cert.isSome do fail s!"expected cert from prefer_higher_tier order"
-  unless r4.attempts.length == 1 do
-    fail s!"expected stop_on_success=true → 1 attempt, got {r4.attempts.length}"
-  let a4 := r4.attempts[0]!
-  unless a4.adapter == "cvc5" do
-    fail s!"expected higher-tier cvc5 to win even when listed second, got {a4.adapter}"
-  match a4.outcome with
-  | .succeeded => pure ()
-  | other => fail s!"expected succeeded on cvc5, got {repr other}"
-  -- Same default with the opposite input order: still cvc5.
-  let r5 ← match runDispatchBroker ir [cvc5Manifest, cvc4Manifest] with
-    | .ok r => pure r
-    | .error e => fail s!"runDispatchBroker [cvc5, cvc4] error: {repr e}"
-  unless r5.cert.isSome do fail s!"expected cert"
-  unless r5.attempts.length == 1 do
-    fail s!"expected stop_on_success=true → 1 attempt, got {r5.attempts.length}"
-  let a5 := r5.attempts[0]!
-  unless a5.adapter == "cvc5" do
-    fail s!"expected cvc5 to win, got {a5.adapter}"
-  IO.println "OK dispatch_broker: prefer_higher_tier=true makes cvc5 win over cvc4 regardless of input order"
-  -- Opt-out: preferHigherTier=false respects input order. With
-  -- [cvc4, cvc5] cvc4 wins; with [cvc5, cvc4] cvc5 wins.
-  let r6 ← match runDispatchBroker ir [cvc4Manifest, cvc5Manifest] (preferHigherTier := false) with
-    | .ok r => pure r
-    | .error e => fail s!"runDispatchBroker (opt-out, [cvc4, cvc5]) error: {repr e}"
-  unless r6.cert.isSome do fail s!"expected cert in opt-out mode"
-  let a6 := r6.attempts[0]!
-  unless a6.adapter == "cvc4" do
-    fail s!"opt-out expected cvc4 first, got {a6.adapter}"
-  let r7 ← match runDispatchBroker ir [cvc5Manifest, cvc4Manifest] (preferHigherTier := false) with
-    | .ok r => pure r
-    | .error e => fail s!"runDispatchBroker (opt-out, [cvc5, cvc4]) error: {repr e}"
-  unless r7.cert.isSome do fail s!"expected cert in opt-out mode"
-  let a7 := r7.attempts[0]!
-  unless a7.adapter == "cvc5" do
-    fail s!"opt-out expected cvc5 first, got {a7.adapter}"
-  IO.println "OK dispatch_broker: preferHigherTier=false restores input-order priority"
+  -- Concurrent-dispatch contract (the FFI broker now races every
+  -- eligible adapter via Dispatch.run_parallel — there is no
+  -- stop-on-success early-out): `attempts` has one entry per
+  -- manifest in INPUT order; `prefer_higher_tier := true` selects
+  -- the highest-tier cert received within the grace window. Both
+  -- cvc4 and cvc5 solve example1; cvc5 mints a Tier-3 alethe cert,
+  -- so the chosen cert is tier 3 regardless of input order, and
+  -- cvc5's attempt succeeds in both orders.
+  let certTier (r : BrokerResult) : Option Int :=
+    r.cert.bind (fun c => (c.getObjValAs? Int "tier").toOption)
+  let adapterSucceeded (r : BrokerResult) (name : String) : Bool :=
+    r.attempts.any (fun a =>
+      a.adapter == name && (match a.outcome with
+                            | .succeeded => true | _ => false))
+  for (order, ms) in [("cvc4,cvc5", [cvc4Manifest, cvc5Manifest]),
+                      ("cvc5,cvc4", [cvc5Manifest, cvc4Manifest])] do
+    let r ← match runDispatchBroker ir ms with
+      | .ok r => pure r
+      | .error e => fail s!"runDispatchBroker [{order}] error: {repr e}"
+    unless r.cert.isSome do
+      fail s!"[{order}] expected a cert under prefer_higher_tier"
+    unless r.attempts.length == 2 do
+      fail s!"[{order}] concurrent dispatch attempts every eligible \
+              adapter → expected 2 attempts, got {r.attempts.length}"
+    unless certTier r == some 3 do
+      fail s!"[{order}] expected the higher-tier (cvc5 Tier-3) cert \
+              to be selected, got tier {repr (certTier r)}"
+    unless adapterSucceeded r "cvc5" do
+      fail s!"[{order}] expected cvc5's attempt to have succeeded"
+  IO.println "OK dispatch_broker: prefer_higher_tier=true selects the higher-tier cvc5 cert regardless of input order (all adapters raced)"
+  -- Opt-out: preferHigherTier=false is latency-first (grace 0) —
+  -- the FIRST cert to arrive wins, which is timing-dependent, so
+  -- we don't assert which adapter won. The invariant that still
+  -- holds is the input-ordered attempts log and that a cert was
+  -- produced.
+  for (order, ms) in [("cvc4,cvc5", [cvc4Manifest, cvc5Manifest]),
+                      ("cvc5,cvc4", [cvc5Manifest, cvc4Manifest])] do
+    let r ← match runDispatchBroker ir ms (preferHigherTier := false) with
+      | .ok r => pure r
+      | .error e => fail s!"runDispatchBroker (opt-out, [{order}]) error: {repr e}"
+    unless r.cert.isSome do
+      fail s!"(opt-out, [{order}]) expected a cert"
+    unless r.attempts.length == 2 do
+      fail s!"(opt-out, [{order}]) expected 2 attempts in input order, \
+              got {r.attempts.length}"
+  IO.println "OK dispatch_broker: preferHigherTier=false (latency-first) still races both and logs attempts in input order"
 
 def main : IO Unit := do
   let cwd ← IO.currentDir

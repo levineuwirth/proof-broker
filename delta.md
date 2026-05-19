@@ -120,8 +120,15 @@ is off the table absent a critical ecosystem failure (see §5).
 > (`Unix.open_process_args_full` + `Unix.select`), and OCaml's
 > `Unix` blocking primitives release the runtime lock, so the
 > right tool for *this* job is the stdlib **`Thread`** library:
-> one thread per eligible adapter, a mutex/condition mailbox,
-> a grace-window timer thread. It reuses every adapter's existing
+> one thread per eligible adapter, a mutex-guarded mailbox the
+> calling thread polls (the grace window is a wall-clock deadline
+> the poller checks — no separate timer thread), and every spawned
+> thread is joined before the call returns. The join discipline is
+> not optional: the driver runs inside the FFI-embedded OCaml
+> runtime, where a thread that outlives the synchronous dispatch
+> call corrupts the host process's exit path (this surfaced as a
+> `roundtripTest` CI regression and was fixed by joining, not by
+> reverting the approach). It reuses every adapter's existing
 > blocking code unchanged and touches only `dispatch.ml`.
 > Rewriting all four adapters onto `Lwt_process` to honor the
 > `lwt` lock here would be a large, higher-risk change for no

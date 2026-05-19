@@ -487,11 +487,16 @@ structure Attempt where
   outcome : AttemptOutcome
 deriving Repr, Inhabited
 
-/-- Result of `runDispatchBroker`. [cert] is the first successful
-    cert (as JSON, since there's no Lean-side Certificate ADT yet)
-    or [none] if no adapter succeeded. [attempts] is the per-manifest
-    outcome log in input order; in stop-on-success mode (the FFI
-    default), the list ends at the first [.succeeded] attempt. -/
+/-- Result of `runDispatchBroker`. The FFI broker runs
+    `Dispatch.run_parallel`: every capability-eligible adapter is
+    raced concurrently (no stop-on-success early-out). [attempts]
+    is the per-manifest outcome log, always in input order and one
+    entry per manifest (an eligible adapter not finished by the
+    decision point is recorded `.failed` with a timeout failure).
+    [cert] (JSON; no Lean-side Certificate ADT yet) is the selected
+    winner — the highest-tier cert received within the grace window
+    under `prefer_higher_tier`, or the first to arrive under the
+    latency-first opt-out — or [none] if no adapter succeeded. -/
 structure BrokerResult where
   cert : Option Json
   attempts : List Attempt

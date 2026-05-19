@@ -135,27 +135,41 @@ let run
     Selection. Capability matching runs sequentially first (cheap,
     no subprocess) and records [Skipped] / [No_implementation]
     immediately. Each remaining eligible adapter runs on its own
-    thread, posting its outcome through a mutex/condition mailbox.
-    The collector returns as soon as either (a) every runner has
-    finished, or (b) at least one cert has arrived and the grace
-    window has elapsed since the first cert. Among the certs in
-    hand at the decision point it returns the highest [cert.tier]
-    (ties broken by input order — lowest manifest index — for
-    determinism). [grace_window_ms <= 0] means latency-first:
-    return as soon as any cert arrives, no waiting for a possibly
-    higher-tier one.
+    thread, posting its outcome into a mutex-guarded mailbox; the
+    {e calling} thread is the collector and polls that mailbox on a
+    short interval (no extra timer/condition thread — see "no
+    escaping threads" below). It {e decides} as soon as either
+    (a) every runner has finished, or (b) at least one cert has
+    arrived and the grace window has elapsed since the first cert.
+    Among the certs in hand at the decision point it picks the
+    highest [cert.tier] (ties broken by input order — lowest
+    manifest index — for determinism). [grace_window_ms <= 0] means
+    latency-first: decide as soon as any cert arrives.
 
-    Cancellation (honest v1 semantics). When the collector decides,
-    runners still in flight are recorded as [Failed Timeout]
-    ("broker decided before this backend replied"). We do not
-    SIGKILL their subprocesses — the adapter API exposes no child
-    handle — but every adapter passes the solver a per-call wall
-    clock limit ([Adapter.resolve_timeout_ms]), so an orphaned
-    solver self-terminates within its own budget and its detached
-    thread reaps it. True mid-flight kill would need a cancellation
-    token threaded through [Adapter.t]; deferred and documented
-    rather than silently approximated (cf. the pipeline timeout
-    known-limitation note).
+    No escaping threads (why this matters). The driver runs inside
+    the OCaml runtime embedded in the home-system process via the
+    C-FFI shim. An OCaml thread that outlives the synchronous
+    dispatch call corrupts that embedded runtime's exit path (a
+    short-lived FFI consumer then exits nonzero — observed as the
+    [roundtripTest] CI regression). So {b every thread this
+    function spawns is joined before it returns}, and there is no
+    long-sleeping timer thread to leak: the grace window is a
+    wall-clock deadline the polling collector checks itself.
+
+    Cancellation (honest v1 semantics). The {e decision} (which
+    cert wins, and the [attempts] snapshot) is taken the instant
+    the grace/first-valid condition holds and never changes
+    afterwards — a later or higher-tier cert arriving during the
+    join wait is ignored, and a runner still in flight at the
+    decision is recorded [Failed Timeout]. But because no thread
+    may escape, the call only {e returns} once the laggard runner
+    threads have themselves terminated; every adapter caps its
+    solver with a per-call wall clock limit
+    ([Adapter.resolve_timeout_ms]) so that is bounded by the
+    slowest eligible solver's own budget. True mid-flight SIGKILL
+    would need a cancellation token threaded through [Adapter.t];
+    deferred and documented rather than silently approximated
+    (cf. the pipeline-timeout known-limitation note).
 
     The [attempts] list is always in input (manifest) order so the
     result is reproducible regardless of completion order. *)
@@ -181,9 +195,8 @@ let run_parallel
   let runners = List.rev !runners in
   let total = List.length runners in
   let mtx = Mutex.create () in
-  let cond = Condition.create () in
   let finished = ref 0 in
-  let timer_fired = ref false in
+  let now_ms () = int_of_float (Unix.gettimeofday () *. 1000.) in
   (* Best cert by (max tier, min index). Caller holds [mtx]. *)
   let best_cert () =
     let b = ref None in
@@ -198,62 +211,69 @@ let run_parallel
       outcomes;
     !b
   in
-  if total > 0 then begin
-    List.iter (fun (i, (a : Adapter.t)) ->
-      ignore (Thread.create (fun () ->
-        let o =
-          try (match a.dispatch ir with
-               | Cert c -> Succeeded c
-               | Failed f -> Failed f)
-          with e ->
-            Failed (Adapter.Solver_error {
-              stderr = "adapter raised: " ^ Printexc.to_string e })
-        in
-        Mutex.lock mtx;
-        outcomes.(i) <- Some o;
-        incr finished;
-        Condition.broadcast cond;
-        Mutex.unlock mtx)
-        ()))
-      runners;
+  (* Snapshot the result under [mtx]: the winning cert and the
+     attempts in input order, runners not yet finished recorded as
+     [Failed Timeout] (superseded). *)
+  let snapshot () =
     Mutex.lock mtx;
-    let timer_started = ref false in
+    let chosen = best_cert () in
+    let attempts =
+      Array.to_list (Array.mapi (fun i o ->
+        let outcome = match o with
+          | Some ov -> ov
+          | None -> Failed Adapter.Timeout
+        in
+        { adapter = names.(i); outcome })
+        outcomes)
+    in
+    Mutex.unlock mtx;
+    { cert = Option.map snd chosen; attempts }
+  in
+  if total = 0 then snapshot ()
+  else begin
+    let handles =
+      List.map (fun (i, (a : Adapter.t)) ->
+        Thread.create (fun () ->
+          let o =
+            try (match a.dispatch ir with
+                 | Cert c -> Succeeded c
+                 | Failed f -> Failed f)
+            with e ->
+              Failed (Adapter.Solver_error {
+                stderr = "adapter raised: " ^ Printexc.to_string e })
+          in
+          Mutex.lock mtx;
+          outcomes.(i) <- Some o;
+          incr finished;
+          Mutex.unlock mtx)
+          ())
+        runners
+    in
+    (* Collector = this thread. Poll the mailbox; decide on
+       all-finished, or first-valid (grace<=0), or grace-deadline
+       elapsed since the first cert. No timer/condition thread. *)
     let decided = ref false in
+    let deadline = ref None in
     while not !decided do
+      Mutex.lock mtx;
       let have_cert = best_cert () <> None in
       if !finished >= total then decided := true
       else if have_cert && grace_window_ms <= 0 then decided := true
-      else if have_cert && !timer_fired then decided := true
       else begin
-        if have_cert && not !timer_started then begin
-          timer_started := true;
-          let g = grace_window_ms in
-          ignore (Thread.create (fun () ->
-            Thread.delay (float_of_int g /. 1000.);
-            Mutex.lock mtx;
-            timer_fired := true;
-            Condition.broadcast cond;
-            Mutex.unlock mtx)
-            ())
-        end;
-        Condition.wait cond mtx
-      end
+        (match !deadline with
+         | None -> if have_cert then
+             deadline := Some (now_ms () + grace_window_ms)
+         | Some d -> if have_cert && now_ms () >= d then decided := true)
+      end;
+      Mutex.unlock mtx;
+      if not !decided then Thread.delay 0.01
     done;
-    Mutex.unlock mtx
-  end;
-  Mutex.lock mtx;
-  let chosen = best_cert () in
-  let attempts =
-    Array.to_list (Array.mapi (fun i o ->
-      let outcome =
-        match o with
-        | Some ov -> ov
-        (* Eligible runner that hadn't replied by the decision
-           point — superseded by a faster / higher-tier backend. *)
-        | None -> Failed Adapter.Timeout
-      in
-      { adapter = names.(i); outcome })
-      outcomes)
-  in
-  Mutex.unlock mtx;
-  { cert = Option.map snd chosen; attempts }
+    (* Decision is fixed here; later/lagging certs do not change
+       it. *)
+    let result = snapshot () in
+    (* No OCaml thread may outlive this call (embedded-runtime
+       safety): join every runner. Bounded by each solver's own
+       per-call wall-clock limit. *)
+    List.iter Thread.join handles;
+    result
+  end
