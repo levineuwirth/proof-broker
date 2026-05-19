@@ -119,3 +119,141 @@ let run
     end)
     manifests;
   { cert = !cert; attempts = List.rev !attempts }
+
+(** Concurrent dispatch driver (spec v1.0 §7; roadmap §Phase 3 #5).
+
+    Races every capability-eligible adapter in parallel —
+    first-valid-wins, with a grace window that prefers the
+    highest-tier cert among those received by the decision point.
+    The concurrency primitive is the stdlib [Thread] library, not
+    [lwt] (recorded reconsideration in [delta.md §2.1]): the
+    adapters' [run_solver] is blocking subprocess I/O and OCaml's
+    [Unix] blocking calls release the runtime lock, so one thread
+    per adapter gives real parallelism with the adapter code
+    reused verbatim.
+
+    Selection. Capability matching runs sequentially first (cheap,
+    no subprocess) and records [Skipped] / [No_implementation]
+    immediately. Each remaining eligible adapter runs on its own
+    thread, posting its outcome through a mutex/condition mailbox.
+    The collector returns as soon as either (a) every runner has
+    finished, or (b) at least one cert has arrived and the grace
+    window has elapsed since the first cert. Among the certs in
+    hand at the decision point it returns the highest [cert.tier]
+    (ties broken by input order — lowest manifest index — for
+    determinism). [grace_window_ms <= 0] means latency-first:
+    return as soon as any cert arrives, no waiting for a possibly
+    higher-tier one.
+
+    Cancellation (honest v1 semantics). When the collector decides,
+    runners still in flight are recorded as [Failed Timeout]
+    ("broker decided before this backend replied"). We do not
+    SIGKILL their subprocesses — the adapter API exposes no child
+    handle — but every adapter passes the solver a per-call wall
+    clock limit ([Adapter.resolve_timeout_ms]), so an orphaned
+    solver self-terminates within its own budget and its detached
+    thread reaps it. True mid-flight kill would need a cancellation
+    token threaded through [Adapter.t]; deferred and documented
+    rather than silently approximated (cf. the pipeline timeout
+    known-limitation note).
+
+    The [attempts] list is always in input (manifest) order so the
+    result is reproducible regardless of completion order. *)
+let run_parallel
+      ?(grace_window_ms = 2000)
+      ~(manifests : Manifest.t list)
+      ~(adapters : (string, Adapter.t) Hashtbl.t)
+      (ir : Ir.t) : result =
+  let names = Array.of_list (List.map (fun (m : Manifest.t) -> m.adapter) manifests) in
+  let n = Array.length names in
+  let outcomes : attempt_outcome option array = Array.make n None in
+  let runners = ref [] in
+  List.iteri (fun i (m : Manifest.t) ->
+    match Capability_match.check ir m with
+    | (Order_too_high _ | Logic_out_of_fragment _
+      | Type_construction_not_supported _) as r ->
+      outcomes.(i) <- Some (Skipped r)
+    | Match ->
+      (match Hashtbl.find_opt adapters m.adapter with
+       | None -> outcomes.(i) <- Some No_implementation
+       | Some a -> runners := (i, a) :: !runners))
+    manifests;
+  let runners = List.rev !runners in
+  let total = List.length runners in
+  let mtx = Mutex.create () in
+  let cond = Condition.create () in
+  let finished = ref 0 in
+  let timer_fired = ref false in
+  (* Best cert by (max tier, min index). Caller holds [mtx]. *)
+  let best_cert () =
+    let b = ref None in
+    Array.iteri (fun i o ->
+      match o with
+      | Some (Succeeded c) ->
+        (match !b with
+         | None -> b := Some (i, c)
+         | Some (_, c') -> if c.Certificate.tier > c'.Certificate.tier
+                           then b := Some (i, c))
+      | _ -> ())
+      outcomes;
+    !b
+  in
+  if total > 0 then begin
+    List.iter (fun (i, (a : Adapter.t)) ->
+      ignore (Thread.create (fun () ->
+        let o =
+          try (match a.dispatch ir with
+               | Cert c -> Succeeded c
+               | Failed f -> Failed f)
+          with e ->
+            Failed (Adapter.Solver_error {
+              stderr = "adapter raised: " ^ Printexc.to_string e })
+        in
+        Mutex.lock mtx;
+        outcomes.(i) <- Some o;
+        incr finished;
+        Condition.broadcast cond;
+        Mutex.unlock mtx)
+        ()))
+      runners;
+    Mutex.lock mtx;
+    let timer_started = ref false in
+    let decided = ref false in
+    while not !decided do
+      let have_cert = best_cert () <> None in
+      if !finished >= total then decided := true
+      else if have_cert && grace_window_ms <= 0 then decided := true
+      else if have_cert && !timer_fired then decided := true
+      else begin
+        if have_cert && not !timer_started then begin
+          timer_started := true;
+          let g = grace_window_ms in
+          ignore (Thread.create (fun () ->
+            Thread.delay (float_of_int g /. 1000.);
+            Mutex.lock mtx;
+            timer_fired := true;
+            Condition.broadcast cond;
+            Mutex.unlock mtx)
+            ())
+        end;
+        Condition.wait cond mtx
+      end
+    done;
+    Mutex.unlock mtx
+  end;
+  Mutex.lock mtx;
+  let chosen = best_cert () in
+  let attempts =
+    Array.to_list (Array.mapi (fun i o ->
+      let outcome =
+        match o with
+        | Some ov -> ov
+        (* Eligible runner that hadn't replied by the decision
+           point — superseded by a faster / higher-tier backend. *)
+        | None -> Failed Adapter.Timeout
+      in
+      { adapter = names.(i); outcome })
+      outcomes)
+  in
+  Mutex.unlock mtx;
+  { cert = Option.map snd chosen; attempts }

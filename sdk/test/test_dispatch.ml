@@ -271,6 +271,146 @@ let test_sort_by_max_tier_descending () =
   Alcotest.(check (list string)) "stable on ties"
     [ "cvc4"; "other-tier0" ] names2
 
+(* --- concurrent driver (run_parallel) -------------------------------- *)
+
+(* Synthetic in-process adapters: no subprocess, a controllable
+   delay, and a fixed result. They let the grace-window / tier-
+   selection / ordering logic be tested deterministically without
+   a solver. Generous timing margins keep them robust on CI. *)
+
+let mk_cert ~tier : Certificate.t =
+  let payload : Certificate.payload =
+    if tier = 3 then
+      Tier3_proof_trace {
+        trace_format = "tstp-fof"; trace_data = `String "synthetic";
+        trace_dialect_features = None; trace_annotations = None }
+    else
+      Tier0_oracle { claim = "proved"; backend_attestation = None }
+  in
+  {
+    cert_version = "1.0";
+    tier;
+    format = (if tier = 3 then "tstp-fof" else "oracle");
+    goal = { shell = Ir.Const { name = "True" }; payloads = None };
+    dispatch_context_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    backend = { name = "synthetic"; version = "0";
+                config_hash = "sha256:" ^ String.make 64 '0' };
+    resources = { wall_time_ms = 0; memory_peak_kb = 0;
+                  budget_consumed = None };
+    refinement_record = { adapter = "synthetic"; adapter_version = "0";
+                          specializations = []; fragment = "LIA";
+                          auxiliary = None };
+    payload;
+  }
+
+let mk_adapter name ~delay_ms ~(result : Adapter.result) : Adapter.t = {
+  name;
+  version = "0";
+  dispatch = (fun _ir ->
+    if delay_ms > 0 then Unix.sleepf (float_of_int delay_ms /. 1000.);
+    result);
+}
+
+let synthetic_manifest name : Manifest.t =
+  { (cvc4_manifest ()) with adapter = name; adapter_version = "0" }
+
+let registry_of (xs : Adapter.t list) : (string, Adapter.t) Hashtbl.t =
+  let h = Hashtbl.create 8 in
+  List.iter (fun (a : Adapter.t) -> Hashtbl.replace h a.name a) xs;
+  h
+
+let succeeded (a : Dispatch.attempt) = match a.outcome with
+  | Dispatch.Succeeded _ -> true | _ -> false
+
+let test_par_single_success () =
+  let a = mk_adapter "s1" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:0)) in
+  let r = Dispatch.run_parallel
+    ~manifests:[ synthetic_manifest "s1" ] ~adapters:(registry_of [a])
+    (provable_lia_ir ()) in
+  Alcotest.(check bool) "cert minted" true (Option.is_some r.cert);
+  Alcotest.(check int) "one attempt" 1 (List.length r.attempts);
+  Alcotest.(check bool) "attempt succeeded" true
+    (succeeded (List.hd r.attempts))
+
+let test_par_grace_prefers_higher_tier () =
+  (* Fast Tier-0 + slightly slower Tier-3, both finish well within
+     a 2 s grace window ⇒ the Tier-3 cert is selected. *)
+  let a0 = mk_adapter "fast0" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:0)) in
+  let a3 = mk_adapter "slow3" ~delay_ms:60 ~result:(Cert (mk_cert ~tier:3)) in
+  let r = Dispatch.run_parallel ~grace_window_ms:2000
+    ~manifests:[ synthetic_manifest "fast0"; synthetic_manifest "slow3" ]
+    ~adapters:(registry_of [a0; a3]) (provable_lia_ir ()) in
+  match r.cert with
+  | Some c -> Alcotest.(check int) "higher tier wins" 3 c.tier
+  | None -> Alcotest.fail "expected a cert"
+
+let test_par_grace_is_bounded () =
+  (* Fast Tier-0, very slow Tier-3, tiny grace window ⇒ decision
+     fires after the window with only the Tier-0 cert in hand. *)
+  let a0 = mk_adapter "fast0" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:0)) in
+  let a3 = mk_adapter "slow3" ~delay_ms:400 ~result:(Cert (mk_cert ~tier:3)) in
+  let r = Dispatch.run_parallel ~grace_window_ms:50
+    ~manifests:[ synthetic_manifest "fast0"; synthetic_manifest "slow3" ]
+    ~adapters:(registry_of [a0; a3]) (provable_lia_ir ()) in
+  (match r.cert with
+   | Some c -> Alcotest.(check int) "grace-bounded: Tier 0 returned" 0 c.tier
+   | None -> Alcotest.fail "expected a cert");
+  (* The superseded still-running runner is recorded, in input
+     order, as a Timeout — not dropped. *)
+  Alcotest.(check int) "both attempts present" 2 (List.length r.attempts);
+  (match (List.nth r.attempts 1).outcome with
+   | Dispatch.Failed Adapter.Timeout -> ()
+   | _ -> Alcotest.fail "slow runner should be Failed Timeout")
+
+let test_par_latency_first () =
+  (* grace 0 ⇒ first cert wins even if a higher tier is in flight. *)
+  let a0 = mk_adapter "fast0" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:0)) in
+  let a3 = mk_adapter "slow3" ~delay_ms:200 ~result:(Cert (mk_cert ~tier:3)) in
+  let r = Dispatch.run_parallel ~grace_window_ms:0
+    ~manifests:[ synthetic_manifest "fast0"; synthetic_manifest "slow3" ]
+    ~adapters:(registry_of [a0; a3]) (provable_lia_ir ()) in
+  match r.cert with
+  | Some c -> Alcotest.(check int) "latency-first: Tier 0" 0 c.tier
+  | None -> Alcotest.fail "expected a cert"
+
+let test_par_attempts_input_order () =
+  (* Completion order (b fast, a slow) must not affect the
+     attempts order, which is always input/manifest order. *)
+  let a = mk_adapter "a" ~delay_ms:80
+            ~result:(Failed Adapter.Sat_returned) in
+  let b = mk_adapter "b" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:0)) in
+  let r = Dispatch.run_parallel ~grace_window_ms:2000
+    ~manifests:[ synthetic_manifest "a"; synthetic_manifest "b" ]
+    ~adapters:(registry_of [a; b]) (provable_lia_ir ()) in
+  Alcotest.(check (list string)) "attempts in input order"
+    [ "a"; "b" ] (List.map (fun x -> x.Dispatch.adapter) r.attempts);
+  Alcotest.(check bool) "cert from b" true (Option.is_some r.cert)
+
+let test_par_all_skipped () =
+  (* A BV-only manifest is skipped on a LIA goal; no runner, no
+     cert, the skip is recorded. *)
+  let r = Dispatch.run_parallel
+    ~manifests:[ bv_only_manifest () ] ~adapters:(empty_registry ())
+    (provable_lia_ir ()) in
+  Alcotest.(check bool) "no cert" true (Option.is_none r.cert);
+  Alcotest.(check int) "one attempt" 1 (List.length r.attempts);
+  (match (List.hd r.attempts).outcome with
+   | Dispatch.Skipped _ -> ()
+   | _ -> Alcotest.fail "expected Skipped")
+
+let test_par_all_fail () =
+  let a = mk_adapter "a" ~delay_ms:0 ~result:(Failed Adapter.Sat_returned) in
+  let b = mk_adapter "b" ~delay_ms:0
+            ~result:(Failed Adapter.Unknown_returned) in
+  let r = Dispatch.run_parallel
+    ~manifests:[ synthetic_manifest "a"; synthetic_manifest "b" ]
+    ~adapters:(registry_of [a; b]) (provable_lia_ir ()) in
+  Alcotest.(check bool) "no cert" true (Option.is_none r.cert);
+  Alcotest.(check int) "both attempts" 2 (List.length r.attempts);
+  Alcotest.(check bool) "none succeeded" true
+    (not (List.exists succeeded r.attempts))
+
 let () =
   Alcotest.run "dispatch" [
     "driver", [
@@ -288,5 +428,18 @@ let () =
     "preference", [
       Alcotest.test_case "sort_by_max_tier_descending"
         `Quick test_sort_by_max_tier_descending;
+    ];
+    "concurrent", [
+      Alcotest.test_case "single success" `Quick test_par_single_success;
+      Alcotest.test_case "grace prefers higher tier" `Quick
+        test_par_grace_prefers_higher_tier;
+      Alcotest.test_case "grace is bounded" `Quick
+        test_par_grace_is_bounded;
+      Alcotest.test_case "latency-first (grace 0)" `Quick
+        test_par_latency_first;
+      Alcotest.test_case "attempts in input order" `Quick
+        test_par_attempts_input_order;
+      Alcotest.test_case "all skipped" `Quick test_par_all_skipped;
+      Alcotest.test_case "all fail" `Quick test_par_all_fail;
     ];
   ]
