@@ -110,6 +110,32 @@ Janestreet ecosystem coupling is not justified by our needs. The
 decision is locked at the start of Phase 0; switching mid-implementation
 is off the table absent a critical ecosystem failure (see §5).
 
+> **Recorded reconsideration (Phase 3, concurrent dispatch).** Per
+> §5's "do not silently revisit … the audit trail matters"
+> discipline, this is an explicit, narrow amendment — not a
+> reversal. The concurrent-dispatch deliverable (roadmap §Phase 3
+> #5) races several **blocking solver subprocesses** and returns
+> the first/highest-tier result. The adapters' `run_solver`
+> already does blocking subprocess I/O
+> (`Unix.open_process_args_full` + `Unix.select`), and OCaml's
+> `Unix` blocking primitives release the runtime lock, so the
+> right tool for *this* job is the stdlib **`Thread`** library:
+> one thread per eligible adapter, a mutex/condition mailbox,
+> a grace-window timer thread. It reuses every adapter's existing
+> blocking code unchanged and touches only `dispatch.ml`.
+> Rewriting all four adapters onto `Lwt_process` to honor the
+> `lwt` lock here would be a large, higher-risk change for no
+> behavioural gain on subprocess-bound work.
+>
+> **Scope of this amendment:** `Thread` is adopted *only* for
+> parallel subprocess dispatch. `lwt` remains the locked async
+> runtime for the genuinely-async work it was chosen for — the
+> LLM-as-backend adapter's HTTP client (`cohttp-lwt-unix`) and any
+> future async I/O. The two coexist: `Thread` for CPU/subprocess
+> fan-out, `lwt` for network concurrency. No `lwt` code is removed
+> (none exists yet); the Phase-0 lock is amended, not voided.
+> This note is the recorded decision §5 requires.
+
 **New Phase 0 deliverable: FFI round-trip spike (week 1–2).** Before
 committing implementation effort downstream of the C-FFI assumption,
 build the smallest possible end-to-end round trip: a non-trivial IR

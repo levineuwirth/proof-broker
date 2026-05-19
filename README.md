@@ -21,9 +21,13 @@ the kernel check), and M3 (Lean higher-order reifier +
 verdict-gated `aesop` HOL closer). The roadmap §Phase-3 exit
 criterion is met: the worked function-composition goal
 (`examples/example2-…`) closes `by proof_broker` through real
-Vampire, axiom-free (footprint `[propext]`). The remaining
-Phase-3 roadmap items — LLM-as-backend, LLM-assisted
-reconstruction, concurrent dispatch — are untouched and tracked
+Vampire, axiom-free (footprint `[propext]`). Concurrent dispatch
+(roadmap §Phase 3 #5) also landed: `Dispatch.run_parallel` races
+the capability-eligible adapters on threads, first-valid-wins
+with a grace window that prefers the highest tier (`delta.md
+§2.1` records the `Thread`-vs-`lwt` reconsideration). The
+remaining Phase-3 roadmap items — the LLM-as-backend adapter and
+LLM-assisted reconstruction — are untouched and tracked
 separately.
 Phase 6 (cross-platform distribution + polish) carries the displaced
 original-Phase-5 scope. See `delta.md §2` for per-phase status and

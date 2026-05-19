@@ -421,14 +421,20 @@ let dispatch_broker (input : string) : string =
     let manifests =
       List.map Proof_broker.Manifest.of_json manifests_json
     in
-    let manifests =
-      if prefer_higher_tier
-      then Proof_broker.Manifest.sort_by_max_tier_descending manifests
-      else manifests
-    in
+    (* Concurrent dispatch (roadmap §Phase 3 #5). No pre-sort: the
+       parallel driver races all eligible adapters and selects the
+       highest [cert.tier] received within the grace window, so
+       tier preference is a selection policy rather than an
+       iteration order. [prefer_higher_tier] (default true) maps to
+       a 2 s grace window — the roadmap's stated default — during
+       which a higher-tier cert can still overtake a Tier-0 one;
+       [false] is latency-first (grace 0: the first cert wins).
+       Manifest input order only breaks ties and orders the
+       attempts log. *)
+    let grace_window_ms = if prefer_higher_tier then 2000 else 0 in
     let result =
-      Proof_broker.Dispatch.run
-        ~manifests ~adapters:adapter_registry ir
+      Proof_broker.Dispatch.run_parallel
+        ~grace_window_ms ~manifests ~adapters:adapter_registry ir
     in
     let cert_field = match result.cert with
       | None -> []
