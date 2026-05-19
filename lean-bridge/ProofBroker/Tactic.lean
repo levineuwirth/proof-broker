@@ -25,6 +25,15 @@ Soundness footprint:
     combination from the Tier 1 witness, or the Alethe walker for
     Tier 3 — is the principled finish; until a fragment has one,
     an uncloseable certified goal is a tactic error, not a theorem.
+  * The LLM `lean-tactic-script` Tier-3 cert (an untrusted oracle
+    the OCaml verifier deliberately leaves soundness-unchecked,
+    `tier3ReplayDeferred`) takes a distinct path:
+    `replayLlmScriptOrFail` elaborates the script as `(by …)`
+    against the goal, then accepts iff the *replayed* proof term's
+    transitive axiom footprint ⊆ `{propext, Classical.choice,
+    Quot.sound}`. `sorry`/`admit` (`sorryAx`), `native_decide`
+    (`Lean.ofReduceBool`), or any bespoke axiom ⇒ tactic failure,
+    never an admitted theorem. The LLM cannot widen the trust base.
   * Goal/hypothesis reification covers the LIA fragment only (Int with
     +, -, negation, multiplication by integer literal; ≤, <, =; ¬, ∧,
     ∨). Anything outside this fragment fails fast with a
@@ -742,6 +751,114 @@ private def certFragment (cert : Json) : String :=
   (cert.getObjVal? "refinement_record"
     |>.bind (·.getObjValAs? String "fragment")).toOption.getD ""
 
+/-- Read `payload.trace_format` (`""` if absent). -/
+private def certTraceFormat (cert : Json) : String :=
+  (cert.getObjVal? "payload"
+    |>.bind (·.getObjValAs? String "trace_format")).toOption.getD ""
+
+/-- Read `payload.trace_data` as a string (`none` if absent or
+    non-string — the only shape `Adapter_llm` emits is a JSON
+    string). -/
+private def certTraceData? (cert : Json) : Option String :=
+  (cert.getObjVal? "payload"
+    |>.bind (·.getObjValAs? String "trace_data")).toOption
+
+/-- Axioms the home kernel already tolerates everywhere else a
+    `proof_broker` closer runs (the classical footprint `omega` /
+    `decide` / `aesop` pull in). The LLM-replay gate accepts a
+    replayed proof term iff its transitive axiom set is a subset of
+    this — never widening the trust base. Deliberately EXCLUDES
+    `sorryAx` (`sorry`/`admit`) and `Lean.ofReduceBool`/
+    `Lean.ofReduceNat` (`native_decide`, compiler trust, not
+    kernel-checked). -/
+private def llmReplayAxiomAllowlist : List Name :=
+  [``propext, ``Classical.choice, ``Quot.sound]
+
+/-- Replay an LLM-suggested Lean tactic script — the Tier-3
+    `lean-tactic-script` cert payload `Adapter_llm` mints — through
+    the home kernel.
+
+    The cert is an UNTRUSTED oracle: the OCaml verifier returns
+    `tier3ReplayDeferred` and never soundness-checks it. Soundness
+    is entirely home-side and rests on two kernel-level facts
+    (audit H1):
+
+    1. The script is elaborated by Lean itself (`exact (by …)`
+       against the goal type). A script that does not actually
+       prove the goal raises a tactic error and the goal is left
+       OPEN — a replay failure is a tactic failure, never an
+       admitted theorem.
+    2. The replayed proof term's transitive axiom footprint is
+       collected and must be a subset of `llmReplayAxiomAllowlist`.
+       A hallucinated `sorry`/`admit` (→ `sorryAx`), `native_decide`
+       (→ `Lean.ofReduceBool`), or any bespoke axiom is REJECTED
+       here — the LLM cert never enters the trust footprint.
+
+    So the LLM can only ever get a goal closed by a proof the home
+    kernel independently accepts under the very same axioms every
+    other closer already uses; it cannot widen what `proof_broker`
+    trusts. -/
+private def replayLlmScriptOrFail (goal : MVarId)
+    (cert : Json) : TacticM Unit := do
+  let raw ← match certTraceData? cert with
+    | some s => pure s
+    | none => throwError "proof_broker: LLM `lean-tactic-script` cert \
+        carries no string `payload.trace_data`; nothing to replay."
+  -- LLMs frequently echo a leading `by` / `:= by` despite the
+  -- prompt asking for the bare body; strip one so the script
+  -- parses as the body of the `by` we wrap it in. Anything left
+  -- that doesn't parse is a tactic failure below (goal stays open).
+  let trimS := fun (s : String) => s.trimAscii.toString
+  let body :=
+    let t := trimS raw
+    let t := if t.startsWith ":=" then trimS (t.drop 2).toString else t
+    if t.startsWith "by" then trimS (t.drop 2).toString else t
+  if body.isEmpty then
+    throwError "proof_broker: the LLM returned an empty tactic script. \
+      The goal is left OPEN (audit H1)."
+  -- Wrap as a `by` term, indented so the tactic block sits to the
+  -- right of `by` for the layout-sensitive parser.
+  let src :=
+    "by\n" ++ String.intercalate "\n"
+      ((body.splitOn "\n").map (fun l => "  " ++ l))
+  let stx ← match Lean.Parser.runParserCategory (← getEnv) `term src with
+    | .ok s => pure s
+    | .error e => throwError "proof_broker: the LLM tactic script does not \
+        parse as a Lean `by` block ({e}). The goal is left OPEN — a parse \
+        failure is a tactic failure, never an admitted theorem.\n\
+        --- script ---\n{raw}"
+  -- Replay: elaborate `(by <script>)` against the goal type and
+  -- close the goal with it. `exact` failing (script doesn't prove
+  -- the goal / errors) propagates as a tactic error — goal OPEN.
+  let tstx : TSyntax `term := ⟨stx⟩
+  try
+    evalTactic (← `(tactic| exact $tstx))
+  catch ex =>
+    throwError "proof_broker: the LLM tactic script failed to replay \
+      through the kernel: {ex.toMessageData}. The goal is left OPEN — a \
+      failed replay is a tactic failure, never an admitted theorem \
+      (audit H1)."
+  unless (← goal.isAssigned) do
+    throwError "proof_broker: the LLM tactic script ran without error but \
+      did not close the goal. The goal is left OPEN, never admitted \
+      (audit H1)."
+  -- Audit H1: gate the *replayed* term's transitive axiom footprint.
+  let pf ← instantiateMVars (mkMVar goal)
+  let mut bad : NameSet := {}
+  for c in pf.getUsedConstantsAsSet.toList do
+    for a in (← collectAxioms c) do
+      unless llmReplayAxiomAllowlist.contains a do bad := bad.insert a
+  unless bad.toList.isEmpty do
+    -- Undo the assignment narrative-wise: the cert is rejected, the
+    -- goal is treated as never closed (audit H1). `throwError`
+    -- aborts the tactic so the metavariable assignment is discarded
+    -- with the tactic state.
+    throwError "proof_broker: the LLM tactic script closed the goal, but \
+      its proof term depends on axiom(s) outside the allowed classical \
+      footprint: {bad.toList}. REJECTED — the goal is treated as OPEN, \
+      never admitted via an LLM-introduced axiom (audit H1). (`sorry`/\
+      `admit` ⇒ `sorryAx`; `native_decide` ⇒ `Lean.ofReduceBool`.)"
+
 /-- Close the goal from a successfully verified path, or surface a
     structured error describing why the path didn't close.
 
@@ -766,12 +883,29 @@ private def certFragment (cert : Json) : String :=
 
     The verbose form calls `logInfo` with `renderPath` first; the bare
     form just throws so unsuccessful invocations are silent. -/
--- `_goal`/`_goalType` are retained in the signature (callers pass
--- them) but unused since audit H1: every closer now operates on the
--- tactic state (`omega`/`decide`/…) or `throwError`s — nothing
--- assigns the metavariable directly anymore.
-private def closeOrFail (_goal : MVarId) (_goalType : Expr)
+-- `goal` is used only on the LLM-replay path (it replays
+-- `(by <script>)` via `exact`, then audits the assigned term's
+-- axioms). `_goalType` is retained for the shared closer signature
+-- but unused. Every other closer operates on the tactic state
+-- (`omega`/`decide`/…) or `throwError`s — none assigns the
+-- metavariable directly (audit H1).
+private def closeOrFail (goal : MVarId) (_goalType : Expr)
     (path : ExtractionPath) : TacticM Unit := do
+  -- LLM-as-backend home-side completion (roadmap §Phase 3 #3). The
+  -- `lean-tactic-script` Tier-3 cert is an untrusted oracle the
+  -- OCaml verifier deliberately leaves soundness-unchecked
+  -- (`tier3ReplayDeferred`, envelope-ok only). It is NOT routed
+  -- through the fragment-keyed closers below — its soundness comes
+  -- from kernel replay + an axiom-footprint gate. See
+  -- `replayLlmScriptOrFail`.
+  if let some cert := path.cert then
+    if certTraceFormat cert == "lean-tactic-script"
+        && path.verifyEnvelopeOk == some true
+        && (match path.verifyReason with
+            | some (.tier3ReplayDeferred _) => true
+            | _ => false) then
+      replayLlmScriptOrFail goal cert
+      return
   -- Accept either strict verifyOk (Tier 1/2/3 with a real
   -- soundness check) OR envelopeOk + tierCheckDeferred (Tier 0
   -- oracle path, currently the only route for fragments without
@@ -1508,5 +1642,32 @@ def evalProofBrokerTerm : Tactic := fun stx => do
         runTermModeOnGoal goal adapterNames? preferHigherTier
     | none =>
       runTermModeOnGoal goal adapterNames? preferHigherTier
+
+/- ============================================================
+   Test-only entry point for the LLM-replay closer
+   ============================================================ -/
+
+/-- TEST-ONLY tactic. Drives the exact `replayLlmScriptOrFail`
+    path `proof_broker` takes for an LLM `lean-tactic-script`
+    cert, but feeds the string literal directly as the cert's
+    `payload.trace_data` instead of dispatching to a live LLM
+    endpoint (which `Adapter_llm` fail-closes without
+    `PROOF_BROKER_LLM_ENDPOINT`). This lets CI assert the
+    audit-H1 contract — a valid script closes the goal, while a
+    `sorry`/`admit`/`native_decide`/bespoke-axiom script is
+    REJECTED as a tactic failure — with no network and no live
+    model. Not used by the real broker pipeline. -/
+syntax (name := llmReplayTest) "llm_replay_test" str : tactic
+
+@[tactic llmReplayTest]
+def evalLlmReplayTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| llm_replay_test $s:str) =>
+    let cert : Json := Json.mkObj [
+      ("payload", Json.mkObj [
+        ("trace_format", Json.str "lean-tactic-script"),
+        ("trace_data", Json.str s.getString)])]
+    replayLlmScriptOrFail (← getMainGoal) cert
+  | _ => throwError "llm_replay_test: malformed invocation"
 
 end ProofBroker.Tactic

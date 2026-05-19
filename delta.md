@@ -421,14 +421,37 @@ soundness verdict; the cert carries an
 `unverified_until_kernel_replay` tag and an honest annotation.
 Tested without any network (mock local endpoint, forked
 one-shot responder, `curl`-gated) per the §11 "no LLM in CI"
-policy. **Deferred (separate slice):** the Lean-side
-script-replay closer that would actually close a goal from an
-LLM cert (kernel-checked, audit H1), and roadmap deliverable #4
-(LLM-assisted reconstruction of un-replayable Tier-3 traces).
+policy.
 
-With these, Phase 3's structural surface is complete; only the
-Lean LLM-script closer and deliverable #4 remain, both
-inherently outside CI (no LLM endpoint) and tracked separately.
+**LLM-script replay closer shipped (home-side completion of
+§Phase 3 #3).** `ProofBroker.Tactic.replayLlmScriptOrFail`:
+`closeOrFail` routes a `lean-tactic-script` cert whose verify
+reason is `tier3ReplayDeferred` *past* the fragment-keyed closers
+to a dedicated path that elaborates the script as `(by …)`
+against the goal via `exact`, requires the goal actually closed,
+then collects the **replayed proof term's** transitive axioms
+(`collectAxioms` over `getUsedConstantsAsSet`) and accepts iff
+they are a subset of `{propext, Classical.choice, Quot.sound}` —
+the same classical ceiling every other closer already uses. A
+hallucinated `sorry`/`admit` (⇒ `sorryAx`), `native_decide`
+(⇒ `Lean.ofReduceBool`, compiler trust, not kernel-checked), or
+any bespoke axiom is a tactic failure with the goal left OPEN,
+never an admitted theorem (audit H1) — so the untrusted oracle
+can never widen the trust base. CI exercises this with no network
+or live model via a test-only `llm_replay_test "<script>"`
+tactic that drives the identical closer with the string as the
+cert payload (`Test/Tactic.lean`: a positive `omega` close plus
+`sorry`/`native_decide`/non-closing/unparsable rejections, the
+positive theorem pinned in `tools/axiom_allowlist.json`). With
+this, the §Phase-3 exit criterion for the LLM path is reachable
+end-to-end (live endpoint configured ⇒ adapter mints the cert ⇒
+this closer kernel-checks it). **Deferred (separate slice):**
+roadmap deliverable #4 (LLM-assisted reconstruction of
+un-replayable Tier-3 traces).
+
+With these, Phase 3's structural surface is complete; only
+deliverable #4 remains, inherently outside CI (no LLM endpoint)
+and tracked separately.
 
 ### 2.5 Phase 4 (Probe)
 
