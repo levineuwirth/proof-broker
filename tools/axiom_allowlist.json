@@ -123,6 +123,8 @@
     "ProofBroker.TestMathlib.pb_lra_term_ge_goal_strict_a1_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_gt_goal_strict_a1_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.hol_function_composition_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"]
   },
 

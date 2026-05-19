@@ -31,6 +31,7 @@ higher arity is mechanical.
 -/
 
 import Lean
+import Aesop
 import Mathlib.Tactic.Linarith
 import Mathlib.Data.Real.Basic
 import ProofBroker.Tactic
@@ -707,6 +708,27 @@ private def closeViaTermModeReal (cert : Json) (_ir : IR) : TacticM Unit := do
 private def lraEqSplit : TacticM Unit := do
   evalTactic (← `(tactic| apply le_antisymm))
 
+/-- Higher-order / FOL closer for a Vampire-certified goal
+    (`verifiedTier3Provenance` Tier-3 TSTP, or Tier-0 oracle). The
+    OCaml `Tier3_tptp` provenance gate (or Vampire's SZS Theorem)
+    has already established the goal is provable from its
+    hypotheses; `aesop` re-derives a Lean kernel proof term —
+    introducing equations, applying hypotheses, unfolding
+    `Function.comp` etc. — so closure is axiom-free (the cert
+    never enters the trust footprint; audit H1). `aesop` itself
+    only ever pulls the documented core axioms (`propext`,
+    `Classical.choice`, `Quot.sound`), already in the allowlist.
+    If `aesop` cannot discharge the certified goal it `throwError`s
+    (it does not admit) — propagated as a tactic failure, never an
+    axiom. -/
+private def holCloseWithAesop : TacticM Unit := do
+  evalTactic (← `(tactic|
+    first
+    | aesop
+    | (subst_eqs; aesop)
+    | (simp only [Function.comp]; aesop)
+    | simp_all [Function.comp]))
+
 initialize do
   ProofBroker.Tactic.reifierExt.set (some {
     reifyType := reifyTypeMathlib,
@@ -717,6 +739,7 @@ initialize do
     tier1FarkasCloser := closeViaTermModeReal,
     tier1EqSplit := lraEqSplit,
     irFragment := "LRA",
+    holCloser := holCloseWithAesop,
   })
 
 end ProofBrokerMathlib.Tactic

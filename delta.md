@@ -219,6 +219,127 @@ needs.
 
 No risk-register changes for Phase 3.
 
+#### 2.4.1 Phase 3 progress (post-completion notes)
+
+**M1 shipped: Vampire adapter + TPTP serializer + Tier-0
+dispatch.** `sdk/lib/tptp.ml` serializes an `Ir.t` to TPTP, with
+the dialect chosen by `logic_classification.order` (FOF for
+first-order, THF for higher-order — the "Vampire-HOL" path the
+exit criterion names). `sdk/lib/adapter_vampire.ml` mirrors the
+z3 adapter shape (no-shell subprocess, SZS-status protocol) and
+mints a Tier-0 oracle cert with `axiomatization` refinement
+records; `examples/manifest-vampire.json` advertises FOL/HOL/UF
+(deliberately *not* the arithmetic fragments, so capability
+matching keeps routing LIA/LRA goals to the SMT adapters).
+Validated end-to-end against real Vampire 5.0.1 (pinned +
+SHA-256-checked in the `sdk` CI job, audit-M8 discipline).
+
+**Two scope realities surfaced during M1, recorded here per §5's
+"the audit trail matters" discipline — they were *not* named in
+the original §2.4 and they reshape the remaining Phase-3
+envelope:**
+
+1. **The Tier-3 verifier is OCaml-side and large.** The Alethe
+   precedent (`tier3_alethe.ml`) is ~1.6 kLOC with ~22 rule
+   checkers; the home system only consumes the verdict and closes
+   via a verdict-gated axiom-free closer (audit H1). The TSTP
+   replayer (M2) mirrors that module against a proof format the
+   original §2.4 risk list called out as MED ("succeed in Vampire
+   but fail to replay"). M1 deliberately stops at Tier 0 so the
+   heterogeneous-dispatch claim is validated before that cost is
+   sunk.
+
+2. **The Lean reifier is LIA-only.** `examples/example2-
+   function-composition.json` is a hand-written spec fixture, not
+   something `proof_broker` currently produces — closing it
+   axiom-free (the roadmap exit criterion) additionally requires
+   a higher-order reifier extension in Lean plus an HOL closer,
+   which the original Phase-3 plan did not scope. This is tracked
+   as M3 and is the bulk of the remaining calendar.
+
+**Slack accounting (cf. §2.7).** No new slack; M1's effort was
+the well-bounded SDK-side foundation. The M2/M3 split makes the
+previously-implicit Lean-side cost explicit rather than absorbing
+it silently — calendar-neutral, slack-negative continues to hold.
+
+**M2 shipped: TSTP parser + Tier-3 provenance verifier +
+fail-closed minting.** `sdk/lib/tptp_proof.ml` parses Vampire's
+`--proof tptp` derivation (statement splitter + a shallow
+annotation-term parser; formula bodies kept verbatim — depth-
+bounded and `Stack_overflow`-backstopped like `alethe.ml`).
+`sdk/lib/tier3_tptp.ml` is the soundness-critical piece, and the
+honest scope boundary is recorded here per §5: it is **not** a
+per-step re-derivation like the Alethe Tier-3 verifier. Vampire
+emits superposition/resolution steps without the unifier, so
+re-deriving them is the proof-search problem itself (the original
+§2.4 MED risk). Instead the verifier checks the property that is
+soundly and cheaply checkable — the TSTP analogue of
+`Tier3_alethe.validate_top_level_assumes`: every leaf reachable
+from the `$false` sink is one of our input formulas (matched by
+the `--output_axiom_names` name, never a prover-`introduced`
+definition nor a `file` leaf we did not send), the conjecture is
+consumed only via a negation inference, the parent DAG is
+well-formed, and every rule is in a reviewed allowlist.
+
+`Verified_provenance` is therefore a sound **filter**, not a
+kernel check: it never accepts a derivation that smuggled an
+axiom, skipped the goal, or failed to reach `$false`, but it does
+not assert each inference was re-checked. In the H1 model the M3
+home-system closer re-proves the goal gated on this verdict and
+**is** the kernel check; the cert advertises the boundary
+explicitly via a `provenance_verified_only` dialect-feature tag
+and a prose `trace_annotations` line, so no consumer is misled.
+The Vampire adapter mints Tier-3 only on `Verified_provenance`
+(one parse feeds gate and payload) and otherwise falls back to
+the Tier-0 oracle — the same fail-closed discipline cvc5's
+adapter uses. Validated end-to-end against real Vampire 5.0.1:
+the worked FOF goal's derivation passes the gate and mints a
+`tstp-fof` Tier-3 cert; `examples/cert-example4-tier3-tptp.json`
+is the schema/cross-doc fixture.
+
+**M3 shipped: Lean higher-order reifier + verdict-gated HOL
+closer — the Phase-3 exit criterion is met.** The core (Mathlib-
+free) Lean reifier was extended to the HO/FOL fragment:
+parenthesized higher-order arrow types (`(Nat->Nat)->Prop`),
+bare type constants as uninterpreted base sorts, `∀`/`→`
+(`.forall_`/`.implies`), and applied global constants (e.g.
+`Function.comp`) collected as IR `freeVars` with their
+monomorphic types. A higher-order goal sets `order =
+higher_order` / `firstOrderFragment = none`, which makes
+`capability_match` skip the first-order SMT adapters and route
+dispatch to Vampire (THF). The OCaml `Verifier.verify` now
+dispatches `tstp-fof`/`tstp-thf` Tier-3 certs to `Tier3_tptp`,
+surfacing the honest `verified_tier3_provenance` reason (its own
+variant, not conflated with Alethe's per-step `verified_tier3`).
+The bridge closer gained a `holCloser` `ReifierExt` slot;
+`ProofBrokerMathlib` registers an `aesop`-based closer. Gating
+follows the H1 contract exactly: the re-verified cert decides
+*whether* to invoke the closer; `aesop` emits the kernel proof
+term, so the cert never enters the trust footprint.
+
+`Test/TacticMathlib.lean`'s `hol_function_composition_axiom_free`
+is `examples/example2-function-composition.json`'s goal closed
+`by proof_broker`, end-to-end through real Vampire: reify → THF
+dispatch → SZS Theorem → Tier-3 `tstp-thf` mint → provenance
+re-verify → `aesop`. Observed trust footprint: `[propext]` —
+strictly inside the documented core ceiling (pinned in
+`tools/axiom_allowlist.json`); zero `sorryAx`. The roadmap
+§Phase-3 exit criterion ("a goal involving function composition
+… succeeds via Vampire-HOL") is satisfied. With no
+`ProofBrokerMathlib` import the core lib `throwError`s on a
+certified HO goal rather than admit — identical discipline to
+the LRA path.
+
+**Slack accounting (cf. §2.7), final.** M3 was the predicted
+large Lean-side slice; it landed without new calendar but it
+*was* the previously-implicit cost the M1 note made explicit.
+Calendar-neutral, slack-negative holds; Phase 3's three core
+deliverables (Vampire adapter, TSTP Tier-3 verifier, the
+heterogeneous-dispatch + HO reach this validates) are complete.
+The remaining roadmap Phase-3 items (LLM-as-backend adapter,
+LLM-assisted reconstruction, concurrent dispatch) are untouched
+and tracked separately.
+
 ### 2.5 Phase 4 (Probe)
 
 **This is where the language choice pays off.**

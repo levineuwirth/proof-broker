@@ -1,0 +1,30 @@
+{
+  "manifest_version": "1.0",
+  "adapter": "vampire",
+  "adapter_version": "5.0.1",
+  "backends_supported": ["vampire-fol", "vampire-hol"],
+
+  "logic_fragments": ["FOL", "HOL", "UF"],
+
+  "type_constructions": [
+    "primitive",
+    "type_variable_via_specialization"
+  ],
+
+  "max_order": "higher_order",
+
+  "tiers_produced": [0],
+
+  "preferred_rewrite_pipeline": [
+    { "pass": "definition_unfolding",
+      "config": { "concepts": ["function_composition"] } },
+    { "pass": "propositional_simplification" },
+    { "pass": "skolemization" }
+  ],
+
+  "concurrency": {
+    "supports_cancellation": true,
+    "expected_latency_ms": 10000,
+    "max_parallel_invocations": 2
+  }
+}

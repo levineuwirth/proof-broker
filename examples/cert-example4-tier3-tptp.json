@@ -1,0 +1,50 @@
+{
+  "cert_version": "1.0",
+  "tier": 3,
+  "format": "tstp-fof",
+
+  "goal": {
+    "shell": {
+      "node": "App", "symbol": "q", "type_args": [],
+      "args": [ { "node": "Var", "name": "a" } ]
+    }
+  },
+
+  "dispatch_context_hash": "sha256:00000000000000000000000000000000000000000000000000000000a1f3b000",
+  "rewrite_trace_hash":    "sha256:00000000000000000000000000000000000000000000000000000000a1f3b001",
+
+  "backend": {
+    "name": "vampire",
+    "version": "5.0.1",
+    "config_hash": "sha256:00000000000000000000000000000000000000000000000000000000a1f3b002"
+  },
+
+  "resources": {
+    "wall_time_ms": 41,
+    "memory_peak_kb": 9216,
+    "budget_consumed": 0.004
+  },
+
+  "refinement_record": {
+    "adapter": "vampire",
+    "adapter_version": "5.0.1",
+    "specializations": [],
+    "fragment": "FOL",
+    "auxiliary": {
+      "tptp_dialect": "fof"
+    }
+  },
+
+  "payload": {
+    "trace_format": "tstp-fof",
+    "trace_data": "% SZS output start Proof for q\nfof(f1,axiom,( p(a) ),file('stdin',h1)).\nfof(f2,axiom,( ! [X0] : (p(X0) => q(X0)) ),file('stdin',h2)).\nfof(f3,conjecture,( q(a) ),file('stdin',goal)).\nfof(f4,negated_conjecture,( ~q(a) ),inference(negated_conjecture,[status(cth)],[f3])).\nfof(f7,plain,( p(a) ),inference(cnf_transformation,[],[f1])).\nfof(f8,plain,( ! [X0] : (~p(X0) | q(X0)) ),inference(cnf_transformation,[],[f2])).\nfof(f9,plain,( ~q(a) ),inference(cnf_transformation,[],[f4])).\nfof(f10,plain,( q(a) ),inference(resolution,[],[f8,f7])).\nfof(f11,plain,( $false ),inference(forward_subsumption_resolution,[],[f10,f9])).\n% SZS output end Proof for q\n",
+    "trace_dialect_features": [
+      "provenance_verified_only",
+      "rule:cnf_transformation",
+      "rule:forward_subsumption_resolution",
+      "rule:negated_conjecture",
+      "rule:resolution"
+    ],
+    "trace_annotations": "tstp passthrough: 9 formulas; rules: cnf_transformation, forward_subsumption_resolution, negated_conjecture, resolution. Gated by provenance + DAG-structure verification (no smuggled axioms, refutes the negated goal, reaches $false); inference steps are NOT individually re-derived - the home-system closer is the kernel check."
+  }
+}

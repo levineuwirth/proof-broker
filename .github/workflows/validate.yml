@@ -76,6 +76,27 @@ jobs:
         # dep surface minimal.
         run: opam exec -- dune build sdk
 
+      - name: Install Vampire (pinned + checksummed)
+        # The Vampire adapter's live tests (test_adapter_vampire)
+        # shell out to the `vampire` binary; absent it they skip and
+        # the suite still passes, but CI should actually exercise the
+        # FOF/THF dispatch path, so install a pinned release. Audit
+        # M8 discipline (mirrors the cvc5 step in the lean-bridge /
+        # rocq-bridge jobs): pin the version AND verify the archive's
+        # SHA-256 before it touches the runner so a compromised /
+        # MITM'd release fails the job instead of silently changing
+        # the prover. Keep VAMPIRE_VERSION in sync with
+        # Adapter_vampire.version and examples/manifest-vampire.json.
+        env:
+          VAMPIRE_VERSION: "v5.0.1"
+          VAMPIRE_SHA256: "6ff2f42ea7fb9753ee104efc3e623d5e39443190f7c82a63e1e1517bf9d2cde3"
+        run: |
+          curl -sSL "https://github.com/vprover/vampire/releases/download/${VAMPIRE_VERSION}/vampire-Linux-X64.zip" -o /tmp/vampire.zip
+          echo "${VAMPIRE_SHA256}  /tmp/vampire.zip" | sha256sum -c -
+          unzip -q /tmp/vampire.zip -d /tmp/vampire
+          sudo install -m 755 /tmp/vampire/vampire /usr/local/bin/vampire
+          vampire --version | head -1
+
       - name: Run SDK tests
         run: opam exec -- dune runtest sdk
 
@@ -262,6 +283,24 @@ jobs:
           unzip -q /tmp/cvc5.zip -d /tmp/cvc5
           sudo install -m 755 /tmp/cvc5/cvc5-Linux-x86_64-static/bin/cvc5 /usr/local/bin/cvc5
           cvc5 --version
+
+      - name: Install Vampire (pinned + checksummed)
+        # Phase-3 M3: Test/TacticMathlib.lean's
+        # hol_function_composition_axiom_free reifies a higher-order
+        # goal, dispatches to Vampire at lake-build time, and closes
+        # the goal gated on the re-verified Tier-3 tstp cert. Vampire
+        # is therefore part of the Lean-side trust footprint here,
+        # same as cvc5 — pin + SHA-256-verify before use (audit M8;
+        # same archive/hash as the `sdk` job, keep in sync on a bump).
+        env:
+          VAMPIRE_VERSION: "v5.0.1"
+          VAMPIRE_SHA256: "6ff2f42ea7fb9753ee104efc3e623d5e39443190f7c82a63e1e1517bf9d2cde3"
+        run: |
+          curl -sSL "https://github.com/vprover/vampire/releases/download/${VAMPIRE_VERSION}/vampire-Linux-X64.zip" -o /tmp/vampire.zip
+          echo "${VAMPIRE_SHA256}  /tmp/vampire.zip" | sha256sum -c -
+          unzip -q /tmp/vampire.zip -d /tmp/vampire
+          sudo install -m 755 /tmp/vampire/vampire /usr/local/bin/vampire
+          vampire --version | head -1
 
       - name: Install SDK deps
         # See retry rationale in the `sdk` job's Install SDK deps step.
