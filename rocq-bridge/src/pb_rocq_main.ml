@@ -2,10 +2,18 @@ module Cert = Proof_broker.Certificate
 module Ir = Proof_broker.Ir
 
 let adapter_registry () : (string, Proof_broker.Adapter.t) Hashtbl.t =
-  let r = Hashtbl.create 4 in
-  Hashtbl.replace r "cvc4" Proof_broker.Adapter_cvc4.adapter;
-  Hashtbl.replace r "cvc5" Proof_broker.Adapter_cvc5.adapter;
-  Hashtbl.replace r "z3"   Proof_broker.Adapter_z3.adapter;
+  let r = Hashtbl.create 8 in
+  Hashtbl.replace r "cvc4"    Proof_broker.Adapter_cvc4.adapter;
+  Hashtbl.replace r "cvc5"    Proof_broker.Adapter_cvc5.adapter;
+  Hashtbl.replace r "z3"      Proof_broker.Adapter_z3.adapter;
+  (* Phase-3 Rocq parity: bind the same adapter set as the Lean
+     side's FFI registry (see sdk/ffi/proof_broker_ffi.ml). Vampire
+     is required by the HOL test; Adapter_llm fail-closes when
+     PROOF_BROKER_LLM_ENDPOINT is unset, so binding it costs
+     nothing and the dispatch driver records the (failed) attempt
+     in the audit log. *)
+  Hashtbl.replace r "vampire" Proof_broker.Adapter_vampire.adapter;
+  Hashtbl.replace r "llm"     Proof_broker.Adapter_llm.adapter;
   r
 
 let attempts_summary (attempts : Proof_broker.Dispatch.attempt list) : string =

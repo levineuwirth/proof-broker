@@ -39,8 +39,14 @@ let load_one (dir : string) (name : string)
 
 let load_default () : Proof_broker.Manifest.t list =
   let dir = resolve_examples_dir () in
+  (* Vampire is last so [capability_match] skips it for first-order
+     LIA/LRA/BV goals — same order as the Lean side's
+     [loadDefaultManifests]. [load_one] drops missing manifests
+     silently, so users without Vampire/LLM installed still get
+     the LIA/LRA/UF reach. *)
   let manifests =
-    List.filter_map (load_one dir) [ "cvc4"; "cvc5"; "z3" ]
+    List.filter_map (load_one dir)
+      [ "cvc4"; "cvc5"; "z3"; "vampire" ]
   in
   if manifests = [] then
     CErrors.user_err Pp.(
