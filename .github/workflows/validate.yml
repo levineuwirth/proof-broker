@@ -394,13 +394,32 @@ jobs:
           sudo install -m 755 /tmp/cvc5/cvc5-Linux-x86_64-static/bin/cvc5 /usr/local/bin/cvc5
           cvc5 --version
 
+      - name: Install Vampire (pinned + checksummed)
+        # Phase-3 #1 Rocq parity (rocq-bridge/hammer/Test.v's
+        # pb_hol_function_composition_axiom_free): the HOL test
+        # reifies a higher-order goal, dispatches to Vampire at
+        # build time (THF), and closes via coq-hammer's hauto.
+        # Pinned + SHA-256-verified, same archive/hash as the
+        # sdk + lean-bridge jobs — keep in sync on a version bump.
+        env:
+          VAMPIRE_VERSION: "v5.0.1"
+          VAMPIRE_SHA256: "6ff2f42ea7fb9753ee104efc3e623d5e39443190f7c82a63e1e1517bf9d2cde3"
+        run: |
+          curl -sSL "https://github.com/vprover/vampire/releases/download/${VAMPIRE_VERSION}/vampire-Linux-X64.zip" -o /tmp/vampire.zip
+          echo "${VAMPIRE_SHA256}  /tmp/vampire.zip" | sha256sum -c -
+          unzip -q /tmp/vampire.zip -d /tmp/vampire
+          sudo install -m 755 /tmp/vampire/vampire /usr/local/bin/vampire
+          vampire --version | head -1
+
       - name: Install SDK + rocq-bridge deps
         # proof_broker_rocq pulls in rocq-runtime (>= 9.0); proof_broker
-        # pulls the OCaml SDK deps. Both opam files at repo root.
+        # pulls the OCaml SDK deps; proof_broker_rocq_hammer
+        # (Phase-3 #1 Rocq parity, opt-in HOL closer via hauto)
+        # pulls coq-hammer. All opam files at repo root.
         # See retry rationale in the `sdk` job's Install SDK deps step.
         run: |
           n=0
-          until opam install -y --deps-only --with-test ./proof_broker.opam ./proof_broker_rocq.opam; do
+          until opam install -y --deps-only --with-test ./proof_broker.opam ./proof_broker_rocq.opam ./proof_broker_rocq_hammer.opam; do
             n=$((n+1))
             if [ "$n" -ge 3 ]; then echo "opam install failed after $n attempts" >&2; exit 1; fi
             echo "opam install attempt $n hit a transient fetch error; retrying in 15s..." >&2
@@ -409,10 +428,12 @@ jobs:
 
       - name: Build SDK + rocq-bridge
         # dune build with no path scope builds everything reachable
-        # from the workspace root; for this job that's both sdk and
-        # rocq-bridge. Capture stdout+stderr so the trust-footprint
-        # gate can parse the Print Assumptions output of every .v
-        # file in rocq-bridge/theories/.
+        # from the workspace root; for this job that's the SDK, the
+        # core rocq-bridge plugin + theories, and the opt-in
+        # rocq-bridge/hammer theory (which the Phase-3 HOL test
+        # in rocq-bridge/hammer/Test.v depends on). Capture
+        # stdout+stderr so the trust-footprint gate can parse the
+        # Print Assumptions output of every .v file.
         run: opam exec -- dune build > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
 
       - name: Trust-footprint gate (axiom allowlist, Rocq side)

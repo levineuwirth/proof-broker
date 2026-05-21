@@ -177,22 +177,37 @@ let invoke_uf =
   invoke_named_tactic
     "first [ congruence | (subst; assumption) | (subst; reflexivity) ]"
 
+(* HOL closer (roadmap §Phase 3 #1 home-side, Rocq parity slice).
+   Mirrors Lean's [ReifierExt.holCloser] extension hook: the core
+   plugin only knows the tactic NAME; the actual aesop-equivalent
+   reach is provided by an opt-in package (rocq-bridge/hammer,
+   the [ProofBrokerHammer] coq.theory, which redefines
+   [proof_broker_hol_closer] to [hauto] when imported), exactly
+   the way [ProofBrokerMathlib] supplies [linarith] / [aesop] on
+   the Lean side. With no opt-in registered the default Ltac in
+   [theories/ProofBrokerHol.v] fails with a directive to import
+   the hammer package, so an un-registered HOL goal is a tactic
+   failure — never an admitted axiom (audit H1). *)
+let invoke_hol_closer = invoke_named_tactic "proof_broker_hol_closer"
+
 (* Map cert fragment to a closer tactic. Mirrors the Lean side's
    [closeOrFail] dispatch. The cert-verification gate keeps these
-   paths sound; [lia] / [lra] / the UF chain are themselves
-   axiom-free, so closures along these paths don't introduce a trust
-   axiom. *)
+   paths sound; [lia] / [lra] / the UF chain / the HOL closer's
+   replayed proof term are themselves axiom-checkable (the trust
+   gate gates the test theorem's [Print Assumptions] line), so
+   closures along these paths don't introduce a trust axiom. *)
 let closer_for_fragment fragment : unit Proofview.tactic =
   match fragment with
   | "LIA" -> invoke_lia
   | "LRA" -> invoke_lra
   | "UF" -> invoke_uf
+  | "HOL" | "FOL" -> invoke_hol_closer
   | other ->
     CErrors.user_err Pp.(
       str (Printf.sprintf
-             "proof_broker: closer for fragment %s not yet wired (LIA, \
-              LRA, UF are the fragments with a cert-gated closer in \
-              the core plugin)"
+             "proof_broker: closer for fragment %s not yet wired \
+              (LIA, LRA, UF, HOL, FOL are the fragments with a \
+              cert-gated closer in the core plugin)"
              other))
 
 let close_or_fail (p : path) : unit Proofview.tactic =

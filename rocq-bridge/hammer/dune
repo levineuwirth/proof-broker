@@ -1,0 +1,5 @@
+(coq.theory
+ (name ProofBrokerHammer)
+ (package proof_broker_rocq_hammer)
+ (theories Stdlib Hammer ProofBroker)
+ (plugins proof_broker_rocq.plugin))
