@@ -411,11 +411,27 @@ jobs:
           sudo install -m 755 /tmp/vampire/vampire /usr/local/bin/vampire
           vampire --version | head -1
 
+      - name: Add coq-released opam repository
+        # [coq-hammer-tactics] (the opt-in HOL closer's dep) lives
+        # in the coq-released repo (https://coq.inria.fr/opam/released),
+        # not the default opam-repository at opam.ocaml.org.
+        # rocq-runtime / coq-core / coq-stdlib are in the default
+        # repo so the original rocq-bridge job worked without this,
+        # but coq-hammer-* has not been migrated. Adding it here
+        # (rocq-bridge job only) keeps the dep surface localized —
+        # the SDK and Lean-bridge jobs don't need it.
+        run: |
+          opam repository add coq-released https://coq.inria.fr/opam/released
+          opam update
+
       - name: Install SDK + rocq-bridge deps
         # proof_broker_rocq pulls in rocq-runtime (>= 9.0); proof_broker
         # pulls the OCaml SDK deps; proof_broker_rocq_hammer
         # (Phase-3 #1 Rocq parity, opt-in HOL closer via hauto)
-        # pulls coq-hammer. All opam files at repo root.
+        # pulls coq-hammer-tactics (the lighter reconstruction-only
+        # half of coq-hammer — we don't need the ATP-prediction
+        # layer here; the broker has already chosen the cert).
+        # All opam files at repo root.
         # See retry rationale in the `sdk` job's Install SDK deps step.
         run: |
           n=0

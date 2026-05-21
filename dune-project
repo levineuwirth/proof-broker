@@ -52,4 +52,4 @@
   (rocq-runtime (>= 9.0))
   (coq-core (>= 9.0))
   (coq-stdlib (>= 9.0))
-  (coq-hammer (>= 1.3))))
+  (coq-hammer-tactics (>= 1.3))))
