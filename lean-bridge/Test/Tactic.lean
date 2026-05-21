@@ -494,4 +494,35 @@ theorem alethe_walker_la_generic_disj (x : Int) :
 
 #print axioms alethe_walker_la_generic_disj
 
+/- Alethe walker — multi-literal resolution.
+
+   `resolution` is now n-ary: a left-fold of binary resolutions,
+   each cancelling one complementary literal pair (the walker
+   finds the pivot; cvc5 does not list it). Intermediate
+   resolvents can carry several literals — the proof term is the
+   `Or.elim` cascade `casesClause` builds, with each non-pivot
+   literal injected into the resolvent by `injectLit`. -/
+
+/-- Three-clause propositional refutation exercising the full
+    resolution machinery: `or` flattens the disjunctive assumes
+    into clauses; `t2` resolves two 2-literal clauses into the
+    2-literal resolvent `B ∨ C`; `t3`/`t4` chain down to the
+    empty clause. Closes `False` axiom-free — the proof term is
+    the reconstructed `Or.elim` cascade, no decision procedure. -/
+theorem alethe_walker_resolution_axiom_free
+    (A B C : Prop)
+    (hAB : A ∨ B) (hAC : ¬A ∨ C) (hnB : ¬B) (hnC : ¬C) : False := by
+  alethe_walker_test "( \
+    (assume a0 (or A B)) \
+    (assume a1 (or (not A) C)) \
+    (assume a2 (not B)) \
+    (assume a3 (not C)) \
+    (step t0 (cl A B) :rule or :premises (a0)) \
+    (step t1 (cl (not A) C) :rule or :premises (a1)) \
+    (step t2 (cl B C) :rule resolution :premises (t0 t1)) \
+    (step t3 (cl C) :rule resolution :premises (t2 a2)) \
+    (step t4 (cl) :rule resolution :premises (t3 a3)) )"
+
+#print axioms alethe_walker_resolution_axiom_free
+
 end ProofBroker.Test
