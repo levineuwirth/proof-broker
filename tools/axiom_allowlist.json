@@ -413,6 +413,8 @@
     "pb_uf_composed_axiom_free":
       [],
     "pb_uf_predicate_axiom_free":
+      [],
+    "pb_hol_function_composition_axiom_free":
       []
   }
 }

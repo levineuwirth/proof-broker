@@ -142,8 +142,17 @@ let rec reify_type env sigma ty : string option =
   else
     match EConstr.kind sigma ty with
     | Prod (_, dom, body) when EConstr.Vars.noccurn sigma 1 body ->
+      let dom_is_arrow = is_arrow_type sigma dom in
       (match reify_type env sigma dom, reify_type env sigma body with
-       | Some d, Some r -> Some (d ^ "->" ^ r)
+       | Some d, Some r ->
+         (* Parenthesize an arrow-shaped domain so the IR string
+            keeps the grouping: [(Z -> Z) -> Prop] must serialize as
+            ["(Int->Int)->Prop"], not ["Int->Int->Prop"] (which the
+            SDK's [parse_arrow_type] would read as a 2-arg Int->Prop
+            predicate, dropping the function-of-Int-to-Int argument
+            structure the HOL fragment depends on). *)
+         let d_paren = if dom_is_arrow then "(" ^ d ^ ")" else d in
+         Some (d_paren ^ "->" ^ r)
        | _ -> None)
     | _ -> None
 
@@ -178,6 +187,66 @@ let rec reify_term env sigma t : Ir.shell_term =
        else
          match EConstr.kind sigma t with
          | App (head, args) -> reify_app env sigma head args t
+         | Prod (binder, dom, body) ->
+           (* [Prod] at term level encodes either propositional
+              implication (non-dependent body) or a [forall]
+              (body depends on the bound var — the HOL/FOL
+              fragment). Distinguish by whether [body] references
+              the bound variable. *)
+           if EConstr.Vars.noccurn sigma 1 body then
+             (* Non-dependent: [dom -> body]. Treat as implication.
+                Lift [body] out of the [Prod]'s binder context so
+                its de Bruijn indices line up with the surrounding
+                term — [noccurn 1] guarantees the now-removed slot
+                isn't referenced. *)
+             Ir.Implies {
+               antecedent = reify_term env sigma dom;
+               consequent =
+                 reify_term env sigma (EConstr.Vars.lift (-1) body);
+             }
+           else
+             (* Dependent: a quantification. Reify the domain as an
+                IR type-ref (function types preserved with parens),
+                emit an [Ir.Forall], and push the binder into the
+                env as a named local so the body reifies with the
+                quantified name bound as a free [Ir.Var]. *)
+             let var_name =
+               match binder.Context.binder_name with
+               | Names.Name id -> Names.Id.to_string id
+               | Anonymous -> "_x"
+             in
+             let ty_string =
+               match reify_type env sigma dom with
+               | Some s -> s
+               | None ->
+                 reify_error "forall over unsupported type: %s"
+                   (pp_econstr env sigma dom)
+             in
+             let fresh_id =
+               let avoid = Termops.vars_of_env env in
+               Namegen.next_ident_away_in_goal env
+                 (Names.Id.of_string var_name) avoid
+             in
+             let push_decl =
+               (* [push_named] takes [Constr.named_declaration], whose
+                  annot uses [Sorts.relevance] directly (the kernel
+                  side); [EConstr.ERelevance] is the EConstr-side
+                  wrapper used by [econstr_named_declaration]. Since
+                  we're pushing into [Environ.push_named], use the
+                  kernel side. *)
+               Context.Named.Declaration.LocalAssum
+                 (Context.make_annot fresh_id Sorts.Relevant,
+                  EConstr.to_constr sigma dom)
+             in
+             let env' = Environ.push_named push_decl env in
+             let body' =
+               EConstr.Vars.subst1 (EConstr.mkVar fresh_id) body
+             in
+             Ir.Forall {
+               var = Names.Id.to_string fresh_id;
+               ty = ty_string;
+               body = reify_term env' sigma body';
+             }
          | _ ->
            reify_error "unsupported term shape: %s"
              (pp_econstr env sigma t))
@@ -207,13 +276,16 @@ and reify_app env sigma head args full =
   else if head_is r_Rge    && nargs = 2 then bin "LE.le"    (r 1) (r 0)
   else if head_is r_Rgt    && nargs = 2 then bin "LT.lt"    (r 1) (r 0)
   else if head_is r_eq   && nargs = 3 then begin
-    if eq_ref sigma args.(0) r_Z then
-      Ir.Eq { ty = "Int"; left = r 1; right = r 2 }
-    else if eq_ref sigma args.(0) r_R then
-      Ir.Eq { ty = "Real"; left = r 1; right = r 2 }
-    else
+    (* Defer to [reify_type] for the equality's type argument so
+       LIA / LRA / UF arrow-type / HOL function-type equalities all
+       go through one path. The Phase-3 HOL test case
+       [f = g : Z->Z] needs equality at arrow-typed terms, which
+       the earlier LIA/LRA-only restriction explicitly rejected. *)
+    match reify_type env sigma args.(0) with
+    | Some tref -> Ir.Eq { ty = tref; left = r 1; right = r 2 }
+    | None ->
       reify_error
-        "equality over unsupported type (LIA/LRA only): %s"
+        "equality over unsupported type: %s"
         (* Audit #18: use the passed [env] (the goal's local context),
            not [Global.env ()] — every other error site here does, and
            Global.env may lack section/local context, mis-printing the
@@ -252,8 +324,36 @@ and reify_app env sigma head args full =
 
 let plugin_version = "0.1"
 
+(* Walk the shell looking for higher-order shapes:
+     * a [Forall] whose declared [ty] is an arrow chain (i.e.
+       quantifying over a function), and
+     * an [Eq] at an arrow-typed [ty] (equality on functions).
+   Either is sufficient to bump the fragment from UF to HOL —
+   they're the two features cvc5/z3 reject and Vampire-THF wants. *)
+let rec shell_has_ho_features (t : Ir.shell_term) : bool =
+  let arrow_ty s = Option.has_some (Smtlib.parse_arrow_type s) in
+  match t with
+  | Var _ | Const _ | Num_lit _ | Opaque _ -> false
+  | Not { operand } -> shell_has_ho_features operand
+  | And { left; right }
+  | Or { left; right }
+  | Implies { antecedent = left; consequent = right } ->
+    shell_has_ho_features left || shell_has_ho_features right
+  | Eq { ty; left; right } ->
+    arrow_ty ty
+    || shell_has_ho_features left || shell_has_ho_features right
+  | Forall { ty; body; _ } | Exists { ty; body; _ } ->
+    arrow_ty ty || shell_has_ho_features body
+  | Lambda { body; _ } -> shell_has_ho_features body
+  | App { args; _ } -> List.exists shell_has_ho_features args
+
 (* Pick the fragment label from the IR contents (free vars +
    shells). Precedence:
+     HOL — any [Forall] over an arrow-typed binder OR any [Eq] at
+           an arrow type (quantification over / equality at
+           function values — the features that route to Vampire
+           THF). Carries [order = "higher_order"], matching the
+           Lean reifier and example2-function-composition.json.
      UF  — any arrow-typed free var, OR any [App "UF.<name>"] in
            the goal/hypotheses (so closed UF-term goals carry the
            label even when the function symbol comes from a
@@ -262,6 +362,11 @@ let plugin_version = "0.1"
      LIA — default.
    Mirrors lean-bridge's [Reify.buildIR] precedence. *)
 let logic_for (ir : Ir.t) : Ir.logic_classification =
+  let any_hol =
+    shell_has_ho_features ir.goal.shell
+    || List.exists (fun (h : Ir.hypothesis) -> shell_has_ho_features h.shell)
+         ir.context.hypotheses
+  in
   let any_uf =
     List.exists
       (fun (fv : Ir.free_var) -> Option.has_some (Smtlib.parse_arrow_type fv.ty))
@@ -274,13 +379,14 @@ let logic_for (ir : Ir.t) : Ir.logic_classification =
     List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
       ir.context.free_vars
   in
-  let frag =
-    if any_uf then "UF"
-    else if any_real then "LRA"
-    else "LIA"
+  let order, frag =
+    if any_hol then "higher_order", "HOL"
+    else if any_uf then "first_order", "UF"
+    else if any_real then "first_order", "LRA"
+    else "first_order", "LIA"
   in
   {
-    order = "first_order";
+    order;
     features_used = [];
     first_order_fragment = frag;
     decidable_theory = None;
@@ -332,9 +438,12 @@ let build_ir gl : Ir.t =
     ir_version = "1.0";
     source_system = { name = "rocq"; version = plugin_version };
     tier = "goal";
-    (* Filled in below — needs the goal+hypotheses to be in scope so
-       [shell_mentions_uf] can detect UF symbols introduced by closed
-       UF-term goals. *)
+    (* Filled in below — needs the goal+hypotheses to be in scope
+       so [shell_mentions_uf] / [shell_has_ho_features] can detect
+       UF / HOL signals introduced by the reified shells. The
+       placeholder [LIA / first_order] is replaced by [logic_for]'s
+       computed values; the [{ ir with ... }] update at the
+       function's exit is the single point of truth. *)
     logic_classification = {
       order = "first_order";
       features_used = [];

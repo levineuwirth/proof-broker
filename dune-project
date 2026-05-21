@@ -40,3 +40,16 @@
   (rocq-runtime (>= 9.0))
   (coq-core (>= 9.0))
   (coq-stdlib (>= 9.0))))
+
+(package
+ (name proof_broker_rocq_hammer)
+ (synopsis "Proof Broker Rocq plugin — coq-hammer HOL closer opt-in")
+ (description "Optional opt-in extension to proof_broker_rocq: registers coq-hammer's hauto as the HOL/FOL closer (Ltac proof_broker_hol_closer). Mirrors lean-bridge/ProofBrokerMathlib's role on the Lean side (which registers Mathlib's aesop). With this package imported, the proof_broker tactic can close Vampire-minted Tier-3 HOL certs; without it, the core plugin's default Ltac fails with a directive to install/import this package (audit H1: HOL goals stay OPEN until a sound closer fires).")
+ (depends
+  (ocaml (>= 5.0))
+  dune
+  proof_broker_rocq
+  (rocq-runtime (>= 9.0))
+  (coq-core (>= 9.0))
+  (coq-stdlib (>= 9.0))
+  (coq-hammer (>= 1.3))))
