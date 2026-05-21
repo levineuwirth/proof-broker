@@ -49,6 +49,7 @@ import Lean
 import ProofBroker.IR
 import ProofBroker.Bridge
 import ProofBroker.TermMode
+import ProofBroker.Alethe
 
 namespace ProofBroker.Tactic
 
@@ -763,6 +764,45 @@ private def certTraceData? (cert : Json) : Option String :=
   (cert.getObjVal? "payload"
     |>.bind (·.getObjValAs? String "trace_data")).toOption
 
+/-- Alethe walker M1.β: try to close a `False` goal by walking
+    the cert's alethe-2024 trace into a kernel proof term. The
+    "cert IS the proof" play — the cvc5 refutation trace is
+    elaborated step-by-step rather than the goal being re-proven
+    by `omega`.
+
+    Returns `true` iff the walker fully closed the goal; `false`
+    on any failure (no trace data, parse failure, non-`False`
+    goal, unsupported rule). A `false` return leaves the goal
+    untouched so the caller falls through to `omega` — current
+    behavior preserved exactly. The walker builds the proof term
+    purely (`mkAppM`, no mvar assignment) until the final
+    `goal.assign`, so a mid-walk failure can't leave a partial
+    assignment.
+
+    M1.β only handles the `False`-goal refutation shape (the
+    Alethe proof's own conclusion). Non-`False` user goals would
+    need `Classical.byContradiction` to expose the `False`
+    subgoal first — deferred to a later rule-cluster PR. -/
+private def tryAletheWalkerLIA (cert : Json) : TacticM Bool := do
+  match certTraceData? cert with
+  | none => return false
+  | some traceData =>
+    match Alethe.runParseAletheProof traceData with
+    | .error _ => return false
+    | .ok proof =>
+      let goal ← getMainGoal
+      let goalType ← goal.getType
+      if !goalType.isConstOf ``False then
+        return false
+      else
+        try
+          let ctx ← Alethe.mkContext
+          let proofTerm ← Alethe.walkProof ctx proof
+          goal.assign proofTerm
+          return true
+        catch _ =>
+          return false
+
 /-- Axioms the home kernel already tolerates everywhere else a
     `proof_broker` closer runs (the classical footprint `omega` /
     `decide` / `aesop` pull in). The LLM-replay gate accepts a
@@ -985,7 +1025,25 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- proof, so omega will succeed on the LIA goal. omega itself
       -- is axiom-free, so the resulting proof term does not depend
       -- on any axiom regardless of the tier the cert came from.
-      evalTactic (← `(tactic| omega))
+      --
+      -- Alethe walker M1.β: for alethe-2024 traces over a `False`
+      -- goal (the refutation-style shape the Alethe proof
+      -- actually proves), try walking the trace into a kernel
+      -- proof term first ("cert IS the proof"). On any walker
+      -- failure (unsupported rule, non-clausal shape, etc.) we
+      -- fall through to omega — preserving current behavior
+      -- exactly. Real cvc5 LIA traces use ~14 rules of which M1.β
+      -- only covers 4 (assume / resolution / or / false), so the
+      -- walker will throw and omega will run for them — but the
+      -- architecture is in place to extend rule-cluster by
+      -- rule-cluster in subsequent PRs.
+      let walkerHandled ← do
+        if certTraceFormat cert == "alethe-2024" then
+          tryAletheWalkerLIA cert
+        else
+          pure false
+      unless walkerHandled do
+        evalTactic (← `(tactic| omega))
     else if fragment == "BV" then
       -- Cert-gated decide: BitVec has DecidableEq + the operator
       -- typeclass instances are decidable, so closed BV goals
@@ -1813,5 +1871,35 @@ def evalLlmReconstructTest : Tactic := fun stx => do
         trace → Lean tactic script). The goal is left OPEN — \
         rejected, never admitted via an LLM-introduced axiom."
   | _ => throwError "llm_reconstruct_test: malformed invocation"
+
+/-- TEST-ONLY tactic for the Alethe walker (Alethe walker M1.β).
+    Parses the string literal as an alethe-2024 trace via the SDK
+    FFI, builds a walker context from the current goal's local
+    hypotheses, walks the proof into a kernel proof term, and
+    assigns the (`False`) goal. Lets CI exercise the walker's
+    per-rule elaboration on hand-written traces without
+    dispatching to a live cvc5 — the same CI-stable pattern as
+    `llm_replay_test`. The goal must be `False` (the
+    refutation-style shape an Alethe proof concludes); a
+    non-`False` goal is rejected. -/
+syntax (name := aletheWalkerTest) "alethe_walker_test" str : tactic
+
+@[tactic aletheWalkerTest]
+def evalAletheWalkerTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| alethe_walker_test $s:str) =>
+    let proof ← match Alethe.runParseAletheProof s.getString with
+      | .ok p => pure p
+      | .error e =>
+        throwError "alethe_walker_test: failed to parse trace ({repr e})"
+    let goal ← getMainGoal
+    let goalType ← goal.getType
+    unless goalType.isConstOf ``False do
+      throwError "alethe_walker_test: goal must be `False` (the \
+        refutation shape an Alethe proof concludes); got {goalType}"
+    let ctx ← Alethe.mkContext
+    let proofTerm ← Alethe.walkProof ctx proof
+    goal.assign proofTerm
+  | _ => throwError "alethe_walker_test: malformed invocation"
 
 end ProofBroker.Tactic
