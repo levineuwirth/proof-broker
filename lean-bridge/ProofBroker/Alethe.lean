@@ -254,10 +254,25 @@ private def parseIntAtom (s : String) : Option Int := do
       | _ => ("", false)
     if denomOk then numStr.toInt? else none
 
+/-- Build an `Int`-typed numeral in the exact form omega's
+    literal recognizer (`Expr.nat?` / `Expr.int?`) accepts:
+    `@OfNat.ofNat Int ⟨rawNatLit k⟩ inst`. Two subtleties:
+    * the `OfNat` form is required — a bare `Int.ofNat k`
+      constructor is treated as an opaque atom by omega;
+    * the inner `Nat` index must be a {e raw} literal
+      (`Expr.lit (.natVal k)` via `mkRawNatLit`) — `mkNatLit`
+      wraps it in another `OfNat.ofNat`, and `Expr.nat?`'s
+      `let lit (.natVal n) := n` match then fails, again
+      leaving the literal an opaque atom.
+    Negative literals wrap the nonneg numeral in `Neg.neg`. -/
 private def mkIntLit (n : Int) : MetaM Expr := do
-  let absN : Nat := n.natAbs
-  let absE := mkApp (mkConst ``Int.ofNat) (mkNatLit absN)
-  if n < 0 then mkAppM ``Neg.neg #[absE] else pure absE
+  let intTy := mkConst ``Int
+  let mkNonneg (k : Nat) : MetaM Expr :=
+    mkAppOptM ``OfNat.ofNat #[some intTy, some (mkRawNatLit k), none]
+  if n < 0 then
+    mkAppM ``Neg.neg #[← mkNonneg n.natAbs]
+  else
+    mkNonneg n.toNat
 
 /- Translate an Alethe `Sexp` to a Lean `Expr`. The recognized
    shapes cover the LIA fragment: integer literals,
@@ -426,6 +441,33 @@ private def elabResolution (s : Step) : WalkerM Expr := do
     throwError m!"alethe walker: 'resolution' M1.β scope handles \
                    exactly 2 premises, got {repr s.premises}"
 
+/-- LIA-tautology leaf rules (`la_generic`, `la_mult_neg`). The
+    step's clause is a linear-arithmetic tautology — its negation
+    is LIA-unsatisfiable, with the Farkas multipliers carried in
+    `:args`. cvc5 treats these as proof *leaves*: there is no
+    finer cert content below them, so the walker discharges the
+    clause with a scoped `omega` call (the architectural decision
+    recorded in the M1.γ scoping — omega-ing the leaf mirrors
+    Alethe's own structure). `omega` is axiom-free; the cert
+    drives the surrounding proof skeleton (resolution /
+    congruence / boolean cleanup), the arithmetic leaves are
+    decided.
+
+    Implementation mirrors `omegaTactic`'s frontend: a synthetic
+    mvar of the clause type, `falseOrByContra` into a `False`
+    goal, then the `MetaM`-level `omega` entry over the local
+    hypotheses. -/
+private def elabLiaLeaf (ctx : WalkerContext) (s : Step) : WalkerM Expr := do
+  let clauseProp ← sexpToExpr ctx (Sexp.list (.atom "cl" :: s.clause))
+  let mvar ← mkFreshExprSyntheticOpaqueMVar clauseProp
+  match ← mvar.mvarId!.falseOrByContra with
+  | none => pure ()        -- goal closed by falseOrByContra itself
+  | some gFalse =>
+    gFalse.withContext do
+      let hyps := (← getLocalHyps).toList
+      Lean.Elab.Tactic.Omega.omega hyps gFalse
+  instantiateMVars mvar
+
 /-- Elaborate a single step: dispatch on `rule` to a per-rule
     elaborator, store the result under the step's `id`. Unknown
     rules throw — the omega fallback in `closeOrFail` catches
@@ -439,14 +481,18 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "or" => elabOr s
     | "resolution" => elabResolution s
     | "false" => elabFalseStep ctx s
+    | "la_generic" => elabLiaLeaf ctx s
+    | "la_mult_neg" => elabLiaLeaf ctx s
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
-                     supported (M1.β scope: resolution / or / \
-                     false, plus seeded assumes. Subsequent PRs \
-                     add la_generic / cong / refl / hole / \
-                     equiv_simplify / rare_rewrite / implies / \
-                     and_neg / etc. — the omega fallback handles \
-                     cvc5 traces in the meantime)."
+                     supported (current scope: resolution / or / \
+                     false / la_generic / la_mult_neg, plus \
+                     seeded assumes. Subsequent PRs add \
+                     multi-literal resolution and the equality \
+                     (cong / refl / trans) + boolean-cleanup \
+                     (hole / rare_rewrite / equiv_* / implies / \
+                     and_neg) clusters — the omega fallback \
+                     handles full cvc5 traces in the meantime)."
   storeStep s.id result
 
 /-- Walk an Alethe proof and return the `Expr` proving the final

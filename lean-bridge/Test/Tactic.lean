@@ -461,4 +461,37 @@ theorem alethe_walker_clausal_flipped_axiom_free
 
 #print axioms alethe_walker_clausal_flipped_axiom_free
 
+/- Alethe walker — arithmetic layer (`la_generic` / `la_mult_neg`).
+
+   These rules are LIA-tautology *leaves*: the step's clause is a
+   linear-arithmetic tautology, discharged by a scoped `omega`
+   call (the walker reconstructs the proof skeleton from the
+   cert; the arithmetic leaves are decided). cvc5 emits
+   `la_generic` clauses as disjunctions whose negation is
+   LIA-unsat. -/
+
+/-- `la_generic` leaf producing a one-literal unconditional
+    tautology clause: `0 ≤ 5`. The walker discharges it via
+    omega; the proof term is omega's, footprint
+    `[propext, Quot.sound]`. -/
+theorem alethe_walker_la_generic_lit : (0 : Int) ≤ 5 := by
+  alethe_walker_test
+    "( (step t0 (cl (<= 0 5)) :rule la_generic :args ()) )"
+
+#print axioms alethe_walker_la_generic_lit
+
+/-- `la_generic` leaf producing a multi-literal disjunction
+    clause — the shape cvc5 actually emits. `¬(x ≥ 3) ∨ (x ≥ 1)`
+    is a conditional LIA tautology (its negation
+    `x ≥ 3 ∧ x < 1` is unsat). Exercises the `cl`→`∨` chaining
+    in `sexpToExpr` and omega's negated-disjunction hypothesis
+    handling. -/
+theorem alethe_walker_la_generic_disj (x : Int) :
+    ¬(x ≥ 3) ∨ (x ≥ 1) := by
+  alethe_walker_test
+    "( (step t0 (cl (not (>= x 3)) (>= x 1)) \
+        :rule la_generic :args (1/1 1/1)) )"
+
+#print axioms alethe_walker_la_generic_disj
+
 end ProofBroker.Test
