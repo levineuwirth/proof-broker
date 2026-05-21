@@ -7,8 +7,9 @@
     [hauto] — coq-hammer's reconstruction tactic, the closest
     Rocq has to Lean's [aesop]. Mirror of the
     [ProofBrokerMathlib]-style opt-in pattern on the Lean side:
-    the core Rocq plugin stays Stdlib-only, with [coq-hammer] as
-    a separate opam package the user opts into.
+    the core Rocq plugin stays Stdlib-only, with
+    [coq-hammer-tactics] as a separate opam package the user
+    opts into.
 
     Soundness. The cert-verification gate (Tier-3 TSTP provenance
     for Vampire-minted certs) ensures [hauto] runs only on goals
@@ -25,7 +26,16 @@
 
     *)
 
-From Hammer Require Import Hammer.
+(* [coq-hammer-tactics] (the package this opam-depends on) exposes
+   the reconstruction tactics under [Hammer.Tactics]: [hauto],
+   [sauto], [scrush], etc. We use [coq-hammer-tactics] rather than
+   the full [coq-hammer] package because we only need the
+   reconstruction layer — the ATP-prediction stage that ships an
+   external ATP isn't relevant here (the broker has already chosen
+   which Tier-3 cert to close). Lighter opam dep footprint, same
+   closer reach for the goals Vampire-HOL is already producing
+   certs for. *)
+From Hammer Require Import Tactics.
 From ProofBroker Require Import ProofBrokerHol.
 
 Ltac proof_broker_hol_closer ::= hauto.
