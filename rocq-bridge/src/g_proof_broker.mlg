@@ -58,3 +58,23 @@ END
 TACTIC EXTEND ProofBrokerLlmReplayTest
 | [ "llm_replay_test" string(s) ] -> { Llm_replay.replay_script s }
 END
+
+(* TEST-ONLY tactic for the LLM-assisted Tier-3 reconstruction
+   fallback (roadmap §Phase 3 #4, Rocq parity M3). The live SDK
+   path ([Llm_reconstruct.translate]) only runs when an endpoint
+   is configured — for CI we skip the translation call and feed
+   the candidate script directly into the {e same} closer the
+   production path invokes after a successful translation
+   ([Pb_rocq_main.replay_reconstructed_script]). This pins the
+   integration: a translated script flows through
+   [Llm_replay.replay_script] (kernel replay + axiom-footprint
+   gate), the same audit-H1 contract [llm_replay_test] exercises
+   for primary LLM certs. First argument is the trace format of
+   the (notionally un-replayable) source cert — surfaces in the
+   audit feedback line. Mirror of [llm_reconstruct_test] in
+   lean-bridge/Test/Tactic.lean. *)
+TACTIC EXTEND ProofBrokerLlmReconstructTest
+| [ "llm_reconstruct_test" string(fmt) string(s) ] -> {
+    Pb_rocq_main.replay_reconstructed_script fmt s
+  }
+END

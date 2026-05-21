@@ -703,3 +703,49 @@ Proof.
   assert_fails (llm_replay_test "@@@ not lean @@@").
   exact I.
 Qed.
+
+(* ============================================================
+   LLM-assisted Tier-3 reconstruction fallback
+   (roadmap §Phase 3 deliverable 4, Rocq parity M3).
+
+   [llm_reconstruct_test "<traceFmt>" "<script>"] simulates a
+   successful [Llm_reconstruct.translate] call (the LLM was
+   asked to translate an un-replayable Tier-3 trace and
+   returned the script) and routes the candidate through the
+   SAME audit-H1 gate the production fallback uses. The
+   translation step itself is a pure I/O wrapper around an
+   untrusted oracle — no soundness contribution — so swapping
+   the live SDK call for a literal script is faithful to what's
+   being tested: that a candidate script makes it through
+   [replay_reconstructed_script] → [Llm_replay.replay_script],
+   with the audit-H1 gate firing identically. Mirror of the
+   llm_reconstruct_test block in lean-bridge/Test/Tactic.lean. *)
+
+(* Positive: a translated script the kernel independently
+   accepts (axiom-free [intros; reflexivity]) closes the goal
+   via the reconstruction fallback's replay closer. The build
+   log carries the "closed via LLM Tier-3 reconstruction …"
+   audit line. *)
+Theorem pb_llm_reconstruct_axiom_free : forall x : Z, x = x.
+Proof.
+  llm_reconstruct_test "alethe-2024" "intros x; reflexivity".
+Qed.
+
+Print pb_llm_reconstruct_axiom_free.
+Print Assumptions pb_llm_reconstruct_axiom_free.
+
+(* Negative: a translation that runs without error but does not
+   close the goal is a tactic failure, never a silent pass. *)
+Example pb_llm_reconstruct_rejects_non_closing : True.
+Proof.
+  assert_fails (llm_reconstruct_test "alethe-2024" "idtac").
+  exact I.
+Qed.
+
+(* Negative: a translation that does not parse as Rocq Ltac is
+   a tactic failure, not an admitted theorem. *)
+Example pb_llm_reconstruct_rejects_unparsable : True.
+Proof.
+  assert_fails (llm_reconstruct_test "tstp-fof" "@@@ not lean @@@").
+  exact I.
+Qed.

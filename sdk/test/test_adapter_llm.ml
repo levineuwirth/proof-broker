@@ -56,6 +56,36 @@ let test_prompt_render () =
   Alcotest.(check bool) "asks for a fenced lean block" true
     (contains p "```lean")
 
+(* Rocq-flavored IR: same logical shape as [sample_ir] but with
+   [source_system.name = "rocq"] and an [Int] free var (which the
+   Rocq dialect renders as [Z]). Exercises the bridge-aware
+   dispatch in [Adapter_llm.dialect_of_ir]. *)
+let sample_ir_rocq () =
+  let ir = make_ir
+    ~free_vars:[ { name = "a"; ty = "Int" } ]
+    ~hypotheses:[
+      { name = "h1";
+        shell = App { symbol = "UF.p"; type_args = [];
+                      args = [ Var { name = "a" } ] } } ]
+    (App { symbol = "UF.p"; type_args = []; args = [ Var { name = "a" } ] })
+  in
+  { ir with source_system = { name = "rocq"; version = "0.0" } }
+
+let test_prompt_render_rocq () =
+  let p = Adapter_llm.render_prompt (sample_ir_rocq ()) in
+  Alcotest.(check bool) "translates Int → Z in binder type" true
+    (contains p "(a : Z)");
+  Alcotest.(check bool) "binds the hypothesis (Rocq Ltac form)" true
+    (contains p "(h1 : (p a))");
+  Alcotest.(check bool) "states the goal as a Rocq theorem (Theorem ... .)" true
+    (contains p "Theorem goal");
+  Alcotest.(check bool) "asks for a fenced coq block" true
+    (contains p "```coq");
+  Alcotest.(check bool) "does not leak Lean's by-block syntax" false
+    (contains p "```lean");
+  Alcotest.(check bool) "does not leak Lean's := by" false
+    (contains p ":= by")
+
 let test_extract_script_fenced () =
   Alcotest.(check string) "fenced lean block extracted" "subst h; simp"
     (Adapter_llm.extract_script
@@ -145,11 +175,75 @@ let test_mock_endpoint () =
        Alcotest.fail ("mock endpoint should yield a cert; got "
                       ^ Adapter.kind_of_failure f))
 
+(* Rocq mock endpoint: same forked one-shot responder pattern,
+   but the IR's source_system.name="rocq" so dispatch picks the
+   Rocq dialect — the minted cert's [format] and
+   [trace_format] should both be "rocq-tactic-script", and the
+   embedded script preserves the ```coq fence content. *)
+let mock_body_rocq =
+  {|{"choices":[{"message":{"content":"```coq\nintros; lia.\n```"}}]}|}
+
+let test_mock_endpoint_rocq () =
+  if not (curl_available ()) then Alcotest.skip ();
+  let sock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+  Unix.setsockopt sock Unix.SO_REUSEADDR true;
+  Unix.bind sock (Unix.ADDR_INET (Unix.inet_addr_loopback, 0));
+  Unix.listen sock 1;
+  let port =
+    match Unix.getsockname sock with
+    | Unix.ADDR_INET (_, p) -> p
+    | _ -> Alcotest.fail "no port"
+  in
+  match Unix.fork () with
+  | 0 ->
+    (try
+       let c, _ = Unix.accept sock in
+       let buf = Bytes.create 4096 in
+       ignore (Unix.read c buf 0 (Bytes.length buf));
+       let resp =
+         Printf.sprintf
+           "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\
+            Content-Length: %d\r\nConnection: close\r\n\r\n%s"
+           (String.length mock_body_rocq) mock_body_rocq
+       in
+       ignore (Unix.write_substring c resp 0 (String.length resp));
+       Unix.close c
+     with _ -> ());
+    Unix._exit 0
+  | child ->
+    Unix.close sock;
+    Unix.putenv "PROOF_BROKER_LLM_ENDPOINT"
+      (Printf.sprintf "http://127.0.0.1:%d/v1/chat/completions" port);
+    Unix.putenv "PROOF_BROKER_LLM_MODEL" "mock-model-rocq";
+    Unix.putenv "PROOF_BROKER_LLM_API_KEY" "";
+    let result = Adapter_llm.dispatch (sample_ir_rocq ()) in
+    ignore (Unix.waitpid [] child);
+    (match result with
+     | Cert c ->
+       Alcotest.(check string) "cert.format" "rocq-tactic-script" c.format;
+       (match c.payload with
+        | Tier3_proof_trace { trace_format; trace_data = `String s; _ } ->
+          Alcotest.(check string) "trace_format" "rocq-tactic-script"
+            trace_format;
+          Alcotest.(check string) "extracted Ltac script" "intros; lia." s
+        | _ -> Alcotest.fail "expected Tier3_proof_trace");
+       (match Verifier.verify c (sample_ir_rocq ()) with
+        | Tier3_replay_deferred { trace_format } ->
+          Alcotest.(check string) "verify reason picks up Rocq format"
+            "rocq-tactic-script" trace_format
+        | r ->
+          Alcotest.fail ("expected tier3_replay_deferred, got "
+                         ^ Verifier.kind_of_reason r))
+     | Failed f ->
+       Alcotest.fail ("Rocq mock endpoint should yield a cert; got "
+                      ^ Adapter.kind_of_failure f))
+
 let () =
   Alcotest.run "adapter_llm"
     [
       ( "render",
-        [ Alcotest.test_case "prompt" `Quick test_prompt_render;
+        [ Alcotest.test_case "prompt (Lean)" `Quick test_prompt_render;
+          Alcotest.test_case "prompt (Rocq)" `Quick test_prompt_render_rocq;
           Alcotest.test_case "extract fenced" `Quick
             test_extract_script_fenced;
           Alcotest.test_case "extract bare" `Quick
@@ -157,6 +251,8 @@ let () =
       ( "transport",
         [ Alcotest.test_case "fail-closed (no endpoint)" `Quick
             test_fail_closed;
-          Alcotest.test_case "mock endpoint → Tier-3 cert" `Quick
-            test_mock_endpoint ] );
+          Alcotest.test_case "mock endpoint → Lean Tier-3 cert" `Quick
+            test_mock_endpoint;
+          Alcotest.test_case "mock endpoint → Rocq Tier-3 cert" `Quick
+            test_mock_endpoint_rocq ] );
     ]

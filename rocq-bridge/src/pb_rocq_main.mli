@@ -38,3 +38,13 @@ val run_close_term : Names.Id.t list option -> unit Proofview.tactic
     arity > 2, non-Le hypotheses, etc.) — the user explicitly
     opted into term mode by typing [proof_broker_term] over
     plain [proof_broker]. *)
+
+val replay_reconstructed_script :
+  string -> string -> unit Proofview.tactic
+(** [replay_reconstructed_script trace_format script] feeds the
+    LLM-translated script through [Llm_replay.replay_script]
+    (the audit-H1 gate) and, on success, emits a
+    [Feedback.msg_info] line naming the source trace format so
+    the audit trail is visible in build output. Exported for the
+    test-only [llm_reconstruct_test] tactic to drive the
+    reconstruction-side closer without a live LLM endpoint. *)

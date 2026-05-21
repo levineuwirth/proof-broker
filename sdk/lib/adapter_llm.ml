@@ -42,7 +42,18 @@ let default_timeout_ms = 30_000
 let timeout_of_ir (ir : Ir.t) : int =
   Adapter.resolve_timeout_ms ~default_ms:default_timeout_ms ir
 
-(* --- IR → Lean surface syntax ---------------------------------------- *)
+(* --- IR → bridge surface syntax -------------------------------------- *)
+
+(** The IR's type-ref vocabulary is bridge-agnostic ([Int]/[Real]/
+    [Prop] + arrow chains). Each home bridge needs the *prompt*
+    rendered in its own surface syntax — Lean asks for Lean
+    tactics, Rocq asks for Ltac — so the rendering layer splits
+    here. The discriminator is [ir.source_system.name]; see
+    [dispatch] for the call site. Sym-and-IR translation logic
+    that doesn't depend on the surface syntax (e.g.
+    [strip_uf], [extract_script], [curl_post]) stays shared. *)
+
+(** {2 Lean dialect (Lean 4)} *)
 
 (** Render an IR type-ref as Lean (the IR uses [->] for arrows;
     Lean reads [→], and the parenthesization the reifier emits is
@@ -121,10 +132,96 @@ and paren (t : Ir.shell_term) : string =
   | Var _ | Const _ | Num_lit _ -> lean_term t
   | _ -> lean_term t  (* lean_term already parenthesizes compounds *)
 
-(** The theorem statement + an instruction, as the user prompt.
-    Free vars and hypotheses become binders; the goal is the
-    conclusion. *)
-let render_prompt (ir : Ir.t) : string =
+(** {2 Rocq dialect (Coq / Rocq Stdlib)} *)
+
+(** Render an IR type-ref as Rocq Stdlib syntax. The IR's
+    bridge-agnostic vocabulary ([Int] / [Real] / [Prop]) is mapped
+    to Rocq's [Z] / [R] / [Prop]; arrow chains stay structural
+    (Rocq writes them with ASCII [->], matching the IR's own
+    encoding). Parenthesization the reifier emits is preserved
+    verbatim. *)
+let rocq_ty (t : Ir.type_ref) : string =
+  (* Build out with one pass: substitute the bridge-agnostic
+     type names for their Rocq Stdlib equivalents. The IR's
+     [parse_arrow_type] convention keeps everything else
+     character-by-character. *)
+  let n = String.length t in
+  let b = Buffer.create n in
+  let i = ref 0 in
+  while !i < n do
+    let c = t.[!i] in
+    if c = 'I' && !i + 3 <= n && String.sub t !i 3 = "Int" then begin
+      Buffer.add_char b 'Z'; i := !i + 3
+    end else if c = 'R' && !i + 4 <= n && String.sub t !i 4 = "Real" then begin
+      Buffer.add_char b 'R'; i := !i + 4
+    end else begin
+      Buffer.add_char b c; incr i
+    end
+  done;
+  Buffer.contents b
+
+(** Infix Rocq operator for the recognized arithmetic/relational
+    shell symbols. Assumes [Z_scope] (or [R_scope]) is open in
+    the proof context — the prompt's [Open Scope Z_scope.]
+    instruction sets that up. *)
+let rocq_infix_of = function
+  | "HAdd.hAdd" | "Int.add" | "Add.add" | "+" -> Some "+"
+  | "HSub.hSub" | "Int.sub" | "Sub.sub" | "-" -> Some "-"
+  | "HMul.hMul" | "Int.mul" | "Mul.mul" | "*" -> Some "*"
+  | "LE.le" | "<=" -> Some "<="
+  | "LT.lt" | "<" -> Some "<"
+  | "GE.ge" | ">=" -> Some ">="
+  | "GT.gt" | ">" -> Some ">"
+  | _ -> None
+
+let rec rocq_term (t : Ir.shell_term) : string =
+  match t with
+  | Var { name } -> name
+  | Const { name = "True" } -> "True"
+  | Const { name = "False" } -> "False"
+  | Const { name } -> name
+  | Num_lit { value; _ } -> value
+  | Not { operand } -> "~ " ^ rocq_paren operand
+  | And { left; right } ->
+    Printf.sprintf "(%s /\\ %s)" (rocq_term left) (rocq_term right)
+  | Or { left; right } ->
+    Printf.sprintf "(%s \\/ %s)" (rocq_term left) (rocq_term right)
+  | Implies { antecedent; consequent } ->
+    Printf.sprintf "(%s -> %s)" (rocq_term antecedent) (rocq_term consequent)
+  | Eq { left; right; _ } ->
+    Printf.sprintf "(%s = %s)" (rocq_term left) (rocq_term right)
+  | Forall { var; ty; body } ->
+    Printf.sprintf "(forall %s : %s, %s)" var (rocq_ty ty) (rocq_term body)
+  | Exists { var; ty; body } ->
+    Printf.sprintf "(exists %s : %s, %s)" var (rocq_ty ty) (rocq_term body)
+  | Lambda { binders; body } ->
+    let bs =
+      String.concat " "
+        (List.map
+           (fun (b : Ir.binder) ->
+              Printf.sprintf "(%s : %s)" b.var (rocq_ty b.ty))
+           binders)
+    in
+    Printf.sprintf "(fun %s => %s)" bs (rocq_term body)
+  | App { symbol; args; _ } ->
+    let sym = strip_uf symbol in
+    (match rocq_infix_of symbol, args with
+     | Some op, [ a; b ] ->
+       Printf.sprintf "(%s %s %s)" (rocq_term a) op (rocq_term b)
+     | _, [] -> sym
+     | _, _ ->
+       Printf.sprintf "(%s %s)" sym
+         (String.concat " " (List.map rocq_paren args)))
+  | Opaque { payload_id } -> "(_ (* opaque:" ^ payload_id ^ " *))"
+
+and rocq_paren (t : Ir.shell_term) : string =
+  match t with
+  | Var _ | Const _ | Num_lit _ -> rocq_term t
+  | _ -> rocq_term t  (* rocq_term already parenthesizes compounds *)
+
+(** The theorem statement + an instruction, as the user prompt
+    rendered for the Lean home system. *)
+let render_prompt_lean (ir : Ir.t) : string =
   let fv =
     List.map
       (fun (v : Ir.free_var) ->
@@ -145,13 +242,103 @@ let render_prompt (ir : Ir.t) : string =
      theorem goal %s : %s := by\n  -- your tactics here\n"
     binders goal
 
+(** The theorem statement + an instruction, as the user prompt
+    rendered for the Rocq home system. Asks for Ltac in a fenced
+    ```coq block; binders are introduced into the proof context
+    by Rocq's section-style theorem header, so the LLM's tactics
+    can refer to free vars / hypotheses by name without needing
+    to [intros] them. *)
+let render_prompt_rocq (ir : Ir.t) : string =
+  let fv =
+    List.map
+      (fun (v : Ir.free_var) ->
+         Printf.sprintf "(%s : %s)" v.name (rocq_ty v.ty))
+      ir.context.free_vars
+  in
+  let hyps =
+    List.map
+      (fun (h : Ir.hypothesis) ->
+         Printf.sprintf "(%s : %s)" h.name (rocq_term h.shell))
+      ir.context.hypotheses
+  in
+  let binders = String.concat " " (fv @ hyps) in
+  let goal = rocq_term ir.goal.shell in
+  Printf.sprintf
+    "Prove this Rocq theorem (assume [From Stdlib Require Import ZArith.] \
+     and [Open Scope Z_scope.] are in effect). Reply with ONLY a fenced \
+     ```coq code block containing an Ltac proof script (the lines between \
+     `Proof.` and `Qed.`, exclusive), no prose.\n\n\
+     Theorem goal %s : %s.\n\
+     Proof.\n  (* your tactics here *)\nQed.\n"
+    binders goal
+
+(* --- dialect bundle --------------------------------------------------- *)
+
+(** Per-bridge configuration: prompt template, [trace_format]
+    label for the minted cert, and the [system_prompt] role
+    message. [Adapter_llm.dispatch] and [Llm_reconstruct.translate]
+    both branch on [ir.source_system.name] via [dialect_of_ir] to
+    pick the right bundle. *)
+type dialect = {
+  system_prompt : string;
+  render_prompt : Ir.t -> string;
+  ty : Ir.type_ref -> string;
+  term : Ir.shell_term -> string;
+  trace_format : string;
+  cert_format : string;
+  annotation : string;
+}
+
+let lean_dialect : dialect = {
+  system_prompt =
+    "You are a Lean 4 proof assistant. Output only a Lean 4 tactic \
+     script inside a single ```lean fenced block. No explanations.";
+  render_prompt = render_prompt_lean;
+  ty = lean_ty;
+  term = lean_term;
+  trace_format = "lean-tactic-script";
+  cert_format = "lean-tactic-script";
+  annotation =
+    "LLM-suggested Lean tactic script. NOT verified by the broker — \
+     soundness rests entirely on the home system replaying it through \
+     its kernel (audit H1); a failed replay is a tactic failure, never \
+     an axiom.";
+}
+
+let rocq_dialect : dialect = {
+  system_prompt =
+    "You are a Rocq (Coq) proof assistant. Output only an Ltac proof \
+     script inside a single ```coq fenced block. No explanations.";
+  render_prompt = render_prompt_rocq;
+  ty = rocq_ty;
+  term = rocq_term;
+  trace_format = "rocq-tactic-script";
+  cert_format = "rocq-tactic-script";
+  annotation =
+    "LLM-suggested Rocq Ltac script. NOT verified by the broker — \
+     soundness rests entirely on the home system replaying it through \
+     its kernel (audit H1); a failed replay is a tactic failure, never \
+     an axiom.";
+}
+
+(** Pick the dialect for an IR. Defaults to the Lean dialect for
+    any [source_system.name] other than ["rocq"] — the IR's
+    source_system field is bridge-supplied, so an unrecognized
+    value here means a bridge we haven't taught the LLM about
+    yet, and Lean is the safer (more LLM-familiar) default. *)
+let dialect_of_ir (ir : Ir.t) : dialect =
+  match ir.source_system.name with
+  | "rocq" -> rocq_dialect
+  | _ -> lean_dialect
+
+(** Back-compat alias for callers that want the Lean rendering
+    without going through [dialect_of_ir]. *)
+let render_prompt (ir : Ir.t) : string =
+  (dialect_of_ir ir).render_prompt ir
+
 (* --- request body ---------------------------------------------------- *)
 
-let system_prompt =
-  "You are a Lean 4 proof assistant. Output only a Lean 4 tactic \
-   script inside a single ```lean fenced block. No explanations."
-
-let build_body ~model ~(prompt : string) : string =
+let build_body ~model ~system_prompt ~(prompt : string) : string =
   Yojson.Safe.to_string
     (`Assoc [
        "model", `String model;
@@ -256,6 +443,7 @@ let extract_script (content : string) : string =
 (* --- cert minting ---------------------------------------------------- *)
 
 let mk_cert ~(ir : Ir.t) ~model ~script ~timeout_ms : Certificate.t =
+  let dialect = dialect_of_ir ir in
   let fragment =
     let f = ir.logic_classification.first_order_fragment in
     if f = "" then "none" else f
@@ -263,7 +451,7 @@ let mk_cert ~(ir : Ir.t) ~model ~script ~timeout_ms : Certificate.t =
   {
     cert_version = "1.0";
     tier = 3;
-    format = "lean-tactic-script";
+    format = dialect.cert_format;
     goal = ir.goal;
     dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
     rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
@@ -284,15 +472,11 @@ let mk_cert ~(ir : Ir.t) ~model ~script ~timeout_ms : Certificate.t =
       auxiliary = Some (`Assoc [ "model", `String model ]);
     };
     payload = Tier3_proof_trace {
-      trace_format = "lean-tactic-script";
+      trace_format = dialect.trace_format;
       trace_data = `String script;
       trace_dialect_features =
         Some [ "llm_generated"; "unverified_until_kernel_replay" ];
-      trace_annotations =
-        Some "LLM-suggested Lean tactic script. NOT verified by the \
-              broker — soundness rests entirely on the home system \
-              replaying it through its kernel (audit H1); a failed \
-              replay is a tactic failure, never an axiom.";
+      trace_annotations = Some dialect.annotation;
     };
   }
 
@@ -316,8 +500,11 @@ let dispatch (ir : Ir.t) : Adapter.result =
         ~default:"default"
     in
     let timeout_ms = timeout_of_ir ir in
-    let prompt = render_prompt ir in
-    let body = build_body ~model ~prompt in
+    let dialect = dialect_of_ir ir in
+    let prompt = dialect.render_prompt ir in
+    let body =
+      build_body ~model ~system_prompt:dialect.system_prompt ~prompt
+    in
     (try
        let stdout, stderr, code =
          curl_post ~timeout_ms ~url ~api_key ~body

@@ -32,11 +32,13 @@
 
 let default_timeout_ms = Adapter_llm.default_timeout_ms
 
-(** Build the user prompt: the goal as a Lean [theorem ... := by]
-    skeleton (same shape [Adapter_llm.render_prompt] uses for the
-    primary path), followed by the original trace as a hint with
-    its declared format. Free vars and hypotheses become binders;
-    the conclusion is the goal. *)
+(** Build the user prompt: the goal as a theorem skeleton in the
+    home bridge's surface syntax (Lean / Rocq), followed by the
+    original trace as a hint with its declared format. Free vars
+    and hypotheses become binders; the conclusion is the goal.
+    Uses the same [Adapter_llm.dialect_of_ir] dispatch as the
+    primary LLM adapter, so Lean home systems get a Lean-flavored
+    prompt and Rocq home systems get a Rocq-flavored one. *)
 let render_prompt (ir : Ir.t) (cert : Certificate.t) : string =
   let trace_format, trace_data =
     match cert.payload with
@@ -48,33 +50,47 @@ let render_prompt (ir : Ir.t) (cert : Certificate.t) : string =
          Tier3_proof_trace (reconstruction only applies to Tier-3 \
          certificates that carry a proof trace)"
   in
+  let dialect = Adapter_llm.dialect_of_ir ir in
   let fv =
     List.map
       (fun (v : Ir.free_var) ->
-         Printf.sprintf "(%s : %s)" v.name (Adapter_llm.lean_ty v.ty))
+         Printf.sprintf "(%s : %s)" v.name (dialect.ty v.ty))
       ir.context.free_vars
   in
   let hyps =
     List.map
       (fun (h : Ir.hypothesis) ->
-         Printf.sprintf "(%s : %s)"
-           h.name (Adapter_llm.lean_term h.shell))
+         Printf.sprintf "(%s : %s)" h.name (dialect.term h.shell))
       ir.context.hypotheses
   in
   let binders = String.concat " " (fv @ hyps) in
-  let goal = Adapter_llm.lean_term ir.goal.shell in
+  let goal = dialect.term ir.goal.shell in
   let trace_str = Yojson.Safe.to_string trace_data in
+  let is_rocq = (ir.source_system.name = "rocq") in
+  let fence, theorem_skeleton =
+    if is_rocq then
+      "coq",
+      Printf.sprintf
+        "Theorem goal %s : %s.\nProof.\n  (* your tactics here *)\nQed.\n"
+        binders goal
+    else
+      "lean",
+      Printf.sprintf
+        "theorem goal %s : %s := by\n  -- your tactics here\n"
+        binders goal
+  in
   Printf.sprintf
-    "A theorem prover produced a `%s` proof trace for the Lean 4 \
-     theorem below, but the home system has no symbolic replayer \
-     for that trace format. Use the trace as a hint and reply with \
-     ONLY a fenced ```lean code block containing a Lean 4 tactic \
-     proof (the `by` block body), no prose. A wrong or sorry-laden \
-     script will be rejected by the home system's kernel-and-axiom \
-     gate; the goal is left open in that case.\n\n\
-     theorem goal %s : %s := by\n  -- your tactics here\n\n\
+    "A theorem prover produced a `%s` proof trace for the theorem \
+     below, but the home system has no symbolic replayer for that \
+     trace format. Use the trace as a hint and reply with ONLY a \
+     fenced ```%s code block containing the tactic proof body, no \
+     prose. A wrong or sorry-laden / admit-laden script will be \
+     rejected by the home system's kernel-and-axiom gate; the goal \
+     is left open in that case.\n\n\
+     %s\n\
      --- begin %s trace ---\n%s\n--- end %s trace ---\n"
-    trace_format binders goal trace_format trace_str trace_format
+    trace_format fence theorem_skeleton
+    trace_format trace_str trace_format
 
 (** Translate [cert]'s trace into a candidate Lean tactic script
     by prompting the configured LLM. Returns the script on
@@ -104,8 +120,12 @@ let translate (ir : Ir.t) (cert : Certificate.t) : (string, string) result =
        ());
     (match cert.payload with
      | Tier3_proof_trace _ ->
+       let dialect = Adapter_llm.dialect_of_ir ir in
        let prompt = render_prompt ir cert in
-       let body = Adapter_llm.build_body ~model ~prompt in
+       let body =
+         Adapter_llm.build_body ~model
+           ~system_prompt:dialect.system_prompt ~prompt
+       in
        (try
           let stdout, stderr, code =
             Adapter_llm.curl_post ~timeout_ms ~url ~api_key ~body
