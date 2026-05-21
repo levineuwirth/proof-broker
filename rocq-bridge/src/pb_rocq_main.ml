@@ -220,6 +220,23 @@ let close_or_fail (p : path) : unit Proofview.tactic =
   | Some cert, Some r ->
     let kind = Proof_broker.Verifier.kind_of_reason r in
     (match r with
+     (* LLM-as-backend home-side (roadmap §Phase 3 #3, Rocq
+        parity M2). The cert is an untrusted oracle the OCaml
+        verifier deliberately leaves soundness-unchecked
+        ([Tier3_replay_deferred], envelope-ok only). Route the
+        trace through [Llm_replay.replay_script]: kernel replay
+        + an axiom-footprint subset check against the classical
+        Rocq Stdlib allowlist. Audit H1: a hallucinated [admit]
+        or [Axiom Foo] is a tactic failure, never an admitted
+        theorem. *)
+     | Tier3_replay_deferred _ ->
+       (match cert.payload with
+        | Tier3_proof_trace { trace_data = `String script; _ } ->
+          Llm_replay.replay_script script
+        | _ ->
+          CErrors.user_err Pp.(
+            str "proof_broker: Tier-3 replay-deferred cert payload \
+                 is not a string trace; cannot replay"))
      | Verified_envelope | Verified_farkas
      | Verified_case_split | Verified_tier3
      (* Verified_tier3_provenance gates the home-system closer

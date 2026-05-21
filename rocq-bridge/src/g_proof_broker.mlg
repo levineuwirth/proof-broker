@@ -47,3 +47,14 @@ TACTIC EXTEND ProofBrokerTerm
 | [ "proof_broker_term" "[" ne_ident_list_sep(names, ",") "]" ] ->
     { Pb_rocq_main.run_close_term (Some names) }
 END
+
+(* TEST-ONLY tactic for the LLM-replay closer (roadmap §Phase 3
+   #3, Rocq parity M2). Drives the exact [Llm_replay.replay_script]
+   path [close_or_fail] takes for a Tier-3 [Tier3_replay_deferred]
+   cert, but feeds the string literal directly as the cert payload
+   so CI can exercise the audit-H1 contract without a live LLM
+   endpoint. Mirror of [llm_replay_test] in
+   lean-bridge/ProofBroker/Tactic.lean. *)
+TACTIC EXTEND ProofBrokerLlmReplayTest
+| [ "llm_replay_test" string(s) ] -> { Llm_replay.replay_script s }
+END
