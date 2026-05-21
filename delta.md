@@ -486,13 +486,66 @@ the candidate script directly into the production-path
 `replayReconstructedScript`, bypassing the FFI translate call
 (no network needed; the audit gate is identical to the live path).
 
-With these, **Phase 3 (Breadth) is structurally complete**: every
-roadmap deliverable (Vampire adapter + TPTP→Lean replayer + HOL
-closer; LLM-as-backend adapter and home-side replay closer;
-concurrent dispatch; LLM-assisted Tier-3 reconstruction; refined
-capability matching) has landed. Remaining Phase-3 work is
-polish (latency tuning, prompt iteration, additional adapters)
-tracked in the per-phase retrospective rather than in this delta.
+With these, **Phase 3 (Breadth) is structurally complete on the
+Lean side**: every roadmap deliverable (Vampire adapter +
+TPTP→Lean replayer + HOL closer; LLM-as-backend adapter and
+home-side replay closer; concurrent dispatch; LLM-assisted
+Tier-3 reconstruction; refined capability matching) has landed.
+
+**Phase 3 Rocq parity shipped in four milestones** (PRs #37/#38/
+#39, May 2026 — see `RETROSPECTIVES/phase-3-rocq-parity.md`).
+Because the SDK is shared (adapters, dispatch driver, TSTP and
+Alethe verifiers, `Llm_reconstruct`), Rocq parity was almost
+entirely plugin-side wiring plus one round of SDK bridge-
+awareness:
+
+* **M1** added the Rocq HO reifier (`Prod`→`Forall`/`Implies`,
+  parenthesized arrow domains, `Eq` at function type, HOL
+  fragment detection); a fragment-keyed HOL/FOL closer hook
+  (`proof_broker_hol_closer` Ltac, default fails with a clear
+  directive); the `ProofBrokerHammer` opt-in package
+  (`coq-hammer-tactics`-backed `hauto`, mirror of
+  `ProofBrokerMathlib`'s aesop opt-in); and the worked-example
+  test `pb_hol_function_composition_axiom_free` (closed
+  axiom-free by `hauto` under the Tier-3 TSTP provenance gate).
+
+* **M2** added a Rocq-side LLM-replay closer
+  (`rocq-bridge/src/llm_replay.ml`) using Rocq's kernel
+  `Assumptions` API for the audit-H1 axiom-footprint gate — the
+  same API `Print Assumptions` calls internally. Sentinel
+  `VarRef` "owner" + dummy `indirect_accessor` (safe under
+  `add_opaque:false`) gave us the same semantic gate Lean's
+  `collectAxioms` provides, in ~60 lines of plugin code.
+
+* **M3** made the SDK's `Adapter_llm` and `Llm_reconstruct`
+  bridge-aware: a new `dialect` record (system_prompt,
+  render_prompt, ty, term, trace_format, …) dispatched by
+  `ir.source_system.name`. Lean home systems → Lean syntax +
+  `lean-tactic-script` certs (preserved); Rocq home systems →
+  Rocq Stdlib syntax + Ltac + `rocq-tactic-script` certs.
+  `Verifier.verify` extended to recognize both formats →
+  `Tier3_replay_deferred`. The reconstruction-fallback
+  `Proofview.tclORELSE` wrap on Rocq's `close_or_fail` mirrors
+  Lean's `closeOrFailPrimary`+`closeOrFail` split from PR #36:
+  primary failure triggers a lazy `Llm_reconstruct.translate`
+  call and routes the candidate through the same audit-H1
+  replay gate from M2 (no separate trust path).
+
+* **M4** is this `delta.md` sync and the README update; the
+  `fragment_of_logic` consolidation flagged in
+  `RETROSPECTIVES/phase-4.md` had already shipped during an
+  earlier audit pass.
+
+**Phase 3 (Breadth) is now structurally complete on both bridges.**
+The architectural payoff predicted in §1.1 ("the IR is genuinely
+cross-system or accidentally Lean-shaped") materialized:
+every shared SDK piece worked on the Rocq side unchanged, and
+the only cross-bridge surface that needed bridge-awareness was
+the LLM prompt rendering, which consolidated into a single
+`dialect` record in `Adapter_llm`. Remaining Phase-3 work is
+polish (latency tuning, prompt iteration, additional adapters,
+BV/UF reach on Rocq pending a Stdlib BitVec library) tracked
+in the per-phase retrospectives rather than in this delta.
 
 ### 2.5 Phase 4 (Probe)
 
