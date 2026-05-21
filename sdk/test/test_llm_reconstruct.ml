@@ -119,6 +119,45 @@ let test_prompt_render () =
   Alcotest.(check bool) "warns that the script is gated" true
     (contains p "kernel-and-axiom gate")
 
+(* Rocq-flavored variant: [source_system.name = "rocq"] routes
+   through [Adapter_llm.rocq_dialect] so the rendered theorem
+   skeleton uses [Theorem ... Proof. ... Qed.] form and asks for
+   a fenced ```coq block, not ```lean. *)
+let sample_ir_rocq () =
+  let ir = make_ir
+    ~free_vars:[ { name = "a"; ty = "Int" } ]
+    ~hypotheses:[
+      { name = "h1";
+        shell = App { symbol = "UF.p"; type_args = [];
+                      args = [ Var { name = "a" } ] } } ]
+    (App { symbol = "UF.p"; type_args = []; args = [ Var { name = "a" } ] })
+  in
+  { ir with source_system = { name = "rocq"; version = "0.0" } }
+
+let test_prompt_render_rocq () =
+  let ir = sample_ir_rocq () in
+  let cert =
+    sample_cert ~trace_format:"otter-resolution"
+      ~trace_data:(`String "(resolved C1 C2 → C3)") ir
+  in
+  let p = Llm_reconstruct.render_prompt ir cert in
+  Alcotest.(check bool) "names the source trace format" true
+    (contains p "otter-resolution");
+  Alcotest.(check bool) "embeds the trace verbatim" true
+    (contains p "resolved C1 C2");
+  Alcotest.(check bool) "translates Int → Z in binder" true
+    (contains p "(a : Z)");
+  Alcotest.(check bool) "states the goal as a Rocq theorem" true
+    (contains p "Theorem goal");
+  Alcotest.(check bool) "Proof. ... Qed. scaffold" true
+    (contains p "Proof.");
+  Alcotest.(check bool) "asks for a fenced coq block" true
+    (contains p "```coq");
+  Alcotest.(check bool) "does not leak Lean by-block" false
+    (contains p "```lean");
+  Alcotest.(check bool) "does not leak `:= by` syntax" false
+    (contains p ":= by")
+
 (** A non-Tier3 cert raises [Invalid_argument] from [render_prompt]
     — defensive, since this is a programming error not a runtime
     failure mode the caller should swallow. *)
@@ -205,7 +244,8 @@ let () =
   Alcotest.run "llm_reconstruct"
     [
       ( "render",
-        [ Alcotest.test_case "prompt" `Quick test_prompt_render;
+        [ Alcotest.test_case "prompt (Lean)" `Quick test_prompt_render;
+          Alcotest.test_case "prompt (Rocq)" `Quick test_prompt_render_rocq;
           Alcotest.test_case "reject non-tier3" `Quick
             test_prompt_render_rejects_non_tier3 ] );
       ( "transport",

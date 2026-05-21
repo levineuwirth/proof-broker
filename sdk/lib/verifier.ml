@@ -85,13 +85,14 @@ type reason =
   | Tier3_unsupported_format of { trace_format : string }
   (** A Tier-3 trace whose format the broker recognizes but
       cannot soundness-check in OCaml because verification is the
-      home system's job — specifically [lean-tactic-script] from
-      the LLM adapter, which only Lean's kernel can re-check.
-      Envelope-verified (hashes / tier / dispatch context all
-      passed) but NOT a soundness verdict: the home-system replay
-      is the proof (audit H1). Distinct from
-      [Tier3_unsupported_format] (no replayer anywhere) and from
-      [Tier_check_deferred] (no tier verifier at all). *)
+      home system's job — specifically [lean-tactic-script] or
+      [rocq-tactic-script] from the LLM adapter, which only the
+      home system's kernel can re-check. Envelope-verified
+      (hashes / tier / dispatch context all passed) but NOT a
+      soundness verdict: the home-system replay is the proof
+      (audit H1). Distinct from [Tier3_unsupported_format] (no
+      replayer anywhere) and from [Tier_check_deferred] (no tier
+      verifier at all). *)
   | Tier3_replay_deferred of { trace_format : string }
   | Unsupported_witness_kind of { kind : string }
   | Tier_check_deferred of { tier : int }
@@ -515,11 +516,17 @@ let verify
      | Tier3_proof_trace { trace_format = ("tstp-fof" | "tstp-thf");
                            trace_data = `String proof_str; _ } ->
        reason_of_tier3_tptp (Tier3_tptp.verify ir proof_str)
-     | Tier3_proof_trace { trace_format = "lean-tactic-script"; _ } ->
-       (* Untrusted LLM oracle output: only Lean's kernel can
-          re-check it. Envelope passed; defer the proof to the
-          home-system replay (audit H1). *)
-       Tier3_replay_deferred { trace_format = "lean-tactic-script" }
+     | Tier3_proof_trace
+         { trace_format = ("lean-tactic-script" | "rocq-tactic-script")
+            as trace_format; _ } ->
+       (* Untrusted LLM oracle output: only the home system's
+          kernel can re-check it. Envelope passed; defer the proof
+          to the home-system replay (audit H1). The two formats
+          correspond to the two home bridges
+          [Adapter_llm.dialect_of_ir] dispatches on; both share
+          this verdict because the broker's role is identical for
+          either (envelope check + hand off). *)
+       Tier3_replay_deferred { trace_format }
      | Tier3_proof_trace { trace_format; _ } ->
        Tier3_unsupported_format { trace_format }
      | _ -> Tier_check_deferred { tier = cert.tier })

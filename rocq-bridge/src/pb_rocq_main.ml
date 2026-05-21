@@ -211,7 +211,13 @@ let closer_for_fragment fragment : unit Proofview.tactic =
               cert-gated closer in the core plugin)"
              other))
 
-let close_or_fail (p : path) : unit Proofview.tactic =
+(* Primary closer chain: fragment-keyed dispatch for verified
+   reasons, plus the LLM-replay arm for [rocq-tactic-script]
+   certs. Renamed from [close_or_fail] in M3.c — the public
+   [close_or_fail] (below) is now a wrapper that catches a
+   primary failure and tries LLM-assisted Tier-3 reconstruction
+   before re-raising the error. *)
+let close_or_fail_primary (p : path) : unit Proofview.tactic =
   match p.cert, p.verify_reason with
   | None, _ ->
     CErrors.user_err Pp.(
@@ -229,7 +235,13 @@ let close_or_fail (p : path) : unit Proofview.tactic =
         Rocq Stdlib allowlist. Audit H1: a hallucinated [admit]
         or [Axiom Foo] is a tactic failure, never an admitted
         theorem. *)
-     | Tier3_replay_deferred _ ->
+     | Tier3_replay_deferred { trace_format = "rocq-tactic-script" } ->
+       (* M3.b: tightened to only accept the Rocq-flavored cert.
+          A [lean-tactic-script] cert reaching the Rocq closer is
+          a configuration error (LLM adapter saw this bridge as
+          Lean-flavored), not a tactic-soundness issue — surface
+          it as a clear user error rather than silently trying to
+          parse Lean tactics as Ltac. *)
        (match cert.payload with
         | Tier3_proof_trace { trace_data = `String script; _ } ->
           Llm_replay.replay_script script
@@ -237,6 +249,16 @@ let close_or_fail (p : path) : unit Proofview.tactic =
           CErrors.user_err Pp.(
             str "proof_broker: Tier-3 replay-deferred cert payload \
                  is not a string trace; cannot replay"))
+     | Tier3_replay_deferred { trace_format } ->
+       CErrors.user_err Pp.(
+         str (Printf.sprintf
+                "proof_broker: LLM cert has trace_format=%S but the \
+                 Rocq home-system replayer only accepts \
+                 'rocq-tactic-script'. The LLM adapter likely saw \
+                 this IR as a Lean source_system; ensure the Rocq \
+                 reifier sets ir.source_system.name = \"rocq\" so \
+                 [Adapter_llm.dialect_of_ir] picks the Rocq dialect."
+                trace_format))
      | Verified_envelope | Verified_farkas
      | Verified_case_split | Verified_tier3
      (* Verified_tier3_provenance gates the home-system closer
@@ -269,6 +291,73 @@ let close_or_fail (p : path) : unit Proofview.tactic =
     (* Should not happen: cert present => verify ran. *)
     CErrors.user_err Pp.(
       str "proof_broker: internal — cert present but verify outcome missing")
+
+(* --- M3.c: LLM-assisted Tier-3 reconstruction fallback ----------- *)
+
+(* Run [Llm_replay.replay_script] on a candidate the LLM produced
+   via reconstruction (rather than the primary LLM-as-backend
+   path). On success, emit a [Feedback.msg_info] line naming the
+   source trace format so the audit trail of how the goal closed
+   is visible in the build output. Mirror of Lean's
+   [replayReconstructedScript]. *)
+let replay_reconstructed_script (trace_format : string)
+    (script : string) : unit Proofview.tactic =
+  let announce =
+    Proofview.tclLIFT (Proofview.NonLogical.make (fun () ->
+      Feedback.msg_info (Pp.str (Printf.sprintf
+        "proof_broker: closed via LLM Tier-3 reconstruction \
+         (%s trace → Rocq Ltac script, kernel-checked, audit H1)."
+        trace_format))))
+  in
+  Proofview.tclBIND (Llm_replay.replay_script script) (fun () -> announce)
+
+(* Decide whether to invoke LLM-assisted reconstruction on the
+   current cert + return a fallback tactic if so. Gates (no-op
+   unless all hold):
+   * a cert is in hand,
+   * tier is 3 with a [Tier3_proof_trace] payload,
+   * [trace_format] is not already [rocq-tactic-script] (which the
+     primary LLM-replay arm at the top of [close_or_fail_primary]
+     handles),
+   * the SDK's [Llm_reconstruct.translate] returns a non-empty
+     script (so this is silent when no endpoint is configured —
+     the primary failure is re-raised).
+
+   The translate call runs immediately when this function is
+   invoked; callers should only invoke it from the [tclORELSE]
+   handler so the HTTP request is lazy (fires only on primary
+   failure). *)
+let try_llm_reconstruct (ir : Ir.t) (cert_opt : Cert.t option)
+  : unit Proofview.tactic option =
+  match cert_opt with
+  | None -> None
+  | Some (cert : Cert.t) ->
+    if cert.tier <> 3 then None
+    else match cert.payload with
+    | Tier3_proof_trace { trace_format = "rocq-tactic-script"; _ } ->
+      None
+    | Tier3_proof_trace { trace_format; _ } ->
+      (match Proof_broker.Llm_reconstruct.translate ir cert with
+       | Error _ -> None
+       | Ok script ->
+         Some (replay_reconstructed_script trace_format script))
+    | _ -> None
+
+(* Public closer: try the primary fragment-keyed chain; on any
+   failure, try LLM-assisted Tier-3 reconstruction before
+   re-raising the primary error. Mirror of Lean's [closeOrFail]
+   try/catch wrap. Audit H1: the reconstruction path goes
+   through the SAME audit gate [replay_reconstructed_script] →
+   [Llm_replay.replay_script] uses for primary
+   [rocq-tactic-script] certs — kernel replay + axiom-footprint
+   subset check — so the LLM never widens the trust base. *)
+let close_or_fail (p : path) : unit Proofview.tactic =
+  Proofview.tclORELSE
+    (close_or_fail_primary p)
+    (fun (primary_exn, primary_info) ->
+      match try_llm_reconstruct p.ir p.cert with
+      | None -> Proofview.tclZERO ~info:primary_info primary_exn
+      | Some fallback -> fallback)
 
 (* --- public entry points ------------------------------------------- *)
 
