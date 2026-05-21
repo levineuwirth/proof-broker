@@ -135,7 +135,8 @@ let render_path (p : path) : string =
       let kind = Proof_broker.Verifier.kind_of_reason r in
       let ok = match r with
         | Verified_envelope | Verified_farkas
-        | Verified_case_split | Verified_tier3 -> true
+        | Verified_case_split | Verified_tier3
+        | Verified_tier3_provenance -> true
         | _ -> false
       in
       Printf.sprintf "  verify:   %dms, ok=%b (%s)" p.verify_ms ok kind
@@ -220,7 +221,18 @@ let close_or_fail (p : path) : unit Proofview.tactic =
     let kind = Proof_broker.Verifier.kind_of_reason r in
     (match r with
      | Verified_envelope | Verified_farkas
-     | Verified_case_split | Verified_tier3 ->
+     | Verified_case_split | Verified_tier3
+     (* Verified_tier3_provenance gates the home-system closer
+        (kernel check, audit H1) exactly as Verified_farkas gates
+        lia: the OCaml-side TSTP verifier accepted the cert's
+        envelope + provenance (no smuggled axioms, refutes the
+        negated goal, reaches $false), so the registered
+        proof_broker_hol_closer (hauto, opted-in via
+        ProofBrokerHammer) can produce a kernel-checked proof
+        term. Same arm the Lean closer added when M2 (TSTP
+        verifier) shipped — Verified_tier3_provenance is the
+        gate for the Vampire HOL path. *)
+     | Verified_tier3_provenance ->
        closer_for_fragment cert.refinement_record.fragment
      | Tier_check_deferred _ ->
        (* Tier 0 oracle path: no soundness verifier ran but the
