@@ -426,4 +426,39 @@ example : (1 : Int) = 1 := by
   fail_if_success (llm_reconstruct_test "alethe-2024" "skip")
   rfl
 
+/- ============================================================
+   Alethe walker (M1.β — clausal layer).
+
+   `alethe_walker_test "<trace>"` parses a hand-written
+   alethe-2024 trace via the SDK FFI and walks it into a kernel
+   proof term — the "cert IS the proof" play for Tier-3
+   alethe-2024 certs. M1.β covers the clausal rules (assume /
+   resolution / or / false); the arithmetic and equality rule
+   clusters land in follow-up PRs. Build success is the test:
+   the walker must produce a well-typed proof term the kernel
+   accepts. -/
+
+/-- Clausal walker: `A` and `¬A` in scope resolve to the empty
+    clause (`False`). The walker reconstructs the proof term
+    `hNA hA` from the trace's `assume` + `resolution` steps —
+    no decision procedure, no axiom. -/
+theorem alethe_walker_clausal_axiom_free
+    (A : Prop) (hA : A) (hNA : ¬A) : False := by
+  alethe_walker_test
+    "( (assume a0 A) (assume a1 (not A)) \
+       (step t0 (cl) :rule resolution :premises (a0 a1)) )"
+
+#print axioms alethe_walker_clausal_axiom_free
+
+/-- Same, with the resolution premises in the opposite order —
+    exercises the `elabResolution` symmetric branch (premise
+    order in the trace is not fixed). -/
+theorem alethe_walker_clausal_flipped_axiom_free
+    (P : Prop) (hP : P) (hNP : ¬P) : False := by
+  alethe_walker_test
+    "( (assume a0 (not P)) (assume a1 P) \
+       (step t0 (cl) :rule resolution :premises (a0 a1)) )"
+
+#print axioms alethe_walker_clausal_flipped_axiom_free
+
 end ProofBroker.Test

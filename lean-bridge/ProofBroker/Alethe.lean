@@ -20,11 +20,21 @@ failure on an unsupported rule is a tactic failure, with the
 existing omega fallback re-running (closer chain in
 [ProofBroker.Tactic.closeOrFail]).
 
-M1 scope (LIA + UF): assume / refl / resolution / or /
-la_generic / la_mult_neg / false-closing / symm / trans / cong
-/ not_and / contraction / reordering. Subproof is M3 scope.
-Unsupported rules surface as throwError; the omega fallback
-catches them.
+M1.β (this PR) scope: **clausal rules only** — `assume`,
+`resolution`, `or`, and the empty-`(cl)` closing step. Sexp→Expr
+covers LIA-shaped terms (`Int`, arithmetic ops, comparisons,
+`not`, `True`/`False`, `or`/`and` connectives) so the
+expression layer is ready for the arithmetic rules. Subsequent
+PRs add: `la_generic` + `la_mult_neg` (arithmetic), then
+`refl` / `symm` / `trans` / `cong` (equality), then the
+boolean-cleanup cluster cvc5 emits everywhere (`hole`,
+`rare_rewrite`, `equiv_simplify`, `equiv1`/`equiv2`, `implies`,
+`and_neg`). Real cvc5 output uses ~14 rules even for a tiny
+Farkas proof, so meaningful coverage requires the full set;
+this PR's clausal-only walker still falls through to omega on
+real cvc5 traces but the architecture is in place to extend.
+Unsupported rules surface as `throwError`; the omega fallback
+in `closeOrFail` catches them.
 -/
 
 import Lean
@@ -171,5 +181,297 @@ def runParseAletheProof (proofText : String) : Except FfiError Proof := do
   | .ok p => pure p
   | .error e =>
     .error (.decodeError s!"decoding alethe proof: {e}" none)
+
+/- ============================================================
+   Walker: Alethe proof → Lean kernel proof term
+   ============================================================ -/
+
+open Lean Meta Elab Tactic
+
+/-- Walker context: maps Alethe atom names to Lean expressions
+    (typically local hypotheses or free variables from the goal's
+    context). Populated by `mkContext`, which scans the current
+    goal's `LocalContext` and harvests every named local
+    declaration. The walker uses this map to resolve atoms during
+    `Sexp → Expr` translation. -/
+structure WalkerContext where
+  vars : NameMap Expr
+  deriving Inhabited
+
+/-- Walker state: map from step id to the `Expr` proving that
+    step's clause (a disjunction of literals — `False` for the
+    empty clause). Built up by folding [Step.elab] over the
+    proof's step list. -/
+structure WalkerState where
+  proven : NameMap Expr
+  deriving Inhabited
+
+abbrev WalkerM := StateRefT WalkerState MetaM
+
+private def lookupStep (id : String) : WalkerM Expr := do
+  let st ← get
+  match st.proven.find? (Name.mkSimple id) with
+  | some e => pure e
+  | none => throwError m!"alethe walker: step '{id}' not proven yet"
+
+private def storeStep (id : String) (e : Expr) : WalkerM Unit :=
+  modify fun st => { st with proven := st.proven.insert (.mkSimple id) e }
+
+/-- Build a [WalkerContext] from the current goal's local
+    context. Every named hypothesis / free var becomes an atom
+    binding. Anonymous locals are skipped (Alethe atoms always
+    have names). -/
+def mkContext : TacticM WalkerContext := do
+  let lctx ← getLCtx
+  let mut vars : NameMap Expr := {}
+  for decl in lctx do
+    unless decl.isImplementationDetail do
+      vars := vars.insert decl.userName decl.toExpr
+  return { vars }
+
+/- ----------------------------------------------------------------
+   Sexp → Expr (LIA scope)
+
+   Atoms are looked up in the context, parsed as Int literals,
+   or recognized as `true`/`false` constants. Lists are dispatched
+   on the head atom; the recognized heads are the LIA-shaped ones
+   the Alethe printer emits (`+`, `-`, `*`, `<=`, `<`, `>=`, `>`,
+   `=`, `not`, `or`, `and`, `cl`, `=>`, `true`, `false`).
+   ---------------------------------------------------------------- -/
+
+/-- Parse an Alethe integer-shaped atom: either a plain integer
+    `"-3"`/`"3"` or a rational denominator-1 form `"3/1"`/`"-3/1"`
+    (cvc5's alethe-2024 printer normalizes integers as
+    rationals). Returns `none` for anything else. -/
+private def parseIntAtom (s : String) : Option Int := do
+  let s := s.trim
+  if s.isEmpty then none
+  else
+    let (numStr, denomOk) :=
+      match s.splitOn "/" with
+      | [n] => (n, true)
+      | [n, "1"] => (n, true)
+      | _ => ("", false)
+    if denomOk then numStr.toInt? else none
+
+private def mkIntLit (n : Int) : MetaM Expr := do
+  let absN : Nat := n.natAbs
+  let absE := mkApp (mkConst ``Int.ofNat) (mkNatLit absN)
+  if n < 0 then mkAppM ``Neg.neg #[absE] else pure absE
+
+/- Translate an Alethe `Sexp` to a Lean `Expr`. The recognized
+   shapes cover the LIA fragment: integer literals,
+   variable/hypothesis references, arithmetic (`+`/`-`/`*`),
+   comparisons (`<=`/`<`/`>=`/`>`/`=`), logical connectives
+   (`not`/`and`/`or`/`=>`), and the clausal `cl` constructor
+   (empty `(cl)` → `False`; one-literal `(cl L)` → `L`;
+   many-literal `(cl L1 L2 ...)` → `L1 ∨ L2 ∨ ...`). Other
+   shapes raise a clear `throwError` so the omega fallback can
+   re-run. `sexpToExpr` / `listToExpr` / `andOrChain` are
+   mutually recursive — hence the `mutual` block. -/
+mutual
+
+partial def sexpToExpr (ctx : WalkerContext) : Sexp → MetaM Expr
+  | .atom s => do
+    if s = "true" then return mkConst ``True
+    if s = "false" then return mkConst ``False
+    match parseIntAtom s with
+    | some n => mkIntLit n
+    | none =>
+      match ctx.vars.find? (Name.mkSimple s) with
+      | some e => return e
+      | none =>
+        throwError m!"alethe walker: unknown atom '{s}' \
+                      (not an integer literal, not in scope)"
+  | .list xs => listToExpr ctx xs
+
+partial def listToExpr (ctx : WalkerContext) : List Sexp → MetaM Expr
+  | [.atom "+", a, b] => do
+    mkAppM ``HAdd.hAdd #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom "-", a, b] => do
+    mkAppM ``HSub.hSub #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom "-", a] => do
+    mkAppM ``Neg.neg #[← sexpToExpr ctx a]
+  | [.atom "*", a, b] => do
+    mkAppM ``HMul.hMul #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom "<=", a, b] => do
+    mkAppM ``LE.le #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom "<", a, b] => do
+    mkAppM ``LT.lt #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom ">=", a, b] => do
+    mkAppM ``GE.ge #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom ">", a, b] => do
+    mkAppM ``GT.gt #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom "=", a, b] => do
+    mkAppM ``Eq #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  | [.atom "not", a] => do
+    return mkApp (mkConst ``Not) (← sexpToExpr ctx a)
+  | (.atom "and") :: rest => andOrChain ctx ``And rest
+  | (.atom "or") :: rest => andOrChain ctx ``Or rest
+  | (.atom "cl") :: rest =>
+    -- `(cl)` is the empty clause = False. `(cl L)` is just L.
+    -- `(cl L1 L2 ...)` is `L1 ∨ L2 ∨ ...` (right-associative).
+    match rest with
+    | [] => return mkConst ``False
+    | [lit] => sexpToExpr ctx lit
+    | _ => andOrChain ctx ``Or rest
+  | [.atom "=>", a, b] => do
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    return mkForall .anonymous .default aE bE
+  | other =>
+    throwError m!"alethe walker: unsupported Sexp shape: \
+                  ({String.intercalate " " (other.map fun s => reprStr s)})"
+
+/-- Right-associate a list of literals into an n-ary `And`/`Or`
+    chain. Empty list collapses to `True` (for `And`) / `False`
+    (for `Or`) — but the callers only ever pass non-empty lists. -/
+partial def andOrChain (ctx : WalkerContext) (conn : Name)
+    : List Sexp → MetaM Expr
+  | [] => return mkConst (if conn = ``And then ``True else ``False)
+  | [lit] => sexpToExpr ctx lit
+  | lit :: rest => do
+    let lE ← sexpToExpr ctx lit
+    let restE ← andOrChain ctx conn rest
+    mkAppM conn #[lE, restE]
+
+end
+
+/- ----------------------------------------------------------------
+   Rule elaborators (clausal layer)
+   ---------------------------------------------------------------- -/
+
+/-- An Alethe top-level `(assume id L)`: the proof of `L` is the
+    Lean hypothesis in scope whose type is definitionally equal
+    to `L`. Mirrors how cvc5 names assumes — they correspond to
+    the goal's named hypotheses / the negated-goal literal. If no
+    matching hypothesis is found, throws so the omega fallback
+    can run.
+
+    Note: Alethe `assume`s are a distinct top-level command form
+    (parsed into `Proof.assumes`, not `Proof.steps`); `walkProof`
+    seeds them into the walker state before walking the steps. -/
+private def elabAssumeLiteral (ctx : WalkerContext) (id : String)
+    (literal : Sexp) : WalkerM Expr := do
+  let stmt ← sexpToExpr ctx literal
+  -- Search the local context for a hypothesis whose type is
+  -- definitionally equal to the assume's stated literal.
+  let lctx ← getLCtx
+  for decl in lctx do
+    if decl.isImplementationDetail then continue
+    if ← isDefEq decl.type stmt then
+      return decl.toExpr
+  throwError m!"alethe walker: assume '{id}' states {stmt}, \
+                 but no local hypothesis matches that type"
+
+/-- `(cl)` from a `false`-rule step. Alethe's `(step _ (cl (not false)) :rule false)`
+    is the standard premise for the final empty-cl resolution. The
+    proof of `(cl (not false))` is `(fun (h : False) => h) : ¬False`. -/
+private def elabFalseStep (_ctx : WalkerContext) (s : Step) : WalkerM Expr := do
+  match s.clause with
+  | [.list [.atom "not", .atom "false"]] =>
+    -- ¬False ≡ False → False ≡ id : False → False
+    let falseExpr := mkConst ``False
+    return .lam .anonymous falseExpr (.bvar 0) .default
+  | _ =>
+    throwError m!"alethe walker: 'false' rule expects clause \
+                   (cl (not false)), got {repr s.clause}"
+
+/-- `or` rule: from a single premise that is the n-ary `or` of
+    literals, produce the same clause. Alethe's `or` rule
+    decomposes a non-clausal Prop of the form `(or L1 L2 ... Ln)`
+    into the clause `(cl L1 L2 ... Ln)`. Logically the
+    proposition is unchanged (clause IS disjunction at the Prop
+    level under our `cl` encoding), so the elaborator just
+    returns the premise expression with the same type. -/
+private def elabOr (s : Step) : WalkerM Expr := do
+  match s.premises with
+  | some [p] => lookupStep p
+  | _ =>
+    throwError m!"alethe walker: 'or' rule expects exactly one \
+                   premise, got {repr s.premises}"
+
+/-- `resolution`: clausal resolution between premise clauses.
+    Alethe's `resolution` is multi-way (resolves over multiple
+    pivot literals in one step). M1.β implements the binary
+    case (two premises) for clauses with one or two literals
+    each — the most common shape in the boolean-cleanup steps
+    that close cvc5 LIA proofs. Larger resolutions surface as
+    `throwError`, and the omega fallback runs. -/
+private def elabResolution (s : Step) : WalkerM Expr := do
+  match s.premises with
+  | some [p1, p2] => do
+    let e1 ← lookupStep p1
+    let e2 ← lookupStep p2
+    -- For M1.β we only handle the simplest case: one premise
+    -- has type `L`, the other has type `¬L`, and we derive
+    -- `False`. This corresponds to the final closing step of
+    -- many cvc5 proofs (`(step closing (cl) :rule resolution
+    -- :premises (some_L some_neg_L))`).
+    let t1 ← inferType e1
+    let t2 ← inferType e2
+    -- Try e1 : L, e2 : L → False
+    let negT1 := mkApp (mkConst ``Not) t1
+    if ← isDefEq t2 negT1 then
+      return mkApp e2 e1
+    -- Or e2 : L, e1 : L → False
+    let negT2 := mkApp (mkConst ``Not) t2
+    if ← isDefEq t1 negT2 then
+      return mkApp e1 e2
+    throwError m!"alethe walker: resolution between {t1} and {t2} \
+                   is not the simple ¬-elimination shape M1.β \
+                   handles (multi-literal clauses + pivot \
+                   selection are M1.γ scope)."
+  | _ =>
+    throwError m!"alethe walker: 'resolution' M1.β scope handles \
+                   exactly 2 premises, got {repr s.premises}"
+
+/-- Elaborate a single step: dispatch on `rule` to a per-rule
+    elaborator, store the result under the step's `id`. Unknown
+    rules throw — the omega fallback in `closeOrFail` catches
+    these so the walker is honest about partial coverage.
+
+    `assume` is not handled here: Alethe `assume`s are a separate
+    top-level command (`Proof.assumes`), seeded into the walker
+    state by `walkProof` before the step list is walked. -/
+def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
+  let result ← match s.rule with
+    | "or" => elabOr s
+    | "resolution" => elabResolution s
+    | "false" => elabFalseStep ctx s
+    | other =>
+      throwError m!"alethe walker: rule '{other}' not yet \
+                     supported (M1.β scope: resolution / or / \
+                     false, plus seeded assumes. Subsequent PRs \
+                     add la_generic / cong / refl / hole / \
+                     equiv_simplify / rare_rewrite / implies / \
+                     and_neg / etc. — the omega fallback handles \
+                     cvc5 traces in the meantime)."
+  storeStep s.id result
+
+/-- Walk an Alethe proof and return the `Expr` proving the final
+    step's clause. For a closing alethe-2024 proof the last step
+    is `(step _ (cl) :rule resolution :premises (...))` and the
+    returned expression has type `False`.
+
+    Two phases: (1) seed each top-level `assume` by matching its
+    literal against a local hypothesis; (2) fold `elabStep` over
+    the step list. The `proven` map keys are both assume ids and
+    step ids — Alethe references either uniformly by id. -/
+def walkProof (ctx : WalkerContext) (proof : Proof) : MetaM Expr := do
+  let initial : WalkerState := { proven := {} }
+  let walk : WalkerM Expr := do
+    for a in proof.assumes do
+      let e ← elabAssumeLiteral ctx a.id a.literal
+      storeStep a.id e
+    proof.steps.forM (elabStep ctx)
+    match proof.steps.getLast? with
+    | none =>
+      throwError m!"alethe walker: proof has no steps — nothing to \
+                     conclude (a well-formed alethe-2024 proof ends \
+                     in an empty-clause resolution step)"
+    | some last => lookupStep last.id
+  let (result, _) ← walk.run initial
+  return result
 
 end ProofBroker.Alethe
