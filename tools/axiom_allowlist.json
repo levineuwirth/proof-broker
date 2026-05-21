@@ -52,6 +52,10 @@
       [],
     "ProofBroker.Test.alethe_walker_clausal_flipped_axiom_free":
       [],
+    "ProofBroker.Test.alethe_walker_la_generic_lit":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_la_generic_disj":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":

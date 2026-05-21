@@ -1872,16 +1872,20 @@ def evalLlmReconstructTest : Tactic := fun stx => do
         rejected, never admitted via an LLM-introduced axiom."
   | _ => throwError "llm_reconstruct_test: malformed invocation"
 
-/-- TEST-ONLY tactic for the Alethe walker (Alethe walker M1.β).
-    Parses the string literal as an alethe-2024 trace via the SDK
-    FFI, builds a walker context from the current goal's local
-    hypotheses, walks the proof into a kernel proof term, and
-    assigns the (`False`) goal. Lets CI exercise the walker's
-    per-rule elaboration on hand-written traces without
-    dispatching to a live cvc5 — the same CI-stable pattern as
-    `llm_replay_test`. The goal must be `False` (the
-    refutation-style shape an Alethe proof concludes); a
-    non-`False` goal is rejected. -/
+/-- TEST-ONLY tactic for the Alethe walker. Parses the string
+    literal as an alethe-2024 trace via the SDK FFI, builds a
+    walker context from the current goal's local hypotheses,
+    walks the proof into a kernel proof term, and assigns the
+    goal. Lets CI exercise the walker's per-rule elaboration on
+    hand-written traces without dispatching to a live cvc5 — the
+    same CI-stable pattern as `llm_replay_test`.
+
+    The walked proof's final step yields a proof of that step's
+    clause; the tactic accepts it iff its type is defeq to the
+    goal — `False` for a refutation-shaped trace, or the clause
+    proposition itself for a trace whose last step is a
+    `la_generic` leaf (used to unit-test individual rules in
+    isolation). -/
 syntax (name := aletheWalkerTest) "alethe_walker_test" str : tactic
 
 @[tactic aletheWalkerTest]
@@ -1894,11 +1898,12 @@ def evalAletheWalkerTest : Tactic := fun stx => do
         throwError "alethe_walker_test: failed to parse trace ({repr e})"
     let goal ← getMainGoal
     let goalType ← goal.getType
-    unless goalType.isConstOf ``False do
-      throwError "alethe_walker_test: goal must be `False` (the \
-        refutation shape an Alethe proof concludes); got {goalType}"
     let ctx ← Alethe.mkContext
     let proofTerm ← Alethe.walkProof ctx proof
+    let termType ← inferType proofTerm
+    unless ← isDefEq termType goalType do
+      throwError "alethe_walker_test: walker produced a proof of \
+        {termType}, but the goal is {goalType}"
     goal.assign proofTerm
   | _ => throwError "alethe_walker_test: malformed invocation"
 
