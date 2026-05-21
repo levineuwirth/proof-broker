@@ -51,11 +51,31 @@ script, which then goes through the *same* `replayLlmScriptOrFail`
 audit-H1 gate — no separate trust path. The fallback is silent
 when no endpoint is configured (the primary failure is
 re-raised), so CI with no LLM sees the same diagnostics as before.
-With this, Phase 3 (Breadth) is structurally complete; remaining
-Phase-3 polish is tracked in the per-phase retrospectives.
+With this, Phase 3 (Breadth) is structurally complete on the Lean
+side; remaining Phase-3 polish is tracked in the per-phase
+retrospectives.
+
+The Rocq bridge now has structural parity with the Lean side's
+Phase-3 surface (PR #37/#38/#39, May 2026). M1 lifted the Rocq
+reifier to higher-order shapes (`Prod`→`Forall`/`Implies`,
+parenthesized arrow domains, `Eq` at function types, `HOL`
+fragment detection) and added a fragment-keyed HOL closer hook
+backed by an opt-in `coq-hammer`-based `hauto` package (mirror
+of `ProofBrokerMathlib`). M2 added a Rocq-side LLM-replay closer
+that uses Rocq's kernel `Assumptions` API for the audit-H1
+axiom-footprint gate (the same API `Print Assumptions` calls
+internally). M3 made the SDK's `Adapter_llm` and `Llm_reconstruct`
+bridge-aware: a `dialect` record dispatched on
+`ir.source_system.name` renders Lean syntax / `lean-tactic-script`
+certs for Lean home systems and Rocq Stdlib syntax /
+`rocq-tactic-script` certs for Rocq home systems, then wired the
+reconstruction-fallback `tclORELSE` wrap into Rocq's
+`close_or_fail` (same audit-H1 gate as M2 for translated
+scripts). Phase 3 is now structurally complete on **both**
+bridges.
 Phase 6 (cross-platform distribution + polish) carries the displaced
 original-Phase-5 scope. See `delta.md §2` for per-phase status and
-`RETROSPECTIVES/phase-{0,4,5}.md` for retrospectives.
+`RETROSPECTIVES/phase-{0,4,5,3-rocq-parity}.md` for retrospectives.
 Term-mode reconstruction (Phase 5 deliverable) covers the full Tier 1
 + Tier 2 Farkas cert vocabulary on both bridges — comparison goals
 (≤ / < / ≥ / > / =), all four inequality hypothesis shapes plus
