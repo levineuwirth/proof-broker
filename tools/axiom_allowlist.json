@@ -46,6 +46,8 @@
       [],
     "ProofBroker.Test.llm_replay_axiom_free":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.llm_reconstruct_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":

@@ -379,4 +379,51 @@ example : True := by
   fail_if_success (llm_replay_test "@@@ not lean @@@")
   trivial
 
+/- ============================================================
+   LLM-assisted Tier-3 reconstruction (roadmap §Phase 3 #4).
+
+   `llm_reconstruct_test "<traceFmt>" "<script>"` simulates a
+   successful `llm_translate_trace` FFI call (an LLM was asked to
+   translate an un-replayable Tier-3 trace and returned the
+   script) and routes the candidate through the SAME audit-H1
+   gate the production fallback uses. The translation step itself
+   is a pure I/O wrapper around an untrusted oracle — no soundness
+   contribution — so swapping the live FFI for a literal script is
+   faithful to what's actually being tested: that a candidate
+   script makes it through `replayReconstructedScript` →
+   `replayLlmScriptOrFail`, with the audit-H1 gate firing
+   identically.
+   ============================================================ -/
+
+/-- Positive: a translated script the kernel independently
+    accepts under the classical footprint (axiom-free `omega`)
+    closes the goal via the reconstruction fallback's replay
+    closer. The build log carries the
+    `closed via LLM Tier-3 reconstruction ...` audit line. -/
+theorem llm_reconstruct_axiom_free
+    (n : Int) (h : n + 1 = 3) : n = 2 := by
+  llm_reconstruct_test "alethe-2024" "omega"
+
+#print axioms llm_reconstruct_axiom_free
+
+/-- audit H1: a hallucinated `sorry` "translation" closes the
+    goal but the audit gate rejects `sorryAx`; the tactic
+    fails so the goal is left OPEN. -/
+example : (1 : Int) = 1 := by
+  fail_if_success (llm_reconstruct_test "tstp-fof" "sorry")
+  rfl
+
+/-- audit H1: a `native_decide` translation routes through the
+    compiler-trust axiom `Lean.ofReduceBool`, which is outside
+    the classical allowlist — rejected. -/
+example : (2 + 2 : Nat) = 4 := by
+  fail_if_success (llm_reconstruct_test "alethe-2024" "native_decide")
+  rfl
+
+/-- A translation that doesn't actually close the goal is a
+    tactic failure, never a silent pass. -/
+example : (1 : Int) = 1 := by
+  fail_if_success (llm_reconstruct_test "alethe-2024" "skip")
+  rfl
+
 end ProofBroker.Test
