@@ -660,3 +660,46 @@ Print Assumptions pb_uf_composed_axiom_free.
 
 Print pb_uf_predicate_axiom_free.
 Print Assumptions pb_uf_predicate_axiom_free.
+
+(* ============================================================
+   LLM-as-backend home-side replay closer
+   (roadmap §Phase 3 deliverable 3, Rocq parity M2).
+
+   [llm_replay_test "<script>"] simulates a successful LLM
+   adapter response (an LLM produced this Ltac string) and runs
+   the *same* [Llm_replay.replay_script] closer the live broker
+   path takes for a Tier-3 [Tier3_replay_deferred] cert. This
+   exercises the audit-H1 contract — kernel replay + axiom-
+   footprint subset check — with no network and no model.
+   Mirror of the llm_replay_test block in
+   lean-bridge/Test/Tactic.lean. *)
+
+(* Positive: a clean Ltac script the home kernel independently
+   accepts ([intros; reflexivity], axiom-free) closes the goal
+   via the LLM-replay path. The proof term comes from Rocq, not
+   the LLM — audit H1. *)
+Theorem pb_llm_replay_axiom_free : forall x : Z, x = x.
+Proof.
+  llm_replay_test "intros x; reflexivity".
+Qed.
+
+Print pb_llm_replay_axiom_free.
+Print Assumptions pb_llm_replay_axiom_free.
+
+(* Negative: a script that runs without error but does not close
+   the goal ([idtac]) is a tactic failure — never a silent
+   pass. [assert_fails] confirms the inner tactic errored;
+   [exact I] then closes legitimately. *)
+Example pb_llm_replay_rejects_non_closing : True.
+Proof.
+  assert_fails (llm_replay_test "idtac").
+  exact I.
+Qed.
+
+(* Negative: a script that does not parse as Rocq Ltac is a
+   tactic failure, not an admitted theorem. *)
+Example pb_llm_replay_rejects_unparsable : True.
+Proof.
+  assert_fails (llm_replay_test "@@@ not lean @@@").
+  exact I.
+Qed.
