@@ -859,8 +859,82 @@ private def replayLlmScriptOrFail (goal : MVarId)
       never admitted via an LLM-introduced axiom (audit H1). (`sorry`/\
       `admit` ⇒ `sorryAx`; `native_decide` ⇒ `Lean.ofReduceBool`.)"
 
-/-- Close the goal from a successfully verified path, or surface a
-    structured error describing why the path didn't close.
+/- ============================================================
+   LLM-assisted Tier-3 reconstruction (roadmap §Phase 3 #4)
+   ============================================================
+
+   When the broker mints a Tier-3 cert whose `trace_format` the
+   home system has no symbolic replayer for (e.g., a future ATP
+   that emits a dialect Lean's `omega`/`linarith`/`aesop` chain
+   can't act on), the closer asks the configured LLM to translate
+   the trace into a candidate Lean tactic script, then routes
+   that script through the {e same} audit-H1 gate
+   `replayLlmScriptOrFail` uses for primary LLM certs — kernel
+   replay plus a transitive-axiom subset check against the
+   classical allowlist. The LLM never widens the trust base:
+   a hallucinated `sorry`/`native_decide`/bespoke-axiom
+   translation is a tactic failure, never an admitted theorem.
+
+   The fallback is silent when the endpoint is unconfigured (the
+   SDK returns a structured error; the caller re-raises the
+   primary failure) — i.e., no LLM endpoint behaves exactly as if
+   this branch were not wired in. -/
+
+/-- Replay a candidate script (from a reconstruction translator)
+    through `replayLlmScriptOrFail`, wrapping it in a synthetic
+    `lean-tactic-script` cert payload so the same audit-H1 gate
+    fires. Returns `true` on a successful, axiom-gated closure;
+    `false` if the gate rejected the script. Never raises — a
+    rejection is reported as `false` so the caller can re-raise
+    its own primary error for the user. -/
+private def replayReconstructedScript (goal : MVarId)
+    (traceFormat : String) (script : String) : TacticM Bool := do
+  let candidate : Json := Json.mkObj [
+    ("payload", Json.mkObj [
+      ("trace_format", Json.str "lean-tactic-script"),
+      ("trace_data", Json.str script)])]
+  try
+    replayLlmScriptOrFail goal candidate
+    Lean.logInfo m!"proof_broker: closed via LLM Tier-3 reconstruction \
+      ({traceFormat} trace → Lean tactic script, kernel-checked, audit H1)."
+    pure true
+  catch _ =>
+    pure false
+
+/-- Try LLM-assisted reconstruction on `cert?`. Returns `true`
+    iff a candidate script came back from the SDK AND the
+    audit-H1 gate accepted the replayed proof term.
+
+    Gate (no-op unless all hold):
+    * a cert is in hand,
+    * tier is 3,
+    * `payload.trace_format` exists and is not already
+      `lean-tactic-script` (which the primary LLM-replay branch
+      at the top of `closeOrFail` handles),
+    * the SDK's `llm_translate_trace` returns a non-empty script
+      (so this is silent when no endpoint is configured). -/
+private def tryLlmReconstruct? (goal : MVarId) (ir : IR)
+    (cert? : Option Json) : TacticM Bool := do
+  match cert? with
+  | none => pure false
+  | some cert =>
+    let tier := (cert.getObjValAs? Int "tier").toOption.getD 0
+    let traceFmt := certTraceFormat cert
+    if tier != 3 || traceFmt == "" || traceFmt == "lean-tactic-script" then
+      pure false
+    else
+      match runLlmTranslateTrace ir cert with
+      | .error _ => pure false
+      | .ok script => replayReconstructedScript goal traceFmt script
+
+/-- Primary fragment-keyed closer chain. Dispatch on (cert's
+    fragment × verify reason); on any failure (verifier
+    rejection, fragment closer can't discharge, no closer for
+    this fragment) `throwError`s rather than leaving the goal
+    closed by an unjustified axiom. Wrapped by `closeOrFail`,
+    which catches a primary failure and hands it to the
+    LLM-assisted Tier-3 reconstruction fallback (audit-H1-gated)
+    before re-raising — see `tryLlmReconstruct?`.
 
     Closure dispatch is keyed on the cert's fragment first, then
     its verify reason:
@@ -881,31 +955,13 @@ private def replayLlmScriptOrFail (goal : MVarId)
       finish for the not-yet-covered shapes; LIA Tier 3 doesn't
       need it — omega already nails that axiom-free.
 
-    The verbose form calls `logInfo` with `renderPath` first; the bare
-    form just throws so unsuccessful invocations are silent. -/
--- `goal` is used only on the LLM-replay path (it replays
--- `(by <script>)` via `exact`, then audits the assigned term's
--- axioms). `_goalType` is retained for the shared closer signature
--- but unused. Every other closer operates on the tactic state
--- (`omega`/`decide`/…) or `throwError`s — none assigns the
--- metavariable directly (audit H1).
-private def closeOrFail (goal : MVarId) (_goalType : Expr)
-    (path : ExtractionPath) : TacticM Unit := do
-  -- LLM-as-backend home-side completion (roadmap §Phase 3 #3). The
-  -- `lean-tactic-script` Tier-3 cert is an untrusted oracle the
-  -- OCaml verifier deliberately leaves soundness-unchecked
-  -- (`tier3ReplayDeferred`, envelope-ok only). It is NOT routed
-  -- through the fragment-keyed closers below — its soundness comes
-  -- from kernel replay + an axiom-footprint gate. See
-  -- `replayLlmScriptOrFail`.
-  if let some cert := path.cert then
-    if certTraceFormat cert == "lean-tactic-script"
-        && path.verifyEnvelopeOk == some true
-        && (match path.verifyReason with
-            | some (.tier3ReplayDeferred _) => true
-            | _ => false) then
-      replayLlmScriptOrFail goal cert
-      return
+    `goal` is unused here — every primary closer operates on the
+    tactic state (`omega`/`decide`/…) or `throwError`s. It's
+    kept in the signature because `closeOrFail`'s shared signature
+    threads it through; the LLM-replay/reconstruction paths in
+    the wrapper do use it. -/
+private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
+    : TacticM Unit := do
   -- Accept either strict verifyOk (Tier 1/2/3 with a real
   -- soundness check) OR envelopeOk + tierCheckDeferred (Tier 0
   -- oracle path, currently the only route for fragments without
@@ -1030,6 +1086,64 @@ private def closeOrFail (goal : MVarId) (_goalType : Expr)
     -- closer can't trust). Surface the reason verbatim.
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker: cert minted but verifier rejected: {r}"
+
+/-- Close the goal from an extracted broker path, with the full
+    Phase-3 audit-H1 closer stack:
+
+    1. LLM-as-backend primary (#3) — a `lean-tactic-script`
+       Tier-3 cert with reason `tier3ReplayDeferred` is the
+       untrusted oracle the OCaml verifier deliberately leaves
+       soundness-unchecked. Routed straight to
+       `replayLlmScriptOrFail` (kernel replay + axiom-footprint
+       gate); never enters the fragment chain.
+    2. Primary fragment-keyed closers (`closeOrFailPrimary`) —
+       `omega`/`decide`/`subst_eqs`/`linarith`/`aesop` per the
+       cert's fragment.
+    3. LLM-assisted Tier-3 reconstruction fallback (#4) — if (2)
+       throws and a Tier-3 trace cert (in any format other than
+       `lean-tactic-script`) is in hand, ask the SDK to translate
+       the trace into a candidate Lean tactic script via
+       `runLlmTranslateTrace`, then route the script through the
+       SAME audit-H1 gate (`replayReconstructedScript` →
+       `replayLlmScriptOrFail`). On success the goal closes and
+       a `logInfo` records the reconstruction step. On any
+       rejection (no endpoint, parse failure, sorry/native_decide
+       in the script, …) the primary failure is re-raised so the
+       user sees the original reason, not a misleading
+       "LLM didn't help" message.
+
+    Soundness across all three: no closer ever assigns the goal
+    metavariable directly with a trusted axiom; every kernel
+    proof either comes from an axiom-free decision procedure or
+    from `replayLlmScriptOrFail`'s subset check against the
+    classical allowlist. The LLM never widens the trust base.
+
+    The verbose form (`proof_broker?`) calls `logInfo` with
+    `renderPath` first; the bare form just throws so unsuccessful
+    invocations are silent. `_goalType` is retained for the
+    shared closer signature but unused; `goal` is used only by
+    the LLM-replay paths. -/
+private def closeOrFail (goal : MVarId) (_goalType : Expr)
+    (path : ExtractionPath) : TacticM Unit := do
+  -- (1) LLM-as-backend primary path — its untrusted-oracle cert
+  -- bypasses the fragment chain entirely.
+  if let some cert := path.cert then
+    if certTraceFormat cert == "lean-tactic-script"
+        && path.verifyEnvelopeOk == some true
+        && (match path.verifyReason with
+            | some (.tier3ReplayDeferred _) => true
+            | _ => false) then
+      replayLlmScriptOrFail goal cert
+      return
+  -- (2) Primary closer chain; on failure, (3) try LLM-assisted
+  -- reconstruction before surfacing the error.
+  try
+    closeOrFailPrimary goal path
+  catch primary =>
+    if (← tryLlmReconstruct? goal path.ir path.cert) then
+      return
+    else
+      throw primary
 
 /- ============================================================
    Term-mode closer (Tier 1 Farkas reconstruction)
@@ -1669,5 +1783,35 @@ def evalLlmReplayTest : Tactic := fun stx => do
         ("trace_data", Json.str s.getString)])]
     replayLlmScriptOrFail (← getMainGoal) cert
   | _ => throwError "llm_replay_test: malformed invocation"
+
+/-- TEST-ONLY tactic for the LLM-assisted Tier-3 reconstruction
+    fallback (roadmap §Phase 3 #4). The live SDK FFI
+    (`llm_translate_trace`) only runs when an endpoint is
+    configured — for CI we skip the translation call and feed the
+    candidate script directly into the {e same} closer the
+    production path invokes after a successful FFI translation
+    (`replayReconstructedScript`). This pins the integration:
+    a translated script flows through `replayLlmScriptOrFail`
+    (kernel replay + axiom-footprint gate), the same audit-H1
+    contract `llm_replay_test` exercises for primary LLM certs.
+    First argument is the trace format of the (notionally
+    un-replayable) source cert — surfaced in the `logInfo` audit
+    line so the user can see which non-replayable format was
+    rescued. -/
+syntax (name := llmReconstructTest)
+  "llm_reconstruct_test" str str : tactic
+
+@[tactic llmReconstructTest]
+def evalLlmReconstructTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| llm_reconstruct_test $fmt:str $script:str) =>
+    let ok ← replayReconstructedScript (← getMainGoal)
+              fmt.getString script.getString
+    unless ok do
+      throwError "llm_reconstruct_test: the candidate script did not \
+        close the goal under the audit-H1 gate (`{fmt.getString}` \
+        trace → Lean tactic script). The goal is left OPEN — \
+        rejected, never admitted via an LLM-introduced axiom."
+  | _ => throwError "llm_reconstruct_test: malformed invocation"
 
 end ProofBroker.Tactic

@@ -449,9 +449,50 @@ this closer kernel-checks it). **Deferred (separate slice):**
 roadmap deliverable #4 (LLM-assisted reconstruction of
 un-replayable Tier-3 traces).
 
-With these, Phase 3's structural surface is complete; only
-deliverable #4 remains, inherently outside CI (no LLM endpoint)
-and tracked separately.
+**LLM-assisted Tier-3 reconstruction shipped (§Phase 3 #4).**
+`sdk/lib/llm_reconstruct.ml` adds `Llm_reconstruct.translate (ir,
+cert)` which reuses `Adapter_llm`'s curl transport, body builder,
+and response extractor (no new dependencies, same `curl -K -`
+secret discipline) but ships a different user prompt: the IR as
+a Lean theorem skeleton followed by the original Tier-3 trace
+verbatim, with the LLM asked to translate the trace into a Lean
+tactic script. The translation is exposed via a new FFI method
+`llm_translate_trace` (mirror of `verify_certificate`) and a
+`runLlmTranslateTrace` Bridge call on the Lean side.
+`ProofBroker.Tactic.closeOrFail` now wraps the primary
+fragment-keyed closer chain in a try/catch: on any primary
+failure with a Tier-3 cert in hand (and `trace_format` not
+already `lean-tactic-script`), the reconstruction translator is
+invoked and the candidate script is routed through the SAME
+audit-H1 gate (`replayReconstructedScript` → `replayLlmScriptOrFail`,
+kernel replay + axiom-footprint subset check against `{propext,
+Classical.choice, Quot.sound}`). A successful reconstruction
+emits a `logInfo` line ("closed via LLM Tier-3 reconstruction
+(<format> trace → Lean tactic script, kernel-checked, audit
+H1)") so the audit trail is visible in the build output. The
+fallback is silent when `PROOF_BROKER_LLM_ENDPOINT` is unset (the
+SDK returns a structured `llm_error` envelope; the primary
+failure is re-raised) — i.e., CI without an LLM endpoint behaves
+exactly as if this branch were not wired in. SDK tests:
+prompt-rendering, non-Tier3 rejection, fail-closed, and an
+end-to-end mock-HTTP-endpoint translate (mirroring
+`test_adapter_llm`'s forked one-shot responder pattern). Lean
+tests: a positive `omega`-translation closes axiom-free
+(`llm_reconstruct_axiom_free` pinned in
+`tools/axiom_allowlist.json`), and `sorry`/`native_decide`/
+non-closing translations are rejected — exercised via a test-only
+`llm_reconstruct_test "<format>" "<script>"` tactic that feeds
+the candidate script directly into the production-path
+`replayReconstructedScript`, bypassing the FFI translate call
+(no network needed; the audit gate is identical to the live path).
+
+With these, **Phase 3 (Breadth) is structurally complete**: every
+roadmap deliverable (Vampire adapter + TPTP→Lean replayer + HOL
+closer; LLM-as-backend adapter and home-side replay closer;
+concurrent dispatch; LLM-assisted Tier-3 reconstruction; refined
+capability matching) has landed. Remaining Phase-3 work is
+polish (latency tuning, prompt iteration, additional adapters)
+tracked in the per-phase retrospective rather than in this delta.
 
 ### 2.5 Phase 4 (Probe)
 

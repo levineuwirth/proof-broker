@@ -42,8 +42,17 @@ subset of the classical allowlist (`propext`, `Classical.choice`,
 `native_decide` (`Lean.ofReduceBool`, compiler trust), or any
 bespoke axiom is a tactic failure, never an admitted theorem, so
 the LLM can never widen the trust base. LLM-assisted Tier-3
-reconstruction of un-replayable traces (roadmap §Phase 3 #4) is
-the one remaining Phase-3 item, tracked separately.
+reconstruction of un-replayable traces (roadmap §Phase 3 #4) has
+also landed: when a Tier-3 cert arrives in a `trace_format` the
+home system has no symbolic replayer for and every fragment
+closer fails, the SDK's `Llm_reconstruct.translate` asks the
+configured endpoint to convert the trace into a Lean tactic
+script, which then goes through the *same* `replayLlmScriptOrFail`
+audit-H1 gate — no separate trust path. The fallback is silent
+when no endpoint is configured (the primary failure is
+re-raised), so CI with no LLM sees the same diagnostics as before.
+With this, Phase 3 (Breadth) is structurally complete; remaining
+Phase-3 polish is tracked in the per-phase retrospectives.
 Phase 6 (cross-platform distribution + polish) carries the displaced
 original-Phase-5 scope. See `delta.md §2` for per-phase status and
 `RETROSPECTIVES/phase-{0,4,5}.md` for retrospectives.

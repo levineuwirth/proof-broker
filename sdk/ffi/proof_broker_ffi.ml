@@ -198,6 +198,51 @@ let verify_certificate (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [llm_translate_trace] (roadmap §Phase 3 deliverable 4 — LLM-assisted
+   Tier-3 reconstruction) takes
+     {"ir": <Ir>, "cert": <Certificate>}
+   where [cert] is a Tier-3 certificate whose [trace_format] the
+   home system has no symbolic replayer for, and returns
+     {"script": "..."}
+   carrying a candidate Lean tactic script the LLM produced from
+   the trace. The script is UNTRUSTED — soundness rests entirely
+   on the home-system kernel replaying it and gating the resulting
+   proof term's axiom footprint (audit H1; see
+   [ProofBroker.Tactic.replayLlmScriptOrFail] on the Lean side).
+   Fail-closed when [PROOF_BROKER_LLM_ENDPOINT] is unset: returns a
+   [llm_error] envelope so the caller proceeds without the LLM. *)
+let llm_translate_trace (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let ir_json = match List.assoc_opt "ir" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error ("missing field: ir", j))
+    in
+    let cert_json = match List.assoc_opt "cert" pairs with
+      | Some v -> v
+      | None ->
+        raise (Proof_broker.Codec.Decode_error ("missing field: cert", j))
+    in
+    let ir = Proof_broker.Codec.of_json ir_json in
+    let cert = Proof_broker.Certificate.of_json cert_json in
+    match Proof_broker.Llm_reconstruct.translate ir cert with
+    | Ok script ->
+      envelope_ok (`Assoc [ "script", `String script ])
+    | Error msg ->
+      envelope_error ~kind:"llm_error" ~message:msg []
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* [match_adapters] takes a wrapped input of shape
      {"ir": <IR>, "manifests": [<Manifest>, ...]}
    and returns
@@ -553,6 +598,7 @@ let () =
   register_method "run_pipeline" run_pipeline;
   register_method "match_adapters" match_adapters;
   register_method "verify_certificate" verify_certificate;
+  register_method "llm_translate_trace" llm_translate_trace;
   register_method "dispatch_to_adapter" dispatch_to_adapter;
   register_method "dispatch_broker" dispatch_broker;
   register_method "check_alethe_step" check_alethe_step;

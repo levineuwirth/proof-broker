@@ -407,6 +407,35 @@ def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := non
     | .error _ => .error (.decodeError "missing 'reason'" none)
   return { ok, envelopeOk, reason := parseCertReason reasonJ }
 
+/-- Ask the SDK to translate an un-replayable Tier-3 trace `cert`
+    into a candidate Lean tactic script via the configured LLM
+    endpoint (roadmap §Phase 3 deliverable 4 — LLM-assisted Tier-3
+    reconstruction). Returns the script string on success.
+
+    The returned script is UNTRUSTED — soundness rests entirely
+    on the home-system kernel replaying it and gating the
+    resulting proof term's axiom footprint (audit H1, see
+    `ProofBroker.Tactic.replayLlmScriptOrFail`). This call is a
+    pure I/O step; it produces no proof of anything.
+
+    Fail-closed: when `PROOF_BROKER_LLM_ENDPOINT` is unset, the
+    SDK returns a `llm_error` envelope which decodes here to
+    `FfiError.other`. Callers should treat the error as
+    "reconstruction not available right now" and proceed to
+    re-raise whatever the original closer's failure was — i.e.
+    the LLM never silently fills a gap that should have been a
+    tactic failure. -/
+def runLlmTranslateTrace (ir : IR) (cert : Json) : Except FfiError String := do
+  let input := Json.mkObj [
+    ("ir", ProofBroker.IR.IR.toJson ir),
+    ("cert", cert)
+  ]
+  let payload ← decodeEnvelope (pbCall "llm_translate_trace" input.compress)
+  match payload.getObjValAs? String "script" with
+  | .ok s => pure s
+  | .error _ =>
+    .error (.decodeError "missing 'script' in llm_translate_trace response" none)
+
 /-- Adapter dispatch failure (spec §7). Mirrors OCaml's
     `Adapter.failure`. `satReturned` means the solver said the
     negated goal is satisfiable — the home-system goal is *not*
