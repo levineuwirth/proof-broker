@@ -198,6 +198,62 @@ let verify_certificate (input : string) : string =
   | Yojson.Json_error msg ->
     envelope_error ~kind:"json_parse_error" ~message:msg []
 
+(* [parse_alethe_proof] takes the raw Alethe-2024 text cvc5 emits as
+   its Tier-3 trace and returns the parsed proof's [assumes] /
+   [steps] / [anchors] as JSON for the Lean-side Alethe walker to
+   consume. The walker per-step elaborates a kernel proof term
+   from the trace — the audit-H1 "cert IS the proof"
+   architectural play, parallel to the Tier-1 Farkas term-mode
+   closer. SDK-side parsing is the natural home (the parser
+   already exists in [Alethe.parse] and is exercised by the OCaml
+   provenance verifier in [Tier3_alethe.verify]); the FFI just
+   surfaces the parsed structure to Lean. *)
+let parse_alethe_proof (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let proof_str = match List.assoc_opt "proof" pairs with
+      | Some (`String s) -> s
+      | Some other ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("expected string at proof", other))
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: proof", j))
+    in
+    let proof = Proof_broker.Alethe.parse proof_str in
+    let assumes_json =
+      List.map (fun (id, sexp) ->
+        `Assoc [
+          "id", `String id;
+          "literal", Proof_broker.Alethe.Sexp.to_json sexp;
+        ])
+        proof.assumes
+    in
+    let steps_json =
+      List.map Proof_broker.Alethe.step_to_json proof.steps
+    in
+    let anchors_json =
+      List.map (fun s -> `String s) proof.anchors
+    in
+    envelope_ok (`Assoc [
+      "assumes", `List assumes_json;
+      "steps", `List steps_json;
+      "anchors", `List anchors_json;
+    ])
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+  | Proof_broker.Alethe.Parse_error msg ->
+    envelope_error ~kind:"alethe_parse_error" ~message:msg []
+
 (* [llm_translate_trace] (roadmap §Phase 3 deliverable 4 — LLM-assisted
    Tier-3 reconstruction) takes
      {"ir": <Ir>, "cert": <Certificate>}
@@ -599,6 +655,7 @@ let () =
   register_method "match_adapters" match_adapters;
   register_method "verify_certificate" verify_certificate;
   register_method "llm_translate_trace" llm_translate_trace;
+  register_method "parse_alethe_proof" parse_alethe_proof;
   register_method "dispatch_to_adapter" dispatch_to_adapter;
   register_method "dispatch_broker" dispatch_broker;
   register_method "check_alethe_step" check_alethe_step;
