@@ -712,6 +712,246 @@ private def elabTrustTaggedLeaf (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) :=
   omegaDischargeClause ctx s
 
+/- ----------------------------------------------------------------
+   Boolean-cleanup cluster: `implies` / `equiv1` / `equiv2` /
+   `not_and` / `and_neg`.
+
+   cvc5 emits these during the SAT-side normalization of Tier-3
+   traces — turning implications, propositional equivalences, and
+   conjunctions into clausal form for the resolution layer. Proofs
+   are constructed directly from the premise via `Classical.em`
+   case analysis on the relevant Prop, then injected into the
+   resulting clausal disjunction. The footprint grows to
+   `[propext, Classical.choice, Quot.sound]` (via `em`) but stays
+   within the standard classical baseline — no new trust axioms.
+   `equiv_simplify` is deferred to a follow-up: its clauses are
+   propositional-equality tautologies (`(= (= a a) true)` etc.)
+   that need a different discharge mechanism (propext + `Iff`
+   reflexivity, not omega).
+   ---------------------------------------------------------------- -/
+
+/-- `implies`: from premise `(=> a b)` proving `a → b`, derive
+    `(cl (not a) b)` ≡ `¬a ∨ b`. Proof: case-split `a` with
+    `Classical.em`; if `a`, the premise gives `b` (right disjunct);
+    if `¬a`, that is the left disjunct. -/
+private def elabImplies (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause, s.premises with
+  | [.list [.atom "not", a], b], some [p] => do
+    let (impH, _) ← lookupStep p
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let notAE := mkApp (mkConst ``Not) aE
+    let resultTy ← mkAppM ``Or #[notAE, bE]
+    let posCase ← withLocalDeclD `ha aE fun ha => do
+      let hb := mkApp impH ha
+      let inj ← mkAppOptM ``Or.inr #[some notAE, some bE, some hb]
+      mkLambdaFVars #[ha] inj
+    let negCase ← withLocalDeclD `hna notAE fun hna => do
+      let inj ← mkAppOptM ``Or.inl #[some notAE, some bE, some hna]
+      mkLambdaFVars #[hna] inj
+    let em ← mkAppM ``Classical.em #[aE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some aE, some notAE, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _, _ =>
+    throwError m!"alethe walker: 'implies' expects clause \
+                   (cl (not a) b) with one premise (=> a b), got \
+                   clause {repr s.clause}, premises {repr s.premises}"
+
+/-- `equiv1`: from premise `(= a b)` (propositional equality),
+    derive `(cl (not a) b)` ≡ `¬a ∨ b` — the forward direction.
+    Proof: case-split `a`; if `a`, transport via `Eq.mp` to get
+    `b`; if `¬a`, that is the left disjunct. -/
+private def elabEquiv1 (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause, s.premises with
+  | [.list [.atom "not", a], b], some [p] => do
+    let (eqH, _) ← lookupStep p
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let notAE := mkApp (mkConst ``Not) aE
+    let resultTy ← mkAppM ``Or #[notAE, bE]
+    let posCase ← withLocalDeclD `ha aE fun ha => do
+      let hb ← mkAppM ``Eq.mp #[eqH, ha]
+      let inj ← mkAppOptM ``Or.inr #[some notAE, some bE, some hb]
+      mkLambdaFVars #[ha] inj
+    let negCase ← withLocalDeclD `hna notAE fun hna => do
+      let inj ← mkAppOptM ``Or.inl #[some notAE, some bE, some hna]
+      mkLambdaFVars #[hna] inj
+    let em ← mkAppM ``Classical.em #[aE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some aE, some notAE, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _, _ =>
+    throwError m!"alethe walker: 'equiv1' expects clause \
+                   (cl (not a) b) with one premise (= a b), got \
+                   clause {repr s.clause}, premises {repr s.premises}"
+
+/-- `equiv2`: from premise `(= a b)`, derive `(cl a (not b))` ≡
+    `a ∨ ¬b` — the backward direction. Proof: case-split `b`; if
+    `b`, transport backwards via `Eq.mpr` to get `a`; if `¬b`,
+    that is the right disjunct. -/
+private def elabEquiv2 (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause, s.premises with
+  | [a, .list [.atom "not", b]], some [p] => do
+    let (eqH, _) ← lookupStep p
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let notBE := mkApp (mkConst ``Not) bE
+    let resultTy ← mkAppM ``Or #[aE, notBE]
+    let posCase ← withLocalDeclD `hb bE fun hb => do
+      let ha ← mkAppM ``Eq.mpr #[eqH, hb]
+      let inj ← mkAppOptM ``Or.inl #[some aE, some notBE, some ha]
+      mkLambdaFVars #[hb] inj
+    let negCase ← withLocalDeclD `hnb notBE fun hnb => do
+      let inj ← mkAppOptM ``Or.inr #[some aE, some notBE, some hnb]
+      mkLambdaFVars #[hnb] inj
+    let em ← mkAppM ``Classical.em #[bE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some bE, some notBE, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _, _ =>
+    throwError m!"alethe walker: 'equiv2' expects clause \
+                   (cl a (not b)) with one premise (= a b), got \
+                   clause {repr s.clause}, premises {repr s.premises}"
+
+/-- De Morgan recursive helper. Given conjuncts `[a₁, …, aₙ]` and
+    a proof `h : ¬(a₁ ∧ … ∧ aₙ)` (right-associated), produces a
+    proof of `¬a₁ ∨ … ∨ ¬aₙ`. Base case: singleton — `h` is
+    already the desired negation. Recursive case: case-split
+    `a₁` via `Classical.em`; if it holds, partially apply `h` to
+    a suspended conjunction (yielding `¬(a₂ ∧ … ∧ aₙ)`) and
+    recurse for the right disjunct; if `¬a₁`, it is the left
+    disjunct. -/
+private partial def buildNotAnd (ctx : WalkerContext)
+    (lits : List Sexp) (h : Expr) : MetaM Expr := do
+  match lits with
+  | [] => throwError "alethe walker: 'not_and' with empty conjunction"
+  | [_] => pure h
+  | a :: rest => do
+    let aE ← sexpToExpr ctx a
+    let notAE := mkApp (mkConst ``Not) aE
+    let restAndE ← andOrChain ctx ``And rest
+    let restNegs := rest.map (fun lit => Sexp.list [.atom "not", lit])
+    let restOrTy ← clauseTypeOf ctx restNegs
+    let resultTy ← mkAppM ``Or #[notAE, restOrTy]
+    let posCase ← withLocalDeclD `ha aE fun ha => do
+      let hPrime ← withLocalDeclD `hrest restAndE fun hrest => do
+        let conj ← mkAppM ``And.intro #[ha, hrest]
+        let absurd := mkApp h conj
+        mkLambdaFVars #[hrest] absurd
+      let recProof ← buildNotAnd ctx rest hPrime
+      let inj ← mkAppOptM ``Or.inr #[some notAE, some restOrTy, some recProof]
+      mkLambdaFVars #[ha] inj
+    let negCase ← withLocalDeclD `hna notAE fun hna => do
+      let inj ← mkAppOptM ``Or.inl #[some notAE, some restOrTy, some hna]
+      mkLambdaFVars #[hna] inj
+    let em ← mkAppM ``Classical.em #[aE]
+    mkAppOptM ``Or.elim
+      #[some aE, some notAE, some resultTy, some em, some posCase, some negCase]
+
+/-- `not_and`: from premise `(not (and a₁ … aₙ))`, derive
+    `(cl (not a₁) … (not aₙ))` — De Morgan's law in clausal form.
+    The walker strips the `(not _)` wrappers off the clause to
+    recover the conjuncts, then `buildNotAnd` recurses on the
+    right-associated conjunction structure. -/
+private def elabNotAnd (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.premises with
+  | some [p] => do
+    let (hP, _) ← lookupStep p
+    let inner ← s.clause.mapM fun lit =>
+      match lit with
+      | .list [.atom "not", x] => pure x
+      | other =>
+        throwError m!"alethe walker: 'not_and' clause literal not \
+                       in (not _) form: {repr other}"
+    let proof ← buildNotAnd ctx inner hP
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'not_and' expects exactly one \
+                   premise, got {repr s.premises}"
+
+/-- Tautology recursive helper. Builds a proof of
+    `(a₁ ∧ … ∧ aₙ) ∨ ¬a₁ ∨ … ∨ ¬aₙ` (right-associated in both
+    connectives) for a non-empty literal list. Base case `n=1`:
+    `Classical.em a₁`. Recursive case: case-split the inner
+    recursive result (`rest_and ∨ rest_neg`); if the conjunction
+    side fires, case-split `a₁` again to either build the full
+    conjunction (left) or inject the head negation (middle); if
+    the rest_neg side fires, that is the tail. -/
+private partial def buildAndNeg (ctx : WalkerContext)
+    (lits : List Sexp) : MetaM Expr := do
+  match lits with
+  | [] => throwError "alethe walker: 'and_neg' with empty conjunction"
+  | [a] => do
+    let aE ← sexpToExpr ctx a
+    mkAppM ``Classical.em #[aE]
+  | a :: rest => do
+    let aE ← sexpToExpr ctx a
+    let notAE := mkApp (mkConst ``Not) aE
+    let restAndE ← andOrChain ctx ``And rest
+    let restNegs := rest.map (fun lit => Sexp.list [.atom "not", lit])
+    let restOrTy ← clauseTypeOf ctx restNegs
+    let recProof ← buildAndNeg ctx rest
+    let conjE ← mkAppM ``And #[aE, restAndE]
+    let innerOrTy ← mkAppM ``Or #[notAE, restOrTy]
+    let resultTy ← mkAppM ``Or #[conjE, innerOrTy]
+    let leftBranch ← withLocalDeclD `hRA restAndE fun hRA => do
+      let posBranch ← withLocalDeclD `ha aE fun ha => do
+        let conj ← mkAppM ``And.intro #[ha, hRA]
+        let inj ← mkAppOptM ``Or.inl #[some conjE, some innerOrTy, some conj]
+        mkLambdaFVars #[ha] inj
+      let negBranch ← withLocalDeclD `hna notAE fun hna => do
+        let injInner ← mkAppOptM ``Or.inl #[some notAE, some restOrTy, some hna]
+        let injOuter ← mkAppOptM ``Or.inr #[some conjE, some innerOrTy, some injInner]
+        mkLambdaFVars #[hna] injOuter
+      let em ← mkAppM ``Classical.em #[aE]
+      let body ← mkAppOptM ``Or.elim
+        #[some aE, some notAE, some resultTy, some em, some posBranch, some negBranch]
+      mkLambdaFVars #[hRA] body
+    let rightBranch ← withLocalDeclD `hRO restOrTy fun hRO => do
+      let injInner ← mkAppOptM ``Or.inr #[some notAE, some restOrTy, some hRO]
+      let injOuter ← mkAppOptM ``Or.inr #[some conjE, some innerOrTy, some injInner]
+      mkLambdaFVars #[hRO] injOuter
+    mkAppOptM ``Or.elim
+      #[some restAndE, some restOrTy, some resultTy,
+        some recProof, some leftBranch, some rightBranch]
+
+/-- `and_neg`: tautology rule, no premises. Derives the clause
+    `(cl (and a₁ … aₙ) (not a₁) … (not aₙ))`. Proof built
+    recursively by `buildAndNeg`. The walker verifies the
+    negation literals match the conjuncts position-wise — a
+    sanity check on the trace's well-formedness. -/
+private def elabAndNeg (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | (.list ((.atom "and") :: conjs)) :: negLits => do
+    if conjs.isEmpty then
+      throwError m!"alethe walker: 'and_neg' with empty (and) head"
+    unless conjs.length == negLits.length do
+      throwError m!"alethe walker: 'and_neg' arity mismatch: \
+                     {conjs.length} conjuncts vs {negLits.length} \
+                     negation literals"
+    for pair in negLits.zip conjs do
+      let (negLit, conj) := pair
+      match negLit with
+      | .list [.atom "not", x] =>
+        unless x == conj do
+          throwError m!"alethe walker: 'and_neg' literal mismatch: \
+                         got (not {repr x}), expected (not {repr conj})"
+      | _ =>
+        throwError m!"alethe walker: 'and_neg' literal not in \
+                       (not _) form: {repr negLit}"
+    let proof ← buildAndNeg ctx conjs
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'and_neg' expects clause \
+                   (cl (and a₁ … aₙ) (not a₁) … (not aₙ)), got \
+                   {repr s.clause}"
+
 /-- Elaborate a single step: dispatch on `rule` to a per-rule
     elaborator, store the result under the step's `id`. Unknown
     rules throw — the omega fallback in `closeOrFail` catches
@@ -733,15 +973,20 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "cong" => elabCong ctx s
     | "hole" => elabTrustTaggedLeaf ctx s
     | "rare_rewrite" => elabTrustTaggedLeaf ctx s
+    | "implies" => elabImplies ctx s
+    | "equiv1" => elabEquiv1 ctx s
+    | "equiv2" => elabEquiv2 ctx s
+    | "not_and" => elabNotAnd ctx s
+    | "and_neg" => elabAndNeg ctx s
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
                      supported (current scope: resolution / or / \
                      false / la_generic / la_mult_neg / refl / \
-                     symm / trans / cong / hole / rare_rewrite, \
-                     plus seeded assumes. Subsequent PRs add the \
-                     remaining boolean-cleanup cluster (equiv_* / \
-                     implies / and_neg) — the omega fallback \
-                     handles full cvc5 traces in the meantime)."
+                     symm / trans / cong / hole / rare_rewrite / \
+                     implies / equiv1 / equiv2 / not_and / and_neg, \
+                     plus seeded assumes. equiv_simplify is the \
+                     remaining gap — the omega fallback handles \
+                     full cvc5 traces in the meantime)."
   storeStep s.id proof clause
 
 /-- Walk an Alethe proof and return the `Expr` proving the final
