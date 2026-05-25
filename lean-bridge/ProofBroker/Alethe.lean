@@ -341,6 +341,21 @@ partial def listToExpr (ctx : WalkerContext) : List Sexp → MetaM Expr
     let aE ← sexpToExpr ctx a
     let bE ← sexpToExpr ctx b
     return mkForall .anonymous .default aE bE
+  -- Generic application fallback. Used by `cong` to translate
+  -- `(f a1 … an)` into `f a1 … an` for UF symbols. The head is
+  -- looked up in `ctx.vars` (UF symbols are local free vars in
+  -- the home-system goal); arguments recurse through
+  -- `sexpToExpr`. Falls through to the catch-all error if the
+  -- head is not in scope, keeping unrecognized shapes as honest
+  -- failures rather than silently building ill-typed apps.
+  | (.atom name) :: args => do
+    match ctx.vars.find? (Name.mkSimple name) with
+    | some fE => do
+      let argEs ← args.mapM (sexpToExpr ctx)
+      Lean.Meta.mkAppM' fE argEs.toArray
+    | none =>
+      throwError m!"alethe walker: unsupported applied head '{name}' \
+                    (not a recognized operator, not in local scope)"
   | other =>
     throwError m!"alethe walker: unsupported Sexp shape: \
                   ({String.intercalate " " (other.map fun s => reprStr s)})"
@@ -548,6 +563,105 @@ private def elabResolution (ctx : WalkerContext) (s : Step)
     throwError m!"alethe walker: 'resolution' needs at least one \
                    premise, got {repr s.premises}"
 
+/- ----------------------------------------------------------------
+   Equality cluster: `refl` / `symm` / `trans` / `cong`.
+
+   These are the rules cvc5's `alethe-2024` emits for the UF /
+   equality fragment. None of them touch a decision procedure
+   (unlike `la_generic` / `la_mult_neg` which omega-discharge a
+   tautological leaf): they reconstruct the kernel proof from the
+   premises directly, so the resulting proof terms are axiom-free
+   (no `propext` / `Classical.choice`, just `Eq.rec` underneath).
+   ---------------------------------------------------------------- -/
+
+/-- `refl`: a leaf rule with no premises, concluding `(cl (= t t))`
+    for any term `t`. The walker requires LHS and RHS to be
+    syntactically identical at the Sexp level (the form cvc5
+    emits after preprocessing); the proof term is `Eq.refl t`. -/
+private def elabRefl (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=", lhs, rhs]] => do
+    unless lhs == rhs do
+      throwError m!"alethe walker: 'refl' expects (= t t) with \
+                     identical sides, got (= {repr lhs} {repr rhs})"
+    let lhsE ← sexpToExpr ctx lhs
+    let proof ← mkAppM ``Eq.refl #[lhsE]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'refl' expects clause \
+                   (cl (= t t)), got {repr s.clause}"
+
+/-- `symm`: one premise proving `(= t u)`, conclusion `(= u t)`.
+    The proof term is `Eq.symm` of the premise. -/
+private def elabSymm (s : Step) : WalkerM (Expr × List Sexp) := do
+  match s.premises with
+  | some [p] => do
+    let (eP, _) ← lookupStep p
+    let proof ← mkAppM ``Eq.symm #[eP]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'symm' expects exactly one \
+                   premise, got {repr s.premises}"
+
+/-- `trans`: n premises proving `(= t1 t2)`, `(= t2 t3)`, …,
+    `(= t_{n} t_{n+1})`, conclusion `(= t1 t_{n+1})`. The proof
+    term is the left-fold of `Eq.trans` over the premise list.
+    A single-premise `trans` is a no-op (passthrough). -/
+private def elabTrans (s : Step) : WalkerM (Expr × List Sexp) := do
+  match s.premises with
+  | some (p0 :: rest) => do
+    let (e0, _) ← lookupStep p0
+    let mut acc := e0
+    for pi in rest do
+      let (ei, _) ← lookupStep pi
+      acc ← mkAppM ``Eq.trans #[acc, ei]
+    pure (acc, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'trans' expects at least one \
+                   premise, got {repr s.premises}"
+
+/-- `cong`: n premises proving `(= a1 b1)`, …, `(= an bn)`,
+    conclusion `(= (f a1 … an) (f b1 … bn))`. The proof term is
+    built by left-folding `Lean.Meta.mkCongr` over the premise list,
+    starting from `Eq.refl f`. `mkCongr` collapses the
+    `Eq.refl f` seed into `mkCongrArg` automatically, then chains
+    through `mkCongr`'s general case for each subsequent
+    argument — so the resulting term is a curried congruence
+    cascade (`(f a1) a2 = (f b1) b2` etc.) matching Lean's own
+    curried application convention.
+
+    The function head is required to be identical on both sides
+    (Sexp `BEq`); typically `fA = .atom "f"` for a UF symbol the
+    walker resolves through `sexpToExpr`'s context lookup, but a
+    higher-order head (an applied list) is also accepted as long
+    as both sides agree structurally. Arity mismatch or differing
+    heads throw a clear error. -/
+private def elabCong (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause, s.premises with
+  | [.list [.atom "=", .list (fA :: argsA), .list (fB :: argsB)]],
+    some pids => do
+    unless fA == fB do
+      throwError m!"alethe walker: 'cong' function heads differ: \
+                     {repr fA} vs {repr fB}"
+    unless argsA.length == argsB.length do
+      throwError m!"alethe walker: 'cong' arity mismatch: LHS has \
+                     {argsA.length} args, RHS has {argsB.length}"
+    unless argsA.length == pids.length do
+      throwError m!"alethe walker: 'cong' has {pids.length} \
+                     premises but {argsA.length} argument pairs"
+    let fExpr ← sexpToExpr ctx fA
+    let mut acc ← mkAppM ``Eq.refl #[fExpr]
+    for pid in pids do
+      let (eqProof, _) ← lookupStep pid
+      acc ← Lean.Meta.mkCongr acc eqProof
+    pure (acc, s.clause)
+  | _, _ =>
+    throwError m!"alethe walker: 'cong' expects clause \
+                   (cl (= (f …) (f …))) with a premise list, got \
+                   clause {repr s.clause}, premises {repr s.premises}"
+
 /-- LIA-tautology leaf rules (`la_generic`, `la_mult_neg`). The
     step's clause is a linear-arithmetic tautology — its negation
     is LIA-unsatisfiable, with the Farkas multipliers carried in
@@ -591,16 +705,19 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "false" => elabFalseStep ctx s
     | "la_generic" => elabLiaLeaf ctx s
     | "la_mult_neg" => elabLiaLeaf ctx s
+    | "refl" => elabRefl ctx s
+    | "symm" => elabSymm s
+    | "trans" => elabTrans s
+    | "cong" => elabCong ctx s
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
                      supported (current scope: resolution / or / \
-                     false / la_generic / la_mult_neg, plus \
-                     seeded assumes. Subsequent PRs add the \
-                     equality (cong / refl / trans / symm) and \
-                     boolean-cleanup (hole / rare_rewrite / \
-                     equiv_* / implies / and_neg) clusters — the \
-                     omega fallback handles full cvc5 traces in \
-                     the meantime)."
+                     false / la_generic / la_mult_neg / refl / \
+                     symm / trans / cong, plus seeded assumes. \
+                     Subsequent PRs add the boolean-cleanup \
+                     cluster (hole / rare_rewrite / equiv_* / \
+                     implies / and_neg) — the omega fallback \
+                     handles full cvc5 traces in the meantime)."
   storeStep s.id proof clause
 
 /-- Walk an Alethe proof and return the `Expr` proving the final

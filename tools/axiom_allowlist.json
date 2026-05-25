@@ -58,6 +58,18 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.alethe_walker_resolution_axiom_free":
       [],
+    "ProofBroker.Test.alethe_walker_refl_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_symm_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_trans_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_cong_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_cong_two_arg_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_cong_refutation_axiom_free":
+      [],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":
