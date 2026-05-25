@@ -607,4 +607,63 @@ theorem alethe_walker_cong_refutation_axiom_free
 
 #print axioms alethe_walker_cong_refutation_axiom_free
 
+/- Alethe walker — trust-tagged leaves (`hole` / `rare_rewrite`).
+
+   cvc5 emits these for clauses it admits without finer-grained
+   proof — `hole` for `TRUST_THEORY_REWRITE`-annotated rewrites,
+   `rare_rewrite` for steps justified by its RARE rewrite system.
+   Audit H1 forbids trusting either tag: the walker re-derives the
+   clause from scratch via omega, ignoring the annotation. The
+   `[propext, Quot.sound]` axiom footprint matches the `la_generic`
+   path — omega is axiom-free, and the cvc5 annotation contributes
+   no trust delta. -/
+
+/-- `hole`: cvc5 emits a `TRUST_THEORY_REWRITE`-annotated leaf for
+    `0 ≤ 5`. The walker ignores the annotation and re-derives via
+    omega, producing an axiom-free proof. -/
+theorem alethe_walker_hole_axiom_free : (0 : Int) ≤ 5 := by
+  alethe_walker_test
+    "( (step t0 (cl (<= 0 5)) :rule hole) )"
+
+#print axioms alethe_walker_hole_axiom_free
+
+/-- `rare_rewrite`: same omega-discharge policy. Mid-proof
+    trust-tagged step the walker re-verifies independently. -/
+theorem alethe_walker_rare_rewrite_axiom_free (x : Int) :
+    ¬(x ≥ 3) ∨ (x ≥ 1) := by
+  alethe_walker_test
+    "( (step t0 (cl (not (>= x 3)) (>= x 1)) :rule rare_rewrite) )"
+
+#print axioms alethe_walker_rare_rewrite_axiom_free
+
+/-- End-to-end: a `hole` clause feeding into resolution. The
+    walker discharges the trust-tagged leaf via omega (the clause
+    is the LIA-tautological implication `n ≥ 6 → n ≥ 5`), then
+    the clausal layer composes it against the hypotheses to close
+    `False`. Confirms `hole` slots into the existing resolution
+    machinery the same way `la_generic` does. -/
+theorem alethe_walker_hole_refutation_axiom_free
+    (n : Int) (h1 : n ≥ 6) (h2 : ¬(n ≥ 5)) : False := by
+  alethe_walker_test
+    "( (assume a0 (>= n 6)) \
+       (assume a1 (not (>= n 5))) \
+       (step t0 (cl (not (>= n 6)) (>= n 5)) :rule hole) \
+       (step t1 (cl (not (>= n 6))) :rule resolution :premises (t0 a1)) \
+       (step t2 (cl) :rule resolution :premises (t1 a0)) )"
+
+#print axioms alethe_walker_hole_refutation_axiom_free
+
+/-- audit H1: a `hole` whose clause is *not* in fact valid (not
+    an omega-tautology, not implied by the hypotheses) must FAIL
+    rather than be admitted on the trust tag. `(>= n 100)` from no
+    premises is false in general; the walker's omega re-derivation
+    fails, the tactic errors, and the goal is left OPEN. This is
+    the contract that makes `hole` H1-safe: cvc5's annotation is
+    advisory, never license. -/
+example (n : Int) : True := by
+  fail_if_success
+    (alethe_walker_test
+      "( (step t0 (cl (>= n 100)) :rule hole) )")
+  trivial
+
 end ProofBroker.Test
