@@ -70,6 +70,12 @@
       [],
     "ProofBroker.Test.alethe_walker_cong_refutation_axiom_free":
       [],
+    "ProofBroker.Test.alethe_walker_hole_axiom_free":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_rare_rewrite_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_hole_refutation_axiom_free":
+      ["propext", "Quot.sound"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":

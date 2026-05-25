@@ -662,23 +662,13 @@ private def elabCong (ctx : WalkerContext) (s : Step)
                    (cl (= (f …) (f …))) with a premise list, got \
                    clause {repr s.clause}, premises {repr s.premises}"
 
-/-- LIA-tautology leaf rules (`la_generic`, `la_mult_neg`). The
-    step's clause is a linear-arithmetic tautology — its negation
-    is LIA-unsatisfiable, with the Farkas multipliers carried in
-    `:args`. cvc5 treats these as proof *leaves*: there is no
-    finer cert content below them, so the walker discharges the
-    clause with a scoped `omega` call (the architectural decision
-    recorded in the M1.γ scoping — omega-ing the leaf mirrors
-    Alethe's own structure). `omega` is axiom-free; the cert
-    drives the surrounding proof skeleton (resolution /
-    congruence / boolean cleanup), the arithmetic leaves are
-    decided.
-
-    Implementation mirrors `omegaTactic`'s frontend: a synthetic
-    mvar of the clause type, `falseOrByContra` into a `False`
-    goal, then the `MetaM`-level `omega` entry over the local
-    hypotheses. -/
-private def elabLiaLeaf (ctx : WalkerContext) (s : Step)
+/-- Shared omega-discharge helper. Translates the step's clause to
+    a `Prop`, spawns a synthetic mvar, runs `falseOrByContra` into
+    a `False` goal, and dispatches to the `MetaM`-level `omega`
+    entry over the local hypotheses. Mirrors `omegaTactic`'s
+    frontend. Returns the instantiated mvar (the proof term) paired
+    with the step's clause. -/
+private def omegaDischargeClause (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
   let clauseProp ← sexpToExpr ctx (Sexp.list (.atom "cl" :: s.clause))
   let mvar ← mkFreshExprSyntheticOpaqueMVar clauseProp
@@ -689,6 +679,38 @@ private def elabLiaLeaf (ctx : WalkerContext) (s : Step)
       let hyps := (← getLocalHyps).toList
       Lean.Elab.Tactic.Omega.omega hyps gFalse
   return (← instantiateMVars mvar, s.clause)
+
+/-- LIA-tautology leaf rules (`la_generic`, `la_mult_neg`). The
+    step's clause is a linear-arithmetic tautology — its negation
+    is LIA-unsatisfiable, with the Farkas multipliers carried in
+    `:args`. cvc5 treats these as proof *leaves*: there is no
+    finer cert content below them, so the walker discharges the
+    clause with a scoped `omega` call (the architectural decision
+    recorded in the M1.γ scoping — omega-ing the leaf mirrors
+    Alethe's own structure). `omega` is axiom-free; the cert
+    drives the surrounding proof skeleton (resolution /
+    congruence / boolean cleanup), the arithmetic leaves are
+    decided. -/
+private def elabLiaLeaf (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) :=
+  omegaDischargeClause ctx s
+
+/-- `hole` / `rare_rewrite`: cvc5's *trust-tagged* leaf forms.
+    `hole` is cvc5's "admit the conclusion without proof" step
+    (carrying a `TRUST_THEORY_REWRITE` annotation on real traces);
+    `rare_rewrite` is a step justified by cvc5's RARE rewrite
+    system. Audit H1 forbids trusting either tag: the walker
+    re-derives the clause from scratch via the same omega-discharge
+    used for LIA leaves, so the resulting proof term goes through
+    the kernel independently of cvc5's annotation. Clauses outside
+    omega's scope (e.g. pure propositional / theory tautologies
+    omega can't handle) surface as `throwError`; the closer
+    chain's omega fallback then re-runs at the outer level. The
+    point is *never* to admit on tag — the trust gate stays at
+    `[propext, Quot.sound]`. -/
+private def elabTrustTaggedLeaf (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) :=
+  omegaDischargeClause ctx s
 
 /-- Elaborate a single step: dispatch on `rule` to a per-rule
     elaborator, store the result under the step's `id`. Unknown
@@ -709,13 +731,15 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "symm" => elabSymm s
     | "trans" => elabTrans s
     | "cong" => elabCong ctx s
+    | "hole" => elabTrustTaggedLeaf ctx s
+    | "rare_rewrite" => elabTrustTaggedLeaf ctx s
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
                      supported (current scope: resolution / or / \
                      false / la_generic / la_mult_neg / refl / \
-                     symm / trans / cong, plus seeded assumes. \
-                     Subsequent PRs add the boolean-cleanup \
-                     cluster (hole / rare_rewrite / equiv_* / \
+                     symm / trans / cong / hole / rare_rewrite, \
+                     plus seeded assumes. Subsequent PRs add the \
+                     remaining boolean-cleanup cluster (equiv_* / \
                      implies / and_neg) — the omega fallback \
                      handles full cvc5 traces in the meantime)."
   storeStep s.id proof clause
