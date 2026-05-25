@@ -666,4 +666,102 @@ example (n : Int) : True := by
       "( (step t0 (cl (>= n 100)) :rule hole) )")
   trivial
 
+/- Alethe walker — boolean-cleanup cluster (`implies` / `equiv1`
+   / `equiv2` / `not_and` / `and_neg`).
+
+   These rules flatten implications, propositional equivalences,
+   and conjunctions into clausal form for the resolution layer.
+   Proof terms are constructed by `Classical.em` case analysis on
+   the relevant Props, so the footprint is `[propext,
+   Classical.choice, Quot.sound]` — the standard classical
+   baseline, no new trust delta. `equiv_simplify` is deferred:
+   its propositional-equality tautologies need propext + Iff
+   reflexivity rather than omega-discharge. -/
+
+/-- `implies`: from premise `a → b`, derive `¬a ∨ b`. The walker
+    builds the proof by case-splitting `a`: if `a`, the premise
+    gives `b`; if `¬a`, that is the left disjunct. -/
+theorem alethe_walker_implies_axiom_free
+    (a b : Prop) (h : a → b) : ¬a ∨ b := by
+  alethe_walker_test
+    "( (assume a0 (=> a b)) \
+       (step t0 (cl (not a) b) :rule implies :premises (a0)) )"
+
+#print axioms alethe_walker_implies_axiom_free
+
+/-- `equiv1`: forward direction of propositional equivalence —
+    from `h : a = b`, derive `¬a ∨ b`. -/
+theorem alethe_walker_equiv1_axiom_free
+    (a b : Prop) (h : a = b) : ¬a ∨ b := by
+  alethe_walker_test
+    "( (assume a0 (= a b)) \
+       (step t0 (cl (not a) b) :rule equiv1 :premises (a0)) )"
+
+#print axioms alethe_walker_equiv1_axiom_free
+
+/-- `equiv2`: backward direction — from `h : a = b`, derive
+    `a ∨ ¬b`. -/
+theorem alethe_walker_equiv2_axiom_free
+    (a b : Prop) (h : a = b) : a ∨ ¬b := by
+  alethe_walker_test
+    "( (assume a0 (= a b)) \
+       (step t0 (cl a (not b)) :rule equiv2 :premises (a0)) )"
+
+#print axioms alethe_walker_equiv2_axiom_free
+
+/-- `not_and` binary: from `¬(a ∧ b)`, derive `¬a ∨ ¬b`. De
+    Morgan's law in classical form. -/
+theorem alethe_walker_not_and_axiom_free
+    (a b : Prop) (h : ¬(a ∧ b)) : ¬a ∨ ¬b := by
+  alethe_walker_test
+    "( (assume a0 (not (and a b))) \
+       (step t0 (cl (not a) (not b)) :rule not_and :premises (a0)) )"
+
+#print axioms alethe_walker_not_and_axiom_free
+
+/-- `not_and` ternary: exercises the recursive `buildNotAnd`
+    helper over a right-associated `a ∧ (b ∧ c)` premise,
+    producing the right-associated `¬a ∨ (¬b ∨ ¬c)`. -/
+theorem alethe_walker_not_and_ternary_axiom_free
+    (a b c : Prop) (h : ¬(a ∧ b ∧ c)) : ¬a ∨ ¬b ∨ ¬c := by
+  alethe_walker_test
+    "( (assume a0 (not (and a b c))) \
+       (step t0 (cl (not a) (not b) (not c)) :rule not_and :premises (a0)) )"
+
+#print axioms alethe_walker_not_and_ternary_axiom_free
+
+/-- `and_neg` binary: tautology `(a ∧ b) ∨ ¬a ∨ ¬b`. No
+    premises — constructed purely by case analysis. -/
+theorem alethe_walker_and_neg_axiom_free
+    (a b : Prop) : (a ∧ b) ∨ ¬a ∨ ¬b := by
+  alethe_walker_test
+    "( (step t0 (cl (and a b) (not a) (not b)) :rule and_neg) )"
+
+#print axioms alethe_walker_and_neg_axiom_free
+
+/-- `and_neg` ternary: tautology `(a ∧ b ∧ c) ∨ ¬a ∨ ¬b ∨ ¬c`.
+    Exercises the recursive `buildAndNeg` helper. -/
+theorem alethe_walker_and_neg_ternary_axiom_free
+    (a b c : Prop) : (a ∧ b ∧ c) ∨ ¬a ∨ ¬b ∨ ¬c := by
+  alethe_walker_test
+    "( (step t0 (cl (and a b c) (not a) (not b) (not c)) :rule and_neg) )"
+
+#print axioms alethe_walker_and_neg_ternary_axiom_free
+
+/-- End-to-end refutation combining boolean cleanup with
+    resolution: from `h : a → b`, `ha : a`, `hnb : ¬b`, derive
+    `False`. `implies` flattens `h` to `¬a ∨ b`; two resolution
+    steps cancel the literals against the hypotheses. -/
+theorem alethe_walker_implies_refutation_axiom_free
+    (a b : Prop) (h : a → b) (ha : a) (hnb : ¬b) : False := by
+  alethe_walker_test
+    "( (assume a0 (=> a b)) \
+       (assume a1 a) \
+       (assume a2 (not b)) \
+       (step t0 (cl (not a) b) :rule implies :premises (a0)) \
+       (step t1 (cl b) :rule resolution :premises (t0 a1)) \
+       (step t2 (cl) :rule resolution :premises (t1 a2)) )"
+
+#print axioms alethe_walker_implies_refutation_axiom_free
+
 end ProofBroker.Test
