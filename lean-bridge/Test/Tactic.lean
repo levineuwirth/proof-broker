@@ -525,4 +525,86 @@ theorem alethe_walker_resolution_axiom_free
 
 #print axioms alethe_walker_resolution_axiom_free
 
+/- Alethe walker — equality cluster (`refl` / `symm` / `trans` /
+   `cong`).
+
+   These rules are how cvc5's `alethe-2024` walks
+   uninterpreted-function and equality reasoning. None of them
+   touch a decision procedure (unlike `la_generic`): the proof
+   term is reconstructed kernel-side from the premise proofs
+   directly, so the resulting theorems are axiom-free (no
+   `propext` / `Classical.choice`, just `Eq.rec` underneath). -/
+
+/-- `refl`: a leaf rule concluding `t = t` for any `t`. No
+    premises, just `Eq.refl t`. -/
+theorem alethe_walker_refl_axiom_free (a : Int) : a = a := by
+  alethe_walker_test
+    "( (step t0 (cl (= a a)) :rule refl) )"
+
+#print axioms alethe_walker_refl_axiom_free
+
+/-- `symm`: flips an equality. Premise `a = b`, conclusion
+    `b = a`; proof term is `Eq.symm h`. -/
+theorem alethe_walker_symm_axiom_free
+    (a b : Int) (h : a = b) : b = a := by
+  alethe_walker_test
+    "( (assume a0 (= a b)) \
+       (step t0 (cl (= b a)) :rule symm :premises (a0)) )"
+
+#print axioms alethe_walker_symm_axiom_free
+
+/-- `trans`: chains equalities. Premises `a = b`, `b = c`;
+    conclusion `a = c`; proof term is the left-fold of
+    `Eq.trans`. Exercises the n-ary premise list. -/
+theorem alethe_walker_trans_axiom_free
+    (a b c : Int) (h1 : a = b) (h2 : b = c) : a = c := by
+  alethe_walker_test
+    "( (assume a0 (= a b)) \
+       (assume a1 (= b c)) \
+       (step t0 (cl (= a c)) :rule trans :premises (a0 a1)) )"
+
+#print axioms alethe_walker_trans_axiom_free
+
+/-- `cong` over a unary UF symbol: `x = y ⊢ f x = f y`. The
+    walker's generic application case translates `(f x)` /
+    `(f y)` by looking up `f` in the local context; the proof
+    term is `mkCongr (Eq.refl f) h` — i.e., `congrArg f h`. -/
+theorem alethe_walker_cong_axiom_free
+    (f : Int → Int) (x y : Int) (h : x = y) : f x = f y := by
+  alethe_walker_test
+    "( (assume a0 (= x y)) \
+       (step t0 (cl (= (f x) (f y))) :rule cong :premises (a0)) )"
+
+#print axioms alethe_walker_cong_axiom_free
+
+/-- `cong` over a 2-arg UF symbol: `a = c ∧ b = d ⊢ f a b = f c d`.
+    The `mkCongr` left-fold builds the curried cascade
+    `(f a) b = (f c) d` via two `mkCongr` steps. -/
+theorem alethe_walker_cong_two_arg_axiom_free
+    (f : Int → Int → Int) (a b c d : Int)
+    (h1 : a = c) (h2 : b = d) : f a b = f c d := by
+  alethe_walker_test
+    "( (assume a0 (= a c)) \
+       (assume a1 (= b d)) \
+       (step t0 (cl (= (f a b) (f c d))) \
+        :rule cong :premises (a0 a1)) )"
+
+#print axioms alethe_walker_cong_two_arg_axiom_free
+
+/-- End-to-end UF refutation: combine `cong` with the clausal
+    layer. From `x = y` and `f x ≠ f y`, derive `False` via
+    `cong` (to get `f x = f y`) + `resolution` against the
+    inequality. The walker reconstructs the full proof skeleton
+    axiom-free — UF reasoning all the way down. -/
+theorem alethe_walker_cong_refutation_axiom_free
+    (f : Int → Int) (x y : Int)
+    (h : x = y) (hne : ¬(f x = f y)) : False := by
+  alethe_walker_test
+    "( (assume a0 (= x y)) \
+       (assume a1 (not (= (f x) (f y)))) \
+       (step t0 (cl (= (f x) (f y))) :rule cong :premises (a0)) \
+       (step t1 (cl) :rule resolution :premises (t0 a1)) )"
+
+#print axioms alethe_walker_cong_refutation_axiom_free
+
 end ProofBroker.Test
