@@ -78,3 +78,16 @@ TACTIC EXTEND ProofBrokerLlmReconstructTest
     Pb_rocq_main.replay_reconstructed_script fmt s
   }
 END
+
+(* TEST-ONLY tactic for the Rocq-side Alethe walker port. Parses
+   the string literal as an alethe-2024 trace, walks the proof
+   into a Coq kernel term, and assigns the goal — same
+   CI-stable pattern as [llm_replay_test], parallel to Lean's
+   [alethe_walker_test] in lean-bridge/ProofBroker/Tactic.lean.
+   R-2 scope: clausal rules (assume / or / false / resolution).
+   Subsequent PRs (R-3 onward) extend rule coverage; R-9 wires
+   the same walker logic into [close_or_fail] under
+   [tclORELSE → lia] for production. *)
+TACTIC EXTEND ProofBrokerAletheWalkerTest
+| [ "alethe_walker_test" string(s) ] -> { Alethe_walker.walker_test s }
+END

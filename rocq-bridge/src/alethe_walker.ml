@@ -1,9 +1,4 @@
-(** Rocq-side Alethe walker. R-1: foundation only — the parse
-    wrapper that surfaces the SDK's already-shared
-    [Proof_broker.Alethe.parse] in a [Result] form for the Rocq
-    plugin. Walker elaborators arrive starting R-2.
-
-    See [.mli] for the multi-PR plan and audit-H1 contract. *)
+(** Rocq-side Alethe walker. R-2: clausal layer. *)
 
 module Alethe = Proof_broker.Alethe
 
@@ -15,8 +10,400 @@ let parse_trace (s : string) : (proof, string) result =
   | Alethe.Parse_error msg ->
     Error ("alethe parse: " ^ msg)
   | exn ->
-    (* Defensive: any other exception (e.g. an unexpected stack
-       overflow not caught by [parse]'s own backstop) becomes an
-       Error so the caller falls through to [lia] cleanly,
-       rather than propagating and crashing the tactic. *)
     Error ("alethe parse: unexpected exception: " ^ Printexc.to_string exn)
+
+(* =========================================================
+   Reference resolution. Strict lookup from Coq's standard
+   library (lib_ref): raises if any of these is missing, which
+   would indicate a Coq installation too old to have num.* /
+   core.* refs registered. All names match those used by
+   [term_mode.ml].
+   ========================================================= *)
+
+let constr_of_ref (name : string) : EConstr.t =
+  EConstr.of_constr
+    (UnivGen.constr_of_monomorphic_global (Global.env ())
+       (Rocqlib.lib_ref name))
+
+let r_xH    = lazy (constr_of_ref "num.pos.xH")
+let r_xO    = lazy (constr_of_ref "num.pos.xO")
+let r_xI    = lazy (constr_of_ref "num.pos.xI")
+let r_Z0    = lazy (constr_of_ref "num.Z.Z0")
+let r_Zpos  = lazy (constr_of_ref "num.Z.Zpos")
+let r_Zneg  = lazy (constr_of_ref "num.Z.Zneg")
+let r_Z     = lazy (constr_of_ref "num.Z.type")
+let r_Zadd  = lazy (constr_of_ref "num.Z.add")
+let r_Zsub  = lazy (constr_of_ref "num.Z.sub")
+let r_Zopp  = lazy (constr_of_ref "num.Z.opp")
+let r_Zmul  = lazy (constr_of_ref "num.Z.mul")
+let r_Zle   = lazy (constr_of_ref "num.Z.le")
+let r_Zlt   = lazy (constr_of_ref "num.Z.lt")
+let r_Zge   = lazy (constr_of_ref "num.Z.ge")
+let r_Zgt   = lazy (constr_of_ref "num.Z.gt")
+let r_eq    = lazy (constr_of_ref "core.eq.type")
+let r_not   = lazy (constr_of_ref "core.not.type")
+let r_and   = lazy (constr_of_ref "core.and.type")
+let r_or    = lazy (constr_of_ref "core.or.type")
+let r_True  = lazy (constr_of_ref "core.True.type")
+let r_False = lazy (constr_of_ref "core.False.type")
+
+let force = Lazy.force
+
+(* =========================================================
+   Z literal construction. Mirrors term_mode's pattern: walk
+   the Z.t value into the unary/positive constructor tree.
+   ========================================================= *)
+
+let rec positive_of_z (n : Z.t) : EConstr.t =
+  if Z.equal n Z.one then force r_xH
+  else
+    let two = Z.of_int 2 in
+    let r = Z.rem n two in
+    let half = Z.div n two in
+    if Z.equal r Z.zero then
+      EConstr.mkApp (force r_xO, [| positive_of_z half |])
+    else
+      EConstr.mkApp (force r_xI, [| positive_of_z half |])
+
+let z_lit (n : Z.t) : EConstr.t =
+  match Z.sign n with
+  | 0 -> force r_Z0
+  | s when s > 0 -> EConstr.mkApp (force r_Zpos, [| positive_of_z n |])
+  | _ -> EConstr.mkApp (force r_Zneg, [| positive_of_z (Z.abs n) |])
+
+(** Parse an Alethe integer-shaped atom: either a plain integer
+    ["-3"]/["3"] or a rational-denominator-1 form ["3/1"]/["-3/1"]
+    (cvc5's alethe-2024 printer normalizes integers as rationals). *)
+let parse_int_atom (s : string) : Z.t option =
+  let s = String.trim s in
+  if s = "" then None
+  else
+    let num_str =
+      match String.split_on_char '/' s with
+      | [ n ] -> Some n
+      | [ n; "1" ] -> Some n
+      | _ -> None
+    in
+    match num_str with
+    | None -> None
+    | Some n -> (try Some (Z.of_string n) with _ -> None)
+
+(* =========================================================
+   Walker types.
+
+   Lean used a StateRefT monad for the proven-step map. Coq
+   plugin convention is OCaml refs / mutable Hashtbls; the
+   walker phase is purely OCaml (no Proofview), only the
+   final goal-assignment crosses into Proofview.
+   ========================================================= *)
+
+exception Walker_error of string
+
+type walker_ctx = {
+  vars : EConstr.t Names.Id.Map.t;
+}
+
+type walker_state = {
+  proven : (string, EConstr.t * Alethe.Sexp.t list) Hashtbl.t;
+}
+
+let make_state () : walker_state =
+  { proven = Hashtbl.create 64 }
+
+let store_step (st : walker_state) (id : string) (e : EConstr.t)
+    (clause : Alethe.Sexp.t list) : unit =
+  Hashtbl.replace st.proven id (e, clause)
+
+let lookup_step (st : walker_state) (id : string)
+    : EConstr.t * Alethe.Sexp.t list =
+  match Hashtbl.find_opt st.proven id with
+  | Some pc -> pc
+  | None ->
+    raise (Walker_error
+             (Printf.sprintf "step '%s' not proven yet" id))
+
+(** Build a walker context from the goal's local context. Every
+    named hypothesis / free var becomes an atom binding;
+    anonymous locals are skipped (Alethe atoms always have names). *)
+let make_context (env : Environ.env) : walker_ctx =
+  let named_ctx = Environ.named_context env in
+  let vars =
+    List.fold_left (fun acc decl ->
+        let id = Context.Named.Declaration.get_id decl in
+        Names.Id.Map.add id (EConstr.mkVar id) acc)
+      Names.Id.Map.empty
+      named_ctx
+  in
+  { vars }
+
+(* =========================================================
+   Sexp -> Constr translation. LIA fragment.
+
+   Mirrors Lean's [sexpToExpr] / [listToExpr] / [andOrChain].
+   For [eq] we hardcode the type as [Z] for now — boolean
+   equality (Prop = Prop) lands in R-7 alongside equiv1/equiv2.
+   ========================================================= *)
+
+let rec sexp_to_constr (ctx : walker_ctx) (s : Alethe.Sexp.t) : EConstr.t =
+  match s with
+  | Atom a -> atom_to_constr ctx a
+  | List xs -> list_to_constr ctx xs
+
+and atom_to_constr (ctx : walker_ctx) (s : string) : EConstr.t =
+  if s = "true" then force r_True
+  else if s = "false" then force r_False
+  else
+    match parse_int_atom s with
+    | Some n -> z_lit n
+    | None ->
+      let id = Names.Id.of_string_soft s in
+      (match Names.Id.Map.find_opt id ctx.vars with
+       | Some e -> e
+       | None ->
+         raise (Walker_error
+                  (Printf.sprintf
+                     "unknown atom '%s' (not an integer literal, \
+                      not in scope)" s)))
+
+and list_to_constr (ctx : walker_ctx) (xs : Alethe.Sexp.t list) : EConstr.t =
+  match xs with
+  | [ Atom "+"; a; b ] ->
+    EConstr.mkApp (force r_Zadd,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom "-"; a; b ] ->
+    EConstr.mkApp (force r_Zsub,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom "-"; a ] ->
+    EConstr.mkApp (force r_Zopp, [| sexp_to_constr ctx a |])
+  | [ Atom "*"; a; b ] ->
+    EConstr.mkApp (force r_Zmul,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom "<="; a; b ] ->
+    EConstr.mkApp (force r_Zle,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom "<"; a; b ] ->
+    EConstr.mkApp (force r_Zlt,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom ">="; a; b ] ->
+    EConstr.mkApp (force r_Zge,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom ">"; a; b ] ->
+    EConstr.mkApp (force r_Zgt,
+                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  | [ Atom "="; a; b ] ->
+    (* Polymorphic [eq] — hardcoded to Z for R-2's LIA scope.
+       Boolean equality between Props arrives in R-7 (equiv1/2). *)
+    EConstr.mkApp (force r_eq,
+                   [| force r_Z;
+                      sexp_to_constr ctx a;
+                      sexp_to_constr ctx b |])
+  | [ Atom "not"; a ] ->
+    EConstr.mkApp (force r_not, [| sexp_to_constr ctx a |])
+  | (Atom "and") :: rest ->
+    and_or_chain ctx (force r_and) (force r_True) rest
+  | (Atom "or") :: rest ->
+    and_or_chain ctx (force r_or) (force r_False) rest
+  | (Atom "cl") :: rest ->
+    (* `(cl)` is the empty clause = False. `(cl L)` is just L.
+       `(cl L1 L2 ...)` is `L1 \/ L2 \/ ...` (right-associative). *)
+    (match rest with
+     | [] -> force r_False
+     | [ lit ] -> sexp_to_constr ctx lit
+     | _ -> and_or_chain ctx (force r_or) (force r_False) rest)
+  | [ Atom "=>"; a; b ] ->
+    let binder =
+      Context.make_annot Names.Anonymous Sorts.Relevant
+    in
+    EConstr.mkProd (binder, sexp_to_constr ctx a, sexp_to_constr ctx b)
+  | _ ->
+    raise (Walker_error "unsupported Sexp shape (R-2 LIA scope)")
+
+and and_or_chain (ctx : walker_ctx) (conn : EConstr.t) (empty : EConstr.t)
+    (xs : Alethe.Sexp.t list) : EConstr.t =
+  match xs with
+  | [] -> empty
+  | [ lit ] -> sexp_to_constr ctx lit
+  | lit :: rest ->
+    let l_e = sexp_to_constr ctx lit in
+    let rest_e = and_or_chain ctx conn empty rest in
+    EConstr.mkApp (conn, [| l_e; rest_e |])
+
+(* =========================================================
+   Clause utilities. Mirror of Lean's [negateLit] / [isNotForm]
+   / [clauseTypeOf].
+   ========================================================= *)
+
+let clause_type_of (ctx : walker_ctx) (lits : Alethe.Sexp.t list) : EConstr.t =
+  sexp_to_constr ctx (Alethe.Sexp.List (Atom "cl" :: lits))
+
+let negate_lit (s : Alethe.Sexp.t) : Alethe.Sexp.t =
+  match s with
+  | List [ Atom "not"; x ] -> x
+  | other -> List [ Atom "not"; other ]
+
+let is_not_form (s : Alethe.Sexp.t) : bool =
+  match s with
+  | List [ Atom "not"; _ ] -> true
+  | _ -> false
+
+(* =========================================================
+   Rule elaborators (R-2 scope).
+
+   * [elab_assume_literal]: match the assume's stated literal
+     against a local hypothesis by defeq, return [mkVar] of the
+     matched hypothesis.
+   * [elab_false_step]: `(cl (not false))` → `fun (h : False) => h`.
+   * [elab_or]: passthrough — restate the premise's proof under
+     the step's flattened clause-literal list.
+   * [elab_resolution_simple]: complementary-singleton-pair only.
+     N-ary resolution arrives in R-4.
+   ========================================================= *)
+
+let elab_assume_literal (env : Environ.env) (sigma : Evd.evar_map)
+    (ctx : walker_ctx) (id : string) (literal : Alethe.Sexp.t)
+    : EConstr.t =
+  let stmt = sexp_to_constr ctx literal in
+  let named_ctx = Environ.named_context env in
+  let rec find = function
+    | [] ->
+      raise (Walker_error
+               (Printf.sprintf
+                  "assume '%s' states a literal with no matching \
+                   local hypothesis" id))
+    | decl :: rest ->
+      let ty = EConstr.of_constr
+                 (Context.Named.Declaration.get_type decl) in
+      if Reductionops.is_conv env sigma ty stmt then
+        EConstr.mkVar (Context.Named.Declaration.get_id decl)
+      else
+        find rest
+  in
+  find named_ctx
+
+let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "not"; Atom "false" ] ] ->
+    (* Build [fun (h : False) => h] : False -> False. *)
+    let binder =
+      Context.make_annot
+        (Names.Name (Names.Id.of_string "h"))
+        Sorts.Relevant
+    in
+    let proof =
+      EConstr.mkLambda (binder, force r_False, EConstr.mkRel 1)
+    in
+    (proof, s.clause)
+  | _ ->
+    raise (Walker_error
+             "'false' rule expects clause (cl (not false))")
+
+let elab_or (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.premises with
+  | Some [ p ] ->
+    let (proof, _) = lookup_step st p in
+    (proof, s.clause)
+  | _ ->
+    raise (Walker_error
+             "'or' rule expects exactly one premise")
+
+(** R-2 simple resolution: exactly two premises, each a singleton
+    clause, complementary to each other. The proof is the [Not]-side
+    applied to the positive side (or vice versa), yielding [False].
+    N-ary resolution (intermediate non-singleton resolvents, pivot
+    search across multi-literal clauses) is R-4. *)
+let elab_resolution_simple (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.premises with
+  | Some [ p1; p2 ] ->
+    let (e1, c1) = lookup_step st p1 in
+    let (e2, c2) = lookup_step st p2 in
+    (match c1, c2 with
+     | [ lit1 ], [ lit2 ] when negate_lit lit1 = lit2 ->
+       let proof =
+         if is_not_form lit1
+         then EConstr.mkApp (e1, [| e2 |])
+         else EConstr.mkApp (e2, [| e1 |])
+       in
+       (proof, [])  (* empty clause *)
+     | _ ->
+       raise (Walker_error
+                "R-2 'resolution': only complementary singleton \
+                 pairs supported (n-ary in R-4)"))
+  | _ ->
+    raise (Walker_error
+             "'resolution' needs exactly two premises in R-2 scope")
+
+(* =========================================================
+   Dispatch + walk.
+   ========================================================= *)
+
+let elab_step (env : Environ.env) (sigma : Evd.evar_map)
+    (ctx : walker_ctx) (st : walker_state) (s : Alethe.step) : unit =
+  let (proof, clause) =
+    match s.rule with
+    | "or" -> elab_or st s
+    | "resolution" -> elab_resolution_simple st s
+    | "false" -> elab_false_step ctx s
+    | other ->
+      raise (Walker_error
+               (Printf.sprintf
+                  "rule '%s' not yet supported (R-2 scope: \
+                   assume / or / resolution / false; subsequent \
+                   PRs add la_generic / la_mult_neg / equality / \
+                   trust-tagged leaves / boolean cleanup / \
+                   equiv_simplify / equiv_pos)" other))
+  in
+  let _ = env in let _ = sigma in
+  store_step st s.id proof clause
+
+let walk_proof (env : Environ.env) (sigma : Evd.evar_map)
+    (ctx : walker_ctx) (p : proof) : EConstr.t =
+  let st = make_state () in
+  (* Phase 1: seed assumes against local hypotheses. *)
+  List.iter (fun (id, lit) ->
+      let e = elab_assume_literal env sigma ctx id lit in
+      store_step st id e [ lit ])
+    p.assumes;
+  (* Phase 2: walk steps in order. *)
+  List.iter (elab_step env sigma ctx st) p.steps;
+  match List.rev p.steps with
+  | [] ->
+    raise (Walker_error
+             "proof has no steps; a well-formed alethe-2024 \
+              trace ends in an empty-clause resolution step")
+  | last :: _ ->
+    let (e, _) = lookup_step st last.id in
+    e
+
+(* =========================================================
+   Tactic entry point.
+   ========================================================= *)
+
+let walker_test (trace_str : string) : unit Proofview.tactic =
+  Proofview.Goal.enter (fun gl ->
+    let sigma = Proofview.Goal.sigma gl in
+    let env = Proofview.Goal.env gl in
+    let goal_ty = Proofview.Goal.concl gl in
+    match parse_trace trace_str with
+    | Error msg ->
+      Tacticals.tclZEROMSG
+        (Pp.str ("alethe_walker_test: " ^ msg))
+    | Ok p ->
+      (try
+         let ctx = make_context env in
+         let proof_term = walk_proof env sigma ctx p in
+         let term_ty = Retyping.get_type_of env sigma proof_term in
+         if Reductionops.is_conv env sigma term_ty goal_ty then
+           Proofview.Refine.refine ~typecheck:true (fun sigma ->
+             (sigma, proof_term))
+         else
+           Tacticals.tclZEROMSG
+             (Pp.str
+                "alethe_walker_test: walker produced a proof of \
+                 the wrong type for the current goal")
+       with
+       | Walker_error msg ->
+         Tacticals.tclZEROMSG
+           (Pp.str ("alethe_walker_test: " ^ msg))))
