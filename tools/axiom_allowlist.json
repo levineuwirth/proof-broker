@@ -3,7 +3,7 @@
 
   "lean": {
     "ProofBroker.Test.lia_axiom_free":
-      ["propext", "Quot.sound"],
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_axiom_free":
@@ -106,6 +106,12 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.alethe_walker_equiv_pos2_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_cong_not_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_cong_add_axiom_free":
+      [],
+    "ProofBroker.Test.alethe_walker_cong_le_axiom_free":
+      [],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":

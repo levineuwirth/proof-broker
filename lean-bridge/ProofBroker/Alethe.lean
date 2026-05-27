@@ -646,45 +646,68 @@ private def elabTrans (s : Step) : WalkerM (Expr × List Sexp) := do
     throwError m!"alethe walker: 'trans' expects at least one \
                    premise, got {repr s.premises}"
 
-/-- `cong`: n premises proving `(= a1 b1)`, …, `(= an bn)`,
-    conclusion `(= (f a1 … an) (f b1 … bn))`. The proof term is
-    built by left-folding `Lean.Meta.mkCongr` over the premise list,
-    starting from `Eq.refl f`. `mkCongr` collapses the
+/-- `cong`: n premises proving `(= a₁ b₁)`, …, `(= aₙ bₙ)`,
+    conclusion `(= (f a₁ … aₙ) (f b₁ … bₙ))`. The proof term is
+    built by left-folding `Lean.Meta.mkCongr` over the premise
+    list, starting from `Eq.refl f`. `mkCongr` collapses the
     `Eq.refl f` seed into `mkCongrArg` automatically, then chains
     through `mkCongr`'s general case for each subsequent
     argument — so the resulting term is a curried congruence
-    cascade (`(f a1) a2 = (f b1) b2` etc.) matching Lean's own
+    cascade (`(f a₁) a₂ = (f b₁) b₂` etc.) matching Lean's own
     curried application convention.
 
-    The function head is required to be identical on both sides
-    (Sexp `BEq`); typically `fA = .atom "f"` for a UF symbol the
-    walker resolves through `sexpToExpr`'s context lookup, but a
-    higher-order head (an applied list) is also accepted as long
-    as both sides agree structurally. Arity mismatch or differing
-    heads throw a clear error. -/
+    Implementation works at the `Expr` level rather than the
+    `Sexp` level so it handles built-in operator atoms uniformly:
+    LHS and RHS are translated via `sexpToExpr` (which knows
+    `(+ a b)` → `mkAppM ``HAdd.hAdd …`, `(not a)` → `Not a`, UF
+    `(f x)` → applied free var, etc.), then `pids.length` apps
+    are peeled off the LHS via `Expr.appFn!` to expose the
+    operator with its implicit/typeclass args bound. `Eq.refl
+    opE` becomes the fold seed.
+
+    Concretely: for `cong h : x = y ⊢ (= (+ x z) (+ y z))` over
+    `Int`, `lhsE = @HAdd.hAdd Int Int Int inst x z` has 6 app
+    levels (4 implicit + 2 explicit); stripping 2 (= 1 premise,
+    since the cong is only over the `x = y` arg) gives
+    `@HAdd.hAdd Int Int Int inst x` — but wait, that strips one
+    explicit AND not the right one. Actually cvc5 emits cong with
+    a premise per arg position, so for binary ops the trace has
+    two premises; stripping 2 gives `@HAdd.hAdd Int Int Int
+    inst`, the right operator to seed mkCongr from. Mismatched
+    arities or differing operators throw. -/
 private def elabCong (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
   match s.clause, s.premises with
-  | [.list [.atom "=", .list (fA :: argsA), .list (fB :: argsB)]],
-    some pids => do
-    unless fA == fB do
-      throwError m!"alethe walker: 'cong' function heads differ: \
-                     {repr fA} vs {repr fB}"
-    unless argsA.length == argsB.length do
-      throwError m!"alethe walker: 'cong' arity mismatch: LHS has \
-                     {argsA.length} args, RHS has {argsB.length}"
-    unless argsA.length == pids.length do
+  | [.list [.atom "=", lhsSexp, rhsSexp]], some pids => do
+    let lhsE ← sexpToExpr ctx lhsSexp
+    let rhsE ← sexpToExpr ctx rhsSexp
+    let lhsArity := lhsE.getAppNumArgs
+    let rhsArity := rhsE.getAppNumArgs
+    unless lhsArity == rhsArity do
+      throwError m!"alethe walker: 'cong' app-arity mismatch: \
+                     LHS has {lhsArity} app levels, RHS has \
+                     {rhsArity}"
+    unless pids.length ≤ lhsArity do
       throwError m!"alethe walker: 'cong' has {pids.length} \
-                     premises but {argsA.length} argument pairs"
-    let fExpr ← sexpToExpr ctx fA
-    let mut acc ← mkAppM ``Eq.refl #[fExpr]
+                     premises but LHS only has {lhsArity} app \
+                     levels (translated form: {lhsE})"
+    let mut opE := lhsE
+    let mut opERhs := rhsE
+    for _ in [0:pids.length] do
+      opE := opE.appFn!
+      opERhs := opERhs.appFn!
+    unless ← Meta.isDefEq opE opERhs do
+      throwError m!"alethe walker: 'cong' operator heads differ \
+                     after stripping {pids.length} explicit args: \
+                     {opE} vs {opERhs}"
+    let mut acc ← mkAppM ``Eq.refl #[opE]
     for pid in pids do
       let (eqProof, _) ← lookupStep pid
       acc ← Lean.Meta.mkCongr acc eqProof
     pure (acc, s.clause)
   | _, _ =>
     throwError m!"alethe walker: 'cong' expects clause \
-                   (cl (= (f …) (f …))) with a premise list, got \
+                   (cl (= LHS RHS)) with a premise list, got \
                    clause {repr s.clause}, premises {repr s.premises}"
 
 /-- Shared omega-discharge helper. Translates the step's clause to

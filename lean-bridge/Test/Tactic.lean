@@ -71,12 +71,16 @@ example (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
 
 /-- Named LIA goal proven via the default `proof_broker` form,
     which `preferHigherTier := true` floats to cvc5's Tier 3
-    alethe-2024 path. Even with a Tier 3 cert (no Lean-side
-    Alethe walker yet) the closer is `omega` because the goal is
-    LIA — cert verification gates the call, omega does the rest.
-    omega is axiom-free, so this theorem's transitive axiom set
-    stays within the core-Lean ceiling; verified inline by
-    `#print axioms` below. -/
+    alethe-2024 path. The Lean-side Alethe walker now elaborates
+    the trace into a kernel proof term ("cert IS the proof") —
+    this is the first test in the suite where a real cvc5
+    dispatch closes walker-first rather than via the omega
+    fallback. Footprint is `[propext, Classical.choice,
+    Quot.sound]` because cvc5's trace uses boolean-cleanup rules
+    (`equiv_pos1` / `equiv_pos2`) whose proof terms invoke
+    `Classical.em`; same classical baseline as the
+    `proof_broker_term` paths. Verified inline by `#print axioms`
+    below. -/
 theorem lia_axiom_free
     (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
   proof_broker
@@ -888,5 +892,49 @@ theorem alethe_walker_equiv_pos2_axiom_free
     "( (step t0 (cl (not (= a b)) (not a) b) :rule equiv_pos2) )"
 
 #print axioms alethe_walker_equiv_pos2_axiom_free
+
+/- Alethe walker — `cong` over built-in operators.
+
+   Real cvc5 LIA traces use `cong` to lift argument equalities
+   through built-in operators (`not`, `+`, `<=`, etc.) — not just
+   UF symbols. The Expr-level `elabCong` refactor handles these
+   by translating LHS/RHS via `sexpToExpr` (which already knows
+   how to translate operator-headed lists) and stripping
+   `pids.length` apps to expose the typed operator. -/
+
+/-- `cong` over `not` (unary Prop operator). Trace shape mirrors
+    UF cong but with `not` as the function head. -/
+theorem alethe_walker_cong_not_axiom_free
+    (a b : Prop) (h : a = b) : (¬a) = (¬b) := by
+  alethe_walker_test
+    "( (assume a0 (= a b)) \
+       (step t0 (cl (= (not a) (not b))) :rule cong :premises (a0)) )"
+
+#print axioms alethe_walker_cong_not_axiom_free
+
+/-- `cong` over `+` (binary polymorphic operator over `Int`).
+    cvc5 emits this when lifting arg equalities through an
+    addition during LIA normalization. -/
+theorem alethe_walker_cong_add_axiom_free
+    (x y z w : Int) (h1 : x = y) (h2 : z = w) : x + z = y + w := by
+  alethe_walker_test
+    "( (assume a0 (= x y)) \
+       (assume a1 (= z w)) \
+       (step t0 (cl (= (+ x z) (+ y w))) :rule cong :premises (a0 a1)) )"
+
+#print axioms alethe_walker_cong_add_axiom_free
+
+/-- `cong` over `<=` (binary comparison, predicate-valued).
+    Slightly different from `+`: the conclusion's equality is
+    between two `Prop`s, exercising the `mkCongr` chain when the
+    operator's result type is `Prop`. -/
+theorem alethe_walker_cong_le_axiom_free
+    (x y : Int) (h : x = y) : (x ≤ 5) = (y ≤ 5) := by
+  alethe_walker_test
+    "( (assume a0 (= x y)) \
+       (step t_refl (cl (= 5 5)) :rule refl) \
+       (step t0 (cl (= (<= x 5) (<= y 5))) :rule cong :premises (a0 t_refl)) )"
+
+#print axioms alethe_walker_cong_le_axiom_free
 
 end ProofBroker.Test
