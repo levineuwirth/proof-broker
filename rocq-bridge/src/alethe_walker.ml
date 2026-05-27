@@ -1,4 +1,5 @@
-(** Rocq-side Alethe walker. R-2: clausal layer. *)
+(** Rocq-side Alethe walker. R-3: clausal layer + arithmetic
+    (la_generic / la_mult_neg via [lia]-discharge). *)
 
 module Alethe = Proof_broker.Alethe
 
@@ -259,7 +260,8 @@ let is_not_form (s : Alethe.Sexp.t) : bool =
      N-ary resolution arrives in R-4.
    ========================================================= *)
 
-let elab_assume_literal (env : Environ.env) (sigma : Evd.evar_map)
+let elab_assume_literal (env : Environ.env)
+    (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (id : string) (literal : Alethe.Sexp.t)
     : EConstr.t =
   let stmt = sexp_to_constr ctx literal in
@@ -273,12 +275,31 @@ let elab_assume_literal (env : Environ.env) (sigma : Evd.evar_map)
     | decl :: rest ->
       let ty = EConstr.of_constr
                  (Context.Named.Declaration.get_type decl) in
-      if Reductionops.is_conv env sigma ty stmt then
+      if Reductionops.is_conv env !sigma_ref ty stmt then
         EConstr.mkVar (Context.Named.Declaration.get_id decl)
       else
         find rest
   in
   find named_ctx
+
+(** Arithmetic leaf rules ([la_generic] / [la_mult_neg]). The
+    step's clause is a linear-arithmetic tautology — cvc5 treats
+    these as proof leaves. The walker creates a fresh evar of the
+    clause type; the outer [walker_test] / [tryAletheWalkerLIA]
+    runs [lia] on each such evar via [tclINDEPENDENT] after the
+    [Refine.refine]. Mirror of Lean's [omegaDischargeClause]. *)
+let elab_la_generic (env : Environ.env)
+    (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
+    (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
+  let clause_prop =
+    sexp_to_constr ctx
+      (Alethe.Sexp.List (Alethe.Sexp.Atom "cl" :: s.clause))
+  in
+  let new_sigma, evar =
+    Evarutil.new_evar env !sigma_ref clause_prop
+  in
+  sigma_ref := new_sigma;
+  (evar, s.clause)
 
 let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
@@ -339,35 +360,37 @@ let elab_resolution_simple (st : walker_state) (s : Alethe.step)
    Dispatch + walk.
    ========================================================= *)
 
-let elab_step (env : Environ.env) (sigma : Evd.evar_map)
+let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (st : walker_state) (s : Alethe.step) : unit =
   let (proof, clause) =
     match s.rule with
     | "or" -> elab_or st s
     | "resolution" -> elab_resolution_simple st s
     | "false" -> elab_false_step ctx s
+    | "la_generic" -> elab_la_generic env sigma_ref ctx s
+    | "la_mult_neg" -> elab_la_generic env sigma_ref ctx s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-2 scope: \
-                   assume / or / resolution / false; subsequent \
-                   PRs add la_generic / la_mult_neg / equality / \
-                   trust-tagged leaves / boolean cleanup / \
-                   equiv_simplify / equiv_pos)" other))
+                  "rule '%s' not yet supported (R-3 scope: \
+                   assume / or / resolution / false / la_generic \
+                   / la_mult_neg; subsequent PRs add multi-literal \
+                   resolution / equality / trust-tagged leaves / \
+                   boolean cleanup / equiv_simplify / equiv_pos)"
+                  other))
   in
-  let _ = env in let _ = sigma in
   store_step st s.id proof clause
 
-let walk_proof (env : Environ.env) (sigma : Evd.evar_map)
+let walk_proof (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (p : proof) : EConstr.t =
   let st = make_state () in
   (* Phase 1: seed assumes against local hypotheses. *)
   List.iter (fun (id, lit) ->
-      let e = elab_assume_literal env sigma ctx id lit in
+      let e = elab_assume_literal env sigma_ref ctx id lit in
       store_step st id e [ lit ])
     p.assumes;
   (* Phase 2: walk steps in order. *)
-  List.iter (elab_step env sigma ctx st) p.steps;
+  List.iter (elab_step env sigma_ref ctx st) p.steps;
   match List.rev p.steps with
   | [] ->
     raise (Walker_error
@@ -379,11 +402,34 @@ let walk_proof (env : Environ.env) (sigma : Evd.evar_map)
 
 (* =========================================================
    Tactic entry point.
+
+   The walker generates a proof term whose leaves are either
+   concrete (clausal rules) or evars (la_generic / la_mult_neg).
+   After [Refine.refine] asserts the term against the goal mvar,
+   any remaining subgoals are exactly those la_generic evars —
+   discharged by [tclINDEPENDENT invoke_lia]. Mirror of Lean's
+   [omegaDischargeClause]'s out-of-MetaM equivalent.
    ========================================================= *)
+
+(** Invoke a registered Stdlib tactic by name — used to call
+    [lia] on the subgoals [Refine.refine] produces from the
+    walker's la_generic evars. Duplicates the pattern from
+    [Pb_rocq_main.invoke_named_tactic] (avoiding a cross-module
+    dependency at this stage of the arc). *)
+let invoke_named_tactic (name : string) : unit Proofview.tactic =
+  Proofview.Goal.enter (fun _ ->
+    let raw = Procq.parse_string Ltac_plugin.Pltac.tactic name in
+    let glob =
+      Ltac_plugin.Tacintern.intern_pure_tactic
+        (Ltac_plugin.Tacintern.make_empty_glob_sign ~strict:false) raw
+    in
+    Ltac_plugin.Tacinterp.eval_tactic glob)
+
+let invoke_lia () : unit Proofview.tactic =
+  invoke_named_tactic "lia"
 
 let walker_test (trace_str : string) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
-    let sigma = Proofview.Goal.sigma gl in
     let env = Proofview.Goal.env gl in
     let goal_ty = Proofview.Goal.concl gl in
     match parse_trace trace_str with
@@ -392,12 +438,20 @@ let walker_test (trace_str : string) : unit Proofview.tactic =
         (Pp.str ("alethe_walker_test: " ^ msg))
     | Ok p ->
       (try
+         let sigma_ref = ref (Proofview.Goal.sigma gl) in
          let ctx = make_context env in
-         let proof_term = walk_proof env sigma ctx p in
-         let term_ty = Retyping.get_type_of env sigma proof_term in
-         if Reductionops.is_conv env sigma term_ty goal_ty then
-           Proofview.Refine.refine ~typecheck:true (fun sigma ->
-             (sigma, proof_term))
+         let proof_term = walk_proof env sigma_ref ctx p in
+         let final_sigma = !sigma_ref in
+         let term_ty =
+           Retyping.get_type_of env final_sigma proof_term
+         in
+         if Reductionops.is_conv env final_sigma term_ty goal_ty then
+           let refine_tac =
+             Proofview.Refine.refine ~typecheck:true (fun _ ->
+               (final_sigma, proof_term))
+           in
+           Proofview.tclTHEN refine_tac
+             (Proofview.tclINDEPENDENT (invoke_lia ()))
          else
            Tacticals.tclZEROMSG
              (Pp.str

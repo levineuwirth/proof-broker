@@ -771,3 +771,41 @@ Qed.
 
 Print alethe_walker_clausal_axiom_free.
 Print Assumptions alethe_walker_clausal_axiom_free.
+
+(** Alethe walker — R-3 arithmetic layer ([la_generic] /
+    [la_mult_neg]).
+
+    Mirror of lean-bridge/Test/Tactic.lean's
+    [alethe_walker_la_generic_lit] / [_disj]. cvc5 emits
+    [la_generic] for LIA-tautology leaves; the walker creates a
+    fresh evar of the clause's type, and the outer tactic runs
+    [lia] on it via [tclINDEPENDENT]. Axiom-footprint match
+    Coq's [lia] (Coq Stdlib's LIA decision procedure, axiom-free
+    over Z). *)
+
+(** Single-literal LIA tautology: [0 <= 5] proved by [lia] via
+    the walker's evar-discharge. *)
+Theorem alethe_walker_la_generic_lit : (0 <= 5)%Z.
+Proof.
+  alethe_walker_test
+    "( (step t0 (cl (<= 0 5)) :rule la_generic :args ()) )".
+Qed.
+
+Print alethe_walker_la_generic_lit.
+Print Assumptions alethe_walker_la_generic_lit.
+
+(** Multi-literal disjunction tautology: [~ (x >= 3) \/ (x >= 1)].
+    The walker translates the [(cl ...)] clause to a
+    right-associated Or; the resulting evar's type is the
+    disjunction, which [lia] handles by case analysis on its
+    negation. *)
+Theorem alethe_walker_la_generic_disj :
+  forall x : Z, ~ (x >= 3) \/ (x >= 1).
+Proof.
+  intro x.
+  alethe_walker_test
+    "( (step t0 (cl (not (>= x 3)) (>= x 1)) :rule la_generic :args (1/1 1/1)) )".
+Qed.
+
+Print alethe_walker_la_generic_disj.
+Print Assumptions alethe_walker_la_generic_disj.

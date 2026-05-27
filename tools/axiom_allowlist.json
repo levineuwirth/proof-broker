@@ -487,6 +487,10 @@
     "pb_llm_reconstruct_axiom_free":
       [],
     "alethe_walker_clausal_axiom_free":
+      [],
+    "alethe_walker_la_generic_lit":
+      [],
+    "alethe_walker_la_generic_disj":
       []
   }
 }
