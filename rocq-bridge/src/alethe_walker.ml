@@ -213,7 +213,7 @@ and list_to_constr (ctx : walker_ctx) (xs : Alethe.Sexp.t list) : EConstr.t =
      | _ -> and_or_chain ctx (force r_or) (force r_False) rest)
   | [ Atom "=>"; a; b ] ->
     let binder =
-      Context.make_annot Names.Anonymous Sorts.Relevant
+      Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
     in
     EConstr.mkProd (binder, sexp_to_constr ctx a, sexp_to_constr ctx b)
   | _ ->
@@ -309,7 +309,7 @@ let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
     let binder =
       Context.make_annot
         (Names.Name (Names.Id.of_string "h"))
-        Sorts.Relevant
+        EConstr.ERelevance.relevant
     in
     let proof =
       EConstr.mkLambda (binder, force r_False, EConstr.mkRel 1)
