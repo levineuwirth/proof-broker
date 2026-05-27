@@ -92,6 +92,14 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.alethe_walker_implies_refutation_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_equiv_simplify_refl_axiom_free":
+      ["propext"],
+    "ProofBroker.Test.alethe_walker_equiv_simplify_not_not_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_equiv_simplify_and_idem_axiom_free":
+      ["propext"],
+    "ProofBroker.Test.alethe_walker_equiv_simplify_or_idem_axiom_free":
+      ["propext"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":

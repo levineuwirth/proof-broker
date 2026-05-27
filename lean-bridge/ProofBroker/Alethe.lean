@@ -952,6 +952,137 @@ private def elabAndNeg (ctx : WalkerContext) (s : Step)
                    (cl (and a₁ … aₙ) (not a₁) … (not aₙ)), got \
                    {repr s.clause}"
 
+/- ----------------------------------------------------------------
+   `equiv_simplify`: propositional-equality tautology simplification.
+
+   cvc5's `equiv_simplify` rule emits clauses of the form
+   `(cl (= lhs rhs))` where `lhs ↔ rhs` is a propositional
+   tautology — reflexivity, double negation, identity-element
+   elimination, etc. Unlike the boolean-cleanup rules which take
+   a meaningful premise, these are *leaves*: the proof term is
+   constructed from the clause's structural shape alone.
+
+   Discharge strategy is a structural pattern matcher rather
+   than `omega` (which doesn't handle propext + Iff reasoning)
+   or `simp` (which would drag opaque axiom-set growth into the
+   trust footprint). Per-pattern hand-built proofs keep the
+   audit trail transparent — each supported case has a visible
+   `propext (Iff.intro …)` term. Unsupported patterns throw,
+   handing control back to the closer chain. New patterns can
+   be added incrementally as cvc5 traces demand them.
+
+   Supported patterns (this PR):
+   * `(= (= t t) true)`     — reflexivity tautology
+   * `(= (not (not a)) a)`  — double negation (Classical)
+   * `(= (and a a) a)`      — `And` idempotence
+   * `(= (or a a) a)`       — `Or` idempotence
+   ---------------------------------------------------------------- -/
+
+/-- Build `(t = t) = True` via `propext (Iff.intro (fun _ ↦ ⟨⟩)
+    (fun _ ↦ Eq.refl t))`. No `Classical` needed — both
+    directions are constructive. -/
+private def buildEqReflTautology (ctx : WalkerContext) (t : Sexp)
+    : MetaM Expr := do
+  let tE ← sexpToExpr ctx t
+  let eqTT ← mkAppM ``Eq #[tE, tE]
+  let reflE ← mkAppM ``Eq.refl #[tE]
+  let trueE := mkConst ``True
+  let trueIntro := mkConst ``True.intro
+  let fwdLam ← withLocalDeclD `h eqTT fun h =>
+    mkLambdaFVars #[h] trueIntro
+  let bwdLam ← withLocalDeclD `h trueE fun h =>
+    mkLambdaFVars #[h] reflE
+  let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
+  mkAppM ``propext #[iffP]
+
+/-- Build `(¬¬a) = a` via `propext Classical.not_not`. The
+    Classical primitive supplies both directions: the backward
+    `a → ¬¬a` is constructive, the forward `¬¬a → a` is the
+    classical step. -/
+private def buildDoubleNegation (ctx : WalkerContext) (a : Sexp)
+    : MetaM Expr := do
+  let aE ← sexpToExpr ctx a
+  let iffP ← mkAppOptM ``Classical.not_not #[some aE]
+  mkAppM ``propext #[iffP]
+
+/-- Build `(a ∧ a) = a` via `propext (Iff.intro And.left
+    (fun ha ↦ ⟨ha, ha⟩))`. Constructive — no `Classical`. -/
+private def buildAndIdem (ctx : WalkerContext) (a : Sexp)
+    : MetaM Expr := do
+  let aE ← sexpToExpr ctx a
+  let aAndA ← mkAppM ``And #[aE, aE]
+  let fwdLam ← withLocalDeclD `h aAndA fun h => do
+    let p ← mkAppM ``And.left #[h]
+    mkLambdaFVars #[h] p
+  let bwdLam ← withLocalDeclD `ha aE fun ha => do
+    let p ← mkAppM ``And.intro #[ha, ha]
+    mkLambdaFVars #[ha] p
+  let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
+  mkAppM ``propext #[iffP]
+
+/-- Build `(a ∨ a) = a` via `propext (Iff.intro (fun h ↦
+    h.elim id id) Or.inl)`. Constructive — no `Classical`. -/
+private def buildOrIdem (ctx : WalkerContext) (a : Sexp)
+    : MetaM Expr := do
+  let aE ← sexpToExpr ctx a
+  let aOrA ← mkAppM ``Or #[aE, aE]
+  let fwdLam ← withLocalDeclD `h aOrA fun h => do
+    let leftLam ← withLocalDeclD `hL aE fun hL =>
+      mkLambdaFVars #[hL] hL
+    let rightLam ← withLocalDeclD `hR aE fun hR =>
+      mkLambdaFVars #[hR] hR
+    let body ← mkAppOptM ``Or.elim
+      #[some aE, some aE, some aE, some h, some leftLam, some rightLam]
+    mkLambdaFVars #[h] body
+  let bwdLam ← withLocalDeclD `ha aE fun ha => do
+    let p ← mkAppOptM ``Or.inl #[some aE, some aE, some ha]
+    mkLambdaFVars #[ha] p
+  let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
+  mkAppM ``propext #[iffP]
+
+/-- `equiv_simplify`: structural pattern matcher on the
+    `(= lhs rhs)` clause shape. Each recognized pattern delegates
+    to a per-pattern builder; unrecognized shapes throw with the
+    supported-pattern list. -/
+private def elabEquivSimplify (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=", lhs, rhs]] => do
+    let proof ← match lhs, rhs with
+      | .list [.atom "=", t1, t2], .atom "true" =>
+        if t1 == t2 then
+          buildEqReflTautology ctx t1
+        else
+          unsupportedEquivSimplify lhs rhs
+      | .list [.atom "not", .list [.atom "not", a]], a' =>
+        if a == a' then
+          buildDoubleNegation ctx a
+        else
+          unsupportedEquivSimplify lhs rhs
+      | .list [.atom "and", a1, a2], a' =>
+        if a1 == a2 && a1 == a' then
+          buildAndIdem ctx a1
+        else
+          unsupportedEquivSimplify lhs rhs
+      | .list [.atom "or", a1, a2], a' =>
+        if a1 == a2 && a1 == a' then
+          buildOrIdem ctx a1
+        else
+          unsupportedEquivSimplify lhs rhs
+      | _, _ =>
+        unsupportedEquivSimplify lhs rhs
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'equiv_simplify' expects clause \
+                   (cl (= lhs rhs)), got {repr s.clause}"
+where
+  unsupportedEquivSimplify (lhs rhs : Sexp) : MetaM Expr := do
+    throwError m!"alethe walker: 'equiv_simplify' pattern not \
+                   recognized: (= {repr lhs} {repr rhs}). Supported \
+                   patterns: (= (= t t) true) / (= (not (not a)) a) \
+                   / (= (and a a) a) / (= (or a a) a). New patterns \
+                   can be added incrementally — see Alethe.lean."
+
 /-- Elaborate a single step: dispatch on `rule` to a per-rule
     elaborator, store the result under the step's `id`. Unknown
     rules throw — the omega fallback in `closeOrFail` catches
@@ -978,15 +1109,16 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "equiv2" => elabEquiv2 ctx s
     | "not_and" => elabNotAnd ctx s
     | "and_neg" => elabAndNeg ctx s
+    | "equiv_simplify" => elabEquivSimplify ctx s
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
                      supported (current scope: resolution / or / \
                      false / la_generic / la_mult_neg / refl / \
                      symm / trans / cong / hole / rare_rewrite / \
-                     implies / equiv1 / equiv2 / not_and / and_neg, \
-                     plus seeded assumes. equiv_simplify is the \
-                     remaining gap — the omega fallback handles \
-                     full cvc5 traces in the meantime)."
+                     implies / equiv1 / equiv2 / not_and / and_neg \
+                     / equiv_simplify, plus seeded assumes — the \
+                     omega fallback in closeOrFail handles any \
+                     residual unsupported rules)."
   storeStep s.id proof clause
 
 /-- Walk an Alethe proof and return the `Expr` proving the final

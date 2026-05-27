@@ -764,4 +764,73 @@ theorem alethe_walker_implies_refutation_axiom_free
 
 #print axioms alethe_walker_implies_refutation_axiom_free
 
+/- Alethe walker — `equiv_simplify` (propositional-equality
+   tautologies).
+
+   cvc5's `equiv_simplify` emits propositional-equality
+   tautologies — reflexivity, double negation, identity-element
+   elimination, etc. — as `(cl (= lhs rhs))` clauses. The walker
+   pattern-matches on the clause shape and constructs a proof
+   term per supported pattern. Three of the four patterns close
+   constructively (`[propext, Quot.sound]`); only the
+   double-negation pattern needs `Classical.not_not` and lands
+   at the classical baseline.
+
+   Unsupported patterns surface as `throwError` (audit H1) — see
+   the negative test. New patterns can be added incrementally to
+   `elabEquivSimplify`. -/
+
+/-- Reflexivity tautology: `(t = t) = True`. Proof term:
+    `propext (Iff.intro (fun _ => True.intro) (fun _ => Eq.refl t))`.
+    Constructive — no `Classical`. -/
+theorem alethe_walker_equiv_simplify_refl_axiom_free
+    (t : Int) : (t = t) = True := by
+  alethe_walker_test
+    "( (step t0 (cl (= (= t t) true)) :rule equiv_simplify) )"
+
+#print axioms alethe_walker_equiv_simplify_refl_axiom_free
+
+/-- Double negation: `(¬¬a) = a`. Uses `Classical.not_not` —
+    the forward direction `¬¬a → a` is the classical step;
+    backward is constructive. Footprint: classical baseline. -/
+theorem alethe_walker_equiv_simplify_not_not_axiom_free
+    (a : Prop) : (¬¬a) = a := by
+  alethe_walker_test
+    "( (step t0 (cl (= (not (not a)) a)) :rule equiv_simplify) )"
+
+#print axioms alethe_walker_equiv_simplify_not_not_axiom_free
+
+/-- And-idempotence: `(a ∧ a) = a`. Proof:
+    `propext (Iff.intro And.left (fun ha => ⟨ha, ha⟩))`.
+    Constructive. -/
+theorem alethe_walker_equiv_simplify_and_idem_axiom_free
+    (a : Prop) : (a ∧ a) = a := by
+  alethe_walker_test
+    "( (step t0 (cl (= (and a a) a)) :rule equiv_simplify) )"
+
+#print axioms alethe_walker_equiv_simplify_and_idem_axiom_free
+
+/-- Or-idempotence: `(a ∨ a) = a`. Proof:
+    `propext (Iff.intro (fun h => h.elim id id) Or.inl)`.
+    Constructive. -/
+theorem alethe_walker_equiv_simplify_or_idem_axiom_free
+    (a : Prop) : (a ∨ a) = a := by
+  alethe_walker_test
+    "( (step t0 (cl (= (or a a) a)) :rule equiv_simplify) )"
+
+#print axioms alethe_walker_equiv_simplify_or_idem_axiom_free
+
+/-- audit H1: an `equiv_simplify` clause that doesn't match any
+    supported pattern must FAIL rather than be admitted. The
+    walker throws with a list of supported patterns; the tactic
+    errors; the goal is left OPEN. `(= (and a b) (and b a))`
+    (and-commutativity) is true but not in the supported set, so
+    this pattern is rejected — extending support is a deliberate
+    PR-level decision, never a silent broadening. -/
+example (a b : Prop) : True := by
+  fail_if_success
+    (alethe_walker_test
+      "( (step t0 (cl (= (and a b) (and b a))) :rule equiv_simplify) )")
+  trivial
+
 end ProofBroker.Test
