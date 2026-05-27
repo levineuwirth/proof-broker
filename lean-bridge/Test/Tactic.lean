@@ -857,4 +857,36 @@ theorem alethe_walker_byContra_axiom_free
 
 #print axioms alethe_walker_byContra_axiom_free
 
+/- Alethe walker — `equiv_pos1` / `equiv_pos2` (3-literal Boolean
+   tautologies).
+
+   These rules cvc5's SAT engine emits for case-splits on
+   propositional equality during clausal normalization of LIA
+   traces. Both are 0-premise tautologies; the proof is a nested
+   `Classical.em` case-split first on `(a = b)`, then on `b`
+   (`equiv_pos1`) or `a` (`equiv_pos2`), with `Eq.mp`/`Eq.mpr`
+   transporting one Prop to the other in the equality-holds
+   branch. Discovered as the blocker for real cvc5 LIA traces
+   during the walker-into-closer integration (PR #49). -/
+
+/-- `equiv_pos1`: tautology `¬(a = b) ∨ a ∨ ¬b`. Case-split
+    cascade: not-eq → left; eq + b → middle (via `Eq.mpr`);
+    eq + ¬b → right. -/
+theorem alethe_walker_equiv_pos1_axiom_free
+    (a b : Prop) : ¬(a = b) ∨ a ∨ ¬b := by
+  alethe_walker_test
+    "( (step t0 (cl (not (= a b)) a (not b)) :rule equiv_pos1) )"
+
+#print axioms alethe_walker_equiv_pos1_axiom_free
+
+/-- `equiv_pos2`: tautology `¬(a = b) ∨ ¬a ∨ b`. Mirror of
+    `equiv_pos1`: not-eq → left; eq + ¬a → middle; eq + a → right
+    (via `Eq.mp`). -/
+theorem alethe_walker_equiv_pos2_axiom_free
+    (a b : Prop) : ¬(a = b) ∨ ¬a ∨ b := by
+  alethe_walker_test
+    "( (step t0 (cl (not (= a b)) (not a) b) :rule equiv_pos2) )"
+
+#print axioms alethe_walker_equiv_pos2_axiom_free
+
 end ProofBroker.Test

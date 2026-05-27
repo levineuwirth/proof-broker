@@ -842,6 +842,111 @@ private def elabEquiv2 (ctx : WalkerContext) (s : Step)
                    (cl a (not b)) with one premise (= a b), got \
                    clause {repr s.clause}, premises {repr s.premises}"
 
+/-- `equiv_pos1`: 3-literal Boolean tautology, no premises.
+    Conclusion `(cl (not (= a b)) a (not b))` ≡
+    `¬(a = b) ∨ a ∨ ¬b`. Proof: nested `Classical.em` case-split.
+    If `¬(a = b)`, take the left disjunct. If `a = b`, case on
+    `b`: if `b` holds, `Eq.mpr` transports it to `a` for the
+    middle disjunct; if `¬b`, take the right disjunct. -/
+private def elabEquivPos1 (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "not", .list [.atom "=", a, b]], a',
+     .list [.atom "not", b']] => do
+    unless a == a' && b == b' do
+      throwError m!"alethe walker: 'equiv_pos1' arg mismatch in \
+                     clause {repr s.clause}"
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let eqAB ← mkAppM ``Eq #[aE, bE]
+    let notEqAB := mkApp (mkConst ``Not) eqAB
+    let notBE := mkApp (mkConst ``Not) bE
+    let innerOrTy ← mkAppM ``Or #[aE, notBE]
+    let resultTy ← mkAppM ``Or #[notEqAB, innerOrTy]
+    let posOuter ← withLocalDeclD `eqH eqAB fun eqH => do
+      let posInner ← withLocalDeclD `hb bE fun hb => do
+        let aProof ← mkAppM ``Eq.mpr #[eqH, hb]
+        let innerInl ← mkAppOptM ``Or.inl
+          #[some aE, some notBE, some aProof]
+        let outerInr ← mkAppOptM ``Or.inr
+          #[some notEqAB, some innerOrTy, some innerInl]
+        mkLambdaFVars #[hb] outerInr
+      let negInner ← withLocalDeclD `hnb notBE fun hnb => do
+        let innerInr ← mkAppOptM ``Or.inr
+          #[some aE, some notBE, some hnb]
+        let outerInr ← mkAppOptM ``Or.inr
+          #[some notEqAB, some innerOrTy, some innerInr]
+        mkLambdaFVars #[hnb] outerInr
+      let emB ← mkAppM ``Classical.em #[bE]
+      let body ← mkAppOptM ``Or.elim
+        #[some bE, some notBE, some resultTy, some emB,
+          some posInner, some negInner]
+      mkLambdaFVars #[eqH] body
+    let negOuter ← withLocalDeclD `hne notEqAB fun hne => do
+      let outerInl ← mkAppOptM ``Or.inl
+        #[some notEqAB, some innerOrTy, some hne]
+      mkLambdaFVars #[hne] outerInl
+    let emEq ← mkAppM ``Classical.em #[eqAB]
+    let proof ← mkAppOptM ``Or.elim
+      #[some eqAB, some notEqAB, some resultTy, some emEq,
+        some posOuter, some negOuter]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'equiv_pos1' expects clause \
+                   (cl (not (= a b)) a (not b)), got {repr s.clause}"
+
+/-- `equiv_pos2`: 3-literal Boolean tautology, no premises.
+    Conclusion `(cl (not (= a b)) (not a) b)` ≡
+    `¬(a = b) ∨ ¬a ∨ b`. Mirror of `equiv_pos1`: if `a = b` and
+    `a` holds, `Eq.mp` transports to `b` for the right disjunct;
+    if `¬a`, take the middle disjunct. -/
+private def elabEquivPos2 (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "not", .list [.atom "=", a, b]],
+     .list [.atom "not", a'], b'] => do
+    unless a == a' && b == b' do
+      throwError m!"alethe walker: 'equiv_pos2' arg mismatch in \
+                     clause {repr s.clause}"
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let eqAB ← mkAppM ``Eq #[aE, bE]
+    let notEqAB := mkApp (mkConst ``Not) eqAB
+    let notAE := mkApp (mkConst ``Not) aE
+    let innerOrTy ← mkAppM ``Or #[notAE, bE]
+    let resultTy ← mkAppM ``Or #[notEqAB, innerOrTy]
+    let posOuter ← withLocalDeclD `eqH eqAB fun eqH => do
+      let posInner ← withLocalDeclD `ha aE fun ha => do
+        let bProof ← mkAppM ``Eq.mp #[eqH, ha]
+        let innerInr ← mkAppOptM ``Or.inr
+          #[some notAE, some bE, some bProof]
+        let outerInr ← mkAppOptM ``Or.inr
+          #[some notEqAB, some innerOrTy, some innerInr]
+        mkLambdaFVars #[ha] outerInr
+      let negInner ← withLocalDeclD `hna notAE fun hna => do
+        let innerInl ← mkAppOptM ``Or.inl
+          #[some notAE, some bE, some hna]
+        let outerInr ← mkAppOptM ``Or.inr
+          #[some notEqAB, some innerOrTy, some innerInl]
+        mkLambdaFVars #[hna] outerInr
+      let emA ← mkAppM ``Classical.em #[aE]
+      let body ← mkAppOptM ``Or.elim
+        #[some aE, some notAE, some resultTy, some emA,
+          some posInner, some negInner]
+      mkLambdaFVars #[eqH] body
+    let negOuter ← withLocalDeclD `hne notEqAB fun hne => do
+      let outerInl ← mkAppOptM ``Or.inl
+        #[some notEqAB, some innerOrTy, some hne]
+      mkLambdaFVars #[hne] outerInl
+    let emEq ← mkAppM ``Classical.em #[eqAB]
+    let proof ← mkAppOptM ``Or.elim
+      #[some eqAB, some notEqAB, some resultTy, some emEq,
+        some posOuter, some negOuter]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'equiv_pos2' expects clause \
+                   (cl (not (= a b)) (not a) b), got {repr s.clause}"
+
 /-- De Morgan recursive helper. Given conjuncts `[a₁, …, aₙ]` and
     a proof `h : ¬(a₁ ∧ … ∧ aₙ)` (right-associated), produces a
     proof of `¬a₁ ∨ … ∨ ¬aₙ`. Base case: singleton — `h` is
@@ -1132,6 +1237,8 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "implies" => elabImplies ctx s
     | "equiv1" => elabEquiv1 ctx s
     | "equiv2" => elabEquiv2 ctx s
+    | "equiv_pos1" => elabEquivPos1 ctx s
+    | "equiv_pos2" => elabEquivPos2 ctx s
     | "not_and" => elabNotAnd ctx s
     | "and_neg" => elabAndNeg ctx s
     | "equiv_simplify" => elabEquivSimplify ctx s
@@ -1140,8 +1247,9 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
                      supported (current scope: resolution / or / \
                      false / la_generic / la_mult_neg / refl / \
                      symm / trans / cong / hole / rare_rewrite / \
-                     implies / equiv1 / equiv2 / not_and / and_neg \
-                     / equiv_simplify, plus seeded assumes — the \
+                     implies / equiv1 / equiv2 / equiv_pos1 / \
+                     equiv_pos2 / not_and / and_neg / \
+                     equiv_simplify, plus seeded assumes — the \
                      omega fallback in closeOrFail handles any \
                      residual unsupported rules)."
   storeStep s.id proof clause
