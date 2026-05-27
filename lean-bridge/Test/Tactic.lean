@@ -937,4 +937,58 @@ theorem alethe_walker_cong_le_axiom_free
 
 #print axioms alethe_walker_cong_le_axiom_free
 
+/- Alethe walker — snapshot test against a real cvc5 trace.
+
+   The trace below is the verbatim alethe-2024 output cvc5
+   minted for `(n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m)
+   ⊢ n ≤ 10` (the `lia_axiom_free` shape) — captured by adding
+   diagnostic logging to `tryAletheWalkerLIA` in this branch,
+   then pasted verbatim here. Walking it via `alethe_walker_test`
+   exercises the walker independently of cvc5 dispatch: CI
+   doesn't need cvc5 to validate this path, and the trace text
+   pins the walker against the actual shape cvc5 emits.
+
+   What the trace exercises end-to-end:
+   * cvc5's `(! expr :named @id)` named-reference syntax, with
+     back-references `@p_X` throughout (parsed and expanded by
+     the SDK).
+   * `equiv_pos2` (3-literal Boolean tautology, no premises).
+   * `hole` with `TRUST_THEORY_REWRITE` annotation — re-derived
+     via omega regardless of the cvc5 tag (audit H1).
+   * `cong` over built-in operator atoms (`not`, `>=`) — the
+     Expr-level refactor handles these uniformly.
+   * `trans` chaining equality steps.
+   * `refl` as a leaf.
+   * Multi-premise `resolution` closing the empty clause.
+
+   If cvc5 ever changes its trace format (different rule names,
+   different ordering, new syntactic sugar), this test surfaces
+   the drift immediately. -/
+theorem alethe_walker_real_cvc5_trace_axiom_free
+    (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
+  alethe_walker_test "( \
+    (assume a0 (! (= (+ n m) 10) :named @p_1)) \
+    (assume a1 (! (<= 0 m) :named @p_2)) \
+    (assume a2 (! (not (! (<= n 10) :named @p_3)) :named @p_4)) \
+    (step t0 (cl (not (! (= @p_4 (! (not (! (>= m 0) :named @p_5)) :named @p_7)) :named @p_8)) (not @p_4) @p_7) :rule equiv_pos2) \
+    (step t1 (cl (! (= @p_3 (! (not (! (>= n 11) :named @p_9)) :named @p_15)) :named @p_18)) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_18 3 7)) \
+    (step t2 (cl (= @p_4 (! (not @p_15) :named @p_16))) :rule cong :premises (t1)) \
+    (step t3 (cl (! (= @p_16 @p_9) :named @p_17)) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_17 1 7)) \
+    (step t4 (cl (= @p_4 @p_9)) :rule trans :premises (t2 t3)) \
+    (step t5 (cl (not (! (= @p_1 (! (= n (! (+ 10 (* -1 m)) :named @p_10)) :named @p_13)) :named @p_14)) (not @p_1) @p_13) :rule equiv_pos2) \
+    (step t6 (cl @p_14) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_14 3 7)) \
+    (step t7 (cl @p_13) :rule resolution :premises (t5 t6 a0)) \
+    (step t8 (cl (= 11 11)) :rule refl) \
+    (step t9 (cl (= @p_9 (! (>= @p_10 11) :named @p_11))) :rule cong :premises (t7 t8)) \
+    (step t10 (cl (! (= @p_11 @p_7) :named @p_12)) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_12 3 7)) \
+    (step t11 (cl (= @p_9 @p_7)) :rule trans :premises (t9 t10)) \
+    (step t12 (cl @p_8) :rule trans :premises (t4 t11)) \
+    (step t13 (cl @p_7) :rule resolution :premises (t0 t12 a2)) \
+    (step t14 (cl (not (! (= @p_2 @p_5) :named @p_6)) (not @p_2) @p_5) :rule equiv_pos2) \
+    (step t15 (cl @p_6) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_6 3 7)) \
+    (step t16 (cl @p_5) :rule resolution :premises (t14 t15 a1)) \
+    (step t17 (cl) :rule resolution :premises (t13 t16)) )"
+
+#print axioms alethe_walker_real_cvc5_trace_axiom_free
+
 end ProofBroker.Test

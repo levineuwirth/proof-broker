@@ -112,6 +112,8 @@
       [],
     "ProofBroker.Test.alethe_walker_cong_le_axiom_free":
       [],
+    "ProofBroker.Test.alethe_walker_real_cvc5_trace_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":
