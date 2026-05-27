@@ -485,6 +485,8 @@
     "pb_llm_replay_axiom_free":
       [],
     "pb_llm_reconstruct_axiom_free":
+      [],
+    "alethe_walker_clausal_axiom_free":
       []
   }
 }

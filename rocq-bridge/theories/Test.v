@@ -749,3 +749,25 @@ Proof.
   assert_fails (llm_reconstruct_test "tstp-fof" "@@@ not lean @@@").
   exact I.
 Qed.
+
+(** Alethe walker — R-2 clausal layer.
+
+    Mirror of lean-bridge/Test/Tactic.lean's
+    [alethe_walker_clausal_axiom_free]. The trace seeds the two
+    [assume] steps against the local hypotheses [hA] and [hNA],
+    then the [resolution] step cancels the complementary
+    [(A, not A)] pair to derive the empty clause = False.
+    Walker proof: [hNA hA : False].
+
+    Audit-footprint-clean: no axioms (the walker built a pure
+    kernel term, no decision procedure involved at all). *)
+Theorem alethe_walker_clausal_axiom_free :
+  forall (A : Prop), A -> ~ A -> False.
+Proof.
+  intros A hA hNA.
+  alethe_walker_test
+    "( (assume a0 A) (assume a1 (not A)) (step t0 (cl) :rule resolution :premises (a0 a1)) )".
+Qed.
+
+Print alethe_walker_clausal_axiom_free.
+Print Assumptions alethe_walker_clausal_axiom_free.
