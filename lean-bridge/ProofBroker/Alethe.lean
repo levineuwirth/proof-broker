@@ -1,6 +1,6 @@
 /-
 Alethe proof ADT + walker (Lean side of the M1 Alethe walker
-work, in the Lean-side Alethe walker arc).
+arc).
 
 The SDK ([sdk/lib/alethe.ml]) parses cvc5's alethe-2024 trace
 into a step list and exposes it across the FFI via the
@@ -14,27 +14,52 @@ Trust model. The OCaml-side [Tier3_alethe.verify] runs a
 provenance-level check (every step references valid premises,
 the proof walks to the empty clause). The walker here does the
 *soundness* work: per-step elaboration into a Lean expression
-that the kernel will independently typecheck when the goal
-mvar is assigned. Audit H1: no axiom is introduced; a walker
-failure on an unsupported rule is a tactic failure, with the
-existing omega fallback re-running (closer chain in
+that the kernel independently typechecks when the goal mvar is
+assigned. Audit H1: no axiom is introduced; a walker failure
+on an unsupported rule is a tactic failure, with the existing
+omega fallback re-running (closer chain in
 [ProofBroker.Tactic.closeOrFail]).
 
-M1.β (this PR) scope: **clausal rules only** — `assume`,
-`resolution`, `or`, and the empty-`(cl)` closing step. Sexp→Expr
-covers LIA-shaped terms (`Int`, arithmetic ops, comparisons,
-`not`, `True`/`False`, `or`/`and` connectives) so the
-expression layer is ready for the arithmetic rules. Subsequent
-PRs add: `la_generic` + `la_mult_neg` (arithmetic), then
-`refl` / `symm` / `trans` / `cong` (equality), then the
-boolean-cleanup cluster cvc5 emits everywhere (`hole`,
-`rare_rewrite`, `equiv_simplify`, `equiv1`/`equiv2`, `implies`,
-`and_neg`). Real cvc5 output uses ~14 rules even for a tiny
-Farkas proof, so meaningful coverage requires the full set;
-this PR's clausal-only walker still falls through to omega on
-real cvc5 traces but the architecture is in place to extend.
-Unsupported rules surface as `throwError`; the omega fallback
-in `closeOrFail` catches them.
+Rule coverage. The walker handles a substantial slice of
+cvc5's alethe-2024 rule set, organized into clusters:
+
+* **clausal** — `assume` (seeded from top-level
+  `Proof.assumes`), `resolution` (n-ary, finds pivots itself),
+  `or`, `false`, the empty-`(cl)` closing step.
+* **arithmetic** — `la_generic`, `la_mult_neg`. Discharged by
+  a scoped `omega` call; the cert drives the surrounding proof
+  skeleton, the arithmetic leaves are decided.
+* **equality** — `refl`, `symm`, `trans`, `cong`. Kernel proof
+  reconstruction (no decision procedure); the `cong` case uses
+  `Lean.Meta.mkCongr` over a left-fold of premise equations.
+* **trust-tagged leaves** — `hole`, `rare_rewrite`. cvc5's
+  "trust me" tags, re-derived via omega independently of the
+  annotation. Audit H1: a hole whose clause isn't an
+  omega-tautology fails the walker, never admitted on tag.
+* **boolean cleanup** — `implies`, `equiv1`, `equiv2`,
+  `not_and`, `and_neg`. Constructed via `Classical.em` case
+  analysis on the relevant Props.
+* **`equiv_simplify`** — propositional-equality tautologies
+  matched against a curated pattern set (reflexivity, double
+  negation, And/Or idempotence). New patterns added
+  incrementally as cvc5 traces demand them.
+
+`Sexp → Expr` covers LIA-shaped terms (`Int`, arithmetic ops,
+comparisons, `not`, `True`/`False`, `or`/`and`/`=>`), plus a
+generic UF-application fallback for `(f a₁ … aₙ)` over local
+free vars (so `cong` works for any in-scope UF symbol).
+
+Production integration. `ProofBroker.Tactic.tryAletheWalkerLIA`
+wires the walker into the LIA arm of `closeOrFailPrimary`. The
+shared `walkProofIntoGoal` helper distinguishes refutation
+traces (final clause empty `(cl)`) from direct traces, and uses
+`MVarId.falseOrByContra` to expose `¬goal` as a hypothesis for
+non-`False` user goals. Walker failure falls through to omega.
+
+Real cvc5 dispatches still hit rules outside the covered set
+(e.g. `equiv_pos1`/`equiv_pos2` 3-literal Boolean tautologies);
+those fall through to omega, preserving audit H1. Extending
+coverage to the remaining long-tail rules is the next iteration.
 -/
 
 import Lean
