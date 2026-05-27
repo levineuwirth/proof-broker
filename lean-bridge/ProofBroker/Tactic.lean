@@ -764,25 +764,68 @@ private def certTraceData? (cert : Json) : Option String :=
   (cert.getObjVal? "payload"
     |>.bind (·.getObjValAs? String "trace_data")).toOption
 
-/-- Alethe walker M1.β: try to close a `False` goal by walking
-    the cert's alethe-2024 trace into a kernel proof term. The
-    "cert IS the proof" play — the cvc5 refutation trace is
-    elaborated step-by-step rather than the goal being re-proven
-    by `omega`.
+/-- Walk a parsed Alethe proof into a kernel term and assign it
+    to `goal`. Shared between the production `tryAletheWalkerLIA`
+    and the test-only `alethe_walker_test` tactic so both close
+    goals through the same logic.
+
+    Two trace shapes are recognized:
+
+    * **Refutation traces** (`Proof.steps.getLast?` has empty
+      clause `(cl)`). cvc5's actual output: the walker produces
+      a `False`-typed term. For non-`False` user goals, we first
+      `MVarId.falseOrByContra` to expose `¬goal` as a hypothesis
+      and reduce the goal to `False`; the walker's
+      `elabAssumeLiteral` then matches the trace's
+      `(assume _ (not goal))` step against that hypothesis by
+      `isDefEq`. `falseOrByContra` itself is axiom-safe
+      (`Classical.byContradiction`, classical baseline).
+    * **Direct traces** (final step's clause non-empty). Used by
+      per-rule unit tests (e.g. a standalone `la_generic` leaf
+      proving `(cl (<= 0 5))`). The walked term's type matches
+      the goal directly — no byContra wrapping.
+
+    Throws on walker failure or walked-term-type mismatch.
+    Callers that want a fallback (the production path) wrap in
+    try/catch; the test entry point lets failures surface so the
+    test reports a clean error. -/
+private def walkProofIntoGoal (goal : MVarId) (proof : Alethe.Proof)
+    : TacticM Unit := do
+  let goalType ← goal.getType
+  let isRefutation := match proof.steps.getLast? with
+    | some last => last.clause.isEmpty
+    | none => false
+  if isRefutation && !goalType.isConstOf ``False then
+    match ← goal.falseOrByContra with
+    | none => pure ()
+    | some falseGoal =>
+      falseGoal.withContext do
+        let ctx ← Alethe.mkContext
+        let proofTerm ← Alethe.walkProof ctx proof
+        falseGoal.assign proofTerm
+  else
+    goal.withContext do
+      let ctx ← Alethe.mkContext
+      let proofTerm ← Alethe.walkProof ctx proof
+      let termType ← Meta.inferType proofTerm
+      unless ← Meta.isDefEq termType goalType do
+        throwError "alethe walker: walker produced a proof of \
+          {termType}, but the goal is {goalType}"
+      goal.assign proofTerm
+
+/-- Alethe walker: try to close a goal by walking the cert's
+    alethe-2024 trace into a kernel proof term. The "cert IS the
+    proof" play — the cvc5 refutation trace is elaborated
+    step-by-step rather than the goal being re-proven by `omega`.
 
     Returns `true` iff the walker fully closed the goal; `false`
-    on any failure (no trace data, parse failure, non-`False`
-    goal, unsupported rule). A `false` return leaves the goal
-    untouched so the caller falls through to `omega` — current
-    behavior preserved exactly. The walker builds the proof term
-    purely (`mkAppM`, no mvar assignment) until the final
-    `goal.assign`, so a mid-walk failure can't leave a partial
-    assignment.
-
-    M1.β only handles the `False`-goal refutation shape (the
-    Alethe proof's own conclusion). Non-`False` user goals would
-    need `Classical.byContradiction` to expose the `False`
-    subgoal first — deferred to a later rule-cluster PR. -/
+    on any failure (no trace data, parse failure, unsupported
+    rule, walked-term type mismatch). A `false` return leaves
+    the goal untouched so the caller falls through to `omega` —
+    audit H1 preserved: walker failure is a tactic failure, not
+    an admitted theorem. The walker builds the proof term purely
+    (`mkAppM`, no mvar assignment) until the final assignment,
+    so a mid-walk failure can't leave a partial assignment. -/
 private def tryAletheWalkerLIA (cert : Json) : TacticM Bool := do
   match certTraceData? cert with
   | none => return false
@@ -790,18 +833,11 @@ private def tryAletheWalkerLIA (cert : Json) : TacticM Bool := do
     match Alethe.runParseAletheProof traceData with
     | .error _ => return false
     | .ok proof =>
-      let goal ← getMainGoal
-      let goalType ← goal.getType
-      if !goalType.isConstOf ``False then
+      try
+        walkProofIntoGoal (← getMainGoal) proof
+        return true
+      catch _ =>
         return false
-      else
-        try
-          let ctx ← Alethe.mkContext
-          let proofTerm ← Alethe.walkProof ctx proof
-          goal.assign proofTerm
-          return true
-        catch _ =>
-          return false
 
 /-- Axioms the home kernel already tolerates everywhere else a
     `proof_broker` closer runs (the classical footprint `omega` /
@@ -1026,17 +1062,18 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- is axiom-free, so the resulting proof term does not depend
       -- on any axiom regardless of the tier the cert came from.
       --
-      -- Alethe walker M1.β: for alethe-2024 traces over a `False`
-      -- goal (the refutation-style shape the Alethe proof
-      -- actually proves), try walking the trace into a kernel
-      -- proof term first ("cert IS the proof"). On any walker
-      -- failure (unsupported rule, non-clausal shape, etc.) we
-      -- fall through to omega — preserving current behavior
-      -- exactly. Real cvc5 LIA traces use ~14 rules of which M1.β
-      -- only covers 4 (assume / resolution / or / false), so the
-      -- walker will throw and omega will run for them — but the
-      -- architecture is in place to extend rule-cluster by
-      -- rule-cluster in subsequent PRs.
+      -- Alethe walker: for alethe-2024 traces, try walking the
+      -- trace into a kernel proof term first ("cert IS the
+      -- proof"). The walker calls `MVarId.falseOrByContra`
+      -- internally to handle non-`False` user goals — the Alethe
+      -- proof always concludes `False`, so any goal is normalized
+      -- to that refutation shape with the negated goal exposed
+      -- as a hypothesis the trace's `assume`s match against. On
+      -- any walker failure (parse error, unsupported rule, walk
+      -- exception, type mismatch) we fall through to omega —
+      -- audit H1 preserved. The walker covers the ~14 rules cvc5
+      -- emits for LIA+UF traces; omega catches anything outside
+      -- that scope.
       let walkerHandled ← do
         if certTraceFormat cert == "alethe-2024" then
           tryAletheWalkerLIA cert
@@ -1873,19 +1910,16 @@ def evalLlmReconstructTest : Tactic := fun stx => do
   | _ => throwError "llm_reconstruct_test: malformed invocation"
 
 /-- TEST-ONLY tactic for the Alethe walker. Parses the string
-    literal as an alethe-2024 trace via the SDK FFI, builds a
-    walker context from the current goal's local hypotheses,
-    walks the proof into a kernel proof term, and assigns the
-    goal. Lets CI exercise the walker's per-rule elaboration on
-    hand-written traces without dispatching to a live cvc5 — the
-    same CI-stable pattern as `llm_replay_test`.
+    literal as an alethe-2024 trace via the SDK FFI, walks the
+    proof into a kernel proof term, and assigns the goal. Lets CI
+    exercise the walker's per-rule elaboration on hand-written
+    traces without dispatching to a live cvc5 — the same
+    CI-stable pattern as `llm_replay_test`.
 
-    The walked proof's final step yields a proof of that step's
-    clause; the tactic accepts it iff its type is defeq to the
-    goal — `False` for a refutation-shaped trace, or the clause
-    proposition itself for a trace whose last step is a
-    `la_generic` leaf (used to unit-test individual rules in
-    isolation). -/
+    Routes through `walkProofIntoGoal`, identical to the
+    production `tryAletheWalkerLIA` path: refutation traces use
+    `falseOrByContra` to expose `¬goal` for non-`False` user
+    goals; direct (single-literal) traces assign by defeq. -/
 syntax (name := aletheWalkerTest) "alethe_walker_test" str : tactic
 
 @[tactic aletheWalkerTest]
@@ -1896,15 +1930,7 @@ def evalAletheWalkerTest : Tactic := fun stx => do
       | .ok p => pure p
       | .error e =>
         throwError "alethe_walker_test: failed to parse trace ({repr e})"
-    let goal ← getMainGoal
-    let goalType ← goal.getType
-    let ctx ← Alethe.mkContext
-    let proofTerm ← Alethe.walkProof ctx proof
-    let termType ← inferType proofTerm
-    unless ← isDefEq termType goalType do
-      throwError "alethe_walker_test: walker produced a proof of \
-        {termType}, but the goal is {goalType}"
-    goal.assign proofTerm
+    walkProofIntoGoal (← getMainGoal) proof
   | _ => throwError "alethe_walker_test: malformed invocation"
 
 end ProofBroker.Tactic

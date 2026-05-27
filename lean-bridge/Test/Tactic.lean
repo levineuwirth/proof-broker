@@ -833,4 +833,28 @@ example (a b : Prop) : True := by
       "( (step t0 (cl (= (and a b) (and b a))) :rule equiv_simplify) )")
   trivial
 
+/- Alethe walker — non-`False` goal via `falseOrByContra`.
+
+   cvc5's alethe-2024 traces are refutation proofs (final step
+   is the empty clause `(cl)`, conclusion `False`). For a user
+   goal like `n ≤ 10`, the walker now first calls
+   `MVarId.falseOrByContra` to expose `¬(n ≤ 10)` as a
+   hypothesis the trace's top-level `assume` step matches
+   against. This wiring closes the deferred case from the
+   original walker scaffold and is the integration path the
+   production `proof_broker` invocation goes through. -/
+
+/-- Non-`False` user goal closed by walking a refutation trace.
+    The trace's `(assume a1 (not (<= n 10)))` matches the
+    hypothesis byContra introduces; the `la_generic` leaf
+    omega-discharges `n ≤ 5 ∧ ¬(n ≤ 10) ⊢ False`. -/
+theorem alethe_walker_byContra_axiom_free
+    (n : Int) (h : n ≤ 5) : n ≤ 10 := by
+  alethe_walker_test
+    "( (assume a0 (<= n 5)) \
+       (assume a1 (not (<= n 10))) \
+       (step t0 (cl) :rule la_generic :args ()) )"
+
+#print axioms alethe_walker_byContra_axiom_free
+
 end ProofBroker.Test
