@@ -1,5 +1,5 @@
-(** Rocq-side Alethe walker. R-3: clausal layer + arithmetic
-    (la_generic / la_mult_neg via [lia]-discharge). *)
+(** Rocq-side Alethe walker. R-4: clausal layer + arithmetic +
+    n-ary multi-literal resolution. *)
 
 module Alethe = Proof_broker.Alethe
 
@@ -47,6 +47,10 @@ let r_and   = lazy (constr_of_ref "core.and.type")
 let r_or    = lazy (constr_of_ref "core.or.type")
 let r_True  = lazy (constr_of_ref "core.True.type")
 let r_False = lazy (constr_of_ref "core.False.type")
+let r_or_introl = lazy (constr_of_ref "core.or.intro_l")
+let r_or_intror = lazy (constr_of_ref "core.or.intro_r")
+let r_or_ind    = lazy (constr_of_ref "core.or.ind")
+let r_False_ind = lazy (constr_of_ref "core.False.ind")
 
 let force = Lazy.force
 
@@ -248,6 +252,140 @@ let is_not_form (s : Alethe.Sexp.t) : bool =
   | _ -> false
 
 (* =========================================================
+   Resolution machinery (R-4).
+
+   Mirror of Lean's [injectLit] / [casesClause] / [binaryResolve].
+   The walker constructs the [Or.elim] / [or_ind] cascade
+   directly: for each non-pivot literal of the premise, inject
+   the literal-proof into the resolvent at the right position;
+   at the pivot, case-split the other premise and close via
+   [False_ind] on the complementary application.
+
+   Binder construction uses [EConstr.Vars.subst_var] to abstract
+   over named variables — the named-then-replace pattern handles
+   de Bruijn shifting automatically as the recursion descends.
+   ========================================================= *)
+
+(** Abstract a [build_body] continuation over a fresh-named local
+    [EConstr.mkVar id] into a [mkLambda]. The named-then-replace
+    pattern is the cleanest way to build nested lambdas in plugin
+    OCaml without manually tracking de Bruijn indices: build the
+    body using [mkVar id], then [Vars.subst_var id] replaces the
+    [mkVar] with [mkRel 1] and shifts existing Rels up. *)
+let abstract_lam (binder_name : string) (ty : EConstr.t)
+    (build_body : EConstr.t -> EConstr.t) : EConstr.t =
+  let id = Names.Id.of_string ("_walker_" ^ binder_name) in
+  let body_named = build_body (EConstr.mkVar id) in
+  let body_closed = EConstr.Vars.subst_var id body_named in
+  let binder =
+    Context.make_annot
+      (Names.Name (Names.Id.of_string binder_name))
+      EConstr.ERelevance.relevant
+  in
+  EConstr.mkLambda (binder, ty, body_closed)
+
+(** Given a proof of `target[idx]`, build a proof of the whole
+    clause `⋁target` via the right `Or.intro_l`/`Or.intro_r` chain. *)
+let rec inject_lit (ctx : walker_ctx) (target : Alethe.Sexp.t list)
+    (idx : int) (lit_proof : EConstr.t) : EConstr.t =
+  match target, idx with
+  | [ _ ], 0 -> lit_proof
+  | (l :: rest), 0 ->
+    let a_ty = sexp_to_constr ctx l in
+    let b_ty = clause_type_of ctx rest in
+    EConstr.mkApp (force r_or_introl, [| a_ty; b_ty; lit_proof |])
+  | (l :: rest), k when k > 0 ->
+    let a_ty = sexp_to_constr ctx l in
+    let b_ty = clause_type_of ctx rest in
+    let inner = inject_lit ctx rest (k - 1) lit_proof in
+    EConstr.mkApp (force r_or_intror, [| a_ty; b_ty; inner |])
+  | _ ->
+    raise (Walker_error
+             (Printf.sprintf
+                "inject_lit: index %d out of range for a \
+                 %d-literal clause" idx (List.length target)))
+
+(** Case-analyse `clause_proof : ⋁lits`. For each disjunct, call
+    `handler idx litProof` (which returns a proof of `result_ty`);
+    chain the cases with `or_ind`. *)
+let rec cases_clause (ctx : walker_ctx) (clause_proof : EConstr.t)
+    (lits : Alethe.Sexp.t list) (result_ty : EConstr.t)
+    (handler : int -> EConstr.t -> EConstr.t) : EConstr.t =
+  match lits with
+  | [] -> raise (Walker_error "cases_clause on an empty clause")
+  | [ _ ] -> handler 0 clause_proof
+  | l :: rest ->
+    let l_ty = sexp_to_constr ctx l in
+    let rest_ty = clause_type_of ctx rest in
+    let lam_l = abstract_lam "hl" l_ty (fun hl ->
+      handler 0 hl)
+    in
+    let lam_r = abstract_lam "hr" rest_ty (fun hr ->
+      cases_clause ctx hr rest result_ty
+        (fun i p -> handler (i + 1) p))
+    in
+    EConstr.mkApp (force r_or_ind,
+                   [| l_ty; rest_ty; result_ty;
+                      lam_l; lam_r; clause_proof |])
+
+(** Binary clausal resolution. Given `eA : ⋁A`, `eB : ⋁B` sharing
+    a complementary literal pair, produce `(proof, R)` where
+    `R = (A∖pivot) ++ (B∖pivot)` and `proof : ⋁R`. Pivot search
+    is exhaustive (cvc5 doesn't emit pivot info). Throws if no
+    complementary pair exists. *)
+let binary_resolve (ctx : walker_ctx)
+    (e_a : EConstr.t) (a : Alethe.Sexp.t list)
+    (e_b : EConstr.t) (b : Alethe.Sexp.t list)
+    : EConstr.t * Alethe.Sexp.t list =
+  let n_a = List.length a in
+  let n_b = List.length b in
+  let pivot =
+    let rec find_i i =
+      if i >= n_a then None
+      else
+        let lit_a = List.nth a i in
+        let rec find_j j =
+          if j >= n_b then find_i (i + 1)
+          else if negate_lit lit_a = List.nth b j then Some (i, j)
+          else find_j (j + 1)
+        in find_j 0
+    in find_i 0
+  in
+  match pivot with
+  | None ->
+    raise (Walker_error
+             "resolution premises share no complementary literal — no pivot")
+  | Some (i, j) ->
+    let a_is_not = is_not_form (List.nth a i) in
+    let erase_idx (xs : 'a list) (k : int) : 'a list =
+      List.filteri (fun idx _ -> idx <> k) xs
+    in
+    let r = erase_idx a i @ erase_idx b j in
+    let result_ty = clause_type_of ctx r in
+    let a_len_minus_1 = n_a - 1 in
+    let proof = cases_clause ctx e_a a result_ty (fun i' h_a' ->
+      if i' = i then
+        cases_clause ctx e_b b result_ty (fun j' h_b' ->
+          if j' = j then
+            (* Complementary pair: not-side applied to other → False *)
+            let false_proof =
+              if a_is_not
+              then EConstr.mkApp (h_a', [| h_b' |])
+              else EConstr.mkApp (h_b', [| h_a' |])
+            in
+            EConstr.mkApp (force r_False_ind,
+                           [| result_ty; false_proof |])
+          else
+            let pos =
+              a_len_minus_1 + (if j' < j then j' else j' - 1)
+            in
+            inject_lit ctx r pos h_b')
+      else
+        inject_lit ctx r (if i' < i then i' else i' - 1) h_a')
+    in
+    (proof, r)
+
+(* =========================================================
    Rule elaborators (R-2 scope).
 
    * [elab_assume_literal]: match the assume's stated literal
@@ -256,8 +394,8 @@ let is_not_form (s : Alethe.Sexp.t) : bool =
    * [elab_false_step]: `(cl (not false))` → `fun (h : False) => h`.
    * [elab_or]: passthrough — restate the premise's proof under
      the step's flattened clause-literal list.
-   * [elab_resolution_simple]: complementary-singleton-pair only.
-     N-ary resolution arrives in R-4.
+   * [elab_resolution]: n-ary resolution as a left-fold of
+     [binary_resolve] over the premise list.
    ========================================================= *)
 
 let elab_assume_literal (env : Environ.env)
@@ -329,32 +467,28 @@ let elab_or (st : walker_state) (s : Alethe.step)
     raise (Walker_error
              "'or' rule expects exactly one premise")
 
-(** R-2 simple resolution: exactly two premises, each a singleton
-    clause, complementary to each other. The proof is the [Not]-side
-    applied to the positive side (or vice versa), yielding [False].
-    N-ary resolution (intermediate non-singleton resolvents, pivot
-    search across multi-literal clauses) is R-4. *)
-let elab_resolution_simple (st : walker_state) (s : Alethe.step)
-    : EConstr.t * Alethe.Sexp.t list =
+(** [resolution]: n-ary clausal resolution. Alethe's [resolution]
+    is a left-fold of binary resolutions over the premise list;
+    each binary step cancels one complementary literal pair
+    ([binary_resolve] finds the pivot — cvc5 does not list pivots
+    explicitly). The result `(proof, clause)` carries the
+    computed resolvent; for a closing step the resolvent is the
+    empty clause and the proof has type [False]. *)
+let elab_resolution (ctx : walker_ctx) (st : walker_state)
+    (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
   match s.premises with
-  | Some [ p1; p2 ] ->
-    let (e1, c1) = lookup_step st p1 in
-    let (e2, c2) = lookup_step st p2 in
-    (match c1, c2 with
-     | [ lit1 ], [ lit2 ] when negate_lit lit1 = lit2 ->
-       let proof =
-         if is_not_form lit1
-         then EConstr.mkApp (e1, [| e2 |])
-         else EConstr.mkApp (e2, [| e1 |])
-       in
-       (proof, [])  (* empty clause *)
-     | _ ->
-       raise (Walker_error
-                "R-2 'resolution': only complementary singleton \
-                 pairs supported (n-ary in R-4)"))
+  | Some (p0 :: rest) ->
+    let (e0, c0) = lookup_step st p0 in
+    let acc = ref (e0, c0) in
+    List.iter (fun pi ->
+        let (ei, ci) = lookup_step st pi in
+        let (cur_e, cur_c) = !acc in
+        acc := binary_resolve ctx cur_e cur_c ei ci)
+      rest;
+    !acc
   | _ ->
     raise (Walker_error
-             "'resolution' needs exactly two premises in R-2 scope")
+             "'resolution' needs at least one premise")
 
 (* =========================================================
    Dispatch + walk.
@@ -365,18 +499,18 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
   let (proof, clause) =
     match s.rule with
     | "or" -> elab_or st s
-    | "resolution" -> elab_resolution_simple st s
+    | "resolution" -> elab_resolution ctx st s
     | "false" -> elab_false_step ctx s
     | "la_generic" -> elab_la_generic env sigma_ref ctx s
     | "la_mult_neg" -> elab_la_generic env sigma_ref ctx s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-3 scope: \
-                   assume / or / resolution / false / la_generic \
-                   / la_mult_neg; subsequent PRs add multi-literal \
-                   resolution / equality / trust-tagged leaves / \
-                   boolean cleanup / equiv_simplify / equiv_pos)"
+                  "rule '%s' not yet supported (R-4 scope: \
+                   assume / or / resolution (n-ary) / false / \
+                   la_generic / la_mult_neg; subsequent PRs add \
+                   equality / trust-tagged leaves / boolean \
+                   cleanup / equiv_simplify / equiv_pos)"
                   other))
   in
   store_step st s.id proof clause

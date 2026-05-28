@@ -809,3 +809,40 @@ Qed.
 
 Print alethe_walker_la_generic_disj.
 Print Assumptions alethe_walker_la_generic_disj.
+
+(** Alethe walker — R-4 multi-literal resolution.
+
+    Mirror of lean-bridge/Test/Tactic.lean's
+    [alethe_walker_resolution_axiom_free]. A 3-clause
+    propositional refutation:
+    - hAB : A \/ B
+    - hAC : ~A \/ C
+    - hnB : ~B
+    - hnC : ~C
+    The walker performs four resolution steps:
+    - t2: resolve (cl A B) and (cl (not A) C) on pivot A/~A
+      → resolvent (cl B C). Exercises the full Or.elim cascade
+      via [cases_clause] + [inject_lit], the n-ary case the
+      R-2 simple resolution couldn't handle.
+    - t3: resolve (cl B C) and (not B) → (cl C).
+    - t4: resolve (cl C) and (not C) → (cl) = False.
+    Axiom-footprint clean: pure kernel-term reconstruction. *)
+Theorem alethe_walker_resolution_axiom_free :
+  forall (A B C : Prop),
+    A \/ B -> ~ A \/ C -> ~ B -> ~ C -> False.
+Proof.
+  intros A B C hAB hAC hnB hnC.
+  alethe_walker_test "(
+    (assume a0 (or A B))
+    (assume a1 (or (not A) C))
+    (assume a2 (not B))
+    (assume a3 (not C))
+    (step t0 (cl A B) :rule or :premises (a0))
+    (step t1 (cl (not A) C) :rule or :premises (a1))
+    (step t2 (cl B C) :rule resolution :premises (t0 t1))
+    (step t3 (cl C) :rule resolution :premises (t2 a2))
+    (step t4 (cl) :rule resolution :premises (t3 a3)) )".
+Qed.
+
+Print alethe_walker_resolution_axiom_free.
+Print Assumptions alethe_walker_resolution_axiom_free.
