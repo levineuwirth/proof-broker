@@ -26,16 +26,29 @@ let constr_of_ref (name : string) : EConstr.t =
     (UnivGen.constr_of_monomorphic_global (Global.env ())
        (Rocqlib.lib_ref name))
 
-(* Fallback for symbols Stdlib does NOT register in the Rocqlib
-   [core.*] table — resolves a fully-qualified path through the
-   Coq nametab. Used for [False_ind] which Stdlib only exposes
-   under [Stdlib.Init.Logic.False_ind], not as a [core.False.*]
-   lib_ref. *)
-let constr_of_global_path (path : string) : EConstr.t =
-  let qid = Libnames.qualid_of_string path in
-  let gref = Nametab.locate qid in
-  EConstr.of_constr
-    (UnivGen.constr_of_monomorphic_global (Global.env ()) gref)
+(* Resolve a symbol the Rocqlib [core.*] table does NOT register,
+   by trying a list of candidate fully-qualified (or short) names
+   through the Coq nametab. The first that resolves wins. Raises
+   [Walker_error] (NOT a bare [Not_found] anomaly) if none do, so
+   the walker's own error handler catches it and the tactic fails
+   cleanly into the [lia] fallback rather than crashing coqc.
+   Candidate lists absorb the Coq→rocq-prover library rename
+   (Coq.* / Stdlib.* / Corelib.* / bare prelude name). *)
+let constr_of_first_path (candidates : string list) : EConstr.t =
+  let rec try_each = function
+    | [] ->
+      raise (Failure
+               (Printf.sprintf
+                  "alethe walker: none of these paths resolved: %s"
+                  (String.concat ", " candidates)))
+    | path :: rest ->
+      (match Nametab.locate (Libnames.qualid_of_string path) with
+       | gref ->
+         EConstr.of_constr
+           (UnivGen.constr_of_monomorphic_global (Global.env ()) gref)
+       | exception Not_found -> try_each rest)
+  in
+  try_each candidates
 
 let r_xH    = lazy (constr_of_ref "num.pos.xH")
 let r_xO    = lazy (constr_of_ref "num.pos.xO")
@@ -62,11 +75,17 @@ let r_or_introl = lazy (constr_of_ref "core.or.intro_l")
 let r_or_intror = lazy (constr_of_ref "core.or.intro_r")
 let r_or_ind    = lazy (constr_of_ref "core.or.ind")
 (* Stdlib doesn't register False's eliminator in the [core.*]
-   table (neither [core.False.ind] nor [core.False.elim] —
-   verified empirically via CI). Asymmetric with [core.or.ind].
-   Falls back to a fully-qualified Nametab lookup. *)
+   table (neither [core.False.ind] nor [core.False.elim] — both
+   verified absent via CI). Asymmetric with [core.or.ind]. Fall
+   back to a nametab lookup over rename-robust candidate paths;
+   the short prelude-exported [False_ind] is the most likely hit. *)
 let r_False_ind =
-  lazy (constr_of_global_path "Stdlib.Init.Logic.False_ind")
+  lazy (constr_of_first_path
+          [ "False_ind";
+            "Corelib.Init.Logic.False_ind";
+            "Stdlib.Init.Logic.False_ind";
+            "Coq.Init.Logic.False_ind";
+            "Init.Logic.False_ind" ])
 
 let force = Lazy.force
 
