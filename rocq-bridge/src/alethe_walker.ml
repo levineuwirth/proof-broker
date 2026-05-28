@@ -71,8 +71,8 @@ let r_and   = lazy (constr_of_ref "core.and.type")
 let r_or    = lazy (constr_of_ref "core.or.type")
 let r_True  = lazy (constr_of_ref "core.True.type")
 let r_False = lazy (constr_of_ref "core.False.type")
-let r_or_introl = lazy (constr_of_ref "core.or.intro_l")
-let r_or_intror = lazy (constr_of_ref "core.or.intro_r")
+let r_or_introl = lazy (constr_of_ref "core.or.introl")
+let r_or_intror = lazy (constr_of_ref "core.or.intror")
 let r_or_ind    = lazy (constr_of_ref "core.or.ind")
 (* Stdlib doesn't register False's eliminator in the [core.*]
    table (neither [core.False.ind] nor [core.False.elim] — both
