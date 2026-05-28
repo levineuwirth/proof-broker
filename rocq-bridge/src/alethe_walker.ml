@@ -447,7 +447,7 @@ let walker_test (trace_str : string) : unit Proofview.tactic =
          in
          if Reductionops.is_conv env final_sigma term_ty goal_ty then
            let refine_tac =
-             Proofview.Refine.refine ~typecheck:true (fun _ ->
+             Refine.refine ~typecheck:true (fun _ ->
                (final_sigma, proof_term))
            in
            Proofview.tclTHEN refine_tac
