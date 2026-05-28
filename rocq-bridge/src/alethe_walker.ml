@@ -272,11 +272,11 @@ let is_not_form (s : Alethe.Sexp.t) : bool =
     OCaml without manually tracking de Bruijn indices: build the
     body using [mkVar id], then [Vars.subst_var id] replaces the
     [mkVar] with [mkRel 1] and shifts existing Rels up. *)
-let abstract_lam (binder_name : string) (ty : EConstr.t)
-    (build_body : EConstr.t -> EConstr.t) : EConstr.t =
+let abstract_lam (sigma_ref : Evd.evar_map ref) (binder_name : string)
+    (ty : EConstr.t) (build_body : EConstr.t -> EConstr.t) : EConstr.t =
   let id = Names.Id.of_string ("_walker_" ^ binder_name) in
   let body_named = build_body (EConstr.mkVar id) in
-  let body_closed = EConstr.Vars.subst_var id body_named in
+  let body_closed = EConstr.Vars.subst_var !sigma_ref id body_named in
   let binder =
     Context.make_annot
       (Names.Name (Names.Id.of_string binder_name))
@@ -308,8 +308,9 @@ let rec inject_lit (ctx : walker_ctx) (target : Alethe.Sexp.t list)
 (** Case-analyse `clause_proof : ⋁lits`. For each disjunct, call
     `handler idx litProof` (which returns a proof of `result_ty`);
     chain the cases with `or_ind`. *)
-let rec cases_clause (ctx : walker_ctx) (clause_proof : EConstr.t)
-    (lits : Alethe.Sexp.t list) (result_ty : EConstr.t)
+let rec cases_clause (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
+    (clause_proof : EConstr.t) (lits : Alethe.Sexp.t list)
+    (result_ty : EConstr.t)
     (handler : int -> EConstr.t -> EConstr.t) : EConstr.t =
   match lits with
   | [] -> raise (Walker_error "cases_clause on an empty clause")
@@ -317,11 +318,11 @@ let rec cases_clause (ctx : walker_ctx) (clause_proof : EConstr.t)
   | l :: rest ->
     let l_ty = sexp_to_constr ctx l in
     let rest_ty = clause_type_of ctx rest in
-    let lam_l = abstract_lam "hl" l_ty (fun hl ->
+    let lam_l = abstract_lam sigma_ref "hl" l_ty (fun hl ->
       handler 0 hl)
     in
-    let lam_r = abstract_lam "hr" rest_ty (fun hr ->
-      cases_clause ctx hr rest result_ty
+    let lam_r = abstract_lam sigma_ref "hr" rest_ty (fun hr ->
+      cases_clause sigma_ref ctx hr rest result_ty
         (fun i p -> handler (i + 1) p))
     in
     EConstr.mkApp (force r_or_ind,
@@ -333,7 +334,7 @@ let rec cases_clause (ctx : walker_ctx) (clause_proof : EConstr.t)
     `R = (A∖pivot) ++ (B∖pivot)` and `proof : ⋁R`. Pivot search
     is exhaustive (cvc5 doesn't emit pivot info). Throws if no
     complementary pair exists. *)
-let binary_resolve (ctx : walker_ctx)
+let binary_resolve (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
     (e_a : EConstr.t) (a : Alethe.Sexp.t list)
     (e_b : EConstr.t) (b : Alethe.Sexp.t list)
     : EConstr.t * Alethe.Sexp.t list =
@@ -363,9 +364,9 @@ let binary_resolve (ctx : walker_ctx)
     let r = erase_idx a i @ erase_idx b j in
     let result_ty = clause_type_of ctx r in
     let a_len_minus_1 = n_a - 1 in
-    let proof = cases_clause ctx e_a a result_ty (fun i' h_a' ->
+    let proof = cases_clause sigma_ref ctx e_a a result_ty (fun i' h_a' ->
       if i' = i then
-        cases_clause ctx e_b b result_ty (fun j' h_b' ->
+        cases_clause sigma_ref ctx e_b b result_ty (fun j' h_b' ->
           if j' = j then
             (* Complementary pair: not-side applied to other → False *)
             let false_proof =
@@ -474,7 +475,8 @@ let elab_or (st : walker_state) (s : Alethe.step)
     explicitly). The result `(proof, clause)` carries the
     computed resolvent; for a closing step the resolvent is the
     empty clause and the proof has type [False]. *)
-let elab_resolution (ctx : walker_ctx) (st : walker_state)
+let elab_resolution (sigma_ref : Evd.evar_map ref)
+    (ctx : walker_ctx) (st : walker_state)
     (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
   match s.premises with
   | Some (p0 :: rest) ->
@@ -483,7 +485,7 @@ let elab_resolution (ctx : walker_ctx) (st : walker_state)
     List.iter (fun pi ->
         let (ei, ci) = lookup_step st pi in
         let (cur_e, cur_c) = !acc in
-        acc := binary_resolve ctx cur_e cur_c ei ci)
+        acc := binary_resolve sigma_ref ctx cur_e cur_c ei ci)
       rest;
     !acc
   | _ ->
@@ -499,7 +501,7 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
   let (proof, clause) =
     match s.rule with
     | "or" -> elab_or st s
-    | "resolution" -> elab_resolution ctx st s
+    | "resolution" -> elab_resolution sigma_ref ctx st s
     | "false" -> elab_false_step ctx s
     | "la_generic" -> elab_la_generic env sigma_ref ctx s
     | "la_mult_neg" -> elab_la_generic env sigma_ref ctx s
