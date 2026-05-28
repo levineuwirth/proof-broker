@@ -50,7 +50,10 @@ let r_False = lazy (constr_of_ref "core.False.type")
 let r_or_introl = lazy (constr_of_ref "core.or.intro_l")
 let r_or_intror = lazy (constr_of_ref "core.or.intro_r")
 let r_or_ind    = lazy (constr_of_ref "core.or.ind")
-let r_False_ind = lazy (constr_of_ref "core.False.ind")
+(* Stdlib registers False's eliminator as `core.False.elim`, not
+   `core.False.ind` (despite the kernel name being [False_ind]).
+   Asymmetric with [core.or.ind] — verified empirically via CI. *)
+let r_False_ind = lazy (constr_of_ref "core.False.elim")
 
 let force = Lazy.force
 
