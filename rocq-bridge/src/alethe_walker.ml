@@ -71,9 +71,28 @@ let r_and   = lazy (constr_of_ref "core.and.type")
 let r_or    = lazy (constr_of_ref "core.or.type")
 let r_True  = lazy (constr_of_ref "core.True.type")
 let r_False = lazy (constr_of_ref "core.False.type")
-let r_or_introl = lazy (constr_of_ref "core.or.introl")
-let r_or_intror = lazy (constr_of_ref "core.or.intror")
 let r_or_ind    = lazy (constr_of_ref "core.or.ind")
+(* Stdlib registers [core.or.ind] but NOT the disjunction
+   introductions ([core.or.intro_l]/[introl]/[intro_r]/[intror]
+   are all absent from the [core.*] table — verified via CI).
+   Same asymmetry as [False_ind] below. The constructors are
+   prelude-exported under the short names [or_introl]/[or_intror],
+   always in scope regardless of the Coq→rocq-prover rename, so
+   route them through the same candidate-path Nametab lookup. *)
+let r_or_introl =
+  lazy (constr_of_first_path
+          [ "or_introl";
+            "Corelib.Init.Logic.or_introl";
+            "Stdlib.Init.Logic.or_introl";
+            "Coq.Init.Logic.or_introl";
+            "Init.Logic.or_introl" ])
+let r_or_intror =
+  lazy (constr_of_first_path
+          [ "or_intror";
+            "Corelib.Init.Logic.or_intror";
+            "Stdlib.Init.Logic.or_intror";
+            "Coq.Init.Logic.or_intror";
+            "Init.Logic.or_intror" ])
 (* Stdlib doesn't register False's eliminator in the [core.*]
    table (neither [core.False.ind] nor [core.False.elim] — both
    verified absent via CI). Asymmetric with [core.or.ind]. Fall
