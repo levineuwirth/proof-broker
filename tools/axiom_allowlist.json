@@ -491,6 +491,8 @@
     "alethe_walker_la_generic_lit":
       [],
     "alethe_walker_la_generic_disj":
+      [],
+    "alethe_walker_resolution_axiom_free":
       []
   }
 }
