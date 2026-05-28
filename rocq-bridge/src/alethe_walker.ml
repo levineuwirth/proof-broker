@@ -26,6 +26,17 @@ let constr_of_ref (name : string) : EConstr.t =
     (UnivGen.constr_of_monomorphic_global (Global.env ())
        (Rocqlib.lib_ref name))
 
+(* Fallback for symbols Stdlib does NOT register in the Rocqlib
+   [core.*] table — resolves a fully-qualified path through the
+   Coq nametab. Used for [False_ind] which Stdlib only exposes
+   under [Stdlib.Init.Logic.False_ind], not as a [core.False.*]
+   lib_ref. *)
+let constr_of_global_path (path : string) : EConstr.t =
+  let qid = Libnames.qualid_of_string path in
+  let gref = Nametab.locate qid in
+  EConstr.of_constr
+    (UnivGen.constr_of_monomorphic_global (Global.env ()) gref)
+
 let r_xH    = lazy (constr_of_ref "num.pos.xH")
 let r_xO    = lazy (constr_of_ref "num.pos.xO")
 let r_xI    = lazy (constr_of_ref "num.pos.xI")
@@ -50,10 +61,12 @@ let r_False = lazy (constr_of_ref "core.False.type")
 let r_or_introl = lazy (constr_of_ref "core.or.intro_l")
 let r_or_intror = lazy (constr_of_ref "core.or.intro_r")
 let r_or_ind    = lazy (constr_of_ref "core.or.ind")
-(* Stdlib registers False's eliminator as `core.False.elim`, not
-   `core.False.ind` (despite the kernel name being [False_ind]).
-   Asymmetric with [core.or.ind] — verified empirically via CI. *)
-let r_False_ind = lazy (constr_of_ref "core.False.elim")
+(* Stdlib doesn't register False's eliminator in the [core.*]
+   table (neither [core.False.ind] nor [core.False.elim] —
+   verified empirically via CI). Asymmetric with [core.or.ind].
+   Falls back to a fully-qualified Nametab lookup. *)
+let r_False_ind =
+  lazy (constr_of_global_path "Stdlib.Init.Logic.False_ind")
 
 let force = Lazy.force
 
