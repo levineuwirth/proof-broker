@@ -332,9 +332,24 @@ let is_not_form (s : Alethe.Sexp.t) : bool =
     OCaml without manually tracking de Bruijn indices: build the
     body using [mkVar id], then [Vars.subst_var id] replaces the
     [mkVar] with [mkRel 1] and shifts existing Rels up. *)
+let walker_var_counter = ref 0
+
 let abstract_lam (sigma_ref : Evd.evar_map ref) (binder_name : string)
     (ty : EConstr.t) (build_body : EConstr.t -> EConstr.t) : EConstr.t =
-  let id = Names.Id.of_string ("_walker_" ^ binder_name) in
+  (* The substitution id MUST be globally unique across all live
+     abstractions: nested [cases_clause] calls reuse [binder_name]
+     ("hl"/"hr"), and [subst_var] replaces *every* [mkVar] of the
+     given id. If two distinct binders shared an id, the inner
+     [subst_var] would capture the outer binder's still-free [mkVar]
+     too, collapsing two variables into one de Bruijn index (a
+     positive literal proof and its negation merging — the
+     "X applied to ~X" illegal-application bug). Suffix with a
+     monotonic counter so our own binders never collide. *)
+  incr walker_var_counter;
+  let id =
+    Names.Id.of_string
+      (Printf.sprintf "_walker_%s_%d" binder_name !walker_var_counter)
+  in
   let body_named = build_body (EConstr.mkVar id) in
   let body_closed = EConstr.Vars.subst_var !sigma_ref id body_named in
   let binder =
