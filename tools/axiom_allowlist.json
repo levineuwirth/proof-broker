@@ -505,6 +505,22 @@
     "alethe_walker_rare_rewrite_axiom_free":
       [],
     "alethe_walker_hole_refutation_axiom_free":
-      []
+      [],
+    "alethe_walker_implies_axiom_free":
+      ["classic"],
+    "alethe_walker_equiv1_axiom_free":
+      ["classic"],
+    "alethe_walker_equiv2_axiom_free":
+      ["classic"],
+    "alethe_walker_not_and_binary_axiom_free":
+      ["classic"],
+    "alethe_walker_not_and_ternary_axiom_free":
+      ["classic"],
+    "alethe_walker_and_neg_binary_axiom_free":
+      ["classic"],
+    "alethe_walker_and_neg_ternary_axiom_free":
+      ["classic"],
+    "alethe_walker_implies_refutation_axiom_free":
+      ["classic"]
   }
 }

@@ -7,6 +7,10 @@
     as Lean's [omega] path. *)
 
 From Stdlib Require Import ZArith Lia Reals Lra.
+(* [classic] for the R-7 boolean-cleanup walker tests (implies /
+   equiv1 / equiv2 / not_and / and_neg build their proofs by
+   excluded-middle case analysis). *)
+From Stdlib Require Import Classical_Prop.
 From ProofBroker Require Import ProofBrokerTermMode.
 
 Declare ML Module "proof_broker_rocq.plugin".
@@ -973,3 +977,123 @@ Proof.
   intro n.
   Fail alethe_walker_test "( (step t0 (cl (>= n 100)) :rule hole) )".
 Abort.
+
+(** Alethe walker — R-7 boolean cleanup (implies / equiv1 / equiv2 /
+    not_and / and_neg).
+
+    Mirror of lean-bridge/Test/Tactic.lean's boolean-cleanup tests
+    (Lean #47). cvc5 emits these during SAT-side normalization to
+    flatten implications, propositional equivalences, and
+    conjunctions into clausal form. The walker builds the proofs by
+    [classic] (excluded-middle) case analysis, so these are the
+    FIRST walker proofs to leave the intuitionistic fragment: the
+    axiom footprint grows from empty to [{classic}] — the standard
+    classical baseline, no new trust delta. *)
+
+(* [implies]: a -> b yields ~a \/ b. *)
+Theorem alethe_walker_implies_axiom_free :
+  forall (a b : Prop), (a -> b) -> (~ a \/ b).
+Proof.
+  intros a b hab.
+  alethe_walker_test "(
+    (assume a0 (=> a b))
+    (step t0 (cl (not a) b) :rule implies :premises (a0)) )".
+Qed.
+
+Print alethe_walker_implies_axiom_free.
+Print Assumptions alethe_walker_implies_axiom_free.
+
+(* [equiv1]: a = b yields ~a \/ b (forward direction, eq_mp transport). *)
+Theorem alethe_walker_equiv1_axiom_free :
+  forall (a b : Prop), a = b -> (~ a \/ b).
+Proof.
+  intros a b hab.
+  alethe_walker_test "(
+    (assume a0 (= a b))
+    (step t0 (cl (not a) b) :rule equiv1 :premises (a0)) )".
+Qed.
+
+Print alethe_walker_equiv1_axiom_free.
+Print Assumptions alethe_walker_equiv1_axiom_free.
+
+(* [equiv2]: a = b yields a \/ ~b (backward direction, eq_mpr transport). *)
+Theorem alethe_walker_equiv2_axiom_free :
+  forall (a b : Prop), a = b -> (a \/ ~ b).
+Proof.
+  intros a b hab.
+  alethe_walker_test "(
+    (assume a0 (= a b))
+    (step t0 (cl a (not b)) :rule equiv2 :premises (a0)) )".
+Qed.
+
+Print alethe_walker_equiv2_axiom_free.
+Print Assumptions alethe_walker_equiv2_axiom_free.
+
+(* [not_and] binary: ~(a /\ b) yields ~a \/ ~b (De Morgan). *)
+Theorem alethe_walker_not_and_binary_axiom_free :
+  forall (a b : Prop), ~ (a /\ b) -> (~ a \/ ~ b).
+Proof.
+  intros a b h.
+  alethe_walker_test "(
+    (assume a0 (not (and a b)))
+    (step t0 (cl (not a) (not b)) :rule not_and :premises (a0)) )".
+Qed.
+
+Print alethe_walker_not_and_binary_axiom_free.
+Print Assumptions alethe_walker_not_and_binary_axiom_free.
+
+(* [not_and] ternary: exercises the [build_not_and] recursion. *)
+Theorem alethe_walker_not_and_ternary_axiom_free :
+  forall (a b c : Prop), ~ (a /\ b /\ c) -> (~ a \/ ~ b \/ ~ c).
+Proof.
+  intros a b c h.
+  alethe_walker_test "(
+    (assume a0 (not (and a b c)))
+    (step t0 (cl (not a) (not b) (not c)) :rule not_and :premises (a0)) )".
+Qed.
+
+Print alethe_walker_not_and_ternary_axiom_free.
+Print Assumptions alethe_walker_not_and_ternary_axiom_free.
+
+(* [and_neg] binary: the tautology (a /\ b) \/ ~a \/ ~b, no premises. *)
+Theorem alethe_walker_and_neg_binary_axiom_free :
+  forall (a b : Prop), (a /\ b) \/ ~ a \/ ~ b.
+Proof.
+  intros a b.
+  alethe_walker_test "(
+    (step t0 (cl (and a b) (not a) (not b)) :rule and_neg) )".
+Qed.
+
+Print alethe_walker_and_neg_binary_axiom_free.
+Print Assumptions alethe_walker_and_neg_binary_axiom_free.
+
+(* [and_neg] ternary: exercises the [build_and_neg] recursion. *)
+Theorem alethe_walker_and_neg_ternary_axiom_free :
+  forall (a b c : Prop), (a /\ b /\ c) \/ ~ a \/ ~ b \/ ~ c.
+Proof.
+  intros a b c.
+  alethe_walker_test "(
+    (step t0 (cl (and a b c) (not a) (not b) (not c)) :rule and_neg) )".
+Qed.
+
+Print alethe_walker_and_neg_ternary_axiom_free.
+Print Assumptions alethe_walker_and_neg_ternary_axiom_free.
+
+(* End-to-end: [implies] composed with resolution. From a -> b, a,
+   and ~b derive False — the implies-flattened clause feeds the R-4
+   resolution machinery. *)
+Theorem alethe_walker_implies_refutation_axiom_free :
+  forall (a b : Prop), (a -> b) -> a -> ~ b -> False.
+Proof.
+  intros a b hab ha hnb.
+  alethe_walker_test "(
+    (assume a0 (=> a b))
+    (assume a1 a)
+    (assume a2 (not b))
+    (step t0 (cl (not a) b) :rule implies :premises (a0))
+    (step t1 (cl b) :rule resolution :premises (t0 a1))
+    (step t2 (cl) :rule resolution :premises (t1 a2)) )".
+Qed.
+
+Print alethe_walker_implies_refutation_axiom_free.
+Print Assumptions alethe_walker_implies_refutation_axiom_free.
