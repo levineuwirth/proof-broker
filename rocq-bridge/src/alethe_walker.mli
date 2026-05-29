@@ -52,6 +52,20 @@ type proof = Proof_broker.Alethe.proof
     Error (so the caller can fall through to [lia] cleanly). *)
 val parse_trace : string -> (proof, string) result
 
+(** Walk a parsed proof into the current goal, closing it. Shared
+    by the production closer-chain path
+    ([Pb_rocq_main.try_alethe_walker_lia], R-9) and the test-only
+    [walker_test] tactic. Handles both trace shapes: a refutation
+    trace against a non-[False] goal is first reduced to [False] by
+    classical contradiction (exposing [~goal] as a hypothesis the
+    trace's [assume]s match), while a direct per-rule trace (or a
+    refutation against a [False] goal) is walked against the goal
+    directly. Every failure is a tactic-level failure, so wrapping
+    in [Proofview.tclORELSE] (the production fallback to [lia])
+    fires cleanly — audit H1: walker failure is a tactic failure,
+    never an admitted theorem. *)
+val walk_proof_into_goal : proof -> unit Proofview.tactic
+
 (** TEST-ONLY tactic for the Alethe walker (mirror of Lean's
     [alethe_walker_test] in lean-bridge/ProofBroker/Tactic.lean).
     Parses the string literal as an alethe-2024 trace, walks the

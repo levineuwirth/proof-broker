@@ -211,6 +211,43 @@ let closer_for_fragment fragment : unit Proofview.tactic =
               cert-gated closer in the core plugin)"
              other))
 
+(* Alethe walker (Rocq parity R-9, mirror of Lean's
+   [tryAletheWalkerLIA]). For an [alethe-2024] Tier-3 trace, try
+   walking the cert's trace into a kernel proof term ("cert IS the
+   proof") before the goal is re-proven by [lia]. Returns a tactic
+   that FAILS — so the caller's [tclORELSE] falls through to [lia]
+   — when there is no alethe-2024 string trace or the parse fails;
+   otherwise delegates to [Alethe_walker.walk_proof_into_goal],
+   whose own failures (unsupported rule, type mismatch) are already
+   tactic-level. Audit H1: a walker failure is a tactic failure
+   that falls through to [lia], never an admitted theorem. *)
+let try_alethe_walker_lia (cert : Cert.t) : unit Proofview.tactic =
+  match cert.payload with
+  | Tier3_proof_trace { trace_format = "alethe-2024";
+                        trace_data = `String trace; _ } ->
+    (match Alethe_walker.parse_trace trace with
+     | Ok proof -> Alethe_walker.walk_proof_into_goal proof
+     | Error msg ->
+       Tacticals.tclZEROMSG
+         (Pp.str ("proof_broker: alethe walker parse failed: " ^ msg)))
+  | _ ->
+    Tacticals.tclZEROMSG
+      (Pp.str "proof_broker: cert is not an alethe-2024 string trace")
+
+(* LIA-arm closer that prefers the Alethe walker, falling back to
+   [lia] on any walker failure (no alethe trace / parse error /
+   unsupported rule / walked-term type mismatch). All other
+   fragments are unchanged — the walker only ever ADDS an attempt
+   ahead of the existing [lia], never replaces a closer. *)
+let closer_for_fragment_with_walker (cert : Cert.t) (fragment : string)
+    : unit Proofview.tactic =
+  match fragment with
+  | "LIA" ->
+    Proofview.tclORELSE
+      (try_alethe_walker_lia cert)
+      (fun _ -> invoke_lia)
+  | _ -> closer_for_fragment fragment
+
 (* Primary closer chain: fragment-keyed dispatch for verified
    reasons, plus the LLM-replay arm for [rocq-tactic-script]
    certs. Renamed from [close_or_fail] in M3.c — the public
@@ -272,7 +309,7 @@ let close_or_fail_primary (p : path) : unit Proofview.tactic =
         verifier) shipped — Verified_tier3_provenance is the
         gate for the Vampire HOL path. *)
      | Verified_tier3_provenance ->
-       closer_for_fragment cert.refinement_record.fragment
+       closer_for_fragment_with_walker cert cert.refinement_record.fragment
      | Tier_check_deferred _ ->
        (* Tier 0 oracle path: no soundness verifier ran but the
           envelope checked out and the solver returned [unsat]. The
@@ -281,7 +318,7 @@ let close_or_fail_primary (p : path) : unit Proofview.tactic =
           (we know the goal is provable) rather than carrying the
           proof. Mirror lean-bridge's [closeOrFail] envelope-only
           acceptance — the trust footprint is identical. *)
-       closer_for_fragment cert.refinement_record.fragment
+       closer_for_fragment_with_walker cert cert.refinement_record.fragment
      | _ ->
        CErrors.user_err Pp.(
          str (Printf.sprintf

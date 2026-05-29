@@ -1322,36 +1322,90 @@ let invoke_named_tactic (name : string) : unit Proofview.tactic =
 let invoke_lia () : unit Proofview.tactic =
   invoke_named_tactic "lia"
 
-let walker_test (trace_str : string) : unit Proofview.tactic =
+(** Reduce a non-[False] goal [G] to [False] by classical
+    contradiction, exposing [~G] as a fresh hypothesis the trace's
+    [(assume _ (not G))] step matches against. Mirror of Lean's
+    [MVarId.falseOrByContra]. Term-level [NNPP] would need an
+    evar-under-binder; instead invoke the Ltac [apply NNPP; intro]
+    (consistent with the plugin's tactic-invocation convention).
+    [NNPP] derives from [classic], so this widens the footprint to
+    [{classic}] — the same baseline the boolean cluster already
+    needs. If [NNPP] is out of scope (Classical_Prop not loaded),
+    the [apply] fails and the caller's [tclORELSE] falls to [lia]. *)
+let by_contradiction () : unit Proofview.tactic =
+  invoke_named_tactic "apply NNPP; intro"
+
+(** Is this a refutation trace (final step concludes the empty
+    clause [(cl)])? cvc5's actual output shape; a non-empty final
+    clause is a direct per-rule unit trace. *)
+let is_refutation_trace (p : proof) : bool =
+  match List.rev p.steps with
+  | last :: _ -> last.clause = []
+  | [] -> false
+
+(** Walk the proof into a term and assign it to the CURRENT goal:
+    build the kernel term, check it is convertible with the goal
+    type, [Refine.refine] it, and discharge any la_generic evars
+    with [lia]. A [Walker_error] (raised by the pure walk) is caught
+    inside the [Goal.enter] closure and converted to a [tclZEROMSG]
+    — a tactic-level failure the caller's [tclORELSE] can catch
+    (an OCaml exception escaping the closure could not be). *)
+let walk_against_current_goal (p : proof) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
     let env = Proofview.Goal.env gl in
     let goal_ty = Proofview.Goal.concl gl in
-    match parse_trace trace_str with
-    | Error msg ->
-      Tacticals.tclZEROMSG
-        (Pp.str ("alethe_walker_test: " ^ msg))
-    | Ok p ->
-      (try
-         let sigma_ref = ref (Proofview.Goal.sigma gl) in
-         let ctx = make_context env sigma_ref in
-         let proof_term = walk_proof env sigma_ref ctx p in
-         let final_sigma = !sigma_ref in
-         let term_ty =
-           Retyping.get_type_of env final_sigma proof_term
-         in
-         if Reductionops.is_conv env final_sigma term_ty goal_ty then
-           let refine_tac =
-             Refine.refine ~typecheck:true (fun _ ->
-               (final_sigma, proof_term))
-           in
-           Proofview.tclTHEN refine_tac
-             (Proofview.tclINDEPENDENT (invoke_lia ()))
-         else
-           Tacticals.tclZEROMSG
-             (Pp.str
-                "alethe_walker_test: walker produced a proof of \
-                 the wrong type for the current goal")
-       with
-       | Walker_error msg ->
-         Tacticals.tclZEROMSG
-           (Pp.str ("alethe_walker_test: " ^ msg))))
+    try
+      let sigma_ref = ref (Proofview.Goal.sigma gl) in
+      let ctx = make_context env sigma_ref in
+      let proof_term = walk_proof env sigma_ref ctx p in
+      let final_sigma = !sigma_ref in
+      let term_ty = Retyping.get_type_of env final_sigma proof_term in
+      if Reductionops.is_conv env final_sigma term_ty goal_ty then
+        Proofview.tclTHEN
+          (Refine.refine ~typecheck:true (fun _ ->
+             (final_sigma, proof_term)))
+          (Proofview.tclINDEPENDENT (invoke_lia ()))
+      else
+        Tacticals.tclZEROMSG
+          (Pp.str
+             "alethe walker: walker produced a proof of the wrong \
+              type for the current goal")
+    with Walker_error msg ->
+      Tacticals.tclZEROMSG (Pp.str ("alethe walker: " ^ msg)))
+
+(** Walk a parsed proof into the goal. Shared between the
+    production [Pb_rocq_main.try_alethe_walker_lia] path and the
+    test-only [walker_test] tactic so both close goals through the
+    same logic. Two trace shapes:
+
+    * Refutation trace against a non-[False] goal — first
+      [by_contradiction] to expose [~goal] and reduce to [False],
+      then walk the [False] goal (the trace's [(assume _ (not goal))]
+      matches the exposed hypothesis).
+    * Otherwise (direct per-rule trace, or refutation against a
+      [False] goal) — walk against the goal directly.
+
+    Every failure mode is a tactic-level failure ([tclZEROMSG] /
+    [by_contradiction]'s [apply] failing), so a caller's [tclORELSE]
+    fallback fires cleanly. The walk is pure (no mvar assignment)
+    until the final [Refine.refine], so a mid-walk failure never
+    leaves a partial assignment. *)
+let walk_proof_into_goal (p : proof) : unit Proofview.tactic =
+  Proofview.Goal.enter (fun gl ->
+    let env = Proofview.Goal.env gl in
+    let sigma = Proofview.Goal.sigma gl in
+    let goal_ty = Proofview.Goal.concl gl in
+    let goal_is_false =
+      Reductionops.is_conv env sigma goal_ty (force r_False)
+    in
+    if is_refutation_trace p && not goal_is_false then
+      Proofview.tclTHEN (by_contradiction ())
+        (walk_against_current_goal p)
+    else
+      walk_against_current_goal p)
+
+let walker_test (trace_str : string) : unit Proofview.tactic =
+  match parse_trace trace_str with
+  | Error msg ->
+    Tacticals.tclZEROMSG (Pp.str ("alethe_walker_test: " ^ msg))
+  | Ok p -> walk_proof_into_goal p

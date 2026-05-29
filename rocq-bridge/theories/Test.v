@@ -1176,3 +1176,32 @@ Proof.
   Fail alethe_walker_test "(
     (step t0 (cl (= (and a b) a)) :rule equiv_simplify) )".
 Abort.
+
+(** Alethe walker — R-9 byContra wrapping (shared closer path).
+
+    Mirror of lean-bridge/Test/Tactic.lean's
+    [alethe_walker_byContra_axiom_free] (Lean #49). This exercises
+    the same [walk_proof_into_goal] helper the production closer
+    chain ([Pb_rocq_main.try_alethe_walker_lia]) now uses: a
+    refutation trace (empty final clause) against a NON-[False]
+    user goal. The walker first reduces [n >= 5] to [False] by
+    classical contradiction ([apply NNPP; intro]), exposing
+    [~ (n >= 5)] as a hypothesis the trace's [assume a1] matches;
+    the la_generic leaf (n < 6 \/ n >= 5) + two resolutions then
+    close [False]. Footprint [{classic}] — from the NNPP
+    contradiction; the la_generic leaf is discharged by axiom-free
+    [lia]. *)
+Theorem alethe_walker_bycontra_axiom_free :
+  forall (n : Z), n >= 6 -> n >= 5.
+Proof.
+  intros n h1.
+  alethe_walker_test "(
+    (assume a0 (>= n 6))
+    (assume a1 (not (>= n 5)))
+    (step t0 (cl (not (>= n 6)) (>= n 5)) :rule la_generic :args ())
+    (step t1 (cl (not (>= n 6))) :rule resolution :premises (t0 a1))
+    (step t2 (cl) :rule resolution :premises (t1 a0)) )".
+Qed.
+
+Print alethe_walker_bycontra_axiom_free.
+Print Assumptions alethe_walker_bycontra_axiom_free.
