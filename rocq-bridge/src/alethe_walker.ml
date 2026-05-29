@@ -112,6 +112,25 @@ let r_False_ind =
             "Coq.Init.Logic.False_ind";
             "Init.Logic.False_ind" ])
 
+(* [Init.Logic] eliminators / constructors / lemmas are NOT in the
+   [core.*] lib_ref table in this rocq-prover build (see R-4: only
+   the [Register]'d type defs resolve via [constr_of_ref]). Resolve
+   them by short prelude name, falling back through the rename-robust
+   qualified paths. R-5's equality cluster ([eq_refl] constructor,
+   [eq_sym]/[eq_trans]/[f_equal] lemmas) all go through here. *)
+let logic_ref (short : string) : EConstr.t Lazy.t =
+  lazy (constr_of_first_path
+          [ short;
+            "Corelib.Init.Logic." ^ short;
+            "Stdlib.Init.Logic." ^ short;
+            "Coq.Init.Logic." ^ short;
+            "Init.Logic." ^ short ])
+
+let r_eq_refl  = logic_ref "eq_refl"
+let r_eq_sym   = logic_ref "eq_sym"
+let r_eq_trans = logic_ref "eq_trans"
+let r_f_equal  = logic_ref "f_equal"
+
 let force = Lazy.force
 
 (* =========================================================
@@ -166,6 +185,14 @@ exception Walker_error of string
 
 type walker_ctx = {
   vars : EConstr.t Names.Id.Map.t;
+  (* The goal env + the live evar_map ref. Carried in the context
+     (rather than threaded through every translation call) so the
+     [=] case can [Retyping.get_type_of] the LHS to instantiate
+     polymorphic [eq] at the right element type — no longer
+     hardcoded to [Z] as in R-2/R-3. The ref is the same one
+     [walk_proof] mutates for la_generic evars, so deref it at use. *)
+  env : Environ.env;
+  sigma_ref : Evd.evar_map ref;
 }
 
 type walker_state = {
@@ -190,7 +217,8 @@ let lookup_step (st : walker_state) (id : string)
 (** Build a walker context from the goal's local context. Every
     named hypothesis / free var becomes an atom binding;
     anonymous locals are skipped (Alethe atoms always have names). *)
-let make_context (env : Environ.env) : walker_ctx =
+let make_context (env : Environ.env) (sigma_ref : Evd.evar_map ref)
+    : walker_ctx =
   let named_ctx = Environ.named_context env in
   let vars =
     List.fold_left (fun acc decl ->
@@ -199,7 +227,7 @@ let make_context (env : Environ.env) : walker_ctx =
       Names.Id.Map.empty
       named_ctx
   in
-  { vars }
+  { vars; env; sigma_ref }
 
 (* =========================================================
    Sexp -> Constr translation. LIA fragment.
@@ -256,12 +284,16 @@ and list_to_constr (ctx : walker_ctx) (xs : Alethe.Sexp.t list) : EConstr.t =
     EConstr.mkApp (force r_Zgt,
                    [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
   | [ Atom "="; a; b ] ->
-    (* Polymorphic [eq] — hardcoded to Z for R-2's LIA scope.
+    (* Polymorphic [eq] at the LHS's element type. R-2/R-3 hardcoded
+       [Z] for the LIA scope; R-5 retypes the LHS so UF equality
+       between arbitrary-typed terms ([x = y] over an opaque sort,
+       [f x = f y], …) translates correctly. Z literals still retype
+       to [Z], so the existing la_generic tests are unaffected.
        Boolean equality between Props arrives in R-7 (equiv1/2). *)
-    EConstr.mkApp (force r_eq,
-                   [| force r_Z;
-                      sexp_to_constr ctx a;
-                      sexp_to_constr ctx b |])
+    let ea = sexp_to_constr ctx a in
+    let eb = sexp_to_constr ctx b in
+    let elem_ty = Retyping.get_type_of ctx.env !(ctx.sigma_ref) ea in
+    EConstr.mkApp (force r_eq, [| elem_ty; ea; eb |])
   | [ Atom "not"; a ] ->
     EConstr.mkApp (force r_not, [| sexp_to_constr ctx a |])
   | (Atom "and") :: rest ->
@@ -280,8 +312,18 @@ and list_to_constr (ctx : walker_ctx) (xs : Alethe.Sexp.t list) : EConstr.t =
       Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
     in
     EConstr.mkProd (binder, sexp_to_constr ctx a, sexp_to_constr ctx b)
+  | (Atom f) :: (_ :: _ as args) ->
+    (* Generic uninterpreted-function application (R-5). Reached
+       only after every interpreted head above fails to match, so
+       [f] is a UF symbol in scope (a goal-bound function var):
+       translate the head and apply it to the translated args.
+       Mirror of Lean's [sexpToExpr] applied-free-var fallback;
+       lets [cong]'s [decompose_app] see a real application spine. *)
+    let head = atom_to_constr ctx f in
+    let arg_constrs = Array.of_list (List.map (sexp_to_constr ctx) args) in
+    EConstr.mkApp (head, arg_constrs)
   | _ ->
-    raise (Walker_error "unsupported Sexp shape (R-2 LIA scope)")
+    raise (Walker_error "unsupported Sexp shape (R-5 UF/LIA scope)")
 
 and and_or_chain (ctx : walker_ctx) (conn : EConstr.t) (empty : EConstr.t)
     (xs : Alethe.Sexp.t list) : EConstr.t =
@@ -515,6 +557,174 @@ let elab_la_generic (env : Environ.env)
   sigma_ref := new_sigma;
   (evar, s.clause)
 
+(* =========================================================
+   Equality cluster (R-5): refl / symm / trans / cong.
+
+   Pure kernel-term reconstruction from [Init.Logic]'s
+   [eq_refl] / [eq_sym] / [eq_trans] / [f_equal] — no decision
+   procedure, no [Classical], so the proofs stay axiom-free
+   (the [Print Assumptions] gate confirms). Mirror of Lean #45's
+   [elabRefl] / [elabSymm] / [elabTrans] / [elabCong]; Coq has no
+   [mkCongr] equivalent, so [cong] is open-coded as a per-argument
+   [f_equal] rewrite chain (see [elab_cong]).
+   ========================================================= *)
+
+(** Decompose a proof's type, asserted to be an equality, into its
+    [(element_ty, lhs, rhs)] components. [@eq A x y] decomposes to
+    head [eq] + args [|A; x; y|]. *)
+let eq_parts_of (ctx : walker_ctx) (e : EConstr.t)
+    : EConstr.t * EConstr.t * EConstr.t =
+  let sigma = !(ctx.sigma_ref) in
+  let ty = Retyping.get_type_of ctx.env sigma e in
+  let (_, args) = EConstr.decompose_app sigma ty in
+  if Array.length args <> 3 then
+    raise (Walker_error
+             "equality rule: premise/term is not an equality (= a b)");
+  (args.(0), args.(1), args.(2))
+
+(** [refl]: leaf rule, no premises, clause [(cl (= t t))]. The two
+    sides must be syntactically identical (the form cvc5 emits after
+    preprocessing). Proof: [@eq_refl T t]. *)
+let elab_refl (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "="; lhs; rhs ] ] ->
+    if lhs <> rhs then
+      raise (Walker_error
+               "'refl' expects (= t t) with identical sides");
+    let t = sexp_to_constr ctx lhs in
+    let ty = Retyping.get_type_of ctx.env !(ctx.sigma_ref) t in
+    (EConstr.mkApp (force r_eq_refl, [| ty; t |]), s.clause)
+  | _ ->
+    raise (Walker_error "'refl' expects clause (cl (= t t))")
+
+(** [symm]: one premise [(= t u)], conclusion [(= u t)].
+    Proof: [@eq_sym T t u premise]. *)
+let elab_symm (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.premises with
+  | Some [ p ] ->
+    let (e_p, _) = lookup_step st p in
+    let (a_ty, a, b) = eq_parts_of ctx e_p in
+    (EConstr.mkApp (force r_eq_sym, [| a_ty; a; b; e_p |]), s.clause)
+  | _ ->
+    raise (Walker_error "'symm' expects exactly one premise")
+
+(** [trans]: premises [(= t1 t2)], [(= t2 t3)], …, conclusion
+    [(= t1 tk)]. Left-fold of [@eq_trans] over the premise list;
+    a single-premise [trans] passes through. *)
+let elab_trans (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.premises with
+  | Some (p0 :: rest) ->
+    let (e0, _) = lookup_step st p0 in
+    let (a_ty, x0, y0) = eq_parts_of ctx e0 in
+    (* acc = (proof : x0 = cur_y, cur_y). *)
+    let acc = ref (e0, y0) in
+    List.iter (fun pi ->
+        let (e_i, _) = lookup_step st pi in
+        let (_, _yi, zi) = eq_parts_of ctx e_i in
+        let (acc_e, acc_y) = !acc in
+        let proof =
+          EConstr.mkApp (force r_eq_trans,
+                         [| a_ty; x0; acc_y; zi; acc_e; e_i |])
+        in
+        acc := (proof, zi))
+      rest;
+    (fst !acc, s.clause)
+  | _ ->
+    raise (Walker_error "'trans' expects at least one premise")
+
+(** [cong]: premises [(= a1 b1)], …, [(= an bn)], conclusion
+    [(= (f a1 … an) (f b1 … bn))] for a common operator/UF head [f].
+
+    Coq has no [mkCongr], so this is open-coded as a per-argument
+    rewrite chain over a *fixed* operator (Alethe [cong] never
+    changes the head): rewrite argument position [k] from [ak] to
+    [bk] via [@f_equal arg_ty result_ty (fun x => f …prefix… x …suffix…)
+    ak bk premise_k], then [eq_trans]-chain the links. The lambda
+    fixes already-rewritten prefix args ([b]'s) and not-yet-rewritten
+    suffix args ([a]'s), so link [k] proves
+    [f b1..b(k-1) ak a(k+1)..an = f b1..b(k-1) bk a(k+1)..an]. The
+    [eq_trans] endpoints are supplied in beta-reduced form so the
+    chained proof's stated type stays clean; the [f_equal] links'
+    own redex types are accepted by kernel conversion. *)
+let elab_cong (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause, s.premises with
+  | [ List [ Atom "="; lhs_sexp; rhs_sexp ] ], Some pids ->
+    let sigma = !(ctx.sigma_ref) in
+    let lhs = sexp_to_constr ctx lhs_sexp in
+    let rhs = sexp_to_constr ctx rhs_sexp in
+    let (head_l, args_l) = EConstr.decompose_app sigma lhs in
+    let (head_r, args_r) = EConstr.decompose_app sigma rhs in
+    let n = Array.length args_l in
+    if Array.length args_r <> n then
+      raise (Walker_error
+               (Printf.sprintf
+                  "'cong' app-arity mismatch: LHS has %d args, RHS \
+                   has %d" n (Array.length args_r)));
+    if List.length pids <> n then
+      raise (Walker_error
+               (Printf.sprintf
+                  "'cong' has %d premises but the application has %d \
+                   arguments" (List.length pids) n));
+    if not (Reductionops.is_conv ctx.env sigma head_l head_r) then
+      raise (Walker_error
+               "'cong' operator heads differ between LHS and RHS");
+    if n = 0 then
+      raise (Walker_error "'cong' over a nullary head has no arguments");
+    let result_ty = Retyping.get_type_of ctx.env sigma lhs in
+    let pids_arr = Array.of_list pids in
+    (* [cur_args] mutates left-to-right: before rewriting position k
+       it holds [b0..b(k-1) ak..a(n-1)]. *)
+    let cur_args = Array.copy args_l in
+    let acc = ref None in
+    for k = 0 to n - 1 do
+      let a_k = args_l.(k) in
+      let b_k = args_r.(k) in
+      let (e_k, _) = lookup_step st pids_arr.(k) in
+      let arg_ty = Retyping.get_type_of ctx.env sigma a_k in
+      (* lambda (fun x : arg_ty => f cur_args[k := x]); everything
+         outside the binder lifts by 1 (no-op here — translated
+         terms carry no de Bruijn Rels — but kept for correctness). *)
+      let body_args =
+        Array.mapi
+          (fun i arg ->
+            if i = k then EConstr.mkRel 1 else EConstr.Vars.lift 1 arg)
+          cur_args
+      in
+      let lam_body =
+        EConstr.mkApp (EConstr.Vars.lift 1 head_l, body_args)
+      in
+      let binder =
+        Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
+      in
+      let lam = EConstr.mkLambda (binder, arg_ty, lam_body) in
+      let link =
+        EConstr.mkApp (force r_f_equal,
+                       [| arg_ty; result_ty; lam; a_k; b_k; e_k |])
+      in
+      let app_before = EConstr.mkApp (head_l, Array.copy cur_args) in
+      cur_args.(k) <- b_k;
+      let app_after = EConstr.mkApp (head_l, Array.copy cur_args) in
+      (match !acc with
+       | None -> acc := Some (link, app_before, app_after)
+       | Some (acc_e, start, mid) ->
+         let chained =
+           EConstr.mkApp (force r_eq_trans,
+                          [| result_ty; start; mid; app_after;
+                             acc_e; link |])
+         in
+         acc := Some (chained, start, app_after))
+    done;
+    (match !acc with
+     | Some (proof, _, _) -> (proof, s.clause)
+     | None -> raise (Walker_error "'cong' produced no proof"))
+  | _, _ ->
+    raise (Walker_error
+             "'cong' expects clause (cl (= LHS RHS)) with a premise list")
+
 let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
   match s.clause with
@@ -580,14 +790,18 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | "false" -> elab_false_step ctx s
     | "la_generic" -> elab_la_generic env sigma_ref ctx s
     | "la_mult_neg" -> elab_la_generic env sigma_ref ctx s
+    | "refl" -> elab_refl ctx s
+    | "symm" -> elab_symm ctx st s
+    | "trans" -> elab_trans ctx st s
+    | "cong" -> elab_cong ctx st s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-4 scope: \
+                  "rule '%s' not yet supported (R-5 scope: \
                    assume / or / resolution (n-ary) / false / \
-                   la_generic / la_mult_neg; subsequent PRs add \
-                   equality / trust-tagged leaves / boolean \
-                   cleanup / equiv_simplify / equiv_pos)"
+                   la_generic / la_mult_neg / refl / symm / trans / \
+                   cong; subsequent PRs add trust-tagged leaves / \
+                   boolean cleanup / equiv_simplify / equiv_pos)"
                   other))
   in
   store_step st s.id proof clause
@@ -650,7 +864,7 @@ let walker_test (trace_str : string) : unit Proofview.tactic =
     | Ok p ->
       (try
          let sigma_ref = ref (Proofview.Goal.sigma gl) in
-         let ctx = make_context env in
+         let ctx = make_context env sigma_ref in
          let proof_term = walk_proof env sigma_ref ctx p in
          let final_sigma = !sigma_ref in
          let term_ty =

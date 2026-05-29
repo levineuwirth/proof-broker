@@ -846,3 +846,62 @@ Qed.
 
 Print alethe_walker_resolution_axiom_free.
 Print Assumptions alethe_walker_resolution_axiom_free.
+
+(** Alethe walker — R-5 equality cluster (refl / symm / trans / cong).
+
+    Mirror of lean-bridge/Test/Tactic.lean's equality-cluster tests
+    (Lean #45). Three checks, all over uninterpreted sorts/functions
+    so they exercise the generic-UF application fallback in
+    [sexp_to_constr] and the polymorphic-[eq] retyping (no longer
+    hardcoded to Z). All axiom-footprint clean: pure [eq_refl] /
+    [eq_sym] / [eq_trans] / [f_equal] reconstruction, no Classical. *)
+
+(* Unary congruence: f x = f y from x = y. Exercises [elab_cong]'s
+   single-argument [f_equal] link (n = 1, no eq_trans chaining). *)
+Theorem alethe_walker_cong_unary_axiom_free :
+  forall (U : Type) (f : U -> U) (x y : U), x = y -> f x = f y.
+Proof.
+  intros U f x y hxy.
+  alethe_walker_test "(
+    (assume a0 (= x y))
+    (step t0 (cl (= (f x) (f y))) :rule cong :premises (a0)) )".
+Qed.
+
+Print alethe_walker_cong_unary_axiom_free.
+Print Assumptions alethe_walker_cong_unary_axiom_free.
+
+(* Binary congruence: g a c = g b d from a = b and c = d. Exercises
+   the per-argument rewrite chain with [eq_trans] linking the two
+   single-argument [f_equal] steps (n = 2). *)
+Theorem alethe_walker_cong_binary_axiom_free :
+  forall (U : Type) (g : U -> U -> U) (a b c d : U),
+    a = b -> c = d -> g a c = g b d.
+Proof.
+  intros U g a b c d hab hcd.
+  alethe_walker_test "(
+    (assume a0 (= a b))
+    (assume a1 (= c d))
+    (step t0 (cl (= (g a c) (g b d))) :rule cong :premises (a0 a1)) )".
+Qed.
+
+Print alethe_walker_cong_binary_axiom_free.
+Print Assumptions alethe_walker_cong_binary_axiom_free.
+
+(* End-to-end UF refutation: x = y and f x <> f y are contradictory.
+   [cong] derives f x = f y, then resolution against the negated
+   literal closes the empty clause. Chains the equality cluster into
+   the R-4 resolution machinery. *)
+Theorem alethe_walker_uf_refutation_axiom_free :
+  forall (U : Type) (f : U -> U) (x y : U),
+    x = y -> f x <> f y -> False.
+Proof.
+  intros U f x y hxy hne.
+  alethe_walker_test "(
+    (assume a0 (= x y))
+    (assume a1 (not (= (f x) (f y))))
+    (step t0 (cl (= (f x) (f y))) :rule cong :premises (a0))
+    (step t1 (cl) :rule resolution :premises (t0 a1)) )".
+Qed.
+
+Print alethe_walker_uf_refutation_axiom_free.
+Print Assumptions alethe_walker_uf_refutation_axiom_free.
