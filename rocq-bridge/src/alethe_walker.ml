@@ -794,13 +794,24 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | "symm" -> elab_symm ctx st s
     | "trans" -> elab_trans ctx st s
     | "cong" -> elab_cong ctx st s
+    (* Trust-tagged leaves (R-6). cvc5 emits [hole]
+       (TRUST_THEORY_REWRITE-annotated) and [rare_rewrite] (RARE
+       rewrite system) as "admit the conclusion" steps. Audit H1
+       forbids trusting either tag: re-derive the clause from
+       scratch via the same [lia]-discharge used for LIA leaves, so
+       the proof goes through the kernel independently of cvc5's
+       annotation. Clauses outside [lia]'s scope surface as the
+       evar's [lia] subgoal failing → tactic failure → the closer
+       chain's [lia] fallback re-runs. Never admit on tag. *)
+    | "hole" -> elab_la_generic env sigma_ref ctx s
+    | "rare_rewrite" -> elab_la_generic env sigma_ref ctx s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-5 scope: \
+                  "rule '%s' not yet supported (R-6 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
-                   cong; subsequent PRs add trust-tagged leaves / \
+                   cong / hole / rare_rewrite; subsequent PRs add \
                    boolean cleanup / equiv_simplify / equiv_pos)"
                   other))
   in

@@ -499,6 +499,12 @@
     "alethe_walker_cong_binary_axiom_free":
       [],
     "alethe_walker_uf_refutation_axiom_free":
+      [],
+    "alethe_walker_hole_axiom_free":
+      [],
+    "alethe_walker_rare_rewrite_axiom_free":
+      [],
+    "alethe_walker_hole_refutation_axiom_free":
       []
   }
 }

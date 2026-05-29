@@ -905,3 +905,71 @@ Qed.
 
 Print alethe_walker_uf_refutation_axiom_free.
 Print Assumptions alethe_walker_uf_refutation_axiom_free.
+
+(** Alethe walker — R-6 trust-tagged leaves (hole / rare_rewrite).
+
+    Mirror of lean-bridge/Test/Tactic.lean's trust-tagged-leaf tests
+    (Lean #46). cvc5 emits [hole] (TRUST_THEORY_REWRITE-annotated)
+    and [rare_rewrite] (RARE rewrite system) as "admit the
+    conclusion" steps. Audit H1 forbids trusting the tag: the walker
+    re-derives the clause via the same [lia]-discharge as [la_generic],
+    so the proof goes through the kernel independently of cvc5's
+    annotation. Axiom-footprint matches Coq's [lia] (axiom-free over
+    Z). The negative test pins the contract: a tag is never license. *)
+
+(* [hole]: a LIA-tautology leaf, lia-discharged via the walker's evar. *)
+Theorem alethe_walker_hole_axiom_free : (0 <= 5)%Z.
+Proof.
+  alethe_walker_test "( (step t0 (cl (<= 0 5)) :rule hole) )".
+Qed.
+
+Print alethe_walker_hole_axiom_free.
+Print Assumptions alethe_walker_hole_axiom_free.
+
+(* [rare_rewrite]: same lia-discharge policy, multi-literal clause. *)
+Theorem alethe_walker_rare_rewrite_axiom_free :
+  forall x : Z, ~ (x >= 3) \/ (x >= 1).
+Proof.
+  intro x.
+  alethe_walker_test
+    "( (step t0 (cl (not (>= x 3)) (>= x 1)) :rule rare_rewrite) )".
+Qed.
+
+Print alethe_walker_rare_rewrite_axiom_free.
+Print Assumptions alethe_walker_rare_rewrite_axiom_free.
+
+(* End-to-end: a [hole] clause feeding into resolution. The walker
+   discharges the trust-tagged leaf via lia (the clause is the
+   LIA-tautological implication n >= 6 -> n >= 5 in clausal form),
+   then the clausal layer composes it against the hypotheses to
+   close False. Confirms [hole] slots into the R-4 resolution
+   machinery exactly as [la_generic] does. *)
+Theorem alethe_walker_hole_refutation_axiom_free :
+  forall (n : Z), n >= 6 -> ~ (n >= 5) -> False.
+Proof.
+  intros n h1 h2.
+  alethe_walker_test
+    "( (assume a0 (>= n 6))
+       (assume a1 (not (>= n 5)))
+       (step t0 (cl (not (>= n 6)) (>= n 5)) :rule hole)
+       (step t1 (cl (not (>= n 6))) :rule resolution :premises (t0 a1))
+       (step t2 (cl) :rule resolution :premises (t1 a0)) )".
+Qed.
+
+Print alethe_walker_hole_refutation_axiom_free.
+Print Assumptions alethe_walker_hole_refutation_axiom_free.
+
+(* audit H1 (negative): a [hole] whose clause is NOT a lia-tautology
+   must FAIL rather than be admitted on the trust tag. The clause
+   [(>= n 100)] matches the goal type (so it clears the is_conv
+   check) but is false for general n; the walker's evar survives to
+   the [lia] discharge, which fails, so the whole tactic fails and
+   the goal is left OPEN. This is the contract that makes [hole]
+   H1-safe: cvc5's annotation is advisory, never license. The
+   [Fail] vernacular asserts the tactic errors; [Abort] discards the
+   (correctly) unproved goal, so it contributes no axioms. *)
+Theorem alethe_walker_hole_unsound_must_fail : forall n : Z, n >= 100.
+Proof.
+  intro n.
+  Fail alethe_walker_test "( (step t0 (cl (>= n 100)) :rule hole) )".
+Abort.
