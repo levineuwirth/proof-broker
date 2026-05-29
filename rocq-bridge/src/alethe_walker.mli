@@ -12,17 +12,19 @@
     proof-term construction goes through the kernel like every
     other tactic, and the cert never widens the trust footprint.
 
-    Current scope (R-2 clausal):
+    Current scope (through R-5 equality):
     * Walker monad: [walker_ctx] (atom → EConstr local-var
-      mapping), [walker_state] (step id → proven proof+clause).
-    * [sexp_to_constr] over the LIA fragment: integer literals,
-      arithmetic ops, comparisons, propositional connectives,
-      clause construction, implication.
-    * Four rule elaborators: [assume] (literal → matching
-      hypothesis), [false] (the [fun h => h : False -> False]
-      identity), [or] (passthrough restating an [(or …)] as a
-      clause), [resolution] (binary, complementary singletons
-      only — n-ary lifted in R-4).
+      mapping, plus the goal env + live evar_map ref for
+      retyping), [walker_state] (step id → proven proof+clause).
+    * [sexp_to_constr] over the LIA + UF fragment: integer
+      literals, arithmetic ops, comparisons, propositional
+      connectives, clause construction, implication, polymorphic
+      equality (retyped, not hardcoded to Z), and generic
+      uninterpreted-function application.
+    * Rule elaborators: [assume], [false], [or] (passthrough),
+      [resolution] (n-ary, R-4), [la_generic]/[la_mult_neg]
+      (evar + [lia] discharge, R-3), and the equality cluster
+      [refl]/[symm]/[trans]/[cong] (R-5).
     * [alethe_walker_test] tactic accepting a string-literal
       trace, parallel to Lean's [aletheWalkerTest].
 

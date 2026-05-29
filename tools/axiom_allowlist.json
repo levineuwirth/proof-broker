@@ -493,6 +493,12 @@
     "alethe_walker_la_generic_disj":
       [],
     "alethe_walker_resolution_axiom_free":
+      [],
+    "alethe_walker_cong_unary_axiom_free":
+      [],
+    "alethe_walker_cong_binary_axiom_free":
+      [],
+    "alethe_walker_uf_refutation_axiom_free":
       []
   }
 }
