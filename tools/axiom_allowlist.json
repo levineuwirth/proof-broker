@@ -529,6 +529,8 @@
     "alethe_walker_equiv_simplify_and_idem_axiom_free":
       ["propositional_extensionality"],
     "alethe_walker_equiv_simplify_or_idem_axiom_free":
-      ["propositional_extensionality"]
+      ["propositional_extensionality"],
+    "alethe_walker_bycontra_axiom_free":
+      ["classic"]
   }
 }
