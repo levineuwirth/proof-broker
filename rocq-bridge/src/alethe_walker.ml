@@ -1174,6 +1174,107 @@ let elab_equiv_simplify (ctx : walker_ctx) (s : Alethe.step)
     raise (Walker_error
              "'equiv_simplify' expects clause (cl (= lhs rhs))")
 
+(* =========================================================
+   [equiv_pos1] / [equiv_pos2] (R-10): 3-literal Boolean
+   tautologies, no premises. The two positive-polarity halves of
+   propositional-equivalence reasoning cvc5 emits alongside the
+   R-7 boolean cluster (deferred from R-7 as they are nested
+   case-splits). Built by nested [classic] case analysis with the
+   R-7/R-8 [eq_mp]/[eq_mpr] transports; footprint [{classic}]
+   (the transports go through axiom-free [eq_ind]). Mirror of
+   Lean #50's [elabEquivPos1]/[elabEquivPos2].
+   ========================================================= *)
+
+(** [equiv_pos1]: clause [(cl (not (= a b)) a (not b))] ≡
+    [~(a=b) \/ a \/ ~b]. Nested [classic]: case [a=b]; if not, left
+    disjunct. If [a=b], case [b]; if [b], transport to [a] via
+    [eq_mpr] for the middle disjunct; if [~b], the right disjunct. *)
+let elab_equiv_pos1 (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "not"; List [ Atom "="; a; b ] ]; a';
+      List [ Atom "not"; b' ] ] ->
+    if a <> a' || b <> b' then
+      raise (Walker_error "'equiv_pos1' argument mismatch in clause");
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let eq_ab = sexp_to_constr ctx (List [ Atom "="; a; b ]) in
+    let not_eq = mk_not eq_ab in
+    let not_b = mk_not b_e in
+    let inner_ty = mk_or a_e not_b in
+    let result_ty = mk_or not_eq inner_ty in
+    let pos_outer =
+      abstract_lam ctx.sigma_ref "eqH" eq_ab (fun eq_h ->
+        let pos_inner =
+          abstract_lam ctx.sigma_ref "hb" b_e (fun hb ->
+            let a_proof = eq_mpr ctx eq_h a_e b_e hb in
+            mk_or_intror not_eq inner_ty
+              (mk_or_introl a_e not_b a_proof))
+        in
+        let neg_inner =
+          abstract_lam ctx.sigma_ref "hnb" not_b (fun hnb ->
+            mk_or_intror not_eq inner_ty
+              (mk_or_intror a_e not_b hnb))
+        in
+        mk_or_ind b_e not_b result_ty pos_inner neg_inner
+          (mk_classic b_e))
+    in
+    let neg_outer =
+      abstract_lam ctx.sigma_ref "hne" not_eq (fun hne ->
+        mk_or_introl not_eq inner_ty hne)
+    in
+    (mk_or_ind eq_ab not_eq result_ty pos_outer neg_outer
+       (mk_classic eq_ab),
+     s.clause)
+  | _ ->
+    raise (Walker_error
+             "'equiv_pos1' expects clause (cl (not (= a b)) a (not b))")
+
+(** [equiv_pos2]: clause [(cl (not (= a b)) (not a) b)] ≡
+    [~(a=b) \/ ~a \/ b]. Mirror of [equiv_pos1]: if [a=b] and [a]
+    holds, transport to [b] via [eq_mp] for the right disjunct; if
+    [~a], the middle disjunct. *)
+let elab_equiv_pos2 (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "not"; List [ Atom "="; a; b ] ];
+      List [ Atom "not"; a' ]; b' ] ->
+    if a <> a' || b <> b' then
+      raise (Walker_error "'equiv_pos2' argument mismatch in clause");
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let eq_ab = sexp_to_constr ctx (List [ Atom "="; a; b ]) in
+    let not_eq = mk_not eq_ab in
+    let not_a = mk_not a_e in
+    let inner_ty = mk_or not_a b_e in
+    let result_ty = mk_or not_eq inner_ty in
+    let pos_outer =
+      abstract_lam ctx.sigma_ref "eqH" eq_ab (fun eq_h ->
+        let pos_inner =
+          abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+            let b_proof = eq_mp ctx eq_h a_e b_e ha in
+            mk_or_intror not_eq inner_ty
+              (mk_or_intror not_a b_e b_proof))
+        in
+        let neg_inner =
+          abstract_lam ctx.sigma_ref "hna" not_a (fun hna ->
+            mk_or_intror not_eq inner_ty
+              (mk_or_introl not_a b_e hna))
+        in
+        mk_or_ind a_e not_a result_ty pos_inner neg_inner
+          (mk_classic a_e))
+    in
+    let neg_outer =
+      abstract_lam ctx.sigma_ref "hne" not_eq (fun hne ->
+        mk_or_introl not_eq inner_ty hne)
+    in
+    (mk_or_ind eq_ab not_eq result_ty pos_outer neg_outer
+       (mk_classic eq_ab),
+     s.clause)
+  | _ ->
+    raise (Walker_error
+             "'equiv_pos2' expects clause (cl (not (= a b)) (not a) b)")
+
 let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
   match s.clause with
@@ -1262,15 +1363,18 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | "and_neg" -> elab_and_neg ctx s
     (* Propositional-equality tautology simplification (R-8). *)
     | "equiv_simplify" -> elab_equiv_simplify ctx s
+    (* 3-literal equivalence tautologies (R-10). *)
+    | "equiv_pos1" -> elab_equiv_pos1 ctx s
+    | "equiv_pos2" -> elab_equiv_pos2 ctx s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-8 scope: \
+                  "rule '%s' not yet supported (R-10 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
-                   equiv2 / not_and / and_neg / equiv_simplify; \
-                   subsequent PRs add equiv_pos)"
+                   equiv2 / not_and / and_neg / equiv_simplify / \
+                   equiv_pos1 / equiv_pos2)"
                   other))
   in
   store_step st s.id proof clause
