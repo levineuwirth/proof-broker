@@ -132,6 +132,27 @@ let r_eq_trans = logic_ref "eq_trans"
 let r_f_equal  = logic_ref "f_equal"
 let r_eq_ind   = logic_ref "eq_ind"
 let r_conj     = logic_ref "conj"
+let r_proj1    = logic_ref "proj1"
+let r_True_I   = logic_ref "I"
+
+(* [propositional_extensionality : forall P Q:Prop, (P<->Q) -> P=Q]
+   and [NNPP : forall p, ~~p -> p] — needed by [equiv_simplify]
+   (R-8), which proves propositional-equality tautologies. propext
+   is an axiom from [PropExtensionality]; NNPP is derived from
+   [classic] (so it pulls [classic], not a new axiom). Neither is a
+   [core.*] lib_ref — resolved by name, short form first. *)
+let r_propext =
+  lazy (constr_of_first_path
+          [ "propositional_extensionality";
+            "Stdlib.Logic.PropExtensionality.propositional_extensionality";
+            "Coq.Logic.PropExtensionality.propositional_extensionality";
+            "PropExtensionality.propositional_extensionality" ])
+let r_NNPP =
+  lazy (constr_of_first_path
+          [ "NNPP";
+            "Stdlib.Logic.Classical_Prop.NNPP";
+            "Coq.Logic.Classical_Prop.NNPP";
+            "Classical_Prop.NNPP" ])
 
 (* [classic : forall P:Prop, P \/ ~P] — the excluded-middle axiom
    from [Classical_Prop]. The boolean-cleanup cluster (R-7) is the
@@ -1029,6 +1050,130 @@ let elab_and_neg (ctx : walker_ctx) (s : Alethe.step)
              "'and_neg' expects clause (cl (and a1 … an) (not a1) … \
               (not an))")
 
+(* =========================================================
+   [equiv_simplify] cluster (R-8): propositional-equality
+   tautology simplification.
+
+   cvc5 emits [equiv_simplify] clauses [(cl (= lhs rhs))] where
+   [lhs <-> rhs] is a propositional tautology — reflexivity,
+   double negation, idempotence. Unlike the boolean-cleanup rules
+   these are LEAVES: the proof is built from the clause's shape
+   alone. Discharge is a structural pattern matcher (not [lia],
+   which can't do propext+Iff; not [simp], which would drag opaque
+   axiom growth into the footprint). Each supported pattern has a
+   visible [propositional_extensionality (conj fwd bwd)] term so
+   the audit trail stays transparent. Unsupported shapes throw →
+   closer chain's [lia] fallback. Mirror of Lean #48.
+   ========================================================= *)
+
+(* [P -> Q] as a (non-dependent) arrow type. Translated Props carry
+   no de Bruijn Rels, so no lift of [q] is needed — same as the
+   [=>] translation case. *)
+let mk_arrow (p : EConstr.t) (q : EConstr.t) : EConstr.t =
+  let binder =
+    Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
+  in
+  EConstr.mkProd (binder, p, q)
+
+(* [conj fwd bwd : (P->Q) /\ (Q->P)], which is convertible to
+   [P <-> Q] ([iff] unfolds to that conjunction). *)
+let mk_iff (p : EConstr.t) (q : EConstr.t) (fwd : EConstr.t)
+    (bwd : EConstr.t) : EConstr.t =
+  mk_and_intro (mk_arrow p q) (mk_arrow q p) fwd bwd
+
+(* [@propositional_extensionality P Q iff_proof : P = Q]. *)
+let mk_propext (p : EConstr.t) (q : EConstr.t) (iff_proof : EConstr.t)
+    : EConstr.t =
+  EConstr.mkApp (force r_propext, [| p; q; iff_proof |])
+
+(** [(t = t) = True] via [propext (conj (fun _ => I) (fun _ => eq_refl t))].
+    Constructive (both directions); footprint adds only propext. *)
+let build_eq_refl_tautology (ctx : walker_ctx) (t : Alethe.Sexp.t)
+    : EConstr.t =
+  let t_e = sexp_to_constr ctx t in
+  let t_ty = Retyping.get_type_of ctx.env !(ctx.sigma_ref) t_e in
+  let eq_tt = EConstr.mkApp (force r_eq, [| t_ty; t_e; t_e |]) in
+  let true_e = force r_True in
+  let fwd =
+    abstract_lam ctx.sigma_ref "h" eq_tt (fun _ -> force r_True_I)
+  in
+  let bwd =
+    abstract_lam ctx.sigma_ref "h" true_e (fun _ ->
+      EConstr.mkApp (force r_eq_refl, [| t_ty; t_e |]))
+  in
+  mk_propext eq_tt true_e (mk_iff eq_tt true_e fwd bwd)
+
+(** [(~~a) = a] via [propext (conj (NNPP a) (fun ha hna => hna ha))].
+    The forward [~~a -> a] is [NNPP] (classical); the backward
+    [a -> ~~a] is constructive. Footprint: classic + propext. *)
+let build_double_negation (ctx : walker_ctx) (a : Alethe.Sexp.t)
+    : EConstr.t =
+  let a_e = sexp_to_constr ctx a in
+  let not_a = mk_not a_e in
+  let nn_a = mk_not not_a in
+  let fwd = EConstr.mkApp (force r_NNPP, [| a_e |]) in
+  let bwd =
+    abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+      abstract_lam ctx.sigma_ref "hna" not_a (fun hna ->
+        EConstr.mkApp (hna, [| ha |])))
+  in
+  mk_propext nn_a a_e (mk_iff nn_a a_e fwd bwd)
+
+(** [(a /\ a) = a] via [propext (conj (proj1) (fun ha => conj ha ha))].
+    Constructive; footprint adds only propext. *)
+let build_and_idem (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
+  let a_e = sexp_to_constr ctx a in
+  let a_and_a = mk_and a_e a_e in
+  let fwd = EConstr.mkApp (force r_proj1, [| a_e; a_e |]) in
+  let bwd =
+    abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+      mk_and_intro a_e a_e ha ha)
+  in
+  mk_propext a_and_a a_e (mk_iff a_and_a a_e fwd bwd)
+
+(** [(a \/ a) = a] via [propext (conj (or_ind id id) or_introl)].
+    Constructive; footprint adds only propext. *)
+let build_or_idem (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
+  let a_e = sexp_to_constr ctx a in
+  let a_or_a = mk_or a_e a_e in
+  let fwd =
+    abstract_lam ctx.sigma_ref "h" a_or_a (fun h ->
+      let id_l = abstract_lam ctx.sigma_ref "hL" a_e (fun h_l -> h_l) in
+      let id_r = abstract_lam ctx.sigma_ref "hR" a_e (fun h_r -> h_r) in
+      mk_or_ind a_e a_e a_e id_l id_r h)
+  in
+  let bwd = EConstr.mkApp (force r_or_introl, [| a_e; a_e |]) in
+  mk_propext a_or_a a_e (mk_iff a_or_a a_e fwd bwd)
+
+(** [equiv_simplify]: structural pattern matcher on the
+    [(= lhs rhs)] clause. Each recognized pattern delegates to a
+    per-pattern builder; unrecognized shapes throw with the
+    supported-pattern list (the [lia] fallback then re-runs). *)
+let elab_equiv_simplify (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "="; lhs; rhs ] ] ->
+    let proof =
+      match lhs, rhs with
+      | List [ Atom "="; t1; t2 ], Atom "true" when t1 = t2 ->
+        build_eq_refl_tautology ctx t1
+      | List [ Atom "not"; List [ Atom "not"; a ] ], a' when a = a' ->
+        build_double_negation ctx a
+      | List [ Atom "and"; a1; a2 ], a' when a1 = a2 && a1 = a' ->
+        build_and_idem ctx a1
+      | List [ Atom "or"; a1; a2 ], a' when a1 = a2 && a1 = a' ->
+        build_or_idem ctx a1
+      | _, _ ->
+        raise (Walker_error
+                 "'equiv_simplify' pattern not recognized. Supported: \
+                  (= (= t t) true) / (= (not (not a)) a) / \
+                  (= (and a a) a) / (= (or a a) a)")
+    in
+    (proof, s.clause)
+  | _ ->
+    raise (Walker_error
+             "'equiv_simplify' expects clause (cl (= lhs rhs))")
+
 let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
   match s.clause with
@@ -1115,15 +1260,17 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | "equiv2" -> elab_equiv2 ctx st s
     | "not_and" -> elab_not_and ctx st s
     | "and_neg" -> elab_and_neg ctx s
+    (* Propositional-equality tautology simplification (R-8). *)
+    | "equiv_simplify" -> elab_equiv_simplify ctx s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-7 scope: \
+                  "rule '%s' not yet supported (R-8 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
-                   equiv2 / not_and / and_neg; subsequent PRs add \
-                   equiv_simplify / equiv_pos)"
+                   equiv2 / not_and / and_neg / equiv_simplify; \
+                   subsequent PRs add equiv_pos)"
                   other))
   in
   store_step st s.id proof clause

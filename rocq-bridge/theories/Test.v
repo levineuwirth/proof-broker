@@ -9,8 +9,10 @@
 From Stdlib Require Import ZArith Lia Reals Lra.
 (* [classic] for the R-7 boolean-cleanup walker tests (implies /
    equiv1 / equiv2 / not_and / and_neg build their proofs by
-   excluded-middle case analysis). *)
-From Stdlib Require Import Classical_Prop.
+   excluded-middle case analysis); [propositional_extensionality]
+   for the R-8 equiv_simplify tests (propositional-equality
+   tautologies built via propext). *)
+From Stdlib Require Import Classical_Prop PropExtensionality.
 From ProofBroker Require Import ProofBrokerTermMode.
 
 Declare ML Module "proof_broker_rocq.plugin".
@@ -1097,3 +1099,80 @@ Qed.
 
 Print alethe_walker_implies_refutation_axiom_free.
 Print Assumptions alethe_walker_implies_refutation_axiom_free.
+
+(** Alethe walker — R-8 equiv_simplify (propositional-equality
+    tautology simplification).
+
+    Mirror of lean-bridge/Test/Tactic.lean's equiv_simplify tests
+    (Lean #48). cvc5 emits these as leaves [(cl (= lhs rhs))] where
+    [lhs <-> rhs] is a propositional tautology. The walker is a
+    structural pattern matcher building per-pattern
+    [propositional_extensionality (conj fwd bwd)] terms. Footprint
+    adds [propositional_extensionality] (propext); the double-
+    negation pattern additionally pulls [classic] (via NNPP). *)
+
+(* Pattern (= (= t t) true): reflexivity tautology. Constructive
+   directions; footprint {propositional_extensionality}. *)
+Theorem alethe_walker_equiv_simplify_refl_axiom_free :
+  forall (U : Type) (t : U), (t = t) = True.
+Proof.
+  intros U t.
+  alethe_walker_test "(
+    (step t0 (cl (= (= t t) true)) :rule equiv_simplify) )".
+Qed.
+
+Print alethe_walker_equiv_simplify_refl_axiom_free.
+Print Assumptions alethe_walker_equiv_simplify_refl_axiom_free.
+
+(* Pattern (= (not (not a)) a): double negation. The forward
+   direction is classical (NNPP); footprint
+   {classic, propositional_extensionality}. *)
+Theorem alethe_walker_equiv_simplify_dneg_axiom_free :
+  forall (a : Prop), (~ ~ a) = a.
+Proof.
+  intro a.
+  alethe_walker_test "(
+    (step t0 (cl (= (not (not a)) a)) :rule equiv_simplify) )".
+Qed.
+
+Print alethe_walker_equiv_simplify_dneg_axiom_free.
+Print Assumptions alethe_walker_equiv_simplify_dneg_axiom_free.
+
+(* Pattern (= (and a a) a): And idempotence. Constructive;
+   footprint {propositional_extensionality}. *)
+Theorem alethe_walker_equiv_simplify_and_idem_axiom_free :
+  forall (a : Prop), (a /\ a) = a.
+Proof.
+  intro a.
+  alethe_walker_test "(
+    (step t0 (cl (= (and a a) a)) :rule equiv_simplify) )".
+Qed.
+
+Print alethe_walker_equiv_simplify_and_idem_axiom_free.
+Print Assumptions alethe_walker_equiv_simplify_and_idem_axiom_free.
+
+(* Pattern (= (or a a) a): Or idempotence. Constructive;
+   footprint {propositional_extensionality}. *)
+Theorem alethe_walker_equiv_simplify_or_idem_axiom_free :
+  forall (a : Prop), (a \/ a) = a.
+Proof.
+  intro a.
+  alethe_walker_test "(
+    (step t0 (cl (= (or a a) a)) :rule equiv_simplify) )".
+Qed.
+
+Print alethe_walker_equiv_simplify_or_idem_axiom_free.
+Print Assumptions alethe_walker_equiv_simplify_or_idem_axiom_free.
+
+(* Negative: an equiv_simplify clause whose shape is not one of the
+   four recognized patterns must FAIL (handing control to the
+   closer chain's fallback) rather than fabricate a proof. Here the
+   sides are genuinely distinct props, so no tautology builder
+   applies. Aborted, registers no axioms. *)
+Theorem alethe_walker_equiv_simplify_unsupported_must_fail :
+  forall (a b : Prop), (a /\ b) = a.
+Proof.
+  intros a b.
+  Fail alethe_walker_test "(
+    (step t0 (cl (= (and a b) a)) :rule equiv_simplify) )".
+Abort.
