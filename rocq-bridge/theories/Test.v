@@ -1205,3 +1205,38 @@ Qed.
 
 Print alethe_walker_bycontra_axiom_free.
 Print Assumptions alethe_walker_bycontra_axiom_free.
+
+(** Alethe walker — R-10 equiv_pos1 / equiv_pos2 (3-literal
+    Boolean tautologies).
+
+    Mirror of lean-bridge/Test/Tactic.lean's equiv_pos tests
+    (Lean #50). The two positive-polarity halves of propositional-
+    equivalence reasoning, deferred from the R-7 boolean cluster as
+    they are nested case-splits. No premises; built by nested
+    [classic] case analysis with the eq_mp/eq_mpr transports.
+    Footprint [{classic}] — the transports go through axiom-free
+    [eq_ind], so no propext is pulled. *)
+
+(* equiv_pos1: ~(a=b) \/ a \/ ~b. *)
+Theorem alethe_walker_equiv_pos1_axiom_free :
+  forall (a b : Prop), ~ (a = b) \/ a \/ ~ b.
+Proof.
+  intros a b.
+  alethe_walker_test "(
+    (step t0 (cl (not (= a b)) a (not b)) :rule equiv_pos1) )".
+Qed.
+
+Print alethe_walker_equiv_pos1_axiom_free.
+Print Assumptions alethe_walker_equiv_pos1_axiom_free.
+
+(* equiv_pos2: ~(a=b) \/ ~a \/ b. *)
+Theorem alethe_walker_equiv_pos2_axiom_free :
+  forall (a b : Prop), ~ (a = b) \/ ~ a \/ b.
+Proof.
+  intros a b.
+  alethe_walker_test "(
+    (step t0 (cl (not (= a b)) (not a) b) :rule equiv_pos2) )".
+Qed.
+
+Print alethe_walker_equiv_pos2_axiom_free.
+Print Assumptions alethe_walker_equiv_pos2_axiom_free.

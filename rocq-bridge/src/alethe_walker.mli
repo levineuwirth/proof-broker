@@ -31,7 +31,9 @@
       by [classic] case-analysis — footprint [{classic}]), and
       [equiv_simplify] (R-8, propositional-equality tautologies via
       [propositional_extensionality]; the double-negation pattern
-      also pulls [classic]).
+      also pulls [classic]), and the 3-literal equivalence
+      tautologies [equiv_pos1]/[equiv_pos2] (R-10, nested [classic]
+      case-splits — footprint [{classic}]).
     * [alethe_walker_test] tactic accepting a string-literal
       trace, parallel to Lean's [aletheWalkerTest].
 

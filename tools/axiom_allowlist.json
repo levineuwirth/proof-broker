@@ -531,6 +531,10 @@
     "alethe_walker_equiv_simplify_or_idem_axiom_free":
       ["propositional_extensionality"],
     "alethe_walker_bycontra_axiom_free":
+      ["classic"],
+    "alethe_walker_equiv_pos1_axiom_free":
+      ["classic"],
+    "alethe_walker_equiv_pos2_axiom_free":
       ["classic"]
   }
 }
