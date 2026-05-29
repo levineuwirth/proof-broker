@@ -26,9 +26,12 @@
       (evar + [lia] discharge, R-3), the equality cluster
       [refl]/[symm]/[trans]/[cong] (R-5), trust-tagged leaves
       [hole]/[rare_rewrite] (R-6, re-derived via [lia], never
-      admitted on tag), and the boolean-cleanup cluster
+      admitted on tag), the boolean-cleanup cluster
       [implies]/[equiv1]/[equiv2]/[not_and]/[and_neg] (R-7, built
-      by [classic] case-analysis — footprint [{classic}]).
+      by [classic] case-analysis — footprint [{classic}]), and
+      [equiv_simplify] (R-8, propositional-equality tautologies via
+      [propositional_extensionality]; the double-negation pattern
+      also pulls [classic]).
     * [alethe_walker_test] tactic accepting a string-literal
       trace, parallel to Lean's [aletheWalkerTest].
 

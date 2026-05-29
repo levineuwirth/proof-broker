@@ -521,6 +521,14 @@
     "alethe_walker_and_neg_ternary_axiom_free":
       ["classic"],
     "alethe_walker_implies_refutation_axiom_free":
-      ["classic"]
+      ["classic"],
+    "alethe_walker_equiv_simplify_refl_axiom_free":
+      ["propositional_extensionality"],
+    "alethe_walker_equiv_simplify_dneg_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "alethe_walker_equiv_simplify_and_idem_axiom_free":
+      ["propositional_extensionality"],
+    "alethe_walker_equiv_simplify_or_idem_axiom_free":
+      ["propositional_extensionality"]
   }
 }
