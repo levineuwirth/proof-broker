@@ -12,7 +12,7 @@
     proof-term construction goes through the kernel like every
     other tactic, and the cert never widens the trust footprint.
 
-    Current scope (through R-5 equality):
+    Current scope (through R-7 boolean cleanup):
     * Walker monad: [walker_ctx] (atom → EConstr local-var
       mapping, plus the goal env + live evar_map ref for
       retyping), [walker_state] (step id → proven proof+clause).
@@ -23,8 +23,12 @@
       uninterpreted-function application.
     * Rule elaborators: [assume], [false], [or] (passthrough),
       [resolution] (n-ary, R-4), [la_generic]/[la_mult_neg]
-      (evar + [lia] discharge, R-3), and the equality cluster
-      [refl]/[symm]/[trans]/[cong] (R-5).
+      (evar + [lia] discharge, R-3), the equality cluster
+      [refl]/[symm]/[trans]/[cong] (R-5), trust-tagged leaves
+      [hole]/[rare_rewrite] (R-6, re-derived via [lia], never
+      admitted on tag), and the boolean-cleanup cluster
+      [implies]/[equiv1]/[equiv2]/[not_and]/[and_neg] (R-7, built
+      by [classic] case-analysis — footprint [{classic}]).
     * [alethe_walker_test] tactic accepting a string-literal
       trace, parallel to Lean's [aletheWalkerTest].
 

@@ -130,6 +130,24 @@ let r_eq_refl  = logic_ref "eq_refl"
 let r_eq_sym   = logic_ref "eq_sym"
 let r_eq_trans = logic_ref "eq_trans"
 let r_f_equal  = logic_ref "f_equal"
+let r_eq_ind   = logic_ref "eq_ind"
+let r_conj     = logic_ref "conj"
+
+(* [classic : forall P:Prop, P \/ ~P] — the excluded-middle axiom
+   from [Classical_Prop]. The boolean-cleanup cluster (R-7) is the
+   first walker code to leave the intuitionistic fragment: turning
+   [a -> b] into [~a \/ b] is classically valid only. This widens
+   the axiom footprint from empty to [{classic}] — the standard
+   classical baseline, no new trust delta (mirror of the Lean
+   arc's [Classical.em] step at #47). Not a [core.*] lib_ref;
+   resolved by name, short form first (works once the calling .v
+   has [Require Import]ed Classical_Prop). *)
+let r_classic =
+  lazy (constr_of_first_path
+          [ "classic";
+            "Stdlib.Logic.Classical_Prop.classic";
+            "Coq.Logic.Classical_Prop.classic";
+            "Classical_Prop.classic" ])
 
 let force = Lazy.force
 
@@ -725,6 +743,292 @@ let elab_cong (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
     raise (Walker_error
              "'cong' expects clause (cl (= LHS RHS)) with a premise list")
 
+(* =========================================================
+   Boolean-cleanup cluster (R-7): implies / equiv1 / equiv2 /
+   not_and / and_neg.
+
+   cvc5 emits these during SAT-side normalization of Tier-3
+   traces — flattening implications, propositional equivalences,
+   and conjunctions into clausal form for the resolution layer.
+   Proofs are built by [classic] (excluded-middle) case-analysis
+   on the relevant Props, then injected into the resulting clausal
+   disjunction. Footprint grows to [{classic}] (the standard
+   classical baseline) but no new trust axiom. Mirror of Lean
+   #47's [elabImplies]/[elabEquiv1]/[elabEquiv2] + the De Morgan
+   [buildNotAnd]/[buildAndNeg] recursive helpers.
+   ========================================================= *)
+
+(* Small constructors over the propositional connectives. *)
+let mk_not (a : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_not, [| a |])
+let mk_or (x : EConstr.t) (y : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_or, [| x; y |])
+let mk_and (x : EConstr.t) (y : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_and, [| x; y |])
+let mk_or_introl (a : EConstr.t) (b : EConstr.t) (pa : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_or_introl, [| a; b; pa |])
+let mk_or_intror (a : EConstr.t) (b : EConstr.t) (pb : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_or_intror, [| a; b; pb |])
+let mk_and_intro (a : EConstr.t) (b : EConstr.t) (pa : EConstr.t)
+    (pb : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_conj, [| a; b; pa; pb |])
+let mk_classic (a : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_classic, [| a |])
+(* [@or_ind A B P fA fB hor] : P — eliminator order is motive args,
+   then the two case functions, then the disjunction proof last
+   (note: Lean's [Or.elim] takes the disjunction first). *)
+let mk_or_ind (a : EConstr.t) (b : EConstr.t) (p : EConstr.t)
+    (f_a : EConstr.t) (f_b : EConstr.t) (hor : EConstr.t) : EConstr.t =
+  EConstr.mkApp (force r_or_ind, [| a; b; p; f_a; f_b; hor |])
+
+(* Transport a proof of Prop [a] to Prop [b] along [h : a = b]
+   (the [Eq.mp] analog), via [eq_ind] with the identity motive
+   [fun X : Prop => X]. The [Prop] sort is recovered by retyping
+   [a] rather than constructed directly. *)
+let eq_mp (ctx : walker_ctx) (h : EConstr.t) (a : EConstr.t)
+    (b : EConstr.t) (pa : EConstr.t) : EConstr.t =
+  let prop = Retyping.get_type_of ctx.env !(ctx.sigma_ref) a in
+  let binder =
+    Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
+  in
+  let motive = EConstr.mkLambda (binder, prop, EConstr.mkRel 1) in
+  EConstr.mkApp (force r_eq_ind, [| prop; a; motive; pa; b; h |])
+
+(* Transport backward: a proof of [b] to [a] along [h : a = b]
+   ([Eq.mpr]). Same as [eq_mp] but seeded from [b] with [eq_sym h]. *)
+let eq_mpr (ctx : walker_ctx) (h : EConstr.t) (a : EConstr.t)
+    (b : EConstr.t) (pb : EConstr.t) : EConstr.t =
+  let prop = Retyping.get_type_of ctx.env !(ctx.sigma_ref) b in
+  let binder =
+    Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
+  in
+  let motive = EConstr.mkLambda (binder, prop, EConstr.mkRel 1) in
+  let h_sym = EConstr.mkApp (force r_eq_sym, [| prop; a; b; h |]) in
+  EConstr.mkApp (force r_eq_ind, [| prop; b; motive; pb; a; h_sym |])
+
+(** [implies]: from premise [(=> a b)] proving [a -> b], derive
+    [(cl (not a) b)] ≡ [~a \/ b]. Case-split [a] with [classic]:
+    if [a], the premise gives [b] (right disjunct); if [~a], that
+    is the left disjunct. *)
+let elab_implies (ctx : walker_ctx) (st : walker_state)
+    (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
+  match s.clause, s.premises with
+  | [ List [ Atom "not"; a ]; b ], Some [ p ] ->
+    let (imp_h, _) = lookup_step st p in
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let not_a = mk_not a_e in
+    let result_ty = mk_or not_a b_e in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+        mk_or_intror not_a b_e (EConstr.mkApp (imp_h, [| ha |])))
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hna" not_a (fun hna ->
+        mk_or_introl not_a b_e hna)
+    in
+    (mk_or_ind a_e not_a result_ty pos_case neg_case (mk_classic a_e),
+     s.clause)
+  | _, _ ->
+    raise (Walker_error
+             "'implies' expects clause (cl (not a) b) with one \
+              premise (=> a b)")
+
+(** [equiv1]: from premise [(= a b)] (propositional equality),
+    derive [(cl (not a) b)] ≡ [~a \/ b] — forward direction.
+    Case-split [a]: if [a], transport via [eq_mp] to [b]; if [~a],
+    left disjunct. *)
+let elab_equiv1 (ctx : walker_ctx) (st : walker_state)
+    (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
+  match s.clause, s.premises with
+  | [ List [ Atom "not"; a ]; b ], Some [ p ] ->
+    let (eq_h, _) = lookup_step st p in
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let not_a = mk_not a_e in
+    let result_ty = mk_or not_a b_e in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+        mk_or_intror not_a b_e (eq_mp ctx eq_h a_e b_e ha))
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hna" not_a (fun hna ->
+        mk_or_introl not_a b_e hna)
+    in
+    (mk_or_ind a_e not_a result_ty pos_case neg_case (mk_classic a_e),
+     s.clause)
+  | _, _ ->
+    raise (Walker_error
+             "'equiv1' expects clause (cl (not a) b) with one \
+              premise (= a b)")
+
+(** [equiv2]: from premise [(= a b)], derive [(cl a (not b))] ≡
+    [a \/ ~b] — backward direction. Case-split [b]: if [b],
+    transport backward via [eq_mpr] to [a]; if [~b], right
+    disjunct. *)
+let elab_equiv2 (ctx : walker_ctx) (st : walker_state)
+    (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
+  match s.clause, s.premises with
+  | [ a; List [ Atom "not"; b ] ], Some [ p ] ->
+    let (eq_h, _) = lookup_step st p in
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let not_b = mk_not b_e in
+    let result_ty = mk_or a_e not_b in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "hb" b_e (fun hb ->
+        mk_or_introl a_e not_b (eq_mpr ctx eq_h a_e b_e hb))
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hnb" not_b (fun hnb ->
+        mk_or_intror a_e not_b hnb)
+    in
+    (mk_or_ind b_e not_b result_ty pos_case neg_case (mk_classic b_e),
+     s.clause)
+  | _, _ ->
+    raise (Walker_error
+             "'equiv2' expects clause (cl a (not b)) with one \
+              premise (= a b)")
+
+(** De Morgan recursive helper. Given conjuncts [a1 … an] and a
+    proof [h : ~(a1 /\ … /\ an)] (right-associated), build a proof
+    of [~a1 \/ … \/ ~an]. Base case (singleton): [h] is already the
+    desired negation. Recursive case: case-split [a1] via [classic];
+    if it holds, partially apply [h] to a suspended conjunction
+    (yielding [~(a2 /\ … /\ an)]) and recurse for the right
+    disjunct; if [~a1], it is the left disjunct. *)
+let rec build_not_and (ctx : walker_ctx) (lits : Alethe.Sexp.t list)
+    (h : EConstr.t) : EConstr.t =
+  match lits with
+  | [] -> raise (Walker_error "'not_and' with empty conjunction")
+  | [ _ ] -> h
+  | a :: rest ->
+    let a_e = sexp_to_constr ctx a in
+    let not_a = mk_not a_e in
+    let rest_and = and_or_chain ctx (force r_and) (force r_True) rest in
+    let rest_negs =
+      List.map (fun lit -> Alethe.Sexp.List [ Atom "not"; lit ]) rest
+    in
+    let rest_or_ty = clause_type_of ctx rest_negs in
+    let result_ty = mk_or not_a rest_or_ty in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+        (* h' : ~rest_and = fun hrest => h (conj ha hrest) *)
+        let h_prime =
+          abstract_lam ctx.sigma_ref "hrest" rest_and (fun hrest ->
+            EConstr.mkApp (h, [| mk_and_intro a_e rest_and ha hrest |]))
+        in
+        mk_or_intror not_a rest_or_ty (build_not_and ctx rest h_prime))
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hna" not_a (fun hna ->
+        mk_or_introl not_a rest_or_ty hna)
+    in
+    mk_or_ind a_e not_a result_ty pos_case neg_case (mk_classic a_e)
+
+(** [not_and]: from premise [(not (and a1 … an))], derive
+    [(cl (not a1) … (not an))] — De Morgan in clausal form. Strip
+    the [(not _)] wrappers off the clause to recover the conjuncts,
+    then [build_not_and] recurses on the conjunction. *)
+let elab_not_and (ctx : walker_ctx) (st : walker_state)
+    (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
+  match s.premises with
+  | Some [ p ] ->
+    let (h_p, _) = lookup_step st p in
+    let inner =
+      List.map
+        (function
+          | Alethe.Sexp.List [ Atom "not"; x ] -> x
+          | _ ->
+            raise (Walker_error
+                     "'not_and' clause literal not in (not _) form"))
+        s.clause
+    in
+    (build_not_and ctx inner h_p, s.clause)
+  | _ ->
+    raise (Walker_error "'not_and' expects exactly one premise")
+
+(** Tautology recursive helper. Build a proof of
+    [(a1 /\ … /\ an) \/ ~a1 \/ … \/ ~an] (right-associated in both
+    connectives) for a non-empty literal list. Base case [n=1]:
+    [classic a1]. Recursive case: case-split the inner recursive
+    result ([rest_and \/ rest_negs]); if the conjunction side fires,
+    case-split [a1] again to build the full conjunction (left) or
+    inject the head negation (middle); if the rest_negs side fires,
+    that is the tail. *)
+let rec build_and_neg (ctx : walker_ctx) (lits : Alethe.Sexp.t list)
+    : EConstr.t =
+  match lits with
+  | [] -> raise (Walker_error "'and_neg' with empty conjunction")
+  | [ a ] -> mk_classic (sexp_to_constr ctx a)
+  | a :: rest ->
+    let a_e = sexp_to_constr ctx a in
+    let not_a = mk_not a_e in
+    let rest_and = and_or_chain ctx (force r_and) (force r_True) rest in
+    let rest_negs =
+      List.map (fun lit -> Alethe.Sexp.List [ Atom "not"; lit ]) rest
+    in
+    let rest_or_ty = clause_type_of ctx rest_negs in
+    let rec_proof = build_and_neg ctx rest in
+    let conj_e = mk_and a_e rest_and in
+    let inner_or_ty = mk_or not_a rest_or_ty in
+    let result_ty = mk_or conj_e inner_or_ty in
+    let left_branch =
+      abstract_lam ctx.sigma_ref "hRA" rest_and (fun h_ra ->
+        let pos_branch =
+          abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+            mk_or_introl conj_e inner_or_ty
+              (mk_and_intro a_e rest_and ha h_ra))
+        in
+        let neg_branch =
+          abstract_lam ctx.sigma_ref "hna" not_a (fun hna ->
+            mk_or_intror conj_e inner_or_ty
+              (mk_or_introl not_a rest_or_ty hna))
+        in
+        mk_or_ind a_e not_a result_ty pos_branch neg_branch
+          (mk_classic a_e))
+    in
+    let right_branch =
+      abstract_lam ctx.sigma_ref "hRO" rest_or_ty (fun h_ro ->
+        mk_or_intror conj_e inner_or_ty
+          (mk_or_intror not_a rest_or_ty h_ro))
+    in
+    mk_or_ind rest_and rest_or_ty result_ty left_branch right_branch
+      rec_proof
+
+(** [and_neg]: tautology rule, no premises. Derive the clause
+    [(cl (and a1 … an) (not a1) … (not an))]. The negation literals
+    are verified to match the conjuncts position-wise (a
+    well-formedness check on the trace); proof built by
+    [build_and_neg]. *)
+let elab_and_neg (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | List (Atom "and" :: conjs) :: neg_lits ->
+    if conjs = [] then
+      raise (Walker_error "'and_neg' with empty (and) head");
+    if List.length conjs <> List.length neg_lits then
+      raise (Walker_error
+               (Printf.sprintf
+                  "'and_neg' arity mismatch: %d conjuncts vs %d \
+                   negation literals"
+                  (List.length conjs) (List.length neg_lits)));
+    List.iter2
+      (fun neg_lit conj ->
+        match neg_lit with
+        | Alethe.Sexp.List [ Atom "not"; x ] ->
+          if x <> conj then
+            raise (Walker_error "'and_neg' literal mismatch with conjunct")
+        | _ ->
+          raise (Walker_error
+                   "'and_neg' literal not in (not _) form"))
+      neg_lits conjs;
+    (build_and_neg ctx conjs, s.clause)
+  | _ ->
+    raise (Walker_error
+             "'and_neg' expects clause (cl (and a1 … an) (not a1) … \
+              (not an))")
+
 let elab_false_step (_ctx : walker_ctx) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
   match s.clause with
@@ -805,14 +1109,21 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
        chain's [lia] fallback re-runs. Never admit on tag. *)
     | "hole" -> elab_la_generic env sigma_ref ctx s
     | "rare_rewrite" -> elab_la_generic env sigma_ref ctx s
+    (* Boolean-cleanup cluster (R-7) — classical (em) case-splits. *)
+    | "implies" -> elab_implies ctx st s
+    | "equiv1" -> elab_equiv1 ctx st s
+    | "equiv2" -> elab_equiv2 ctx st s
+    | "not_and" -> elab_not_and ctx st s
+    | "and_neg" -> elab_and_neg ctx s
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-6 scope: \
+                  "rule '%s' not yet supported (R-7 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
-                   cong / hole / rare_rewrite; subsequent PRs add \
-                   boolean cleanup / equiv_simplify / equiv_pos)"
+                   cong / hole / rare_rewrite / implies / equiv1 / \
+                   equiv2 / not_and / and_neg; subsequent PRs add \
+                   equiv_simplify / equiv_pos)"
                   other))
   in
   store_step st s.id proof clause
