@@ -450,7 +450,17 @@ jobs:
         # in rocq-bridge/hammer/Test.v depends on). Capture
         # stdout+stderr so the trust-footprint gate can parse the
         # Print Assumptions output of every .v file.
-        run: opam exec -- dune build > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
+        #
+        # -j 1 (serial): with parallel jobs, coqc output from
+        # multiple .v compilation units (Test.v, hammer/Test.v, …)
+        # interleaves line-by-line in the single redirected log, and
+        # a foreign line spliced into a theorem's `Axioms:` block
+        # corrupts check_axioms.py's parse — surfacing as spurious
+        # "missing" regressions for scattered theorems. Serializing
+        # keeps each file's Print Assumptions output contiguous so
+        # the gate is deterministic. (The plugin still builds; only
+        # the build scheduling is serialized.)
+        run: opam exec -- dune build -j 1 > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
 
       - name: Trust-footprint gate (axiom allowlist, Rocq side)
         run: python tools/check_axioms.py --build-output rocq_build.log --bridge rocq
