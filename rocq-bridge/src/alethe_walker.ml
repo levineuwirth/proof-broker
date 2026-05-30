@@ -1423,8 +1423,24 @@ let invoke_named_tactic (name : string) : unit Proofview.tactic =
     in
     Ltac_plugin.Tacinterp.eval_tactic glob)
 
-let invoke_lia () : unit Proofview.tactic =
-  invoke_named_tactic "lia"
+(** Discharge a leaf evar (la_generic / la_mult_neg / hole /
+    rare_rewrite). Plain [lia] closes the arithmetic-tautology
+    leaves (disjunctions, comparisons — the R-3/R-6 shapes). Real
+    cvc5 [hole] clauses, though, are often *propositional
+    equalities* between arithmetic facts (e.g. [(n<=10) = ~(n>=11)],
+    the double-negation [~~(n>=11) = (n>=11)], or [(n+m=10) =
+    (n=10-m)]) — and Coq's [lia] does not prove [@eq Prop P Q]. So
+    fall back to [propositional_extensionality], which reduces
+    [P = Q] to [P <-> Q]; [lia] then proves the iff (it handles the
+    full propositional combination of linear-arithmetic atoms).
+    The propext branch is taken only when the leaf is genuinely a
+    Prop-equality, so the arithmetic-only leaves stay axiom-free;
+    the snapshot trace's holes pull [propositional_extensionality].
+    A non-tautology leaf satisfies neither branch → the discharge
+    fails → walker fails → fallback fires (audit H1). *)
+let discharge_leaf () : unit Proofview.tactic =
+  invoke_named_tactic
+    "first [ lia | apply propositional_extensionality; lia ]"
 
 (** Reduce a non-[False] goal [G] to [False] by classical
     contradiction, exposing [~G] as a fresh hypothesis the trace's
@@ -1468,7 +1484,7 @@ let walk_against_current_goal (p : proof) : unit Proofview.tactic =
         Proofview.tclTHEN
           (Refine.refine ~typecheck:true (fun _ ->
              (final_sigma, proof_term)))
-          (Proofview.tclINDEPENDENT (invoke_lia ()))
+          (Proofview.tclINDEPENDENT (discharge_leaf ()))
       else
         Tacticals.tclZEROMSG
           (Pp.str
