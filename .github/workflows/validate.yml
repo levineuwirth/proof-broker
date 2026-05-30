@@ -449,25 +449,13 @@ jobs:
         # rocq-bridge/hammer theory (which the Phase-3 HOL test
         # in rocq-bridge/hammer/Test.v depends on). Capture
         # stdout+stderr so the trust-footprint gate can parse the
-        # Print Assumptions output of every .v file.
-        #
-        # -j 1 (serial): with parallel jobs, coqc output from
-        # multiple .v compilation units (Test.v, hammer/Test.v, …)
-        # interleaves line-by-line in the single redirected log, and
-        # a foreign line spliced into a theorem's `Axioms:` block
-        # corrupts check_axioms.py's parse — surfacing as spurious
-        # "missing" regressions for scattered theorems. Serializing
-        # keeps each file's Print Assumptions output contiguous so
-        # the gate is deterministic. (The plugin still builds; only
-        # the build scheduling is serialized.)
-        run: opam exec -- dune build -j 1 > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
-
-      - name: DIAG dump pb_lra_term axiom region (temporary)
-        run: |
-          echo "=== gap region 1745-1775 ==="
-          sed -n '1745,1775p' rocq_build.log
-          echo "=== any error/failure/z3 markers in log ==="
-          grep -nE "Error|Tactic failure|Unable|cannot|no cert|attempts:|admit|Warning|exception|Anomaly|proof_broker:" rocq_build.log | head -40
+        # Print Assumptions output of every .v file. Each .v file is
+        # a separate dune action whose output dune truncates if it
+        # grows too large (head+tail kept, middle dropped) — so a
+        # single test that prints a very large proof term must live
+        # in its own file to avoid truncating sibling tests' Print
+        # Assumptions out of the log (see theories/TestSnapshot.v).
+        run: opam exec -- dune build > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
 
       - name: Trust-footprint gate (axiom allowlist, Rocq side)
         run: python tools/check_axioms.py --build-output rocq_build.log --bridge rocq
