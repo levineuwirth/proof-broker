@@ -1240,3 +1240,63 @@ Qed.
 
 Print alethe_walker_equiv_pos2_axiom_free.
 Print Assumptions alethe_walker_equiv_pos2_axiom_free.
+
+(** Alethe walker — R-11 cong over built-in operators.
+
+    Mirror of lean-bridge/Test/Tactic.lean's cong-over-operator
+    tests (Lean #51). Real cvc5 LIA traces use [cong] to lift
+    argument equalities through built-in operators ([not], [+],
+    [<=], …), not just UF symbols — this is the congruence shape
+    that lets a real alethe-2024 trace walk end-to-end rather than
+    fall through to [lia]. No elaborator change was needed: the
+    Constr-level [elab_cong] (built that way since R-5, as Coq has
+    no [mkCongr]) already translates operator-headed lists via
+    [sexp_to_constr] and peels the spine via [decompose_app] —
+    operator heads ([Zadd]/[Zle]/[not]) decompose exactly like UF
+    heads. All axiom-free: [cong] is [f_equal]/[eq_trans]/[eq_refl]. *)
+
+(* cong over [not] (unary Prop operator): (~a) = (~b) from a = b. *)
+Theorem alethe_walker_cong_not_axiom_free :
+  forall (a b : Prop), a = b -> (~ a) = (~ b).
+Proof.
+  intros a b h.
+  alethe_walker_test "(
+    (assume a0 (= a b))
+    (step t0 (cl (= (not a) (not b))) :rule cong :premises (a0)) )".
+Qed.
+
+Print alethe_walker_cong_not_axiom_free.
+Print Assumptions alethe_walker_cong_not_axiom_free.
+
+(* cong over [+] (binary operator over Z): x + z = y + w from
+   x = y and z = w. The shape cvc5 emits lifting arg equalities
+   through an addition during LIA normalization. *)
+Theorem alethe_walker_cong_add_axiom_free :
+  forall (x y z w : Z), x = y -> z = w -> x + z = y + w.
+Proof.
+  intros x y z w h1 h2.
+  alethe_walker_test "(
+    (assume a0 (= x y))
+    (assume a1 (= z w))
+    (step t0 (cl (= (+ x z) (+ y w))) :rule cong :premises (a0 a1)) )".
+Qed.
+
+Print alethe_walker_cong_add_axiom_free.
+Print Assumptions alethe_walker_cong_add_axiom_free.
+
+(* cong over [<=] (binary comparison, predicate-valued): the
+   conclusion's equality is between two Props, exercising the
+   per-argument chain when the operator's result type is Prop.
+   The constant 5 position is carried by a [refl] premise. *)
+Theorem alethe_walker_cong_le_axiom_free :
+  forall (x y : Z), x = y -> (x <= 5)%Z = (y <= 5)%Z.
+Proof.
+  intros x y h.
+  alethe_walker_test "(
+    (assume a0 (= x y))
+    (step t_refl (cl (= 5 5)) :rule refl)
+    (step t0 (cl (= (<= x 5) (<= y 5))) :rule cong :premises (a0 t_refl)) )".
+Qed.
+
+Print alethe_walker_cong_le_axiom_free.
+Print Assumptions alethe_walker_cong_le_axiom_free.
