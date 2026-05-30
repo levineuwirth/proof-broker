@@ -535,6 +535,12 @@
     "alethe_walker_equiv_pos1_axiom_free":
       ["classic"],
     "alethe_walker_equiv_pos2_axiom_free":
-      ["classic"]
+      ["classic"],
+    "alethe_walker_cong_not_axiom_free":
+      [],
+    "alethe_walker_cong_add_axiom_free":
+      [],
+    "alethe_walker_cong_le_axiom_free":
+      []
   }
 }
