@@ -23,7 +23,9 @@
       uninterpreted-function application.
     * Rule elaborators: [assume], [false], [or] (passthrough),
       [resolution] (n-ary, R-4), [la_generic]/[la_mult_neg]
-      (evar + [lia] discharge, R-3), the equality cluster
+      (evar + leaf discharge — [lia], or [propositional_extensionality]
+      then [lia] for the Prop-equality holes real cvc5 traces emit;
+      R-3/R-12), the equality cluster
       [refl]/[symm]/[trans]/[cong] (R-5), trust-tagged leaves
       [hole]/[rare_rewrite] (R-6, re-derived via [lia], never
       admitted on tag), the boolean-cleanup cluster

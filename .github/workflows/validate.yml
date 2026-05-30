@@ -449,7 +449,12 @@ jobs:
         # rocq-bridge/hammer theory (which the Phase-3 HOL test
         # in rocq-bridge/hammer/Test.v depends on). Capture
         # stdout+stderr so the trust-footprint gate can parse the
-        # Print Assumptions output of every .v file.
+        # Print Assumptions output of every .v file. Each .v file is
+        # a separate dune action whose output dune truncates if it
+        # grows too large (head+tail kept, middle dropped) — so a
+        # single test that prints a very large proof term must live
+        # in its own file to avoid truncating sibling tests' Print
+        # Assumptions out of the log (see theories/TestSnapshot.v).
         run: opam exec -- dune build > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
 
       - name: Trust-footprint gate (axiom allowlist, Rocq side)

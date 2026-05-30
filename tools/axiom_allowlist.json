@@ -541,6 +541,8 @@
     "alethe_walker_cong_add_axiom_free":
       [],
     "alethe_walker_cong_le_axiom_free":
-      []
+      [],
+    "alethe_walker_real_cvc5_trace_axiom_free":
+      ["classic", "propositional_extensionality"]
   }
 }
