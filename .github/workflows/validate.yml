@@ -462,6 +462,15 @@ jobs:
         # the build scheduling is serialized.)
         run: opam exec -- dune build -j 1 > rocq_build.log 2>&1 || (cat rocq_build.log; exit 1)
 
+      - name: DIAG dump pb_lra_term axiom region (temporary)
+        run: |
+          echo "=== marker/axiom lines for the eq..lt_mixed block ==="
+          grep -nE "^(pb_lra_term_(eq|arity3_goal|arity3_lt|rational|eq_hyp|not_hyp|lt_hyp|lt_mixed|le_goal_strict_a1)_axiom_free) (=|:)" rocq_build.log || echo "NONE MATCHED"
+          echo "=== context around first missing (arity3_goal) ==="
+          grep -n "pb_lra_term_arity3_goal_axiom_free" rocq_build.log | head -3
+          echo "=== total log line count ==="
+          wc -l rocq_build.log
+
       - name: Trust-footprint gate (axiom allowlist, Rocq side)
         run: python tools/check_axioms.py --build-output rocq_build.log --bridge rocq
 
