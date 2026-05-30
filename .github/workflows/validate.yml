@@ -32,6 +32,14 @@ jobs:
       - name: Run trust-gate parser tests (axiom-check C2/C3)
         run: python tools/test_check_axioms.py
 
+      # Pure text extraction (no bridge build): fail fast and cheap if the
+      # Lean and Rocq Alethe walkers drift out of rule-set lockstep.
+      - name: Check walker rule parity (Lean <-> Rocq)
+        run: python tools/check_walker_parity.py
+
+      - name: Run walker rule-parity tests
+        run: python tools/test_walker_parity.py
+
   sdk:
     runs-on: ubuntu-latest
     steps:

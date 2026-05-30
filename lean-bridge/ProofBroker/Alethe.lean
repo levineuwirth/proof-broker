@@ -1246,6 +1246,8 @@ where
     state by `walkProof` before the step list is walked. -/
 def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
   let (proof, clause) ← match s.rule with
+    -- PARITY:walker-rules BEGIN — kept in lockstep with rocq-bridge/src/alethe_walker.ml
+    -- (tools/check_walker_parity.py fails CI if the two rule sets diverge)
     | "or" => elabOr s
     | "resolution" => elabResolution ctx s
     | "false" => elabFalseStep ctx s
@@ -1265,6 +1267,7 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "not_and" => elabNotAnd ctx s
     | "and_neg" => elabAndNeg ctx s
     | "equiv_simplify" => elabEquivSimplify ctx s
+    -- PARITY:walker-rules END
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
                      supported (current scope: resolution / or / \
