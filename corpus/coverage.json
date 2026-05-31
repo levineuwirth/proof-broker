@@ -1,0 +1,65 @@
+{
+  "supported_rule_count": 19,
+  "summary": {
+    "walkable": 4,
+    "unsat": 6,
+    "total": 6,
+    "non_unsat": []
+  },
+  "backlog": {
+    "and_pos": 1,
+    "contraction": 1,
+    "implies_neg1": 1,
+    "implies_neg2": 1,
+    "implies_simplify": 1,
+    "not_not": 1,
+    "not_or": 1,
+    "or_neg": 1,
+    "reordering": 1,
+    "subproof": 1
+  },
+  "goals": {
+    "lia_disjunction": {
+      "result": "unsat",
+      "walkable": false,
+      "missing": [
+        "not_not",
+        "not_or"
+      ]
+    },
+    "lia_sum_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": []
+    },
+    "lia_weaken_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": []
+    },
+    "uf_cong": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": []
+    },
+    "uf_lia_mix": {
+      "result": "unsat",
+      "walkable": false,
+      "missing": [
+        "and_pos",
+        "contraction",
+        "implies_neg1",
+        "implies_neg2",
+        "implies_simplify",
+        "or_neg",
+        "reordering",
+        "subproof"
+      ]
+    },
+    "uf_trans": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": []
+    }
+  }
+}

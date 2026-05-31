@@ -1,3 +1,3 @@
-(executable
- (name round_trip_cli)
- (libraries proof_broker yojson))
+(executables
+ (names round_trip_cli corpus_gen)
+ (libraries proof_broker yojson unix))

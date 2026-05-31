@@ -1,0 +1,37 @@
+{
+  "id": "lia_weaken_bound",
+  "description": "3 <= x |- 1 <= x (single-step LIA weakening)",
+  "coq_goal": "forall x : Z, 3 <= x -> 1 <= x",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "LIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App", "symbol": "LE.le", "type_args": [],
+        "args": [
+          { "node": "NumLit", "value": "1", "type": "Int" },
+          { "node": "Var", "name": "x" }
+        ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [ { "name": "x", "type": "Int" } ],
+      "hypotheses": [
+        {
+          "name": "h1",
+          "shell": {
+            "node": "App", "symbol": "LE.le", "type_args": [],
+            "args": [ { "node": "NumLit", "value": "3", "type": "Int" }, { "node": "Var", "name": "x" } ]
+          }
+        }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

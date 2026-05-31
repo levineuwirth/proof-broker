@@ -1,0 +1,39 @@
+{
+  "id": "uf_cong",
+  "description": "a = b |- f a = f b (uninterpreted-function congruence)",
+  "coq_goal": "forall (f : Z -> Z) (a b : Z), a = b -> f a = f b",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UF", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "Eq", "type": "Int",
+        "left": { "node": "App", "symbol": "UF.f", "type_args": [], "args": [ { "node": "Var", "name": "a" } ] },
+        "right": { "node": "App", "symbol": "UF.f", "type_args": [], "args": [ { "node": "Var", "name": "b" } ] }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "f", "type": "Int->Int" },
+        { "name": "a", "type": "Int" },
+        { "name": "b", "type": "Int" }
+      ],
+      "hypotheses": [
+        {
+          "name": "h1",
+          "shell": {
+            "node": "Eq", "type": "Int",
+            "left": { "node": "Var", "name": "a" }, "right": { "node": "Var", "name": "b" }
+          }
+        }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}
