@@ -19,7 +19,7 @@ Open Scope Z_scope.
 (* n + m = 10, 0 <= m |- n <= 10 (pure LIA; the snapshot shape) *)
 Theorem corpus_lia_sum_bound :
   forall (n m : Z), n + m = 10 -> 0 <= m -> n <= 10.
-Proof. alethe_walker_test "(
+Proof. intros n m h1 h3. alethe_walker_test "(
 (assume a0 (! (= (+ n m) 10) :named @p_1))
 (assume a1 (! (<= 0 m) :named @p_2))
 (assume a2 (! (not (! (<= n 10) :named @p_3)) :named @p_4))
@@ -46,7 +46,7 @@ Proof. alethe_walker_test "(
 (* 3 <= x |- 1 <= x (single-step LIA weakening) *)
 Theorem corpus_lia_weaken_bound :
   forall x : Z, 3 <= x -> 1 <= x.
-Proof. alethe_walker_test "(
+Proof. intros x h1. alethe_walker_test "(
 (assume a0 (! (<= 3 x) :named @p_1))
 (assume a1 (! (not (! (<= 1 x) :named @p_2)) :named @p_3))
 (step t0 (cl (not (! (= (! (< (! (+ x (! (* -1 x) :named @p_6)) :named @p_7) (! (+ 1 (! (* -1 3) :named @p_4)) :named @p_5)) :named @p_8) false) :named @p_22)) (not @p_8) false) :rule equiv_pos2)
@@ -94,7 +94,7 @@ Proof. alethe_walker_test "(
 (* a = b |- f a = f b (uninterpreted-function congruence) *)
 Theorem corpus_uf_cong :
   forall (f : Z -> Z) (a b : Z), a = b -> f a = f b.
-Proof. alethe_walker_test "(
+Proof. intros f a b h1. alethe_walker_test "(
 (assume a0 (! (= a b) :named @p_1))
 (assume a1 (! (not (! (= (f a) (! (f b) :named @p_2)) :named @p_3)) :named @p_4))
 (step t0 (cl (not (! (= @p_4 false) :named @p_5)) (not @p_4) false) :rule equiv_pos2)
@@ -115,7 +115,7 @@ Proof. alethe_walker_test "(
 (* a = b, b = c |- a = c (equality transitivity) *)
 Theorem corpus_uf_trans :
   forall (a b c : Z), a = b -> b = c -> a = c.
-Proof. alethe_walker_test "(
+Proof. intros a b c h1 h2. alethe_walker_test "(
 (assume a0 (! (= a b) :named @p_1))
 (assume a1 (! (= b c) :named @p_2))
 (assume a2 (! (not (! (= a c) :named @p_3)) :named @p_4))

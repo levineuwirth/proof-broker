@@ -86,10 +86,19 @@ def render() -> str:
                 f"replay_skip: {skip} *)\n")
             continue
         trace = (TRACES / f"{gid}.alethe").read_text(encoding="utf-8").strip()
+        # Introduce the goal's binders so the trace's atoms resolve against
+        # local hypotheses: the universally-quantified free vars, then the
+        # hypotheses (in goal order), mirroring TestSnapshot.v's `intros n m
+        # h1 h3`. Without this the atoms are still bound under the forall and
+        # the walker reports "unknown atom 'm' (not in scope)".
+        ctx = meta["ir"]["context"]
+        intro_names = ([fv["name"] for fv in ctx.get("free_vars", [])]
+                       + [h["name"] for h in ctx.get("hypotheses", [])])
+        intros = f"intros {' '.join(intro_names)}. " if intro_names else ""
         blocks.append(
             f"\n(* {meta.get('description', gid)} *)\n"
             f"Theorem corpus_{gid} :\n  {meta['coq_goal']}.\n"
-            f'Proof. alethe_walker_test "{coq_escape(trace)}". Qed.\n'
+            f'Proof. {intros}alethe_walker_test "{coq_escape(trace)}". Qed.\n'
         )
     return "".join(blocks)
 
