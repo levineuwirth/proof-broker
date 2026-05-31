@@ -1335,6 +1335,9 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (st : walker_state) (s : Alethe.step) : unit =
   let (proof, clause) =
     match s.rule with
+    (* PARITY:walker-rules BEGIN — kept in lockstep with
+       lean-bridge/ProofBroker/Alethe.lean (tools/check_walker_parity.py
+       fails CI if the two rule sets diverge). *)
     | "or" -> elab_or st s
     | "resolution" -> elab_resolution sigma_ref ctx st s
     | "false" -> elab_false_step ctx s
@@ -1366,6 +1369,7 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (* 3-literal equivalence tautologies (R-10). *)
     | "equiv_pos1" -> elab_equiv_pos1 ctx s
     | "equiv_pos2" -> elab_equiv_pos2 ctx s
+    (* PARITY:walker-rules END *)
     | other ->
       raise (Walker_error
                (Printf.sprintf
