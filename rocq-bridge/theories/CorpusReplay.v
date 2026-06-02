@@ -45,6 +45,45 @@ Proof. intros n m h1 h3. alethe_walker_test "(
 
 (* SKIPPED corpus_lia_weaken_bound: statically walkable but replay_skip: walker shape-gap: cvc5's equiv_simplify here uses a pattern beyond the 4 the elaborator handles ((= (= t t) true) / (= (not (not a)) a) / (= (and a a) a) / (= (or a a) a)). Statically walkable (all rules dispatched); dynamic gap tracked as coverage backlog. *)
 
-(* SKIPPED corpus_uf_cong: statically walkable but replay_skip: walker shape-gap: cong over polymorphic equality. The trace's `cong :premises (t1 t2)` proves (= (= a c) (= c c)) -- congruence over @eq, whose implicit type arg makes the application 3 args for 2 premises, which elab_cong's R-11 arity handling (tuned for not/+/<=) rejects: "'cong' has 2 premises but the application has 3 arguments". Statically walkable; dynamic gap tracked as backlog. *)
+(* a = b |- f a = f b (uninterpreted-function congruence) *)
+Theorem corpus_uf_cong :
+  forall (f : Z -> Z) (a b : Z), a = b -> f a = f b.
+Proof. intros f a b h1. alethe_walker_test "(
+(assume a0 (! (= a b) :named @p_1))
+(assume a1 (! (not (! (= (f a) (! (f b) :named @p_2)) :named @p_3)) :named @p_4))
+(step t0 (cl (not (! (= @p_4 false) :named @p_5)) (not @p_4) false) :rule equiv_pos2)
+(step t1 (cl @p_3) :rule cong :premises (a0))
+(step t2 (cl (! (= @p_2 @p_2) :named @p_6)) :rule refl)
+(step t3 (cl (= @p_3 @p_6)) :rule cong :premises (t1 t2))
+(step t4 (cl (= @p_4 (! (not @p_6) :named @p_7))) :rule cong :premises (t3))
+(step t5 (cl (! (= @p_6 true) :named @p_10)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_10 3 6))
+(step t6 (cl (= @p_7 (! (not true) :named @p_8))) :rule cong :premises (t5))
+(step t7 (cl (! (= @p_8 false) :named @p_9)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_9 1 7))
+(step t8 (cl (= @p_7 false)) :rule trans :premises (t6 t7))
+(step t9 (cl @p_5) :rule trans :premises (t4 t8))
+(step t10 (cl false) :rule resolution :premises (t0 t9 a1))
+(step t11 (cl (not false)) :rule false)
+(step t12 (cl) :rule resolution :premises (t10 t11))
+)". Qed.
 
-(* SKIPPED corpus_uf_trans: statically walkable but replay_skip: walker shape-gap: same cong-over-polymorphic-equality arity issue as uf_cong (its `t3: (= @p_3 @p_6) :rule cong :premises (t1 t2)` is congruence over @eq -- 3 args for 2 premises). Statically walkable; dynamic gap tracked as backlog. *)
+(* a = b, b = c |- a = c (equality transitivity) *)
+Theorem corpus_uf_trans :
+  forall (a b c : Z), a = b -> b = c -> a = c.
+Proof. intros a b c h1 h2. alethe_walker_test "(
+(assume a0 (! (= a b) :named @p_1))
+(assume a1 (! (= b c) :named @p_2))
+(assume a2 (! (not (! (= a c) :named @p_3)) :named @p_4))
+(step t0 (cl (not (! (= @p_4 false) :named @p_5)) (not @p_4) false) :rule equiv_pos2)
+(step t1 (cl @p_3) :rule trans :premises (a0 a1))
+(step t2 (cl (! (= c c) :named @p_6)) :rule refl)
+(step t3 (cl (= @p_3 @p_6)) :rule cong :premises (t1 t2))
+(step t4 (cl (= @p_4 (! (not @p_6) :named @p_7))) :rule cong :premises (t3))
+(step t5 (cl (! (= @p_6 true) :named @p_10)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_10 3 6))
+(step t6 (cl (= @p_7 (! (not true) :named @p_8))) :rule cong :premises (t5))
+(step t7 (cl (! (= @p_8 false) :named @p_9)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_9 1 7))
+(step t8 (cl (= @p_7 false)) :rule trans :premises (t6 t7))
+(step t9 (cl @p_5) :rule trans :premises (t4 t8))
+(step t10 (cl false) :rule resolution :premises (t0 t9 a2))
+(step t11 (cl (not false)) :rule false)
+(step t12 (cl) :rule resolution :premises (t10 t11))
+)". Qed.
