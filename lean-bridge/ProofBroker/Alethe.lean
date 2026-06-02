@@ -1360,6 +1360,33 @@ private def elabImpliesSimplify (ctx : WalkerContext) (s : Step)
     throwError m!"alethe walker: 'implies_simplify' expects clause \
                    (cl (= (=> a false) (not a))), got {repr s.clause}"
 
+/-- `reordering` / `contraction`: one premise, conclusion clause is
+    a set-preserving rewrite of it (`reordering` permutes,
+    `contraction` removes duplicates). Both reduce to the same
+    construction: case-split the premise disjunction, and re-inject
+    each literal proof at a matching position in the conclusion.
+    Sound exactly when every premise literal also appears in the
+    conclusion — true for both rules. Mirror of Rocq's
+    `elab_clause_remap`. -/
+private def elabClauseRemap (ctx : WalkerContext) (rule : String) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.premises with
+  | some [p] => do
+    let (eP, pLits) ← lookupStep p
+    let cLits := s.clause
+    let resultTy ← clauseTypeOf ctx cLits
+    let proof ← casesClause ctx eP pLits resultTy (fun i litProof => do
+      let lit := pLits[i]!
+      match cLits.findIdx? (· == lit) with
+      | some j => injectLit ctx cLits j litProof
+      | none =>
+        throwError m!"alethe walker: '{rule}' premise literal {repr lit} \
+                       absent from the conclusion clause")
+    pure (proof, cLits)
+  | _ =>
+    throwError m!"alethe walker: '{rule}' expects exactly one premise, \
+                   got {repr s.premises}"
+
 /- ----------------------------------------------------------------
    `equiv_simplify`: propositional-equality tautology simplification.
 
@@ -1528,6 +1555,8 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "implies_neg1" => elabImpliesNeg1 ctx s
     | "implies_neg2" => elabImpliesNeg2 ctx s
     | "implies_simplify" => elabImpliesSimplify ctx s
+    | "reordering" => elabClauseRemap ctx "reordering" s
+    | "contraction" => elabClauseRemap ctx "contraction" s
     | "equiv_simplify" => elabEquivSimplify ctx s
     -- PARITY:walker-rules END
     | other =>
