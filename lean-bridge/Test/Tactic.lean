@@ -803,6 +803,47 @@ theorem alethe_walker_not_not_refutation_axiom_free
 
 #print axioms alethe_walker_not_not_refutation_axiom_free
 
+/- Alethe walker — connective-introduction tautology cluster
+   (`and_pos` / `or_neg` / `implies_neg1` / `implies_neg2` /
+   `implies_simplify`). Each tautology is asserted directly as the
+   goal. The `em`-based four land at the classical baseline;
+   `implies_simplify` closes by `rfl` and is genuinely axiom-free. -/
+
+/-- `and_pos` (index 0): `¬(a ∧ b) ∨ a`. -/
+theorem alethe_walker_and_pos_axiom_free (a b : Prop) : ¬(a ∧ b) ∨ a := by
+  alethe_walker_test
+    "( (step t0 (cl (not (and a b)) a) :rule and_pos :args (0)) )"
+
+#print axioms alethe_walker_and_pos_axiom_free
+
+/-- `or_neg` (index 0): `(a ∨ b) ∨ ¬a`. -/
+theorem alethe_walker_or_neg_axiom_free (a b : Prop) : (a ∨ b) ∨ ¬a := by
+  alethe_walker_test
+    "( (step t0 (cl (or a b) (not a)) :rule or_neg :args (0)) )"
+
+#print axioms alethe_walker_or_neg_axiom_free
+
+/-- `implies_neg1`: `(a → b) ∨ a`. -/
+theorem alethe_walker_implies_neg1_axiom_free (a b : Prop) : (a → b) ∨ a := by
+  alethe_walker_test
+    "( (step t0 (cl (=> a b) a) :rule implies_neg1) )"
+
+#print axioms alethe_walker_implies_neg1_axiom_free
+
+/-- `implies_neg2`: `(a → b) ∨ ¬b`. -/
+theorem alethe_walker_implies_neg2_axiom_free (a b : Prop) : (a → b) ∨ ¬b := by
+  alethe_walker_test
+    "( (step t0 (cl (=> a b) (not b)) :rule implies_neg2) )"
+
+#print axioms alethe_walker_implies_neg2_axiom_free
+
+/-- `implies_simplify`: `(a → False) = ¬a`. Constructive (`rfl`). -/
+theorem alethe_walker_implies_simplify_axiom_free (a : Prop) : (a → False) = ¬a := by
+  alethe_walker_test
+    "( (step t0 (cl (= (=> a false) (not a))) :rule implies_simplify) )"
+
+#print axioms alethe_walker_implies_simplify_axiom_free
+
 /- Alethe walker — `equiv_simplify` (propositional-equality
    tautologies).
 

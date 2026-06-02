@@ -133,6 +133,7 @@ let r_f_equal  = logic_ref "f_equal"
 let r_eq_ind   = logic_ref "eq_ind"
 let r_conj     = logic_ref "conj"
 let r_proj1    = logic_ref "proj1"
+let r_proj2    = logic_ref "proj2"
 let r_True_I   = logic_ref "I"
 
 (* [propositional_extensionality : forall P Q:Prop, (P<->Q) -> P=Q]
@@ -1430,6 +1431,203 @@ let elab_not_or (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
               and one index arg")
 
 (* =========================================================
+   Connective-introduction tautology cluster (R-12):
+   and_pos / or_neg / implies_neg1 / implies_neg2 /
+   implies_simplify.
+
+   Premise-light propositional tautologies cvc5 emits while
+   refuting a conjunction/disjunction/implication. Each is a
+   classical [em] case-split over the relevant subformula (except
+   [implies_simplify], which closes by conversion). No new trust
+   axioms beyond the [classic] baseline. Mirror of Lean's
+   [elabAndPos] / [elabOrNeg] / [elabImpliesNeg1] /
+   [elabImpliesNeg2] / [elabImpliesSimplify].
+   ========================================================= *)
+
+(** Project the [idx]-th conjunct out of [hand : t_0 /\ ... /\ t_n]
+    (right-nested, matching [sexp_to_constr]'s [and] reification):
+    [proj2] down to the enclosing pair, then [proj1] (or the bare
+    proof for the final conjunct). *)
+let rec project_conjunct (ctx : walker_ctx) (conjuncts : Alethe.Sexp.t list)
+    (idx : int) (hand : EConstr.t) : EConstr.t =
+  match conjuncts, idx with
+  | [ _ ], 0 -> hand
+  | (c :: rest), 0 ->
+    let a_ty = sexp_to_constr ctx c in
+    let b_ty = and_or_chain ctx (force r_and) (force r_True) rest in
+    EConstr.mkApp (force r_proj1, [| a_ty; b_ty; hand |])
+  | (c :: rest), k when k > 0 ->
+    let a_ty = sexp_to_constr ctx c in
+    let b_ty = and_or_chain ctx (force r_and) (force r_True) rest in
+    let tail = EConstr.mkApp (force r_proj2, [| a_ty; b_ty; hand |]) in
+    project_conjunct ctx rest (k - 1) tail
+  | _ ->
+    raise (Walker_error
+             (Printf.sprintf "conjunct index %d out of range for a \
+                              %d-conjunct (and)" idx (List.length conjuncts)))
+
+let parse_index (rule : string) = function
+  | Some [ Alethe.Sexp.Atom s ] ->
+    (try int_of_string s
+     with _ ->
+       raise (Walker_error
+                (Printf.sprintf "'%s' index arg '%s' is not an integer"
+                   rule s)))
+  | _ ->
+    raise (Walker_error (Printf.sprintf "'%s' expects one index arg" rule))
+
+(** [and_pos]: tautology, no premises. From arg [i], derives
+    [(cl (not (and t_0 .. t_n)) t_i)] ≡ [~(and ..) \/ t_i]. Proof:
+    [em] on [t_i]; if [t_i], right disjunct; if [~t_i], build
+    [~(and ..)] as [fun (hand : and ..) => h_nti (project_i hand)]. *)
+let elab_and_pos (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ (List [ Atom "not"; (List (Atom "and" :: conjuncts) as conj) ]) as not_and;
+      t_i ] ->
+    let i = parse_index "and_pos" s.args in
+    if i < 0 || i >= List.length conjuncts then
+      raise (Walker_error
+               (Printf.sprintf "'and_pos' index %d out of range for a \
+                                %d-conjunct (and)" i (List.length conjuncts)));
+    if List.nth conjuncts i <> t_i then
+      raise (Walker_error
+               "'and_pos' clause literal does not match the selected conjunct");
+    let not_and_e = sexp_to_constr ctx not_and in
+    let and_e = sexp_to_constr ctx conj in
+    let t_i_e = sexp_to_constr ctx t_i in
+    let not_t_i = mk_not t_i_e in
+    let result_ty = mk_or not_and_e t_i_e in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "hti" t_i_e (fun hti ->
+        mk_or_intror not_and_e t_i_e hti)
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hnti" not_t_i (fun hnti ->
+        let not_and_proof =
+          abstract_lam ctx.sigma_ref "hand" and_e (fun hand ->
+            EConstr.mkApp (hnti, [| project_conjunct ctx conjuncts i hand |]))
+        in
+        mk_or_introl not_and_e t_i_e not_and_proof)
+    in
+    (mk_or_ind t_i_e not_t_i result_ty pos_case neg_case (mk_classic t_i_e),
+     s.clause)
+  | _ ->
+    raise (Walker_error
+             "'and_pos' expects clause (cl (not (and ...)) t_i) with an index arg")
+
+(** [or_neg]: tautology, no premises. From arg [i], derives
+    [(cl (or t_0 .. t_n) (not t_i))] ≡ [(or ..) \/ ~t_i]. Proof:
+    [em] on [t_i]; if [t_i], inject it into the [or] (left
+    disjunct); if [~t_i], that is the right disjunct. *)
+let elab_or_neg (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ (List (Atom "or" :: disjuncts) as disj);
+      (List [ Atom "not"; t_i ]) as not_t_i ] ->
+    let i = parse_index "or_neg" s.args in
+    if i < 0 || i >= List.length disjuncts then
+      raise (Walker_error
+               (Printf.sprintf "'or_neg' index %d out of range for a \
+                                %d-disjunct (or)" i (List.length disjuncts)));
+    if List.nth disjuncts i <> t_i then
+      raise (Walker_error
+               "'or_neg' clause literal does not match the selected disjunct");
+    let disj_e = sexp_to_constr ctx disj in
+    let not_t_i_e = sexp_to_constr ctx not_t_i in
+    let t_i_e = sexp_to_constr ctx t_i in
+    let result_ty = mk_or disj_e not_t_i_e in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "hti" t_i_e (fun hti ->
+        mk_or_introl disj_e not_t_i_e (inject_lit ctx disjuncts i hti))
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hnti" not_t_i_e (fun hnti ->
+        mk_or_intror disj_e not_t_i_e hnti)
+    in
+    (mk_or_ind t_i_e not_t_i_e result_ty pos_case neg_case (mk_classic t_i_e),
+     s.clause)
+  | _ ->
+    raise (Walker_error
+             "'or_neg' expects clause (cl (or ...) (not t_i)) with an index arg")
+
+(** [implies_neg1]: tautology, no premises. Derives
+    [(cl (=> a b) a)] ≡ [(a -> b) \/ a]. Proof: [em] on [a]; if
+    [a], right disjunct; if [~a], the implication holds vacuously
+    ([fun (x : a) => False_ind b (h_na x)]). *)
+let elab_implies_neg1 (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ (List [ Atom "=>"; a; b ]) as imp; a' ] when a = a' ->
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let imp_e = sexp_to_constr ctx imp in
+    let result_ty = mk_or imp_e a_e in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+        mk_or_intror imp_e a_e ha)
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hna" (mk_not a_e) (fun hna ->
+        let imp_proof =
+          abstract_lam ctx.sigma_ref "x" a_e (fun x ->
+            EConstr.mkApp (force r_False_ind,
+                           [| b_e; EConstr.mkApp (hna, [| x |]) |]))
+        in
+        mk_or_introl imp_e a_e imp_proof)
+    in
+    (mk_or_ind a_e (mk_not a_e) result_ty pos_case neg_case (mk_classic a_e),
+     s.clause)
+  | _ ->
+    raise (Walker_error "'implies_neg1' expects clause (cl (=> a b) a)")
+
+(** [implies_neg2]: tautology, no premises. Derives
+    [(cl (=> a b) (not b))] ≡ [(a -> b) \/ ~b]. Proof: [em] on [b];
+    if [b], the implication holds ([fun (_ : a) => hb]); if [~b],
+    right disjunct. *)
+let elab_implies_neg2 (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ (List [ Atom "=>"; a; b ]) as imp; List [ Atom "not"; b' ] ] when b = b' ->
+    let a_e = sexp_to_constr ctx a in
+    let b_e = sexp_to_constr ctx b in
+    let imp_e = sexp_to_constr ctx imp in
+    let not_b = mk_not b_e in
+    let result_ty = mk_or imp_e not_b in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "hb" b_e (fun hb ->
+        let imp_proof =
+          abstract_lam ctx.sigma_ref "x" a_e (fun _ -> hb)
+        in
+        mk_or_introl imp_e not_b imp_proof)
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hnb" not_b (fun hnb ->
+        mk_or_intror imp_e not_b hnb)
+    in
+    (mk_or_ind b_e not_b result_ty pos_case neg_case (mk_classic b_e),
+     s.clause)
+  | _ ->
+    raise (Walker_error "'implies_neg2' expects clause (cl (=> a b) (not b))")
+
+(** [implies_simplify]: propositional-equality tautology, no
+    premises. Derives [(cl (= (=> a false) (not a)))]. Since
+    [~a] is definitionally [a -> False], the two sides are
+    convertible and [eq_refl] closes the equality by conversion —
+    no [propext]. *)
+let elab_implies_simplify (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "="; (List [ Atom "=>"; a; Atom "false" ]) as imp;
+             List [ Atom "not"; a' ] ] ] when a = a' ->
+    let imp_e = sexp_to_constr ctx imp in       (* a -> False ≡ ~a *)
+    let prop = Retyping.get_type_of ctx.env !(ctx.sigma_ref) imp_e in
+    (EConstr.mkApp (force r_eq_refl, [| prop; imp_e |]), s.clause)
+  | _ ->
+    raise (Walker_error
+             "'implies_simplify' expects clause (cl (= (=> a false) (not a)))")
+
+(* =========================================================
    Dispatch + walk.
    ========================================================= *)
 
@@ -1469,6 +1667,12 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (* Negation-of-connective cluster (R-11). *)
     | "not_not" -> elab_not_not ctx s
     | "not_or" -> elab_not_or ctx st s
+    (* Connective-introduction tautology cluster (R-12). *)
+    | "and_pos" -> elab_and_pos ctx s
+    | "or_neg" -> elab_or_neg ctx s
+    | "implies_neg1" -> elab_implies_neg1 ctx s
+    | "implies_neg2" -> elab_implies_neg2 ctx s
+    | "implies_simplify" -> elab_implies_simplify ctx s
     (* Propositional-equality tautology simplification (R-8). *)
     | "equiv_simplify" -> elab_equiv_simplify ctx s
     (* 3-literal equivalence tautologies (R-10). *)
@@ -1478,12 +1682,14 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-11 scope: \
+                  "rule '%s' not yet supported (R-12 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
                    equiv2 / not_and / and_neg / not_not / not_or / \
-                   equiv_simplify / equiv_pos1 / equiv_pos2)"
+                   and_pos / or_neg / implies_neg1 / implies_neg2 / \
+                   implies_simplify / equiv_simplify / equiv_pos1 / \
+                   equiv_pos2)"
                   other))
   in
   store_step st s.id proof clause

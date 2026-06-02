@@ -1169,6 +1169,198 @@ private def elabNotOr (ctx : WalkerContext) (s : Step)
                    premises {repr s.premises}, args {repr s.args}"
 
 /- ----------------------------------------------------------------
+   Connective-introduction tautology cluster: and_pos / or_neg /
+   implies_neg1 / implies_neg2 / implies_simplify.
+
+   Premise-light propositional tautologies cvc5 emits while
+   refuting a conjunction / disjunction / implication. Each is a
+   `Classical.em` case-split over the relevant subformula, except
+   `implies_simplify`, which closes by `rfl` (`¬a` is `a → False`).
+   Mirror of Rocq's `elab_and_pos` / `elab_or_neg` /
+   `elab_implies_neg1` / `elab_implies_neg2` /
+   `elab_implies_simplify`.
+   ---------------------------------------------------------------- -/
+
+/-- Parse a single index `:args (i)`. -/
+private def parseIndexArg (rule : String) : Option (List Sexp) → WalkerM Nat
+  | some [.atom s] => do
+    let some i := s.toNat?
+      | throwError m!"alethe walker: '{rule}' index arg '{s}' is not a Nat"
+    pure i
+  | other => throwError m!"alethe walker: '{rule}' expects one index arg, got {repr other}"
+
+/-- Project the `idx`-th conjunct out of `hand : t₀ ∧ … ∧ tₙ`
+    (right-nested, matching `andOrChain ``And`): `And.right` down to
+    the enclosing pair, then `And.left` (or the bare proof for the
+    final conjunct). -/
+private partial def projectConjunct (conjuncts : List Sexp) (idx : Nat)
+    (hand : Expr) : MetaM Expr := do
+  match conjuncts, idx with
+  | [_], 0 => pure hand
+  | (_ :: _), 0 => mkAppM ``And.left #[hand]
+  | (_ :: rest), (k + 1) => do
+    let tail ← mkAppM ``And.right #[hand]
+    projectConjunct rest k tail
+  | _, _ =>
+    throwError m!"alethe walker: conjunct index {idx} out of range for a \
+                   {conjuncts.length}-conjunct (and)"
+
+/-- `and_pos`: tautology, no premises. From arg `i`, derives
+    `(cl (not (and t₀ … tₙ)) tᵢ)` ≡ `¬(and …) ∨ tᵢ`. Proof: `em`
+    on `tᵢ`; if `tᵢ`, right disjunct; if `¬tᵢ`, build `¬(and …)`
+    as `fun (hand : and …) => hnti (projectᵢ hand)`. -/
+private def elabAndPos (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "not", .list (.atom "and" :: conjuncts)], tI] => do
+    let i ← parseIndexArg "and_pos" s.args
+    if i ≥ conjuncts.length then
+      throwError m!"alethe walker: 'and_pos' index {i} out of range for a \
+                     {conjuncts.length}-conjunct (and)"
+    unless conjuncts[i]! == tI do
+      throwError m!"alethe walker: 'and_pos' clause literal does not match \
+                     the selected conjunct"
+    let notAndE ← sexpToExpr ctx (.list [.atom "not", .list (.atom "and" :: conjuncts)])
+    let andE ← sexpToExpr ctx (.list (.atom "and" :: conjuncts))
+    let tIE ← sexpToExpr ctx tI
+    let notTI := mkApp (mkConst ``Not) tIE
+    let resultTy ← mkAppM ``Or #[notAndE, tIE]
+    let posCase ← withLocalDeclD `hti tIE fun hti => do
+      let inj ← mkAppOptM ``Or.inr #[some notAndE, some tIE, some hti]
+      mkLambdaFVars #[hti] inj
+    let negCase ← withLocalDeclD `hnti notTI fun hnti => do
+      let notAndProof ← withLocalDeclD `hand andE fun hand => do
+        let proj ← projectConjunct conjuncts i hand
+        mkLambdaFVars #[hand] (mkApp hnti proj)
+      let inj ← mkAppOptM ``Or.inl #[some notAndE, some tIE, some notAndProof]
+      mkLambdaFVars #[hnti] inj
+    let em ← mkAppM ``Classical.em #[tIE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some tIE, some notTI, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'and_pos' expects clause \
+                   (cl (not (and ...)) t_i), got {repr s.clause}"
+
+/-- `or_neg`: tautology, no premises. From arg `i`, derives
+    `(cl (or t₀ … tₙ) (not tᵢ))` ≡ `(or …) ∨ ¬tᵢ`. Proof: `em` on
+    `tᵢ`; if `tᵢ`, inject it into the `or` (left disjunct); if
+    `¬tᵢ`, right disjunct. -/
+private def elabOrNeg (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list (.atom "or" :: disjuncts), .list [.atom "not", tI]] => do
+    let i ← parseIndexArg "or_neg" s.args
+    if i ≥ disjuncts.length then
+      throwError m!"alethe walker: 'or_neg' index {i} out of range for a \
+                     {disjuncts.length}-disjunct (or)"
+    unless disjuncts[i]! == tI do
+      throwError m!"alethe walker: 'or_neg' clause literal does not match \
+                     the selected disjunct"
+    let disjE ← sexpToExpr ctx (.list (.atom "or" :: disjuncts))
+    let notTIE ← sexpToExpr ctx (.list [.atom "not", tI])
+    let tIE ← sexpToExpr ctx tI
+    let resultTy ← mkAppM ``Or #[disjE, notTIE]
+    let posCase ← withLocalDeclD `hti tIE fun hti => do
+      let orProof ← injectLit ctx disjuncts i hti
+      let inj ← mkAppOptM ``Or.inl #[some disjE, some notTIE, some orProof]
+      mkLambdaFVars #[hti] inj
+    let negCase ← withLocalDeclD `hnti notTIE fun hnti => do
+      let inj ← mkAppOptM ``Or.inr #[some disjE, some notTIE, some hnti]
+      mkLambdaFVars #[hnti] inj
+    let em ← mkAppM ``Classical.em #[tIE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some tIE, some notTIE, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'or_neg' expects clause \
+                   (cl (or ...) (not t_i)), got {repr s.clause}"
+
+/-- `implies_neg1`: tautology, no premises. Derives `(cl (=> a b) a)`
+    ≡ `(a → b) ∨ a`. Proof: `em` on `a`; if `a`, right disjunct; if
+    `¬a`, the implication holds vacuously
+    (`fun (x : a) => (hna x).elim`). -/
+private def elabImpliesNeg1 (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=>", a, b], a'] => do
+    unless a == a' do
+      throwError m!"alethe walker: 'implies_neg1' antecedent mismatch: \
+                     {repr a} vs {repr a'}"
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let impE ← sexpToExpr ctx (.list [.atom "=>", a, b])
+    let resultTy ← mkAppM ``Or #[impE, aE]
+    let posCase ← withLocalDeclD `ha aE fun ha => do
+      let inj ← mkAppOptM ``Or.inr #[some impE, some aE, some ha]
+      mkLambdaFVars #[ha] inj
+    let negCase ← withLocalDeclD `hna (mkApp (mkConst ``Not) aE) fun hna => do
+      let impProof ← withLocalDeclD `x aE fun x => do
+        let falseProof := mkApp hna x
+        let body ← mkAppOptM ``False.elim #[some bE, some falseProof]
+        mkLambdaFVars #[x] body
+      let inj ← mkAppOptM ``Or.inl #[some impE, some aE, some impProof]
+      mkLambdaFVars #[hna] inj
+    let em ← mkAppM ``Classical.em #[aE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some aE, some (mkApp (mkConst ``Not) aE), some resultTy, some em,
+        some posCase, some negCase]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'implies_neg1' expects clause \
+                   (cl (=> a b) a), got {repr s.clause}"
+
+/-- `implies_neg2`: tautology, no premises. Derives
+    `(cl (=> a b) (not b))` ≡ `(a → b) ∨ ¬b`. Proof: `em` on `b`;
+    if `b`, the implication holds (`fun (_ : a) => hb`); if `¬b`,
+    right disjunct. -/
+private def elabImpliesNeg2 (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=>", a, b], .list [.atom "not", b']] => do
+    unless b == b' do
+      throwError m!"alethe walker: 'implies_neg2' consequent mismatch: \
+                     {repr b} vs {repr b'}"
+    let aE ← sexpToExpr ctx a
+    let bE ← sexpToExpr ctx b
+    let impE ← sexpToExpr ctx (.list [.atom "=>", a, b])
+    let notB := mkApp (mkConst ``Not) bE
+    let resultTy ← mkAppM ``Or #[impE, notB]
+    let posCase ← withLocalDeclD `hb bE fun hb => do
+      let impProof ← withLocalDeclD `x aE fun x => do
+        mkLambdaFVars #[x] hb
+      let inj ← mkAppOptM ``Or.inl #[some impE, some notB, some impProof]
+      mkLambdaFVars #[hb] inj
+    let negCase ← withLocalDeclD `hnb notB fun hnb => do
+      let inj ← mkAppOptM ``Or.inr #[some impE, some notB, some hnb]
+      mkLambdaFVars #[hnb] inj
+    let em ← mkAppM ``Classical.em #[bE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some bE, some notB, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'implies_neg2' expects clause \
+                   (cl (=> a b) (not b)), got {repr s.clause}"
+
+/-- `implies_simplify`: propositional-equality tautology, no
+    premises. Derives `(cl (= (=> a false) (not a)))`. Since `¬a`
+    is definitionally `a → False`, the two sides are convertible
+    and `rfl` (`Eq.refl`) closes the equality — no `propext`. -/
+private def elabImpliesSimplify (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=", .list [.atom "=>", a, .atom "false"], .list [.atom "not", a']]] => do
+    unless a == a' do
+      throwError m!"alethe walker: 'implies_simplify' antecedent mismatch: \
+                     {repr a} vs {repr a'}"
+    let impE ← sexpToExpr ctx (.list [.atom "=>", a, .atom "false"])
+    let proof ← mkEqRefl impE
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'implies_simplify' expects clause \
+                   (cl (= (=> a false) (not a))), got {repr s.clause}"
+
+/- ----------------------------------------------------------------
    `equiv_simplify`: propositional-equality tautology simplification.
 
    cvc5's `equiv_simplify` rule emits clauses of the form
@@ -1331,6 +1523,11 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "and_neg" => elabAndNeg ctx s
     | "not_not" => elabNotNot ctx s
     | "not_or" => elabNotOr ctx s
+    | "and_pos" => elabAndPos ctx s
+    | "or_neg" => elabOrNeg ctx s
+    | "implies_neg1" => elabImpliesNeg1 ctx s
+    | "implies_neg2" => elabImpliesNeg2 ctx s
+    | "implies_simplify" => elabImpliesSimplify ctx s
     | "equiv_simplify" => elabEquivSimplify ctx s
     -- PARITY:walker-rules END
     | other =>
