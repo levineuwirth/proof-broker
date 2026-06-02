@@ -1,0 +1,54 @@
+{
+  "lia_disjunction": {
+    "result": "unsat",
+    "rules": [
+      "cong", "equiv_pos2", "hole", "not_not", "not_or", "resolution"
+    ],
+    "steps": 11,
+    "assumes": 1
+  },
+  "lia_sum_bound": {
+    "result": "unsat",
+    "rules": [ "cong", "equiv_pos2", "hole", "refl", "resolution", "trans" ],
+    "steps": 18,
+    "assumes": 3
+  },
+  "lia_weaken_bound": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 40,
+    "assumes": 2
+  },
+  "uf_cong": {
+    "result": "unsat",
+    "rules": [
+      "cong", "equiv_pos2", "false", "hole", "refl", "resolution", "trans"
+    ],
+    "steps": 13,
+    "assumes": 2
+  },
+  "uf_lia_mix": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "and_pos", "cong", "contraction", "equiv1", "equiv_pos2",
+      "equiv_simplify", "hole", "implies", "implies_neg1", "implies_neg2",
+      "implies_simplify", "la_generic", "la_mult_neg", "not_and", "or",
+      "or_neg", "rare_rewrite", "refl", "reordering", "resolution",
+      "subproof", "symm", "trans"
+    ],
+    "steps": 120,
+    "assumes": 10
+  },
+  "uf_trans": {
+    "result": "unsat",
+    "rules": [
+      "cong", "equiv_pos2", "false", "hole", "refl", "resolution", "trans"
+    ],
+    "steps": 13,
+    "assumes": 3
+  }
+}

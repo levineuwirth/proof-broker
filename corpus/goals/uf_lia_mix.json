@@ -1,0 +1,48 @@
+{
+  "id": "uf_lia_mix",
+  "description": "f x = x, 0 <= x |- 0 <= f x (mixed UF + LIA)",
+  "coq_goal": "forall (f : Z -> Z) (x : Z), f x = x -> 0 <= x -> 0 <= f x",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UFLIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App", "symbol": "LE.le", "type_args": [],
+        "args": [
+          { "node": "NumLit", "value": "0", "type": "Int" },
+          { "node": "App", "symbol": "UF.f", "type_args": [], "args": [ { "node": "Var", "name": "x" } ] }
+        ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "f", "type": "Int->Int" },
+        { "name": "x", "type": "Int" }
+      ],
+      "hypotheses": [
+        {
+          "name": "h1",
+          "shell": {
+            "node": "Eq", "type": "Int",
+            "left": { "node": "App", "symbol": "UF.f", "type_args": [], "args": [ { "node": "Var", "name": "x" } ] },
+            "right": { "node": "Var", "name": "x" }
+          }
+        },
+        {
+          "name": "h2",
+          "shell": {
+            "node": "App", "symbol": "LE.le", "type_args": [],
+            "args": [ { "node": "NumLit", "value": "0", "type": "Int" }, { "node": "Var", "name": "x" } ]
+          }
+        }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

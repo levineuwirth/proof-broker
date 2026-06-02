@@ -1,0 +1,42 @@
+{
+  "id": "uf_trans",
+  "description": "a = b, b = c |- a = c (equality transitivity)",
+  "coq_goal": "forall (a b c : Z), a = b -> b = c -> a = c",
+  "replay_skip": "walker shape-gap: same cong-over-polymorphic-equality arity issue as uf_cong (its `t3: (= @p_3 @p_6) :rule cong :premises (t1 t2)` is congruence over @eq -- 3 args for 2 premises). Statically walkable; dynamic gap tracked as backlog.",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UF", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "Eq", "type": "Int",
+        "left": { "node": "Var", "name": "a" }, "right": { "node": "Var", "name": "c" }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "a", "type": "Int" },
+        { "name": "b", "type": "Int" },
+        { "name": "c", "type": "Int" }
+      ],
+      "hypotheses": [
+        {
+          "name": "h1",
+          "shell": { "node": "Eq", "type": "Int",
+            "left": { "node": "Var", "name": "a" }, "right": { "node": "Var", "name": "b" } }
+        },
+        {
+          "name": "h2",
+          "shell": { "node": "Eq", "type": "Int",
+            "left": { "node": "Var", "name": "b" }, "right": { "node": "Var", "name": "c" } }
+        }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

@@ -40,6 +40,23 @@ jobs:
       - name: Run walker rule-parity tests
         run: python tools/test_walker_parity.py
 
+      # Static replay-coverage gate (no bridge build, no solver): compare each
+      # committed corpus trace's rule inventory against the walker's supported
+      # set, and assert the report matches the committed corpus/coverage.json.
+      # A coverage change (corpus grew, cvc5 refreshed, walker learned a rule)
+      # must land as a reviewed diff to coverage.json.
+      - name: Walker replay coverage (static gate)
+        run: python tools/check_walker_coverage.py --check
+
+      # The generated dynamic-replay theory must be in sync with the corpus.
+      - name: Walker corpus replay theory up to date
+        run: python tools/gen_corpus_replay.py --check
+
+      - name: Run walker coverage + replay-gen tests
+        run: |
+          python tools/test_walker_coverage.py
+          python tools/test_gen_corpus_replay.py
+
   sdk:
     runs-on: ubuntu-latest
     steps:
@@ -467,6 +484,22 @@ jobs:
 
       - name: Trust-footprint gate (axiom allowlist, Rocq side)
         run: python tools/check_axioms.py --build-output rocq_build.log --bridge rocq
+
+      # Live-drift check (the "Both"-model live half): re-run the corpus
+      # generator against THIS job's cvc5 and compare to the committed
+      # fixtures. ADVISORY for now (warns, never fails): the committed traces
+      # were minted by a local cvc5 1.3.0 build, and a different 1.3.0 build
+      # (e.g. the static release installed above) can format proofs
+      # differently without being "wrong". This step surfaces such drift so we
+      # can confirm the CI binary matches and then flip it to blocking
+      # (drop the `|| ...:: warning` tail). The deterministic gates above
+      # (static coverage, CorpusReplay.v compilation in `dune build`) do not
+      # depend on this step.
+      - name: Walker corpus live-drift (advisory)
+        run: |
+          opam exec -- dune exec sdk/bin/corpus_gen.exe -- corpus
+          git diff --exit-code -- corpus/ \
+            || echo "::warning::cvc5 trace output drifted from committed corpus fixtures; if this job's cvc5 matches local, re-run 'dune exec sdk/bin/corpus_gen.exe -- corpus' and commit, then make this step blocking."
 
   # Audit H5: single aggregate status. Before this, every job was an
   # independent check and `sdk-cross-platform` had no downstream, so

@@ -1,0 +1,73 @@
+{
+  "supported_rule_count": 19,
+  "summary": {
+    "walkable": 4,
+    "replayed": 1,
+    "shape_gapped": 3,
+    "unsat": 6,
+    "total": 6,
+    "non_unsat": []
+  },
+  "backlog": {
+    "and_pos": 1,
+    "contraction": 1,
+    "implies_neg1": 1,
+    "implies_neg2": 1,
+    "implies_simplify": 1,
+    "not_not": 1,
+    "not_or": 1,
+    "or_neg": 1,
+    "reordering": 1,
+    "subproof": 1
+  },
+  "goals": {
+    "lia_disjunction": {
+      "result": "unsat",
+      "walkable": false,
+      "missing": [
+        "not_not",
+        "not_or"
+      ],
+      "replay_skip": null
+    },
+    "lia_sum_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
+    "lia_weaken_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": "walker shape-gap: cvc5's equiv_simplify here uses a pattern beyond the 4 the elaborator handles ((= (= t t) true) / (= (not (not a)) a) / (= (and a a) a) / (= (or a a) a)). Statically walkable (all rules dispatched); dynamic gap tracked as coverage backlog."
+    },
+    "uf_cong": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": "walker shape-gap: cong over polymorphic equality. The trace's `cong :premises (t1 t2)` proves (= (= a c) (= c c)) -- congruence over @eq, whose implicit type arg makes the application 3 args for 2 premises, which elab_cong's R-11 arity handling (tuned for not/+/<=) rejects: \"'cong' has 2 premises but the application has 3 arguments\". Statically walkable; dynamic gap tracked as backlog."
+    },
+    "uf_lia_mix": {
+      "result": "unsat",
+      "walkable": false,
+      "missing": [
+        "and_pos",
+        "contraction",
+        "implies_neg1",
+        "implies_neg2",
+        "implies_simplify",
+        "or_neg",
+        "reordering",
+        "subproof"
+      ],
+      "replay_skip": null
+    },
+    "uf_trans": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": "walker shape-gap: same cong-over-polymorphic-equality arity issue as uf_cong (its `t3: (= @p_3 @p_6) :rule cong :premises (t1 t2)` is congruence over @eq -- 3 args for 2 premises). Statically walkable; dynamic gap tracked as backlog."
+    }
+  }
+}
