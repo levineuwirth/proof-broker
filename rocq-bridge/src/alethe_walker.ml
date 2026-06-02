@@ -1347,6 +1347,89 @@ let elab_resolution (sigma_ref : Evd.evar_map ref)
              "'resolution' needs at least one premise")
 
 (* =========================================================
+   Negation-of-connective cluster (R-11): not_not / not_or.
+
+   Two premise-light boolean rules cvc5 emits when refuting a
+   negated disjunction. [not_not] is a pure tautology; [not_or]
+   projects one disjunct out of a negated [or]. Both stay within
+   the classical baseline ([not_not] via [classic]); [not_or] is
+   constructive. Mirror of Lean's [elabNotNot] / [elabNotOr].
+   ========================================================= *)
+
+(** [not_not]: tautology rule, no premises. Derives the clause
+    [(cl (not (not (not phi))) phi)] ≡ [~~~phi \/ phi]. Proof:
+    case-split [phi] with [classic]; if [phi], that is the right
+    disjunct; if [~phi], build [~~~phi] as
+    [fun (h : ~~phi) => h ~phi]. Mirror of Lean's [elabNotNot]. *)
+let elab_not_not (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ (List [ Atom "not"; List [ Atom "not"; List [ Atom "not"; phi ] ] ]) as nnn;
+      phi' ] when phi = phi' ->
+    let phi_e = sexp_to_constr ctx phi in
+    let nnn_e = sexp_to_constr ctx nnn in       (* ~~~phi *)
+    let not_phi = mk_not phi_e in
+    let not_not_phi = mk_not not_phi in
+    let result_ty = mk_or nnn_e phi_e in
+    let pos_case =
+      abstract_lam ctx.sigma_ref "hphi" phi_e (fun hphi ->
+        mk_or_intror nnn_e phi_e hphi)
+    in
+    let neg_case =
+      abstract_lam ctx.sigma_ref "hnphi" not_phi (fun hnphi ->
+        let nnn_proof =
+          abstract_lam ctx.sigma_ref "hnn" not_not_phi (fun hnn ->
+            EConstr.mkApp (hnn, [| hnphi |]))
+        in
+        mk_or_introl nnn_e phi_e nnn_proof)
+    in
+    (mk_or_ind phi_e not_phi result_ty pos_case neg_case (mk_classic phi_e),
+     s.clause)
+  | _ ->
+    raise (Walker_error
+             "'not_not' expects clause (cl (not (not (not phi))) phi)")
+
+(** [not_or]: from premise [(not (or t_0 ... t_n))] and an index
+    arg [i], derive the single-literal clause [(cl (not t_i))].
+    Proof: [fun (hti : t_i) => h (inject t_i into the or at i)],
+    where [h : ~(or ...)] is definitionally [(or ...) -> False].
+    Mirror of Lean's [elabNotOr]. *)
+let elab_not_or (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause, s.premises, s.args with
+  | [ _ ], Some [ p ], Some [ Atom i_str ] ->
+    let i =
+      try int_of_string i_str
+      with _ ->
+        raise (Walker_error
+                 (Printf.sprintf "'not_or' index arg '%s' is not an integer"
+                    i_str))
+    in
+    let (h, prem_lits) = lookup_step st p in
+    (match prem_lits with
+     | [ List [ Atom "not"; List (Atom "or" :: disjuncts) ] ] ->
+       if i < 0 || i >= List.length disjuncts then
+         raise (Walker_error
+                  (Printf.sprintf
+                     "'not_or' index %d out of range for a %d-disjunct (or)"
+                     i (List.length disjuncts)));
+       let t_i = List.nth disjuncts i in
+       let t_i_e = sexp_to_constr ctx t_i in
+       let proof =
+         abstract_lam ctx.sigma_ref "hti" t_i_e (fun hti ->
+           let or_proof = inject_lit ctx disjuncts i hti in
+           EConstr.mkApp (h, [| or_proof |]))
+       in
+       (proof, s.clause)
+     | _ ->
+       raise (Walker_error
+                "'not_or' premise is not of the form (not (or ...))"))
+  | _, _, _ ->
+    raise (Walker_error
+             "'not_or' expects a single-literal clause, one premise, \
+              and one index arg")
+
+(* =========================================================
    Dispatch + walk.
    ========================================================= *)
 
@@ -1383,6 +1466,9 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | "equiv2" -> elab_equiv2 ctx st s
     | "not_and" -> elab_not_and ctx st s
     | "and_neg" -> elab_and_neg ctx s
+    (* Negation-of-connective cluster (R-11). *)
+    | "not_not" -> elab_not_not ctx s
+    | "not_or" -> elab_not_or ctx st s
     (* Propositional-equality tautology simplification (R-8). *)
     | "equiv_simplify" -> elab_equiv_simplify ctx s
     (* 3-literal equivalence tautologies (R-10). *)
@@ -1392,12 +1478,12 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-10 scope: \
+                  "rule '%s' not yet supported (R-11 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
-                   equiv2 / not_and / and_neg / equiv_simplify / \
-                   equiv_pos1 / equiv_pos2)"
+                   equiv2 / not_and / and_neg / not_not / not_or / \
+                   equiv_simplify / equiv_pos1 / equiv_pos2)"
                   other))
   in
   store_step st s.id proof clause

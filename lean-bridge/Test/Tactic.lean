@@ -768,6 +768,41 @@ theorem alethe_walker_implies_refutation_axiom_free
 
 #print axioms alethe_walker_implies_refutation_axiom_free
 
+/- Alethe walker — negation-of-connective cluster (`not_not` /
+   `not_or`). The two premise-light boolean rules cvc5 emits when
+   refuting a negated disjunction (see the `lia_disjunction`
+   corpus trace). `not_or` is constructive; `not_not` case-splits
+   with `Classical.em` and lands at the classical baseline. -/
+
+/-- `not_or`: from `h : ¬(a ∨ b)` and `ha : a`, derive `False`.
+    `not_or` projects `¬a` out of the negated disjunction
+    (index 0); resolution cancels it against `ha`. Constructive —
+    no `Classical`. -/
+theorem alethe_walker_not_or_refutation_axiom_free
+    (a b : Prop) (h : ¬(a ∨ b)) (ha : a) : False := by
+  alethe_walker_test
+    "( (assume a0 (not (or a b))) \
+       (assume a1 a) \
+       (step t0 (cl (not a)) :rule not_or :premises (a0) :args (0)) \
+       (step t1 (cl) :rule resolution :premises (t0 a1)) )"
+
+#print axioms alethe_walker_not_or_refutation_axiom_free
+
+/-- `not_not`: tautology `(cl (¬¬¬p) p)`. With `hnp : ¬p` and
+    `hnnp : ¬¬p`, resolution cancels `p` (against `hnp`) then
+    `¬¬¬p` (against `hnnp`) to close `False`. Footprint: classical
+    baseline (`not_not` case-splits with `Classical.em`). -/
+theorem alethe_walker_not_not_refutation_axiom_free
+    (p : Prop) (hnp : ¬p) (hnnp : ¬¬p) : False := by
+  alethe_walker_test
+    "( (assume a0 (not p)) \
+       (assume a1 (not (not p))) \
+       (step t0 (cl (not (not (not p))) p) :rule not_not) \
+       (step t1 (cl (not (not (not p)))) :rule resolution :premises (t0 a0)) \
+       (step t2 (cl) :rule resolution :premises (t1 a1)) )"
+
+#print axioms alethe_walker_not_not_refutation_axiom_free
+
 /- Alethe walker — `equiv_simplify` (propositional-equality
    tautologies).
 
