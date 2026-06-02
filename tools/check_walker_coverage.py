@@ -34,18 +34,40 @@ from pathlib import Path
 import check_walker_parity as parity
 
 ROOT = Path(__file__).resolve().parent.parent
+GOALS = ROOT / "corpus" / "goals"
 INDEX = ROOT / "corpus" / "index.json"
 COVERAGE = ROOT / "corpus" / "coverage.json"
+
+
+def _replay_skips() -> dict:
+    """Map goal id -> replay_skip reason, for goals carrying one.
+
+    A statically walkable goal (all rules dispatched) can still hit an
+    unhandled SHAPE of a supported rule under coqc; such a goal carries
+    "replay_skip" in its goal file and is excluded from the dynamic gate.
+    Tracking it here lets the report separate "walkable on paper" from
+    "actually replayed", which is the honest coverage number.
+    """
+    skips = {}
+    if GOALS.exists():
+        for f in sorted(GOALS.glob("*.json")):
+            g = json.loads(f.read_text(encoding="utf-8"))
+            if g.get("replay_skip"):
+                skips[g["id"]] = g["replay_skip"]
+    return skips
 
 
 def compute() -> dict:
     """Classify every corpus goal against the walker's supported rule set."""
     supported = parity.extract_rules(parity.ROCQ)
     index = json.loads(INDEX.read_text(encoding="utf-8"))
+    skips = _replay_skips()
 
     goals = {}
     backlog: dict[str, int] = {}
-    walkable = 0
+    walkable = 0       # statically walkable: every rule has a dispatch arm
+    replayed = 0       # walkable AND not replay_skip'd -> in the dynamic gate
+    shape_gapped = 0   # walkable BUT replay_skip'd -> supported rule, bad shape
     unsat = 0
     nonunsat = []
     for gid in sorted(index):
@@ -53,14 +75,20 @@ def compute() -> dict:
         result = entry.get("result")
         if result != "unsat":
             nonunsat.append(gid)
-            goals[gid] = {"result": result, "walkable": False, "missing": []}
+            goals[gid] = {"result": result, "walkable": False, "missing": [],
+                          "replay_skip": None}
             continue
         unsat += 1
         rules = set(entry.get("rules", []))
         missing = sorted(rules - supported)
         is_walkable = not missing
+        skip = skips.get(gid)
         if is_walkable:
             walkable += 1
+            if skip:
+                shape_gapped += 1
+            else:
+                replayed += 1
         else:
             for r in missing:
                 backlog[r] = backlog.get(r, 0) + 1
@@ -68,12 +96,15 @@ def compute() -> dict:
             "result": "unsat",
             "walkable": is_walkable,
             "missing": missing,
+            "replay_skip": skip,
         }
 
     return {
         "supported_rule_count": len(supported),
         "summary": {
             "walkable": walkable,
+            "replayed": replayed,
+            "shape_gapped": shape_gapped,
             "unsat": unsat,
             "total": len(index),
             "non_unsat": sorted(nonunsat),
@@ -88,19 +119,25 @@ def compute() -> dict:
 def render(report: dict) -> str:
     s = report["summary"]
     lines = [
-        f"Walker replay coverage: {s['walkable']}/{s['unsat']} unsat traces "
-        f"statically walkable "
-        f"({report['supported_rule_count']} rules supported).",
+        f"Walker replay coverage ({report['supported_rule_count']} rules "
+        f"supported), over {s['unsat']} unsat corpus traces:",
+        f"  static (all rules dispatched): {s['walkable']}/{s['unsat']}",
+        f"  dynamic (kernel-replayed):     {s['replayed']}/{s['unsat']}"
+        + (f"   [+{s['shape_gapped']} statically walkable but shape-gapped]"
+           if s["shape_gapped"] else ""),
         "",
     ]
     for gid in sorted(report["goals"]):
         g = report["goals"][gid]
         if g["result"] != "unsat":
-            lines.append(f"  ?  {gid:<22} result={g['result']} (not unsat)")
+            lines.append(f"  ?    {gid:<22} result={g['result']} (not unsat)")
+        elif g["walkable"] and g["replay_skip"]:
+            lines.append(f"  ~~   {gid:<22} shape-gap (static-only): "
+                         f"{g['replay_skip'].split('.')[0]}.")
         elif g["walkable"]:
-            lines.append(f"  OK {gid:<22} walkable")
+            lines.append(f"  OK   {gid:<22} replayed")
         else:
-            lines.append(f"  -- {gid:<22} blocked by: {', '.join(g['missing'])}")
+            lines.append(f"  --   {gid:<22} blocked by: {', '.join(g['missing'])}")
     if report["backlog"]:
         lines.append("")
         lines.append("Ranked rule backlog (unsupported rule -> goals blocked):")

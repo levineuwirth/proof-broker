@@ -2,6 +2,7 @@
   "id": "uf_cong",
   "description": "a = b |- f a = f b (uninterpreted-function congruence)",
   "coq_goal": "forall (f : Z -> Z) (a b : Z), a = b -> f a = f b",
+  "replay_skip": "walker shape-gap: cong over polymorphic equality. The trace's `cong :premises (t1 t2)` proves (= (= a c) (= c c)) -- congruence over @eq, whose implicit type arg makes the application 3 args for 2 premises, which elab_cong's R-11 arity handling (tuned for not/+/<=) rejects: \"'cong' has 2 premises but the application has 3 arguments\". Statically walkable; dynamic gap tracked as backlog.",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

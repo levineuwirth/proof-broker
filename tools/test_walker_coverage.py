@@ -29,18 +29,24 @@ def _ok(cond: bool, label: str) -> None:
         print(f"FAIL  {label}")
 
 
-def _with_index(index: dict, supported: set):
-    """Point cov at a synthetic index + supported-rule set, return compute()."""
+def _with_index(index: dict, supported: set, skips: dict | None = None):
+    """Point cov at a synthetic index + supported set (+ optional replay_skip
+    goal files), return compute()."""
     d = Path(tempfile.mkdtemp())
     idx = d / "index.json"
     idx.write_text(json.dumps(index), encoding="utf-8")
-    orig_index, orig_extract = cov.INDEX, cov.parity.extract_rules
-    cov.INDEX = idx
+    goals = d / "goals"
+    goals.mkdir()
+    for gid, reason in (skips or {}).items():
+        (goals / f"{gid}.json").write_text(
+            json.dumps({"id": gid, "replay_skip": reason}), encoding="utf-8")
+    orig = (cov.INDEX, cov.GOALS, cov.parity.extract_rules)
+    cov.INDEX, cov.GOALS = idx, goals
     cov.parity.extract_rules = lambda _path: set(supported)
     try:
         return cov.compute()
     finally:
-        cov.INDEX, cov.parity.extract_rules = orig_index, orig_extract
+        cov.INDEX, cov.GOALS, cov.parity.extract_rules = orig
 
 
 def test_walkable_and_blocked() -> None:
@@ -55,8 +61,26 @@ def test_walkable_and_blocked() -> None:
     _ok(rep["goals"]["g_block"]["walkable"] is False, "missing rule -> blocked")
     _ok(rep["goals"]["g_block"]["missing"] == ["subproof", "xor"],
         "missing rules sorted")
-    _ok(rep["summary"] == {"walkable": 1, "unsat": 2, "total": 2, "non_unsat": []},
+    _ok(rep["summary"] == {"walkable": 1, "replayed": 1, "shape_gapped": 0,
+                           "unsat": 2, "total": 2, "non_unsat": []},
         "summary counts")
+
+
+def test_shape_gap_splits_walkable() -> None:
+    rep = _with_index(
+        {
+            "g_replay": {"result": "unsat", "rules": ["or"]},
+            "g_gap": {"result": "unsat", "rules": ["or"]},
+        },
+        supported={"or"},
+        skips={"g_gap": "supported rule, unhandled shape"},
+    )
+    # Both statically walkable; one is replay_skip'd -> shape-gapped.
+    _ok(rep["summary"]["walkable"] == 2, "both statically walkable")
+    _ok(rep["summary"]["replayed"] == 1 and rep["summary"]["shape_gapped"] == 1,
+        "skip splits walkable into replayed + shape_gapped")
+    _ok(rep["goals"]["g_gap"]["replay_skip"] == "supported rule, unhandled shape",
+        "skip reason surfaced per goal")
 
 
 def test_backlog_ranked_by_blocking_count() -> None:
