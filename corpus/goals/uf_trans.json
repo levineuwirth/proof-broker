@@ -2,7 +2,6 @@
   "id": "uf_trans",
   "description": "a = b, b = c |- a = c (equality transitivity)",
   "coq_goal": "forall (a b c : Z), a = b -> b = c -> a = c",
-  "replay_skip": "walker shape-gap: same cong-over-polymorphic-equality arity issue as uf_cong (its `t3: (= @p_3 @p_6) :rule cong :premises (t1 t2)` is congruence over @eq -- 3 args for 2 premises). Statically walkable; dynamic gap tracked as backlog.",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

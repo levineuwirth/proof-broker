@@ -703,26 +703,45 @@ let elab_cong (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
                (Printf.sprintf
                   "'cong' app-arity mismatch: LHS has %d args, RHS \
                    has %d" n (Array.length args_r)));
-    if List.length pids <> n then
+    let p = List.length pids in
+    if p = 0 then
+      raise (Walker_error "'cong' expects at least one premise");
+    (* Premises align to the TRAILING [p] arguments; the leading
+       [n - p] are fixed implicits the reification prepends (e.g. the
+       element type of polymorphic [@eq A x y], so [(= a b)] decomposes
+       to head [eq] + args [|A; a; b|] — 3 args for a 2-premise cong).
+       Mirrors Lean #45's [elabCong], which strips [pids.length] app
+       levels off the head and folds [mkCongr] from [Eq.refl] of the
+       partially-applied head; the Rocq port had wrongly required
+       [p = n], rejecting cong over [=] and other polymorphic heads. *)
+    if p > n then
       raise (Walker_error
                (Printf.sprintf
-                  "'cong' has %d premises but the application has %d \
-                   arguments" (List.length pids) n));
+                  "'cong' has %d premises but the application has only \
+                   %d arguments" p n));
     if not (Reductionops.is_conv ctx.env sigma head_l head_r) then
       raise (Walker_error
                "'cong' operator heads differ between LHS and RHS");
-    if n = 0 then
-      raise (Walker_error "'cong' over a nullary head has no arguments");
+    let k0 = n - p in
+    (* The leading fixed args must agree on both sides, else the
+       rewrite chain's endpoint would not be the stated RHS. *)
+    for i = 0 to k0 - 1 do
+      if not (Reductionops.is_conv ctx.env sigma args_l.(i) args_r.(i)) then
+        raise (Walker_error
+                 (Printf.sprintf
+                    "'cong' leading (implicit) argument %d differs \
+                     between LHS and RHS" i))
+    done;
     let result_ty = Retyping.get_type_of ctx.env sigma lhs in
     let pids_arr = Array.of_list pids in
-    (* [cur_args] mutates left-to-right: before rewriting position k
-       it holds [b0..b(k-1) ak..a(n-1)]. *)
+    (* [cur_args] mutates left-to-right over the trailing args: before
+       rewriting position k it holds [..fixed.. b(k0)..b(k-1) ak..a(n-1)]. *)
     let cur_args = Array.copy args_l in
     let acc = ref None in
-    for k = 0 to n - 1 do
+    for k = k0 to n - 1 do
       let a_k = args_l.(k) in
       let b_k = args_r.(k) in
-      let (e_k, _) = lookup_step st pids_arr.(k) in
+      let (e_k, _) = lookup_step st pids_arr.(k - k0) in
       let arg_ty = Retyping.get_type_of ctx.env sigma a_k in
       (* lambda (fun x : arg_ty => f cur_args[k := x]); everything
          outside the binder lifts by 1 (no-op here — translated

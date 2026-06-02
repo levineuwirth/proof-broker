@@ -2,8 +2,8 @@
   "supported_rule_count": 19,
   "summary": {
     "walkable": 4,
-    "replayed": 1,
-    "shape_gapped": 3,
+    "replayed": 3,
+    "shape_gapped": 1,
     "unsat": 6,
     "total": 6,
     "non_unsat": []
@@ -46,7 +46,7 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": "walker shape-gap: cong over polymorphic equality. The trace's `cong :premises (t1 t2)` proves (= (= a c) (= c c)) -- congruence over @eq, whose implicit type arg makes the application 3 args for 2 premises, which elab_cong's R-11 arity handling (tuned for not/+/<=) rejects: \"'cong' has 2 premises but the application has 3 arguments\". Statically walkable; dynamic gap tracked as backlog."
+      "replay_skip": null
     },
     "uf_lia_mix": {
       "result": "unsat",
@@ -67,7 +67,7 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": "walker shape-gap: same cong-over-polymorphic-equality arity issue as uf_cong (its `t3: (= @p_3 @p_6) :rule cong :premises (t1 t2)` is congruence over @eq -- 3 args for 2 premises). Statically walkable; dynamic gap tracked as backlog."
+      "replay_skip": null
     }
   }
 }
