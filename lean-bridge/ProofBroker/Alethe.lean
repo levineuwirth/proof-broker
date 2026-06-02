@@ -1105,6 +1105,69 @@ private def elabAndNeg (ctx : WalkerContext) (s : Step)
                    (cl (and a₁ … aₙ) (not a₁) … (not aₙ)), got \
                    {repr s.clause}"
 
+/-- `not_not`: tautology rule, no premises. Derives the clause
+    `(cl (not (not (not φ))) φ)` ≡ `¬¬¬φ ∨ φ`. Proof: case-split
+    `φ` with `Classical.em`; if `φ`, that is the right disjunct;
+    if `¬φ`, build `¬¬¬φ` as `fun (h : ¬¬φ) => h ¬φ`. Mirror of
+    Rocq's `elab_not_not`. -/
+private def elabNotNot (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "not", .list [.atom "not", .list [.atom "not", phi]]], phi'] => do
+    unless phi == phi' do
+      throwError m!"alethe walker: 'not_not' inner/outer formula mismatch: \
+                     {repr phi} vs {repr phi'}"
+    let phiE ← sexpToExpr ctx phi
+    let notPhi := mkApp (mkConst ``Not) phiE
+    let notNotPhi := mkApp (mkConst ``Not) notPhi
+    let nnnE := mkApp (mkConst ``Not) notNotPhi      -- ¬¬¬φ
+    let resultTy ← mkAppM ``Or #[nnnE, phiE]
+    let posCase ← withLocalDeclD `hphi phiE fun hphi => do
+      let inj ← mkAppOptM ``Or.inr #[some nnnE, some phiE, some hphi]
+      mkLambdaFVars #[hphi] inj
+    let negCase ← withLocalDeclD `hnphi notPhi fun hnphi => do
+      let nnnProof ← withLocalDeclD `hnn notNotPhi fun hnn => do
+        mkLambdaFVars #[hnn] (mkApp hnn hnphi)
+      let inj ← mkAppOptM ``Or.inl #[some nnnE, some phiE, some nnnProof]
+      mkLambdaFVars #[hnphi] inj
+    let em ← mkAppM ``Classical.em #[phiE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some phiE, some notPhi, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'not_not' expects clause \
+                   (cl (not (not (not phi))) phi), got {repr s.clause}"
+
+/-- `not_or`: from premise `(not (or t_0 … t_n))` and an index arg
+    `i`, derive the single-literal clause `(cl (not t_i))`. Proof:
+    `fun (hti : t_i) => h (inject t_i into the or at i)`, where
+    `h : ¬(or …)` is `(or …) → False`. Mirror of Rocq's
+    `elab_not_or`. -/
+private def elabNotOr (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause, s.premises, s.args with
+  | [_], some [p], some [.atom iStr] => do
+    let some i := iStr.toNat?
+      | throwError m!"alethe walker: 'not_or' index arg '{iStr}' is not a Nat"
+    let (h, premLits) ← lookupStep p
+    match premLits with
+    | [.list [.atom "not", .list (.atom "or" :: disjuncts)]] => do
+      if i ≥ disjuncts.length then
+        throwError m!"alethe walker: 'not_or' index {i} out of range for a \
+                       {disjuncts.length}-disjunct (or)"
+      let tIE ← sexpToExpr ctx disjuncts[i]!
+      let proof ← withLocalDeclD `hti tIE fun hti => do
+        let orProof ← injectLit ctx disjuncts i hti
+        mkLambdaFVars #[hti] (mkApp h orProof)
+      pure (proof, s.clause)
+    | _ =>
+      throwError m!"alethe walker: 'not_or' premise is not (not (or …)): \
+                     {repr premLits}"
+  | _, _, _ =>
+    throwError m!"alethe walker: 'not_or' expects a single-literal clause, \
+                   one premise, and one index arg, got clause {repr s.clause}, \
+                   premises {repr s.premises}, args {repr s.args}"
+
 /- ----------------------------------------------------------------
    `equiv_simplify`: propositional-equality tautology simplification.
 
@@ -1266,6 +1329,8 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "equiv_pos2" => elabEquivPos2 ctx s
     | "not_and" => elabNotAnd ctx s
     | "and_neg" => elabAndNeg ctx s
+    | "not_not" => elabNotNot ctx s
+    | "not_or" => elabNotOr ctx s
     | "equiv_simplify" => elabEquivSimplify ctx s
     -- PARITY:walker-rules END
     | other =>
