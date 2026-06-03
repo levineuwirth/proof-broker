@@ -1,5 +1,5 @@
 {
-  "supported_rule_count": 26,
+  "supported_rule_count": 28,
   "summary": {
     "walkable": 5,
     "replayed": 4,
@@ -9,8 +9,6 @@
     "non_unsat": []
   },
   "backlog": {
-    "contraction": 1,
-    "reordering": 1,
     "subproof": 1
   },
   "goals": {
@@ -42,8 +40,6 @@
       "result": "unsat",
       "walkable": false,
       "missing": [
-        "contraction",
-        "reordering",
         "subproof"
       ],
       "replay_skip": null

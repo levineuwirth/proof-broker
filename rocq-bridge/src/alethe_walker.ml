@@ -1347,6 +1347,48 @@ let elab_resolution (sigma_ref : Evd.evar_map ref)
     raise (Walker_error
              "'resolution' needs at least one premise")
 
+(** First index [j] in [target] whose literal equals [lit].
+    Raises if [lit] does not occur — the caller ([elab_clause_remap])
+    relies on the conclusion containing every premise literal. *)
+let index_of_lit (rule : string) (target : Alethe.Sexp.t list)
+    (lit : Alethe.Sexp.t) : int =
+  let rec go j = function
+    | [] ->
+      raise (Walker_error
+               (Printf.sprintf
+                  "'%s': premise literal absent from the conclusion clause"
+                  rule))
+    | x :: _ when x = lit -> j
+    | _ :: rest -> go (j + 1) rest
+  in
+  go 0 target
+
+(** [reordering] / [contraction]: one premise, conclusion clause is
+    a set-preserving rewrite of it ([reordering] permutes,
+    [contraction] removes duplicates). Both reduce to the same
+    construction: case-split the premise disjunction, and re-inject
+    each literal proof at a matching position in the conclusion.
+    Sound exactly when every premise literal also appears in the
+    conclusion — true for both rules. Mirror of Lean's
+    [elabClauseRemap]. *)
+let elab_clause_remap (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
+    (rule : string) (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.premises with
+  | Some [ p ] ->
+    let (e_p, p_lits) = lookup_step st p in
+    let c_lits = s.clause in
+    let result_ty = clause_type_of ctx c_lits in
+    let proof =
+      cases_clause sigma_ref ctx e_p p_lits result_ty (fun i lit_proof ->
+        let lit = List.nth p_lits i in
+        inject_lit ctx c_lits (index_of_lit rule c_lits lit) lit_proof)
+    in
+    (proof, c_lits)
+  | _ ->
+    raise (Walker_error
+             (Printf.sprintf "'%s' expects exactly one premise" rule))
+
 (* =========================================================
    Negation-of-connective cluster (R-11): not_not / not_or.
 
@@ -1673,6 +1715,9 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | "implies_neg1" -> elab_implies_neg1 ctx s
     | "implies_neg2" -> elab_implies_neg2 ctx s
     | "implies_simplify" -> elab_implies_simplify ctx s
+    (* Clause-structure rules (R-13). *)
+    | "reordering" -> elab_clause_remap sigma_ref ctx "reordering" st s
+    | "contraction" -> elab_clause_remap sigma_ref ctx "contraction" st s
     (* Propositional-equality tautology simplification (R-8). *)
     | "equiv_simplify" -> elab_equiv_simplify ctx s
     (* 3-literal equivalence tautologies (R-10). *)
@@ -1682,14 +1727,14 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-12 scope: \
+                  "rule '%s' not yet supported (R-13 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
                    equiv2 / not_and / and_neg / not_not / not_or / \
                    and_pos / or_neg / implies_neg1 / implies_neg2 / \
-                   implies_simplify / equiv_simplify / equiv_pos1 / \
-                   equiv_pos2)"
+                   implies_simplify / reordering / contraction / \
+                   equiv_simplify / equiv_pos1 / equiv_pos2)"
                   other))
   in
   store_step st s.id proof clause

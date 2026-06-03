@@ -844,6 +844,31 @@ theorem alethe_walker_implies_simplify_axiom_free (a : Prop) : (a → False) = �
 
 #print axioms alethe_walker_implies_simplify_axiom_free
 
+/- Alethe walker — clause-structure rules (`reordering` /
+   `contraction`). Both remap a premise's disjunction onto a
+   set-preserving rewrite of its literal list. The `or` rule first
+   unpacks an assumed disjunction into a multi-literal clause; then
+   the rule under test permutes / dedups it. Constructive
+   (`Or.elim` / `Or.inl`/`Or.inr` only) — genuinely axiom-free. -/
+
+/-- `reordering`: from `h : a ∨ b`, derive `b ∨ a`. -/
+theorem alethe_walker_reordering_axiom_free (a b : Prop) (h : a ∨ b) : b ∨ a := by
+  alethe_walker_test
+    "( (assume a0 (or a b)) \
+       (step t0 (cl a b) :rule or :premises (a0)) \
+       (step t1 (cl b a) :rule reordering :premises (t0)) )"
+
+#print axioms alethe_walker_reordering_axiom_free
+
+/-- `contraction`: from `h : a ∨ a`, derive `a`. -/
+theorem alethe_walker_contraction_axiom_free (a : Prop) (h : a ∨ a) : a := by
+  alethe_walker_test
+    "( (assume a0 (or a a)) \
+       (step t0 (cl a a) :rule or :premises (a0)) \
+       (step t1 (cl a) :rule contraction :premises (t0)) )"
+
+#print axioms alethe_walker_contraction_axiom_free
+
 /- Alethe walker — `equiv_simplify` (propositional-equality
    tautologies).
 
