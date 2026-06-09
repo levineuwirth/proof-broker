@@ -487,19 +487,19 @@ jobs:
 
       # Live-drift check (the "Both"-model live half): re-run the corpus
       # generator against THIS job's cvc5 and compare to the committed
-      # fixtures. ADVISORY for now (warns, never fails): the committed traces
-      # were minted by a local cvc5 1.3.0 build, and a different 1.3.0 build
-      # (e.g. the static release installed above) can format proofs
-      # differently without being "wrong". This step surfaces such drift so we
-      # can confirm the CI binary matches and then flip it to blocking
-      # (drop the `|| ...:: warning` tail). The deterministic gates above
-      # (static coverage, CorpusReplay.v compilation in `dune build`) do not
-      # depend on this step.
-      - name: Walker corpus live-drift (advisory)
+      # fixtures. BLOCKING: the CI-pinned static cvc5 1.3.0 release has been
+      # confirmed to format proofs byte-identically to the committed traces
+      # (which were minted locally), so any diff here is a real drift — a
+      # cvc5 bump, a corpus_gen change, or a stale fixture — and must fail.
+      # If you intentionally change cvc5 output or the corpus, re-run
+      # `dune exec sdk/bin/corpus_gen.exe -- corpus` and commit the result.
+      # The deterministic gates above (static coverage, CorpusReplay.v
+      # compilation in `dune build`) do not depend on this step.
+      - name: Walker corpus live-drift
         run: |
           opam exec -- dune exec sdk/bin/corpus_gen.exe -- corpus
           git diff --exit-code -- corpus/ \
-            || echo "::warning::cvc5 trace output drifted from committed corpus fixtures; if this job's cvc5 matches local, re-run 'dune exec sdk/bin/corpus_gen.exe -- corpus' and commit, then make this step blocking."
+            || { echo "::error::cvc5 trace output drifted from committed corpus fixtures; re-run 'dune exec sdk/bin/corpus_gen.exe -- corpus' and commit the regenerated traces (or pin the cvc5 version that produced them)."; exit 1; }
 
   # Audit H5: single aggregate status. Before this, every job was an
   # independent check and `sdk-cross-platform` had no downstream, so
