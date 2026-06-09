@@ -84,6 +84,8 @@ Proof. intros f a b h1. alethe_walker_test "(
 (step t12 (cl) :rule resolution :premises (t10 t11))
 )". Qed.
 
+(* SKIPPED corpus_uf_lia_mix: statically walkable but replay_skip: walker shape-gap (Rocq): cong over an n-ary connective. cvc5 emits e.g. (cong :premises (t1 t2 t3)) over (or a b c) [step t4] and over (+ 0 0 x) [step t19.t6.t7], but the reifier renders n-ary or/and/+ as right-nested binary, so decompose_app sees 2 args while cong supplies 3 premises ('cong has 3 premises but the application has only 2 arguments'). t4 fires before the first anchor, so this is orthogonal to subproof (now supported). Needs n-ary cong + n-ary arithmetic reification; tracked as the remaining coverage backlog. *)
+
 (* a = b, b = c |- a = c (equality transitivity) *)
 Theorem corpus_uf_trans :
   forall (a b c : Z), a = b -> b = c -> a = c.

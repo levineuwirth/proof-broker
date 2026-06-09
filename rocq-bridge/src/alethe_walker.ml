@@ -237,10 +237,21 @@ type walker_ctx = {
 
 type walker_state = {
   proven : (string, EConstr.t * Alethe.Sexp.t list) Hashtbl.t;
+  (* subproof-close-id -> id of its last directly-enclosed step
+     (the clause the subproof discharges). *)
+  inner_final : (string, string) Hashtbl.t;
+  (* subproof-local-assume-id -> (its bound var, its literal).
+     Local assumes are seeded as named variables (pushed into the
+     elaboration env so [Retyping] can see them) rather than matched
+     against goal hypotheses; the discharging [subproof] step
+     abstracts them. *)
+  locals : (string, Names.Id.t * Alethe.Sexp.t) Hashtbl.t;
 }
 
 let make_state () : walker_state =
-  { proven = Hashtbl.create 64 }
+  { proven = Hashtbl.create 64;
+    inner_final = Hashtbl.create 16;
+    locals = Hashtbl.create 16 }
 
 let store_step (st : walker_state) (id : string) (e : EConstr.t)
     (clause : Alethe.Sexp.t list) : unit =
@@ -1390,6 +1401,108 @@ let elab_clause_remap (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
              (Printf.sprintf "'%s' expects exactly one premise" rule))
 
 (* =========================================================
+   Subproof / anchor mechanism (R-14).
+
+   An [(anchor :step S)] opens a subproof; its body [S.t*] derives
+   a clause [D] under local assumptions [S.a*]; the closing
+   [(step S (cl ...) :rule subproof :discharge (S.a0 ...))] lifts it
+   to [(cl (not phi_0) ... (not phi_k) D)] — the deduction theorem
+   at the clause layer. The SDK parser flattens anchors into the
+   [assumes]/[steps] lists (dotted ids), so the walk stays flat;
+   local assumes are pre-seeded as named vars (pushed into the
+   elaboration env) and each [subproof] step abstracts its own.
+   Mirror of Lean's [dischargeLift] / [elabSubproof].
+   ========================================================= *)
+
+(** Abstract an EXISTING named var [vid] (a seeded local assume) out
+    of [body] into [fun (name : ty) => body]. Unlike [abstract_lam]
+    (which mints a fresh var), this binds a variable already free in
+    [body] — the discharge of a subproof assumption. *)
+let abstract_over_id (sigma_ref : Evd.evar_map ref) (name : string)
+    (ty : EConstr.t) (vid : Names.Id.t) (body : EConstr.t) : EConstr.t =
+  let body_closed = EConstr.Vars.subst_var !sigma_ref vid body in
+  let binder =
+    Context.make_annot
+      (Names.Name (Names.Id.of_string name)) EConstr.ERelevance.relevant
+  in
+  EConstr.mkLambda (binder, ty, body_closed)
+
+(** Deduction-theorem lifting. Given [fn : phi_0 -> ... -> phi_{k-1}
+    -> ⟦cl D⟧] (the discharged body abstracted over its local
+    assumes), build a proof of [~phi_0 \/ ... \/ ~phi_{k-1} \/ ⟦cl D⟧]
+    ≡ [⟦cl ((not phi_0) ... (not phi_{k-1}) D)⟧]. Classical [em] per
+    assumption: if [phi_i] holds, apply [fn] and descend; else inject
+    [~phi_i]. *)
+let rec discharge_lift (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
+    (phis : Alethe.Sexp.t list) (suffix : Alethe.Sexp.t list)
+    (fn : EConstr.t) : EConstr.t =
+  match phis with
+  | [] -> fn
+  | phi :: rest ->
+    let phi_e = sexp_to_constr ctx phi in
+    let not_phi = mk_not phi_e in
+    let rest_ty =
+      clause_type_of ctx
+        (List.map (fun l -> Alethe.Sexp.List [ Atom "not"; l ]) rest @ suffix)
+    in
+    let result_ty = mk_or not_phi rest_ty in
+    let pos =
+      abstract_lam sigma_ref "h" phi_e (fun h ->
+        mk_or_intror not_phi rest_ty
+          (discharge_lift sigma_ref ctx rest suffix
+             (EConstr.mkApp (fn, [| h |]))))
+    in
+    let neg =
+      abstract_lam sigma_ref "hn" not_phi (fun hn ->
+        mk_or_introl not_phi rest_ty hn)
+    in
+    mk_or_ind phi_e not_phi result_ty pos neg (mk_classic phi_e)
+
+(** [subproof]: close an anchored subproof. The body's last
+    directly-enclosed step proves clause [D]; the [:discharge] list
+    names the local assumptions [phi_0 .. phi_{k-1}]. Conclusion is
+    [(cl (not phi_0) .. (not phi_{k-1}) D)] (an empty body [(cl)]
+    contributes the literal [false] — both reify to [False]). Proof:
+    abstract the body over the assumption vars, then [discharge_lift]. *)
+let elab_subproof (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
+    (st : walker_state) (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
+  let discharge = match s.discharge with Some d -> d | None -> [] in
+  let dis =
+    List.map (fun did ->
+        match Hashtbl.find_opt st.locals did with
+        | Some (vid, phi) -> (vid, phi)
+        | None ->
+          raise (Walker_error
+                   (Printf.sprintf
+                      "'subproof' discharge '%s' is not a subproof-local assume"
+                      did)))
+      discharge
+  in
+  let inner_id =
+    match Hashtbl.find_opt st.inner_final s.id with
+    | Some id -> id
+    | None ->
+      raise (Walker_error
+               (Printf.sprintf "'subproof' %s has no enclosed steps" s.id))
+  in
+  let (e_inner, _) = lookup_step st inner_id in
+  let k = List.length discharge in
+  let rec drop n xs = if n <= 0 then xs else match xs with
+    | [] -> [] | _ :: t -> drop (n - 1) t in
+  let suffix = drop k s.clause in
+  (* bodyFn = fun h_0 .. h_{k-1} => e_inner, abstracting the seeded
+     assume vars (outermost binds phi_0). *)
+  let body_fn =
+    List.fold_right (fun (vid, phi) acc ->
+        abstract_over_id sigma_ref "h" (sexp_to_constr ctx phi) vid acc)
+      dis e_inner
+  in
+  let proof =
+    discharge_lift sigma_ref ctx (List.map snd dis) suffix body_fn
+  in
+  (proof, s.clause)
+
+(* =========================================================
    Negation-of-connective cluster (R-11): not_not / not_or.
 
    Two premise-light boolean rules cvc5 emits when refuting a
@@ -1718,6 +1831,8 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (* Clause-structure rules (R-13). *)
     | "reordering" -> elab_clause_remap sigma_ref ctx "reordering" st s
     | "contraction" -> elab_clause_remap sigma_ref ctx "contraction" st s
+    (* Subproof / anchor mechanism (R-14). *)
+    | "subproof" -> elab_subproof sigma_ref ctx st s
     (* Propositional-equality tautology simplification (R-8). *)
     | "equiv_simplify" -> elab_equiv_simplify ctx s
     (* 3-literal equivalence tautologies (R-10). *)
@@ -1727,14 +1842,14 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-13 scope: \
+                  "rule '%s' not yet supported (R-14 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
                    equiv2 / not_and / and_neg / not_not / not_or / \
                    and_pos / or_neg / implies_neg1 / implies_neg2 / \
                    implies_simplify / reordering / contraction / \
-                   equiv_simplify / equiv_pos1 / equiv_pos2)"
+                   subproof / equiv_simplify / equiv_pos1 / equiv_pos2)"
                   other))
   in
   store_step st s.id proof clause
@@ -1742,12 +1857,50 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
 let walk_proof (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (p : proof) : EConstr.t =
   let st = make_state () in
-  (* Phase 1: seed assumes against local hypotheses. *)
+  (* Each subproof-close id -> its last directly-enclosed step (the
+     clause the subproof discharges). Document order => last wins. *)
+  List.iter (fun (s : Alethe.step) ->
+      match Alethe.enclosing_subproof_id s.id with
+      | Some parent -> Hashtbl.replace st.inner_final parent s.id
+      | None -> ())
+    p.steps;
+  (* Subproof-local assumes are seeded as named vars and pushed into
+     a SEPARATE elaboration env (carried in [ctx]) so [Retyping] can
+     type them; the discharging [subproof] step abstracts its own.
+     [elab_step] keeps the ORIGINAL [env] — la_generic evars and the
+     top-level assume/hypothesis match stay in the clean goal
+     context, untouched by the local-assume vars. *)
+  let counter = ref 0 in
+  let env_ext =
+    List.fold_left (fun env_acc (id, lit) ->
+        match Alethe.enclosing_subproof_id id with
+        | None -> env_acc
+        | Some _ ->
+          incr counter;
+          let vid =
+            Names.Id.of_string (Printf.sprintf "_walker_sp_%d" !counter)
+          in
+          let ty = sexp_to_constr ctx lit in
+          Hashtbl.replace st.locals id (vid, lit);
+          store_step st id (EConstr.mkVar vid) [ lit ];
+          let decl =
+            Context.Named.Declaration.LocalAssum
+              (Context.make_annot vid Sorts.Relevant,
+               EConstr.to_constr !sigma_ref ty)
+          in
+          Environ.push_named decl env_acc)
+      env p.assumes
+  in
+  let ctx = { ctx with env = env_ext } in
+  (* Top-level assumes match goal hypotheses (original [env]). *)
   List.iter (fun (id, lit) ->
-      let e = elab_assume_literal env sigma_ref ctx id lit in
-      store_step st id e [ lit ])
+      match Alethe.enclosing_subproof_id id with
+      | Some _ -> ()  (* already seeded as a local var above *)
+      | None ->
+        let e = elab_assume_literal env sigma_ref ctx id lit in
+        store_step st id e [ lit ])
     p.assumes;
-  (* Phase 2: walk steps in order. *)
+  (* Walk steps in order ([env] = original goal context). *)
   List.iter (elab_step env sigma_ref ctx st) p.steps;
   match List.rev p.steps with
   | [] ->
