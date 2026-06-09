@@ -2,8 +2,8 @@
   "supported_rule_count": 29,
   "summary": {
     "walkable": 6,
-    "replayed": 4,
-    "shape_gapped": 2,
+    "replayed": 5,
+    "shape_gapped": 1,
     "unsat": 6,
     "total": 6,
     "non_unsat": []
@@ -26,7 +26,7 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": "walker shape-gap: cvc5's equiv_simplify here uses a pattern beyond the 4 the elaborator handles ((= (= t t) true) / (= (not (not a)) a) / (= (and a a) a) / (= (or a a) a)). Statically walkable (all rules dispatched); dynamic gap tracked as coverage backlog."
+      "replay_skip": null
     },
     "uf_cong": {
       "result": "unsat",
@@ -38,7 +38,7 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": "walker shape-gap (Rocq): cong over an n-ary connective. cvc5 emits e.g. (cong :premises (t1 t2 t3)) over (or a b c) [step t4] and over (+ 0 0 x) [step t19.t6.t7], but the reifier renders n-ary or/and/+ as right-nested binary, so decompose_app sees 2 args while cong supplies 3 premises ('cong has 3 premises but the application has only 2 arguments'). t4 fires before the first anchor, so this is orthogonal to subproof (now supported). Needs n-ary cong + n-ary arithmetic reification; tracked as the remaining coverage backlog."
+      "replay_skip": "walker shape-gap (Rocq): n-ary resolution chain order. binary_resolve left-folds the premise list and greedily picks the first complementary literal pair; in uf_lia_mix one resolution step (CorpusReplay.v:136) has a premise whose pivot only matches a non-adjacent later premise, so the greedy left-fold strands it ('resolution premises share no complementary literal \u2014 no pivot'). Cong (n-ary), variadic arithmetic, and equiv_simplify eq-true are now all supported (lia_weaken_bound replays); this is the last remaining blocker, tracked as the resolution-order backlog item."
     },
     "uf_trans": {
       "result": "unsat",

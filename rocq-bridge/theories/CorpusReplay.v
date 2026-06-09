@@ -61,7 +61,53 @@ Proof. intros n m h1 h3. alethe_walker_test "(
 (step t17 (cl) :rule resolution :premises (t13 t16))
 )". Qed.
 
-(* SKIPPED corpus_lia_weaken_bound: statically walkable but replay_skip: walker shape-gap: cvc5's equiv_simplify here uses a pattern beyond the 4 the elaborator handles ((= (= t t) true) / (= (not (not a)) a) / (= (and a a) a) / (= (or a a) a)). Statically walkable (all rules dispatched); dynamic gap tracked as coverage backlog. *)
+(* 3 <= x |- 1 <= x (single-step LIA weakening) *)
+Theorem corpus_lia_weaken_bound :
+  forall x : Z, 3 <= x -> 1 <= x.
+Proof. intros x h1. alethe_walker_test "(
+(assume a0 (! (<= 3 x) :named @p_1))
+(assume a1 (! (not (! (<= 1 x) :named @p_2)) :named @p_3))
+(step t0 (cl (not (! (= (! (< (! (+ x (! (* -1 x) :named @p_6)) :named @p_7) (! (+ 1 (! (* -1 3) :named @p_4)) :named @p_5)) :named @p_8) false) :named @p_22)) (not @p_8) false) :rule equiv_pos2)
+(step t1 (cl (! (= @p_8 (! (not (! (>= @p_7 @p_5) :named @p_23)) :named @p_24)) :named @p_33)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_33 3 6))
+(step t2 (cl (! (= @p_7 0) :named @p_32)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_32 3 7))
+(step t3 (cl (= 1 1)) :rule refl)
+(step t4 (cl (! (= @p_4 -3) :named @p_31)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_31 3 7))
+(step t5 (cl (= @p_5 (! (+ 1 -3) :named @p_29))) :rule cong :premises (t3 t4))
+(step t6 (cl (! (= @p_29 -2) :named @p_30)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_30 3 7))
+(step t7 (cl (= @p_5 -2)) :rule trans :premises (t5 t6))
+(step t8 (cl (= @p_23 (! (>= 0 -2) :named @p_27))) :rule cong :premises (t2 t7))
+(step t9 (cl (! (= @p_27 true) :named @p_28)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_28 3 7))
+(step t10 (cl (= @p_23 true)) :rule trans :premises (t8 t9))
+(step t11 (cl (= @p_24 (! (not true) :named @p_25))) :rule cong :premises (t10))
+(step t12 (cl (! (= @p_25 false) :named @p_26)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_26 1 7))
+(step t13 (cl (= @p_24 false)) :rule trans :premises (t11 t12))
+(step t14 (cl @p_22) :rule trans :premises (t1 t13))
+(step t15 (cl (not (! (< x 1) :named @p_15)) (not (! (<= @p_6 @p_4) :named @p_9)) @p_8) :rule la_generic :args (1/1 1/1 1/1))
+(step t16 (cl (not (! (= (! (not (! (>= x 1) :named @p_16)) :named @p_17) @p_15) :named @p_20)) (not @p_17) @p_15) :rule equiv_pos2)
+(step t17 (cl (! (= @p_15 @p_17) :named @p_21)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_21 3 6))
+(step t18 (cl @p_20) :rule symm :premises (t17))
+(step t19 (cl (not (! (= @p_3 @p_17) :named @p_18)) (not @p_3) @p_17) :rule equiv_pos2)
+(step t20 (cl (! (= @p_2 @p_16) :named @p_19)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_19 3 7))
+(step t21 (cl @p_18) :rule cong :premises (t20))
+(step t22 (cl @p_17) :rule resolution :premises (t19 t21 a1))
+(step t23 (cl @p_15) :rule resolution :premises (t16 t18 t22))
+(step t24 (cl (=> (! (and (! (< -1 0) :named @p_11) (! (>= x 3) :named @p_10)) :named @p_12) @p_9)) :rule la_mult_neg)
+(step t25 (cl (not @p_12) @p_9) :rule implies :premises (t24))
+(step t26 (cl @p_12 (not @p_11) (not @p_10)) :rule and_neg)
+(step t27 (cl (= (! (= @p_11 true) :named @p_14) @p_11)) :rule equiv_simplify)
+(step t28 (cl (not @p_14) @p_11) :rule equiv1 :premises (t27))
+(step t29 (cl @p_14) :rule rare_rewrite :args (""evaluate""))
+(step t30 (cl @p_11) :rule resolution :premises (t28 t29))
+(step t31 (cl (not (! (= @p_1 @p_10) :named @p_13)) (not @p_1) @p_10) :rule equiv_pos2)
+(step t32 (cl @p_13) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_13 3 7))
+(step t33 (cl @p_10) :rule resolution :premises (t31 t32 a0))
+(step t34 (cl @p_12) :rule resolution :premises (t26 t30 t33))
+(step t35 (cl @p_9) :rule resolution :premises (t25 t34))
+(step t36 (cl @p_8) :rule resolution :premises (t15 t23 t35))
+(step t37 (cl false) :rule resolution :premises (t0 t14 t36))
+(step t38 (cl (not false)) :rule false)
+(step t39 (cl) :rule resolution :premises (t37 t38))
+)". Qed.
 
 (* a = b |- f a = f b (uninterpreted-function congruence) *)
 Theorem corpus_uf_cong :
@@ -84,7 +130,7 @@ Proof. intros f a b h1. alethe_walker_test "(
 (step t12 (cl) :rule resolution :premises (t10 t11))
 )". Qed.
 
-(* SKIPPED corpus_uf_lia_mix: statically walkable but replay_skip: walker shape-gap (Rocq): cong over an n-ary connective. cvc5 emits e.g. (cong :premises (t1 t2 t3)) over (or a b c) [step t4] and over (+ 0 0 x) [step t19.t6.t7], but the reifier renders n-ary or/and/+ as right-nested binary, so decompose_app sees 2 args while cong supplies 3 premises ('cong has 3 premises but the application has only 2 arguments'). t4 fires before the first anchor, so this is orthogonal to subproof (now supported). Needs n-ary cong + n-ary arithmetic reification; tracked as the remaining coverage backlog. *)
+(* SKIPPED corpus_uf_lia_mix: statically walkable but replay_skip: walker shape-gap (Rocq): n-ary resolution chain order. binary_resolve left-folds the premise list and greedily picks the first complementary literal pair; in uf_lia_mix one resolution step (CorpusReplay.v:136) has a premise whose pivot only matches a non-adjacent later premise, so the greedy left-fold strands it ('resolution premises share no complementary literal — no pivot'). Cong (n-ary), variadic arithmetic, and equiv_simplify eq-true are now all supported (lia_weaken_bound replays); this is the last remaining blocker, tracked as the resolution-order backlog item. *)
 
 (* a = b, b = c |- a = c (equality transitivity) *)
 Theorem corpus_uf_trans :

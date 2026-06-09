@@ -130,6 +130,7 @@ let r_eq_refl  = logic_ref "eq_refl"
 let r_eq_sym   = logic_ref "eq_sym"
 let r_eq_trans = logic_ref "eq_trans"
 let r_f_equal  = logic_ref "f_equal"
+let r_f_equal2 = logic_ref "f_equal2"
 let r_eq_ind   = logic_ref "eq_ind"
 let r_conj     = logic_ref "conj"
 let r_proj1    = logic_ref "proj1"
@@ -311,17 +312,16 @@ and atom_to_constr (ctx : walker_ctx) (s : string) : EConstr.t =
 
 and list_to_constr (ctx : walker_ctx) (xs : Alethe.Sexp.t list) : EConstr.t =
   match xs with
-  | [ Atom "+"; a; b ] ->
-    EConstr.mkApp (force r_Zadd,
-                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
+  (* [+] and [*] are SMT-LIB variadic; cvc5 emits [(+ a b c)].
+     Reify n-ary as a right-nested binary chain (matching [or]/[and]),
+     so [cong]'s per-operand premises line up with the nesting. *)
+  | Atom "+" :: (_ :: _ as args) -> arith_chain ctx (force r_Zadd) args
+  | Atom "*" :: (_ :: _ as args) -> arith_chain ctx (force r_Zmul) args
   | [ Atom "-"; a; b ] ->
     EConstr.mkApp (force r_Zsub,
                    [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
   | [ Atom "-"; a ] ->
     EConstr.mkApp (force r_Zopp, [| sexp_to_constr ctx a |])
-  | [ Atom "*"; a; b ] ->
-    EConstr.mkApp (force r_Zmul,
-                   [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
   | [ Atom "<="; a; b ] ->
     EConstr.mkApp (force r_Zle,
                    [| sexp_to_constr ctx a; sexp_to_constr ctx b |])
@@ -385,6 +385,18 @@ and and_or_chain (ctx : walker_ctx) (conn : EConstr.t) (empty : EConstr.t)
     let l_e = sexp_to_constr ctx lit in
     let rest_e = and_or_chain ctx conn empty rest in
     EConstr.mkApp (conn, [| l_e; rest_e |])
+
+(* Right-nested binary chain for a variadic arithmetic operator
+   ([+], [*]) — no identity element, so a non-empty operand list is
+   required (cvc5 never emits a nullary [+]). A single operand reifies
+   to itself. *)
+and arith_chain (ctx : walker_ctx) (op : EConstr.t)
+    (xs : Alethe.Sexp.t list) : EConstr.t =
+  match xs with
+  | [] -> raise (Walker_error "empty variadic arithmetic application")
+  | [ x ] -> sexp_to_constr ctx x
+  | x :: rest ->
+    EConstr.mkApp (op, [| sexp_to_constr ctx x; arith_chain ctx op rest |])
 
 (* =========================================================
    Clause utilities. Mirror of Lean's [negateLit] / [isNotForm]
@@ -700,9 +712,68 @@ let elab_trans (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
     [eq_trans] endpoints are supplied in beta-reduced form so the
     chained proof's stated type stays clean; the [f_equal] links'
     own redex types are accepted by kernel conversion. *)
+(** The binary Rocq operator a variadic Alethe head reifies to, for
+    the heads that [sexp_to_constr] renders as a right-nested binary
+    chain. [cong] over such a head (≥3 operands) can't go through the
+    flat [decompose_app] path — the chain only exposes 2 args. *)
+let nary_cong_op (op : string) : EConstr.t option =
+  match op with
+  | "or" -> Some (force r_or)
+  | "and" -> Some (force r_and)
+  | "+" -> Some (force r_Zadd)
+  | "*" -> Some (force r_Zmul)
+  | _ -> None
+
+(** [cong] over a right-nested binary chain [op x_0 (op x_1 (... x_{m-1}))]:
+    one premise per operand, folded with [f_equal2]. Returns
+    [(proof : chain_l = chain_r, chain_l, chain_r)]. The single-operand
+    base returns the premise verbatim (the chain is just that operand). *)
+let rec nary_cong_chain (ctx : walker_ctx) (st : walker_state)
+    (op_e : EConstr.t) (xs_l : Alethe.Sexp.t list) (xs_r : Alethe.Sexp.t list)
+    (pids : string list) : EConstr.t * EConstr.t * EConstr.t =
+  let sigma = !(ctx.sigma_ref) in
+  match xs_l, xs_r, pids with
+  | [ xl ], [ xr ], [ pid ] ->
+    let (e, _) = lookup_step st pid in
+    (e, sexp_to_constr ctx xl, sexp_to_constr ctx xr)
+  | xl :: rest_l, xr :: rest_r, pid :: rest_p ->
+    let xl_e = sexp_to_constr ctx xl in
+    let xr_e = sexp_to_constr ctx xr in
+    let (p_head, _) = lookup_step st pid in
+    let (p_tail, tail_l, tail_r) =
+      nary_cong_chain ctx st op_e rest_l rest_r rest_p
+    in
+    let chain_l = EConstr.mkApp (op_e, [| xl_e; tail_l |]) in
+    let chain_r = EConstr.mkApp (op_e, [| xr_e; tail_r |]) in
+    let a1 = Retyping.get_type_of ctx.env sigma xl_e in
+    let a2 = Retyping.get_type_of ctx.env sigma tail_l in
+    let b = Retyping.get_type_of ctx.env sigma chain_l in
+    let proof =
+      EConstr.mkApp (force r_f_equal2,
+                     [| a1; a2; b; op_e; xl_e; xr_e; tail_l; tail_r;
+                        p_head; p_tail |])
+    in
+    (proof, chain_l, chain_r)
+  | _ ->
+    raise (Walker_error "'cong' n-ary chain: operand/premise count mismatch")
+
 let elab_cong (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
   match s.clause, s.premises with
+  (* n-ary connective / arithmetic head (≥3 operands): one premise per
+     operand, reified as a right-nested binary chain. The flat
+     [decompose_app] path below only sees the outermost 2 args, so
+     fold [f_equal2] over the chain instead. *)
+  | [ List [ Atom "=";
+             (List (Atom op :: operands_l)) ;
+             (List (Atom op_r :: operands_r)) ] ], Some pids
+    when op = op_r && nary_cong_op op <> None
+         && List.length operands_l >= 3
+         && List.length operands_l = List.length pids
+         && List.length operands_r = List.length pids ->
+    let op_e = match nary_cong_op op with Some e -> e | None -> assert false in
+    let (proof, _, _) = nary_cong_chain ctx st op_e operands_l operands_r pids in
+    (proof, s.clause)
   | [ List [ Atom "="; lhs_sexp; rhs_sexp ] ], Some pids ->
     let sigma = !(ctx.sigma_ref) in
     let lhs = sexp_to_constr ctx lhs_sexp in
@@ -1176,6 +1247,28 @@ let build_or_idem (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
   let bwd = EConstr.mkApp (force r_or_introl, [| a_e; a_e |]) in
   mk_propext a_or_a a_e (mk_iff a_or_a a_e fwd bwd)
 
+(** [(a = True) = a] (cvc5's eq-true elimination) via
+    [propext ((a = True) <-> a)]. Forward: transport [True.I] back
+    along the hypothesis [a = True] ([eq_mpr]). Backward: from [a],
+    [propext (a <-> True)]. Footprint adds only propext. *)
+let build_eq_true (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
+  let a_e = sexp_to_constr ctx a in
+  let true_e = force r_True in
+  let eq_a_true = sexp_to_constr ctx (List [ Atom "="; a; Atom "true" ]) in
+  let fwd =
+    abstract_lam ctx.sigma_ref "h" eq_a_true (fun h ->
+      eq_mpr ctx h a_e true_e (force r_True_I))
+  in
+  let bwd =
+    abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+      let iff_at = mk_iff a_e true_e
+        (abstract_lam ctx.sigma_ref "_x" a_e (fun _ -> force r_True_I))
+        (abstract_lam ctx.sigma_ref "_t" true_e (fun _ -> ha))
+      in
+      mk_propext a_e true_e iff_at)
+  in
+  mk_propext eq_a_true a_e (mk_iff eq_a_true a_e fwd bwd)
+
 (** [equiv_simplify]: structural pattern matcher on the
     [(= lhs rhs)] clause. Each recognized pattern delegates to a
     per-pattern builder; unrecognized shapes throw with the
@@ -1194,11 +1287,13 @@ let elab_equiv_simplify (ctx : walker_ctx) (s : Alethe.step)
         build_and_idem ctx a1
       | List [ Atom "or"; a1; a2 ], a' when a1 = a2 && a1 = a' ->
         build_or_idem ctx a1
+      | List [ Atom "="; a; Atom "true" ], a' when a = a' ->
+        build_eq_true ctx a
       | _, _ ->
         raise (Walker_error
                  "'equiv_simplify' pattern not recognized. Supported: \
                   (= (= t t) true) / (= (not (not a)) a) / \
-                  (= (and a a) a) / (= (or a a) a)")
+                  (= (and a a) a) / (= (or a a) a) / (= (= a true) a)")
     in
     (proof, s.clause)
   | _ ->

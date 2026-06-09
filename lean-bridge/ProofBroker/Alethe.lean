@@ -341,14 +341,15 @@ partial def sexpToExpr (ctx : WalkerContext) : Sexp → MetaM Expr
   | .list xs => listToExpr ctx xs
 
 partial def listToExpr (ctx : WalkerContext) : List Sexp → MetaM Expr
-  | [.atom "+", a, b] => do
-    mkAppM ``HAdd.hAdd #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
+  -- `+` and `*` are SMT-LIB variadic; cvc5 emits `(+ a b c)`. Reify
+  -- n-ary as a right-nested binary chain (matching `and`/`or`), so
+  -- `cong`'s per-operand premises line up with the nesting.
+  | (.atom "+") :: args => arithChain ctx ``HAdd.hAdd args
+  | (.atom "*") :: args => arithChain ctx ``HMul.hMul args
   | [.atom "-", a, b] => do
     mkAppM ``HSub.hSub #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
   | [.atom "-", a] => do
     mkAppM ``Neg.neg #[← sexpToExpr ctx a]
-  | [.atom "*", a, b] => do
-    mkAppM ``HMul.hMul #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
   | [.atom "<=", a, b] => do
     mkAppM ``LE.le #[← sexpToExpr ctx a, ← sexpToExpr ctx b]
   | [.atom "<", a, b] => do
@@ -404,6 +405,16 @@ partial def andOrChain (ctx : WalkerContext) (conn : Name)
     let lE ← sexpToExpr ctx lit
     let restE ← andOrChain ctx conn rest
     mkAppM conn #[lE, restE]
+
+/-- Right-nested binary chain for a variadic arithmetic operator
+    (`HAdd.hAdd` / `HMul.hMul`) — no identity element, so a non-empty
+    operand list is required. A single operand reifies to itself. -/
+partial def arithChain (ctx : WalkerContext) (op : Name)
+    : List Sexp → MetaM Expr
+  | [] => throwError "alethe walker: empty variadic arithmetic application"
+  | [x] => sexpToExpr ctx x
+  | x :: rest => do
+    mkAppM op #[← sexpToExpr ctx x, ← arithChain ctx op rest]
 
 end
 
@@ -654,6 +665,20 @@ private def elabTrans (s : Step) : WalkerM (Expr × List Sexp) := do
     throwError m!"alethe walker: 'trans' expects at least one \
                    premise, got {repr s.premises}"
 
+/-- `cong` over a right-nested binary chain `op x₀ (op x₁ (… xₘ₋₁))`:
+    one premise per operand, folded with `mkCongr`. `opE` is the
+    (curried) binary operator already applied to its implicit /
+    typeclass args. Returns the proof of `chain_l = chain_r`; the
+    single-operand base returns the premise verbatim. Mirror of
+    Rocq's `nary_cong_chain`. -/
+private partial def nestedCong (opE : Expr) : List String → WalkerM Expr
+  | [] => throwError "alethe walker: 'cong' n-ary chain with no premises"
+  | [p] => return (← lookupStep p).1
+  | p :: pl => do
+    let pHead := (← lookupStep p).1
+    let pTail ← nestedCong opE pl
+    Lean.Meta.mkCongr (← Lean.Meta.mkCongr (← Lean.Meta.mkEqRefl opE) pHead) pTail
+
 /-- `cong`: n premises proving `(= a₁ b₁)`, …, `(= aₙ bₙ)`,
     conclusion `(= (f a₁ … aₙ) (f b₁ … bₙ))`. The proof term is
     built by left-folding `Lean.Meta.mkCongr` over the premise
@@ -687,6 +712,23 @@ private def elabCong (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
   match s.clause, s.premises with
   | [.list [.atom "=", lhsSexp, rhsSexp]], some pids => do
+    -- n-ary connective / arithmetic head (≥3 operands): one premise
+    -- per operand, reified as a right-nested binary chain. The flat
+    -- `appFn!`-strip path below only sees the outer 2 args, so fold
+    -- `mkCongr` over the chain (`opE` = binary operator with its
+    -- implicit/typeclass args, i.e. the 2 explicit operands stripped).
+    let naryOp? : Option Expr ← do
+      match lhsSexp, rhsSexp with
+      | .list (.atom op :: opsL), .list (.atom opR :: opsR) =>
+        if op == opR && (["or", "and", "+", "*"].contains op)
+           && opsL.length ≥ 3 && opsL.length == pids.length
+           && opsR.length == pids.length then
+          pure (some (← sexpToExpr ctx lhsSexp).appFn!.appFn!)
+        else pure none
+      | _, _ => pure none
+    match naryOp? with
+    | some opE => return (← nestedCong opE pids, s.clause)
+    | none =>
     let lhsE ← sexpToExpr ctx lhsSexp
     let rhsE ← sexpToExpr ctx rhsSexp
     let lhsArity := lhsE.getAppNumArgs
@@ -1483,6 +1525,28 @@ private def buildOrIdem (ctx : WalkerContext) (a : Sexp)
   let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
   mkAppM ``propext #[iffP]
 
+/-- Build `(a = True) = a` (cvc5's eq-true elimination) via
+    `propext ((a = True) ↔ a)`. Forward: transport `True.intro`
+    back along `a = True` (`Eq.mp (Eq.symm h)`). Backward: from
+    `a`, `propext (a ↔ True)`. Footprint adds only propext. -/
+private def buildEqTrue (ctx : WalkerContext) (a : Sexp)
+    : MetaM Expr := do
+  let aE ← sexpToExpr ctx a
+  let trueE := mkConst ``True
+  let eqATrue ← mkAppM ``Eq #[aE, trueE]
+  let fwdLam ← withLocalDeclD `h eqATrue fun h => do
+    let p ← mkAppM ``Eq.mp #[← mkAppM ``Eq.symm #[h], mkConst ``True.intro]
+    mkLambdaFVars #[h] p
+  let bwdLam ← withLocalDeclD `ha aE fun ha => do
+    let fLam ← withLocalDeclD `x aE fun x =>
+      mkLambdaFVars #[x] (mkConst ``True.intro)
+    let gLam ← withLocalDeclD `t trueE fun t =>
+      mkLambdaFVars #[t] ha
+    let iff2 ← mkAppM ``Iff.intro #[fLam, gLam]
+    mkLambdaFVars #[ha] (← mkAppM ``propext #[iff2])
+  let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
+  mkAppM ``propext #[iffP]
+
 /-- `equiv_simplify`: structural pattern matcher on the
     `(= lhs rhs)` clause shape. Each recognized pattern delegates
     to a per-pattern builder; unrecognized shapes throw with the
@@ -1510,6 +1574,11 @@ private def elabEquivSimplify (ctx : WalkerContext) (s : Step)
       | .list [.atom "or", a1, a2], a' =>
         if a1 == a2 && a1 == a' then
           buildOrIdem ctx a1
+        else
+          unsupportedEquivSimplify lhs rhs
+      | .list [.atom "=", a, .atom "true"], a' =>
+        if a == a' then
+          buildEqTrue ctx a
         else
           unsupportedEquivSimplify lhs rhs
       | _, _ =>
