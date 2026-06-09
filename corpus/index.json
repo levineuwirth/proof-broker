@@ -7,6 +7,31 @@
     "steps": 11,
     "assumes": 1
   },
+  "lia_eq_from_bounds": {
+    "result": "unsat",
+    "rules": [
+      "cong", "contraction", "equiv_pos2", "hole", "not_and", "or", "or_neg",
+      "refl", "resolution", "trans"
+    ],
+    "steps": 26,
+    "assumes": 3
+  },
+  "lia_irrefl": {
+    "result": "unsat",
+    "rules": [ "equiv_pos2", "false", "hole", "resolution", "trans" ],
+    "steps": 7,
+    "assumes": 1
+  },
+  "lia_strict_trans": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 66,
+    "assumes": 3
+  },
   "lia_sum_bound": {
     "result": "unsat",
     "rules": [ "cong", "equiv_pos2", "hole", "refl", "resolution", "trans" ],
