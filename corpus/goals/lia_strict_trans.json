@@ -1,0 +1,31 @@
+{
+  "id": "lia_strict_trans",
+  "description": "x < y, y < z |- x < z (strict transitivity; probes la_generic/comp_simplify)",
+  "coq_goal": "forall x y z : Z, x < y -> y < z -> x < z",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "LIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App", "symbol": "LT.lt", "type_args": [],
+        "args": [ { "node": "Var", "name": "x" }, { "node": "Var", "name": "z" } ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [ { "name": "x", "type": "Int" }, { "name": "y", "type": "Int" }, { "name": "z", "type": "Int" } ],
+      "hypotheses": [
+        { "name": "h1", "shell": { "node": "App", "symbol": "LT.lt", "type_args": [],
+          "args": [ { "node": "Var", "name": "x" }, { "node": "Var", "name": "y" } ] } },
+        { "name": "h2", "shell": { "node": "App", "symbol": "LT.lt", "type_args": [],
+          "args": [ { "node": "Var", "name": "y" }, { "node": "Var", "name": "z" } ] } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

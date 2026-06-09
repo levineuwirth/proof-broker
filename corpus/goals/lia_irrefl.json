@@ -1,0 +1,26 @@
+{
+  "id": "lia_irrefl",
+  "description": "|- ~(x < x) (irreflexivity of <; probes comp_simplify/la_generic + not)",
+  "coq_goal": "forall x : Z, ~(x < x)",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "LIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "Not", "operand": { "node": "App", "symbol": "LT.lt", "type_args": [],
+          "args": [ { "node": "Var", "name": "x" }, { "node": "Var", "name": "x" } ] }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [ { "name": "x", "type": "Int" } ],
+      "hypotheses": []
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

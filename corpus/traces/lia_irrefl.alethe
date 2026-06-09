@@ -1,0 +1,10 @@
+(
+(assume a0 (! (not (not (! (< x x) :named @p_1))) :named @p_2))
+(step t0 (cl (not (! (= @p_2 false) :named @p_3)) (not @p_2) false) :rule equiv_pos2)
+(step t1 (cl (! (= @p_2 @p_1) :named @p_5)) :rule hole :args ("TRUST_THEORY_REWRITE" @p_5 1 6))
+(step t2 (cl (! (= @p_1 false) :named @p_4)) :rule hole :args ("TRUST_THEORY_REWRITE" @p_4 3 6))
+(step t3 (cl @p_3) :rule trans :premises (t1 t2))
+(step t4 (cl false) :rule resolution :premises (t0 t3 a0))
+(step t5 (cl (not false)) :rule false)
+(step t6 (cl) :rule resolution :premises (t4 t5))
+)
