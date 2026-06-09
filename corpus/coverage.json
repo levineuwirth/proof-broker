@@ -2,8 +2,8 @@
   "supported_rule_count": 29,
   "summary": {
     "walkable": 6,
-    "replayed": 5,
-    "shape_gapped": 1,
+    "replayed": 4,
+    "shape_gapped": 2,
     "unsat": 6,
     "total": 6,
     "non_unsat": []
@@ -38,7 +38,7 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": "walker shape-gap (Rocq): cong over an n-ary connective. cvc5 emits e.g. (cong :premises (t1 t2 t3)) over (or a b c) [step t4] and over (+ 0 0 x) [step t19.t6.t7], but the reifier renders n-ary or/and/+ as right-nested binary, so decompose_app sees 2 args while cong supplies 3 premises ('cong has 3 premises but the application has only 2 arguments'). t4 fires before the first anchor, so this is orthogonal to subproof (now supported). Needs n-ary cong + n-ary arithmetic reification; tracked as the remaining coverage backlog."
     },
     "uf_trans": {
       "result": "unsat",
