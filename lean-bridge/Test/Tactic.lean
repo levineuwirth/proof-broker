@@ -529,6 +529,22 @@ theorem alethe_walker_resolution_axiom_free
 
 #print axioms alethe_walker_resolution_axiom_free
 
+/-- Resolution-chain order: the premises are listed so a strict
+    left-fold strands the middle one — `[x] ∘ [¬y]` share no
+    complementary literal, so the resolver must skip ahead to
+    `[¬x, y]` (which resolves `x`), then come back to `[¬y]`.
+    Exercises the order-robust pivot search. Axiom-free. -/
+theorem alethe_walker_resolution_reorder_axiom_free
+    (x y : Prop) (hx : x) (hxy : ¬x ∨ y) (hny : ¬y) : False := by
+  alethe_walker_test
+    "( (assume a0 x) \
+       (assume a1 (or (not x) y)) \
+       (assume a2 (not y)) \
+       (step t0 (cl (not x) y) :rule or :premises (a1)) \
+       (step t1 (cl) :rule resolution :premises (a0 a2 t0)) )"
+
+#print axioms alethe_walker_resolution_reorder_axiom_free
+
 /- Alethe walker — equality cluster (`refl` / `symm` / `trans` /
    `cong`).
 

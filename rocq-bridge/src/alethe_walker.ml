@@ -1436,19 +1436,47 @@ let elab_or (st : walker_state) (s : Alethe.step)
     explicitly). The result `(proof, clause)` carries the
     computed resolvent; for a closing step the resolvent is the
     empty clause and the proof has type [False]. *)
+(** Do clauses [a] and [b] share a complementary literal pair (a
+    pivot for [binary_resolve])? *)
+let shares_pivot (a : Alethe.Sexp.t list) (b : Alethe.Sexp.t list) : bool =
+  List.exists (fun la -> List.exists (fun lb -> negate_lit la = lb) b) a
+
+(** [resolution]: n-ary clausal resolution. Alethe presents it as a
+    chain of binary resolutions, but cvc5's premise order is not
+    always left-reducible — a premise's pivot may sit in a
+    non-adjacent later premise, so a strict left-fold can hit an
+    accumulator that shares no complementary literal with the next
+    premise. Instead, repeatedly resolve the accumulator against the
+    first REMAINING premise that shares a pivot with it. The
+    resolvent is order-independent up to literal order (downstream
+    matching is order-insensitive); for a closing step it is the
+    empty clause and the proof has type [False]. *)
 let elab_resolution (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (st : walker_state)
     (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
   match s.premises with
   | Some (p0 :: rest) ->
-    let (e0, c0) = lookup_step st p0 in
-    let acc = ref (e0, c0) in
-    List.iter (fun pi ->
-        let (ei, ci) = lookup_step st pi in
-        let (cur_e, cur_c) = !acc in
-        acc := binary_resolve sigma_ref ctx cur_e cur_c ei ci)
-      rest;
-    !acc
+    let rec loop (cur_e, cur_c) remaining =
+      match remaining with
+      | [] -> (cur_e, cur_c)
+      | _ ->
+        (* pick the first remaining premise resolvable with the accumulator *)
+        let rec pick before = function
+          | [] -> None
+          | ((_, ci) as prem) :: after ->
+            if shares_pivot cur_c ci then
+              Some (prem, List.rev_append before after)
+            else pick (prem :: before) after
+        in
+        match pick [] remaining with
+        | Some ((ei, ci), rest') ->
+          loop (binary_resolve sigma_ref ctx cur_e cur_c ei ci) rest'
+        | None ->
+          raise (Walker_error
+                   "resolution: no remaining premise shares a complementary \
+                    literal with the accumulator")
+    in
+    loop (lookup_step st p0) (List.map (lookup_step st) rest)
   | _ ->
     raise (Walker_error
              "'resolution' needs at least one premise")

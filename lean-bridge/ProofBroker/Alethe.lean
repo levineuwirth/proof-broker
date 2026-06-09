@@ -441,6 +441,11 @@ def isNotForm : Sexp → Bool
   | .list [.atom "not", _] => true
   | _ => false
 
+/-- Do clauses `a` and `b` share a complementary literal pair (a
+    pivot for `binaryResolve`)? -/
+def sharesPivot (a b : List Sexp) : Bool :=
+  a.any (fun la => b.any (fun lb => negateLit la == lb))
+
 /-- The clause-as-Prop of a literal list (`(cl …)` semantics:
     empty → `False`, singleton → the literal, n-ary → the
     right-associated `∨`). -/
@@ -586,23 +591,34 @@ private def elabOr (s : Step) : WalkerM (Expr × List Sexp) := do
     throwError m!"alethe walker: 'or' rule expects exactly one \
                    premise, got {repr s.premises}"
 
-/-- `resolution`: n-ary clausal resolution. Alethe's `resolution`
-    is a left-fold of binary resolutions over the premise list;
-    each binary step cancels one complementary literal pair
-    (`binaryResolve` finds the pivot — cvc5 does not list pivots
-    explicitly). The result `(proof, clause)` carries the
-    computed resolvent; for a closing step the resolvent is the
-    empty clause and the proof has type `False`. -/
+/-- Resolve `acc` against the remaining premises. cvc5's premise
+    order is not always left-reducible — a premise's pivot may sit
+    in a non-adjacent later premise — so at each step pick the first
+    REMAINING premise that shares a pivot with the accumulator
+    rather than folding strictly left-to-right. Mirror of Rocq's
+    `elab_resolution` loop. -/
+private partial def resolveChain (ctx : WalkerContext)
+    (acc : Expr × List Sexp) (remaining : List (Expr × List Sexp))
+    : WalkerM (Expr × List Sexp) := do
+  match remaining with
+  | [] => return acc
+  | _ =>
+    match remaining.findIdx? (fun prem => sharesPivot acc.2 prem.2) with
+    | some idx =>
+      let prem := remaining[idx]!
+      let acc' ← binaryResolve ctx acc.1 acc.2 prem.1 prem.2
+      resolveChain ctx acc' (remaining.eraseIdx idx)
+    | none =>
+      throwError m!"alethe walker: 'resolution' — no remaining premise \
+                     shares a complementary literal with the accumulator"
+
 private def elabResolution (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
   match s.premises with
   | some (p0 :: rest) => do
-    let (e0, c0) ← lookupStep p0
-    let mut acc : Expr × List Sexp := (e0, c0)
-    for pi in rest do
-      let (ei, ci) ← lookupStep pi
-      acc ← binaryResolve ctx acc.1 acc.2 ei ci
-    return acc
+    let acc0 ← lookupStep p0
+    let remaining ← rest.mapM lookupStep
+    resolveChain ctx acc0 remaining
   | _ =>
     throwError m!"alethe walker: 'resolution' needs at least one \
                    premise, got {repr s.premises}"
