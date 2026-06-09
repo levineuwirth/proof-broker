@@ -441,6 +441,7 @@ def isNotForm : Sexp → Bool
   | .list [.atom "not", _] => true
   | _ => false
 
+
 /-- The clause-as-Prop of a literal list (`(cl …)` semantics:
     empty → `False`, singleton → the literal, n-ary → the
     right-associated `∨`). -/
@@ -498,10 +499,17 @@ partial def casesClause (ctx : WalkerContext) (clauseProof : Expr)
 def binaryResolve (ctx : WalkerContext)
     (eA : Expr) (A : List Sexp) (eB : Expr) (B : List Sexp)
     : MetaM (Expr × List Sexp) := do
+  -- Two literals are complementary iff one is *syntactically* the
+  -- `(not ...)` of the other. Using the literal form directly
+  -- (rather than `negateLit`, which strips a leading `not`) is what
+  -- lets `(not P)` resolve against `(not (not P))` — the
+  -- double-negation pivot cvc5 emits (e.g. uf_lia_mix t38), where
+  -- `negateLit` would mis-strip to `P` and miss the pair.
+  let isNegOf (x y : Sexp) : Bool := x == .list [.atom "not", y]
   let pivot? : Option (Nat × Nat) := Id.run do
     for i in [0:A.length] do
       for j in [0:B.length] do
-        if negateLit A[i]! == B[j]! then
+        if isNegOf A[i]! B[j]! || isNegOf B[j]! A[i]! then
           return some (i, j)
     return none
   match pivot? with
@@ -509,7 +517,9 @@ def binaryResolve (ctx : WalkerContext)
     throwError m!"alethe walker: resolution premises share no \
                    complementary literal — no pivot"
   | some (i, j) => do
-    let aIsNot := isNotForm A[i]!
+    -- `aIsNot`: `A[i]` is the `(not ...)` side (it applies to `B[j]`
+    -- to derive False), i.e. `A[i] = (not B[j])`.
+    let aIsNot := isNegOf A[i]! B[j]!
     let R := A.eraseIdx i ++ B.eraseIdx j
     let resultTy ← clauseTypeOf ctx R
     let aLen1 := A.length - 1
@@ -586,13 +596,10 @@ private def elabOr (s : Step) : WalkerM (Expr × List Sexp) := do
     throwError m!"alethe walker: 'or' rule expects exactly one \
                    premise, got {repr s.premises}"
 
-/-- `resolution`: n-ary clausal resolution. Alethe's `resolution`
-    is a left-fold of binary resolutions over the premise list;
-    each binary step cancels one complementary literal pair
-    (`binaryResolve` finds the pivot — cvc5 does not list pivots
-    explicitly). The result `(proof, clause)` carries the
-    computed resolvent; for a closing step the resolvent is the
-    empty clause and the proof has type `False`. -/
+/-- `resolution`: n-ary clausal resolution — a left-fold of
+    `binaryResolve` over the premises in emitted order. For a
+    closing step the resolvent is the empty clause and the proof
+    has type `False`. -/
 private def elabResolution (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
   match s.premises with

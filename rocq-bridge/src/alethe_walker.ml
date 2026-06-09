@@ -509,6 +509,15 @@ let rec cases_clause (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
                    [| l_ty; rest_ty; result_ty;
                       lam_l; lam_r; clause_proof |])
 
+(** Two literals are complementary iff one is *syntactically* the
+    [(not ...)] of the other. Using the literal form directly (rather
+    than [negate_lit], which strips a leading [not]) is what makes a
+    negated literal [(not P)] resolve against [(not (not P))] — the
+    double-negation pivot cvc5 emits (e.g. uf_lia_mix t38), where
+    [negate_lit] would mis-strip to [P] and miss the pair. *)
+let is_neg_of (x : Alethe.Sexp.t) (y : Alethe.Sexp.t) : bool =
+  x = Alethe.Sexp.List [ Atom "not"; y ]
+
 (** Binary clausal resolution. Given `eA : ⋁A`, `eB : ⋁B` sharing
     a complementary literal pair, produce `(proof, R)` where
     `R = (A∖pivot) ++ (B∖pivot)` and `proof : ⋁R`. Pivot search
@@ -527,8 +536,10 @@ let binary_resolve (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
         let lit_a = List.nth a i in
         let rec find_j j =
           if j >= n_b then find_i (i + 1)
-          else if negate_lit lit_a = List.nth b j then Some (i, j)
-          else find_j (j + 1)
+          else
+            let lit_b = List.nth b j in
+            if is_neg_of lit_a lit_b || is_neg_of lit_b lit_a then Some (i, j)
+            else find_j (j + 1)
         in find_j 0
     in find_i 0
   in
@@ -537,7 +548,9 @@ let binary_resolve (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
     raise (Walker_error
              "resolution premises share no complementary literal — no pivot")
   | Some (i, j) ->
-    let a_is_not = is_not_form (List.nth a i) in
+    (* [a_is_not]: literal [a.(i)] is the [(not ...)] side (it applies
+       to [b.(j)] to derive False). True when [a.(i) = (not b.(j))]. *)
+    let a_is_not = is_neg_of (List.nth a i) (List.nth b j) in
     let erase_idx (xs : 'a list) (k : int) : 'a list =
       List.filteri (fun idx _ -> idx <> k) xs
     in
@@ -1430,10 +1443,10 @@ let elab_or (st : walker_state) (s : Alethe.step)
              "'or' rule expects exactly one premise")
 
 (** [resolution]: n-ary clausal resolution. Alethe's [resolution]
-    is a left-fold of binary resolutions over the premise list;
-    each binary step cancels one complementary literal pair
-    ([binary_resolve] finds the pivot — cvc5 does not list pivots
-    explicitly). The result `(proof, clause)` carries the
+    is a left-fold of binary resolutions over the premise list in
+    the emitted order; each binary step cancels one complementary
+    literal pair ([binary_resolve] finds the pivot — cvc5 does not
+    list pivots explicitly). The result `(proof, clause)` carries the
     computed resolvent; for a closing step the resolvent is the
     empty clause and the proof has type [False]. *)
 let elab_resolution (sigma_ref : Evd.evar_map ref)
