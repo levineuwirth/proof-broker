@@ -2,8 +2,8 @@
   "supported_rule_count": 29,
   "summary": {
     "walkable": 6,
-    "replayed": 5,
-    "shape_gapped": 1,
+    "replayed": 6,
+    "shape_gapped": 0,
     "unsat": 6,
     "total": 6,
     "non_unsat": []
@@ -26,7 +26,7 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": "walker shape-gap: cvc5's equiv_simplify here uses a pattern beyond the 4 the elaborator handles ((= (= t t) true) / (= (not (not a)) a) / (= (and a a) a) / (= (or a a) a)). Statically walkable (all rules dispatched); dynamic gap tracked as coverage backlog."
+      "replay_skip": null
     },
     "uf_cong": {
       "result": "unsat",

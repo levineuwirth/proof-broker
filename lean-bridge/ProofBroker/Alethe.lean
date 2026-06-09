@@ -1525,6 +1525,28 @@ private def buildOrIdem (ctx : WalkerContext) (a : Sexp)
   let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
   mkAppM ``propext #[iffP]
 
+/-- Build `(a = True) = a` (cvc5's eq-true elimination) via
+    `propext ((a = True) ↔ a)`. Forward: transport `True.intro`
+    back along `a = True` (`Eq.mp (Eq.symm h)`). Backward: from
+    `a`, `propext (a ↔ True)`. Footprint adds only propext. -/
+private def buildEqTrue (ctx : WalkerContext) (a : Sexp)
+    : MetaM Expr := do
+  let aE ← sexpToExpr ctx a
+  let trueE := mkConst ``True
+  let eqATrue ← mkAppM ``Eq #[aE, trueE]
+  let fwdLam ← withLocalDeclD `h eqATrue fun h => do
+    let p ← mkAppM ``Eq.mp #[← mkAppM ``Eq.symm #[h], mkConst ``True.intro]
+    mkLambdaFVars #[h] p
+  let bwdLam ← withLocalDeclD `ha aE fun ha => do
+    let fLam ← withLocalDeclD `x aE fun x =>
+      mkLambdaFVars #[x] (mkConst ``True.intro)
+    let gLam ← withLocalDeclD `t trueE fun t =>
+      mkLambdaFVars #[t] ha
+    let iff2 ← mkAppM ``Iff.intro #[fLam, gLam]
+    mkLambdaFVars #[ha] (← mkAppM ``propext #[iff2])
+  let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
+  mkAppM ``propext #[iffP]
+
 /-- `equiv_simplify`: structural pattern matcher on the
     `(= lhs rhs)` clause shape. Each recognized pattern delegates
     to a per-pattern builder; unrecognized shapes throw with the
@@ -1552,6 +1574,11 @@ private def elabEquivSimplify (ctx : WalkerContext) (s : Step)
       | .list [.atom "or", a1, a2], a' =>
         if a1 == a2 && a1 == a' then
           buildOrIdem ctx a1
+        else
+          unsupportedEquivSimplify lhs rhs
+      | .list [.atom "=", a, .atom "true"], a' =>
+        if a == a' then
+          buildEqTrue ctx a
         else
           unsupportedEquivSimplify lhs rhs
       | _, _ =>

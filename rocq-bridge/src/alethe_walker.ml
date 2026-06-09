@@ -1247,6 +1247,28 @@ let build_or_idem (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
   let bwd = EConstr.mkApp (force r_or_introl, [| a_e; a_e |]) in
   mk_propext a_or_a a_e (mk_iff a_or_a a_e fwd bwd)
 
+(** [(a = True) = a] (cvc5's eq-true elimination) via
+    [propext ((a = True) <-> a)]. Forward: transport [True.I] back
+    along the hypothesis [a = True] ([eq_mpr]). Backward: from [a],
+    [propext (a <-> True)]. Footprint adds only propext. *)
+let build_eq_true (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
+  let a_e = sexp_to_constr ctx a in
+  let true_e = force r_True in
+  let eq_a_true = sexp_to_constr ctx (List [ Atom "="; a; Atom "true" ]) in
+  let fwd =
+    abstract_lam ctx.sigma_ref "h" eq_a_true (fun h ->
+      eq_mpr ctx h a_e true_e (force r_True_I))
+  in
+  let bwd =
+    abstract_lam ctx.sigma_ref "ha" a_e (fun ha ->
+      let iff_at = mk_iff a_e true_e
+        (abstract_lam ctx.sigma_ref "_x" a_e (fun _ -> force r_True_I))
+        (abstract_lam ctx.sigma_ref "_t" true_e (fun _ -> ha))
+      in
+      mk_propext a_e true_e iff_at)
+  in
+  mk_propext eq_a_true a_e (mk_iff eq_a_true a_e fwd bwd)
+
 (** [equiv_simplify]: structural pattern matcher on the
     [(= lhs rhs)] clause. Each recognized pattern delegates to a
     per-pattern builder; unrecognized shapes throw with the
@@ -1265,11 +1287,13 @@ let elab_equiv_simplify (ctx : walker_ctx) (s : Alethe.step)
         build_and_idem ctx a1
       | List [ Atom "or"; a1; a2 ], a' when a1 = a2 && a1 = a' ->
         build_or_idem ctx a1
+      | List [ Atom "="; a; Atom "true" ], a' when a = a' ->
+        build_eq_true ctx a
       | _, _ ->
         raise (Walker_error
                  "'equiv_simplify' pattern not recognized. Supported: \
                   (= (= t t) true) / (= (not (not a)) a) / \
-                  (= (and a a) a) / (= (or a a) a)")
+                  (= (and a a) a) / (= (or a a) a) / (= (= a true) a)")
     in
     (proof, s.clause)
   | _ ->

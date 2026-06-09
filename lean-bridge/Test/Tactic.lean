@@ -945,6 +945,17 @@ theorem alethe_walker_equiv_simplify_or_idem_axiom_free
 
 #print axioms alethe_walker_equiv_simplify_or_idem_axiom_free
 
+/-- Eq-true elimination: `(a = True) = a`. Proof:
+    `propext (Iff.intro (Eq.mp ∘ Eq.symm) (fun ha ↦ propext …))`.
+    Footprint: propext. cvc5 emits this in `uf_lia_mix` /
+    `lia_weaken_bound` when normalizing `(< -1 0) = true`. -/
+theorem alethe_walker_equiv_simplify_eq_true_axiom_free
+    (a : Prop) : (a = True) = a := by
+  alethe_walker_test
+    "( (step t0 (cl (= (= a true) a)) :rule equiv_simplify) )"
+
+#print axioms alethe_walker_equiv_simplify_eq_true_axiom_free
+
 /-- audit H1: an `equiv_simplify` clause that doesn't match any
     supported pattern must FAIL rather than be admitted. The
     walker throws with a list of supported patterns; the tactic
