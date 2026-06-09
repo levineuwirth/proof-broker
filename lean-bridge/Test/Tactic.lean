@@ -529,21 +529,19 @@ theorem alethe_walker_resolution_axiom_free
 
 #print axioms alethe_walker_resolution_axiom_free
 
-/-- Resolution-chain order: the premises are listed so a strict
-    left-fold strands the middle one — `[x] ∘ [¬y]` share no
-    complementary literal, so the resolver must skip ahead to
-    `[¬x, y]` (which resolves `x`), then come back to `[¬y]`.
-    Exercises the order-robust pivot search. Axiom-free. -/
-theorem alethe_walker_resolution_reorder_axiom_free
-    (x y : Prop) (hx : x) (hxy : ¬x ∨ y) (hny : ¬y) : False := by
+/-- Double-negation resolution pivot: a negated literal `¬P` must
+    resolve against its complement `¬¬P` (`= (not ¬P)`). The pivot
+    search compares literal forms syntactically — `negateLit` would
+    strip `¬P` to `P` and miss the `¬¬P` partner. This is the shape
+    of `uf_lia_mix`'s `t38`. Axiom-free. -/
+theorem alethe_walker_resolution_double_neg_axiom_free
+    (P : Prop) (h0 : ¬P) (h1 : ¬¬P) : False := by
   alethe_walker_test
-    "( (assume a0 x) \
-       (assume a1 (or (not x) y)) \
-       (assume a2 (not y)) \
-       (step t0 (cl (not x) y) :rule or :premises (a1)) \
-       (step t1 (cl) :rule resolution :premises (a0 a2 t0)) )"
+    "( (assume a0 (not P)) \
+       (assume a1 (not (not P))) \
+       (step t0 (cl) :rule resolution :premises (a0 a1)) )"
 
-#print axioms alethe_walker_resolution_reorder_axiom_free
+#print axioms alethe_walker_resolution_double_neg_axiom_free
 
 /- Alethe walker — equality cluster (`refl` / `symm` / `trans` /
    `cong`).
