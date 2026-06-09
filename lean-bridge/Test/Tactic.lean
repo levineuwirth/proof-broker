@@ -1058,6 +1058,37 @@ theorem alethe_walker_cong_le_axiom_free
 
 #print axioms alethe_walker_cong_le_axiom_free
 
+/- Alethe walker — n-ary `cong` (≥3 operands). cvc5 emits one
+   premise per operand of a variadic head; the reifier renders
+   n-ary `or`/`and`/`+` as a right-nested binary chain, so cong
+   folds `mkCongr` over the chain rather than the flat `appFn!`
+   path. Constructive (`mkCongr` only). -/
+
+/-- `cong` over a 3-ary `or`. -/
+theorem alethe_walker_cong_nary_or_axiom_free
+    (a b c a' : Prop) (h : a = a') : (a ∨ b ∨ c) = (a' ∨ b ∨ c) := by
+  alethe_walker_test
+    "( (assume a0 (= a a')) \
+       (step t0 (cl (= b b)) :rule refl) \
+       (step t1 (cl (= c c)) :rule refl) \
+       (step t2 (cl (= (or a b c) (or a' b c))) :rule cong :premises (a0 t0 t1)) )"
+
+#print axioms alethe_walker_cong_nary_or_axiom_free
+
+/-- `cong` over a 3-ary `+` (exercises the variadic-arithmetic
+    reifier and the nested chain together). The goal is written in
+    the right-nested form the reifier produces. -/
+theorem alethe_walker_cong_nary_add_axiom_free
+    (x y z w u v : Int) (h1 : x = y) (h2 : z = w) (h3 : u = v) :
+    (x + (z + u)) = (y + (w + v)) := by
+  alethe_walker_test
+    "( (assume a0 (= x y)) \
+       (assume a1 (= z w)) \
+       (assume a2 (= u v)) \
+       (step t0 (cl (= (+ x z u) (+ y w v))) :rule cong :premises (a0 a1 a2)) )"
+
+#print axioms alethe_walker_cong_nary_add_axiom_free
+
 /- Alethe walker — snapshot test against a real cvc5 trace.
 
    The trace below is the verbatim alethe-2024 output cvc5
