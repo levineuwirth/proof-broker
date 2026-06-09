@@ -869,6 +869,26 @@ theorem alethe_walker_contraction_axiom_free (a : Prop) (h : a ∨ a) : a := by
 
 #print axioms alethe_walker_contraction_axiom_free
 
+/- Alethe walker — `subproof` (anchored deduction lifting).
+   A subproof assumes `a` locally, resolves it against the
+   top-level `h : ¬a` to the empty clause, and the discharging
+   `subproof` step lifts that to `(cl (not a) false)` ≡ `¬a ∨ False`
+   (an empty body contributes the `false` literal). A final
+   resolution against `false` peels it off to recover `¬a`.
+   Exercises: local-assume fvar binding, the empty-body → `false`
+   case, and the `em`-based deduction lift. Classical baseline. -/
+theorem alethe_walker_subproof_axiom_free (a : Prop) (h : ¬a) : ¬a := by
+  alethe_walker_test
+    "( (assume a0 (not a)) \
+       (anchor :step t0) \
+       (assume t0.a0 a) \
+       (step t0.t0 (cl) :rule resolution :premises (t0.a0 a0)) \
+       (step t0 (cl (not a) false) :rule subproof :discharge (t0.a0)) \
+       (step t1 (cl (not false)) :rule false) \
+       (step t2 (cl (not a)) :rule resolution :premises (t0 t1)) )"
+
+#print axioms alethe_walker_subproof_axiom_free
+
 /- Alethe walker — `equiv_simplify` (propositional-equality
    tautologies).
 

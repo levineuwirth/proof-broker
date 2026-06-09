@@ -1,16 +1,14 @@
 {
-  "supported_rule_count": 28,
+  "supported_rule_count": 29,
   "summary": {
-    "walkable": 5,
-    "replayed": 4,
+    "walkable": 6,
+    "replayed": 5,
     "shape_gapped": 1,
     "unsat": 6,
     "total": 6,
     "non_unsat": []
   },
-  "backlog": {
-    "subproof": 1
-  },
+  "backlog": {},
   "goals": {
     "lia_disjunction": {
       "result": "unsat",
@@ -38,10 +36,8 @@
     },
     "uf_lia_mix": {
       "result": "unsat",
-      "walkable": false,
-      "missing": [
-        "subproof"
-      ],
+      "walkable": true,
+      "missing": [],
       "replay_skip": null
     },
     "uf_trans": {

@@ -234,6 +234,14 @@ structure WalkerContext where
     the stated clause; literal order follows the left-fold). -/
 structure WalkerState where
   proven : NameMap (Expr × List Sexp)
+  /-- `subproof-close-id ↦ id of its last directly-enclosed step`
+      (the step whose clause the subproof discharges). -/
+  innerFinal : NameMap String := {}
+  /-- `subproof-local-assume-id ↦ (its bound fvar, its literal)`.
+      Local assumes are lambda-bound during the walk (not matched
+      against goal hypotheses); the discharging `subproof` step
+      abstracts them. -/
+  localAssume : NameMap (Expr × Sexp) := {}
   deriving Inhabited
 
 abbrev WalkerM := StateRefT WalkerState MetaM
@@ -1518,6 +1526,67 @@ where
                    / (= (and a a) a) / (= (or a a) a). New patterns \
                    can be added incrementally — see Alethe.lean."
 
+/-- Strip the last dotted component of a step/assume id to get the
+    immediately-enclosing subproof id. `"t6.a0"` → `some "t6"`;
+    `"t19.t6.a0"` → `some "t19.t6"`; `"a0"` → `none`. Mirror of the
+    SDK's `enclosing_subproof_id`. -/
+def enclosingSubproofId (id : String) : Option String :=
+  let parts := id.splitOn "."
+  if parts.length ≤ 1 then none
+  else some (".".intercalate parts.dropLast)
+
+/-- Deduction-theorem lifting for `subproof`. Given
+    `fn : φ₀ → … → φ_{k-1} → ⟦cl D⟧` (the discharged body abstracted
+    over the local assumptions), build a proof of
+    `¬φ₀ ∨ … ∨ ¬φ_{k-1} ∨ ⟦cl D⟧` — i.e. `⟦cl (¬φ₀ … ¬φ_{k-1} D)⟧`.
+    Classical `em` per assumption: if `φᵢ` holds, apply `fn` and
+    descend (right disjunct); if `¬φᵢ`, that is the left disjunct. -/
+private partial def dischargeLift (ctx : WalkerContext) (φs : List Sexp)
+    (suffix : List Sexp) (fn : Expr) : MetaM Expr := do
+  match φs with
+  | [] => pure fn
+  | φ :: rest => do
+    let φE ← sexpToExpr ctx φ
+    let notφ := mkApp (mkConst ``Not) φE
+    let restTy ← clauseTypeOf ctx ((rest.map (fun l => Sexp.list [.atom "not", l])) ++ suffix)
+    let resultTy ← mkAppM ``Or #[notφ, restTy]
+    let posCase ← withLocalDeclD `h φE fun h => do
+      let inner ← dischargeLift ctx rest suffix (mkApp fn h)
+      let inj ← mkAppOptM ``Or.inr #[some notφ, some restTy, some inner]
+      mkLambdaFVars #[h] inj
+    let negCase ← withLocalDeclD `hn notφ fun hn => do
+      let inj ← mkAppOptM ``Or.inl #[some notφ, some restTy, some hn]
+      mkLambdaFVars #[hn] inj
+    let em ← mkAppM ``Classical.em #[φE]
+    mkAppOptM ``Or.elim
+      #[some φE, some notφ, some resultTy, some em, some posCase, some negCase]
+
+/-- `subproof`: close an anchored subproof. The subproof body
+    derives clause `D` (the last directly-enclosed step) under the
+    local assumptions `φ₀ … φ_{k-1}` named by `:discharge`. The
+    conclusion is `(cl (not φ₀) … (not φ_{k-1}) D)` — an empty body
+    `(cl)` contributes the literal `false` (both reify to `False`).
+    Proof: abstract the body over the assumption fvars, then
+    `dischargeLift`. Mirror of Rocq's `elab_subproof`. -/
+private def elabSubproof (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  let st ← get
+  let discharge := s.discharge.getD []
+  let dis ← discharge.mapM fun did => do
+    match st.localAssume.find? (.mkSimple did) with
+    | some (fv, φ) => pure (fv, φ)
+    | none =>
+      throwError m!"alethe walker: 'subproof' discharge '{did}' is not a \
+                     subproof-local assume"
+  let some innerId := st.innerFinal.find? (.mkSimple s.id)
+    | throwError m!"alethe walker: 'subproof' {s.id} has no enclosed steps"
+  let (eInner, _) ← lookupStep innerId
+  let k := discharge.length
+  let suffix := s.clause.drop k
+  let bodyFn ← mkLambdaFVars (dis.map (·.1)).toArray eInner
+  let proof ← dischargeLift ctx (dis.map (·.2)) suffix bodyFn
+  pure (proof, s.clause)
+
 /-- Elaborate a single step: dispatch on `rule` to a per-rule
     elaborator, store the result under the step's `id`. Unknown
     rules throw — the omega fallback in `closeOrFail` catches
@@ -1557,6 +1626,7 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "implies_simplify" => elabImpliesSimplify ctx s
     | "reordering" => elabClauseRemap ctx "reordering" s
     | "contraction" => elabClauseRemap ctx "contraction" s
+    | "subproof" => elabSubproof ctx s
     | "equiv_simplify" => elabEquivSimplify ctx s
     -- PARITY:walker-rules END
     | other =>
@@ -1581,21 +1651,41 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     the step list. The `proven` map keys are both assume ids and
     step ids — Alethe references either uniformly by id. -/
 def walkProof (ctx : WalkerContext) (proof : Proof) : MetaM Expr := do
-  let initial : WalkerState := { proven := {} }
-  let walk : WalkerM Expr := do
-    for a in proof.assumes do
-      let e ← elabAssumeLiteral ctx a.id a.literal
-      storeStep a.id e [a.literal]
-    proof.steps.forM (elabStep ctx)
-    match proof.steps.getLast? with
-    | none =>
-      throwError m!"alethe walker: proof has no steps — nothing to \
-                     conclude (a well-formed alethe-2024 proof ends \
-                     in an empty-clause resolution step)"
-    | some last =>
-      let (e, _) ← lookupStep last.id
-      pure e
-  let (result, _) ← walk.run initial
-  return result
+  -- `close-id ↦ last directly-enclosed step id` (the subproof's
+  -- conclusion, which its discharging step lifts).
+  let innerFinal : NameMap String := proof.steps.foldl (fun m s =>
+    match enclosingSubproofId s.id with
+    | some parent => m.insert (.mkSimple parent) s.id
+    | none => m) {}
+  -- Subproof-local assumes: lambda-bound for the whole walk so
+  -- nested scopes share one flat fvar set; each discharging step
+  -- abstracts its own. Top-level assumes still match goal hyps.
+  let locals := proof.assumes.filter (fun a => (enclosingSubproofId a.id).isSome)
+  let declInfos : Array (Name × (Array Expr → MetaM Expr)) :=
+    locals.toArray.map (fun a => (Name.mkSimple a.id, fun _ => sexpToExpr ctx a.literal))
+  withLocalDeclsD declInfos fun fvars => do
+    let localAssume : NameMap (Expr × Sexp) :=
+      (locals.zip fvars.toList).foldl (fun m (a, fv) =>
+        m.insert (.mkSimple a.id) (fv, a.literal)) {}
+    let initial : WalkerState := { proven := {}, innerFinal, localAssume }
+    let walk : WalkerM Expr := do
+      for a in proof.assumes do
+        let st ← get
+        match st.localAssume.find? (.mkSimple a.id) with
+        | some (fv, _) => storeStep a.id fv [a.literal]
+        | none =>
+          let e ← elabAssumeLiteral ctx a.id a.literal
+          storeStep a.id e [a.literal]
+      proof.steps.forM (elabStep ctx)
+      match proof.steps.getLast? with
+      | none =>
+        throwError m!"alethe walker: proof has no steps — nothing to \
+                       conclude (a well-formed alethe-2024 proof ends \
+                       in an empty-clause resolution step)"
+      | some last =>
+        let (e, _) ← lookupStep last.id
+        pure e
+    let (result, _) ← walk.run initial
+    return result
 
 end ProofBroker.Alethe
