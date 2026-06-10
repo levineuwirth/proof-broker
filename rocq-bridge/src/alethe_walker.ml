@@ -1282,6 +1282,25 @@ let build_eq_true (ctx : walker_ctx) (a : Alethe.Sexp.t) : EConstr.t =
   in
   mk_propext eq_a_true a_e (mk_iff eq_a_true a_e fwd bwd)
 
+(** [(~True) = False] via [propext (conj (fun h => h I)
+    (False_ind _))]. Constructive; footprint adds only propext.
+    cvc5 emits this as a TRUST_THEORY_REWRITE hole when collapsing
+    a refuted reflexive equality ([(r = r) = True], then
+    [(~True) = False]). Mirror of Lean's [buildNotTrueFalse]. *)
+let build_not_true_false (ctx : walker_ctx) : EConstr.t =
+  let true_e = force r_True in
+  let false_e = force r_False in
+  let not_true = mk_not true_e in
+  let fwd =
+    abstract_lam ctx.sigma_ref "h" not_true (fun h ->
+      EConstr.mkApp (h, [| force r_True_I |]))
+  in
+  let bwd =
+    abstract_lam ctx.sigma_ref "h" false_e (fun h ->
+      EConstr.mkApp (force r_False_ind, [| not_true; h |]))
+  in
+  mk_propext not_true false_e (mk_iff not_true false_e fwd bwd)
+
 (** [equiv_simplify]: structural pattern matcher on the
     [(= lhs rhs)] clause. Each recognized pattern delegates to a
     per-pattern builder; unrecognized shapes throw with the
@@ -1302,16 +1321,39 @@ let elab_equiv_simplify (ctx : walker_ctx) (s : Alethe.step)
         build_or_idem ctx a1
       | List [ Atom "="; a; Atom "true" ], a' when a = a' ->
         build_eq_true ctx a
+      | List [ Atom "not"; Atom "true" ], Atom "false" ->
+        build_not_true_false ctx
       | _, _ ->
         raise (Walker_error
                  "'equiv_simplify' pattern not recognized. Supported: \
                   (= (= t t) true) / (= (not (not a)) a) / \
-                  (= (and a a) a) / (= (or a a) a) / (= (= a true) a)")
+                  (= (and a a) a) / (= (or a a) a) / (= (= a true) a) \
+                  / (= (not true) false)")
     in
     (proof, s.clause)
   | _ ->
     raise (Walker_error
              "'equiv_simplify' expects clause (cl (= lhs rhs))")
+
+(** Trust-tagged leaf ([hole] / [rare_rewrite]) with tautology
+    fallback. Most trust holes are arithmetic rewrites
+    (TRUST_THEORY_REWRITE over LIA atoms) and re-derive via the
+    [lia]-discharge; over Prop atoms cvc5 emits the SAME tags on
+    propositional-equality tautologies [lia] can't see (e.g.
+    [(= (= r r) true)] in corpus [prop_eq_trans]). A single-eq
+    clause therefore first tries the [equiv_simplify] structural
+    matcher (propext-based, throws on no match), then falls back
+    to the [lia] discharge. Both paths re-derive from scratch —
+    the Audit-H1 never-admit-on-tag contract is unchanged.
+    Mirror of Lean's [elabTrustTaggedLeafOrTautology]. *)
+let elab_trust_tagged (env : Environ.env) (sigma_ref : Evd.evar_map ref)
+    (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "="; _; _ ] ] ->
+    (try elab_equiv_simplify ctx s
+     with Walker_error _ -> elab_la_generic env sigma_ref ctx s)
+  | _ -> elab_la_generic env sigma_ref ctx s
 
 (* =========================================================
    [equiv_pos1] / [equiv_pos2] (R-10): 3-literal Boolean
@@ -1914,13 +1956,15 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
        (TRUST_THEORY_REWRITE-annotated) and [rare_rewrite] (RARE
        rewrite system) as "admit the conclusion" steps. Audit H1
        forbids trusting either tag: re-derive the clause from
-       scratch via the same [lia]-discharge used for LIA leaves, so
-       the proof goes through the kernel independently of cvc5's
-       annotation. Clauses outside [lia]'s scope surface as the
-       evar's [lia] subgoal failing → tactic failure → the closer
-       chain's [lia] fallback re-runs. Never admit on tag. *)
-    | "hole" -> elab_la_generic env sigma_ref ctx s
-    | "rare_rewrite" -> elab_la_generic env sigma_ref ctx s
+       scratch — propositional-equality tautologies via the
+       [equiv_simplify] matcher, everything else via the same
+       [lia]-discharge used for LIA leaves — so the proof goes
+       through the kernel independently of cvc5's annotation.
+       Clauses outside both scopes surface as the evar's [lia]
+       subgoal failing → tactic failure → the closer chain's
+       [lia] fallback re-runs. Never admit on tag. *)
+    | "hole" -> elab_trust_tagged env sigma_ref ctx s
+    | "rare_rewrite" -> elab_trust_tagged env sigma_ref ctx s
     (* Boolean-cleanup cluster (R-7) — classical (em) case-splits. *)
     | "implies" -> elab_implies ctx st s
     | "equiv1" -> elab_equiv1 ctx st s

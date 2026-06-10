@@ -1164,8 +1164,38 @@ Qed.
 Print alethe_walker_equiv_simplify_or_idem_axiom_free.
 Print Assumptions alethe_walker_equiv_simplify_or_idem_axiom_free.
 
+(* Pattern (= (not true) false): not-true collapse. Constructive;
+   footprint {propositional_extensionality}. cvc5 emits this while
+   collapsing a refuted reflexive equality (corpus prop_eq_trans). *)
+Theorem alethe_walker_equiv_simplify_not_true_axiom_free :
+  (~ True) = False.
+Proof.
+  alethe_walker_test "(
+    (step t0 (cl (= (not true) false)) :rule equiv_simplify) )".
+Qed.
+
+Print alethe_walker_equiv_simplify_not_true_axiom_free.
+Print Assumptions alethe_walker_equiv_simplify_not_true_axiom_free.
+
+(* Trust-tagged leaf with a propositional-equality tautology body:
+   cvc5 tags these TRUST_THEORY_REWRITE exactly like arithmetic
+   rewrites, but lia can't discharge them — the walker's hole path
+   first tries the equiv_simplify structural matcher (corpus
+   prop_eq_trans's steps t5/t7). Footprint
+   {propositional_extensionality}. *)
+Theorem alethe_walker_hole_prop_tautology_axiom_free :
+  forall (a : Prop), ((a = a) = True).
+Proof.
+  intro a.
+  alethe_walker_test "(
+    (step t0 (cl (= (= a a) true)) :rule hole :args (\"TRUST_THEORY_REWRITE\")) )".
+Qed.
+
+Print alethe_walker_hole_prop_tautology_axiom_free.
+Print Assumptions alethe_walker_hole_prop_tautology_axiom_free.
+
 (* Negative: an equiv_simplify clause whose shape is not one of the
-   four recognized patterns must FAIL (handing control to the
+   recognized patterns must FAIL (handing control to the
    closer chain's fallback) rather than fabricate a proof. Here the
    sides are genuinely distinct props, so no tautology builder
    applies. Aborted, registers no axioms. *)
