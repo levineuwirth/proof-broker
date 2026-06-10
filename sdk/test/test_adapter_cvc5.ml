@@ -7,7 +7,7 @@
     * Provable LIA goal → [Cert _] addressing the IR by hash, with
       tier=0 and backend=cvc5.
     * Satisfiable goal → [Failed Sat_returned].
-    * Unsupported IR shape (a quantifier) → [Failed
+    * Unsupported IR shape (a lambda) → [Failed
       (Unsupported_ir _)] (purely Smtlib-level, no cvc5 spawn).
     * Cert envelope-verifies through [Verifier.verify] as
       [Tier_check_deferred 0]. *)
@@ -114,7 +114,7 @@ let test_dispatch_sat_returns_failure () =
 
 let test_dispatch_unsupported_ir () =
   let ir = make_ir
-    (Forall { var = "x"; ty = "Int"; body = Var { name = "x" } })
+    (Lambda { binders = [ { var = "x"; ty = "Int" } ]; body = Var { name = "x" } })
   in
   match Adapter_cvc5.dispatch ir with
   | Failed (Unsupported_ir { kind; _ }) ->

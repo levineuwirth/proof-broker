@@ -1,0 +1,36 @@
+{
+  "id": "prop_eq_trans",
+  "description": "p = q, q = r |- p = r (Prop-equality transitivity; Bool-= reifies as @eq Prop, exercising the propext path)",
+  "coq_goal": "forall p q r : Prop, p = q -> q = r -> p = r",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UF", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "Eq", "type": "Bool",
+        "left": { "node": "Var", "name": "p" },
+        "right": { "node": "Var", "name": "r" }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "p", "type": "Prop" },
+        { "name": "q", "type": "Prop" },
+        { "name": "r", "type": "Prop" }
+      ],
+      "hypotheses": [
+        { "name": "h1", "shell": { "node": "Eq", "type": "Bool",
+          "left": { "node": "Var", "name": "p" }, "right": { "node": "Var", "name": "q" } } },
+        { "name": "h2", "shell": { "node": "Eq", "type": "Bool",
+          "left": { "node": "Var", "name": "q" }, "right": { "node": "Var", "name": "r" } } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

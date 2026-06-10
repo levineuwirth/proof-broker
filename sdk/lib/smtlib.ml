@@ -24,11 +24,14 @@
       verbatim, with negative literals wrapped as [(- N)] per
       SMT-LIB grammar.
 
-    Out of scope. Quantifiers ([Forall]/[Exists]),
-    [Lambda]/[Opaque], type-class methods that haven't been
-    refined to primitives ([HAdd.hAdd] is accepted but indicates
-    pre-refinement IR — adapter callers usually want a refined
-    IR), bitvector/string/array sorts, uninterpreted functions.
+    * Quantifiers: [Forall]/[Exists] emit as SMT-LIB binders (one
+      binder per IR node; nesting composes). Their presence drops
+      the [QF_] prefix from the picked logic.
+
+    Out of scope. [Lambda]/[Opaque], type-class methods that
+    haven't been refined to primitives ([HAdd.hAdd] is accepted
+    but indicates pre-refinement IR — adapter callers usually want
+    a refined IR), string/array sorts.
 
     Refinement record. The serializer reports which method
     specializations it applied — e.g., [HAdd.hAdd] → [+] — so the
@@ -346,16 +349,8 @@ let rec emit_term ~specs (t : Ir.shell_term) : (string, error) result =
   | Eq { left; right; _ } ->
     emit_bin_op ~specs "=" left right
   | App { symbol; args; _ } -> emit_app ~specs symbol args
-  | Forall _ ->
-    Error (Unsupported_node {
-      node = "Forall";
-      detail = "quantifiers not supported in Phase 2.1";
-    })
-  | Exists _ ->
-    Error (Unsupported_node {
-      node = "Exists";
-      detail = "quantifiers not supported in Phase 2.1";
-    })
+  | Forall { var; ty; body } -> emit_binder ~specs "forall" var ty body
+  | Exists { var; ty; body } -> emit_binder ~specs "exists" var ty body
   | Lambda _ ->
     Error (Unsupported_node {
       node = "Lambda";
@@ -372,6 +367,21 @@ and emit_bin_op ~specs op a b =
   let* sa = emit_term ~specs a in
   let* sb = emit_term ~specs b in
   Ok (Printf.sprintf "(%s %s %s)" op sa sb)
+
+(** Quantifier emission. The IR's [Forall]/[Exists] carry a single
+    binder each; nested quantifiers arrive as nested nodes and emit
+    as nested SMT-LIB binders ([(forall ((x Int)) (forall ((y Int))
+    ...))] — equivalent to the flattened multi-binder form). The
+    bound variable goes through the same simple-symbol policy as
+    free vars: cvc5 echoes binder names verbatim in its Alethe
+    output, so a name needing quotes would break the proof-trace
+    round trip the same way (see [format_identifier]). *)
+and emit_binder ~specs quant var ty body =
+  let ( let* ) = Result.bind in
+  let* v = format_identifier ~site:quant var in
+  let* sort = sort_of_type_ref ~site:quant ty in
+  let* b = emit_term ~specs body in
+  Ok (Printf.sprintf "(%s ((%s %s)) %s)" quant v sort b)
 
 and emit_app ~specs symbol args =
   (* UF.<name> symbols correspond to declared uninterpreted
@@ -470,8 +480,9 @@ let fragment_of_logic = function
     quietly run it under integer semantics. The rule mirrors
     [Farkas.effective_fragment]: any [Real]-typed free var or
     any [Real] type tag inside any hypothesis or goal shell
-    selects QF_LRA; otherwise QF_LIA. We're QF-only in Phase
-    2.1; quantifiers would lift to LIA / LRA. *)
+    selects QF_LRA; otherwise QF_LIA. A [Forall]/[Exists] anywhere
+    in the goal or a hypothesis lifts the pick to the quantified
+    logic (the QF_-less name). *)
 (** True iff any subterm carries a [BitVec(N)] type tag, on a
     Num_lit or an Eq's [ty] field. App symbols that are BV ops
     don't carry types; their BV-ness propagates from the operands.
@@ -517,7 +528,36 @@ let rec shell_mentions_uf (t : Ir.shell_term) : bool =
   | Lambda { body; _ } -> shell_mentions_uf body
   | Opaque _ -> false
 
+(** True iff any subterm is a [Forall] or [Exists]. Quantifier
+    presence drops the [QF_] prefix from the picked logic; a
+    [Lambda] body can't actually serialize, so its traversal arm
+    here is for totality only. Mirrors [shell_mentions_uf]. *)
+let rec shell_mentions_quantifier (t : Ir.shell_term) : bool =
+  match t with
+  | Forall _ | Exists _ -> true
+  | Var _ | Const _ | Num_lit _ | Opaque _ -> false
+  | Eq { left; right; _ } ->
+    shell_mentions_quantifier left || shell_mentions_quantifier right
+  | App { args; _ } -> List.exists shell_mentions_quantifier args
+  | And { left; right } | Or { left; right } ->
+    shell_mentions_quantifier left || shell_mentions_quantifier right
+  | Implies { antecedent; consequent } ->
+    shell_mentions_quantifier antecedent
+    || shell_mentions_quantifier consequent
+  | Not { operand } -> shell_mentions_quantifier operand
+  | Lambda { body; _ } -> shell_mentions_quantifier body
+
 let pick_logic (ir : Ir.t) : string =
+  let quantified =
+    shell_mentions_quantifier ir.goal.shell
+    || List.exists (fun (h : Ir.hypothesis) ->
+         shell_mentions_quantifier h.shell)
+       ir.context.hypotheses
+  in
+  (* SMT-LIB's quantified logics are the QF_ names minus the
+     prefix; the quantifier-free pick below is computed first and
+     the prefix dropped when any shell carries a binder. *)
+  let qf name = if quantified then name else "QF_" ^ name in
   let any_bv_free_var =
     List.exists
       (fun (fv : Ir.free_var) -> Option.is_some (parse_bitvec_width fv.ty))
@@ -528,7 +568,7 @@ let pick_logic (ir : Ir.t) : string =
     || List.exists (fun (h : Ir.hypothesis) -> shell_mentions_bv h.shell)
        ir.context.hypotheses
   in
-  if any_bv_free_var || any_bv_term then "QF_BV"
+  if any_bv_free_var || any_bv_term then qf "BV"
   else
     let any_uf_free_var =
       List.exists
@@ -558,10 +598,10 @@ let pick_logic (ir : Ir.t) : string =
        expands this match exhaustively; in scope today, just
        LIA / LRA crossed with UF presence. *)
     match uf, real with
-    | true,  true  -> "QF_UFLRA"
-    | true,  false -> "QF_UFLIA"
-    | false, true  -> "QF_LRA"
-    | false, false -> "QF_LIA"
+    | true,  true  -> qf "UFLRA"
+    | true,  false -> qf "UFLIA"
+    | false, true  -> qf "LRA"
+    | false, false -> qf "LIA"
 
 (** Assemble the SMT-LIB script. Order:
     1. [(set-logic ...)] — picked from free-var sorts.

@@ -1,0 +1,8 @@
+(
+(assume a0 (! (not (or p (! (not p) :named @p_1))) :named @p_2))
+(step t0 (cl (not (! (not @p_1) :named @p_3)) p) :rule not_not)
+(step t1 (cl @p_3) :rule not_or :premises (a0) :args (1))
+(step t2 (cl p) :rule resolution :premises (t0 t1))
+(step t3 (cl @p_1) :rule not_or :premises (a0) :args (0))
+(step t4 (cl) :rule resolution :premises (t2 t3))
+)

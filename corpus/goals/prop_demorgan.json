@@ -1,0 +1,35 @@
+{
+  "id": "prop_demorgan",
+  "description": "~(p \\/ q) |- ~p /\\ ~q (de Morgan; probes not_or/and rules/and_simplify)",
+  "coq_goal": "forall p q : Prop, ~(p \\/ q) -> ~p /\\ ~q",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UF", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "And",
+        "left": { "node": "Not", "operand": { "node": "Var", "name": "p" } },
+        "right": { "node": "Not", "operand": { "node": "Var", "name": "q" } }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "p", "type": "Prop" },
+        { "name": "q", "type": "Prop" }
+      ],
+      "hypotheses": [
+        { "name": "h1", "shell": { "node": "Not", "operand": {
+          "node": "Or",
+          "left": { "node": "Var", "name": "p" },
+          "right": { "node": "Var", "name": "q" } } } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

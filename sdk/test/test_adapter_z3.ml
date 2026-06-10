@@ -151,10 +151,10 @@ let test_dispatch_sat_returns_failure () =
     Alcotest.fail "expected Sat_returned, got Cert (goal is not provable!)"
 
 let test_dispatch_unsupported_ir () =
-  (* Quantifier in the goal — Smtlib serializer rejects, dispatch
+  (* Lambda in the goal — Smtlib serializer rejects, dispatch
      should surface as Unsupported_ir. Doesn't actually need z3. *)
   let ir = make_ir
-    (Forall { var = "x"; ty = "Int"; body = Var { name = "x" } })
+    (Lambda { binders = [ { var = "x"; ty = "Int" } ]; body = Var { name = "x" } })
   in
   match Adapter_z3.dispatch ir with
   | Failed (Unsupported_ir { kind; _ }) ->

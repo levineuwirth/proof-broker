@@ -1,0 +1,27 @@
+{
+  "id": "prop_excluded_middle",
+  "description": "|- p \\/ ~p (excluded middle; probes tautology/or rules)",
+  "coq_goal": "forall p : Prop, p \\/ ~p",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UF", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "Or",
+        "left": { "node": "Var", "name": "p" },
+        "right": { "node": "Not", "operand": { "node": "Var", "name": "p" } }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [ { "name": "p", "type": "Prop" } ],
+      "hypotheses": []
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

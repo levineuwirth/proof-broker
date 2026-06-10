@@ -1,14 +1,17 @@
 {
   "supported_rule_count": 29,
   "summary": {
-    "walkable": 9,
-    "replayed": 9,
+    "walkable": 12,
+    "replayed": 12,
     "shape_gapped": 0,
-    "unsat": 9,
-    "total": 9,
+    "unsat": 14,
+    "total": 14,
     "non_unsat": []
   },
-  "backlog": {},
+  "backlog": {
+    "forall_inst": 2,
+    "bind": 1
+  },
   "goals": {
     "lia_disjunction": {
       "result": "unsat",
@@ -46,10 +49,45 @@
       "missing": [],
       "replay_skip": null
     },
+    "prop_demorgan": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
+    "prop_eq_trans": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
+    "prop_excluded_middle": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
     "uf_cong": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
+      "replay_skip": null
+    },
+    "uf_exists_witness": {
+      "result": "unsat",
+      "walkable": false,
+      "missing": [
+        "forall_inst"
+      ],
+      "replay_skip": null
+    },
+    "uf_forall_inst": {
+      "result": "unsat",
+      "walkable": false,
+      "missing": [
+        "bind",
+        "forall_inst"
+      ],
       "replay_skip": null
     },
     "uf_lia_mix": {

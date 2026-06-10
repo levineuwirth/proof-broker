@@ -1,0 +1,41 @@
+{
+  "id": "uf_exists_witness",
+  "description": "f y = 0 |- exists x, f x = 0 (existential from a witness; quantifier-rule discovery goal)",
+  "coq_goal": "forall (f : Z -> Z) (y : Z), f y = 0 -> exists x : Z, f x = 0",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UFLIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "Exists", "var": "x", "type": "Int",
+        "body": {
+          "node": "Eq", "type": "Int",
+          "left": { "node": "App", "symbol": "UF.f", "type_args": [],
+            "args": [ { "node": "Var", "name": "x" } ] },
+          "right": { "node": "NumLit", "value": "0", "type": "Int" }
+        }
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "f", "type": "Int->Int" },
+        { "name": "y", "type": "Int" }
+      ],
+      "hypotheses": [
+        { "name": "h1", "shell": {
+          "node": "Eq", "type": "Int",
+          "left": { "node": "App", "symbol": "UF.f", "type_args": [],
+            "args": [ { "node": "Var", "name": "y" } ] },
+          "right": { "node": "NumLit", "value": "0", "type": "Int" }
+        } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}
