@@ -1188,7 +1188,7 @@ Theorem alethe_walker_hole_prop_tautology_axiom_free :
 Proof.
   intro a.
   alethe_walker_test "(
-    (step t0 (cl (= (= a a) true)) :rule hole :args (\"TRUST_THEORY_REWRITE\")) )".
+    (step t0 (cl (= (= a a) true)) :rule hole :args (""TRUST_THEORY_REWRITE"")) )".
 Qed.
 
 Print alethe_walker_hole_prop_tautology_axiom_free.
