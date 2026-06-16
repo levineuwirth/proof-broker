@@ -1,0 +1,155 @@
+{
+  "goals": {
+    "lia_disjunction": {
+      "steps": 11,
+      "assumes": 1,
+      "subproofs": 0,
+      "rule_apps": 11,
+      "distinct_rules": 6,
+      "arith_leaves": 2,
+      "resolution": 3
+    },
+    "lia_eq_from_bounds": {
+      "steps": 26,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 26,
+      "distinct_rules": 10,
+      "arith_leaves": 4,
+      "resolution": 6
+    },
+    "lia_false_from_bounds": {
+      "steps": 39,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 39,
+      "distinct_rules": 15,
+      "arith_leaves": 12,
+      "resolution": 9
+    },
+    "lia_irrefl": {
+      "steps": 7,
+      "assumes": 1,
+      "subproofs": 0,
+      "rule_apps": 7,
+      "distinct_rules": 5,
+      "arith_leaves": 2,
+      "resolution": 2
+    },
+    "lia_pigeonhole3": {
+      "steps": 636,
+      "assumes": 38,
+      "subproofs": 10,
+      "rule_apps": 636,
+      "distinct_rules": 24,
+      "arith_leaves": 118,
+      "resolution": 140
+    },
+    "lia_strict_trans": {
+      "steps": 66,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 66,
+      "distinct_rules": 15,
+      "arith_leaves": 21,
+      "resolution": 11
+    },
+    "lia_sum_bound": {
+      "steps": 18,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 18,
+      "distinct_rules": 6,
+      "arith_leaves": 5,
+      "resolution": 4
+    },
+    "lia_weaken_bound": {
+      "steps": 40,
+      "assumes": 2,
+      "subproofs": 0,
+      "rule_apps": 40,
+      "distinct_rules": 15,
+      "arith_leaves": 12,
+      "resolution": 9
+    },
+    "prop_demorgan": {
+      "steps": 5,
+      "assumes": 2,
+      "subproofs": 0,
+      "rule_apps": 5,
+      "distinct_rules": 3,
+      "arith_leaves": 0,
+      "resolution": 2
+    },
+    "prop_eq_trans": {
+      "steps": 13,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 13,
+      "distinct_rules": 7,
+      "arith_leaves": 2,
+      "resolution": 2
+    },
+    "prop_excluded_middle": {
+      "steps": 5,
+      "assumes": 1,
+      "subproofs": 0,
+      "rule_apps": 5,
+      "distinct_rules": 3,
+      "arith_leaves": 0,
+      "resolution": 2
+    },
+    "uf_cong": {
+      "steps": 13,
+      "assumes": 2,
+      "subproofs": 0,
+      "rule_apps": 13,
+      "distinct_rules": 7,
+      "arith_leaves": 2,
+      "resolution": 2
+    },
+    "uf_exists_witness": {
+      "steps": 23,
+      "assumes": 3,
+      "subproofs": 1,
+      "rule_apps": 23,
+      "distinct_rules": 12,
+      "arith_leaves": 4,
+      "resolution": 6
+    },
+    "uf_forall_inst": {
+      "steps": 26,
+      "assumes": 3,
+      "subproofs": 3,
+      "rule_apps": 26,
+      "distinct_rules": 14,
+      "arith_leaves": 4,
+      "resolution": 7
+    },
+    "uf_lia_mix": {
+      "steps": 120,
+      "assumes": 10,
+      "subproofs": 3,
+      "rule_apps": 120,
+      "distinct_rules": 24,
+      "arith_leaves": 19,
+      "resolution": 30
+    },
+    "uf_trans": {
+      "steps": 13,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 13,
+      "distinct_rules": 7,
+      "arith_leaves": 2,
+      "resolution": 2
+    }
+  },
+  "totals": {
+    "goals": 16,
+    "steps": 1061,
+    "arith_leaves": 209,
+    "max_steps": 636,
+    "max_arith_leaves": 118
+  }
+}

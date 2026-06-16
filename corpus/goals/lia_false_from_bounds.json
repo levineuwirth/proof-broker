@@ -1,0 +1,24 @@
+{
+  "id": "lia_false_from_bounds",
+  "description": "x <= 3, 5 <= x |- False (False-conclusion goal: exercises the (not false) negated-goal assume)",
+  "coq_goal": "forall x : Z, x <= 3 -> 5 <= x -> False",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "LIA", "decidable_theory": null
+    },
+    "goal": { "shell": { "node": "Const", "name": "False" } },
+    "context": {
+      "type_vars": [],
+      "free_vars": [ { "name": "x", "type": "Int" } ],
+      "hypotheses": [
+        { "name": "h1", "shell": { "node": "App", "symbol": "LE.le", "type_args": [], "args": [ { "node": "Var", "name": "x" }, { "node": "NumLit", "value": "3", "type": "Int" } ] } },
+        { "name": "h2", "shell": { "node": "App", "symbol": "LE.le", "type_args": [], "args": [ { "node": "NumLit", "value": "5", "type": "Int" }, { "node": "Var", "name": "x" } ] } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

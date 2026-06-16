@@ -599,6 +599,15 @@ def binaryResolve (ctx : WalkerContext)
     seeds them into the walker state before walking the steps. -/
 private def elabAssumeLiteral (ctx : WalkerContext) (id : String)
     (literal : Sexp) : WalkerM Expr := do
+  -- `(not false)` is the negated-goal assume cvc5 emits for a `False`
+  -- conclusion: no `byContra` hypothesis is introduced (the goal is
+  -- already `False`), so it has no matching local hyp. It is the
+  -- trivial tautology `¬False ≡ False → False`, discharged by the
+  -- identity — same proof `elabFalseStep` gives the `false` rule.
+  match literal with
+  | .list [.atom "not", .atom "false"] =>
+    return .lam .anonymous (mkConst ``False) (.bvar 0) .default
+  | _ =>
   let stmt ← sexpToExpr ctx literal
   -- Search the local context for a hypothesis whose type is
   -- definitionally equal to the assume's stated literal.

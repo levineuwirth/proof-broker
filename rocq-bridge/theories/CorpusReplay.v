@@ -69,6 +69,54 @@ Proof. intros x h1 h2. alethe_walker_test "(
 (step t25 (cl) :rule resolution :premises (t19 t22 t24))
 )". Qed.
 
+(* x <= 3, 5 <= x |- False (False-conclusion goal: exercises the (not false) negated-goal assume) *)
+Theorem corpus_lia_false_from_bounds :
+  forall x : Z, x <= 3 -> 5 <= x -> False.
+Proof. intros x h1 h2. alethe_walker_test "(
+(assume a0 (! (<= x 3) :named @p_1))
+(assume a1 (! (<= 5 x) :named @p_2))
+(assume a2 (! (not false) :named @p_3))
+(step t0 (cl (not (! (= (! (< (! (+ x (! (* -1 x) :named @p_6)) :named @p_7) (! (+ 4 (! (* -1 5) :named @p_4)) :named @p_5)) :named @p_8) false) :named @p_20)) (not @p_8) false) :rule equiv_pos2)
+(step t1 (cl (! (= @p_8 (! (not (! (>= @p_7 @p_5) :named @p_21)) :named @p_22)) :named @p_31)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_31 3 6))
+(step t2 (cl (! (= @p_7 0) :named @p_30)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_30 3 7))
+(step t3 (cl (= 4 4)) :rule refl)
+(step t4 (cl (! (= @p_4 -5) :named @p_29)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_29 3 7))
+(step t5 (cl (= @p_5 (! (+ 4 -5) :named @p_27))) :rule cong :premises (t3 t4))
+(step t6 (cl (! (= @p_27 -1) :named @p_28)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_28 3 7))
+(step t7 (cl (= @p_5 -1)) :rule trans :premises (t5 t6))
+(step t8 (cl (= @p_21 (! (>= 0 -1) :named @p_25))) :rule cong :premises (t2 t7))
+(step t9 (cl (! (= @p_25 true) :named @p_26)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_26 3 7))
+(step t10 (cl (= @p_21 true)) :rule trans :premises (t8 t9))
+(step t11 (cl (= @p_22 (! (not true) :named @p_23))) :rule cong :premises (t10))
+(step t12 (cl (! (= @p_23 false) :named @p_24)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_24 1 7))
+(step t13 (cl (= @p_22 false)) :rule trans :premises (t11 t12))
+(step t14 (cl @p_20) :rule trans :premises (t1 t13))
+(step t15 (cl (not (! (< x 4) :named @p_15)) (not (! (<= @p_6 @p_4) :named @p_9)) @p_8) :rule la_generic :args (1/1 1/1 1/1))
+(step t16 (cl (not (! (= (! (not (>= x 4)) :named @p_16) @p_15) :named @p_18)) (not @p_16) @p_15) :rule equiv_pos2)
+(step t17 (cl (! (= @p_15 @p_16) :named @p_19)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_19 3 6))
+(step t18 (cl @p_18) :rule symm :premises (t17))
+(step t19 (cl (not (! (= @p_1 @p_16) :named @p_17)) (not @p_1) @p_16) :rule equiv_pos2)
+(step t20 (cl @p_17) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_17 3 7))
+(step t21 (cl @p_16) :rule resolution :premises (t19 t20 a0))
+(step t22 (cl @p_15) :rule resolution :premises (t16 t18 t21))
+(step t23 (cl (=> (! (and (! (< -1 0) :named @p_11) (! (>= x 5) :named @p_10)) :named @p_12) @p_9)) :rule la_mult_neg)
+(step t24 (cl (not @p_12) @p_9) :rule implies :premises (t23))
+(step t25 (cl @p_12 (not @p_11) (not @p_10)) :rule and_neg)
+(step t26 (cl (= (! (= @p_11 true) :named @p_14) @p_11)) :rule equiv_simplify)
+(step t27 (cl (not @p_14) @p_11) :rule equiv1 :premises (t26))
+(step t28 (cl @p_14) :rule rare_rewrite :args (""evaluate""))
+(step t29 (cl @p_11) :rule resolution :premises (t27 t28))
+(step t30 (cl (not (! (= @p_2 @p_10) :named @p_13)) (not @p_2) @p_10) :rule equiv_pos2)
+(step t31 (cl @p_13) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_13 3 7))
+(step t32 (cl @p_10) :rule resolution :premises (t30 t31 a1))
+(step t33 (cl @p_12) :rule resolution :premises (t25 t29 t32))
+(step t34 (cl @p_9) :rule resolution :premises (t24 t33))
+(step t35 (cl @p_8) :rule resolution :premises (t15 t22 t34))
+(step t36 (cl false) :rule resolution :premises (t0 t14 t35))
+(step t37 (cl @p_3) :rule false)
+(step t38 (cl) :rule resolution :premises (t36 t37))
+)". Qed.
+
 (* |- ~(x < x) (irreflexivity of <; probes comp_simplify/la_generic + not) *)
 Theorem corpus_lia_irrefl :
   forall x : Z, ~(x < x).
@@ -82,6 +130,8 @@ Proof. intros x. alethe_walker_test "(
 (step t5 (cl (not false)) :rule false)
 (step t6 (cl) :rule resolution :premises (t4 t5))
 )". Qed.
+
+(* SKIPPED corpus_lia_pigeonhole3: statically walkable but replay_skip: scale point: 636 steps / 118 arithmetic leaves, all 24 rules supported (statically walkable). Dynamic replay blocked by a resolution shape gap -- the final n-ary resolution leaves an un-contracted duplicate literal ((a-b>=0) or (a-b>=0)) instead of the empty clause. Profiled via tools/profile_walker.py; see RETROSPECTIVES/phase-6-scale.md. *)
 
 (* x < y, y < z |- x < z (strict transitivity; probes la_generic/comp_simplify) *)
 Theorem corpus_lia_strict_trans :

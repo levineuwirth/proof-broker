@@ -671,6 +671,21 @@ let elab_assume_literal (env : Environ.env)
     (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (id : string) (literal : Alethe.Sexp.t)
     : EConstr.t =
+  match literal with
+  | List [ Atom "not"; Atom "false" ] ->
+    (* [(not false)] is the negated-goal assume cvc5 emits for a
+       [False] conclusion: the goal is already [False], so no
+       by-contradiction hypothesis is introduced and there is no
+       local hyp to match. It is the trivial tautology
+       [~False = False -> False], discharged by the identity — the
+       same proof [elab_false_step] gives the [false] rule. Mirror
+       of Lean's [elabAssumeLiteral] [(not false)] case. *)
+    let binder =
+      Context.make_annot
+        (Names.Name (Names.Id.of_string "h")) EConstr.ERelevance.relevant
+    in
+    EConstr.mkLambda (binder, force r_False, EConstr.mkRel 1)
+  | _ ->
   let stmt = sexp_to_constr ctx literal in
   let named_ctx = Environ.named_context env in
   let rec find = function

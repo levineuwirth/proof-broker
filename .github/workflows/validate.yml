@@ -52,10 +52,18 @@ jobs:
       - name: Walker corpus replay theory up to date
         run: python tools/gen_corpus_replay.py --check
 
-      - name: Run walker coverage + replay-gen tests
+      # Walker scale profile (structural cost predictors per trace): a
+      # trace-complexity change -- a refreshed cvc5 emitting a heavier
+      # proof, or a new goal that balloons the arithmetic-leaf count --
+      # must land as a reviewed diff to corpus/profile.json.
+      - name: Walker scale profile up to date
+        run: python tools/profile_walker.py --check
+
+      - name: Run walker coverage + replay-gen + profile tests
         run: |
           python tools/test_walker_coverage.py
           python tools/test_gen_corpus_replay.py
+          python tools/test_profile_walker.py
 
   sdk:
     runs-on: ubuntu-latest

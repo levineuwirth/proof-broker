@@ -1,11 +1,11 @@
 {
   "supported_rule_count": 31,
   "summary": {
-    "walkable": 14,
-    "replayed": 14,
-    "shape_gapped": 0,
-    "unsat": 14,
-    "total": 14,
+    "walkable": 16,
+    "replayed": 15,
+    "shape_gapped": 1,
+    "unsat": 16,
+    "total": 16,
     "non_unsat": []
   },
   "backlog": {},
@@ -22,11 +22,23 @@
       "missing": [],
       "replay_skip": null
     },
+    "lia_false_from_bounds": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
     "lia_irrefl": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
       "replay_skip": null
+    },
+    "lia_pigeonhole3": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": "scale point: 636 steps / 118 arithmetic leaves, all 24 rules supported (statically walkable). Dynamic replay blocked by a resolution shape gap -- the final n-ary resolution leaves an un-contracted duplicate literal ((a-b>=0) or (a-b>=0)) instead of the empty clause. Profiled via tools/profile_walker.py; see RETROSPECTIVES/phase-6-scale.md."
     },
     "lia_strict_trans": {
       "result": "unsat",
