@@ -970,6 +970,30 @@ theorem alethe_walker_equiv_simplify_eq_true_axiom_free
 
 #print axioms alethe_walker_equiv_simplify_eq_true_axiom_free
 
+/-- Not-true collapse: `(¬True) = False`. Proof:
+    `propext (Iff.intro (fun h ↦ h True.intro) False.elim)`.
+    Footprint: propext. cvc5 emits this while collapsing a
+    refuted reflexive equality (corpus `prop_eq_trans`). -/
+theorem alethe_walker_equiv_simplify_not_true_axiom_free
+    : (¬True) = False := by
+  alethe_walker_test
+    "( (step t0 (cl (= (not true) false)) :rule equiv_simplify) )"
+
+#print axioms alethe_walker_equiv_simplify_not_true_axiom_free
+
+/-- Trust-tagged leaf with a propositional-equality tautology
+    body: cvc5 tags these `TRUST_THEORY_REWRITE` exactly like
+    arithmetic rewrites, but omega can't discharge them — the
+    walker's `hole` path first tries the `equiv_simplify`
+    structural matcher (corpus `prop_eq_trans`'s steps t5/t7).
+    Footprint: propext. -/
+theorem alethe_walker_hole_prop_tautology_axiom_free
+    (a : Prop) : (a = a) = True := by
+  alethe_walker_test
+    "( (step t0 (cl (= (= a a) true)) :rule hole :args (\"TRUST_THEORY_REWRITE\")) )"
+
+#print axioms alethe_walker_hole_prop_tautology_axiom_free
+
 /-- audit H1: an `equiv_simplify` clause that doesn't match any
     supported pattern must FAIL rather than be admitted. The
     walker throws with a list of supported patterns; the tactic
@@ -1167,5 +1191,32 @@ theorem alethe_walker_real_cvc5_trace_axiom_free
     (step t17 (cl) :rule resolution :premises (t13 t16)) )"
 
 #print axioms alethe_walker_real_cvc5_trace_axiom_free
+
+/-- Equality chains over `Prop` atoms (corpus `prop_eq_trans`):
+    `p = q, q = r ⊢ p = r` via `trans`/`refl`/`cong` where the
+    carrier sort is `Bool` (reified `Prop`), not `Int`. The
+    `TRUST_THEORY_REWRITE` holes normalize `(r = r) = True` and
+    `(¬True) = False` over Prop. Verbatim cvc5 1.3.0 output. -/
+theorem alethe_walker_prop_eq_trans_axiom_free
+    (p q r : Prop) (h1 : p = q) (h2 : q = r) : p = r := by
+  alethe_walker_test "( \
+    (assume a0 (! (= p q) :named @p_1)) \
+    (assume a1 (! (= q r) :named @p_2)) \
+    (assume a2 (! (not (! (= p r) :named @p_3)) :named @p_4)) \
+    (step t0 (cl (not (! (= @p_4 false) :named @p_5)) (not @p_4) false) :rule equiv_pos2) \
+    (step t1 (cl @p_3) :rule trans :premises (a0 a1)) \
+    (step t2 (cl (! (= r r) :named @p_6)) :rule refl) \
+    (step t3 (cl (= @p_3 @p_6)) :rule cong :premises (t1 t2)) \
+    (step t4 (cl (= @p_4 (! (not @p_6) :named @p_7))) :rule cong :premises (t3)) \
+    (step t5 (cl (! (= @p_6 true) :named @p_10)) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_10 1 6)) \
+    (step t6 (cl (= @p_7 (! (not true) :named @p_8))) :rule cong :premises (t5)) \
+    (step t7 (cl (! (= @p_8 false) :named @p_9)) :rule hole :args (\"TRUST_THEORY_REWRITE\" @p_9 1 7)) \
+    (step t8 (cl (= @p_7 false)) :rule trans :premises (t6 t7)) \
+    (step t9 (cl @p_5) :rule trans :premises (t4 t8)) \
+    (step t10 (cl false) :rule resolution :premises (t0 t9 a2)) \
+    (step t11 (cl (not false)) :rule false) \
+    (step t12 (cl) :rule resolution :premises (t10 t11)) )"
+
+#print axioms alethe_walker_prop_eq_trans_axiom_free
 
 end ProofBroker.Test

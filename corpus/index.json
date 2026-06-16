@@ -48,6 +48,26 @@
     "steps": 40,
     "assumes": 2
   },
+  "prop_demorgan": {
+    "result": "unsat",
+    "rules": [ "and_neg", "not_or", "resolution" ],
+    "steps": 5,
+    "assumes": 2
+  },
+  "prop_eq_trans": {
+    "result": "unsat",
+    "rules": [
+      "cong", "equiv_pos2", "false", "hole", "refl", "resolution", "trans"
+    ],
+    "steps": 13,
+    "assumes": 3
+  },
+  "prop_excluded_middle": {
+    "result": "unsat",
+    "rules": [ "not_not", "not_or", "resolution" ],
+    "steps": 5,
+    "assumes": 1
+  },
   "uf_cong": {
     "result": "unsat",
     "rules": [
@@ -55,6 +75,25 @@
     ],
     "steps": 13,
     "assumes": 2
+  },
+  "uf_exists_witness": {
+    "result": "unsat",
+    "rules": [
+      "cong", "contraction", "equiv_pos2", "forall_inst", "hole", "implies",
+      "implies_neg1", "implies_neg2", "or", "resolution", "subproof", "trans"
+    ],
+    "steps": 23,
+    "assumes": 3
+  },
+  "uf_forall_inst": {
+    "result": "unsat",
+    "rules": [
+      "bind", "cong", "contraction", "equiv_pos2", "forall_inst", "hole",
+      "implies", "implies_neg1", "implies_neg2", "or", "reordering",
+      "resolution", "subproof", "trans"
+    ],
+    "steps": 26,
+    "assumes": 3
   },
   "uf_lia_mix": {
     "result": "unsat",

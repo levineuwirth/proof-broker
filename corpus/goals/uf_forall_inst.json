@@ -1,0 +1,42 @@
+{
+  "id": "uf_forall_inst",
+  "description": "(forall x, f x <= 10) |- f 3 <= 10 (universal instantiation; quantifier-rule discovery goal)",
+  "coq_goal": "forall (f : Z -> Z), (forall x : Z, f x <= 10) -> f 3 <= 10",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UFLIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App", "symbol": "LE.le", "type_args": [],
+        "args": [
+          { "node": "App", "symbol": "UF.f", "type_args": [],
+            "args": [ { "node": "NumLit", "value": "3", "type": "Int" } ] },
+          { "node": "NumLit", "value": "10", "type": "Int" }
+        ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [ { "name": "f", "type": "Int->Int" } ],
+      "hypotheses": [
+        { "name": "h1", "shell": {
+          "node": "Forall", "var": "x", "type": "Int",
+          "body": {
+            "node": "App", "symbol": "LE.le", "type_args": [],
+            "args": [
+              { "node": "App", "symbol": "UF.f", "type_args": [],
+                "args": [ { "node": "Var", "name": "x" } ] },
+              { "node": "NumLit", "value": "10", "type": "Int" }
+            ]
+          }
+        } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

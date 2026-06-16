@@ -47,7 +47,8 @@ let kind_of_error = function
 let detail_of_error = function
   | Unknown_fragment f ->
     Printf.sprintf "no refinement strategy for fragment %s \
-                    (supported: LIA, LRA)" f
+                    (substitution: LIA, LRA; pass-through: UF, BV, \
+                    NIA, NRA, FOL, UFLIA, UFLRA)" f
 
 (** Mapping from fragment name to the "host type" the metadata
     embedding tag refers to. v1: LIA → Int, LRA → Real. *)

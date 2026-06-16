@@ -807,12 +807,13 @@ private def elabLiaLeaf (ctx : WalkerContext) (s : Step)
     system. Audit H1 forbids trusting either tag: the walker
     re-derives the clause from scratch via the same omega-discharge
     used for LIA leaves, so the resulting proof term goes through
-    the kernel independently of cvc5's annotation. Clauses outside
-    omega's scope (e.g. pure propositional / theory tautologies
-    omega can't handle) surface as `throwError`; the closer
-    chain's omega fallback then re-runs at the outer level. The
-    point is *never* to admit on tag — the trust gate stays at
-    `[propext, Quot.sound]`. -/
+    the kernel independently of cvc5's annotation. Propositional
+    tautologies omega can't handle get a first-chance structural
+    discharge in `elabTrustTaggedLeafOrTautology` (the dispatch
+    target); anything neither path covers surfaces as
+    `throwError` and the closer chain's omega fallback re-runs at
+    the outer level. The point is *never* to admit on tag — the
+    trust gate stays at `[propext, Quot.sound]`. -/
 private def elabTrustTaggedLeaf (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) :=
   omegaDischargeClause ctx s
@@ -1463,11 +1464,19 @@ private def elabClauseRemap (ctx : WalkerContext) (rule : String) (s : Step)
    handing control back to the closer chain. New patterns can
    be added incrementally as cvc5 traces demand them.
 
-   Supported patterns (this PR):
+   Supported patterns:
    * `(= (= t t) true)`     — reflexivity tautology
    * `(= (not (not a)) a)`  — double negation (Classical)
    * `(= (and a a) a)`      — `And` idempotence
    * `(= (or a a) a)`       — `Or` idempotence
+   * `(= (= a true) a)`     — eq-true elimination
+   * `(= (not true) false)` — not-true collapse
+
+   The same matcher doubles as the first-chance discharge for
+   trust-tagged leaves (`hole` / `rare_rewrite`) — cvc5 tags
+   propositional-equality tautologies over `Prop` atoms with
+   `TRUST_THEORY_REWRITE` exactly like arithmetic rewrites, and
+   omega can't see those. See `elabTrustTaggedLeafOrTautology`.
    ---------------------------------------------------------------- -/
 
 /-- Build `(t = t) = True` via `propext (Iff.intro (fun _ ↦ ⟨⟩)
@@ -1554,6 +1563,23 @@ private def buildEqTrue (ctx : WalkerContext) (a : Sexp)
   let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
   mkAppM ``propext #[iffP]
 
+/-- Build `(¬True) = False` via `propext (Iff.intro
+    (fun h ↦ h True.intro) False.elim)`. Constructive — no
+    `Classical`. cvc5 emits this as a `TRUST_THEORY_REWRITE`
+    hole when collapsing a refuted reflexive equality
+    (`(r = r) = True`, then `(¬True) = False`). -/
+private def buildNotTrueFalse : MetaM Expr := do
+  let trueE := mkConst ``True
+  let notTrue := mkApp (mkConst ``Not) trueE
+  let falseE := mkConst ``False
+  let fwdLam ← withLocalDeclD `h notTrue fun h =>
+    mkLambdaFVars #[h] (mkApp h (mkConst ``True.intro))
+  let bwdLam ← withLocalDeclD `h falseE fun h => do
+    let p ← mkAppOptM ``False.elim #[some notTrue, some h]
+    mkLambdaFVars #[h] p
+  let iffP ← mkAppM ``Iff.intro #[fwdLam, bwdLam]
+  mkAppM ``propext #[iffP]
+
 /-- `equiv_simplify`: structural pattern matcher on the
     `(= lhs rhs)` clause shape. Each recognized pattern delegates
     to a per-pattern builder; unrecognized shapes throw with the
@@ -1588,6 +1614,8 @@ private def elabEquivSimplify (ctx : WalkerContext) (s : Step)
           buildEqTrue ctx a
         else
           unsupportedEquivSimplify lhs rhs
+      | .list [.atom "not", .atom "true"], .atom "false" =>
+        buildNotTrueFalse
       | _, _ =>
         unsupportedEquivSimplify lhs rhs
     pure (proof, s.clause)
@@ -1599,8 +1627,28 @@ where
     throwError m!"alethe walker: 'equiv_simplify' pattern not \
                    recognized: (= {repr lhs} {repr rhs}). Supported \
                    patterns: (= (= t t) true) / (= (not (not a)) a) \
-                   / (= (and a a) a) / (= (or a a) a). New patterns \
-                   can be added incrementally — see Alethe.lean."
+                   / (= (and a a) a) / (= (or a a) a) / \
+                   (= (= a true) a) / (= (not true) false). New \
+                   patterns can be added incrementally — see \
+                   Alethe.lean."
+
+/-- Trust-tagged leaf (`hole` / `rare_rewrite`) with tautology
+    fallback. Most trust holes are arithmetic rewrites
+    (`TRUST_THEORY_REWRITE` over LIA atoms) and re-derive via
+    omega; over `Prop` atoms cvc5 emits the *same* tags on
+    propositional-equality tautologies omega cannot see (e.g.
+    `(= (= r r) true)` in corpus `prop_eq_trans`). A single-eq
+    clause therefore first tries the `equiv_simplify` structural
+    matcher (propext-based, throws on no match), then falls back
+    to the omega discharge. Both paths re-derive from scratch —
+    the Audit-H1 never-admit-on-tag contract is unchanged. -/
+private def elabTrustTaggedLeafOrTautology (ctx : WalkerContext)
+    (s : Step) : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=", _, _]] =>
+    try elabEquivSimplify ctx s
+    catch _ => elabTrustTaggedLeaf ctx s
+  | _ => elabTrustTaggedLeaf ctx s
 
 /-- Strip the last dotted component of a step/assume id to get the
     immediately-enclosing subproof id. `"t6.a0"` → `some "t6"`;
@@ -1684,8 +1732,8 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "symm" => elabSymm s
     | "trans" => elabTrans s
     | "cong" => elabCong ctx s
-    | "hole" => elabTrustTaggedLeaf ctx s
-    | "rare_rewrite" => elabTrustTaggedLeaf ctx s
+    | "hole" => elabTrustTaggedLeafOrTautology ctx s
+    | "rare_rewrite" => elabTrustTaggedLeafOrTautology ctx s
     | "implies" => elabImplies ctx s
     | "equiv1" => elabEquiv1 ctx s
     | "equiv2" => elabEquiv2 ctx s

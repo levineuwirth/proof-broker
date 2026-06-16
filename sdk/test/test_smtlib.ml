@@ -10,7 +10,9 @@
       sort.
     * Hypotheses become [(assert ...)] and the goal becomes
       [(assert (not ...))].
-    * Errors: quantifier rejected, opaque rejected, unsupported
+    * Quantifiers: [Forall]/[Exists] binder emission, nesting,
+      binder-name sanitization, QF_-prefix drop in [pick_logic].
+    * Errors: lambda rejected, opaque rejected, unsupported
       symbol rejected.
     * Specialization side-channel: [HAdd.hAdd]/[LE.le] are recorded;
       primitive symbols are also recorded with their canonical
@@ -203,14 +205,15 @@ let test_emit_declare_const_rejects_non_simple () =
 
 (* --- error paths ----------------------------------------------------- *)
 
-let test_emit_quantifier_rejected () =
+let test_emit_lambda_rejected () =
   let specs = ref [] in
-  let t = Ir.Forall {
-    var = "n"; ty = "Int"; body = Var { name = "n" };
+  let t = Ir.Lambda {
+    binders = [ { var = "n"; ty = "Int" } ];
+    body = Var { name = "n" };
   } in
   match Smtlib.emit_term ~specs t with
-  | Error (Unsupported_node { node = "Forall"; _ }) -> ()
-  | _ -> Alcotest.fail "expected Unsupported_node Forall"
+  | Error (Unsupported_node { node = "Lambda"; _ }) -> ()
+  | _ -> Alcotest.fail "expected Unsupported_node Lambda"
 
 let test_emit_unknown_symbol_rejected () =
   let specs = ref [] in
@@ -516,6 +519,112 @@ let test_emit_logic_uflia () =
   | Ok script -> Alcotest.(check string) "QF_UFLIA" "QF_UFLIA" script.logic
   | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
 
+(* --- quantifiers ----------------------------------------------------- *)
+
+let test_emit_forall () =
+  let t = Ir.Forall {
+    var = "x"; ty = "Int";
+    body = App {
+      symbol = "LE.le"; type_args = [];
+      args = [ Var { name = "x" }; Num_lit { value = "10"; ty = "Int" } ];
+    };
+  } in
+  Alcotest.(check string) "(forall ((x Int)) (<= x 10))"
+    "(forall ((x Int)) (<= x 10))" (emit_term_ok t)
+
+let test_emit_exists () =
+  let t = Ir.Exists {
+    var = "x"; ty = "Int";
+    body = Eq {
+      ty = "Int";
+      left = Var { name = "x" };
+      right = Num_lit { value = "0"; ty = "Int" };
+    };
+  } in
+  Alcotest.(check string) "(exists ((x Int)) (= x 0))"
+    "(exists ((x Int)) (= x 0))" (emit_term_ok t)
+
+let test_emit_nested_forall () =
+  (* One binder per IR node; nesting composes as nested SMT-LIB
+     binders, which is equivalent to the multi-binder form. *)
+  let t = Ir.Forall {
+    var = "x"; ty = "Int";
+    body = Forall {
+      var = "y"; ty = "Int";
+      body = Eq {
+        ty = "Int";
+        left = Var { name = "x" };
+        right = Var { name = "y" };
+      };
+    };
+  } in
+  Alcotest.(check string) "nested binders"
+    "(forall ((x Int)) (forall ((y Int)) (= x y)))" (emit_term_ok t)
+
+let test_emit_forall_bad_binder_name_rejected () =
+  let specs = ref [] in
+  let t = Ir.Forall {
+    var = "bad name"; ty = "Int"; body = Var { name = "bad name" };
+  } in
+  match Smtlib.emit_term ~specs t with
+  | Error (Bad_identifier { name = "bad name"; _ }) -> ()
+  | _ -> Alcotest.fail "expected Bad_identifier for binder name with space"
+
+let test_emit_logic_quantified_lia () =
+  (* A quantifier anywhere drops the QF_ prefix from the pick. *)
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Forall {
+      var = "x"; ty = "Int";
+      body = App {
+        symbol = "LE.le"; type_args = [];
+        args = [ Var { name = "x" }; Var { name = "x" } ];
+      };
+    };
+  } in
+  let ir = make_ir
+    ~free_vars:[ { name = "n"; ty = "Int" } ]
+    ~hypotheses:[ h1 ]
+    (App {
+      symbol = "LE.le"; type_args = [];
+      args = [ Var { name = "n" }; Var { name = "n" } ];
+    })
+  in
+  match Smtlib.emit ir with
+  | Ok script -> Alcotest.(check string) "LIA" "LIA" script.logic
+  | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
+let test_emit_logic_quantified_uflia () =
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = Forall {
+      var = "x"; ty = "Int";
+      body = App {
+        symbol = "LE.le"; type_args = [];
+        args = [
+          App { symbol = "UF.f"; type_args = [];
+                args = [ Var { name = "x" } ] };
+          Num_lit { value = "10"; ty = "Int" };
+        ];
+      };
+    };
+  } in
+  let ir = make_ir
+    ~free_vars:[ { name = "f"; ty = "Int->Int" } ]
+    ~hypotheses:[ h1 ]
+    (App {
+      symbol = "LE.le"; type_args = [];
+      args = [
+        App { symbol = "UF.f"; type_args = [];
+              args = [ Num_lit { value = "3"; ty = "Int" } ] };
+        Num_lit { value = "10"; ty = "Int" };
+      ];
+    })
+  in
+  match Smtlib.emit ir with
+  | Ok script -> Alcotest.(check string) "UFLIA" "UFLIA" script.logic
+  | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
+
 (* --- fragment_of_logic shared mapping ------------------------------- *)
 
 let test_fol_lia () =
@@ -589,7 +698,7 @@ let () =
         `Quick test_emit_declare_const_rejects_non_simple;
     ];
     "errors", [
-      Alcotest.test_case "Forall rejected" `Quick test_emit_quantifier_rejected;
+      Alcotest.test_case "Lambda rejected" `Quick test_emit_lambda_rejected;
       Alcotest.test_case "unknown symbol rejected" `Quick test_emit_unknown_symbol_rejected;
       Alcotest.test_case "Opaque rejected" `Quick test_emit_opaque_rejected;
       Alcotest.test_case "unsupported type rejected" `Quick test_emit_unsupported_type_rejected;
@@ -626,6 +735,17 @@ let () =
       Alcotest.test_case "UF symbol app" `Quick test_emit_uf_app;
       Alcotest.test_case "QF_UFLIA logic with UF + Int"
         `Quick test_emit_logic_uflia;
+    ];
+    "quantifiers", [
+      Alcotest.test_case "forall emission" `Quick test_emit_forall;
+      Alcotest.test_case "exists emission" `Quick test_emit_exists;
+      Alcotest.test_case "nested forall" `Quick test_emit_nested_forall;
+      Alcotest.test_case "bad binder name rejected"
+        `Quick test_emit_forall_bad_binder_name_rejected;
+      Alcotest.test_case "quantified hyp picks LIA"
+        `Quick test_emit_logic_quantified_lia;
+      Alcotest.test_case "quantified hyp + UF picks UFLIA"
+        `Quick test_emit_logic_quantified_uflia;
     ];
     "fragment_of_logic", [
       Alcotest.test_case "QF_LIA → LIA" `Quick test_fol_lia;

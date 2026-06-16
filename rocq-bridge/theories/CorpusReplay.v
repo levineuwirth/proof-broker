@@ -233,6 +233,53 @@ Proof. intros x h1. alethe_walker_test "(
 (step t39 (cl) :rule resolution :premises (t37 t38))
 )". Qed.
 
+(* ~(p \/ q) |- ~p /\ ~q (de Morgan; probes not_or/and rules/and_simplify) *)
+Theorem corpus_prop_demorgan :
+  forall p q : Prop, ~(p \/ q) -> ~p /\ ~q.
+Proof. intros p q h1. alethe_walker_test "(
+(assume a0 (! (not (or p q)) :named @p_1))
+(assume a1 (! (not (! (and (! (not p) :named @p_3) (! (not q) :named @p_2)) :named @p_4)) :named @p_5))
+(step t0 (cl @p_4 (not @p_3) (not @p_2)) :rule and_neg)
+(step t1 (cl @p_3) :rule not_or :premises (a0) :args (0))
+(step t2 (cl @p_2) :rule not_or :premises (a0) :args (1))
+(step t3 (cl @p_4) :rule resolution :premises (t0 t1 t2))
+(step t4 (cl) :rule resolution :premises (t3 a1))
+)". Qed.
+
+(* p = q, q = r |- p = r (Prop-equality transitivity; Bool-= reifies as @eq Prop, exercising the propext path) *)
+Theorem corpus_prop_eq_trans :
+  forall p q r : Prop, p = q -> q = r -> p = r.
+Proof. intros p q r h1 h2. alethe_walker_test "(
+(assume a0 (! (= p q) :named @p_1))
+(assume a1 (! (= q r) :named @p_2))
+(assume a2 (! (not (! (= p r) :named @p_3)) :named @p_4))
+(step t0 (cl (not (! (= @p_4 false) :named @p_5)) (not @p_4) false) :rule equiv_pos2)
+(step t1 (cl @p_3) :rule trans :premises (a0 a1))
+(step t2 (cl (! (= r r) :named @p_6)) :rule refl)
+(step t3 (cl (= @p_3 @p_6)) :rule cong :premises (t1 t2))
+(step t4 (cl (= @p_4 (! (not @p_6) :named @p_7))) :rule cong :premises (t3))
+(step t5 (cl (! (= @p_6 true) :named @p_10)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_10 1 6))
+(step t6 (cl (= @p_7 (! (not true) :named @p_8))) :rule cong :premises (t5))
+(step t7 (cl (! (= @p_8 false) :named @p_9)) :rule hole :args (""TRUST_THEORY_REWRITE"" @p_9 1 7))
+(step t8 (cl (= @p_7 false)) :rule trans :premises (t6 t7))
+(step t9 (cl @p_5) :rule trans :premises (t4 t8))
+(step t10 (cl false) :rule resolution :premises (t0 t9 a2))
+(step t11 (cl (not false)) :rule false)
+(step t12 (cl) :rule resolution :premises (t10 t11))
+)". Qed.
+
+(* |- p \/ ~p (excluded middle; probes tautology/or rules) *)
+Theorem corpus_prop_excluded_middle :
+  forall p : Prop, p \/ ~p.
+Proof. intros p. alethe_walker_test "(
+(assume a0 (! (not (or p (! (not p) :named @p_1))) :named @p_2))
+(step t0 (cl (not (! (not @p_1) :named @p_3)) p) :rule not_not)
+(step t1 (cl @p_3) :rule not_or :premises (a0) :args (1))
+(step t2 (cl p) :rule resolution :premises (t0 t1))
+(step t3 (cl @p_1) :rule not_or :premises (a0) :args (0))
+(step t4 (cl) :rule resolution :premises (t2 t3))
+)". Qed.
+
 (* a = b |- f a = f b (uninterpreted-function congruence) *)
 Theorem corpus_uf_cong :
   forall (f : Z -> Z) (a b : Z), a = b -> f a = f b.
