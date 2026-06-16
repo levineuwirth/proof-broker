@@ -114,6 +114,10 @@
       [],
     "ProofBroker.Test.alethe_walker_real_cvc5_trace_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_forall_inst_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_exists_witness_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":
@@ -543,6 +547,10 @@
     "alethe_walker_cong_le_axiom_free":
       [],
     "alethe_walker_real_cvc5_trace_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "alethe_walker_forall_inst_bind_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "alethe_walker_exists_duality_axiom_free":
       ["classic", "propositional_extensionality"]
   }
 }

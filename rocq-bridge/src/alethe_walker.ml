@@ -172,6 +172,17 @@ let r_classic =
             "Coq.Logic.Classical_Prop.classic";
             "Classical_Prop.classic" ])
 
+(* Existential [ex : forall A, (A -> Prop) -> Prop] with its
+   constructor [ex_intro] and eliminator [ex_ind] — needed by
+   [forall_inst] / [bind] (quantifier parsing) and the existential-
+   duality trust rewrite. The TYPE resolves via the [core.*] table
+   (like [eq]/[or]); the constructor/eliminator are absent there
+   (same asymmetry as [or_ind]), so route them through the
+   rename-robust [logic_ref] candidate paths. *)
+let r_ex       = lazy (constr_of_ref "core.ex.type")
+let r_ex_intro = logic_ref "ex_intro"
+let r_ex_ind   = logic_ref "ex_ind"
+
 let force = Lazy.force
 
 (* =========================================================
@@ -289,6 +300,16 @@ let make_context (env : Environ.env) (sigma_ref : Evd.evar_map ref)
    equality (Prop = Prop) lands in R-7 alongside equiv1/equiv2.
    ========================================================= *)
 
+(* Translate an Alethe binder sort to its Coq type. The corpus
+   quantifier goals bind only [Int] (= [Z]); other sorts are an
+   honest failure. Mirror of Lean's [sortToExpr]. *)
+let parse_sort (s : Alethe.Sexp.t) : EConstr.t =
+  match s with
+  | Atom "Int" -> force r_Z
+  | _ ->
+    raise (Walker_error
+             "unsupported quantifier binder sort (only Int is supported)")
+
 let rec sexp_to_constr (ctx : walker_ctx) (s : Alethe.Sexp.t) : EConstr.t =
   match s with
   | Atom a -> atom_to_constr ctx a
@@ -363,6 +384,16 @@ and list_to_constr (ctx : walker_ctx) (xs : Alethe.Sexp.t list) : EConstr.t =
       Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
     in
     EConstr.mkProd (binder, sexp_to_constr ctx a, sexp_to_constr ctx b)
+  (* Quantifiers (cvc5 QF_UFLIA traces with [forall_inst] / [bind]).
+     A binder [(forall ((x T) ..) body)] is built one binder at a
+     time via [parse_quant]: push [x : T] into the elaboration env +
+     var map, parse the body, then re-abstract ([forall] -> [mkProd],
+     [exists] -> [ex] over a [mkLambda]). Mirror of Lean's
+     [quantToExpr]. *)
+  | [ Atom "forall"; List binders; body ] ->
+    parse_quant ctx true binders body
+  | [ Atom "exists"; List binders; body ] ->
+    parse_quant ctx false binders body
   | (Atom f) :: (_ :: _ as args) ->
     (* Generic uninterpreted-function application (R-5). Reached
        only after every interpreted head above fails to match, so
@@ -397,6 +428,50 @@ and arith_chain (ctx : walker_ctx) (op : EConstr.t)
   | [ x ] -> sexp_to_constr ctx x
   | x :: rest ->
     EConstr.mkApp (op, [| sexp_to_constr ctx x; arith_chain ctx op rest |])
+
+(* Build a quantified term from a binder list + body. Each [(x T)]
+   binder pushes a named [x : T] into the elaboration env (so the
+   [=] case's [Retyping] can type terms mentioning [x]) and the var
+   map, parses the rest in that scope, then re-abstracts: [forall]
+   -> [mkProd], [exists] -> [ex] over a [mkLambda]. An existing decl
+   of the same name (e.g. a [bind]-seeded var) is reused rather than
+   double-pushed. Empty binder list reduces to the body. *)
+and parse_quant (ctx : walker_ctx) (is_forall : bool)
+    (binders : Alethe.Sexp.t list) (body : Alethe.Sexp.t) : EConstr.t =
+  match binders with
+  | [] -> sexp_to_constr ctx body
+  | List [ Atom v; sort ] :: rest ->
+    let sort_e = parse_sort sort in
+    let x_id = Names.Id.of_string_soft v in
+    let already =
+      List.exists
+        (fun d -> Names.Id.equal (Context.Named.Declaration.get_id d) x_id)
+        (Environ.named_context ctx.env)
+    in
+    let env' =
+      if already then ctx.env
+      else
+        Environ.push_named
+          (Context.Named.Declaration.LocalAssum
+             (Context.make_annot x_id Sorts.Relevant,
+              EConstr.to_constr !(ctx.sigma_ref) sort_e))
+          ctx.env
+    in
+    let ctx' =
+      { ctx with env = env';
+                 vars = Names.Id.Map.add x_id (EConstr.mkVar x_id) ctx.vars }
+    in
+    let inner = parse_quant ctx' is_forall rest body in
+    let inner_closed = EConstr.Vars.subst_var !(ctx.sigma_ref) x_id inner in
+    let binder =
+      Context.make_annot (Names.Name x_id) EConstr.ERelevance.relevant
+    in
+    if is_forall then EConstr.mkProd (binder, sort_e, inner_closed)
+    else
+      EConstr.mkApp (force r_ex,
+                     [| sort_e; EConstr.mkLambda (binder, sort_e, inner_closed) |])
+  | _ ->
+    raise (Walker_error "malformed quantifier binder list")
 
 (* =========================================================
    Clause utilities. Mirror of Lean's [negateLit] / [isNotForm]
@@ -627,6 +702,16 @@ let elab_la_generic (env : Environ.env)
     sexp_to_constr ctx
       (Alethe.Sexp.List (Alethe.Sexp.Atom "cl" :: s.clause))
   in
+  (* [env] here is the "leaf env" [walk_proof] passes to [elab_step]:
+     the goal context plus the [bind] binder vars, but NOT the
+     subproof-local-assume vars. A [bind]-inner leaf's clause mentions
+     the bound [x], so [x] must be in scope; the local-assume Props,
+     by contrast, never appear in an arithmetic leaf's clause type and
+     would leave a top-level leaf's evar referencing an unbound
+     section variable. For a bind-free proof this equals the bare goal
+     env, so existing arithmetic leaves are unchanged. The bind
+     abstraction wraps the evar's instance so [Refine.refine] maps [x]
+     to the enclosing lambda. *)
   let new_sigma, evar =
     Evarutil.new_evar env !sigma_ref clause_prop
   in
@@ -935,6 +1020,31 @@ let eq_mp (ctx : walker_ctx) (h : EConstr.t) (a : EConstr.t)
 let eq_mpr (ctx : walker_ctx) (h : EConstr.t) (a : EConstr.t)
     (b : EConstr.t) (pb : EConstr.t) : EConstr.t =
   let prop = Retyping.get_type_of ctx.env !(ctx.sigma_ref) b in
+  let binder =
+    Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
+  in
+  let motive = EConstr.mkLambda (binder, prop, EConstr.mkRel 1) in
+  let h_sym = EConstr.mkApp (force r_eq_sym, [| prop; a; b; h |]) in
+  EConstr.mkApp (force r_eq_ind, [| prop; b; motive; pb; a; h_sym |])
+
+(* [eq_mp]/[eq_mpr] variants for operands KNOWN to be [Prop] (the
+   carrier sort is hardcoded rather than recovered by [Retyping]).
+   Used by [bind] under an [abstract_lam] binder: there [a]/[b]
+   mention the fresh local var, which is absent from [ctx.env], so
+   [Retyping] can't run. The bodies of a [bind] forall are always
+   Props, so [Prop] is the correct carrier. *)
+let prop_sort = lazy (EConstr.mkSort EConstr.ESorts.prop)
+let eq_mp_prop (h : EConstr.t) (a : EConstr.t) (b : EConstr.t)
+    (pa : EConstr.t) : EConstr.t =
+  let prop = force prop_sort in
+  let binder =
+    Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
+  in
+  let motive = EConstr.mkLambda (binder, prop, EConstr.mkRel 1) in
+  EConstr.mkApp (force r_eq_ind, [| prop; a; motive; pa; b; h |])
+let eq_mpr_prop (h : EConstr.t) (a : EConstr.t) (b : EConstr.t)
+    (pb : EConstr.t) : EConstr.t =
+  let prop = force prop_sort in
   let binder =
     Context.make_annot Names.Anonymous EConstr.ERelevance.relevant
   in
@@ -1346,13 +1456,88 @@ let elab_equiv_simplify (ctx : walker_ctx) (s : Alethe.step)
     to the [lia] discharge. Both paths re-derive from scratch —
     the Audit-H1 never-admit-on-tag contract is unchanged.
     Mirror of Lean's [elabTrustTaggedLeafOrTautology]. *)
+(** Match the existential-duality trust rewrite cvc5 emits when
+    Skolem-normalizing an [exists]:
+    [(exists x:T, P) = ~(forall x:T, ~P)] (same binder, same body).
+    Returns the [(exists.., ~forall..)] sexp pair on a hit. The
+    equality is classical, not arithmetic, so neither [lia] nor the
+    propext+lia fallback closes it — it needs [build_exists_duality]. *)
+let exists_forall_duality (clause : Alethe.Sexp.t list)
+    : (Alethe.Sexp.t * Alethe.Sexp.t) option =
+  match clause with
+  | [ List [ Atom "=";
+             (List [ Atom "exists"; List [ List [ Atom v; sort ] ]; pb ] as lhs);
+             (List [ Atom "not";
+                     List [ Atom "forall"; List [ List [ Atom v2; sort2 ] ];
+                            List [ Atom "not"; pb2 ] ] ] as rhs) ] ]
+    when v = v2 && sort = sort2 && pb = pb2 ->
+    Some (lhs, rhs)
+  | _ -> None
+
+(** Build [(exists x:T, P) = ~(forall x:T, ~P)] (classical existential
+    duality) via [propext]. fwd: from a witness and [forall x,~P x],
+    [ex_ind] picks [w]/[hw:P w] and [hall w hw : False]. bwd: [NNPP]
+    by contradiction — from [~(forall x,~P x)] and [hne : ~(exists
+    x,P x)], the map [fun x hx => hne (ex_intro P x hx)] inhabits
+    [forall x,~P x], contradiction. Footprint: [propext] + [classic]
+    (via NNPP). Mirror of Lean's [buildExistsDuality]. *)
+let build_exists_duality (ctx : walker_ctx) (lhs : Alethe.Sexp.t)
+    (rhs : Alethe.Sexp.t) : EConstr.t =
+  let e_e = sexp_to_constr ctx lhs in          (* ex T P *)
+  let na_e = sexp_to_constr ctx rhs in         (* ~(forall x,~P x) *)
+  let sigma = !(ctx.sigma_ref) in
+  let (_, ex_args) = EConstr.decompose_app sigma e_e in
+  let t_ty = ex_args.(0) in
+  let p = ex_args.(1) in
+  let (_, na_args) = EConstr.decompose_app sigma na_e in
+  let forall_neg = na_args.(0) in              (* forall x:T, ~P x *)
+  let fwd =
+    abstract_lam ctx.sigma_ref "he" e_e (fun he ->
+      abstract_lam ctx.sigma_ref "hall" forall_neg (fun hall ->
+        let motive =
+          abstract_lam ctx.sigma_ref "w" t_ty (fun w ->
+            let pw = EConstr.mkApp (p, [| w |]) in
+            abstract_lam ctx.sigma_ref "hw" pw (fun hw ->
+              EConstr.mkApp (hall, [| w; hw |])))
+        in
+        EConstr.mkApp (force r_ex_ind,
+                       [| t_ty; p; force r_False; motive; he |])))
+  in
+  let bwd =
+    abstract_lam ctx.sigma_ref "hna" na_e (fun hna ->
+      let arg =
+        abstract_lam ctx.sigma_ref "hne" (mk_not e_e) (fun hne ->
+          let fneg =
+            abstract_lam ctx.sigma_ref "x" t_ty (fun x ->
+              let px = EConstr.mkApp (p, [| x |]) in
+              abstract_lam ctx.sigma_ref "hx" px (fun hx ->
+                let wit =
+                  EConstr.mkApp (force r_ex_intro, [| t_ty; p; x; hx |])
+                in
+                EConstr.mkApp (hne, [| wit |])))
+          in
+          EConstr.mkApp (hna, [| fneg |]))
+      in
+      EConstr.mkApp (force r_NNPP, [| e_e; arg |]))
+  in
+  mk_propext e_e na_e (mk_iff e_e na_e fwd bwd)
+
+(** Trust-tagged leaf ([hole] / [rare_rewrite]) with tautology
+    fallbacks. A single-equality clause is matched, in order:
+    existential-duality ([exists] Skolem normalization), the
+    [equiv_simplify] structural patterns, then the [lia]/propext
+    discharge ([elab_la_generic]). Every path re-derives from
+    scratch — the Audit-H1 never-admit-on-tag contract is unchanged. *)
 let elab_trust_tagged (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (ctx : walker_ctx) (s : Alethe.step)
     : EConstr.t * Alethe.Sexp.t list =
   match s.clause with
   | [ List [ Atom "="; _; _ ] ] ->
-    (try elab_equiv_simplify ctx s
-     with Walker_error _ -> elab_la_generic env sigma_ref ctx s)
+    (match exists_forall_duality s.clause with
+     | Some (lhs, rhs) -> (build_exists_duality ctx lhs rhs, s.clause)
+     | None ->
+       (try elab_equiv_simplify ctx s
+        with Walker_error _ -> elab_la_generic env sigma_ref ctx s))
   | _ -> elab_la_generic env sigma_ref ctx s
 
 (* =========================================================
@@ -1651,6 +1836,105 @@ let elab_subproof (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
     discharge_lift sigma_ref ctx (List.map snd dis) suffix body_fn
   in
   (proof, s.clause)
+
+(* =========================================================
+   Quantifier rules (R-15): forall_inst / bind.
+
+   [forall_inst] instantiates a universal at a term; [bind]
+   rewrites under a binder. Both ride the existing subproof/anchor
+   machinery — cvc5's QF_UFLIA traces wrap them in the same
+   implies_neg/subproof skeleton the boolean cluster already
+   handles. Mirror of Lean's [elabForallInst] / [elabBind].
+   ========================================================= *)
+
+(** [forall_inst]: the single-literal clause is the classical
+    tautology [(or (not (forall x:T, F)) F[x:=t])], with the
+    instantiation term [t] in [:args]. cvc5 gives both the
+    quantifier and the already-substituted instance, so the proof
+    case-splits [Q = (forall x, F)] with [classic]: if [Q] holds,
+    [Q t : F[x:=t]] is the right disjunct (defeq the stated
+    instance, since cvc5 substituted the same way the parser does);
+    else [~Q] is the left. Footprint stays at [{classic}]. *)
+let elab_forall_inst (ctx : walker_ctx) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause, s.args with
+  | [ List [ Atom "or"; List [ Atom "not"; q ]; inst ] ], Some [ t ] ->
+    let q_e = sexp_to_constr ctx q in
+    let inst_e = sexp_to_constr ctx inst in
+    let t_e = sexp_to_constr ctx t in
+    let not_q = mk_not q_e in
+    let result_ty = mk_or not_q inst_e in
+    let pos =
+      abstract_lam ctx.sigma_ref "hq" q_e (fun hq ->
+        mk_or_intror not_q inst_e (EConstr.mkApp (hq, [| t_e |])))
+    in
+    let neg =
+      abstract_lam ctx.sigma_ref "hnq" not_q (fun hnq ->
+        mk_or_introl not_q inst_e hnq)
+    in
+    (mk_or_ind q_e not_q result_ty pos neg (mk_classic q_e), s.clause)
+  | _ ->
+    raise (Walker_error
+             "'forall_inst' expects clause (cl (or (not (forall ..)) inst)) \
+              with one :args instantiation term")
+
+(** [bind]: congruence under a binder. The clause is
+    [(= (forall x:T, A) (forall x:T, B))]; the anchored subproof's
+    last step proves the body equality [A[x] = B[x]] for the binder
+    [x] that [walk_proof] seeded as a shared named var. Abstracting
+    that proof over [x] gives [h_all : forall x, A x = B x]; the
+    conclusion follows by [propext] over the iff whose directions
+    transport each instance along [h_all x] (Prop-carrier [eq_ind]).
+    Footprint adds only [propext] beyond the body proof. Mirror of
+    Lean's [elabBind]. *)
+let elab_bind (ctx : walker_ctx) (st : walker_state) (s : Alethe.step)
+    : EConstr.t * Alethe.Sexp.t list =
+  match s.clause with
+  | [ List [ Atom "="; lhs; rhs ] ] ->
+    let vname, sort = match lhs with
+      | List [ Atom "forall"; List (List [ Atom v; srt ] :: _); _ ] -> (v, srt)
+      | _ -> raise (Walker_error "'bind' LHS is not a forall")
+    in
+    let x_id = Names.Id.of_string_soft vname in
+    let sort_e = parse_sort sort in
+    let inner_id =
+      match Hashtbl.find_opt st.inner_final s.id with
+      | Some id -> id
+      | None -> raise (Walker_error "'bind' has no enclosed steps")
+    in
+    let (e_body, _) = lookup_step st inner_id in
+    (* h_all = fun x:T => e_body : forall x:T, (A x = B x) *)
+    let h_all = abstract_over_id ctx.sigma_ref vname sort_e x_id e_body in
+    let lhs_e = sexp_to_constr ctx lhs in
+    let rhs_e = sexp_to_constr ctx rhs in
+    (* The Prod codomains carry the body with [Rel 1] = the binder;
+       [subst1] instantiates them at the fresh [abstract_lam] var
+       without needing [Retyping] (the var isn't in [ctx.env]). *)
+    let sigma = !(ctx.sigma_ref) in
+    let (_, _, a_body) = EConstr.destProd sigma lhs_e in
+    let (_, _, b_body) = EConstr.destProd sigma rhs_e in
+    let fwd =
+      abstract_lam ctx.sigma_ref "hA" lhs_e (fun hA ->
+        abstract_lam ctx.sigma_ref vname sort_e (fun x ->
+          let ax = EConstr.Vars.subst1 x a_body in
+          let bx = EConstr.Vars.subst1 x b_body in
+          let hx = EConstr.mkApp (h_all, [| x |]) in
+          let h_ax = EConstr.mkApp (hA, [| x |]) in
+          eq_mp_prop hx ax bx h_ax))
+    in
+    let bwd =
+      abstract_lam ctx.sigma_ref "hB" rhs_e (fun hB ->
+        abstract_lam ctx.sigma_ref vname sort_e (fun x ->
+          let ax = EConstr.Vars.subst1 x a_body in
+          let bx = EConstr.Vars.subst1 x b_body in
+          let hx = EConstr.mkApp (h_all, [| x |]) in
+          let h_bx = EConstr.mkApp (hB, [| x |]) in
+          eq_mpr_prop hx ax bx h_bx))
+    in
+    (mk_propext lhs_e rhs_e (mk_iff lhs_e rhs_e fwd bwd), s.clause)
+  | _ ->
+    raise (Walker_error
+             "'bind' expects clause (cl (= (forall ..) (forall ..)))")
 
 (* =========================================================
    Negation-of-connective cluster (R-11): not_not / not_or.
@@ -1990,18 +2274,22 @@ let elab_step (env : Environ.env) (sigma_ref : Evd.evar_map ref)
     (* 3-literal equivalence tautologies (R-10). *)
     | "equiv_pos1" -> elab_equiv_pos1 ctx s
     | "equiv_pos2" -> elab_equiv_pos2 ctx s
+    (* Quantifier rules (R-15). *)
+    | "forall_inst" -> elab_forall_inst ctx s
+    | "bind" -> elab_bind ctx st s
     (* PARITY:walker-rules END *)
     | other ->
       raise (Walker_error
                (Printf.sprintf
-                  "rule '%s' not yet supported (R-14 scope: \
+                  "rule '%s' not yet supported (R-15 scope: \
                    assume / or / resolution (n-ary) / false / \
                    la_generic / la_mult_neg / refl / symm / trans / \
                    cong / hole / rare_rewrite / implies / equiv1 / \
                    equiv2 / not_and / and_neg / not_not / not_or / \
                    and_pos / or_neg / implies_neg1 / implies_neg2 / \
                    implies_simplify / reordering / contraction / \
-                   subproof / equiv_simplify / equiv_pos1 / equiv_pos2)"
+                   subproof / equiv_simplify / equiv_pos1 / equiv_pos2 / \
+                   forall_inst / bind)"
                   other))
   in
   store_step st s.id proof clause
@@ -2043,7 +2331,55 @@ let walk_proof (env : Environ.env) (sigma_ref : Evd.evar_map ref)
           Environ.push_named decl env_acc)
       env p.assumes
   in
-  let ctx = { ctx with env = env_ext } in
+  (* [bind] binders: each [bind] step's clause [(= (forall x:T, _) ..)]
+     names a binder [x] its inner subproof references. Seed one shared
+     named var per distinct binder name (over the whole walk, like the
+     local assumes); each [bind] step abstracts the var out of its own
+     body. Distinct binds reusing a name share the var soundly. *)
+  let bind_binders =
+    List.fold_left (fun acc (s : Alethe.step) ->
+        if s.rule = "bind" then
+          match s.clause with
+          | [ List [ Atom "=";
+                     List [ Atom "forall"; List (List [ Atom v; sort ] :: _); _ ];
+                     _ ] ] ->
+            if List.exists (fun (v', _) -> String.equal v' v) acc then acc
+            else acc @ [ (v, sort) ]
+          | _ -> acc
+        else acc)
+      [] p.steps
+  in
+  let push_bind_vars base_env =
+    List.fold_left (fun env_acc (v, sort) ->
+        let x_id = Names.Id.of_string_soft v in
+        let already =
+          List.exists
+            (fun d ->
+               Names.Id.equal (Context.Named.Declaration.get_id d) x_id)
+            (Environ.named_context env_acc)
+        in
+        if already then env_acc
+        else
+          Environ.push_named
+            (Context.Named.Declaration.LocalAssum
+               (Context.make_annot x_id Sorts.Relevant,
+                EConstr.to_constr !sigma_ref (parse_sort sort)))
+            env_acc)
+      base_env bind_binders
+  in
+  let vars_ext =
+    List.fold_left (fun vars_acc (v, _) ->
+        let x_id = Names.Id.of_string_soft v in
+        Names.Id.Map.add x_id (EConstr.mkVar x_id) vars_acc)
+      ctx.vars bind_binders
+  in
+  (* [ctx.env] (parsing / Retyping) gets the local assumes AND the
+     bind vars. [leaf_env] (la_generic / hole evar creation) gets the
+     bind vars over the BARE goal env — NOT the local assumes, which
+     never appear in an arithmetic leaf's clause type and would make a
+     top-level leaf's evar reference an unbound section var. *)
+  let ctx = { ctx with env = push_bind_vars env_ext; vars = vars_ext } in
+  let leaf_env = push_bind_vars env in
   (* Top-level assumes match goal hypotheses (original [env]). *)
   List.iter (fun (id, lit) ->
       match Alethe.enclosing_subproof_id id with
@@ -2052,8 +2388,8 @@ let walk_proof (env : Environ.env) (sigma_ref : Evd.evar_map ref)
         let e = elab_assume_literal env sigma_ref ctx id lit in
         store_step st id e [ lit ])
     p.assumes;
-  (* Walk steps in order ([env] = original goal context). *)
-  List.iter (elab_step env sigma_ref ctx st) p.steps;
+  (* Walk steps in order; [leaf_env] = goal context + bind vars. *)
+  List.iter (elab_step leaf_env sigma_ref ctx st) p.steps;
   match List.rev p.steps with
   | [] ->
     raise (Walker_error

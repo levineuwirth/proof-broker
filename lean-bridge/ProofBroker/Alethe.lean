@@ -324,6 +324,19 @@ private def mkIntLit (n : Int) : MetaM Expr := do
    shapes raise a clear `throwError` so the omega fallback can
    re-run. `sexpToExpr` / `listToExpr` / `andOrChain` are
    mutually recursive — hence the `mutual` block. -/
+
+/-- Translate an Alethe binder sort to its Lean type. The corpus
+    quantifier goals bind only `Int`; other sorts are an honest
+    failure (the `forall_inst` / `bind` rules that need this only
+    ever see `Int` binders from cvc5's QF_UFLIA traces). Kept
+    separate from `sexpToExpr` because it consumes a sort position,
+    not a term position. -/
+def sortToExpr : Sexp → MetaM Expr
+  | .atom "Int" => return mkConst ``Int
+  | s =>
+    throwError m!"alethe walker: unsupported quantifier binder sort \
+                   {repr s} (only Int is supported)"
+
 mutual
 
 partial def sexpToExpr (ctx : WalkerContext) : Sexp → MetaM Expr
@@ -375,6 +388,15 @@ partial def listToExpr (ctx : WalkerContext) : List Sexp → MetaM Expr
     let aE ← sexpToExpr ctx a
     let bE ← sexpToExpr ctx b
     return mkForall .anonymous .default aE bE
+  -- Quantifiers (cvc5 QF_UFLIA traces with `forall_inst` / `bind`).
+  -- A binder `(forall ((x T) …) body)` is built one binder at a
+  -- time: introduce a fresh local `x : T`, extend the var map, and
+  -- parse the body in that scope, then re-abstract — `∀` via
+  -- `mkForallFVars`, `∃` via `Exists` over a `mkLambdaFVars`.
+  | (.atom "forall") :: (.list binders) :: [body] =>
+    quantToExpr ctx true binders body
+  | (.atom "exists") :: (.list binders) :: [body] =>
+    quantToExpr ctx false binders body
   -- Generic application fallback. Used by `cong` to translate
   -- `(f a1 … an)` into `f a1 … an` for UF symbols. The head is
   -- looked up in `ctx.vars` (UF symbols are local free vars in
@@ -415,6 +437,28 @@ partial def arithChain (ctx : WalkerContext) (op : Name)
   | [x] => sexpToExpr ctx x
   | x :: rest => do
     mkAppM op #[← sexpToExpr ctx x, ← arithChain ctx op rest]
+
+/-- Build a quantified term from a binder list and body. Each
+    `(x T)` binder introduces a fresh local `x : T` (so the body's
+    references resolve and `inferType` sees the right context),
+    parses the remaining binders + body in the extended scope, then
+    re-abstracts: `∀` via `mkForallFVars`, `∃` via `Exists` applied
+    to `mkLambdaFVars`. An empty binder list reduces to the body. -/
+partial def quantToExpr (ctx : WalkerContext) (isForall : Bool)
+    : List Sexp → Sexp → MetaM Expr
+  | [], body => sexpToExpr ctx body
+  | (.list [.atom v, sort]) :: rest, body => do
+    let sortE ← sortToExpr sort
+    withLocalDeclD (Name.mkSimple v) sortE fun x => do
+      let ctx' := { ctx with vars := ctx.vars.insert (Name.mkSimple v) x }
+      let inner ← quantToExpr ctx' isForall rest body
+      if isForall then
+        mkForallFVars #[x] inner
+      else
+        mkAppM ``Exists #[← mkLambdaFVars #[x] inner]
+  | other, _ =>
+    throwError m!"alethe walker: malformed quantifier binder list: \
+                   ({String.intercalate " " (other.map fun s => reprStr s)})"
 
 end
 
@@ -767,23 +811,52 @@ private def elabCong (ctx : WalkerContext) (s : Step)
                    (cl (= LHS RHS)) with a premise list, got \
                    clause {repr s.clause}, premises {repr s.premises}"
 
-/-- Shared omega-discharge helper. Translates the step's clause to
-    a `Prop`, spawns a synthetic mvar, runs `falseOrByContra` into
-    a `False` goal, and dispatches to the `MetaM`-level `omega`
-    entry over the local hypotheses. Mirrors `omegaTactic`'s
-    frontend. Returns the instantiated mvar (the proof term) paired
-    with the step's clause. -/
+/-- Close an mvar of arithmetic-tautology type: `falseOrByContra`
+    into a `False` goal, then the `MetaM`-level `omega` entry over
+    the local hypotheses. Throws if omega can't close it. -/
+private def omegaCloseMVar (g : MVarId) : MetaM Unit :=
+  g.withContext do
+    match ← g.falseOrByContra with
+    | none => pure ()        -- goal closed by falseOrByContra itself
+    | some gFalse =>
+      gFalse.withContext do
+        Lean.Elab.Tactic.Omega.omega (← getLocalHyps).toList gFalse
+
+/-- Shared omega-discharge helper. Translates the step's clause to a
+    `Prop` and proves it. Primary path: `falseOrByContra` + `omega`,
+    which closes arithmetic disjunctions and any Prop-equality whose
+    surrounding hypotheses already pin its atoms. Fallback, taken
+    only when the primary path throws: if the clause is a
+    Prop-equality `A = B`, reduce via `propext` to `A ↔ B` and prove
+    each direction by `omega` (a standalone arithmetic-tautology
+    equality — e.g. `(t ≤ 10) = ¬(t ≥ 11)` from a `bind` body — that
+    omega can't decide as a bare `Eq` but can as an `Iff`). This
+    mirrors Rocq's `first [ lia | apply propositional_extensionality;
+    lia ]`; the `propext` it pulls is already in the trust baseline.
+    Audit H1 is preserved: a non-tautology clause fails both paths,
+    so the walker fails rather than admitting it. -/
 private def omegaDischargeClause (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
   let clauseProp ← sexpToExpr ctx (Sexp.list (.atom "cl" :: s.clause))
-  let mvar ← mkFreshExprSyntheticOpaqueMVar clauseProp
-  match ← mvar.mvarId!.falseOrByContra with
-  | none => pure ()        -- goal closed by falseOrByContra itself
-  | some gFalse =>
-    gFalse.withContext do
-      let hyps := (← getLocalHyps).toList
-      Lean.Elab.Tactic.Omega.omega hyps gFalse
-  return (← instantiateMVars mvar, s.clause)
+  let proof ←
+    try
+      let mvar ← mkFreshExprSyntheticOpaqueMVar clauseProp
+      omegaCloseMVar mvar.mvarId!
+      instantiateMVars mvar
+    catch e =>
+      match clauseProp.eq? with
+      | some (ty, a, b) => do
+        unless ← isDefEq ty (mkSort Level.zero) do throw e
+        let mkDir (hTy gTy : Expr) : MetaM Expr :=
+          withLocalDeclD `h hTy fun h => do
+            let g ← mkFreshExprSyntheticOpaqueMVar gTy
+            omegaCloseMVar g.mvarId!
+            mkLambdaFVars #[h] (← instantiateMVars g)
+        let mp ← mkDir a b
+        let mpr ← mkDir b a
+        mkAppM ``propext #[← mkAppM ``Iff.intro #[mp, mpr]]
+      | none => throw e
+  return (proof, s.clause)
 
 /-- LIA-tautology leaf rules (`la_generic`, `la_mult_neg`). The
     step's clause is a linear-arithmetic tautology — its negation
@@ -1632,22 +1705,73 @@ where
                    patterns can be added incrementally — see \
                    Alethe.lean."
 
+/-- Match the existential-duality trust rewrite cvc5 emits when
+    Skolem-normalizing an `∃`: `(∃ x:T, P) = ¬(∀ x:T, ¬P)` (same
+    binder, same body). Returns the `(∃…, ¬∀…)` sexp pair on a hit;
+    the equality is classical, not arithmetic, so neither omega nor
+    the propext-iff fallback can close it — it needs its own
+    builder. -/
+private def existsForallDuality? : List Sexp → Option (Sexp × Sexp)
+  | [.list [.atom "=", lhs, rhs]] =>
+    match lhs, rhs with
+    | .list [.atom "exists", .list [.list [.atom v, sort]], pb],
+      .list [.atom "not", .list [.atom "forall",
+        .list [.list [.atom v2, sort2]], .list [.atom "not", pb2]]] =>
+      if v == v2 && sort == sort2 && pb == pb2 then some (lhs, rhs) else none
+    | _, _ => none
+  | _ => none
+
+/-- Build `(∃ x:T, P x) = ¬(∀ x:T, ¬ P x)` (classical existential
+    duality) via `propext`. Forward: from a witness `⟨w, hw⟩` and
+    `∀x,¬P x`, `hall w hw : False`. Backward: `byContradiction` —
+    from `¬(∀x,¬P x)` and `hne : ¬∃x,P x`, the function
+    `fun x hx => hne ⟨x,hx⟩ : ∀x,¬P x` contradicts. Footprint:
+    `propext` + `Classical.byContradiction` (classical baseline).
+    Mirror of Rocq's `build_exists_duality`. -/
+private def buildExistsDuality (ctx : WalkerContext) (lhsSexp rhsSexp : Sexp)
+    : MetaM Expr := do
+  let eE ← sexpToExpr ctx lhsSexp            -- ∃ x:T, P x
+  let naE ← sexpToExpr ctx rhsSexp           -- ¬(∀ x:T, ¬ P x)
+  let args := eE.getAppArgs                  -- #[T, P]
+  let T := args[0]!
+  let P := args[1]!
+  let forallNeg := naE.appArg!               -- ∀ x:T, ¬ P x
+  let fwd ← withLocalDeclD `he eE fun he =>
+    withLocalDeclD `hall forallNeg fun hall => do
+      let motive ← withLocalDeclD `w T fun w => do
+        withLocalDeclD `hw (← mkAppM' P #[w]) fun hw =>
+          mkLambdaFVars #[w, hw] (mkApp (mkApp hall w) hw)
+      let body ← mkAppM ``Exists.elim #[he, motive]
+      mkLambdaFVars #[he, hall] body
+  let bwd ← withLocalDeclD `hna naE fun hna => do
+    let contra ← withLocalDeclD `hne (mkApp (mkConst ``Not) eE) fun hne => do
+      let fneg ← withLocalDeclD `x T fun x => do
+        withLocalDeclD `hx (← mkAppM' P #[x]) fun hx => do
+          let wit ← mkAppOptM ``Exists.intro #[some T, some P, some x, some hx]
+          mkLambdaFVars #[x, hx] (mkApp hne wit)
+      mkLambdaFVars #[hne] (mkApp hna fneg)
+    mkLambdaFVars #[hna] (← mkAppM ``Classical.byContradiction #[contra])
+  mkAppM ``propext #[← mkAppM ``Iff.intro #[fwd, bwd]]
+
 /-- Trust-tagged leaf (`hole` / `rare_rewrite`) with tautology
-    fallback. Most trust holes are arithmetic rewrites
+    fallbacks. Most trust holes are arithmetic rewrites
     (`TRUST_THEORY_REWRITE` over LIA atoms) and re-derive via
     omega; over `Prop` atoms cvc5 emits the *same* tags on
-    propositional-equality tautologies omega cannot see (e.g.
-    `(= (= r r) true)` in corpus `prop_eq_trans`). A single-eq
-    clause therefore first tries the `equiv_simplify` structural
-    matcher (propext-based, throws on no match), then falls back
-    to the omega discharge. Both paths re-derive from scratch —
-    the Audit-H1 never-admit-on-tag contract is unchanged. -/
+    tautologies omega cannot see. A single-eq clause is therefore
+    matched against, in order: the existential-duality rewrite
+    (`∃` Skolem normalization), the `equiv_simplify` structural
+    patterns, then the omega discharge (itself propext-augmented).
+    Every path re-derives from scratch — the Audit-H1
+    never-admit-on-tag contract is unchanged. -/
 private def elabTrustTaggedLeafOrTautology (ctx : WalkerContext)
     (s : Step) : WalkerM (Expr × List Sexp) := do
   match s.clause with
   | [.list [.atom "=", _, _]] =>
-    try elabEquivSimplify ctx s
-    catch _ => elabTrustTaggedLeaf ctx s
+    match existsForallDuality? s.clause with
+    | some (le, re) => return (← buildExistsDuality ctx le re, s.clause)
+    | none =>
+      try elabEquivSimplify ctx s
+      catch _ => elabTrustTaggedLeaf ctx s
   | _ => elabTrustTaggedLeaf ctx s
 
 /-- Strip the last dotted component of a step/assume id to get the
@@ -1711,6 +1835,91 @@ private def elabSubproof (ctx : WalkerContext) (s : Step)
   let proof ← dischargeLift ctx (dis.map (·.2)) suffix bodyFn
   pure (proof, s.clause)
 
+/-- `forall_inst`: quantifier instantiation. The clause is the
+    single literal `(or (not (∀ x:T, F)) F[x:=t])`, with the
+    instantiation term `t` in `:args`. cvc5 gives both the
+    quantifier and the already-substituted instance, so the proof
+    is the classical tautology `¬Q ∨ F[x:=t]`: case-split `Q` with
+    `Classical.em` — if `Q` holds, `Q t : F[x:=t]` is the right
+    disjunct; if `¬Q`, that is the left. `Q t` is defeq to the
+    stated instance (cvc5 substituted the same way the parser
+    does). Footprint stays at the classical baseline. Mirror of
+    Rocq's `elab_forall_inst`. -/
+private def elabForallInst (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause, s.args with
+  | [.list [.atom "or", .list [.atom "not", q], inst]], some [t] => do
+    let qE ← sexpToExpr ctx q
+    let instE ← sexpToExpr ctx inst
+    let tE ← sexpToExpr ctx t
+    let notQ := mkApp (mkConst ``Not) qE
+    let resultTy ← mkAppM ``Or #[notQ, instE]
+    let posCase ← withLocalDeclD `hq qE fun hq => do
+      let inj ← mkAppOptM ``Or.inr #[some notQ, some instE, some (mkApp hq tE)]
+      mkLambdaFVars #[hq] inj
+    let negCase ← withLocalDeclD `hnq notQ fun hnq => do
+      let inj ← mkAppOptM ``Or.inl #[some notQ, some instE, some hnq]
+      mkLambdaFVars #[hnq] inj
+    let em ← mkAppM ``Classical.em #[qE]
+    let proof ← mkAppOptM ``Or.elim
+      #[some qE, some notQ, some resultTy, some em, some posCase, some negCase]
+    pure (proof, s.clause)
+  | _, _ =>
+    throwError m!"alethe walker: 'forall_inst' expects clause \
+                   (cl (or (not (forall ..)) inst)) with one :args \
+                   instantiation term, got clause {repr s.clause}, \
+                   args {repr s.args}"
+
+/-- Extract the leading `(x T)` binder of a `(forall ((x T) …) _)`
+    sexp — the bound name and its sort. Used by `bind` to locate
+    the seeded binder fvar and (re)build the quantified sort. -/
+private def forallBinder? : Sexp → Option (String × Sexp)
+  | .list [.atom "forall", .list ((.list [.atom v, sort]) :: _), _] =>
+    some (v, sort)
+  | _ => none
+
+/-- `bind`: congruence under a binder. The clause is
+    `(= (∀ x:T, A) (∀ x:T, B))`; the anchored subproof's last step
+    proves the body equality `A[x] = B[x]` for the binder `x` that
+    `walkProof` seeded as a shared local fvar. Abstracting that
+    proof over the fvar gives `hAll : ∀ x, A x = B x`; the
+    conclusion follows by `propext` over the iff whose two
+    directions transport each instance along `hAll x` (`Eq.mp` /
+    `Eq.mpr`). Footprint adds only `propext` beyond the body
+    proof. Mirror of Rocq's `elab_bind`. -/
+private def elabBind (ctx : WalkerContext) (s : Step)
+    : WalkerM (Expr × List Sexp) := do
+  match s.clause with
+  | [.list [.atom "=", lhs, rhs]] => do
+    let some (vName, _) := forallBinder? lhs
+      | throwError m!"alethe walker: 'bind' LHS is not a forall: {repr lhs}"
+    let some xfv := ctx.vars.find? (Name.mkSimple vName)
+      | throwError m!"alethe walker: 'bind' binder '{vName}' was not \
+                       seeded (walkProof should have introduced it)"
+    let st ← get
+    let some innerId := st.innerFinal.find? (.mkSimple s.id)
+      | throwError m!"alethe walker: 'bind' {s.id} has no enclosed steps"
+    let (eBody, _) ← lookupStep innerId
+    let hAll ← mkLambdaFVars #[xfv] eBody
+    let lhsE ← sexpToExpr ctx lhs
+    let rhsE ← sexpToExpr ctx rhs
+    let sortE ← inferType xfv
+    let fwd ← withLocalDeclD `hA lhsE fun hA => do
+      let body ← withLocalDeclD (Name.mkSimple vName) sortE fun x => do
+        let bx ← mkAppM ``Eq.mp #[mkApp hAll x, mkApp hA x]
+        mkLambdaFVars #[x] bx
+      mkLambdaFVars #[hA] body
+    let bwd ← withLocalDeclD `hB rhsE fun hB => do
+      let body ← withLocalDeclD (Name.mkSimple vName) sortE fun x => do
+        let ax ← mkAppM ``Eq.mpr #[mkApp hAll x, mkApp hB x]
+        mkLambdaFVars #[x] ax
+      mkLambdaFVars #[hB] body
+    let proof ← mkAppM ``propext #[← mkAppM ``Iff.intro #[fwd, bwd]]
+    pure (proof, s.clause)
+  | _ =>
+    throwError m!"alethe walker: 'bind' expects clause \
+                   (cl (= (forall ..) (forall ..))), got {repr s.clause}"
+
 /-- Elaborate a single step: dispatch on `rule` to a per-rule
     elaborator, store the result under the step's `id`. Unknown
     rules throw — the omega fallback in `closeOrFail` catches
@@ -1752,6 +1961,8 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     | "contraction" => elabClauseRemap ctx "contraction" s
     | "subproof" => elabSubproof ctx s
     | "equiv_simplify" => elabEquivSimplify ctx s
+    | "forall_inst" => elabForallInst ctx s
+    | "bind" => elabBind ctx s
     -- PARITY:walker-rules END
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
@@ -1785,12 +1996,37 @@ def walkProof (ctx : WalkerContext) (proof : Proof) : MetaM Expr := do
   -- nested scopes share one flat fvar set; each discharging step
   -- abstracts its own. Top-level assumes still match goal hyps.
   let locals := proof.assumes.filter (fun a => (enclosingSubproofId a.id).isSome)
+  -- `bind` binders: each `bind` step's clause `(= (∀ x:T, _) …)`
+  -- names a binder `x` that its inner subproof references. Seed one
+  -- shared fvar per distinct binder name over the whole walk (just
+  -- like local assumes); each `bind` step abstracts the fvar out of
+  -- its own body. Distinct binds reusing a name share the fvar
+  -- soundly — abstraction closes whichever proof mentions it.
+  let bindBinders : List (Name × Sexp) :=
+    proof.steps.foldl (fun acc s =>
+      if s.rule = "bind" then
+        match s.clause with
+        | [.list [.atom "=", lhs, _]] =>
+          match forallBinder? lhs with
+          | some (v, sort) =>
+            if acc.any (fun p => p.1 == Name.mkSimple v) then acc
+            else acc ++ [(Name.mkSimple v, sort)]
+          | none => acc
+        | _ => acc
+      else acc) []
   let declInfos : Array (Name × (Array Expr → MetaM Expr)) :=
     locals.toArray.map (fun a => (Name.mkSimple a.id, fun _ => sexpToExpr ctx a.literal))
-  withLocalDeclsD declInfos fun fvars => do
+  let bindDecls : Array (Name × (Array Expr → MetaM Expr)) :=
+    bindBinders.toArray.map (fun (nm, sort) => (nm, fun _ => sortToExpr sort))
+  withLocalDeclsD (declInfos ++ bindDecls) fun fvars => do
+    let nLocals := locals.length
     let localAssume : NameMap (Expr × Sexp) :=
-      (locals.zip fvars.toList).foldl (fun m (a, fv) =>
+      (locals.zip (fvars.toList.take nLocals)).foldl (fun m (a, fv) =>
         m.insert (.mkSimple a.id) (fv, a.literal)) {}
+    let varsWithBinds : NameMap Expr :=
+      (bindBinders.zip (fvars.toList.drop nLocals)).foldl
+        (fun m (nmSort, fv) => m.insert nmSort.1 fv) ctx.vars
+    let ctx : WalkerContext := { ctx with vars := varsWithBinds }
     let initial : WalkerState := { proven := {}, innerFinal, localAssume }
     let walk : WalkerM Expr := do
       for a in proof.assumes do

@@ -1,17 +1,14 @@
 {
-  "supported_rule_count": 29,
+  "supported_rule_count": 31,
   "summary": {
-    "walkable": 12,
-    "replayed": 12,
+    "walkable": 14,
+    "replayed": 14,
     "shape_gapped": 0,
     "unsat": 14,
     "total": 14,
     "non_unsat": []
   },
-  "backlog": {
-    "forall_inst": 2,
-    "bind": 1
-  },
+  "backlog": {},
   "goals": {
     "lia_disjunction": {
       "result": "unsat",
@@ -75,19 +72,14 @@
     },
     "uf_exists_witness": {
       "result": "unsat",
-      "walkable": false,
-      "missing": [
-        "forall_inst"
-      ],
+      "walkable": true,
+      "missing": [],
       "replay_skip": null
     },
     "uf_forall_inst": {
       "result": "unsat",
-      "walkable": false,
-      "missing": [
-        "bind",
-        "forall_inst"
-      ],
+      "walkable": true,
+      "missing": [],
       "replay_skip": null
     },
     "uf_lia_mix": {
