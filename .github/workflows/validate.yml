@@ -65,6 +65,17 @@ jobs:
           python tools/test_gen_corpus_replay.py
           python tools/test_profile_walker.py
 
+      # Property-based fuzz of the resolution clause-algebra (set
+      # semantics + soundness vs a truth-table oracle): the systematic
+      # guard for the resolvent computation, including the dedup
+      # invariant whose absence broke the pigeonhole scale point. Fixed
+      # seed -> reproducible; the self-test includes a negative control
+      # proving the suite detects the regression.
+      - name: Fuzz walker resolution algebra
+        run: |
+          python tools/fuzz_resolution.py
+          python tools/test_fuzz_resolution.py
+
   sdk:
     runs-on: ubuntu-latest
     steps:
