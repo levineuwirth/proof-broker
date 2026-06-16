@@ -695,23 +695,25 @@ let elab_assume_literal (env : Environ.env)
     clause type; the outer [walker_test] / [tryAletheWalkerLIA]
     runs [lia] on each such evar via [tclINDEPENDENT] after the
     [Refine.refine]. Mirror of Lean's [omegaDischargeClause]. *)
-let elab_la_generic (_env : Environ.env)
+let elab_la_generic (env : Environ.env)
     (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
     (s : Alethe.step) : EConstr.t * Alethe.Sexp.t list =
   let clause_prop =
     sexp_to_constr ctx
       (Alethe.Sexp.List (Alethe.Sexp.Atom "cl" :: s.clause))
   in
-  (* Create the evar in [ctx.env] (the goal env extended with seeded
-     subproof-local-assume and [bind] binder vars), not the bare goal
-     [env]: a [bind]-inner leaf's clause mentions the seeded binder
-     [x], so its type is only well-formed where [x] is in scope. For
-     a proof with no subproofs [ctx.env] = [env], so the clean-context
-     arithmetic leaves are unchanged. The [bind]/subproof abstraction
-     wraps the evar's instance so [Refine.refine] binds [x] correctly
-     (the evar's named-context entry maps to the enclosing lambda). *)
+  (* [env] here is the "leaf env" [walk_proof] passes to [elab_step]:
+     the goal context plus the [bind] binder vars, but NOT the
+     subproof-local-assume vars. A [bind]-inner leaf's clause mentions
+     the bound [x], so [x] must be in scope; the local-assume Props,
+     by contrast, never appear in an arithmetic leaf's clause type and
+     would leave a top-level leaf's evar referencing an unbound
+     section variable. For a bind-free proof this equals the bare goal
+     env, so existing arithmetic leaves are unchanged. The bind
+     abstraction wraps the evar's instance so [Refine.refine] maps [x]
+     to the enclosing lambda. *)
   let new_sigma, evar =
-    Evarutil.new_evar ctx.env !sigma_ref clause_prop
+    Evarutil.new_evar env !sigma_ref clause_prop
   in
   sigma_ref := new_sigma;
   (evar, s.clause)
@@ -2347,29 +2349,37 @@ let walk_proof (env : Environ.env) (sigma_ref : Evd.evar_map ref)
         else acc)
       [] p.steps
   in
-  let env_ext, vars_ext =
-    List.fold_left (fun (env_acc, vars_acc) (v, sort) ->
+  let push_bind_vars base_env =
+    List.fold_left (fun env_acc (v, sort) ->
         let x_id = Names.Id.of_string_soft v in
-        let sort_e = parse_sort sort in
         let already =
           List.exists
             (fun d ->
                Names.Id.equal (Context.Named.Declaration.get_id d) x_id)
             (Environ.named_context env_acc)
         in
-        let env_acc' =
-          if already then env_acc
-          else
-            Environ.push_named
-              (Context.Named.Declaration.LocalAssum
-                 (Context.make_annot x_id Sorts.Relevant,
-                  EConstr.to_constr !sigma_ref sort_e))
-              env_acc
-        in
-        (env_acc', Names.Id.Map.add x_id (EConstr.mkVar x_id) vars_acc))
-      (env_ext, ctx.vars) bind_binders
+        if already then env_acc
+        else
+          Environ.push_named
+            (Context.Named.Declaration.LocalAssum
+               (Context.make_annot x_id Sorts.Relevant,
+                EConstr.to_constr !sigma_ref (parse_sort sort)))
+            env_acc)
+      base_env bind_binders
   in
-  let ctx = { ctx with env = env_ext; vars = vars_ext } in
+  let vars_ext =
+    List.fold_left (fun vars_acc (v, _) ->
+        let x_id = Names.Id.of_string_soft v in
+        Names.Id.Map.add x_id (EConstr.mkVar x_id) vars_acc)
+      ctx.vars bind_binders
+  in
+  (* [ctx.env] (parsing / Retyping) gets the local assumes AND the
+     bind vars. [leaf_env] (la_generic / hole evar creation) gets the
+     bind vars over the BARE goal env — NOT the local assumes, which
+     never appear in an arithmetic leaf's clause type and would make a
+     top-level leaf's evar reference an unbound section var. *)
+  let ctx = { ctx with env = push_bind_vars env_ext; vars = vars_ext } in
+  let leaf_env = push_bind_vars env in
   (* Top-level assumes match goal hypotheses (original [env]). *)
   List.iter (fun (id, lit) ->
       match Alethe.enclosing_subproof_id id with
@@ -2378,8 +2388,8 @@ let walk_proof (env : Environ.env) (sigma_ref : Evd.evar_map ref)
         let e = elab_assume_literal env sigma_ref ctx id lit in
         store_step st id e [ lit ])
     p.assumes;
-  (* Walk steps in order ([env] = original goal context). *)
-  List.iter (elab_step env sigma_ref ctx st) p.steps;
+  (* Walk steps in order; [leaf_env] = goal context + bind vars. *)
+  List.iter (elab_step leaf_env sigma_ref ctx st) p.steps;
   match List.rev p.steps with
   | [] ->
     raise (Walker_error
