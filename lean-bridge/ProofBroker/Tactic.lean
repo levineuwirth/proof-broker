@@ -1686,6 +1686,16 @@ syntax (name := proofBrokerTerm) "proof_broker_term" ("[" ident,* "]")? : tactic
     success and failure paths. -/
 syntax (name := proofBrokerQ) "proof_broker?" ("[" ident,* "]")? : tactic
 
+/-- Walker-STRICT form: dispatch + verify as usual, then close the
+    goal ONLY via the Alethe walker on the minted cert — NO `omega`
+    fallback. The tactic fails unless a live solve mints a Tier-3
+    alethe-2024 cert AND `walkProofIntoGoal` reconstructs it into a
+    kernel term. Plain `proof_broker` runs the walker then falls
+    through to `omega`, so a regression in the LIVE walker path (cert
+    shape, trace extraction, the walk) is masked there; this guards
+    it end-to-end. Test-only — production goals use `proof_broker`. -/
+syntax (name := proofBrokerWalker) "proof_broker_walker" ("[" ident,* "]")? : tactic
+
 /-- Parse the optional adapter-list suffix shared by both syntaxes.
     Returns `(adapterNames?, preferHigherTier)`. -/
 private def parseAdapterList (lst : Option (Array Ident))
@@ -1710,6 +1720,27 @@ def evalProofBroker : Tactic := fun stx => do
     | _ => throwError "proof_broker: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
   closeOrFail goal goalType path
+
+@[tactic proofBrokerWalker]
+def evalProofBrokerWalker : Tactic := fun stx => do
+  let goal ← getMainGoal
+  let (adapterNames?, preferHigherTier) ← match stx with
+    | `(tactic| proof_broker_walker [$names,*]) =>
+        parseAdapterList (some names.getElems)
+    | `(tactic| proof_broker_walker) =>
+        parseAdapterList none
+    | _ => throwError "proof_broker_walker: malformed invocation"
+  let path ← buildExtractionPath goal adapterNames? preferHigherTier
+  let cert ← match path.cert with
+    | some c => pure c
+    | none => throwError "proof_broker_walker: no adapter minted a cert; \
+        attempts: {path.attempts.map (·.adapter)}"
+  -- Walker-strict: require the Alethe walker to close from the live
+  -- cert; no `omega` fallback (that is what `proof_broker` adds).
+  unless (← tryAletheWalkerLIA cert) do
+    throwError "proof_broker_walker: the Alethe walker did not close the \
+      goal from the live cert (no omega fallback). Cert tier/format may \
+      not be a walkable alethe-2024 trace, or the walk failed."
 
 @[tactic proofBrokerQ]
 def evalProofBrokerQ : Tactic := fun stx => do

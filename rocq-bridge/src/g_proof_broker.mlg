@@ -24,6 +24,18 @@ TACTIC EXTEND ProofBroker
     { Pb_rocq_main.run_close (Some names) }
 END
 
+(* [proof_broker_walker [adapters]?] — walker-STRICT closing form.
+   Like [proof_broker] but closes ONLY via the Alethe walker on the
+   live-dispatched cert, with no [lia] fallback. End-to-end guard for
+   the production cvc5 -> Tier-3 cert -> walker -> kernel path; the
+   plain [proof_broker]'s fallback otherwise masks a walker regression
+   along that live path. Test-only. *)
+TACTIC EXTEND ProofBrokerWalker
+| [ "proof_broker_walker" ] -> { Pb_rocq_main.run_close_walker None }
+| [ "proof_broker_walker" "[" ne_ident_list_sep(names, ",") "]" ] ->
+    { Pb_rocq_main.run_close_walker (Some names) }
+END
+
 (* [proof_broker_verbose [adapters]?] — verbose form mirroring
    Lean's [proof_broker?]. Prints multi-line extraction-path
    summary (IR shape, attempts, cert, verify) before closing.
