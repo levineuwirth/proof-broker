@@ -403,6 +403,31 @@ let run_close (names : Names.Id.t list option) : unit Proofview.tactic =
     let path = build_path gl names in
     close_or_fail path)
 
+(* Walker-STRICT closer: like [run_close], but closes the goal ONLY
+   via the Alethe walker on the dispatched cert — no [lia] fallback,
+   no LLM reconstruction. End-to-end coverage for the production
+   cvc5 -> walker -> kernel path: a live solve must mint a Tier-3
+   alethe-2024 cert AND the walker must reconstruct it into a kernel
+   term, or the tactic FAILS. The production [proof_broker] wraps the
+   walker in [tclORELSE _ lia], so a regression in the live walker
+   path (cert-envelope shape, trace extraction, walk) is silently
+   masked by the fallback there; this entry point removes the mask so
+   that path is guarded. Test-only — production goals should use
+   [proof_broker], which degrades gracefully. *)
+let run_close_walker (names : Names.Id.t list option) : unit Proofview.tactic =
+  Proofview.Goal.enter (fun gl ->
+    let path = build_path gl names in
+    match path.cert, path.verify_reason with
+    | None, _ ->
+      CErrors.user_err Pp.(
+        str "proof_broker_walker: no cert minted; attempts: " ++
+        str (attempts_summary path.attempts))
+    | Some _, None ->
+      CErrors.user_err Pp.(
+        str "proof_broker_walker: internal — cert without verify")
+    | Some cert, Some _ ->
+      try_alethe_walker_lia cert)
+
 let run_test (names : Names.Id.t list option) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
     let path = build_path gl names in

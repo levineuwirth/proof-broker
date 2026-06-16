@@ -87,6 +87,26 @@ theorem lia_axiom_free
 
 #print axioms lia_axiom_free
 
+/-- End-to-end production path through the Alethe walker, walker-STRICT.
+
+    `proof_broker_walker` runs the full live pipeline (reify →
+    dispatch to cvc5 → verify) and then closes ONLY via
+    `walkProofIntoGoal` on the minted cert, with NO `omega` fallback.
+    `lia_axiom_free` above uses plain `proof_broker`, whose
+    `walker-then-omega` order silently masks any regression in the
+    LIVE walker path (cert shape, trace extraction, the walk); this
+    removes the mask, so a green build proves the walker reconstructs
+    a *real* live cvc5 cert into a kernel term — not a committed
+    fixture (the corpus replay covers that). Same classical-baseline
+    footprint as `lia_axiom_free`; that the footprint is non-empty
+    (vs `omega`'s axiom-free closure) is itself corroboration the
+    walker, not a fallback, produced the term. -/
+theorem lia_walker_live_axiom_free
+    (n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m) : n ≤ 10 := by
+  proof_broker_walker
+
+#print axioms lia_walker_live_axiom_free
+
 /-- Same theorem pinned through cvc4 (Tier 1 Farkas) — confirms
     the dispatch-on-fragment closer doesn't regress on the
     original Tier 1 path that motivated the omega-based closure

@@ -22,6 +22,14 @@ val run_close : Names.Id.t list option -> unit Proofview.tactic
 (** Dispatch + verify + close. [None] uses default manifests sorted
     by tier descending; [Some names] respects the input order. *)
 
+val run_close_walker : Names.Id.t list option -> unit Proofview.tactic
+(** Walker-STRICT close: dispatch + verify + reconstruct via the
+    Alethe walker on the minted cert, with NO [lia] fallback. The
+    tactic fails unless a live solve mints a Tier-3 alethe-2024 cert
+    AND the walker walks it into a kernel term — end-to-end coverage
+    for the production cvc5 -> walker -> kernel path that
+    [run_close]'s [tclORELSE _ lia] otherwise masks. Test-only. *)
+
 val run_test : Names.Id.t list option -> unit Proofview.tactic
 (** Dispatch + verify + print summary; does not close. *)
 
