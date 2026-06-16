@@ -118,6 +118,10 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.alethe_walker_exists_witness_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_false_from_bounds_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.alethe_walker_pigeonhole3_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.lra_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_term_case_split_axiom_free":

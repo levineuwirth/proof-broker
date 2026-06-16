@@ -16,11 +16,33 @@
     "steps": 26,
     "assumes": 3
   },
+  "lia_false_from_bounds": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 39,
+    "assumes": 3
+  },
   "lia_irrefl": {
     "result": "unsat",
     "rules": [ "equiv_pos2", "false", "hole", "resolution", "trans" ],
     "steps": 7,
     "assumes": 1
+  },
+  "lia_pigeonhole3": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "and_pos", "cong", "contraction", "equiv1", "equiv_pos2",
+      "equiv_simplify", "hole", "implies", "implies_neg1", "implies_neg2",
+      "implies_simplify", "la_generic", "la_mult_neg", "not_and", "or",
+      "or_neg", "rare_rewrite", "refl", "reordering", "resolution",
+      "subproof", "symm", "trans"
+    ],
+    "steps": 636,
+    "assumes": 38
   },
   "lia_strict_trans": {
     "result": "unsat",

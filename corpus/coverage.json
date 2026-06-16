@@ -1,11 +1,11 @@
 {
   "supported_rule_count": 31,
   "summary": {
-    "walkable": 14,
-    "replayed": 14,
+    "walkable": 16,
+    "replayed": 16,
     "shape_gapped": 0,
-    "unsat": 14,
-    "total": 14,
+    "unsat": 16,
+    "total": 16,
     "non_unsat": []
   },
   "backlog": {},
@@ -22,7 +22,19 @@
       "missing": [],
       "replay_skip": null
     },
+    "lia_false_from_bounds": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
     "lia_irrefl": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null
+    },
+    "lia_pigeonhole3": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
