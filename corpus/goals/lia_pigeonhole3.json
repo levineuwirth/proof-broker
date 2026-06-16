@@ -1,8 +1,7 @@
 {
   "id": "lia_pigeonhole3",
-  "description": "three values in {1,2} cannot be pairwise distinct (pigeonhole; large LIA+Boolean trace -- the corpus scale point)",
+  "description": "three values in {1,2} cannot be pairwise distinct (pigeonhole; large LIA+Boolean trace -- the corpus scale point, 636 steps / 118 arithmetic leaves)",
   "coq_goal": "forall a b c : Z, 1 <= a -> a <= 2 -> 1 <= b -> b <= 2 -> 1 <= c -> c <= 2 -> a <> b -> b <> c -> a <> c -> False",
-  "replay_skip": "scale point: 636 steps / 118 arithmetic leaves, all 24 rules supported (statically walkable). Dynamic replay blocked by a resolution shape gap -- the final n-ary resolution leaves an un-contracted duplicate literal ((a-b>=0) or (a-b>=0)) instead of the empty clause. Profiled via tools/profile_walker.py; see RETROSPECTIVES/phase-6-scale.md.",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

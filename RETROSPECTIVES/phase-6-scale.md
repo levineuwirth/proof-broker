@@ -55,40 +55,53 @@ leaves (118 vs 19) — a clean stress point well separated from the rest
 of the corpus. The profile is the deterministic, solver-free proxy for
 reconstruction cost; the ground-truth wall-clock is the CI replay (Rocq
 `CorpusReplay.v` under `coqc`, Lean `ProofBroker.Test` under `lake`),
-where the leaves actually run.
+where the leaves actually run. The scale point reconstructs end-to-end
+on both bridges: corpus dynamic replay is **16/16**.
 
-## Two gaps the scale point exposed
+## Three bugs the scale point exposed — all fixed
 
-Pushing the corpus to 636 steps surfaced two issues the smaller goals
-never reached. Profiling earned its keep by finding them.
+Pushing the corpus to 636 steps surfaced three issues the smaller goals
+never reached, none a missing rule (all 24 of pigeonhole's rules are
+supported, and the other goals replay). Profiling earned its keep by
+finding them; each is a small, principled fix.
 
-**(1) `False`-conclusion assume — fixed.** Every prior corpus goal had a
+**(1) `False`-conclusion assume.** Every prior corpus goal had a
 non-`False` conclusion, so the walker's `falseOrByContra` wrapper always
 ran, introducing the negated goal as a hypothesis that cvc5's
 negated-goal `assume` then matched. `lia_pigeonhole3`'s conclusion *is*
 `False`: no wrapper runs, and cvc5's `(assume _ (not false))` had no
-hypothesis to match against — the walker errored on a literal it should
-have proved trivially. `¬False ≡ False → False` is the identity; both
-bridges' assume-seeding now special-case `(not false)` to that proof
-(the same term `elabFalseStep` / `elab_false_step` already gave the
-`false` *rule*). Covered end-to-end by the new `lia_false_from_bounds`
-corpus goal (a small `False`-conclusion replay), and a focused
-`*_axiom_free` theorem on the Lean side.
+hypothesis to match — the walker errored on a literal it should prove
+trivially. `¬False ≡ False → False` is the identity; both bridges'
+assume-seeding now special-case `(not false)` to that proof (the same
+term the `false` *rule* already used). Also covered by the small
+`lia_false_from_bounds` corpus goal.
 
-**(2) Resolution shape gap at scale — recorded.** With (1) fixed,
-`lia_pigeonhole3` reconstructs through 600+ steps and then stalls at the
-top-level `n`-ary resolution: it yields an un-contracted duplicate
-literal (`(a − b ≥ 0) ∨ (a − b ≥ 0)`) instead of the empty clause. The
-walker's pairwise-resolution cancellation order diverges from cvc5's
-intended one for this premise structure — a shape gap, not a missing
-rule (all 24 of pigeonhole's rules are supported and the other 23 corpus
-goals resolve fine). The goal is committed `replay_skip` (statically
-walkable, dynamically shape-gapped — the coverage classifier's existing
-third state), so it stays in the profile and the static gate while being
-excluded from the `coqc` replay. Closing the gap is a focused follow-up:
-the symptom points at the resolvent dedup / cancellation-order logic in
-the `n`-ary resolution path, exercised by a minimised version of this
-final step.
+**(2) Resolution resolvent dedup.** Alethe clauses are sets, but the
+walkers' `binaryResolve` / `binary_resolve` concatenated the two
+premises' leftovers without deduping. A literal surviving in *both*
+premises then appeared twice in the resolvent, and a later premise's
+single complement cancelled only one copy — leaving the un-resolvable
+`(a − b ≥ 0) ∨ (a − b ≥ 0)` at pigeonhole's final `n`-ary resolution.
+Both walkers now dedup the resolvent (first-occurrence order) and inject
+each surviving literal at its *looked-up* position, so both copies of a
+duplicate land on its single slot. Latent until a goal's resolution
+chain actually shared a literal across premises — which only pigeonhole
+did.
+
+**(3) Local assumes leaking into omega leaves (Lean).** The flat walk
+binds every subproof's assumes through one `withLocalDeclsD`, so all of
+them are in scope at every leaf. `omega`, handed the full local context,
+would pull a local assume from an *unrelated* subproof into an
+arithmetic leaf's proof; that subproof's discharge never abstracts it,
+and the fvar leaked into the final term (the kernel's "declaration has
+free variables"). But an arithmetic leaf is an unconditionally-valid
+clause that must not depend on subproof-local assumptions. The Lean
+omega-discharge now excludes the local-assume fvars from the hypotheses
+it passes `omega`, scoping leaves to the goal context — matching the
+Rocq side, whose `leaf_env` (goal + bind vars, no local assumes) already
+enforced this. Surfaced only once a dedup'd resolvent (fix 2) let
+reconstruction reach the offending leaf, and only with pigeonhole's
+nested-subproof structure.
 
 ## Measurement note
 

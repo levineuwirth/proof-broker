@@ -564,9 +564,18 @@ def binaryResolve (ctx : WalkerContext)
     -- `aIsNot`: `A[i]` is the `(not ...)` side (it applies to `B[j]`
     -- to derive False), i.e. `A[i] = (not B[j])`.
     let aIsNot := isNegOf A[i]! B[j]!
-    let R := A.eraseIdx i ++ B.eraseIdx j
+    -- Alethe clauses are SETS: the resolvent dedups duplicate
+    -- literals. Without this, a literal surviving in both premises
+    -- appears twice in `R`, and a later premise's single complement
+    -- only cancels one copy — leaving an un-resolvable `X ∨ X`
+    -- (corpus `lia_pigeonhole3`'s final resolution). Keep
+    -- first-occurrence order so the injection positions are stable.
+    let R := (A.eraseIdx i ++ B.eraseIdx j).foldl
+      (fun acc x => if acc.contains x then acc else acc ++ [x]) []
     let resultTy ← clauseTypeOf ctx R
-    let aLen1 := A.length - 1
+    -- Inject each surviving literal at its position in the *deduped*
+    -- `R` (looked up, not computed): both occurrences of a duplicated
+    -- literal land on its single slot.
     let proof ← casesClause ctx eA A resultTy (fun i' hA' => do
       if i' == i then
         casesClause ctx eB B resultTy (fun j' hB' => do
@@ -577,10 +586,9 @@ def binaryResolve (ctx : WalkerContext)
               if aIsNot then mkApp hA' hB' else mkApp hB' hA'
             mkAppOptM ``False.elim #[some resultTy, some falseProof]
           else
-            let pos := aLen1 + (if j' < j then j' else j' - 1)
-            injectLit ctx R pos hB')
+            injectLit ctx R (R.findIdx (· == B[j']!)) hB')
       else
-        injectLit ctx R (if i' < i then i' else i' - 1) hA')
+        injectLit ctx R (R.findIdx (· == A[i']!)) hA')
     return (proof, R)
 
 /- ----------------------------------------------------------------
@@ -822,14 +830,29 @@ private def elabCong (ctx : WalkerContext) (s : Step)
 
 /-- Close an mvar of arithmetic-tautology type: `falseOrByContra`
     into a `False` goal, then the `MetaM`-level `omega` entry over
-    the local hypotheses. Throws if omega can't close it. -/
-private def omegaCloseMVar (g : MVarId) : MetaM Unit :=
+    the local hypotheses, minus `excluded`. Throws if omega can't
+    close it.
+
+    `excluded` is the set of subproof-local-assume fvars. The flat
+    walk binds every subproof's assumes via one `withLocalDeclsD`, so
+    they are all in scope at every leaf — but an arithmetic leaf is an
+    *unconditionally-valid* clause that must not depend on them. Left
+    in, omega may pull a local assume from an unrelated subproof's
+    scope into the leaf's proof; that subproof's discharge never
+    abstracts it, and the fvar leaks into the final term (the kernel's
+    "declaration has free variables"). Excluding them keeps leaves
+    scoped to the goal context, mirroring the Rocq side's leaf_env
+    (goal + bind vars, no local assumes). -/
+private def omegaCloseMVar (g : MVarId) (excluded : List FVarId)
+    : MetaM Unit :=
   g.withContext do
     match ← g.falseOrByContra with
     | none => pure ()        -- goal closed by falseOrByContra itself
     | some gFalse =>
       gFalse.withContext do
-        Lean.Elab.Tactic.Omega.omega (← getLocalHyps).toList gFalse
+        let hyps := (← getLocalHyps).toList.filter
+          (fun h => !excluded.contains h.fvarId!)
+        Lean.Elab.Tactic.Omega.omega hyps gFalse
 
 /-- Shared omega-discharge helper. Translates the step's clause to a
     `Prop` and proves it. Primary path: `falseOrByContra` + `omega`,
@@ -846,11 +869,14 @@ private def omegaCloseMVar (g : MVarId) : MetaM Unit :=
     so the walker fails rather than admitting it. -/
 private def omegaDischargeClause (ctx : WalkerContext) (s : Step)
     : WalkerM (Expr × List Sexp) := do
+  -- The subproof-local-assume fvars to keep out of omega's hypotheses
+  -- (see `omegaCloseMVar`).
+  let excluded := (← get).localAssume.toList.map (fun p => p.2.1.fvarId!)
   let clauseProp ← sexpToExpr ctx (Sexp.list (.atom "cl" :: s.clause))
   let proof ←
     try
       let mvar ← mkFreshExprSyntheticOpaqueMVar clauseProp
-      omegaCloseMVar mvar.mvarId!
+      omegaCloseMVar mvar.mvarId! excluded
       instantiateMVars mvar
     catch e =>
       match clauseProp.eq? with
@@ -859,7 +885,7 @@ private def omegaDischargeClause (ctx : WalkerContext) (s : Step)
         let mkDir (hTy gTy : Expr) : MetaM Expr :=
           withLocalDeclD `h hTy fun h => do
             let g ← mkFreshExprSyntheticOpaqueMVar gTy
-            omegaCloseMVar g.mvarId!
+            omegaCloseMVar g.mvarId! excluded
             mkLambdaFVars #[h] (← instantiateMVars g)
         let mp ← mkDir a b
         let mpr ← mkDir b a

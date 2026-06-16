@@ -629,9 +629,32 @@ let binary_resolve (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
     let erase_idx (xs : 'a list) (k : int) : 'a list =
       List.filteri (fun idx _ -> idx <> k) xs
     in
-    let r = erase_idx a i @ erase_idx b j in
+    (* Alethe clauses are SETS: the resolvent dedups duplicate
+       literals. Without this, a literal surviving in both premises
+       appears twice in [r], and a later premise's single complement
+       only cancels one copy — leaving an un-resolvable [X \/ X]
+       (corpus [lia_pigeonhole3]'s final resolution). Keep first-
+       occurrence order so the injection positions are stable.
+       Mirror of Lean's [binaryResolve] dedup. *)
+    let dedup (xs : Alethe.Sexp.t list) : Alethe.Sexp.t list =
+      List.fold_left
+        (fun acc x -> if List.mem x acc then acc else acc @ [ x ]) [] xs
+    in
+    let r = dedup (erase_idx a i @ erase_idx b j) in
     let result_ty = clause_type_of ctx r in
-    let a_len_minus_1 = n_a - 1 in
+    (* Position of a surviving literal in the *deduped* [r] (looked up,
+       not computed): both occurrences of a duplicated literal land on
+       its single slot. *)
+    let idx_of (lit : Alethe.Sexp.t) : int =
+      let rec go k = function
+        | [] ->
+          raise (Walker_error
+                   "resolution: surviving literal absent from resolvent")
+        | x :: _ when x = lit -> k
+        | _ :: t -> go (k + 1) t
+      in
+      go 0 r
+    in
     let proof = cases_clause sigma_ref ctx e_a a result_ty (fun i' h_a' ->
       if i' = i then
         cases_clause sigma_ref ctx e_b b result_ty (fun j' h_b' ->
@@ -645,12 +668,9 @@ let binary_resolve (sigma_ref : Evd.evar_map ref) (ctx : walker_ctx)
             EConstr.mkApp (force r_False_ind,
                            [| result_ty; false_proof |])
           else
-            let pos =
-              a_len_minus_1 + (if j' < j then j' else j' - 1)
-            in
-            inject_lit ctx r pos h_b')
+            inject_lit ctx r (idx_of (List.nth b j')) h_b')
       else
-        inject_lit ctx r (if i' < i then i' else i' - 1) h_a')
+        inject_lit ctx r (idx_of (List.nth a i')) h_a')
     in
     (proof, r)
 
