@@ -442,3 +442,39 @@ let rec normalize (j : Yojson.Safe.t) : Yojson.Safe.t = match j with
   | other -> other
 
 let json_equal a b = normalize a = normalize b
+
+(** [canonical_bytes j] is THE canonical bytestream for [j] — the
+    locked v1 serialization the cross-document hash invariants
+    (cert.dispatch_context_hash, rewrite_trace_hash, config_hash) are
+    computed over. Mirrored byte-for-byte by [tools/canonical_hash.py]
+    so cross-document checks can be performed Python-side without
+    trusting the SDK's verifier.
+
+    Concrete format (DO NOT change without bumping cert/IR schema
+    versions — every committed hash in every shipped fixture depends
+    on this byte stream):
+
+    - Recursive key sort of every [Assoc] (via [normalize] above).
+      Sort is byte-wise [String.compare]; Python mirrors with
+      [sorted(d.keys())], which on valid UTF-8 strings agrees because
+      UTF-8 preserves lexicographic order.
+    - JSON serialization via [Yojson.Safe.to_string]:
+      * No whitespace anywhere outside string contents
+        ([",":] separators).
+      * Non-ASCII emitted as raw UTF-8 bytes (NOT [\uXXXX] escapes).
+        Python must mirror with [ensure_ascii=False, separators=(",",":")].
+      * Standard short escapes ([\\n], [\\t], [\\r], [\\b], [\\f]) for
+        control chars; other controls as [\\u00XX].
+      * [/] is NOT escaped on either side.
+    - No floats appear in any v1 canonical input (IR, trace,
+      manifest) — only ints, strings, bools, null, lists, objects —
+      so float-formatting drift between Yojson and Python is
+      structurally avoided.
+
+    Cross-tested by [tests/cross_canonical/] on every CI run:
+    [sdk/test/test_canonical_hash.ml] (OCaml side) and
+    [tools/test_canonical_hash.py] (Python side) compute the SHA-256
+    of [canonical_bytes] for the same fixtures and assert agreement
+    against [tests/cross_canonical/expected.json]. *)
+let canonical_bytes (j : Yojson.Safe.t) : string =
+  Yojson.Safe.to_string (normalize j)

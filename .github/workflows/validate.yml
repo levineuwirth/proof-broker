@@ -32,6 +32,13 @@ jobs:
       - name: Run trust-gate parser tests (axiom-check C2/C3)
         run: python tools/test_check_axioms.py
 
+      - name: Cross-canonical hash byte-equivalence (Python side)
+        # Companion to sdk/test/test_canonical_hash.ml — both run
+        # against tests/cross_canonical/expected.json so a drift on
+        # either side surfaces as a failing test, never a silent
+        # same-pass on a divergent format.
+        run: python tools/test_canonical_hash.py
+
       # Pure text extraction (no bridge build): fail fast and cheap if the
       # Lean and Rocq Alethe walkers drift out of rule-set lockstep.
       - name: Check walker rule parity (Lean <-> Rocq)
