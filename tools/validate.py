@@ -30,6 +30,11 @@ from check import (  # noqa: E402
     check_certificate,
     check_manifest,
     check_trace,
+    # Cross-fixture hash linkage (#18d / #24-M1): see check.py for
+    # the pairing convention and the docs on the unpaired sentinels.
+    check_cert_hashes,
+    CERT_MANIFEST_PAIRS,
+    CERT_IR_PAIRS,
 )
 
 
@@ -132,6 +137,28 @@ def main() -> int:
                 doc = json.load(f)
             reg_errors, _reg_warnings = reg_fn(doc, patterns)
             errors = errors + [f"registry: {e}" for e in reg_errors]
+
+        # Cross-fixture hash linkage (#18d / #24-M1): cert.backend.config_hash
+        # must equal canonical_sha256(paired_manifest), and
+        # cert.dispatch_context_hash must equal canonical_sha256(paired_ir)
+        # when one is shipped. The pairing maps live in check.py;
+        # tools/regen_cert_hashes.py uses the same maps to (re-)pin
+        # fixture hashes.
+        if example.name in CERT_MANIFEST_PAIRS:
+            with example.open() as f:
+                cert = json.load(f)
+            with (EXAMPLES / CERT_MANIFEST_PAIRS[example.name]).open() as f:
+                paired_manifest = json.load(f)
+            paired_ir = None
+            if example.name in CERT_IR_PAIRS:
+                with (EXAMPLES / CERT_IR_PAIRS[example.name]).open() as f:
+                    paired_ir = json.load(f)
+            hash_errors, _hw = check_cert_hashes(
+                cert,
+                paired_ir=paired_ir,
+                paired_manifest=paired_manifest,
+            )
+            errors = errors + [f"hash: {e}" for e in hash_errors]
 
         if errors:
             print(f"FAIL {rel}  [{schema_name}]")
