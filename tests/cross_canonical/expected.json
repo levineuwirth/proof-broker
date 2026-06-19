@@ -1,0 +1,8 @@
+{
+  "_note": "Locked expected SHAs for the cross-canonical fixtures. Both sdk/test/test_canonical_hash.ml and tools/test_canonical_hash.py assert agreement with these values. A mismatch on either side means OCaml's Yojson.Safe.to_string + Codec.normalize and Python's json.dumps + _canonicalize have diverged on byte format — DO NOT update these values to make a test pass; investigate the divergence. The harness exists exactly to surface this.",
+  "control_chars.json":    "sha256:38840ac96804c0e398c1018f6a9041c2e58cd06105e7d778bf099ebf97539ea5",
+  "large_structured.json": "sha256:a4dd9dff35d14640f35246a069428c14e8b469c72f41fdccbc4932ee14bdb4db",
+  "nested.json":           "sha256:81a77ee1a23899572a0053a7899840be97fbeddb65d602f7bda9ff5ce1c5a86d",
+  "plain.json":            "sha256:356725a6950b6205a700a311b95ab9c4eabc05e1e9db872b3274c5ade740a88c",
+  "unicode_key.json":      "sha256:19f8239f5729ac2b815926a997762f807079aca84e66b942c9037f7c68a57d0f"
+}

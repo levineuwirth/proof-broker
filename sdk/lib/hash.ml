@@ -12,10 +12,16 @@ let sha256_of_string (s : string) : string =
   let hex = Digestif.SHA256.(to_hex (digest_string s)) in
   "sha256:" ^ hex
 
-(** [sha256_of_json j] normalizes [j] (recursive key sort) before
-    hashing, so semantically-equal JSON documents that differ only in
-    key order produce the same hash. This is the canonical
-    content-hash function used by the rewriter to populate
-    [before_hash] and [after_hash] in trace entries. *)
-let sha256_of_json (j : Yojson.Safe.t) : string =
-  sha256_of_string (Yojson.Safe.to_string (Codec.normalize j))
+(** [canonical_sha256 j] is THE locked v1 canonical hash of a JSON
+    document — the function the cross-document hash invariants
+    (cert.dispatch_context_hash, rewrite_trace_hash, config_hash)
+    are computed by, and the function [tools/canonical_hash.py]
+    mirrors byte-for-byte. See [Codec.canonical_bytes] for the
+    bytestream specification. *)
+let canonical_sha256 (j : Yojson.Safe.t) : string =
+  sha256_of_string (Codec.canonical_bytes j)
+
+(** Legacy name retained for existing call sites — identical to
+    [canonical_sha256]. New code should call [canonical_sha256]
+    directly. *)
+let sha256_of_json = canonical_sha256
