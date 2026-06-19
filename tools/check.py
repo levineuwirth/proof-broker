@@ -350,6 +350,87 @@ def check_manifest(manifest, registry):
     return errors, warnings
 
 
+# --- Cross-fixture hash linkage (#18d / #24-M1) ---------------------------
+#
+# The strict-identity hash invariants for example certificates:
+#
+#   * cert.backend.config_hash == canonical_sha256(paired_manifest)
+#   * cert.dispatch_context_hash == canonical_sha256(paired_ir)
+#     (when the cert ships with a paired IR fixture)
+#
+# Schema-stated (rewrite-trace.schema.json's `final_ir_hash matches the
+# certificate's dispatch_context_hash`) but unenforced before this. Wired
+# into validate.py for cert-* example fixtures; tools/regen_cert_hashes.py
+# uses these same pairing maps to (re-)pin the fixture hashes.
+
+# cert filename -> manifest filename. Every cert has a backend, so every
+# cert has a manifest pairing.
+CERT_MANIFEST_PAIRS = {
+    "cert-example1-tier1-farkas.json":    "manifest-cvc5.json",
+    "cert-example1-tier3-alethe.json":    "manifest-cvc5.json",
+    "cert-example2-tier2-casesplit.json": "manifest-cvc5.json",
+    "cert-example4-tier3-tptp.json":      "manifest-vampire.json",
+}
+
+# cert filename -> IR filename. Only certs whose dispatch IR is shipped
+# as an example fixture appear. cert-example2 (synthetic H2 case-split)
+# and cert-example4 (synthetic Tier-3 TPTP) construct their dispatch IR
+# in-process and do NOT have a paired example IR; their
+# dispatch_context_hash uses the documented unpaired sentinel.
+CERT_IR_PAIRS = {
+    "cert-example1-tier1-farkas.json": "example1-lia-typeclass.json",
+    "cert-example1-tier3-alethe.json": "example1-lia-typeclass.json",
+}
+
+# Documented "not a real digest" sentinels. Anything appearing in a cert
+# field with one of these values is intentionally not checked for hash
+# equality, just for shape conformance (which the schema's ContentHash
+# pattern already does). Pinning the exact strings here keeps the
+# regen tool and the checker agreed on the convention.
+_UNPAIRED_DISPATCH_CONTEXT_HASH = "sha256:" + "0" * 64
+_NO_TRACE_HASH = "sha256:" + "0" * 64
+
+
+def check_cert_hashes(cert, paired_ir=None, paired_manifest=None):
+    """Verify a certificate's strict-identity hash linkage to its
+    paired fixtures.
+
+    Caller (validate.py) does the pairing-name lookup and loads the
+    paired IR / manifest dicts. We compute the canonical SHA-256 and
+    compare; mismatches are errors with both sides reported so the
+    diagnostic is actionable.
+
+    Both `paired_ir` and `paired_manifest` are optional — a cert with
+    no paired IR (synthetic in-process dispatch) is checked for
+    manifest linkage only.
+    """
+    # Local import: canonical_hash is in tools/; check.py is too.
+    from canonical_hash import canonical_sha256
+    errors, warnings = [], []
+
+    if paired_manifest is not None:
+        expected = canonical_sha256(paired_manifest)
+        actual = cert.get("backend", {}).get("config_hash")
+        if actual != expected:
+            errors.append(
+                f"backend.config_hash: expected {expected} (canonical hash "
+                f"of paired manifest), got {actual}. Run "
+                f"`python tools/regen_cert_hashes.py` to re-pin."
+            )
+
+    if paired_ir is not None:
+        expected = canonical_sha256(paired_ir)
+        actual = cert.get("dispatch_context_hash")
+        if actual != expected:
+            errors.append(
+                f"dispatch_context_hash: expected {expected} (canonical "
+                f"hash of paired IR), got {actual}. Run "
+                f"`python tools/regen_cert_hashes.py` to re-pin."
+            )
+
+    return errors, warnings
+
+
 def check_trace(trace, registry):
     errors, warnings = [], []
     pass_ids = {p["id"] for p in registry["rewriter_passes"]}

@@ -106,7 +106,22 @@ let run
            | None -> No_implementation
            | Some adapter ->
              (match adapter.dispatch ir with
-              | Cert c -> Succeeded c
+              | Cert c ->
+                (* #18d / #24-M1 strict-identity config_hash. The
+                   driver knows which manifest matched; the adapter
+                   does not, and shouldn't have to load its own
+                   manifest just to hash it. Substitute the placeholder
+                   [config_hash] the adapter wrote ([sha256:000...000]
+                   sentinel) with [canonical_sha256] of the matched
+                   manifest's canonical JSON. Reuses the byte-stable
+                   primitive locked in chore/canonical-hash-harness. *)
+                let config_hash =
+                  Hash.canonical_sha256 (Manifest.to_json m)
+                in
+                let c' = { c with
+                  backend = { c.backend with config_hash }
+                } in
+                Succeeded c'
               | Failed f -> Failed f))
       in
       (match outcome with
@@ -190,7 +205,11 @@ let run_parallel
     | Match ->
       (match Hashtbl.find_opt adapters m.adapter with
        | None -> outcomes.(i) <- Some No_implementation
-       | Some a -> runners := (i, a) :: !runners))
+       (* Capture the matched manifest [m] so the thread closure can
+          substitute the cert's [config_hash] with the manifest hash
+          without a second sequential pass. Mirrors the sequential
+          driver's strict-identity rewrite (see [run] above). *)
+       | Some a -> runners := (i, a, m) :: !runners))
     manifests;
   let runners = List.rev !runners in
   let total = List.length runners in
@@ -232,11 +251,19 @@ let run_parallel
   if total = 0 then snapshot ()
   else begin
     let handles =
-      List.map (fun (i, (a : Adapter.t)) ->
+      List.map (fun (i, (a : Adapter.t), (m : Manifest.t)) ->
         Thread.create (fun () ->
           let o =
             try (match a.dispatch ir with
-                 | Cert c -> Succeeded c
+                 | Cert c ->
+                   (* Strict-identity config_hash; see [run] above. *)
+                   let config_hash =
+                     Hash.canonical_sha256 (Manifest.to_json m)
+                   in
+                   let c' = { c with
+                     backend = { c.backend with config_hash }
+                   } in
+                   Succeeded c'
                  | Failed f -> Failed f)
             with e ->
               Failed (Adapter.Solver_error {
