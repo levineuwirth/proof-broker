@@ -224,11 +224,12 @@ def render(d: dict) -> str:
             else "not measured — `coverage.json` has no `mintable` key yet (R1)")
     row("Walker corpus",
         f"{c['goals']} goals, {c['steps']} proof steps; statically walkable "
-        f"{c['walkable']}/{c['total']}; replayed under coqc "
-        f"{c['replayed']}/{c['total']}; live-mintable {mint}",
+        f"{c['walkable']}/{c['total']}; in the generated `CorpusReplay.v` "
+        f"{c['replayed']}/{c['total']} (the coqc ground truth is that file "
+        "compiling in the rocq-bridge job); live-mintable "
+        f"{mint}",
         "`corpus/index.json`, `corpus/coverage.json` "
-        "(`check_walker_coverage.py --check`; `CorpusReplay.v` in the "
-        "rocq-bridge job)")
+        "(`check_walker_coverage.py --check`, `gen_corpus_replay.py --check`)")
 
     be = "; ".join(
         f"{name} {ver} (tiers {','.join(map(str, tiers))}"
