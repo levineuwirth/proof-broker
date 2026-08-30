@@ -2,7 +2,10 @@
 
 A corpus of LIA+UF goals that cvc5 closes, used to measure how much of the
 fragment the Alethe walker actually replays (kernel-checked), and to rank the
-rules that block the rest. See `.claude/walker-replay-coverage-plan.md`.
+rules that block the rest. This README plus the committed `coverage.json`
+are the durable coverage plan/baseline (the earlier
+`.claude/walker-replay-coverage-plan.md` lived in a gitignored directory
+and no longer exists).
 
 ## Layout
 
@@ -41,7 +44,8 @@ Commit the regenerated artifacts; the diffs are the review surface.
 - `dune build` compiles `rocq-bridge/theories/CorpusReplay.v` — the dynamic,
   kernel-checked ground truth that every statically-walkable goal actually
   closes (rocq-bridge job).
-- live-drift (advisory) — regenerate against CI's cvc5 and warn on any diff.
+- live-drift (blocking since PR #74; the "Walker corpus live-drift" step of
+  the rocq-bridge job) — regenerate against CI's cvc5 and fail on any diff.
 
 ## Adding a goal
 

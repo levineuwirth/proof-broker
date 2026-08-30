@@ -488,8 +488,11 @@ private def parseDispatchFailure (j : Json) : DispatchFailure :=
     `runVerifyCertificate` to confirm the envelope addresses the
     same IR.
 
-    Phase 2.1 supports `cvc4` only and only mints Tier 0 oracle
-    certs; proof-tier minting (Tier 1 / Tier 3) is deferred. -/
+    Originally (Phase 2.1) `cvc4`-only and Tier 0 only. The adapter
+    registry behind this call is now multi-backend (`cvc4` / `cvc5`
+    / `z3` / `vampire` / `llm` — `adapter_registry` in
+    `sdk/ffi/proof_broker_ffi.ml`) and proof-tier minting
+    (Tier 1 Farkas / Tier 3 alethe-2024) has since shipped. -/
 def runDispatchToAdapter (adapter : String) (ir : IR)
     : Except FfiError DispatchResult := do
   let input := Json.mkObj [

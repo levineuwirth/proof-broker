@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-document soundness checks for Phase 0 fixtures.
+"""Cross-document soundness checks for every fixture in examples/.
 
 The JSON Schemas validate structure. This pass validates invariants that
 span multiple documents or require domain knowledge:
@@ -28,6 +28,11 @@ span multiple documents or require domain knowledge:
   Certificates
     - refinement_record.fragment is a registered fragment.
     - Tier 1 witness_kind / Tier 3 trace_format are in the registry.
+    - Strict-identity hash linkage (check_cert_hashes, driven from
+      validate.py): dispatch_context_hash == canonical SHA-256 of the
+      paired IR and backend.config_hash == canonical SHA-256 of the
+      paired manifest (tools/canonical_hash.py reproduces the OCaml
+      codec canonicalization).
 
   Adapter manifests
     - logic_fragments, type_constructions, witness_kinds_produced,
@@ -52,9 +57,6 @@ tracked separately, not silently asserted here):
   - Tier-0 and Tier-2 payload contents (e.g. Tier-2 library-lemma
     content_hash) get no registry/hash cross-check; only the
     refinement_record.fragment is validated for those tiers.
-  - No cross-document IR<->cert canonical-hash *equality* (would need
-    the OCaml codec canonicalization reproduced here); only the
-    within-trace hash chain above is enforced.
 
 Errors fail the run; warnings are surfaced but do not.
 """

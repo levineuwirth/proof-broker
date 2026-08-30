@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Validate the Phase 0 reference artifacts against the JSON Schemas.
+"""Validate every fixture in examples/ against the JSON Schemas.
 
 Validates:
-  - examples/example*.json against schemas/v1.0/ir.schema.json
+  - examples/*.json (IRs, certificates, adapter manifests, rewrite
+    traces) against the schemas/v1.0/*.schema.json that `schema_for`
+    maps each fixture name to
   - registry/patterns-v1.json (well-formed JSON only; no schema yet)
 
 Then ALSO co-enforces the registry vocabulary (audit M3): the

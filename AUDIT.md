@@ -13,6 +13,15 @@ The highest-severity findings were re-verified by hand against source
 
 ## 1. Status summary
 
+> **Status note (2026-08-30).** The table and the "Issue tracker &
+> pass status" block below are the 2026-05-17 snapshot. Since then,
+> audit passes 2–10 landed as PRs #20–#29, and the Rocq bridge
+> (marked "NOT BUILT" below and in §2) has been built locally on the
+> rocq 9.1.1 stack (2026-08-30; `rocq-runtime` is pinned `< 9.2` in
+> `dune-project` because 9.2.0 changed the `Assumptions.assumptions`
+> API used by `rocq-bridge/src/llm_replay.ml`) and is built in CI by
+> the dedicated `rocq-bridge` job in `validate.yml`.
+
 The project is in genuinely good shape. 4 of 5 CI surfaces pass
 end-to-end from a clean environment; the shipped trust footprint is
 exactly the documented 5 core axioms with **no `sorryAx`/`sorry`/admit**.

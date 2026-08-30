@@ -598,7 +598,10 @@ let check_alethe_step (input : string) : string =
     let ir = Proof_broker.Codec.of_json ir_json in
     let step = Proof_broker.Alethe.step_of_json step_json in
     (* The FFI per-step interface ships no premise context yet —
-       it's a direction-2 hook for a future Lean walker. With an
+       originally a direction-2 hook for a then-future Lean walker.
+       The Lean walker that shipped ([lean-bridge/ProofBroker/Alethe.lean])
+       does not use it: it fetches the parsed proof via
+       [parse_alethe_proof] and elaborates each step itself. With an
        empty [env.proven], stateless rules ([la_generic], [refl],
        [false]) work; stateful rules ([trans], [cong], [resolution])
        will surface "unknown premise" until the FFI grows an env

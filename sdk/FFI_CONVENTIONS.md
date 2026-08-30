@@ -296,14 +296,20 @@ Rendering at the shim boundary (rather than at the raise site inside
 OCaml) preserves the structured representation for any OCaml-internal
 diagnostic path that later wants it.
 
-## What's not yet decided
+## What was not yet decided when this was written (both since decided)
 
 - Whether the shim is stateful (holding e.g. a parsed registry) or
   stateless (each call re-loads). Decision belongs to whoever writes
   the shim; constraints from this document apply either way.
+  **Decided:** the shim keeps a method `registry` (`Hashtbl`) populated
+  once at module init and read-only afterwards — no per-call re-loading
+  (`sdk/ffi/proof_broker_ffi.ml`, `registry` / `register_method`).
 - The Lean-side error type that `{"status": "error", ...}` envelopes
   decode into. Probably an inductive matching this document's `kind`
   values, with a catch-all for forward compatibility.
+  **Decided:** `inductive FfiError` in `lean-bridge/ProofBroker/Bridge.lean`
+  (`jsonParseError` / `decodeError` / `unknownMethod` / `shimFailure`,
+  plus `.other kind message` as the forward-compatibility catch-all).
 
 ## Phase-0 spike outcome
 

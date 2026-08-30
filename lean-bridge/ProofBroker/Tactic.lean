@@ -23,7 +23,9 @@ Soundness footprint:
     leaves the goal open — it never closes via an admitted axiom.
     Reifying the cert into a term-mode Lean proof — Farkas
     combination from the Tier 1 witness, or the Alethe walker for
-    Tier 3 — is the principled finish; until a fragment has one,
+    Tier 3 (now wired in for alethe-2024 traces on LIA:
+    `tryAletheWalkerLIA` / `ProofBroker.Alethe`, omega as the
+    fallback) — is the principled finish; until a fragment has one,
     an uncloseable certified goal is a tactic error, not a theorem.
   * The LLM `lean-tactic-script` Tier-3 cert (an untrusted oracle
     the OCaml verifier deliberately leaves soundness-unchecked,
@@ -1071,9 +1073,13 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- as a hypothesis the trace's `assume`s match against. On
       -- any walker failure (parse error, unsupported rule, walk
       -- exception, type mismatch) we fall through to omega —
-      -- audit H1 preserved. The walker covers the ~14 rules cvc5
-      -- emits for LIA+UF traces; omega catches anything outside
-      -- that scope.
+      -- audit H1 preserved. The walker's rule inventory is the
+      -- `PARITY:walker-rules` dispatch block in
+      -- `ProofBroker.Alethe.elabStep` (kept in lockstep with the
+      -- Rocq walker by `tools/check_walker_parity.py`; rule counts:
+      -- the generated status table in README.md,
+      -- `python3 tools/status_table.py`); omega catches anything
+      -- outside that scope.
       let walkerHandled ← do
         if certTraceFormat cert == "alethe-2024" then
           tryAletheWalkerLIA cert
