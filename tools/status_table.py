@@ -21,7 +21,10 @@ Sources (all committed, all already gated elsewhere in CI):
   corpus/coverage.json                 static replay coverage baseline
                                        (check_walker_coverage.py --check);
                                        `mintable` once R1 adds it
-  examples/manifest-*.json             adapter manifests: backend + version
+  examples/manifest-*.json             adapter manifests: backend + DECLARED
+                                       version (the label the adapter stamps
+                                       into certificates; compared with the
+                                       CI pin in the note under the table)
   .github/workflows/validate.yml       CI job list + timeout-minutes, and
                                        the solver/toolchain pins (env vars)
   lean-bridge/lean-toolchain           Lean toolchain pin
@@ -111,6 +114,25 @@ def backends() -> list:
         out.append((name, str(d.get("adapter_version", "?")),
                     d.get("tiers_produced", []),
                     d.get("trace_formats_produced") or []))
+    return out
+
+
+def declared_vs_pinned(backends: list, pins: dict) -> list:
+    """[(backend, declared, pinned)] for every backend whose manifest
+    `adapter_version` differs from the CI env pin `<NAME>_VERSION` in
+    validate.yml (a leading `v` on the pin is ignored: Vampire's release
+    tags are `v5.0.1`, the manifest says `5.0.1`). Backends with no
+    such env pin (apt-installed z3/cvc4, the LLM mock) are skipped —
+    there is nothing declared on the CI side to compare with. Same
+    inputs as the Backends and Toolchain-pins rows, so the note under
+    the table cannot disagree with them."""
+    out = []
+    for name, declared, _tiers, _fmts in backends:
+        pinned = pins.get(f"{name.upper()}_VERSION")
+        if not pinned:
+            continue
+        if declared not in {p.removeprefix("v") for p in pinned}:
+            out.append((name, declared, "/".join(pinned)))
     return out
 
 
@@ -260,7 +282,26 @@ def render(d: dict) -> str:
     row("Retrospectives", _code(d["retros"]), "`RETROSPECTIVES/`")
 
     header = ["| surface | value | source |", "|---|---|---|"]
-    return "\n".join(header + rows) + "\n"
+    table = "\n".join(header + rows) + "\n"
+    return table + "\n" + version_note(d) + "\n"
+
+
+def version_note(d: dict) -> str:
+    """One paragraph under the table: the Backends row is what the
+    adapters *declare* (`examples/manifest-*.json`), the Toolchain-pins
+    row is what CI installs; names every backend where the two differ,
+    derived from the same data as the rows (never typed)."""
+    drift = declared_vs_pinned(d["backends"], d["ci"]["pins"])
+    if drift:
+        listed = "; ".join(f"{name} (declared {dec}, pinned {pin})"
+                           for name, dec, pin in drift)
+        tail = f"Declared version differs from the CI pin for: {listed}."
+    else:
+        tail = "Every backend with a CI pin declares the pinned version."
+    return ("Version labels: the *Backends* row is each adapter's **declared** "
+            "`adapter_version` from `examples/manifest-*.json` (the label it "
+            "stamps into certificates); the *Toolchain pins* row is the binary "
+            "CI actually installs (`validate.yml` env pins). " + tail)
 
 
 def block(table: str) -> str:

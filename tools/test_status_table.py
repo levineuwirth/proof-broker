@@ -111,10 +111,61 @@ def test_check_negative_controls() -> None:
         "write() preserves the text around the block")
 
 
+def test_version_note_declared_vs_pinned() -> None:
+    # Synthetic inputs: the mismatch list is derived, not typed.
+    bes = [("cvc5", "1.3.3", [0, 1], []), ("vampire", "5.0.1", [0], []),
+           ("z3", "4.16.0", [0, 1], [])]
+    pins = {"CVC5_VERSION": ["1.3.0"], "VAMPIRE_VERSION": ["v5.0.1"]}
+    _ok(st.declared_vs_pinned(bes, pins) == [("cvc5", "1.3.3", "1.3.0")],
+        "declared_vs_pinned: cvc5 1.3.3 vs pin 1.3.0 is reported")
+    _ok(st.declared_vs_pinned(bes, {"CVC5_VERSION": ["1.3.3"],
+                                    "VAMPIRE_VERSION": ["v5.0.1"]}) == [],
+        "declared_vs_pinned: equal versions yield no mismatch")
+    _ok(st.declared_vs_pinned([("vampire", "5.0.1", [0], [])],
+                              {"VAMPIRE_VERSION": ["v5.0.1"]}) == [],
+        "declared_vs_pinned: a leading 'v' on the pin is not a mismatch")
+    _ok(st.declared_vs_pinned([("z3", "4.16.0", [0, 1], [])], pins) == [],
+        "declared_vs_pinned: a backend without a CI env pin is skipped")
+    _ok(st.declared_vs_pinned(bes, {"CVC5_VERSION": ["1.3.0", "1.3.3"]})
+        == [], "declared_vs_pinned: any job's pin equal to the declared version counts")
+    # Real sources: the note names exactly the drift the sources show.
+    d = st.collect()
+    real = st.declared_vs_pinned(d["backends"], d["ci"]["pins"])
+    recomputed = []
+    for m in st.MANIFESTS:
+        name = m.stem.removeprefix("manifest-")
+        declared = str(json.loads(m.read_text(encoding="utf-8"))["adapter_version"])
+        pinned = d["ci"]["pins"].get(f"{name.upper()}_VERSION")
+        if pinned and declared not in {p.removeprefix("v") for p in pinned}:
+            recomputed.append((name, declared, "/".join(pinned)))
+    _ok(real == recomputed, "real sources: mismatch list == manifests vs validate.yml pins")
+    table = st.render(d)
+    note = st.version_note(d)
+    _ok(note in table and table.index(note) > table.rindex("| "),
+        "rendered block carries the version note after the table")
+    _ok("\n\n" in table[:table.index(note)],
+        "a blank line separates the table from the note (markdown)")
+    for name, dec, pin in real:
+        _ok(f"{name} (declared {dec}, pinned {pin})" in note,
+            f"note lists the real drift entry {name} (declared {dec}, pinned {pin})")
+    if not real:
+        _ok("declares the pinned version" in note, "note says there is no drift")
+    # A synthetic no-drift collection renders the no-drift sentence.
+    same = dict(d)
+    same["backends"] = [(n, v, t, f) for n, v, t, f in d["backends"]]
+    same["ci"] = dict(d["ci"])
+    same["ci"]["pins"] = {**d["ci"]["pins"],
+                          **{f"{n.upper()}_VERSION": [v] for n, v, _, _ in d["backends"]}}
+    _ok("differs from the CI pin" not in st.version_note(same)
+        and "declares the pinned version" in st.version_note(same),
+        "equal declared/pinned versions render no mismatch list")
+
+
 def main() -> int:
     test_counts_come_from_sources()
     test_ci_jobs_regex()
     test_check_negative_controls()
+    test_version_note_declared_vs_pinned()
     print(f"\n{_PASS} passed, {_FAIL} failed")
     return 1 if _FAIL else 0
 
