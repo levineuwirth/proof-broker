@@ -58,16 +58,22 @@ let timeout_of_ir (ir : Ir.t) : int =
     rejects a non-positive limit, so it is floored at 100 ms.
     [--proof tptp] requests a TSTP derivation on stdout — unused
     by the Tier-0 minter but kept so the M2 replayer can consume
-    the same invocation; [--output_axiom_names on] makes the
-    derivation reference axioms by our hypothesis names, which the
-    M2 replayer will need to align steps to IR hypotheses. *)
+    the same invocation. The derivation must reference input
+    formulas by our hypothesis names ([file(_, NAME)] leaves), which
+    the M2 provenance verifier aligns with IR hypotheses: Vampire
+    >= 5.1.0 prints them by default (as single-quoted atoms, which
+    [Tptp_proof] un-quotes); 5.0.x needed [--output_axiom_names on],
+    an option 5.1.0 REMOVED ("User error: output_axiom_names is not
+    a valid option" -> no SZS line -> no cert). Without the flag,
+    5.0.x prints [file(unknown,unknown)] and Tier-3 minting falls
+    through to Tier 0, so this adapter is Tier-3-capable only on the
+    pinned >= 5.1.0 binary. *)
 let run_solver ~timeout_ms (problem : string) : string * string * int =
   let secs = Float.max 0.1 (float_of_int timeout_ms /. 1000.) in
   let argv = [|
     vampire_binary;
     "--input_syntax"; "tptp";
     "--proof"; "tptp";
-    "--output_axiom_names"; "on";
     "--time_limit"; Printf.sprintf "%.3f" secs;
   |] in
   (* No shell: [open_process_args_full] execvp's [argv] directly, so
@@ -144,7 +150,7 @@ let parse_szs (stdout : string) : szs =
 (** Pinned to the Vampire release installed in CI. Bump on solver
     upgrade so the manifest / [backend.version] stay synchronized
     (mirrors the [Adapter_z3.version] discipline). *)
-let version = "5.0.1"
+let version = "5.1.0"
 
 let backend : Certificate.backend = {
   name = "vampire";
