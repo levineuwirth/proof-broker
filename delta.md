@@ -885,12 +885,18 @@ later one's lazy binding). The FFI-bearing core `ProofBroker` lib,
 is deleted. Nothing in that lib needs native code — its `initialize`
 registration of the `Real` reifier and the `linarith` / `aesop` closers
 runs in the interpreter, and the `@[extern]` FFI surface lives in the
-still-precompiled core lib. Consequences measured on the R0.5 branch:
-`lake build` schedules 878 jobs instead of 17,382 (the ~17k Mathlib
-`.c.o` compiles were the bulk of the 15-minute CI job); the trust gate
-is unchanged — `check_axioms.py --bridge lean`: all 102 allowlisted
-theorems within ceiling, `hol_function_composition_axiom_free` at
-`[propext]` through live Vampire.
+still-precompiled core lib. Consequences, as dated measurements on the
+R0.5 tree (`dacae65`, rebased unchanged as `13cf414`; Lean v4.32.0,
+Mathlib cache fetched; the job count is a property of the build state,
+not of the tree): `lake build` schedules 878 jobs (incremental `lake
+build` at `dacae65`, 2026-08-30; 885 from `lake clean` on the same
+tree) instead of 17,382 (`lake build` with the Mathlib precompile, same
+day — the ~17k Mathlib `.c.o` compiles were the bulk of the lean-bridge
+CI job, 15m09 on the last green `main` run, `0a5ae40`, 2026-06-19); the
+trust gate is unchanged — `check_axioms.py --bridge lean`: every
+allowlisted theorem (count in the README status table) within ceiling,
+`hol_function_composition_axiom_free` at `[propext]` through live
+Vampire.
 
 **Verdict on condition 5.** The disruption is real but confined to
 Lake configuration; the C-ABI assumptions of the shim

@@ -154,10 +154,12 @@ lean_lib ProofBrokerTest where
     independently of the core `ProofBroker` lib so projects
     without Mathlib in their closure can ignore it.
 
-    NOT precompiled (delta.md §5, reconsideration record of
+    NOT precompiled (delta.md §5.1, reconsideration record of
     2026-08-30): `precompileModules := true` here made Lake build
-    `Mathlib:shared` (every Mathlib module's `.c.o`, ~17k jobs, the
-    bulk of the 15-min CI job) and load the precompiled Mathlib
+    `Mathlib:shared` (every Mathlib module's `.c.o` — ~17k of the
+    17,382 jobs `lake build` scheduled with the precompile on
+    2026-08-30, and the bulk of the lean-bridge CI job: 15m09 on the
+    last green `main` run, 2026-06-19) and load the precompiled Mathlib
     `.so` into the elaborator — which needed the `libLake_shared.so`
     `--load-dynlib` workaround under Lean v4.30 and fails outright
     under v4.32 / Lake 5.0 (`symbol lookup error: … libmathlib_Mathlib.so:
@@ -165,8 +167,10 @@ lean_lib ProofBrokerTest where
     library `.so`s are loaded without cross-linking). Nothing in this
     lib needs native code: its `initialize` registration and closers
     run in the interpreter, and the FFI-bearing `ProofBroker` core
-    lib below stays precompiled. Result: 878 build jobs instead of
-    17,382 and no dynlib plumbing for Mathlib at all. -/
+    lib below stays precompiled. Result (dated measurement, delta.md
+    §5.1): 878 build jobs from an incremental `lake build` on the R0.5
+    tree, 2026-08-30 (885 from `lake clean` on the same tree), instead
+    of 17,382 — and no dynlib plumbing for Mathlib at all. -/
 lean_lib ProofBrokerMathlib where
   precompileModules := false
   roots := #[`ProofBrokerMathlib]

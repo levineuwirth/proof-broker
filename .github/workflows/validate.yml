@@ -19,7 +19,8 @@ jobs:
   schemas:
     runs-on: ubuntu-latest
     # timeout-minutes on every job: ~2x the observed wall-clock of the
-    # last green main run (schemas 10 s, sdk 1m54, cross-platform 2m18,
+    # last green main run (0a5ae40, 2026-06-19, workflow run
+    # 27852779842: schemas 10 s, sdk 1m54, cross-platform 2m18,
     # lean-bridge 15m09, rocq-bridge 6m20) so a hung solver or a
     # runaway Mathlib build fails the job instead of burning the
     # 6-hour default. Raise deliberately when a phase adds real work
