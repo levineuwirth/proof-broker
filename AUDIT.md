@@ -15,7 +15,7 @@ The highest-severity findings were re-verified by hand against source
 
 > **Status note (2026-08-30).** The table and the "Issue tracker &
 > pass status" block below are the 2026-05-17 snapshot. Since then,
-> audit passes 2–10 landed as PRs #20–#29, and the Rocq bridge
+> audit passes 2–10 landed as PRs #21–#29, and the Rocq bridge
 > (marked "NOT BUILT" below and in §2) has been built locally on the
 > rocq 9.1.1 stack (2026-08-30; `rocq-runtime` is pinned `< 9.2` in
 > `dune-project` because 9.2.0 changed the `Assumptions.assumptions`
