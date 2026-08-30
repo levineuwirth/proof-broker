@@ -102,6 +102,22 @@ jobs:
       - name: Install Python validator deps
         run: pip install -r tools/requirements.txt
 
+      - name: Pin dune < 3.24 (rocq-runtime constraint, WATCH)
+        # dune 3.24 (2026-06-21) deleted `(using coq …)` from the dune
+        # language; only `(using rocq 0.11)` parses there. But every
+        # published rocq-runtime (<= 9.2.0) declares
+        # `dune {>= "3.8" & < "3.24"}` (`opam show rocq-runtime.9.2.0`),
+        # so a dune-3.24 workspace cannot host the Rocq bridge at all.
+        # dune-project therefore stays on `(using coq 0.8)` and pins
+        # `(dune (< 3.24))` in every package. setup-ocaml installs the
+        # newest dune; pin it here BEFORE the deps so `dune build` parses
+        # dune-project. (The rocq-bridge job gets the same downgrade for
+        # free from rocq-runtime's constraint and needs no pin step.)
+        # WATCH(rocq-dune-3.24): when a rocq-runtime release lifts the
+        # bound, migrate dune-project to `(lang dune 3.24)` +
+        # `(using rocq 0.11)` and delete this step in all three jobs.
+        run: opam install -y "dune<3.24"
+
       - name: Install SDK deps
         # The opam files (proof_broker.opam, proof_broker_rocq.opam)
         # live at repo root after the Phase 1 workspace merge; pre-
@@ -202,6 +218,22 @@ jobs:
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
+
+      - name: Pin dune < 3.24 (rocq-runtime constraint, WATCH)
+        # dune 3.24 (2026-06-21) deleted `(using coq …)` from the dune
+        # language; only `(using rocq 0.11)` parses there. But every
+        # published rocq-runtime (<= 9.2.0) declares
+        # `dune {>= "3.8" & < "3.24"}` (`opam show rocq-runtime.9.2.0`),
+        # so a dune-3.24 workspace cannot host the Rocq bridge at all.
+        # dune-project therefore stays on `(using coq 0.8)` and pins
+        # `(dune (< 3.24))` in every package. setup-ocaml installs the
+        # newest dune; pin it here BEFORE the deps so `dune build` parses
+        # dune-project. (The rocq-bridge job gets the same downgrade for
+        # free from rocq-runtime's constraint and needs no pin step.)
+        # WATCH(rocq-dune-3.24): when a rocq-runtime release lifts the
+        # bound, migrate dune-project to `(lang dune 3.24)` +
+        # `(using rocq 0.11)` and delete this step in all three jobs.
+        run: opam install -y "dune<3.24"
 
       - name: Install SDK deps
         # See retry rationale in the `sdk` job's Install SDK deps step.
@@ -353,6 +385,22 @@ jobs:
           sudo install -m 755 /tmp/vampire/vampire /usr/local/bin/vampire
           vampire --version | head -1
 
+      - name: Pin dune < 3.24 (rocq-runtime constraint, WATCH)
+        # dune 3.24 (2026-06-21) deleted `(using coq …)` from the dune
+        # language; only `(using rocq 0.11)` parses there. But every
+        # published rocq-runtime (<= 9.2.0) declares
+        # `dune {>= "3.8" & < "3.24"}` (`opam show rocq-runtime.9.2.0`),
+        # so a dune-3.24 workspace cannot host the Rocq bridge at all.
+        # dune-project therefore stays on `(using coq 0.8)` and pins
+        # `(dune (< 3.24))` in every package. setup-ocaml installs the
+        # newest dune; pin it here BEFORE the deps so `dune build` parses
+        # dune-project. (The rocq-bridge job gets the same downgrade for
+        # free from rocq-runtime's constraint and needs no pin step.)
+        # WATCH(rocq-dune-3.24): when a rocq-runtime release lifts the
+        # bound, migrate dune-project to `(lang dune 3.24)` +
+        # `(using rocq 0.11)` and delete this step in all three jobs.
+        run: opam install -y "dune<3.24"
+
       - name: Install SDK deps
         # See retry rationale in the `sdk` job's Install SDK deps step.
         run: |
@@ -476,6 +524,10 @@ jobs:
           opam update
 
       - name: Install SDK + rocq-bridge deps
+        # No explicit `dune<3.24` pin here: rocq-runtime's own
+        # `dune {>= "3.8" & < "3.24"}` constraint makes the solver
+        # downgrade dune (WATCH(rocq-dune-3.24), see the pin step in
+        # the sdk / sdk-cross-platform / lean-bridge jobs).
         # proof_broker_rocq pulls in rocq-runtime (>= 9.0); proof_broker
         # pulls the OCaml SDK deps; proof_broker_rocq_hammer
         # (Phase-3 #1 Rocq parity, opt-in HOL closer via hauto)
