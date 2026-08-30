@@ -55,11 +55,11 @@ The roadmap's original Phase 0–6 numbering is kept for the history in
 |---|---|---|
 | R0 | re-green CI, local parity, repo hygiene, script-derived status (this table) | — |
 | R1 | close the walker's production path (SDK mint gate = walker rule set; UF/UFLIA routed to the walker; live-strict corpus suite on both bridges) | Phase 2.6 (replayer), "Phase 6" as used by `phase-6-scale.md` (walker scale) |
-| R2 | make the certificate load-bearing: rewriter on the live path, real `rewrite_trace_hash`, honest envelope, identity-trace guard | Phase 2.4/2.5 (passes, trace), 2.8 |
+| R2 | make the certificate load-bearing: rewriter on the live path, real `rewrite_trace_hash`, honest envelope, identity-trace guard | Phase 2.4/2.5 (passes, trace) |
 | R3 | specialization + lifting: ℕ→ℤ, polymorphic α, definitional unfolding inverted in the lifted term | Phase 2.1–2.3, 2.7 (metadata, lifting) |
 | R4 | external demo: `by proof_broker` on a downstream Lake project's ℕ/ℤ LIA and UFLIA obligations | Phase 3 exit criterion applied externally |
 | R5 | spec v1.1 delta, roadmap v1.1, docs consolidation | Phase 1 → v1.1 checkpoint (never written), Phase 5/6 double meaning resolved |
-| shipped | Phases 0 (foundations), 1 (skeleton), 3 (breadth: Vampire, concurrent dispatch, LLM adapter + replay closer, on both bridges), 4 (Rocq probe), 5 (term-mode parity), 6 (cross-platform CI matrix + signing scaffold) | see `delta.md §2`, `RETROSPECTIVES/` |
+| shipped | Phases 0 (foundations), 1 (skeleton), 2.8 (capability matching), 3 (breadth: Vampire and the LLM adapter + replay closer on both bridges; concurrent dispatch on Lean only — the Rocq bridge dispatches sequentially through `Dispatch.run`, decide-list), 4 (Rocq probe: the shell calculus survived a second home system; the metadata half of the IR was never probed — R3), 5 (term-mode parity), 6 (cross-platform CI matrix + signing scaffold) | see `delta.md §2`, `RETROSPECTIVES/` |
 
 ## Layout
 
