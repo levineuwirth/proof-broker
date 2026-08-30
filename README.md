@@ -38,8 +38,8 @@ refreshes it). It is the only place this README states a count.
 | Trust gate (Rocq) | 114 allowlisted theorems; 4 distinct axioms: `ClassicalDedekindReals.sig_forall_dec`, `FunctionalExtensionality.functional_extensionality_dep`, `classic`, `propositional_extensionality` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the rocq-bridge job) |
 | Alethe walker rules | Lean 31, Rocq 31 (at parity) | dispatch arms between `PARITY:walker-rules` markers (`check_walker_parity.py`) |
 | Walker corpus | 16 goals, 1061 proof steps; statically walkable 16/16; in the generated `CorpusReplay.v` 16/16 (the coqc ground truth is that file compiling in the rocq-bridge job); live-mintable not measured — `coverage.json` has no `mintable` key yet (R1) | `corpus/index.json`, `corpus/coverage.json` (`check_walker_coverage.py --check`, `gen_corpus_replay.py --check`) |
-| Backends (adapter manifests) | cvc4 1.8 (tiers 0,1); cvc5 1.3.3 (tiers 0,1,2,3; alethe-2024); llm 0 (tiers 3; lean-tactic-script); vampire 5.0.1 (tiers 0); z3 4.16.0 (tiers 0,1) | `examples/manifest-*.json` |
-| Toolchain pins | Lean `leanprover/lean4:v4.30.0-rc2`; OCaml `5.4`; dune `>= 3.21 & < 3.24`; rocq-runtime `>= 9.0 & < 9.2`; cvc5 `1.3.0`; Vampire `v5.0.1`; elan `v4.2.1` | `lean-bridge/lean-toolchain`, `proof_broker_rocq.opam`, `validate.yml` env pins |
+| Backends (adapter manifests) | cvc4 1.8 (tiers 0,1); cvc5 1.3.3 (tiers 0,1,2,3; alethe-2024); llm 0 (tiers 3; lean-tactic-script); vampire 5.1.0 (tiers 0); z3 4.16.0 (tiers 0,1) | `examples/manifest-*.json` |
+| Toolchain pins | Lean `leanprover/lean4:v4.32.0`; OCaml `5.4`; dune `>= 3.21 & < 3.24`; rocq-runtime `>= 9.0 & < 9.2`; cvc5 `1.3.0`; Vampire `v5.1.0`; elan `v4.2.4` | `lean-bridge/lean-toolchain`, `proof_broker_rocq.opam`, `validate.yml` env pins |
 | CI jobs (timeout) | schemas (10 min); sdk (20 min); sdk-cross-platform (20 min); lean-bridge (40 min); rocq-bridge (30 min); ci-status (5 min); weekly cron `17 6 * * 1` | `.github/workflows/validate.yml` |
 | Retrospectives | `phase-0.md`, `phase-3-rocq-parity.md`, `phase-4.md`, `phase-5.md`, `phase-6-scale.md` | `RETROSPECTIVES/` |
 
