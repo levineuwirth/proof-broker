@@ -46,6 +46,16 @@ jobs:
       - name: Run cross-doc checker negative tests
         run: python tools/test_check.py
 
+      # Doc-count gate: every number README's Status section shows is
+      # printed by tools/status_table.py from the committed JSON/source
+      # files; the embedded copy must match byte-for-byte. Hand-typed
+      # counts went stale within weeks every time (retros); this turns
+      # that into a red schemas job. `--write` refreshes the block.
+      - name: README status table up to date
+        run: |
+          python tools/status_table.py --check
+          python tools/test_status_table.py
+
       - name: Run trust-gate parser tests (axiom-check C2/C3)
         run: python tools/test_check_axioms.py
 

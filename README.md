@@ -10,83 +10,56 @@ post-spec engineering decisions (notably the OCaml language flip).
 
 ## Status
 
-Phases 0 (Foundations), 1 (Skeleton), 2 (Core), 4 (Rocq probe), and
-5 (term-mode parity) have shipped end-to-end. Phase 3 (Breadth) is
-in progress — the Vampire path is complete end-to-end: M1 (ATP
-adapter + TPTP-FOF/THF serializer + Tier-0 dispatch), M2 (TSTP
-parser + fail-closed Tier-3 *provenance* verifier — no smuggled
-axioms, refutes the negated goal, reaches `$false`; inference
-steps are not individually re-derived, the home-system closer is
-the kernel check), and M3 (Lean higher-order reifier +
-verdict-gated `aesop` HOL closer). The roadmap §Phase-3 exit
-criterion is met: the worked function-composition goal
-(`examples/example2-…`) closes `by proof_broker` through real
-Vampire, axiom-free (footprint `[propext]`). Concurrent dispatch
-(roadmap §Phase 3 #5) also landed: `Dispatch.run_parallel` races
-the capability-eligible adapters on threads, first-valid-wins
-with a grace window that prefers the highest tier (`delta.md
-§2.1` records the `Thread`-vs-`lwt` reconsideration). The
-LLM-as-backend adapter (roadmap §Phase 3 #3) has also landed:
-`Adapter_llm` renders the IR as Lean surface syntax, prompts a
-configured chat-completions endpoint over a `curl` subprocess
-(`delta.md §2.1` records the transport reconsideration), and
-mints a Tier-3 `lean-tactic-script` cert that the verifier marks
-`Tier3_replay_deferred` — an untrusted oracle whose soundness
-rests entirely on the home-system kernel replaying the script
-(audit H1). That home-side replayer has now landed too:
-`ProofBroker.Tactic`'s `replayLlmScriptOrFail` elaborates the
-script as `(by …)` against the goal, and accepts the result only
-if the *replayed* proof term's transitive axiom footprint is a
-subset of the classical allowlist (`propext`, `Classical.choice`,
-`Quot.sound`) — a hallucinated `sorry` (`sorryAx`),
-`native_decide` (`Lean.ofReduceBool`, compiler trust), or any
-bespoke axiom is a tactic failure, never an admitted theorem, so
-the LLM can never widen the trust base. LLM-assisted Tier-3
-reconstruction of un-replayable traces (roadmap §Phase 3 #4) has
-also landed: when a Tier-3 cert arrives in a `trace_format` the
-home system has no symbolic replayer for and every fragment
-closer fails, the SDK's `Llm_reconstruct.translate` asks the
-configured endpoint to convert the trace into a Lean tactic
-script, which then goes through the *same* `replayLlmScriptOrFail`
-audit-H1 gate — no separate trust path. The fallback is silent
-when no endpoint is configured (the primary failure is
-re-raised), so CI with no LLM sees the same diagnostics as before.
-With this, Phase 3 (Breadth) is structurally complete on the Lean
-side; remaining Phase-3 polish is tracked in the per-phase
-retrospectives.
+What ships is a sound, gated, multi-backend **certificate-gated
+re-proving** system: goals from Lean 4 and Rocq are reified into the
+IR, dispatched to cvc4 / cvc5 / z3 (SMT), Vampire (ATP) or an LLM
+endpoint, and the returned certificate is verified by the OCaml SDK
+(envelope, Farkas witnesses, per-step Alethe replay, TSTP provenance)
+before a home-system closer re-derives the goal — term-mode Farkas
+reconstruction for Tier 1/2, the per-rule Alethe walker for cvc5
+Tier-3 traces on both bridges, `omega` / `lia` / `linarith` / `aesop`
+/ `hauto` otherwise. Every closure path is policed by the CI trust
+gate (`tools/check_axioms.py` against `tools/axiom_allowlist.json`):
+no `sorry`, no admits, no new axioms. The spec's further claims —
+metadata-bearing IR, a live rewriter with traces, refinement records
+and **lifting** the proof back through them — are not on the live path
+yet; that is the R2–R3 work in the phase map below, and `delta.md`
+records every decision that diverges from the spec.
 
-The Rocq bridge now has structural parity with the Lean side's
-Phase-3 surface (PR #37/#38/#39, May 2026). M1 lifted the Rocq
-reifier to higher-order shapes (`Prod`→`Forall`/`Implies`,
-parenthesized arrow domains, `Eq` at function types, `HOL`
-fragment detection) and added a fragment-keyed HOL closer hook
-backed by an opt-in `coq-hammer`-based `hauto` package (mirror
-of `ProofBrokerMathlib`). M2 added a Rocq-side LLM-replay closer
-that uses Rocq's kernel `Assumptions` API for the audit-H1
-axiom-footprint gate (the same API `Print Assumptions` calls
-internally). M3 made the SDK's `Adapter_llm` and `Llm_reconstruct`
-bridge-aware: a `dialect` record dispatched on
-`ir.source_system.name` renders Lean syntax / `lean-tactic-script`
-certs for Lean home systems and Rocq Stdlib syntax /
-`rocq-tactic-script` certs for Rocq home systems, then wired the
-reconstruction-fallback `tclORELSE` wrap into Rocq's
-`close_or_fail` (same audit-H1 gate as M2 for translated
-scripts). Phase 3 is now structurally complete on **both**
-bridges.
-Phase 6 (cross-platform distribution + polish) carries the displaced
-original-Phase-5 scope. See `delta.md §2` for per-phase status and
-`RETROSPECTIVES/phase-{0,4,5,3-rocq-parity}.md` for retrospectives.
-Term-mode reconstruction (Phase 5 deliverable) covers the full Tier 1
-+ Tier 2 Farkas cert vocabulary on both bridges — comparison goals
-(≤ / < / ≥ / > / =), all four inequality hypothesis shapes plus
-their negations, equality hypotheses with signed coefficients,
-rational coefficients, arity-N premises, and arity-N disjunctions in
-the Tier 2 case-split path. Trust footprint of the shipped tactics
-is gated by `tools/check_axioms.py` against `tools/axiom_allowlist.json`
-— every `*_axiom_free` theorem in `lean-bridge/Test/Tactic.lean` and
-`rocq-bridge/theories/Test.v` either closes axiom-free or pulls only
-the documented Lean / Rocq core axioms (140 entries after the
-post-Phase-5 dead-code cleanup; Phase 5 closed at 150).
+The table is generated by `python3 tools/status_table.py` from the
+committed JSON / source files it names (`--check` in the schemas CI job
+fails if this copy drifts; `--write` refreshes it). It is the only place
+this README states a count.
+
+<!-- status-table:begin (generated by tools/status_table.py; do not edit by hand) -->
+| surface | value | source |
+|---|---|---|
+| Trust gate (Lean) | 102 allowlisted theorems; 3 distinct axioms: `Classical.choice`, `Quot.sound`, `propext` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the lean-bridge job) |
+| Trust gate (Rocq) | 114 allowlisted theorems; 4 distinct axioms: `ClassicalDedekindReals.sig_forall_dec`, `FunctionalExtensionality.functional_extensionality_dep`, `classic`, `propositional_extensionality` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the rocq-bridge job) |
+| Alethe walker rules | Lean 31, Rocq 31 (at parity) | dispatch arms between `PARITY:walker-rules` markers (`check_walker_parity.py`) |
+| Walker corpus | 16 goals, 1061 proof steps; statically walkable 16/16; replayed under coqc 16/16; live-mintable not measured — `coverage.json` has no `mintable` key yet (R1) | `corpus/index.json`, `corpus/coverage.json` (`check_walker_coverage.py --check`; `CorpusReplay.v` in the rocq-bridge job) |
+| Backends (adapter manifests) | cvc4 1.8 (tiers 0,1); cvc5 1.3.3 (tiers 0,1,2,3; alethe-2024); llm 0 (tiers 3; lean-tactic-script); vampire 5.0.1 (tiers 0); z3 4.16.0 (tiers 0,1) | `examples/manifest-*.json` |
+| Toolchain pins | Lean `leanprover/lean4:v4.30.0-rc2`; OCaml `5.4`; dune `>= 3.21 & < 3.24`; rocq-runtime `>= 9.0 & < 9.2`; cvc5 `1.3.0`; Vampire `v5.0.1`; elan `v4.2.1` | `lean-bridge/lean-toolchain`, `proof_broker_rocq.opam`, `validate.yml` env pins |
+| CI jobs (timeout) | schemas (10 min); sdk (20 min); sdk-cross-platform (20 min); lean-bridge (40 min); rocq-bridge (30 min); ci-status (5 min); weekly cron `17 6 * * 1` | `.github/workflows/validate.yml` |
+| Retrospectives | `phase-0.md`, `phase-3-rocq-parity.md`, `phase-4.md`, `phase-5.md`, `phase-6-scale.md` | `RETROSPECTIVES/` |
+<!-- status-table:end -->
+
+### Phase map
+
+Work is tracked as an R-series of gated phases (each ends at a
+reviewed checkpoint; a phase is DONE only when its own gate passed).
+The roadmap's original Phase 0–6 numbering is kept for the history in
+`delta.md §2` and `RETROSPECTIVES/`:
+
+| R-phase | goal | old phases it absorbs |
+|---|---|---|
+| R0 | re-green CI, local parity, repo hygiene, script-derived status (this table) | — |
+| R1 | close the walker's production path (SDK mint gate = walker rule set; UF/UFLIA routed to the walker; live-strict corpus suite on both bridges) | Phase 2.6 (replayer), "Phase 6" as used by `phase-6-scale.md` (walker scale) |
+| R2 | make the certificate load-bearing: rewriter on the live path, real `rewrite_trace_hash`, honest envelope, identity-trace guard | Phase 2.4/2.5 (passes, trace), 2.8 |
+| R3 | specialization + lifting: ℕ→ℤ, polymorphic α, definitional unfolding inverted in the lifted term | Phase 2.1–2.3, 2.7 (metadata, lifting) |
+| R4 | external demo: `by proof_broker` on a downstream Lake project's ℕ/ℤ LIA and UFLIA obligations | Phase 3 exit criterion applied externally |
+| R5 | spec v1.1 delta, roadmap v1.1, docs consolidation | Phase 1 → v1.1 checkpoint (never written), Phase 5/6 double meaning resolved |
+| shipped | Phases 0 (foundations), 1 (skeleton), 3 (breadth: Vampire, concurrent dispatch, LLM adapter + replay closer, on both bridges), 4 (Rocq probe), 5 (term-mode parity), 6 (cross-platform CI matrix + signing scaffold) | see `delta.md §2`, `RETROSPECTIVES/` |
 
 ## Layout
 
@@ -98,19 +71,27 @@ post-Phase-5 dead-code cleanup; Phase 5 closed at 150).
   kinds)
 - `examples/` — hand-written reference IR documents for the spec §12
   worked examples; canonical fixtures for downstream components
-- `sdk/` — OCaml shared library: IR rewriter, certificate verifier,
-  dispatcher, cvc4/cvc5/z3 adapters, the Vampire ATP adapter
-  (Phase 3 M1: TPTP-FOF/THF serializer + Tier-0 dispatch; M2:
-  TSTP parser + fail-closed Tier-3 provenance verifier wired into
-  the certificate verifier), the LLM-as-backend adapter
-  (curl-subprocess transport, env-configured, fail-closed),
-  the Thread-based concurrent dispatch driver, FFI shim used by
-  Lean
-- `lean-bridge/` — Lean 4 plugin: reifier (LIA + the Phase-3
-  higher-order/FOL fragment), the `proof_broker` tactic, the
-  optional `ProofBrokerMathlib` opt-in (LRA `linarith` closer +
-  the HO `aesop` closer for the Vampire path)
-- `rocq-bridge/` — Rocq plugin (Phase 4 probe): direct-link to the
-  OCaml SDK, `proof_broker` / `proof_broker_term` tactics
-- `tools/` — Python validators, schema cross-checks, axiom-trust gate
-- `RETROSPECTIVES/` — phase-by-phase post-mortems
+- `sdk/` — OCaml shared library: IR rewriter, certificate verifier
+  (envelope, Farkas, per-step Alethe re-check = the Tier-3 mint gate,
+  TSTP provenance), dispatcher (Thread-based concurrent driver),
+  cvc4 / cvc5 / z3 / Vampire / LLM adapters, `corpus_gen`, and the
+  FFI shim (`sdk/ffi/`) used by Lean; `sdk/FFI_CONVENTIONS.md`
+- `lean-bridge/` — Lean 4 plugin: reifier (`Int` LIA, BitVec, the
+  higher-order/FOL fragment), the `proof_broker` / `proof_broker_term`
+  / `proof_broker_walker` tactics, the Alethe walker
+  (`ProofBroker/Alethe.lean`), the LLM-script replay closer, and the
+  optional `ProofBrokerMathlib` opt-in (LRA `linarith` closer + the HO
+  `aesop` closer for the Vampire path)
+- `rocq-bridge/` — Rocq plugin: direct-link to the OCaml SDK, the same
+  tactic family (`proof_broker`, `proof_broker_term`,
+  `proof_broker_walker`, `proof_broker_verbose`), the Alethe walker
+  (`src/alethe_walker.ml`), generated `theories/CorpusReplay.v`, and the
+  opt-in `hammer/` package (`hauto` HOL closer)
+- `corpus/` — walker replay corpus: hand-authored goals, `corpus_gen`
+  traces from pinned cvc5, committed coverage / profile baselines
+- `tests/` — cross-canonical hash fixtures shared by the OCaml and
+  Python canonicalizers
+- `tools/` — Python validators, schema cross-checks, axiom-trust gate,
+  walker parity / coverage / replay-gen / profile gates, resolution
+  fuzzer, and `status_table.py` (this README's numbers)
+- `RETROSPECTIVES/` — phase-by-phase post-mortems (list in the table)
