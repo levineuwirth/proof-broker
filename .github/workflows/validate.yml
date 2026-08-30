@@ -4,10 +4,27 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Weekly cron (Monday 06:17 UTC): the toolchain surface — apt z3/cvc4,
+  # opam's newest resolvable rocq/dune/Mathlib caches, GitHub release
+  # assets — moves under a quiet repo. A scheduled run turns "CI will be
+  # red on the next push" (the dune-3.24 break sat unnoticed for 72
+  # days) into a red badge within a week. Odd minute to avoid the
+  # top-of-hour queue.
+  schedule:
+    - cron: "17 6 * * 1"
+  # Manual re-run without a push (no-op PRs are not needed to re-validate).
+  workflow_dispatch:
 
 jobs:
   schemas:
     runs-on: ubuntu-latest
+    # timeout-minutes on every job: ~2x the observed wall-clock of the
+    # last green main run (schemas 10 s, sdk 1m54, cross-platform 2m18,
+    # lean-bridge 15m09, rocq-bridge 6m20) so a hung solver or a
+    # runaway Mathlib build fails the job instead of burning the
+    # 6-hour default. Raise deliberately when a phase adds real work
+    # (R1's live suite, R0.5's Mathlib bump).
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
@@ -85,6 +102,7 @@ jobs:
 
   sdk:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
@@ -210,6 +228,7 @@ jobs:
           - os: macos-14
             label: macos-aarch64
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     name: sdk-cross-platform (${{ matrix.label }})
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -314,6 +333,7 @@ jobs:
 
   lean-bridge:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     needs: sdk
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -454,6 +474,7 @@ jobs:
 
   rocq-bridge:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: sdk
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -591,6 +612,7 @@ jobs:
     if: ${{ always() }}
     needs: [schemas, sdk, sdk-cross-platform, lean-bridge, rocq-bridge]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Require every required job to have succeeded
         run: |
