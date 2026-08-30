@@ -45,9 +45,18 @@
   ; depend on (rocq-bridge/theories/dune has `(theories Stdlib)`); it
   ; also makes `coqc --config` succeed, which dune calls during build.
   ; All three are required at build time.
-  (rocq-runtime (>= 9.0))
-  (coq-core (>= 9.0))
-  (coq-stdlib (>= 9.0))))
+  ; Upper bound < 9.2: rocq-runtime 9.2.0 changed the signature of
+  ; `Assumptions.assumptions` (now `... -> GlobRef.t list ->
+  ; ContextObjectMap.t`; 9.1 took an owner GlobRef + a Constr.t), which
+  ; breaks the audit-H1 axiom-footprint gate call in
+  ; rocq-bridge/src/llm_replay.ml. Adapting that call is a soundness-
+  ; gate change and gets its own reviewed PR; until then CI and local
+  ; builds resolve the 9.1.1 stack that was green on 2026-06-19.
+  ; WATCH(rocq-9.2-assumptions-api): lift the bound together with the
+  ; llm_replay.ml migration (roadmap decide-list).
+  (rocq-runtime (and (>= 9.0) (< 9.2)))
+  (coq-core (and (>= 9.0) (< 9.2)))
+  (coq-stdlib (and (>= 9.0) (< 9.2)))))
 
 (package
  (name proof_broker_rocq_hammer)
@@ -57,7 +66,8 @@
   (ocaml (>= 5.0))
   (dune (< 3.24))
   proof_broker_rocq
-  (rocq-runtime (>= 9.0))
-  (coq-core (>= 9.0))
-  (coq-stdlib (>= 9.0))
+  ; Same < 9.2 bound as proof_broker_rocq (WATCH(rocq-9.2-assumptions-api)).
+  (rocq-runtime (and (>= 9.0) (< 9.2)))
+  (coq-core (and (>= 9.0) (< 9.2)))
+  (coq-stdlib (and (>= 9.0) (< 9.2)))
   (coq-hammer-tactics (>= 1.3))))
