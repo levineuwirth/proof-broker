@@ -303,9 +303,25 @@ let extract_proof_body (stdout : string) : string option =
 (** Pinned to the static-release version we install at
     ~/.local/bin/cvc5. Bump on solver upgrade so the manifest /
     backend.version stay synchronized. *)
-let version = "1.3.3"
+let version = "1.3.0"
 
 let dispatch (ir : Ir.t) : Adapter.result =
+  (* R1.8: certs stamp the PROBED binary version (declared constant
+     as fallback when the probe fails). On a major.minor mismatch
+     between the binary on PATH and the declared version, emit a
+     named diagnostic and skip the version-sensitive Tier-3
+     alethe-2024 passthrough — the trace dialect the SDK mint gate
+     and the walkers were validated against may have drifted (the
+     Vampire 5.0→5.1 CLI-drift precedent). Lower tiers (Farkas /
+     case-split / oracle) are shape-checked per dispatch and stay
+     available. *)
+  let version_drift =
+    Adapter.version_mismatch ~binary:cvc5_binary ~declared:version in
+  if version_drift then
+    Adapter.warn_version_mismatch ~adapter:"cvc5" ~binary:cvc5_binary
+      ~declared:version ~skipping:"the Tier-3 alethe-2024 passthrough";
+  let version =
+    Adapter.probed_version ~binary:cvc5_binary ~fallback:version in
   let fragment = Farkas.effective_fragment ir in
   match Refinement.run ~fragment ir with
   | Error err ->
@@ -380,6 +396,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
                on a propositional rewrite like [(<= n 10) =
                (not (>= n 11))] under LIA tightening. *)
             let try_tier3 proof_str =
+              if version_drift then None else
               match Alethe.parse proof_str with
               | exception Alethe.Parse_error _ -> None
               | proof ->

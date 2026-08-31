@@ -152,7 +152,7 @@ let parse_szs (stdout : string) : szs =
     (mirrors the [Adapter_z3.version] discipline). *)
 let version = "5.1.0"
 
-let backend : Certificate.backend = {
+let backend ~version : Certificate.backend = {
   name = "vampire";
   version;
   config_hash = "sha256:" ^ String.make 64 '0';
@@ -171,6 +171,7 @@ let resources_now ~timeout_ms : Certificate.resources = {
     as uninterpreted TPTP symbols, and the witness names that
     encoding so a lifter can reverse it. *)
 let mk_refinement_record
+      ~adapter_version
       ~(dialect : Tptp.dialect)
       ~(ir : Ir.t)
       (specs : Tptp.specialization list)
@@ -184,7 +185,7 @@ let mk_refinement_record
   in
   {
     adapter = "vampire";
-    adapter_version = version;
+    adapter_version;
     specializations =
       List.map
         (fun (s : Tptp.specialization) : Refinement_record.specialization -> {
@@ -202,6 +203,7 @@ let mk_refinement_record
   }
 
 let mint_oracle_cert
+      ~adapter_version
       ~(original_ir : Ir.t)
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
@@ -218,9 +220,10 @@ let mint_oracle_cert
     goal = original_ir.goal;
     dispatch_context_hash;
     rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
-    backend;
+    backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
-    refinement_record = mk_refinement_record ~dialect ~ir:original_ir specs;
+    refinement_record =
+      mk_refinement_record ~adapter_version ~dialect ~ir:original_ir specs;
     payload = Tier0_oracle {
       claim = "proved";
       backend_attestation =
@@ -237,6 +240,7 @@ let mint_oracle_cert
     time. The payload records, honestly, that the gate was
     provenance-level, not per-step (see [Tptp_passthrough]). *)
 let mint_tier3_cert
+      ~adapter_version
       ~(original_ir : Ir.t)
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
@@ -255,15 +259,31 @@ let mint_tier3_cert
     goal = original_ir.goal;
     dispatch_context_hash;
     rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
-    backend;
+    backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
-    refinement_record = mk_refinement_record ~dialect ~ir:original_ir specs;
+    refinement_record =
+      mk_refinement_record ~adapter_version ~dialect ~ir:original_ir specs;
     payload = Tptp_passthrough.make_payload ~proof_str ~dialect proof;
   }
 
 (* --- top-level dispatch --------------------------------------------- *)
 
 let dispatch (ir : Ir.t) : Adapter.result =
+  (* R1.8: certs stamp the probed binary version (declared constant
+     as fallback). On a major.minor mismatch, emit a named
+     diagnostic and skip the version-sensitive Tier-3 TSTP
+     provenance passthrough — Vampire's own 5.0→5.1 CLI/output
+     drift is the precedent (the [file('<stdin>','h1')] provenance
+     form the verifier matches on is version-shaped). The Tier-0
+     oracle path stays available. *)
+  let version_drift =
+    Adapter.version_mismatch ~binary:vampire_binary ~declared:version in
+  if version_drift then
+    Adapter.warn_version_mismatch ~adapter:"vampire"
+      ~binary:vampire_binary ~declared:version
+      ~skipping:"the Tier-3 TSTP provenance passthrough";
+  let stamped_version =
+    Adapter.probed_version ~binary:vampire_binary ~fallback:version in
   match Tptp.emit ir with
   | Error err ->
     Failed (Unsupported_ir {
@@ -278,6 +298,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
        | Proved w ->
          let mk_oracle () =
            mint_oracle_cert
+             ~adapter_version:stamped_version
              ~original_ir:ir
              ~dialect:script.dialect
              ~specs:script.specializations
@@ -290,12 +311,15 @@ let dispatch (ir : Ir.t) : Adapter.result =
             fall back to the Tier-0 oracle. One parse feeds both
             the gate and the payload. *)
          let cert =
+           if version_drift then mk_oracle ()
+           else
            match Tptp_proof.parse stdout with
            | exception Tptp_proof.Parse_error _ -> mk_oracle ()
            | proof ->
              (match Tier3_tptp.verify_parsed ir proof with
               | Verified_provenance ->
                 mint_tier3_cert
+                  ~adapter_version:stamped_version
                   ~original_ir:ir
                   ~dialect:script.dialect
                   ~specs:script.specializations

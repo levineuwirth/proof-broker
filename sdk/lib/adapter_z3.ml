@@ -230,6 +230,11 @@ let mint_farkas_cert
 let version = "4.16.0"
 
 let dispatch (ir : Ir.t) : Adapter.result =
+  (* R1.8: certs stamp the probed binary version (declared constant
+     as fallback). z3 mints only Tier 1 / Tier 0 — no
+     version-sensitive trace passthrough to skip. *)
+  let version =
+    Adapter.probed_version ~binary:z3_binary ~fallback:version in
   let fragment = Farkas.effective_fragment ir in
   match Refinement.run ~fragment ir with
   | Error err ->

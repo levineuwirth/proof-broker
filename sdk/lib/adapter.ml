@@ -110,6 +110,92 @@ let resolve_timeout_ms ~(default_ms : int) (ir : Ir.t) : int =
   else if raw > hi then hi
   else raw
 
+(* --- lazy backend-version probe (R1.8) ------------------------------ *)
+
+(** Extract a dotted version number from a solver's [--version]
+    first line (e.g. ["This is cvc5 version 1.3.0 [git ...]"] →
+    ["1.3.0"]). First whitespace-separated token that starts with
+    a digit and contains a dot; [None] when nothing matches. *)
+let parse_version_token (line : string) : string option =
+  let toks = String.split_on_char ' ' line in
+  List.find_opt
+    (fun t ->
+      String.length t > 0
+      && t.[0] >= '0' && t.[0] <= '9'
+      && String.contains t '.')
+    toks
+
+(** [major.minor] prefix of a dotted version ("1.3.0" → "1.3";
+    "1.3" → "1.3"). *)
+let major_minor (v : string) : string =
+  match String.split_on_char '.' v with
+  | maj :: min :: _ -> maj ^ "." ^ min
+  | _ -> v
+
+(** Lazy one-time [--version] probe of a backend binary, memoized
+    per binary name for the process lifetime. Returns [None] when
+    the binary can't be spawned, exits non-zero-ish weirdly, or
+    prints nothing parseable — callers fall back to their declared
+    constant (a probe failure must never fail dispatch; the solver
+    call itself will surface a missing binary). *)
+let probe_table : (string, string option) Hashtbl.t = Hashtbl.create 4
+
+let probe_version ~(binary : string) : string option =
+  match Hashtbl.find_opt probe_table binary with
+  | Some cached -> cached
+  | None ->
+    let result =
+      try
+        let argv = [| binary; "--version" |] in
+        let stdout_ch, stdin_ch, stderr_ch =
+          Unix.open_process_args_full argv.(0) argv (Unix.environment ())
+        in
+        close_out stdin_ch;
+        let line = try input_line stdout_ch with End_of_file -> "" in
+        (* Drain remaining output so the child never blocks. *)
+        (try while true do ignore (input_line stdout_ch) done
+         with End_of_file -> ());
+        (try while true do ignore (input_line stderr_ch) done
+         with End_of_file -> ());
+        ignore (Unix.close_process_full (stdout_ch, stdin_ch, stderr_ch));
+        parse_version_token line
+      with _ -> None
+    in
+    Hashtbl.replace probe_table binary result;
+    result
+
+(** The version an adapter should stamp into certs: the probed
+    binary version when the probe succeeds, else the declared
+    [fallback] constant. *)
+let probed_version ~(binary : string) ~(fallback : string) : string =
+  match probe_version ~binary with
+  | Some v -> v
+  | None -> fallback
+
+(** True iff the probed binary's major.minor differs from the
+    adapter's declared version — the signal that version-sensitive
+    output formats (cvc5's Alethe emission, Vampire's TSTP
+    provenance shapes) may have drifted from what the adapter's
+    parsers were validated against. A failed probe is NOT a
+    mismatch (fallback to declared behavior). *)
+let version_mismatch ~(binary : string) ~(declared : string) : bool =
+  match probe_version ~binary with
+  | Some v -> not (String.equal (major_minor v) (major_minor declared))
+  | None -> false
+
+(** Named diagnostic for a version mismatch, emitted once per
+    dispatch on stderr (never a failure by itself — the adapter
+    skips only its version-sensitive tier attempt). *)
+let warn_version_mismatch ~(adapter : string) ~(binary : string)
+    ~(declared : string) ~(skipping : string) : unit =
+  match probe_version ~binary with
+  | Some v ->
+    Printf.eprintf
+      "proof_broker: %s binary on PATH reports %s but the adapter \
+       declares %s (major.minor mismatch) — skipping %s\n%!"
+      adapter v declared skipping
+  | None -> ()
+
 (** Drain a child process's stdout and stderr concurrently into
     strings. The naive "read stdout, then read stderr" pattern
     deadlocks when the child fills its stderr pipe buffer (~64KB
