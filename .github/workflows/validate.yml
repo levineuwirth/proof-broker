@@ -116,7 +116,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@f92e0606b7ae4873dd1238465ea4bf6f8e40d85c  # v3.7.2
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -243,7 +243,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@f92e0606b7ae4873dd1238465ea4bf6f8e40d85c  # v3.7.2
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -350,7 +350,7 @@ jobs:
 
       # Rebuild the OCaml shim because artifacts don't carry between jobs;
       # cheap because the dune cache hits and the OCaml part is small.
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@f92e0606b7ae4873dd1238465ea4bf6f8e40d85c  # v3.7.2
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -489,7 +489,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@f92e0606b7ae4873dd1238465ea4bf6f8e40d85c  # v3.7.2
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
