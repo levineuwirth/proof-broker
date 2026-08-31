@@ -58,7 +58,7 @@ val parse_trace : string -> (proof, string) result
 
 (** Walk a parsed proof into the current goal, closing it. Shared
     by the production closer-chain path
-    ([Pb_rocq_main.try_alethe_walker_lia], R-9) and the test-only
+    ([Pb_rocq_main.try_alethe_walker], R-9) and the test-only
     [walker_test] tactic. Handles both trace shapes: a refutation
     trace against a non-[False] goal is first reduced to [False] by
     classical contradiction (exposing [~goal] as a hypothesis the

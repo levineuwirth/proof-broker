@@ -24,7 +24,7 @@ Soundness footprint:
     Reifying the cert into a term-mode Lean proof — Farkas
     combination from the Tier 1 witness, or the Alethe walker for
     Tier 3 (now wired in for alethe-2024 traces on LIA:
-    `tryAletheWalkerLIA` / `ProofBroker.Alethe`, omega as the
+    `tryAletheWalker` / `ProofBroker.Alethe`, omega as the
     fallback) — is the principled finish; until a fragment has one,
     an uncloseable certified goal is a tactic error, not a theorem.
   * The LLM `lean-tactic-script` Tier-3 cert (an untrusted oracle
@@ -767,7 +767,7 @@ private def certTraceData? (cert : Json) : Option String :=
     |>.bind (·.getObjValAs? String "trace_data")).toOption
 
 /-- Walk a parsed Alethe proof into a kernel term and assign it
-    to `goal`. Shared between the production `tryAletheWalkerLIA`
+    to `goal`. Shared between the production `tryAletheWalker`
     and the test-only `alethe_walker_test` tactic so both close
     goals through the same logic.
 
@@ -828,7 +828,7 @@ private def walkProofIntoGoal (goal : MVarId) (proof : Alethe.Proof)
     an admitted theorem. The walker builds the proof term purely
     (`mkAppM`, no mvar assignment) until the final assignment,
     so a mid-walk failure can't leave a partial assignment. -/
-private def tryAletheWalkerLIA (cert : Json) : TacticM Bool := do
+private def tryAletheWalker (cert : Json) : TacticM Bool := do
   match certTraceData? cert with
   | none => return false
   | some traceData =>
@@ -1082,7 +1082,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- outside that scope.
       let walkerHandled ← do
         if certTraceFormat cert == "alethe-2024" then
-          tryAletheWalkerLIA cert
+          tryAletheWalker cert
         else
           pure false
       unless walkerHandled do
@@ -1132,15 +1132,50 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- already in the LIA path's footprint), so the chain
       -- doesn't introduce a stronger trust assumption than
       -- omega/decide do elsewhere.
-      try evalTactic (← `(tactic| subst_eqs; rfl))
-      catch _ =>
+      -- Walker-first (R1.3): a UF cert carrying an alethe-2024
+      -- trace goes through the Alethe walker ("cert IS the
+      -- proof") before the re-proving chain; any walker failure
+      -- falls through to it — audit H1 preserved.
+      let walkerHandled ← do
+        if certTraceFormat cert == "alethe-2024" then
+          tryAletheWalker cert
+        else
+          pure false
+      unless walkerHandled do
+        try evalTactic (← `(tactic| subst_eqs; rfl))
+        catch _ =>
+          try evalTactic (← `(tactic| simp_all))
+          catch _ =>
+            throwError "proof_broker: the broker certified this UF goal \
+              but neither the Alethe walker nor the Lean closer chain \
+              (`subst_eqs; rfl`, then `simp_all`) could discharge it. \
+              The goal is left OPEN rather than closed by an \
+              unjustified axiom — this is a tactic failure, not an \
+              admitted theorem."
+    else if fragment == "UFLIA" then
+      -- Quantified UF+LIA (R1.3). `Smtlib.fragment_of_logic` maps
+      -- the quantifier-free UF logics to "UF" but passes a
+      -- quantified UFLIA logic through verbatim — and this arm
+      -- previously did not exist, so such goals had no closer at
+      -- all. Walker-first like LIA/UF, then a `simp_all` /
+      -- `omega` fallback chain (both axiom-free), then an honest
+      -- tactic failure.
+      let walkerHandled ← do
+        if certTraceFormat cert == "alethe-2024" then
+          tryAletheWalker cert
+        else
+          pure false
+      unless walkerHandled do
         try evalTactic (← `(tactic| simp_all))
         catch _ =>
-          throwError "proof_broker: the broker certified this UF goal but \
-            the Lean closer chain (`subst_eqs; rfl`, then `simp_all`) \
-            could not discharge it. The goal is left OPEN rather than \
-            closed by an unjustified axiom — this is a tactic failure, \
-            not an admitted theorem."
+          try evalTactic (← `(tactic| omega))
+          catch _ =>
+            throwError "proof_broker: the broker certified this UFLIA \
+              goal but neither the Alethe walker nor the fallback \
+              chain (`simp_all`, then `omega`) could discharge it. The \
+              goal is left OPEN rather than closed by an unjustified \
+              axiom — this is a tactic failure, not an admitted \
+              theorem."
     else
       -- Non-LIA / non-BV: dispatch through the registered
       -- ReifierExt's closer if present (e.g. ProofBrokerMathlib
@@ -1743,7 +1778,7 @@ def evalProofBrokerWalker : Tactic := fun stx => do
         attempts: {path.attempts.map (·.adapter)}"
   -- Walker-strict: require the Alethe walker to close from the live
   -- cert; no `omega` fallback (that is what `proof_broker` adds).
-  unless (← tryAletheWalkerLIA cert) do
+  unless (← tryAletheWalker cert) do
     throwError "proof_broker_walker: the Alethe walker did not close the \
       goal from the live cert (no omega fallback). Cert tier/format may \
       not be a walkable alethe-2024 trace, or the walk failed."
@@ -1954,7 +1989,7 @@ def evalLlmReconstructTest : Tactic := fun stx => do
     CI-stable pattern as `llm_replay_test`.
 
     Routes through `walkProofIntoGoal`, identical to the
-    production `tryAletheWalkerLIA` path: refutation traces use
+    production `tryAletheWalker` path: refutation traces use
     `falseOrByContra` to expose `¬goal` for non-`False` user
     goals; direct (single-literal) traces assign by defeq. -/
 syntax (name := aletheWalkerTest) "alethe_walker_test" str : tactic

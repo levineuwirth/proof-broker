@@ -197,22 +197,35 @@ let invoke_hol_closer = invoke_named_tactic "proof_broker_hol_closer"
    replayed proof term are themselves axiom-checkable (the trust
    gate gates the test theorem's [Print Assumptions] line), so
    closures along these paths don't introduce a trust axiom. *)
+(* UFLIA fallback chain (R1.3, mirror of lean-bridge's
+   `simp_all` / `omega` chain): the UF closer arms plus [auto] for
+   quantifier instantiation shapes and [lia] for the arithmetic
+   residue. All axiom-free Rocq Stdlib tactics, so a closure here
+   adds nothing to the trust footprint; when every arm fails the
+   goal is left open (audit H1). Quantified UFLIA previously had
+   NO closer at all — it fell into [closer_for_fragment]'s
+   catch-all [user_err]. *)
+let invoke_uflia_fallback =
+  invoke_named_tactic
+    "first [ congruence | (subst; assumption) | auto | lia ]"
+
 let closer_for_fragment fragment : unit Proofview.tactic =
   match fragment with
   | "LIA" -> invoke_lia
   | "LRA" -> invoke_lra
   | "UF" -> invoke_uf
+  | "UFLIA" -> invoke_uflia_fallback
   | "HOL" | "FOL" -> invoke_hol_closer
   | other ->
     CErrors.user_err Pp.(
       str (Printf.sprintf
              "proof_broker: closer for fragment %s not yet wired \
-              (LIA, LRA, UF, HOL, FOL are the fragments with a \
-              cert-gated closer in the core plugin)"
+              (LIA, LRA, UF, UFLIA, HOL, FOL are the fragments with \
+              a cert-gated closer in the core plugin)"
              other))
 
 (* Alethe walker (Rocq parity R-9, mirror of Lean's
-   [tryAletheWalkerLIA]). For an [alethe-2024] Tier-3 trace, try
+   [tryAletheWalker]). For an [alethe-2024] Tier-3 trace, try
    walking the cert's trace into a kernel proof term ("cert IS the
    proof") before the goal is re-proven by [lia]. Returns a tactic
    that FAILS — so the caller's [tclORELSE] falls through to [lia]
@@ -221,7 +234,7 @@ let closer_for_fragment fragment : unit Proofview.tactic =
    whose own failures (unsupported rule, type mismatch) are already
    tactic-level. Audit H1: a walker failure is a tactic failure
    that falls through to [lia], never an admitted theorem. *)
-let try_alethe_walker_lia (cert : Cert.t) : unit Proofview.tactic =
+let try_alethe_walker (cert : Cert.t) : unit Proofview.tactic =
   match cert.payload with
   | Tier3_proof_trace { trace_format = "alethe-2024";
                         trace_data = `String trace; _ } ->
@@ -234,18 +247,21 @@ let try_alethe_walker_lia (cert : Cert.t) : unit Proofview.tactic =
     Tacticals.tclZEROMSG
       (Pp.str "proof_broker: cert is not an alethe-2024 string trace")
 
-(* LIA-arm closer that prefers the Alethe walker, falling back to
-   [lia] on any walker failure (no alethe trace / parse error /
-   unsupported rule / walked-term type mismatch). All other
-   fragments are unchanged — the walker only ever ADDS an attempt
-   ahead of the existing [lia], never replaces a closer. *)
+(* Walker-first closer (R1.3): for the fragments the Alethe walker
+   covers (LIA, UF, and quantified UFLIA — cvc5's alethe-2024
+   traces), try walking the cert's trace into a kernel term before
+   the fragment's re-proving closer; any walker failure (no alethe
+   trace / parse error / unsupported rule / walked-term type
+   mismatch) falls back to [closer_for_fragment]. The walker only
+   ever ADDS an attempt ahead of the existing closer, never
+   replaces one; other fragments are unchanged. *)
 let closer_for_fragment_with_walker (cert : Cert.t) (fragment : string)
     : unit Proofview.tactic =
   match fragment with
-  | "LIA" ->
+  | "LIA" | "UF" | "UFLIA" ->
     Proofview.tclORELSE
-      (try_alethe_walker_lia cert)
-      (fun _ -> invoke_lia)
+      (try_alethe_walker cert)
+      (fun _ -> closer_for_fragment fragment)
   | _ -> closer_for_fragment fragment
 
 (* Primary closer chain: fragment-keyed dispatch for verified
@@ -426,7 +442,7 @@ let run_close_walker (names : Names.Id.t list option) : unit Proofview.tactic =
       CErrors.user_err Pp.(
         str "proof_broker_walker: internal — cert without verify")
     | Some cert, Some _ ->
-      try_alethe_walker_lia cert)
+      try_alethe_walker cert)
 
 let run_test (names : Names.Id.t list option) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->

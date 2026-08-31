@@ -49,7 +49,7 @@ comparisons, `not`, `True`/`False`, `or`/`and`/`=>`), plus a
 generic UF-application fallback for `(f a₁ … aₙ)` over local
 free vars (so `cong` works for any in-scope UF symbol).
 
-Production integration. `ProofBroker.Tactic.tryAletheWalkerLIA`
+Production integration. `ProofBroker.Tactic.tryAletheWalker`
 wires the walker into the LIA arm of `closeOrFailPrimary`. The
 shared `walkProofIntoGoal` helper distinguishes refutation
 traces (final clause empty `(cl)`) from direct traces, and uses

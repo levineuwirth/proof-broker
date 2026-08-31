@@ -727,7 +727,7 @@ let elab_assume_literal (env : Environ.env)
 (** Arithmetic leaf rules ([la_generic] / [la_mult_neg]). The
     step's clause is a linear-arithmetic tautology — cvc5 treats
     these as proof leaves. The walker creates a fresh evar of the
-    clause type; the outer [walker_test] / [tryAletheWalkerLIA]
+    clause type; the outer [walker_test] / [tryAletheWalker]
     runs [lia] on each such evar via [tclINDEPENDENT] after the
     [Refine.refine]. Mirror of Lean's [omegaDischargeClause]. *)
 let elab_la_generic (env : Environ.env)
@@ -2530,7 +2530,7 @@ let walk_against_current_goal (p : proof) : unit Proofview.tactic =
       Tacticals.tclZEROMSG (Pp.str ("alethe walker: " ^ msg)))
 
 (** Walk a parsed proof into the goal. Shared between the
-    production [Pb_rocq_main.try_alethe_walker_lia] path and the
+    production [Pb_rocq_main.try_alethe_walker] path and the
     test-only [walker_test] tactic so both close goals through the
     same logic. Two trace shapes:
 
