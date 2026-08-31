@@ -1250,6 +1250,224 @@ let check_symm (env : env) (step : Alethe.step) : step_result =
       detail = "expected one premise and (cl (= b a)) conclusion";
     }
 
+(** [not_not]: tautological clause [(cl (not (not (not φ))) φ)] —
+    [¬¬¬φ ∨ φ] holds for any [φ]. Pure shape check, mirroring the
+    walkers' [elabNotNot] / [elab_not_not]: the triple-negated
+    formula must be syntactically identical to the second
+    literal. *)
+let check_not_not (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "not"; List [ Atom "not"; List [ Atom "not"; phi ] ] ];
+      phi' ] when sexp_equal phi phi' -> Step_verified
+  | [ List [ Atom "not"; List [ Atom "not"; List [ Atom "not"; _ ] ] ];
+      _ ] ->
+    Step_failed {
+      rule = "not_not";
+      detail = "inner formula does not match the second literal";
+    }
+  | _ ->
+    Step_failed {
+      rule = "not_not";
+      detail = "expected (cl (not (not (not phi))) phi)";
+    }
+
+(** [not_or]: from premise [(cl (not (or t_0 … t_n)))] and index
+    [:args (i)], conclude [(cl (not t_i))]. Sound: a negated
+    disjunction refutes each disjunct. Mirrors [elabNotOr] /
+    [elab_not_or] (which build [fun hti => h (inject_i hti)]). *)
+let check_not_or (env : env) (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "not_or"; detail } in
+  let premises = Option.value step.premises ~default:[] in
+  let args = Option.value step.args ~default:[] in
+  match premises, args, step.clause with
+  | [ p ], [ Atom idx_str ], [ concl_lit ] ->
+    (match int_of_string_opt idx_str with
+     | None -> fail "args[0] is not an integer index"
+     | Some i ->
+       (match proven_in_scope env step p with
+        | Some [ List [ Atom "not"; List (Atom "or" :: disjuncts) ] ] ->
+          if i < 0 || i >= List.length disjuncts then
+            fail (Printf.sprintf
+              "index %d out of range for a %d-disjunct (or)"
+              i (List.length disjuncts))
+          else
+            let expected =
+              Alethe.Sexp.List [ Atom "not"; List.nth disjuncts i ]
+            in
+            if sexp_equal expected concl_lit then Step_verified
+            else
+              fail "conclusion literal is not (not t_i) for the \
+                    indexed disjunct"
+        | Some _ -> fail ("premise " ^ p ^ " is not (cl (not (or …)))")
+        | None -> fail ("unknown or out-of-scope premise: " ^ p)))
+  | _ ->
+    fail "expected one premise, one index arg, and a single-literal \
+          clause"
+
+(** [or_neg]: tautological clause [(cl (or t_0 … t_n) (not t_i))]
+    with [:args (i)] — [(or …) ∨ ¬t_i] holds for any disjuncts.
+    Mirrors [elabOrNeg] / [elab_or_neg]. *)
+let check_or_neg (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "or_neg"; detail } in
+  let args = Option.value step.args ~default:[] in
+  match args, step.clause with
+  | [ Atom idx_str ],
+    [ List (Atom "or" :: disjuncts); List [ Atom "not"; t_i ] ] ->
+    (match int_of_string_opt idx_str with
+     | None -> fail "args[0] is not an integer index"
+     | Some i ->
+       if i < 0 || i >= List.length disjuncts then
+         fail (Printf.sprintf
+           "index %d out of range for a %d-disjunct (or)"
+           i (List.length disjuncts))
+       else if sexp_equal (List.nth disjuncts i) t_i then Step_verified
+       else fail "negated literal does not match the indexed disjunct")
+  | _ ->
+    fail "expected :args (i) and (cl (or …) (not t_i))"
+
+(** [equiv2]: from premise [(cl (= A B))], conclude [(cl A (not B))]
+    — the backward direction of equivalence elimination ([equiv1]
+    above is the forward [(cl (not A) B)]). *)
+let check_equiv2 (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises, step.clause with
+  | [ p ], [ a_concl; List [ Atom "not"; b_concl ] ] ->
+    (match proven_in_scope env step p with
+     | Some [ List [ Atom "="; a_prem; b_prem ] ]
+       when sexp_equal a_prem a_concl && sexp_equal b_prem b_concl ->
+       Step_verified
+     | Some _ ->
+       Step_failed {
+         rule = "equiv2";
+         detail = "premise not (cl (= A B)) matching conclusion";
+       }
+     | None ->
+       Step_failed { rule = "equiv2"; detail = "unknown premise: " ^ p })
+  | _ ->
+    Step_failed {
+      rule = "equiv2";
+      detail = "expected one premise and (cl A (not B)) conclusion";
+    }
+
+(** [equiv_pos1]: tautological clause [(cl (not (= φ ψ)) φ (not ψ))].
+    Sibling of [equiv_pos2] for the other orientation; sound for
+    any [φ], [ψ]. *)
+let check_equiv_pos1 (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "not"; List [ Atom "="; phi1; psi1 ] ];
+      phi2;
+      List [ Atom "not"; psi2 ] ]
+    when sexp_equal phi1 phi2 && sexp_equal psi1 psi2 -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "equiv_pos1";
+      detail = "expected (cl (not (= phi psi)) phi (not psi))";
+    }
+
+(** Simultaneous first-order substitution on an Alethe Sexp,
+    respecting binder shadowing: descending into a [forall] /
+    [exists] / [choice] / [lambda] whose binder list rebinds a
+    substituted name drops that name from the substitution (the
+    inner binder shadows the outer one), so instantiation never
+    rewrites under a rebinding of the same variable. Binder lists
+    (and the sorts inside them) are left untouched. *)
+let rec subst_bound
+    (map : (string * Alethe.Sexp.t) list) (t : Alethe.Sexp.t)
+  : Alethe.Sexp.t =
+  if map = [] then t
+  else
+    match t with
+    | Atom a ->
+      (match List.assoc_opt a map with
+       | Some v -> v
+       | None -> t)
+    | List [ (Atom ("forall" | "exists" | "choice" | "lambda") as q);
+             (List binders as bl); body ] ->
+      let bound =
+        List.filter_map (function
+          | Alethe.Sexp.List (Atom v :: _) -> Some v
+          | _ -> None) binders
+      in
+      let map' =
+        List.filter (fun (n, _) -> not (List.mem n bound)) map
+      in
+      List [ q; bl; subst_bound map' body ]
+    | List xs -> List (List.map (subst_bound map) xs)
+
+(** [forall_inst]: tautological single-literal clause
+    [(cl (or (not (forall ((x_1 S_1) …) F)) F[x_i := t_i]))] with
+    the instantiation terms in [:args]. cvc5 emits the terms bare
+    and positional ([:args (3)], [:args (y)]); the Alethe spec's
+    named form [(:= x t)] / [(:= (x S) t)] is also accepted, and
+    must then cover every binder exactly once. The check
+    substitutes the binders in [F] (shadow-aware, [subst_bound])
+    and requires the result to equal the stated instance after
+    numeric normalization. Sorts are not checked — the Sexp layer
+    is untyped; an ill-sorted instantiation term fails at the
+    home-side walker's kernel reconstruction, never silently. *)
+let check_forall_inst (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "forall_inst"; detail } in
+  match step.clause with
+  | [ List [ Atom "or";
+             List [ Atom "not";
+                    List [ Atom "forall"; List binders; body ] ];
+             inst ] ] ->
+    let rec binder_names acc = function
+      | [] -> Ok (List.rev acc)
+      | Alethe.Sexp.List (Atom v :: _) :: rest ->
+        binder_names (v :: acc) rest
+      | b :: _ -> Error ("malformed binder: " ^ Alethe.Sexp.to_string b)
+    in
+    (match binder_names [] binders with
+     | Error msg -> fail msg
+     | Ok names ->
+       let args = Option.value step.args ~default:[] in
+       let named =
+         args <> []
+         && List.for_all (function
+              | Alethe.Sexp.List [ Atom ":="; _; _ ] -> true
+              | _ -> false) args
+       in
+       let map_result =
+         if named then
+           let rec build acc = function
+             | [] -> Ok (List.rev acc)
+             | Alethe.Sexp.List [ Atom ":="; Atom v; t ] :: rest ->
+               build ((v, t) :: acc) rest
+             | Alethe.Sexp.List
+                 [ Atom ":="; List (Atom v :: _); t ] :: rest ->
+               build ((v, t) :: acc) rest
+             | a :: _ ->
+               Error ("malformed := arg: " ^ Alethe.Sexp.to_string a)
+           in
+           (match build [] args with
+            | Error _ as e -> e
+            | Ok m ->
+              if List.sort compare (List.map fst m)
+                 = List.sort compare names
+              then Ok m
+              else Error "named args do not cover the binders exactly")
+         else if List.length args = List.length names then
+           Ok (List.combine names args)
+         else
+           Error (Printf.sprintf
+             "%d instantiation args for %d binders"
+             (List.length args) (List.length names))
+       in
+       (match map_result with
+        | Error msg -> fail msg
+        | Ok map ->
+          let expected = subst_bound map body in
+          if sexp_equal
+               (normalize_numeric_atoms expected)
+               (normalize_numeric_atoms inst)
+          then Step_verified
+          else
+            fail "stated instance is not the binder substitution of \
+                  the body"))
+  | _ ->
+    fail "expected (cl (or (not (forall ((x S) …) F)) inst))"
+
 (** [subproof]: closes an [(anchor :step ID)] block. The body
     derived a clause [C] under local assumptions [A_1 … A_n] (named
     in [:discharge]); the subproof step concludes
@@ -1371,6 +1589,19 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
                  (StringSet.choose undisclosed);
              }
            else begin
+             (* Record the close's dependency set (body deps minus
+                the discharged assumes) under [step.id] BEFORE
+                stripping the inner scope: the strip below removes
+                the body's own deps entry, and the walk loop in
+                [verify_parsed] reads the recorded one. Without
+                this, a close step's deps were always computed
+                empty (the lookup ran post-strip), so a nested
+                close silently dropped its body's dependencies on
+                OUTER-scope local assumes — a crafted trace could
+                launder an undischarged local assume through a
+                nested subproof and derive [(cl)] from it. *)
+             Hashtbl.replace env.deps step.id
+               (StringSet.diff body_deps discharge_set);
              let inner_prefix = step.id ^ "." in
              let plen = String.length inner_prefix in
              let prefixed k =
@@ -1395,6 +1626,90 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
              Step_verified
            end)
 
+(** [bind]: closes an [(anchor :step T :args ((x S) (:= (x S) x)))]
+    binder subproof. The body's last step proves the pointwise
+    equality [(cl (= A B))] with the binder in scope; the close
+    concludes
+    [(cl (= (forall ((x S) …) A) (forall ((x S) …) B)))].
+
+    Restriction (mirroring the walkers, which only elaborate the
+    identity-renaming form cvc5 emits): the two binder lists must
+    be structurally identical — a genuine α-renaming [(:= x y)]
+    is rejected fail-closed.
+
+    Soundness bookkeeping mirrors [check_subproof]:
+    * the body conclusion must be the immediately preceding step
+      AND a direct child of subproof [T] (no unclosed nested
+      scope can leak its conclusion out);
+    * a [bind] close has no [:discharge], so the body must not
+      depend on ANY local assume inside [T] — a binder anchor
+      introduces variables, never assumptions, and a dotted
+      assume smuggled into the block could otherwise be
+      laundered;
+    * the close's dependency set (= the body's) is recorded under
+      [step.id] before the inner scope is stripped from the env
+      (same pre-strip discipline as [check_subproof]). *)
+let check_bind (env : env) (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "bind"; detail } in
+  match step.clause with
+  | [ List [ Atom "=";
+             List [ Atom "forall"; List lbinders; lbody ];
+             List [ Atom "forall"; List rbinders; rbody ] ] ] ->
+    if not (sexp_equal (Alethe.Sexp.List lbinders)
+              (Alethe.Sexp.List rbinders)) then
+      fail "binder lists differ (α-renaming binds are not supported)"
+    else
+      let direct_child = match env.last_step_id with
+        | None -> false
+        | Some sid ->
+          (match Alethe.enclosing_subproof_id sid with
+           | Some encl -> String.equal encl step.id
+           | None -> false)
+      in
+      if not direct_child then
+        fail "body conclusion is not a direct child of the bind subproof"
+      else
+        (match env.last_step_clause with
+         | Some [ List [ Atom "="; a; b ] ]
+           when sexp_equal a lbody && sexp_equal b rbody ->
+           let body_id = Option.get env.last_step_id in
+           let body_deps =
+             match Hashtbl.find_opt env.deps body_id with
+             | Some s -> s
+             | None -> StringSet.empty
+           in
+           let inner_prefix = step.id ^ "." in
+           let plen = String.length inner_prefix in
+           let prefixed k =
+             String.length k > plen
+             && String.sub k 0 plen = inner_prefix
+           in
+           let local_leak =
+             StringSet.exists (fun id ->
+               prefixed id && Hashtbl.mem env.assumes id) body_deps
+           in
+           if local_leak then
+             fail "body depends on a local assume inside the bind \
+                   block (bind has no :discharge to seal it)"
+           else begin
+             Hashtbl.replace env.deps step.id body_deps;
+             let drop tbl =
+               let ks = Hashtbl.fold (fun k _ acc ->
+                 if prefixed k then k :: acc else acc) tbl [] in
+               List.iter (Hashtbl.remove tbl) ks
+             in
+             drop env.proven;
+             drop env.assumes;
+             drop env.deps;
+             Step_verified
+           end
+         | Some _ ->
+           fail "body conclusion is not (cl (= A B)) matching the \
+                 forall bodies"
+         | None -> fail "no preceding body conclusion")
+  | _ ->
+    fail "expected (cl (= (forall …) (forall …)))"
+
 (** Top-level rule dispatch. Add a new clause here when wiring an
     OCaml-side checker for another Alethe rule, and add the same
     rule name to [supported_rules] below. The walker treats
@@ -1402,6 +1717,11 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
     fails when any step uses a rule no checker handles. *)
 let check_step (env : env) (step : Alethe.step) : step_result =
   match step.rule with
+  (* PARITY:walker-rules BEGIN — kept in lockstep with the two
+     bridge walkers (lean-bridge/ProofBroker/Alethe.lean,
+     rocq-bridge/src/alethe_walker.ml);
+     tools/check_walker_parity.py extracts and compares the three
+     rule sets. *)
   | "la_generic" -> check_la_generic env step
   | "refl" -> check_refl step
   | "false" -> check_false step
@@ -1413,6 +1733,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "and_neg" -> check_and_neg step
   | "implies" -> check_implies env step
   | "equiv1" -> check_equiv1 env step
+  | "equiv2" -> check_equiv2 env step
+  | "equiv_pos1" -> check_equiv_pos1 step
   | "la_mult_neg" -> check_la_mult_neg step
   | "hole" -> check_hole env step
   | "rare_rewrite" -> check_rare_rewrite env step
@@ -1423,9 +1745,15 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "reordering" -> check_reordering env step
   | "contraction" -> check_contraction env step
   | "not_and" -> check_not_and env step
+  | "not_not" -> check_not_not step
+  | "not_or" -> check_not_or env step
   | "or" -> check_or env step
+  | "or_neg" -> check_or_neg step
   | "symm" -> check_symm env step
   | "subproof" -> check_subproof env step
+  | "forall_inst" -> check_forall_inst step
+  | "bind" -> check_bind env step
+  (* PARITY:walker-rules END *)
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -1435,10 +1763,12 @@ let check_step (env : env) (step : Alethe.step) : step_result =
     a parsed proof is eligible for Tier 3 minting (the "fail
     closed" gate of direction 3). *)
 let supported_rules : string list = [
-  "and_neg"; "and_pos"; "cong"; "contraction"; "equiv1";
-  "equiv_pos2"; "equiv_simplify"; "false"; "hole"; "implies";
+  "and_neg"; "and_pos"; "bind"; "cong"; "contraction"; "equiv1";
+  "equiv2"; "equiv_pos1"; "equiv_pos2"; "equiv_simplify"; "false";
+  "forall_inst"; "hole"; "implies";
   "implies_neg1"; "implies_neg2"; "implies_simplify";
-  "la_generic"; "la_mult_neg"; "not_and"; "or"; "rare_rewrite";
+  "la_generic"; "la_mult_neg"; "not_and"; "not_not"; "not_or";
+  "or"; "or_neg"; "rare_rewrite";
   "refl"; "reordering"; "resolution"; "subproof"; "symm"; "trans";
 ]
 
@@ -1599,15 +1929,15 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
          in
          let step_deps =
            match step.rule with
-           | "subproof" ->
-             let body_id = Option.value env.last_step_id ~default:"" in
-             let body_deps =
-               match Hashtbl.find_opt env.deps body_id with
-               | Some s -> s | None -> StringSet.empty
-             in
-             let discharge_set = StringSet.of_list
-                                   (Option.value step.discharge ~default:[]) in
-             StringSet.diff body_deps discharge_set
+           | "subproof" | "bind" ->
+             (* [check_subproof] / [check_bind] recorded the
+                close's dependency set (body deps minus any
+                discharge) under [step.id] before stripping the
+                inner scope — the body's own entry is gone by
+                now, so read the recorded one. *)
+             (match Hashtbl.find_opt env.deps step.id with
+              | Some s -> s
+              | None -> StringSet.empty)
            | "la_generic" ->
              let consumed =
                Option.value env.last_la_generic_consumed

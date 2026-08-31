@@ -1369,6 +1369,415 @@ let test_verify_requires_terminal_clause () =
 
 (* --- supported_rules / proof_rules_supported gate ------------------- *)
 
+(* --- R1.1 rule-cluster checkers (not_not / not_or / or_neg /
+   equiv2 / equiv_pos1 / forall_inst / bind) ---------------------- *)
+
+let test_check_not_not_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.nn" ~rule:"not_not"
+    ~clause:[
+      List [ Atom "not";
+             List [ Atom "not"; List [ Atom "not"; Atom "p" ] ] ];
+      Atom "p";
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | _ -> Alcotest.fail "not_not rejected canonical tautology"
+
+let test_check_not_not_rejects_mismatch () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.nn" ~rule:"not_not"
+    ~clause:[
+      List [ Atom "not";
+             List [ Atom "not"; List [ Atom "not"; Atom "p" ] ] ];
+      Atom "q";  (* != p *)
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "not_not should reject mismatched inner formula"
+
+let test_check_not_or_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir
+    [ "t.prem",
+      [ List [ Atom "not"; List [ Atom "or"; Atom "p"; Atom "q" ] ] ] ]
+  in
+  let step = mk_step "t.no" ~rule:"not_or"
+    ~premises:[ "t.prem" ] ~args:[ Atom "1" ]
+    ~clause:[ List [ Atom "not"; Atom "q" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("not_or rejected valid projection: " ^ detail)
+  | _ -> Alcotest.fail "not_or unsupported?"
+
+let test_check_not_or_rejects_wrong_index_literal () =
+  let ir = make_x_ir () in
+  let env = env_with ir
+    [ "t.prem",
+      [ List [ Atom "not"; List [ Atom "or"; Atom "p"; Atom "q" ] ] ] ]
+  in
+  (* index 1 selects q, but the conclusion claims (not p) — the
+     classic wrong-pivot forgery. *)
+  let step = mk_step "t.no" ~rule:"not_or"
+    ~premises:[ "t.prem" ] ~args:[ Atom "1" ]
+    ~clause:[ List [ Atom "not"; Atom "p" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "not_or should reject index/literal mismatch"
+
+let test_check_not_or_rejects_non_or_premise () =
+  let ir = make_x_ir () in
+  let env = env_with ir
+    [ "t.prem", [ List [ Atom "and"; Atom "p"; Atom "q" ] ] ]
+  in
+  let step = mk_step "t.no" ~rule:"not_or"
+    ~premises:[ "t.prem" ] ~args:[ Atom "0" ]
+    ~clause:[ List [ Atom "not"; Atom "p" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "not_or should reject a premise that is not \
+                        (cl (not (or …)))"
+
+let test_check_or_neg_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.on" ~rule:"or_neg"
+    ~args:[ Atom "1" ]
+    ~clause:[
+      List [ Atom "or"; Atom "p"; Atom "q" ];
+      List [ Atom "not"; Atom "q" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | _ -> Alcotest.fail "or_neg rejected canonical tautology"
+
+let test_check_or_neg_rejects_mismatched_literal () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.on" ~rule:"or_neg"
+    ~args:[ Atom "1" ]
+    ~clause:[
+      List [ Atom "or"; Atom "p"; Atom "q" ];
+      List [ Atom "not"; Atom "p" ];  (* index 1 is q *)
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "or_neg should reject index/literal mismatch"
+
+let test_check_or_neg_rejects_out_of_range () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.on" ~rule:"or_neg"
+    ~args:[ Atom "7" ]
+    ~clause:[
+      List [ Atom "or"; Atom "p"; Atom "q" ];
+      List [ Atom "not"; Atom "q" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "or_neg should reject an out-of-range index"
+
+let test_check_equiv2_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir
+    [ "t.eq", [ List [ Atom "="; Atom "a"; Atom "b" ] ] ]
+  in
+  let step = mk_step "t.e2" ~rule:"equiv2"
+    ~premises:[ "t.eq" ]
+    ~clause:[ Atom "a"; List [ Atom "not"; Atom "b" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | _ -> Alcotest.fail "equiv2 rejected (= a b) → (cl a (not b))"
+
+let test_check_equiv2_rejects_flipped () =
+  let ir = make_x_ir () in
+  let env = env_with ir
+    [ "t.eq", [ List [ Atom "="; Atom "a"; Atom "b" ] ] ]
+  in
+  (* Sides swapped relative to the premise orientation. *)
+  let step = mk_step "t.e2" ~rule:"equiv2"
+    ~premises:[ "t.eq" ]
+    ~clause:[ Atom "b"; List [ Atom "not"; Atom "a" ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "equiv2 should reject flipped sides"
+
+let test_check_equiv_pos1_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.ep1" ~rule:"equiv_pos1"
+    ~clause:[
+      List [ Atom "not"; List [ Atom "="; Atom "p"; Atom "q" ] ];
+      Atom "p";
+      List [ Atom "not"; Atom "q" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | _ -> Alcotest.fail "equiv_pos1 rejected canonical tautology"
+
+let test_check_equiv_pos1_rejects_swapped () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  (* phi/psi positions swapped w.r.t. the equality — the shape of
+     equiv_pos2, not equiv_pos1. *)
+  let step = mk_step "t.ep1" ~rule:"equiv_pos1"
+    ~clause:[
+      List [ Atom "not"; List [ Atom "="; Atom "p"; Atom "q" ] ];
+      Atom "q";
+      List [ Atom "not"; Atom "p" ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "equiv_pos1 should reject swapped phi/psi"
+
+let forall_f_le_10 : Alethe.Sexp.t =
+  List [ Atom "forall";
+         List [ List [ Atom "x"; Atom "Int" ] ];
+         List [ Atom "<="; List [ Atom "f"; Atom "x" ]; Atom "10" ] ]
+
+let test_check_forall_inst_accepts () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.fi" ~rule:"forall_inst"
+    ~args:[ Atom "3" ]
+    ~clause:[
+      List [ Atom "or";
+             List [ Atom "not"; forall_f_le_10 ];
+             List [ Atom "<="; List [ Atom "f"; Atom "3" ]; Atom "10" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("forall_inst rejected valid instantiation: " ^ detail)
+  | _ -> Alcotest.fail "forall_inst unsupported?"
+
+let test_check_forall_inst_named_args () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  let step = mk_step "t.fi" ~rule:"forall_inst"
+    ~args:[ List [ Atom ":=";
+                   List [ Atom "x"; Atom "Int" ];
+                   Atom "3" ] ]
+    ~clause:[
+      List [ Atom "or";
+             List [ Atom "not"; forall_f_le_10 ];
+             List [ Atom "<="; List [ Atom "f"; Atom "3" ]; Atom "10" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("forall_inst rejected := arg form: " ^ detail)
+  | _ -> Alcotest.fail "forall_inst unsupported?"
+
+let test_check_forall_inst_rejects_wrong_instance () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  (* Instance claims f 4 but the arg instantiates x := 3 — the
+     wrong-pivot forgery for instantiation. *)
+  let step = mk_step "t.fi" ~rule:"forall_inst"
+    ~args:[ Atom "3" ]
+    ~clause:[
+      List [ Atom "or";
+             List [ Atom "not"; forall_f_le_10 ];
+             List [ Atom "<="; List [ Atom "f"; Atom "4" ]; Atom "10" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "forall_inst should reject a mismatched instance"
+
+let test_check_forall_inst_respects_shadowing () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  (* Body: (or (P x) (forall ((x Int)) (P x))) — the inner x is
+     rebound; substitution must stop at the inner binder. *)
+  let inner_forall : Alethe.Sexp.t =
+    List [ Atom "forall";
+           List [ List [ Atom "x"; Atom "Int" ] ];
+           List [ Atom "P"; Atom "x" ] ]
+  in
+  let quantified : Alethe.Sexp.t =
+    List [ Atom "forall";
+           List [ List [ Atom "x"; Atom "Int" ] ];
+           List [ Atom "or"; List [ Atom "P"; Atom "x" ]; inner_forall ] ]
+  in
+  let good_inst : Alethe.Sexp.t =
+    List [ Atom "or"; List [ Atom "P"; Atom "3" ]; inner_forall ]
+  in
+  let naive_inst : Alethe.Sexp.t =
+    List [ Atom "or"; List [ Atom "P"; Atom "3" ];
+           List [ Atom "forall";
+                  List [ List [ Atom "x"; Atom "Int" ] ];
+                  List [ Atom "P"; Atom "3" ] ] ]
+  in
+  let mk inst = mk_step "t.fi" ~rule:"forall_inst"
+    ~args:[ Atom "3" ]
+    ~clause:[
+      List [ Atom "or"; List [ Atom "not"; quantified ]; inst ];
+    ]
+  in
+  (match Tier3_alethe.check_step env (mk good_inst) with
+   | Step_verified -> ()
+   | Step_failed { detail; _ } ->
+     Alcotest.fail ("shadow-respecting instance rejected: " ^ detail)
+   | _ -> Alcotest.fail "forall_inst unsupported?");
+  (match Tier3_alethe.check_step env (mk naive_inst) with
+   | Step_failed _ -> ()
+   | _ ->
+     Alcotest.fail "forall_inst accepted capture under a rebinding")
+
+(* bind: env needs the last-step machinery populated the way
+   verify_parsed does while walking a subproof body. *)
+
+let bind_body_a : Alethe.Sexp.t =
+  List [ Atom "<="; List [ Atom "f"; Atom "x" ]; Atom "10" ]
+let bind_body_b : Alethe.Sexp.t =
+  List [ Atom "not";
+         List [ Atom ">="; List [ Atom "f"; Atom "x" ]; Atom "11" ] ]
+
+let bind_env ir =
+  let env = env_with ir
+    [ "t9.t0", [ List [ Atom "="; bind_body_a; bind_body_b ] ] ]
+  in
+  env.last_step_clause <-
+    Some [ List [ Atom "="; bind_body_a; bind_body_b ] ];
+  env.last_step_id <- Some "t9.t0";
+  env
+
+let bind_clause : Alethe.Sexp.t list =
+  [ List [ Atom "=";
+           List [ Atom "forall";
+                  List [ List [ Atom "x"; Atom "Int" ] ];
+                  bind_body_a ];
+           List [ Atom "forall";
+                  List [ List [ Atom "x"; Atom "Int" ] ];
+                  bind_body_b ] ] ]
+
+let test_check_bind_accepts () =
+  let ir = make_x_ir () in
+  let env = bind_env ir in
+  let step = mk_step "t9" ~rule:"bind" ~clause:bind_clause in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("bind rejected identity-binder close: " ^ detail)
+  | _ -> Alcotest.fail "bind unsupported?"
+
+let test_check_bind_rejects_body_mismatch () =
+  let ir = make_x_ir () in
+  let env = bind_env ir in
+  env.last_step_clause <-
+    Some [ List [ Atom "="; bind_body_a; bind_body_a ] ];  (* wrong rhs *)
+  let step = mk_step "t9" ~rule:"bind" ~clause:bind_clause in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "bind should reject a body/conclusion mismatch"
+
+let test_check_bind_rejects_renamed_binder () =
+  let ir = make_x_ir () in
+  let env = bind_env ir in
+  let step = mk_step "t9" ~rule:"bind"
+    ~clause:[
+      List [ Atom "=";
+             List [ Atom "forall";
+                    List [ List [ Atom "x"; Atom "Int" ] ];
+                    bind_body_a ];
+             List [ Atom "forall";
+                    List [ List [ Atom "y"; Atom "Int" ] ];  (* renamed *)
+                    bind_body_b ] ] ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "bind should reject an α-renaming binder list"
+
+let test_check_bind_rejects_non_direct_child () =
+  let ir = make_x_ir () in
+  let env = bind_env ir in
+  (* Body conclusion sits in an unclosed nested scope t9.t5. *)
+  Hashtbl.replace env.proven "t9.t5.t0"
+    [ List [ Atom "="; bind_body_a; bind_body_b ] ];
+  env.last_step_id <- Some "t9.t5.t0";
+  let step = mk_step "t9" ~rule:"bind" ~clause:bind_clause in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "bind should reject a nested unsealed body \
+                        conclusion"
+
+let test_check_bind_rejects_local_assume_leak () =
+  let ir = make_x_ir () in
+  let env = bind_env ir in
+  (* A hostile local assume inside the bind block, consumed by the
+     body: nothing can discharge it (bind has no :discharge). *)
+  Hashtbl.replace env.assumes "t9.a0" (Alethe.Sexp.Atom "false");
+  Hashtbl.replace env.deps "t9.t0"
+    (Tier3_alethe.StringSet.singleton "t9.a0");
+  let step = mk_step "t9" ~rule:"bind" ~clause:bind_clause in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail "bind should reject a body depending on a \
+                        block-local assume"
+
+(** Regression pin for the nested-subproof dependency-laundering
+    fix: before R1.1, a subproof close's deps entry was computed
+    AFTER its inner scope was stripped (always empty), so an
+    undischarged outer-local assume consumed inside a NESTED
+    subproof vanished from the dependency bookkeeping — this
+    proof, which derives [(cl)] from the undischarged local
+    [(assume t1.a0 false)], verified end-to-end. It must fail
+    closed at the [t1] close (t1.a0 used but not in
+    [:discharge]). *)
+let test_verify_nested_subproof_dep_laundering () =
+  let ir = make_x_ir () in
+  let proof_str =
+    "(\n\
+     (assume a0 (>= x 3))\n\
+     (anchor :step t1)\n\
+     (assume t1.a0 false)\n\
+     (assume t1.a1 (= x x))\n\
+     (anchor :step t1.t0)\n\
+     (assume t1.t0.a0 (= x x))\n\
+     (step t1.t0.t0 (cl false) :rule reordering :premises (t1.a0))\n\
+     (step t1.t0 (cl (not (= x x)) false) :rule subproof \
+     :discharge (t1.t0.a0))\n\
+     (step t1.t1 (cl (= x x)) :rule refl)\n\
+     (step t1.t2 (cl false) :rule resolution :premises (t1.t0 t1.t1))\n\
+     (step t1 (cl (not (= x x)) false) :rule subproof \
+     :discharge (t1.a1))\n\
+     (step t2 (cl (= x x)) :rule refl)\n\
+     (step t3 (cl false) :rule resolution :premises (t1 t2))\n\
+     (step t4 (cl (not false)) :rule false)\n\
+     (step t5 (cl) :rule resolution :premises (t3 t4))\n\
+     )"
+  in
+  match Tier3_alethe.verify ir proof_str with
+  | Verified ->
+    Alcotest.fail
+      "laundered undischarged local assume verified — the nested \
+       subproof dependency fix regressed"
+  | Step_failed { step_id; _ } ->
+    Alcotest.(check string)
+      "fails at the outer close whose :discharge omits t1.a0"
+      "t1" step_id
+  | Unsupported_rule { rule; _ } ->
+    Alcotest.fail ("unexpected unsupported rule: " ^ rule)
+
 let test_supported_rules_sync () =
   (* Every rule listed in [supported_rules] should actually have a
      [check_step] dispatch — i.e., a step using that rule must not
@@ -1657,6 +2066,51 @@ let () =
         `Quick test_check_subproof_accepts_full_discharge;
       Alcotest.test_case "verify rejects dotted assume without anchor"
         `Quick test_verify_rejects_dotted_assume_without_anchor;
+      Alcotest.test_case "not_not accepts (cl (not (not (not p))) p)"
+        `Quick test_check_not_not_accepts;
+      Alcotest.test_case "not_not rejects mismatched inner formula"
+        `Quick test_check_not_not_rejects_mismatch;
+      Alcotest.test_case "not_or projects indexed negated disjunct"
+        `Quick test_check_not_or_accepts;
+      Alcotest.test_case "not_or rejects index/literal mismatch"
+        `Quick test_check_not_or_rejects_wrong_index_literal;
+      Alcotest.test_case "not_or rejects non-(not (or …)) premise"
+        `Quick test_check_not_or_rejects_non_or_premise;
+      Alcotest.test_case "or_neg accepts (cl (or …) (not t_i))"
+        `Quick test_check_or_neg_accepts;
+      Alcotest.test_case "or_neg rejects index/literal mismatch"
+        `Quick test_check_or_neg_rejects_mismatched_literal;
+      Alcotest.test_case "or_neg rejects out-of-range index"
+        `Quick test_check_or_neg_rejects_out_of_range;
+      Alcotest.test_case "equiv2 accepts (= a b) → (cl a (not b))"
+        `Quick test_check_equiv2_accepts;
+      Alcotest.test_case "equiv2 rejects flipped sides"
+        `Quick test_check_equiv2_rejects_flipped;
+      Alcotest.test_case "equiv_pos1 accepts tautology"
+        `Quick test_check_equiv_pos1_accepts;
+      Alcotest.test_case "equiv_pos1 rejects swapped phi/psi"
+        `Quick test_check_equiv_pos1_rejects_swapped;
+      Alcotest.test_case "forall_inst accepts positional instantiation"
+        `Quick test_check_forall_inst_accepts;
+      Alcotest.test_case "forall_inst accepts (:= (x S) t) arg form"
+        `Quick test_check_forall_inst_named_args;
+      Alcotest.test_case "forall_inst rejects mismatched instance"
+        `Quick test_check_forall_inst_rejects_wrong_instance;
+      Alcotest.test_case "forall_inst respects binder shadowing"
+        `Quick test_check_forall_inst_respects_shadowing;
+      Alcotest.test_case "bind accepts identity-binder close"
+        `Quick test_check_bind_accepts;
+      Alcotest.test_case "bind rejects body/conclusion mismatch"
+        `Quick test_check_bind_rejects_body_mismatch;
+      Alcotest.test_case "bind rejects α-renaming binder lists"
+        `Quick test_check_bind_rejects_renamed_binder;
+      Alcotest.test_case "bind rejects nested unsealed body conclusion"
+        `Quick test_check_bind_rejects_non_direct_child;
+      Alcotest.test_case "bind rejects block-local assume dependency"
+        `Quick test_check_bind_rejects_local_assume_leak;
+      Alcotest.test_case
+        "nested subproof cannot launder an undischarged local assume"
+        `Quick test_verify_nested_subproof_dep_laundering;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"
