@@ -2477,7 +2477,7 @@ let () =
         `Quick test_check_subproof_empty_body_false;
     ];
     "corpus-mintability", [
-      Alcotest.test_case "all 16 corpus traces verify shape-level"
+      Alcotest.test_case "every corpus trace verifies shape-level"
         `Quick test_corpus_traces_fully_mintable;
     ];
     "termination", [
