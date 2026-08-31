@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check import (  # noqa: E402
+    check_cert_hashes,
     check_certificate,
     check_ir,
     check_ir_against_registry,
@@ -247,6 +248,38 @@ def _cert_unknown_trace_format():
     }
     e, _ = check_certificate(fake, REGISTRY)
     assert_contains(e, "unknown format 'fake-format-1'", "error")
+
+
+# --- Cert <-> manifest linkage (check_cert_hashes) ---------------------------
+
+
+@register("hash: backend.version != manifest adapter_version is a warning, not an error")
+def _cert_version_label_drift_warns():
+    cert = copy.deepcopy(CERT1)
+    cert["backend"]["version"] = "0.0.0-not-the-manifest"
+    e, w = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5,
+                             cert_name="cert-x.json", manifest_name="manifest-y.json")
+    assert not e, f"version label drift must not be an error; got {e}"
+    assert_contains(w, "backend.version '0.0.0-not-the-manifest'", "warning")
+    assert_contains(w, f"adapter_version {MANIFEST_CVC5['adapter_version']!r}", "warning")
+    assert_contains(w, "cert-x.json", "warning")
+    assert_contains(w, "manifest-y.json", "warning")
+
+
+@register("hash: matching backend.version / adapter_version yields no warning")
+def _cert_version_label_match_silent():
+    cert = copy.deepcopy(CERT1)
+    cert["backend"]["version"] = MANIFEST_CVC5["adapter_version"]
+    e, w = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5)
+    assert not e and not w, (e, w)
+
+
+@register("hash: a tampered backend.config_hash is still an error")
+def _cert_config_hash_tamper_errors():
+    cert = copy.deepcopy(CERT1)
+    cert["backend"]["config_hash"] = "sha256:" + "c" * 64
+    e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5)
+    assert_contains(e, "backend.config_hash", "error")
 
 
 # --- Tier 2 schema checks ----------------------------------------------------

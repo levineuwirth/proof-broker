@@ -113,6 +113,7 @@ trivially bridge-aware (one shared `dialect_of_ir`).
   Achievable in principle (the SDK is bridge-agnostic, and both
   bridges produce/consume IRs through the shared `Codec`), but
   no end-to-end automated round-trip test exists yet. Tracked.
+  *(As of 2026-08-30: still absent; tracked in the roadmap.)*
 
 * **`coq.theory` → `rocq.theory` dune flip.** Per `dune-project`'s
   note, dune 3.22 didn't ship `(using rocq …)`. When it does,

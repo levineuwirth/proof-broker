@@ -5,11 +5,11 @@ description:
   "Rocq plugin that direct-links the proof_broker OCaml library — no FFI, no JSON marshaling. Reifies LIA goals from Constr into the IR, dispatches through the broker, prints the verified cert. The point is to test whether the IR is genuinely cross-system or accidentally Lean-shaped (delta.md §1.1)."
 depends: [
   "ocaml" {>= "5.0"}
-  "dune" {>= "3.21"}
+  "dune" {>= "3.21" & < "3.24"}
   "proof_broker"
-  "rocq-runtime" {>= "9.0"}
-  "coq-core" {>= "9.0"}
-  "coq-stdlib" {>= "9.0"}
+  "rocq-runtime" {>= "9.0" & < "9.2"}
+  "coq-core" {>= "9.0" & < "9.2"}
+  "coq-stdlib" {>= "9.0" & < "9.2"}
   "odoc" {with-doc}
 ]
 build: [
