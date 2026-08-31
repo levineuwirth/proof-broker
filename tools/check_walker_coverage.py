@@ -60,11 +60,14 @@ def _replay_skips() -> dict:
 def compute() -> dict:
     """Classify every corpus goal against the walker's supported rule set."""
     supported = parity.extract_rules(parity.ROCQ)
-    # The SDK Tier-3 mint gate's dispatch (Tier3_alethe.check_step): a
-    # trace whose full rule set lies within it is MINTABLE — eligible
-    # to become a live Tier-3 cert (the walkers' replay is necessary
-    # but not sufficient; minting is gated SDK-side, R1.4).
-    sdk_gate = parity.extract_rules(parity.SDK)
+    # The SDK Tier-3 mint gate (Tier3_alethe.supported_rules — the list
+    # proof_rules_supported consults): a trace whose full rule set lies
+    # within it is MINTABLE — eligible to become a live Tier-3 cert
+    # (the walkers' replay is necessary but not sufficient; minting is
+    # gated SDK-side, R1.4). Derived from the minter's own list, not the
+    # check_step parity-marker arms; test_walker_parity pins the two
+    # sets equal in both directions.
+    sdk_gate = parity.extract_supported_rules()
     index = json.loads(INDEX.read_text(encoding="utf-8"))
     skips = _replay_skips()
 

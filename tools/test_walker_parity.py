@@ -94,6 +94,32 @@ def test_empty_block_exits() -> None:
         "empty marker block -> SystemExit")
 
 
+def test_supported_rules_extraction() -> None:
+    f = _write("t.ml", '''
+    (* PARITY:walker-rules BEGIN *)
+    | "or" -> check_or env step
+    | "cong" -> check_cong env step
+    (* PARITY:walker-rules END *)
+    let supported_rules : string list = [
+      "cong"; "or";
+    ]
+    ''')
+    _ok(P.extract_supported_rules(f) == {"or", "cong"},
+        "supported_rules: extracts the minter's list")
+
+
+def test_supported_rules_missing_exits() -> None:
+    f = _write("t.ml", '| "or" -> check_or env step\n')
+    _ok(_exits(lambda: P.extract_supported_rules(f)),
+        "missing supported_rules list -> SystemExit")
+
+
+def test_supported_rules_empty_exits() -> None:
+    f = _write("t.ml", "let supported_rules : string list = [\n]\n")
+    _ok(_exits(lambda: P.extract_supported_rules(f)),
+        "empty supported_rules list -> SystemExit")
+
+
 # ---------------------------------------------------------------------------
 # Live parity (doubles as the assertion the CI check makes)
 # ---------------------------------------------------------------------------
@@ -108,6 +134,22 @@ def test_real_walkers_agree() -> None:
         f"union-minus-lean={sorted((rocq | sdk) - lean)} "
         f"union-minus-rocq={sorted((lean | sdk) - rocq)} "
         f"union-minus-sdk={sorted((lean | rocq) - sdk)}")
+
+
+def test_real_sdk_arms_match_supported_rules() -> None:
+    # Pins the SDK-internal sync in BOTH directions: every check_step
+    # dispatch arm has a supported_rules entry (an arm the minter never
+    # mints would overcount coverage's mintable) AND every
+    # supported_rules entry has an arm (the OCaml
+    # test_supported_rules_sync covers behavior for that direction;
+    # set equality here covers both textually).
+    arms = P.extract_rules(P.SDK)
+    gate = P.extract_supported_rules()
+    _ok(arms == gate,
+        f"SDK check_step arms == supported_rules "
+        f"(arms={len(arms)}, gate={len(gate)}); "
+        f"arms-minus-gate={sorted(arms - gate)} "
+        f"gate-minus-arms={sorted(gate - arms)}")
 
 
 def main() -> int:

@@ -29,9 +29,11 @@ def _ok(cond: bool, label: str) -> None:
         print(f"FAIL  {label}")
 
 
-def _with_index(index: dict, supported: set, skips: dict | None = None):
+def _with_index(index: dict, supported: set, skips: dict | None = None,
+                gate: set | None = None):
     """Point cov at a synthetic index + supported set (+ optional replay_skip
-    goal files), return compute()."""
+    goal files; `gate` overrides the minter's supported_rules, default =
+    `supported`), return compute()."""
     d = Path(tempfile.mkdtemp())
     idx = d / "index.json"
     idx.write_text(json.dumps(index), encoding="utf-8")
@@ -40,13 +42,17 @@ def _with_index(index: dict, supported: set, skips: dict | None = None):
     for gid, reason in (skips or {}).items():
         (goals / f"{gid}.json").write_text(
             json.dumps({"id": gid, "replay_skip": reason}), encoding="utf-8")
-    orig = (cov.INDEX, cov.GOALS, cov.parity.extract_rules)
+    orig = (cov.INDEX, cov.GOALS, cov.parity.extract_rules,
+            cov.parity.extract_supported_rules)
     cov.INDEX, cov.GOALS = idx, goals
     cov.parity.extract_rules = lambda _path: set(supported)
+    cov.parity.extract_supported_rules = (
+        lambda _path=None: set(supported if gate is None else gate))
     try:
         return cov.compute()
     finally:
-        cov.INDEX, cov.GOALS, cov.parity.extract_rules = orig
+        (cov.INDEX, cov.GOALS, cov.parity.extract_rules,
+         cov.parity.extract_supported_rules) = orig
 
 
 def test_walkable_and_blocked() -> None:
@@ -118,6 +124,26 @@ def test_mintable_counts() -> None:
     _ok(rep["goals"]["g_in"]["mintable"] is True
         and rep["goals"]["g_out"]["mintable"] is False,
         "per-goal mintable flags")
+
+
+def test_mintable_follows_minter_gate_not_arms() -> None:
+    # mintable derives from the minter's supported_rules list, NOT the
+    # check_step dispatch arms: a rule dispatched by an arm but absent
+    # from supported_rules must not count as mintable (the minter would
+    # never mint it -- overcounting was R1 ROUND 1 finding 5).
+    rep = _with_index(
+        {
+            "g_gate": {"result": "unsat", "rules": ["or"]},
+            "g_arm_only": {"result": "unsat", "rules": ["or", "xor"]},
+        },
+        supported={"or", "xor"},   # walker/dispatch arms (xor gate-less)
+        gate={"or"},               # the minter's supported_rules
+    )
+    _ok(rep["goals"]["g_arm_only"]["walkable"] is True
+        and rep["goals"]["g_arm_only"]["mintable"] is False,
+        "arm-dispatched but gate-less rule -> walkable, not mintable")
+    _ok(rep["mintable"] == 1 and rep["goals"]["g_gate"]["mintable"] is True,
+        "mintable counts only supported_rules-subset traces")
 
 
 def main() -> int:

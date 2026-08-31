@@ -60,6 +60,28 @@ def extract_rules(path: Path) -> set:
     return rules
 
 
+SUPPORTED_RULES = re.compile(
+    r'let\s+supported_rules\s*:\s*string\s+list\s*=\s*\[(.*?)\]', re.S)
+
+
+def extract_supported_rules(path: Path = SDK) -> set:
+    """Return the SDK minter's [Tier3_alethe.supported_rules] set.
+
+    The mint gate ([proof_rules_supported]) consults this LIST, not the
+    [check_step] dispatch arms -- anything derived from "what the minter
+    mints" (e.g. coverage's mintable count) must read this source. Same
+    textual-extraction trust model as [extract_rules]; the two sets are
+    pinned equal (both directions) by test_walker_parity.
+    """
+    m = SUPPORTED_RULES.search(path.read_text(encoding="utf-8"))
+    if not m:
+        sys.exit(f"FAIL: supported_rules list not found in {path}")
+    rules = set(re.findall(r'"([^"]+)"', m.group(1)))
+    if not rules:
+        sys.exit(f"FAIL: supported_rules list empty in {path}")
+    return rules
+
+
 def main() -> int:
     sets = {
         "Lean walker": extract_rules(LEAN),
