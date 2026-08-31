@@ -1734,6 +1734,279 @@ let test_check_bind_rejects_local_assume_leak () =
   | _ -> Alcotest.fail "bind should reject a body depending on a \
                         block-local assume"
 
+(* --- R1.2 check_hole reach + la_generic/resolution generality ---- *)
+
+(* An Int-typed IR: [effective_fragment] inspects the context's
+   types (any Real ⇒ LRA), so an LIA test needs Int free vars and
+   Int literals, not just the classification field. *)
+let lia_ir () : Ir.t =
+  let base = make_x_ir () in
+  let x : Ir.shell_term = Var { name = "x" } in
+  let three : Ir.shell_term = Num_lit { value = "3"; ty = "Int" } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App { symbol = ">="; type_args = []; args = [ x; three ] };
+  } in
+  { base with
+    logic_classification = lia_logic;
+    goal = { shell = Const { name = "False" }; payloads = None };
+    context = {
+      type_vars = [];
+      free_vars = [ { name = "x"; ty = "Int" } ];
+      hypotheses = [ h0 ];
+      library_slice = None;
+    };
+  }
+
+let hole_step clause = mk_step "t.hole" ~rule:"hole" ~clause
+
+let expect_hole_verified env clause name =
+  match Tier3_alethe.check_step env (hole_step clause) with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail (name ^ " rejected: " ^ detail)
+  | _ -> Alcotest.fail (name ^ ": hole unsupported?")
+
+let expect_hole_failed env clause name =
+  match Tier3_alethe.check_step env (hole_step clause) with
+  | Step_failed _ -> ()
+  | _ -> Alcotest.fail (name ^ " should have been rejected")
+
+let test_check_hole_irreflexivity () =
+  let env = env_with (make_x_ir ()) [] in
+  expect_hole_verified env
+    [ List [ Atom "=";
+             List [ Atom "<"; Atom "x"; Atom "x" ];
+             Atom "false" ] ]
+    "(< x x) = false"
+
+let test_check_hole_uf_reflexivity () =
+  let env = env_with (make_x_ir ()) [] in
+  expect_hole_verified env
+    [ List [ Atom "=";
+             List [ Atom "=";
+                    List [ Atom "f"; Atom "y" ];
+                    List [ Atom "f"; Atom "y" ] ];
+             Atom "true" ] ]
+    "(= (f y) (f y)) = true";
+  expect_hole_failed env
+    [ List [ Atom "=";
+             List [ Atom "=";
+                    List [ Atom "f"; Atom "y" ];
+                    List [ Atom "g"; Atom "y" ] ];
+             Atom "true" ] ]
+    "(= (f y) (g y)) = true (distinct opaque atoms)"
+
+let test_check_hole_exists_duality () =
+  let env = env_with (make_x_ir ()) [] in
+  let px : Alethe.Sexp.t = List [ Atom "P"; Atom "x" ] in
+  let binders : Alethe.Sexp.t = List [ List [ Atom "x"; Atom "Int" ] ] in
+  expect_hole_verified env
+    [ List [ Atom "=";
+             List [ Atom "exists"; binders; px ];
+             List [ Atom "not";
+                    List [ Atom "forall"; binders;
+                           List [ Atom "not"; px ] ] ] ] ]
+    "exists-duality"
+
+let test_check_hole_double_negation_forall () =
+  let env = env_with (make_x_ir ()) [] in
+  let q : Alethe.Sexp.t =
+    List [ Atom "forall";
+           List [ List [ Atom "x"; Atom "Int" ] ];
+           List [ Atom "P"; Atom "x" ] ] in
+  expect_hole_verified env
+    [ List [ Atom "=";
+             List [ Atom "not"; List [ Atom "not"; q ] ];
+             q ] ]
+    "double-negation collapse on a quantified Prop"
+
+let test_check_hole_eq_to_bounds () =
+  let env = env_with (make_x_ir ()) [] in
+  expect_hole_verified env
+    [ List [ Atom "=";
+             List [ Atom "="; Atom "x"; Atom "5" ];
+             List [ Atom "and";
+                    List [ Atom "<="; Atom "x"; Atom "5" ];
+                    List [ Atom ">="; Atom "x"; Atom "5" ] ] ] ]
+    "(= x 5) = (and (<= x 5) (>= x 5))";
+  expect_hole_failed env
+    [ List [ Atom "=";
+             List [ Atom "="; Atom "x"; Atom "5" ];
+             List [ Atom "and";
+                    List [ Atom "<="; Atom "x"; Atom "5" ];
+                    List [ Atom ">="; Atom "x"; Atom "4" ] ] ] ]
+    "eq-to-bounds with a wrong bound pair"
+
+let test_check_hole_uf_lia_tightening () =
+  let env = env_with (lia_ir ()) [] in
+  expect_hole_verified env
+    [ List [ Atom "=";
+             List [ Atom "<="; List [ Atom "f"; Atom "x" ]; Atom "10" ];
+             List [ Atom "not";
+                    List [ Atom ">="; List [ Atom "f"; Atom "x" ];
+                           Atom "11" ] ] ] ]
+    "LIA tightening over a UF atom"
+
+let test_check_la_generic_standalone_tautology () =
+  let env = env_with (make_x_ir ()) [] in
+  (* (y < 0) ∧ (-y ≤ 0) is contradictory; neither atom matches the
+     IR's x-hypotheses, so this exercises the tautology fallback. *)
+  let step = mk_step "t.lg" ~rule:"la_generic"
+    ~args:[ Atom "1"; Atom "1" ]
+    ~clause:[
+      List [ Atom "not"; List [ Atom "<"; Atom "y"; Atom "0" ] ];
+      List [ Atom "not";
+             List [ Atom "<="; List [ Atom "*"; Atom "-1"; Atom "y" ];
+                    Atom "0" ] ];
+    ]
+  in
+  (match Tier3_alethe.check_step env step with
+   | Step_verified -> ()
+   | Step_failed { detail; _ } ->
+     Alcotest.fail ("standalone la_generic tautology rejected: " ^ detail)
+   | _ -> Alcotest.fail "la_generic unsupported?");
+  (* Non-contradictory combination must still fail. *)
+  let bogus = mk_step "t.lg2" ~rule:"la_generic"
+    ~args:[ Atom "1"; Atom "1" ]
+    ~clause:[
+      List [ Atom "not"; List [ Atom "<"; Atom "y"; Atom "0" ] ];
+      List [ Atom "not"; List [ Atom "<="; Atom "y"; Atom "5" ] ];
+    ]
+  in
+  (match Tier3_alethe.check_step env bogus with
+   | Step_failed _ -> ()
+   | _ -> Alcotest.fail "non-contradictory la_generic accepted")
+
+let test_check_la_generic_tautology_eq_sign_search () =
+  let env = env_with (make_x_ir ()) [] in
+  (* (y = 3) ∧ (y ≤ 2): the Eq conjunct needs the OPPOSITE sign
+     from the stated coefficient (3 - y) + (y - 2) = 1 > 0. *)
+  let step = mk_step "t.lg" ~rule:"la_generic"
+    ~args:[ Atom "1"; Atom "1" ]
+    ~clause:[
+      List [ Atom "not"; List [ Atom "="; Atom "y"; Atom "3" ] ];
+      List [ Atom "not"; List [ Atom "<="; Atom "y"; Atom "2" ] ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("eq sign-search tautology rejected: " ^ detail)
+  | _ -> Alcotest.fail "la_generic unsupported?"
+
+let test_check_resolution_double_neg_pairing () =
+  let ir = make_x_ir () in
+  let nb : Alethe.Sexp.t = List [ Atom "not"; Atom "b" ] in
+  let env = env_with ir [
+    "t.p1", [ Atom "a"; nb ];
+    "t.p2", [ Atom "a"; List [ Atom "not"; nb ] ];
+  ] in
+  let step = mk_step "t.res" ~rule:"resolution"
+    ~premises:[ "t.p1"; "t.p2" ]
+    ~clause:[ Atom "a"; Atom "a" ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("¬b / ¬¬b pair rejected: " ^ detail)
+  | _ -> Alcotest.fail "resolution unsupported?"
+
+let test_check_resolution_merged_duplicate () =
+  let ir = make_x_ir () in
+  let l : Alethe.Sexp.t = List [ Atom ">="; Atom "a"; Atom "0" ] in
+  let env = env_with ir [
+    "t.p1", [ l; List [ Atom "not"; Atom "p" ] ];
+    "t.p2", [ Atom "p"; l ];
+  ] in
+  let merged = mk_step "t.res" ~rule:"resolution"
+    ~premises:[ "t.p1"; "t.p2" ]
+    ~clause:[ l ]
+  in
+  (match Tier3_alethe.check_step env merged with
+   | Step_verified -> ()
+   | Step_failed { detail; _ } ->
+     Alcotest.fail ("merged duplicate rejected: " ^ detail)
+   | _ -> Alcotest.fail "resolution unsupported?");
+  (* A residual literal ABSENT from the conclusion still fails. *)
+  let env2 = env_with ir [
+    "t.p1", [ l; List [ Atom "not"; Atom "p" ] ];
+    "t.p2", [ Atom "p"; Atom "q" ];
+  ] in
+  let bogus = mk_step "t.res2" ~rule:"resolution"
+    ~premises:[ "t.p1"; "t.p2" ]
+    ~clause:[ l ]
+  in
+  (match Tier3_alethe.check_step env2 bogus with
+   | Step_failed _ -> ()
+   | _ ->
+     Alcotest.fail "residual literal outside the conclusion accepted")
+
+let test_check_subproof_empty_body_false () =
+  let ir = make_x_ir () in
+  let env = env_with ir [
+    "t1.a0", [ Atom "p" ];
+    "t1.t0", [];
+  ] in
+  Hashtbl.replace env.assumes "t1.a0" (Alethe.Sexp.Atom "p");
+  env.last_step_clause <- Some [];
+  env.last_step_id <- Some "t1.t0";
+  let step = { (mk_step "t1" ~rule:"subproof"
+                  ~clause:[ List [ Atom "not"; Atom "p" ];
+                            Atom "false" ])
+               with discharge = Some [ "t1.a0" ] } in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("empty-body close with false literal rejected: "
+                   ^ detail)
+  | _ -> Alcotest.fail "subproof unsupported?"
+
+(** Corpus mintability sweep (R1.2 acceptance): every corpus trace
+    must pass the FULL Tier-3 verifier — shape-level, not just the
+    rule-name gate — against its goal's IR. This is the dynamic
+    ground truth behind [corpus/coverage.json]'s [mintable] count:
+    a trace the walkers replay but this verifier rejects can never
+    become a Tier-3 cert on the live path. *)
+let test_corpus_traces_fully_mintable () =
+  let root =
+    Filename.concat (Sys.getcwd ()) "../../../../corpus"
+  in
+  let goals_dir = Filename.concat root "goals" in
+  let traces_dir = Filename.concat root "traces" in
+  let files =
+    Sys.readdir goals_dir |> Array.to_list
+    |> List.filter (fun f -> Filename.check_suffix f ".json")
+    |> List.sort compare
+  in
+  Alcotest.(check bool) "corpus present (16 goals)"
+    true (List.length files = 16);
+  let failures =
+    List.filter_map (fun f ->
+      let j = Yojson.Safe.from_file (Filename.concat goals_dir f) in
+      let id = Yojson.Safe.Util.(member "id" j |> to_string) in
+      let ir = Codec.of_json (Yojson.Safe.Util.member "ir" j) in
+      let trace =
+        In_channel.with_open_text
+          (Filename.concat traces_dir (id ^ ".alethe"))
+          In_channel.input_all
+      in
+      match Tier3_alethe.verify ir trace with
+      | Verified -> None
+      | Unsupported_rule { rule; step_id } ->
+        Some (Printf.sprintf "%s: unsupported rule %s at step %s"
+                id rule step_id)
+      | Step_failed { step_id; rule; detail } ->
+        Some (Printf.sprintf "%s: step %s (%s): %s"
+                id step_id rule detail))
+      files
+  in
+  if failures <> [] then
+    Alcotest.fail
+      (Printf.sprintf "corpus traces not fully mintable (%d/16):\n  %s"
+         (List.length failures)
+         (String.concat "\n  " failures))
+
 (** Regression pin for the nested-subproof dependency-laundering
     fix: before R1.1, a subproof close's deps entry was computed
     AFTER its inner scope was stripped (always empty), so an
@@ -2111,6 +2384,32 @@ let () =
       Alcotest.test_case
         "nested subproof cannot launder an undischarged local assume"
         `Quick test_verify_nested_subproof_dep_laundering;
+      Alcotest.test_case "hole accepts (< x x) = false (irreflexivity)"
+        `Quick test_check_hole_irreflexivity;
+      Alcotest.test_case "hole accepts UF reflexivity, rejects mismatch"
+        `Quick test_check_hole_uf_reflexivity;
+      Alcotest.test_case "hole accepts exists-duality"
+        `Quick test_check_hole_exists_duality;
+      Alcotest.test_case "hole accepts quantified double negation"
+        `Quick test_check_hole_double_negation_forall;
+      Alcotest.test_case "hole accepts eq-to-bounds, rejects wrong pair"
+        `Quick test_check_hole_eq_to_bounds;
+      Alcotest.test_case "hole accepts LIA tightening over a UF atom"
+        `Quick test_check_hole_uf_lia_tightening;
+      Alcotest.test_case "la_generic standalone tautology fallback"
+        `Quick test_check_la_generic_standalone_tautology;
+      Alcotest.test_case "la_generic tautology Eq sign search"
+        `Quick test_check_la_generic_tautology_eq_sign_search;
+      Alcotest.test_case "resolution pairs ¬X with ¬¬X"
+        `Quick test_check_resolution_double_neg_pairing;
+      Alcotest.test_case "resolution accepts merged duplicates only"
+        `Quick test_check_resolution_merged_duplicate;
+      Alcotest.test_case "subproof accepts empty body closed as false"
+        `Quick test_check_subproof_empty_body_false;
+    ];
+    "corpus-mintability", [
+      Alcotest.test_case "all 16 corpus traces verify shape-level"
+        `Quick test_corpus_traces_fully_mintable;
     ];
     "termination", [
       Alcotest.test_case "non-terminal final clause rejected"

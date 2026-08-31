@@ -88,11 +88,15 @@ type env = {
 (** Translate an IR shell to its [Alethe.Sexp.t] form, mirroring
     what cvc5 would emit when given this term as part of an
     SMT-LIB assert. Symbol names are normalized to SMT-LIB
-    primitives ([HAdd.hAdd] → [+], [LE.le] → [<=], etc.) so the
-    output matches cvc5's atom shapes after named-ref expansion.
-    Returns [None] for shapes that have no SMT-LIB atomic form
-    (Forall, Lambda, Opaque), which can't appear as Tier 3
-    assume atoms anyway. *)
+    primitives ([HAdd.hAdd] → [+], [LE.le] → [<=], etc.), a
+    [UF.<name>] application renders as [(name …)] (the
+    [Smtlib.emit_app] convention), and [Forall]/[Exists] shells
+    render as [(forall ((x S)) body)] / [(exists ((x S)) body)]
+    for the primitive sorts [Smtlib] serializes — so the output
+    matches cvc5's atom shapes after named-ref expansion.
+    Returns [None] for shapes that have no SMT-LIB form (Lambda,
+    Opaque, non-primitive quantifier sorts), which then can't be
+    matched as Tier 3 assume atoms — fail closed. *)
 let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
   let arith_sym = function
     | "HAdd.hAdd" | "Int.add" | "Add.add" | "+" -> "+"
@@ -104,6 +108,28 @@ let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
     | "GE.ge" | ">=" -> ">="
     | "GT.gt" | ">"  -> ">"
     | s -> s
+  in
+  let uf_sym s =
+    let prefix = "UF." in
+    let plen = String.length prefix in
+    if String.length s > plen && String.sub s 0 plen = prefix
+    then Some (String.sub s plen (String.length s - plen))
+    else None
+  in
+  let sort_of = function
+    | "Int" -> Some "Int"
+    | "Real" -> Some "Real"
+    | "Bool" -> Some "Bool"
+    | _ -> None
+  in
+  let quant q var ty body =
+    match sort_of ty, shell_to_sexp body with
+    | Some sort, Some sb ->
+      Some (Alethe.Sexp.List
+              [ Atom q;
+                List [ List [ Atom var; Atom sort ] ];
+                sb ])
+    | _ -> None
   in
   let bin op a b =
     match shell_to_sexp a, shell_to_sexp b with
@@ -125,11 +151,16 @@ let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
      | Some s -> Some (List [ Atom "not"; s ])
      | None -> None)
   | Eq { left; right; _ } -> bin "=" left right
+  | Forall { var; ty; body } -> quant "forall" var ty body
+  | Exists { var; ty; body } -> quant "exists" var ty body
   | App { symbol; args; _ } ->
     let sargs = List.map shell_to_sexp args in
     if List.for_all Option.is_some sargs then
-      Some (List (Atom (arith_sym symbol)
-                  :: List.map Option.get sargs))
+      let head = match uf_sym symbol with
+        | Some name -> name
+        | None -> arith_sym symbol
+      in
+      Some (List (Atom head :: List.map Option.get sargs))
     else None
   | _ -> None
 
@@ -396,12 +427,105 @@ let verify_witness_with_inputs
         Error ("non-positive residual constant: "
                ^ Linear_arith.rat_to_string c)
 
+(** Standalone-tautology check for a [la_generic] step whose
+    literals do NOT all match known inputs. Per the Alethe spec,
+    [la_generic] concludes a VALID clause with no premises: the
+    conjunction of the literals' negations, each scaled by its
+    [:args] coefficient, sums to an arithmetic contradiction.
+    That validity is context-free, so no input matching is needed
+    — compile each literal's negation ([compile_neg_literal],
+    with LIA tightening under non-LRA fragments), scale, sum, and
+    require the residual to be a contradictory constant.
+
+    Coefficient conventions: inequality conjuncts take the
+    coefficient's absolute value (a Farkas combination needs
+    nonnegative multipliers; cvc5's emitted sign encodes
+    direction bookkeeping we don't reconstruct); equality
+    conjuncts may be scaled with either sign, so we search the
+    sign choices (capped at 8 equalities = 256 combinations, far
+    beyond any observed step; fail closed above that). The search
+    does not weaken soundness: acceptance still requires
+    exhibiting a valid Farkas contradiction. *)
+let check_la_generic_tautology ~fragment (env : env)
+    (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "la_generic"; detail } in
+  let args = Option.value step.args ~default:[] in
+  if List.length args <> List.length step.clause then
+    fail "tautology check: args/literal count mismatch"
+  else
+    let rat_abs r =
+      if Linear_arith.rat_is_neg r then Linear_arith.rat_neg r else r
+    in
+    let parse_coef a =
+      let raw = match a with
+        | Alethe.Sexp.Atom s -> s
+        | s -> Alethe.Sexp.to_string s
+      in
+      Linear_arith.rat_of_string raw
+    in
+    let rec build eqs base has_strict = function
+      | [], [] -> Ok (eqs, base, has_strict)
+      | lit :: lits, arg :: args' ->
+        (match parse_coef arg with
+         | None -> Error "tautology check: unparseable coefficient"
+         | Some k ->
+           (match Alethe_farkas.compile_neg_literal ~fragment lit with
+            | None ->
+              Error ("tautology check: literal not Farkas-amenable: "
+                     ^ Alethe.Sexp.to_string lit)
+            | Some (Farkas.Eq f) ->
+              build ((f, k) :: eqs) base has_strict (lits, args')
+            | Some (Farkas.Le f) ->
+              let k = rat_abs k in
+              build eqs (Linear_arith.add base (Linear_arith.scale k f))
+                has_strict (lits, args')
+            | Some (Farkas.Lt f) ->
+              let k = rat_abs k in
+              let strict' = has_strict || Linear_arith.rat_is_pos k in
+              build eqs (Linear_arith.add base (Linear_arith.scale k f))
+                strict' (lits, args')))
+      | _, _ -> Error "tautology check: impossible desync"
+    in
+    match build [] Linear_arith.zero false (step.clause, args) with
+    | Error msg -> fail msg
+    | Ok (eqs, base, has_strict) ->
+      if List.length eqs > 8 then
+        fail "tautology check: too many equality literals (sign \
+              search capped at 8)"
+      else
+        let contradictory residual =
+          Linear_arith.is_constant residual
+          && (let c = Linear_arith.constant_value residual in
+              if has_strict then Linear_arith.rat_is_nonneg c
+              else Linear_arith.rat_is_pos c)
+        in
+        let rec search acc = function
+          | [] -> contradictory acc
+          | (f, k) :: rest ->
+            search (Linear_arith.add acc (Linear_arith.scale k f)) rest
+            || search
+                 (Linear_arith.add acc
+                    (Linear_arith.scale (Linear_arith.rat_neg k) f))
+                 rest
+        in
+        if search base eqs then begin
+          (* A tautology depends on nothing: no local assumes are
+             consumed. *)
+          env.last_la_generic_consumed <- Some StringSet.empty;
+          Step_verified
+        end else
+          fail "tautology check: no sign choice yields a positive \
+                constant residual"
+
 (** Check a single [la_generic] step. Reuses [Alethe_farkas]
     extraction (clause-vs-input matching by linear-form scaling,
     plus LIA tightening) to produce a Farkas witness, then runs
     [verify_witness_with_inputs] on the precompiled inputs (IR
     hypotheses + any local assumes in scope). Verified iff the
-    residual sum is a positive constant. *)
+    residual sum is a positive constant. When a literal matches
+    no input, falls back to [check_la_generic_tautology] — inside
+    subproofs cvc5 recombines derived atoms into context-free
+    la_generic tautologies. *)
 let check_la_generic (env : env) (step : Alethe.step) : step_result =
   let ir = env.ir in
   let fragment = Farkas.effective_fragment ir in
@@ -420,6 +544,8 @@ let check_la_generic (env : env) (step : Alethe.step) : step_result =
   in
   let inputs = base_inputs @ local_inputs in
   match Alethe_farkas.extract_from_step ~fragment ~inputs step with
+  | Error (Alethe_farkas.Unmatched_literal _) ->
+    check_la_generic_tautology ~fragment env step
   | Error e ->
     Step_failed {
       rule = "la_generic";
@@ -609,31 +735,34 @@ let compiled_equal (a : Farkas.compiled) (b : Farkas.compiled) : bool =
   | Farkas.Eq x, Farkas.Eq y -> x = y
   | _ -> false
 
-(** Evaluate a constant comparison literal like [(<= 0 -2)] or
-    [(< -1 0)] to a boolean, when both operands are numeric
-    constants. Returns [None] if either operand isn't a constant
-    or the operator isn't a recognized arithmetic comparison.
-    Used by the [hole]/[rare_rewrite] equality-rewrite checkers
-    to prove things like [(<= 0 -2) = false]. *)
+(** Evaluate a comparison literal to a boolean when the DIFFERENCE
+    of its linearized operands is a constant — e.g. [(<= 0 -2)]
+    (constants), [(< x x)] (irreflexivity: diff [0]), or
+    [(= (f y) (f y))] (reflexivity over an opaque UF atom). The
+    linearization is exact symbolic arithmetic — a constant
+    difference holds under every valuation of the (possibly
+    opaque-abstracted) atoms, so the evaluation is sound for any
+    interpretation. Returns [None] when the difference has a
+    residual variable part or the operator isn't a recognized
+    comparison. Used by the [hole]/[rare_rewrite] equality-rewrite
+    checkers to prove things like [(<= 0 -2) = false] and
+    [(< x x) = false]. *)
 let evaluate_comparison_to_bool (lhs : Alethe.Sexp.t) : bool option =
-  let const_of e =
-    match Alethe_farkas.lin_arith e with
-    | Some lf when Linear_arith.is_constant lf ->
-      Some (Linear_arith.constant_value lf)
-    | _ -> None
-  in
   match lhs with
   | List [ Atom op; a; b ] ->
-    (match const_of a, const_of b with
-     | Some ra, Some rb ->
-       let d = Linear_arith.rat_sub ra rb in
-       (match op with
-        | "<=" -> Some (not (Linear_arith.rat_is_pos d))
-        | "<"  -> Some (Linear_arith.rat_is_neg d)
-        | ">=" -> Some (Linear_arith.rat_is_nonneg d)
-        | ">"  -> Some (Linear_arith.rat_is_pos d)
-        | "="  -> Some (Linear_arith.rat_is_zero d)
-        | _ -> None)
+    (match Alethe_farkas.lin_arith a, Alethe_farkas.lin_arith b with
+     | Some la, Some lb ->
+       let diff = Linear_arith.sub la lb in
+       if not (Linear_arith.is_constant diff) then None
+       else
+         let d = Linear_arith.constant_value diff in
+         (match op with
+          | "<=" -> Some (not (Linear_arith.rat_is_pos d))
+          | "<"  -> Some (Linear_arith.rat_is_neg d)
+          | ">=" -> Some (Linear_arith.rat_is_nonneg d)
+          | ">"  -> Some (Linear_arith.rat_is_pos d)
+          | "="  -> Some (Linear_arith.rat_is_zero d)
+          | _ -> None)
      | _ -> None)
   | _ -> None
 
@@ -685,13 +814,35 @@ let evaluate_constant_literal (lit : Alethe.Sexp.t) : bool option =
   in
   walk true lit
 
+(** Classical propositional / quantifier normalization for rewrite
+    equalities: bottom-up, collapse double negations everywhere
+    and rewrite [(exists B P)] to [(not (forall B (not P)))].
+    Both rewrites are classically valid Prop equalities (the
+    walkers discharge exactly these hole shapes with [propext] +
+    [Classical.em] / [classic]), and they apply congruently at any
+    depth — so two sides with the same normal form denote the same
+    Prop. *)
+let rec normalize_prop (s : Alethe.Sexp.t) : Alethe.Sexp.t =
+  let negate x =
+    match x with
+    | Alethe.Sexp.List [ Atom "not"; inner ] -> inner
+    | _ -> Alethe.Sexp.List [ Atom "not"; x ]
+  in
+  match s with
+  | Atom _ -> s
+  | List [ Atom "not"; inner ] -> negate (normalize_prop inner)
+  | List [ Atom "exists"; binders; body ] ->
+    let nb = normalize_prop body in
+    List [ Atom "not"; List [ Atom "forall"; binders; negate nb ] ]
+  | List xs -> List (List.map normalize_prop xs)
+
 (** Verify a theory-rewrite equality [(= LHS RHS)]. Strategy, in
     order of generality:
     1. Linear-form arithmetic equality: linearize both sides via
        [Alethe_farkas.lin_arith] and compare canonical forms.
        Handles constant-fold rewrites (e.g. [-1] times [3] equals
        [-3]) and algebraic identities (e.g. [x] plus [-x] equals
-       [0]).
+       [0]); UF applications participate as opaque atoms.
     2. Normalized-literal equality: reduce each side to a canonical
        [Farkas.compiled] form, accounting for [(not)] nesting and
        LIA tightening. Handles direction flips, double negation,
@@ -699,22 +850,48 @@ let evaluate_constant_literal (lit : Alethe.Sexp.t) : bool option =
        atom as [not (n >= 11)]), equation rearrangements (an
        equation reordered or moved to one side), and any
        composition of these.
-    3. Constant-boolean evaluation: if both sides reduce to the
+    3. Classical Prop normalization: deep double-negation collapse
+       plus the exists-duality [(exists B P) = (not (forall B
+       (not P)))]; equal normal forms mean equal Props.
+    4. Equality-to-bounds: [(= EQATOM (and B C))] (either
+       orientation) where [EQATOM] compiles to [Eq f] and the two
+       conjuncts normalize to [Le g], [Le h] with [g + h = 0] and
+       [g = ±f] — [f = 0 ↔ f ≤ 0 ∧ -f ≤ 0], modulo LIA
+       tightening of the conjuncts.
+    5. Constant-boolean evaluation: if both sides reduce to the
        same boolean via [(not)] wrappers around [true]/[false],
        accept. Handles propositional folds like [(not (not true))
        = true].
-    4. Comparison-boolean evaluation: if [RHS] is [true]/[false]
-       and [LHS] is a comparison with constant operands, evaluate
-       the comparison. Handles [(<= 0 -2) = false], [(< -1 0) =
-       true].
+    6. Comparison-boolean evaluation: if [RHS] is [true]/[false]
+       and [LHS] is a comparison whose linearized operand
+       DIFFERENCE is constant, evaluate it. Handles [(<= 0 -2) =
+       false], [(< x x) = false], [(= (f y) (f y)) = true].
     Otherwise reject — there are still classes of cvc5 theory
-    rewrites we don't recognize (uninterpreted-function ground
-    rewrites, bit-vector evaluation, complex propositional
-    simplifications). *)
+    rewrites we don't recognize (bit-vector evaluation, complex
+    propositional simplifications). *)
 let check_theory_rewrite_equality
     ?(fragment = "LIA")
     (lhs : Alethe.Sexp.t) (rhs : Alethe.Sexp.t)
   : (unit, string) result =
+  let eq_and_bounds_matches eq_side and_side =
+    match and_side with
+    | Alethe.Sexp.List [ Atom "and"; b1; b2 ] ->
+      (match Alethe_farkas.compile_atom_pos eq_side with
+       | Some (Farkas.Eq f) ->
+         (match normalize_literal ~fragment b1,
+                normalize_literal ~fragment b2 with
+          | Some (Farkas.Le g), Some (Farkas.Le h) ->
+            Linear_arith.add g h = Linear_arith.zero
+            && (g = f || g = Linear_arith.neg f)
+          | _ -> false)
+       | _ -> false)
+    | _ -> false
+  in
+  let no_path =
+    Error "no rewrite path: not linear-equal, normalized-equal, \
+           prop-normal-equal, eq-to-bounds, constant-bool, or \
+           comparison-eval"
+  in
   match Alethe_farkas.lin_arith lhs, Alethe_farkas.lin_arith rhs with
   | Some la, Some lb when la = lb -> Ok ()
   | _ ->
@@ -722,6 +899,10 @@ let check_theory_rewrite_equality
            normalize_literal ~fragment rhs with
      | Some ca, Some cb when compiled_equal ca cb -> Ok ()
      | _ ->
+       if normalize_prop lhs = normalize_prop rhs then Ok ()
+       else if eq_and_bounds_matches lhs rhs
+            || eq_and_bounds_matches rhs lhs then Ok ()
+       else
        (match evaluate_constant_literal lhs,
               evaluate_constant_literal rhs with
         | Some a, Some b when a = b -> Ok ()
@@ -734,20 +915,14 @@ let check_theory_rewrite_equality
               | Some true -> Ok ()
               | Some false ->
                 Error "comparison evaluates to false but rhs is true"
-              | None ->
-                Error "no rewrite path: not linear-equal, normalized-equal, \
-                       constant-bool, or comparison-eval")
+              | None -> no_path)
            | Atom "false" ->
              (match evaluate_comparison_to_bool lhs with
               | Some false -> Ok ()
               | Some true ->
                 Error "comparison evaluates to true but rhs is false"
-              | None ->
-                Error "no rewrite path: not linear-equal, normalized-equal, \
-                       constant-bool, or comparison-eval")
-           | _ ->
-             Error "no rewrite path: not linear-equal, normalized-equal, \
-                    constant-bool, or comparison-eval")))
+              | None -> no_path)
+           | _ -> no_path)))
 
 (** [hole]: cvc5's escape hatch for theory rewrites it doesn't
     spell out fully. The conclusion is a single equality clause
@@ -1017,13 +1192,36 @@ let check_resolution (env : env) (step : Alethe.step) : step_result =
          let rec pair_up = function
            | [] -> Ok ()
            | lit :: rest ->
-             let comp = complement_literal lit in
-             (match pop_first comp rest with
+             (* Two literals are complementary iff one is
+                syntactically [(not <other>)] — in EITHER
+                direction. [complement_literal] strips a negated
+                literal, which misses the pair (¬X, ¬¬X): there
+                the complement of ¬X present in the residue is
+                the WRAPPED form ¬¬X, not the stripped X. Try
+                the stripped candidate first, then the wrapped
+                one. *)
+             let stripped = complement_literal lit in
+             let wrapped = Alethe.Sexp.List [ Atom "not"; lit ] in
+             (match pop_first stripped rest with
               | Some rest' -> pair_up rest'
               | None ->
-                Error (Printf.sprintf
-                  "unpaired residual literal (no complement): %s"
-                  (Alethe.Sexp.to_string lit)))
+                (match pop_first wrapped rest with
+                 | Some rest' -> pair_up rest'
+                 | None ->
+                   (* cvc5's chain resolution MERGES duplicate
+                      literals: the same literal arriving from two
+                      premises appears once in the conclusion.
+                      Dropping the extra copy is sound — a clause
+                      is a disjunction, so L ∨ L ∨ D and L ∨ D are
+                      the same Prop — but only for literals the
+                      conclusion actually retains; anything else
+                      unpaired stays a failure. *)
+                   if List.exists (sexp_equal lit) conclusion_lits
+                   then pair_up rest
+                   else
+                     Error (Printf.sprintf
+                       "unpaired residual literal (no complement): %s"
+                       (Alethe.Sexp.to_string lit))))
          in
          (match pair_up removed with
           | Ok () -> Step_verified
@@ -1548,11 +1746,21 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
            detail = "no preceding body conclusion";
          }
        | Some body_concl ->
-         let expected =
+         let negs =
            List.map (fun a -> Alethe.Sexp.List [ Atom "not"; a ]) atoms
-           @ body_concl
          in
-         if not (multiset_equal_clauses expected step.clause) then
+         (* An empty body conclusion [(cl)] reifies to [False], and
+            cvc5 renders it in the close as the literal [false]
+            (mirroring the walkers' [elabSubproof] note: both forms
+            denote the bottom Prop). Accept either rendering. *)
+         let candidates = match body_concl with
+           | [] -> [ negs; negs @ [ Alethe.Sexp.Atom "false" ] ]
+           | lits -> [ negs @ lits ]
+         in
+         if not (List.exists
+                   (fun expected ->
+                     multiset_equal_clauses expected step.clause)
+                   candidates) then
            Step_failed {
              rule = "subproof";
              detail = "conclusion is not (not A_i)… ++ body_clause";
