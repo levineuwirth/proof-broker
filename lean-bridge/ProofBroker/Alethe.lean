@@ -50,11 +50,14 @@ generic UF-application fallback for `(f a₁ … aₙ)` over local
 free vars (so `cong` works for any in-scope UF symbol).
 
 Production integration. `ProofBroker.Tactic.tryAletheWalker`
-wires the walker into the LIA arm of `closeOrFailPrimary`. The
-shared `walkProofIntoGoal` helper distinguishes refutation
-traces (final clause empty `(cl)`) from direct traces, and uses
+wires the walker into the LIA / UF / UFLIA arms of
+`closeOrFailPrimary` (walker-first since R1.3). The shared
+`walkProofIntoGoal` helper distinguishes refutation traces
+(final clause empty `(cl)`) from direct traces, and uses
 `MVarId.falseOrByContra` to expose `¬goal` as a hypothesis for
-non-`False` user goals. Walker failure falls through to omega.
+non-`False` user goals. Walker failure falls through to the
+fragment's re-proving closer (omega / the `subst_eqs`+`simp_all`
+UF chain / the UFLIA fallback chain).
 
 The cluster list above is a summary; the authoritative rule
 inventory is the `PARITY:walker-rules` dispatch block in
@@ -2070,14 +2073,12 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     -- PARITY:walker-rules END
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
-                     supported (current scope: resolution / or / \
-                     false / la_generic / la_mult_neg / refl / \
-                     symm / trans / cong / hole / rare_rewrite / \
-                     implies / equiv1 / equiv2 / equiv_pos1 / \
-                     equiv_pos2 / not_and / and_neg / \
-                     equiv_simplify, plus seeded assumes — the \
-                     omega fallback in closeOrFail handles any \
-                     residual unsupported rules)."
+                     supported (the authoritative inventory is \
+                     the PARITY:walker-rules dispatch block above, \
+                     kept at three-way parity with the Rocq walker \
+                     and the SDK mint gate — the fragment closer's \
+                     fallback in closeOrFail handles any residual \
+                     unsupported rules)."
   storeStep s.id proof clause
 
 /-- Walk an Alethe proof and return the `Expr` proving the final

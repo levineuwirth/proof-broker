@@ -21,9 +21,10 @@ a trace-complexity regression -- a refreshed cvc5 emitting a heavier
 proof, or a new goal that balloons the leaf count -- shows up as a
 diff rather than a silent slowdown. It is solver-free and
 deterministic: structure only, no reconstruction is run here. The
-ground-truth wall-clock numbers live in RETROSPECTIVES/phase-6-scale.md;
-the dynamic replay (CorpusReplay.v under coqc, ProofBroker.Test under
-lake) is where reconstruction actually happens in CI.
+no in-repo wall-clock baseline exists yet (in-build timings are a
+decide-list item); the dynamic replay (CorpusReplay.v under coqc, the
+generated live-strict CorpusWalkerLive suites on both bridges) is where
+reconstruction actually happens in CI.
 
 Modes:
   (default)  print the human-readable scale profile table.
