@@ -1592,14 +1592,54 @@ let rec subst_bound
       List [ q; bl; subst_bound map' body ]
     | List xs -> List (List.map (subst_bound map) xs)
 
+(** All atoms occurring in [t] — a deliberate over-approximation of
+    the free variables of an untyped Sexp (operator heads and sorts
+    count). Used only to widen the fail-closed capture guard below,
+    never to accept a step. *)
+let rec atoms_of (t : Alethe.Sexp.t) (acc : string list) : string list =
+  match t with
+  | Atom a -> a :: acc
+  | List xs -> List.fold_left (fun acc x -> atoms_of x acc) acc xs
+
+(** True when applying [map] under [t] would substitute a replacement
+    term inside a binder that binds one of the replacement's atoms —
+    variable capture, which [subst_bound] does not α-rename away.
+    Conservative: every atom of the image counts as potentially free
+    and no occurrence check is made on the substituted name, so a
+    colliding-but-harmless instantiation is rejected (fail closed)
+    rather than risked. The corpus's forall_inst bodies contain no
+    inner binders, so nothing legitimate is lost today. *)
+let rec subst_would_capture
+    (map : (string * Alethe.Sexp.t) list) (t : Alethe.Sexp.t) : bool =
+  if map = [] then false
+  else
+    match t with
+    | Atom _ -> false
+    | List [ Atom ("forall" | "exists" | "choice" | "lambda");
+             List binders; body ] ->
+      let bound =
+        List.filter_map (function
+          | Alethe.Sexp.List (Atom v :: _) -> Some v
+          | _ -> None) binders
+      in
+      let map' =
+        List.filter (fun (n, _) -> not (List.mem n bound)) map
+      in
+      List.exists (fun (_, v) ->
+          List.exists (fun a -> List.mem a bound) (atoms_of v []))
+        map'
+      || subst_would_capture map' body
+    | List xs -> List.exists (subst_would_capture map) xs
+
 (** [forall_inst]: tautological single-literal clause
     [(cl (or (not (forall ((x_1 S_1) …) F)) F[x_i := t_i]))] with
     the instantiation terms in [:args]. cvc5 emits the terms bare
     and positional ([:args (3)], [:args (y)]); the Alethe spec's
     named form [(:= x t)] / [(:= (x S) t)] is also accepted, and
     must then cover every binder exactly once. The check
-    substitutes the binders in [F] (shadow-aware, [subst_bound])
-    and requires the result to equal the stated instance after
+    substitutes the binders in [F] (shadow-aware, [subst_bound];
+    capture fails closed via [subst_would_capture]) and requires
+    the result to equal the stated instance after
     numeric normalization. Sorts are not checked — the Sexp layer
     is untyped; an ill-sorted instantiation term fails at the
     home-side walker's kernel reconstruction, never silently. *)
@@ -1655,6 +1695,10 @@ let check_forall_inst (step : Alethe.step) : step_result =
        (match map_result with
         | Error msg -> fail msg
         | Ok map ->
+          if subst_would_capture map body then
+            fail "instantiation term would be captured by an inner \
+                  binder"
+          else
           let expected = subst_bound map body in
           if sexp_equal
                (normalize_numeric_atoms expected)

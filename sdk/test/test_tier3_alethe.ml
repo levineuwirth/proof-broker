@@ -1643,6 +1643,68 @@ let test_check_forall_inst_respects_shadowing () =
    | _ ->
      Alcotest.fail "forall_inst accepted capture under a rebinding")
 
+let test_check_forall_inst_rejects_capture () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  (* forall x. exists y. not (x = y), instantiated with the free atom
+     y: naive substitution yields exists y. not (y = y) — the free y
+     is captured by the inner binder and the instance is false. The
+     gate must fail closed (ROUND 1 finding 2 repro). *)
+  let quantified : Alethe.Sexp.t =
+    List [ Atom "forall";
+           List [ List [ Atom "x"; Atom "Int" ] ];
+           List [ Atom "exists";
+                  List [ List [ Atom "y"; Atom "Int" ] ];
+                  List [ Atom "not";
+                         List [ Atom "="; Atom "x"; Atom "y" ] ] ] ]
+  in
+  let captured_inst : Alethe.Sexp.t =
+    List [ Atom "exists";
+           List [ List [ Atom "y"; Atom "Int" ] ];
+           List [ Atom "not"; List [ Atom "="; Atom "y"; Atom "y" ] ] ]
+  in
+  let step = mk_step "t.fi" ~rule:"forall_inst"
+    ~args:[ Atom "y" ]
+    ~clause:[
+      List [ Atom "or"; List [ Atom "not"; quantified ]; captured_inst ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_failed _ -> ()
+  | Step_verified ->
+    Alcotest.fail "forall_inst accepted a variable-capturing instantiation"
+  | _ -> Alcotest.fail "forall_inst unsupported?"
+
+let test_check_forall_inst_inner_binder_non_colliding () =
+  let ir = make_x_ir () in
+  let env = env_with ir [] in
+  (* Same shape instantiated with z: no collision with the inner
+     binder; the capture guard must not fire. *)
+  let quantified : Alethe.Sexp.t =
+    List [ Atom "forall";
+           List [ List [ Atom "x"; Atom "Int" ] ];
+           List [ Atom "exists";
+                  List [ List [ Atom "y"; Atom "Int" ] ];
+                  List [ Atom "not";
+                         List [ Atom "="; Atom "x"; Atom "y" ] ] ] ]
+  in
+  let inst : Alethe.Sexp.t =
+    List [ Atom "exists";
+           List [ List [ Atom "y"; Atom "Int" ] ];
+           List [ Atom "not"; List [ Atom "="; Atom "z"; Atom "y" ] ] ]
+  in
+  let step = mk_step "t.fi" ~rule:"forall_inst"
+    ~args:[ Atom "z" ]
+    ~clause:[
+      List [ Atom "or"; List [ Atom "not"; quantified ]; inst ];
+    ]
+  in
+  match Tier3_alethe.check_step env step with
+  | Step_verified -> ()
+  | Step_failed { detail; _ } ->
+    Alcotest.fail ("non-colliding inner-binder instance rejected: " ^ detail)
+  | _ -> Alcotest.fail "forall_inst unsupported?"
+
 (* bind: env needs the last-step machinery populated the way
    verify_parsed does while walking a subproof body. *)
 
@@ -2374,6 +2436,10 @@ let () =
         `Quick test_check_forall_inst_rejects_wrong_instance;
       Alcotest.test_case "forall_inst respects binder shadowing"
         `Quick test_check_forall_inst_respects_shadowing;
+      Alcotest.test_case "forall_inst rejects capture by an inner binder"
+        `Quick test_check_forall_inst_rejects_capture;
+      Alcotest.test_case "forall_inst allows a non-colliding inner binder"
+        `Quick test_check_forall_inst_inner_binder_non_colliding;
       Alcotest.test_case "bind accepts identity-binder close"
         `Quick test_check_bind_accepts;
       Alcotest.test_case "bind rejects body/conclusion mismatch"
