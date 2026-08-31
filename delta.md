@@ -851,6 +851,62 @@ In any of these cases, this delta document should be amended (or
 superseded) with an explicit reconsideration. Do not silently revisit
 the language choice; the audit trail matters.
 
+### 5.1 Reconsideration record — condition 5 tripped (2026-08-30, R0.5)
+
+**Trigger.** Lean toolchain bump `v4.30.0-rc2` → `v4.32.0` (Mathlib
+`v4.32.0`), forced by the downstream consumer: a Lake workspace has one
+toolchain and one Mathlib chosen by the root project, and the R4 demo
+project pins `v4.32.0`, so the bridge must compile there.
+
+**What broke.** Not the C shim, not the OCaml boundary: the Lean-side
+*dynlib plumbing* around precompiled modules, i.e. exactly the
+`lakefile.lean` block at lines 100–125 that condition 5 warned about.
+Under Lean 4.30 the `ProofBrokerMathlib` lib was `precompileModules :=
+true`, which made Lake build Mathlib's shared library and load it into
+the elaborator; that load needed `libLake_shared.so`, and because
+Lake's `LD_LIBRARY_PATH` augmentation did not reach the elaborator on
+every system the lakefile computed an absolute
+`--load-dynlib=$LEAN_SYSROOT/lib/lean/libLake_shared.so` at eval time
+(`libLakeSharedDynlibArg`) and added it to every Mathlib-using lib.
+Under Lean 4.32 / Lake 5.0 the mechanism changed again: Lake no longer
+passes per-import `--load-dynlib` arguments but hands the module a
+setup file listing the library `.so`s to load as plugins, topologically
+ordered — and loading `libmathlib_Mathlib.so` then fails with
+`symbol lookup error: … undefined symbol:
+initialize_proofwidgets_ProofWidgets_Component_RefreshComponent`
+(the library `.so`s are not linked against each other on Linux, and
+the plugin loader does not expose an earlier library's symbols to a
+later one's lazy binding). The FFI-bearing core `ProofBroker` lib,
+`Test.Tactic` and `roundtripTest` built unchanged; only
+`ProofBrokerMathlib.TermMode` failed.
+
+**What changed.** `ProofBrokerMathlib` is no longer precompiled
+(`precompileModules := false`) and the `libLake_shared.so` workaround
+is deleted. Nothing in that lib needs native code — its `initialize`
+registration of the `Real` reifier and the `linarith` / `aesop` closers
+runs in the interpreter, and the `@[extern]` FFI surface lives in the
+still-precompiled core lib. Consequences, as dated measurements on the
+R0.5 tree (`dacae65`, rebased unchanged as `13cf414`; Lean v4.32.0,
+Mathlib cache fetched; the job count is a property of the build state,
+not of the tree): `lake build` schedules 878 jobs (incremental `lake
+build` at `dacae65`, 2026-08-30; 885 from `lake clean` on the same
+tree) instead of 17,382 (`lake build` with the Mathlib precompile, same
+day — the ~17k Mathlib `.c.o` compiles were the bulk of the lean-bridge
+CI job, 15m09 on the last green `main` run, `0a5ae40`, 2026-06-19); the
+trust gate is unchanged — `check_axioms.py --bridge lean`: every
+allowlisted theorem (count in the README status table) within ceiling,
+`hol_function_composition_axiom_free` at `[propext]` through live
+Vampire.
+
+**Verdict on condition 5.** The disruption is real but confined to
+Lake configuration; the C-ABI assumptions of the shim
+(`pb_lean_call`, the string-envelope calling convention, `-l:proof_broker_ffi.so`
++ `-rpath` + `--allow-shlib-undefined`) survived 4.30 → 4.32 intact.
+OCaml + C-shim remains the answer; what is retired is the idea that the
+Mathlib-flavored lib should be precompiled at all. Standing rule from
+this record: a Lean bump is a toolchain-refresh task with its own PR,
+and the first thing it re-validates is the dynlib block, not the shim.
+
 ---
 
 ## 6. References

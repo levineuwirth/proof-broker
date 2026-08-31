@@ -347,7 +347,8 @@ let parents (n : node) : string list =
   | _ -> []
 
 (** The axiom/formula name a [file(SRC, NAME)] leaf cites — i.e. the
-    name from our input problem (Vampire echoes it under
+    name from our input problem (Vampire >= 5.1.0 echoes it by
+    default; 5.0.x only under the since-removed
     [--output_axiom_names on]). [None] for non-[file] sources. *)
 let file_name (n : node) : string option =
   match n.source with

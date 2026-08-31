@@ -19,14 +19,15 @@ jobs:
   schemas:
     runs-on: ubuntu-latest
     # timeout-minutes on every job: ~2x the observed wall-clock of the
-    # last green main run (schemas 10 s, sdk 1m54, cross-platform 2m18,
+    # last green main run (0a5ae40, 2026-06-19, workflow run
+    # 27852779842: schemas 10 s, sdk 1m54, cross-platform 2m18,
     # lean-bridge 15m09, rocq-bridge 6m20) so a hung solver or a
     # runaway Mathlib build fails the job instead of burning the
     # 6-hour default. Raise deliberately when a phase adds real work
     # (R1's live suite, R0.5's Mathlib bump).
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
@@ -114,9 +115,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@e89b2ded52a6e13f50162220cf5fe47290162032  # v3.8.0
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -183,8 +184,8 @@ jobs:
         # the prover. Keep VAMPIRE_VERSION in sync with
         # Adapter_vampire.version and examples/manifest-vampire.json.
         env:
-          VAMPIRE_VERSION: "v5.0.1"
-          VAMPIRE_SHA256: "6ff2f42ea7fb9753ee104efc3e623d5e39443190f7c82a63e1e1517bf9d2cde3"
+          VAMPIRE_VERSION: "v5.1.0"
+          VAMPIRE_SHA256: "495828dc76cb17a27080d62dedce755e46de96f47f06f5f0ad4be9cdaf6f968f"
         run: |
           curl -sSL "https://github.com/vprover/vampire/releases/download/${VAMPIRE_VERSION}/vampire-Linux-X64.zip" -o /tmp/vampire.zip
           echo "${VAMPIRE_SHA256}  /tmp/vampire.zip" | sha256sum -c -
@@ -241,9 +242,9 @@ jobs:
     timeout-minutes: 20
     name: sdk-cross-platform (${{ matrix.label }})
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@e89b2ded52a6e13f50162220cf5fe47290162032  # v3.8.0
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -346,11 +347,11 @@ jobs:
     timeout-minutes: 40
     needs: sdk
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       # Rebuild the OCaml shim because artifacts don't carry between jobs;
       # cheap because the dune cache hits and the OCaml part is small.
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@e89b2ded52a6e13f50162220cf5fe47290162032  # v3.8.0
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -406,8 +407,8 @@ jobs:
         # same as cvc5 — pin + SHA-256-verify before use (audit M8;
         # same archive/hash as the `sdk` job, keep in sync on a bump).
         env:
-          VAMPIRE_VERSION: "v5.0.1"
-          VAMPIRE_SHA256: "6ff2f42ea7fb9753ee104efc3e623d5e39443190f7c82a63e1e1517bf9d2cde3"
+          VAMPIRE_VERSION: "v5.1.0"
+          VAMPIRE_SHA256: "495828dc76cb17a27080d62dedce755e46de96f47f06f5f0ad4be9cdaf6f968f"
         run: |
           curl -sSL "https://github.com/vprover/vampire/releases/download/${VAMPIRE_VERSION}/vampire-Linux-X64.zip" -o /tmp/vampire.zip
           echo "${VAMPIRE_SHA256}  /tmp/vampire.zip" | sha256sum -c -
@@ -452,8 +453,8 @@ jobs:
         # SHA-256-verified before execution. Bump ELAN_VERSION and
         # ELAN_INIT_SHA256 together.
         env:
-          ELAN_VERSION: "v4.2.1"
-          ELAN_INIT_SHA256: "4bacca9502cb89736fe63d2685abc2947cfbf34dc87673504f1bb4c43eda9264"
+          ELAN_VERSION: "v4.2.4"
+          ELAN_INIT_SHA256: "a620ff1641616222c8d37c54845492004bb84d6877cdbc944dd65c1aa685bf53"
         run: |
           curl -sSf "https://raw.githubusercontent.com/leanprover/elan/${ELAN_VERSION}/elan-init.sh" -o elan-init.sh
           echo "${ELAN_INIT_SHA256}  elan-init.sh" | sha256sum -c -
@@ -487,9 +488,9 @@ jobs:
     timeout-minutes: 30
     needs: sdk
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014  # v3.6.1
+      - uses: ocaml/setup-ocaml@e89b2ded52a6e13f50162220cf5fe47290162032  # v3.8.0
         with:
           ocaml-compiler: "5.4"
           dune-cache: true
@@ -532,8 +533,8 @@ jobs:
         # Pinned + SHA-256-verified, same archive/hash as the
         # sdk + lean-bridge jobs — keep in sync on a version bump.
         env:
-          VAMPIRE_VERSION: "v5.0.1"
-          VAMPIRE_SHA256: "6ff2f42ea7fb9753ee104efc3e623d5e39443190f7c82a63e1e1517bf9d2cde3"
+          VAMPIRE_VERSION: "v5.1.0"
+          VAMPIRE_SHA256: "495828dc76cb17a27080d62dedce755e46de96f47f06f5f0ad4be9cdaf6f968f"
         run: |
           curl -sSL "https://github.com/vprover/vampire/releases/download/${VAMPIRE_VERSION}/vampire-Linux-X64.zip" -o /tmp/vampire.zip
           echo "${VAMPIRE_SHA256}  /tmp/vampire.zip" | sha256sum -c -

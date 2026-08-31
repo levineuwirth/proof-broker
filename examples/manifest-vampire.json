@@ -1,7 +1,7 @@
 {
   "manifest_version": "1.0",
   "adapter": "vampire",
-  "adapter_version": "5.0.1",
+  "adapter_version": "5.1.0",
   "backends_supported": ["vampire-fol", "vampire-hol"],
 
   "logic_fragments": ["FOL", "HOL", "UF"],

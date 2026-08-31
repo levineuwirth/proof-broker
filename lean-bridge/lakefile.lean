@@ -41,9 +41,11 @@ package «proof-broker-bridge»
     pay the Mathlib build cost. The `ProofBrokerMathlib` lib
     below opts in to Mathlib for LRA support (`linarith` closer
     + `Real` reifier). The require version tracks the
-    `lean-toolchain` (v4.30.0-rc2). -/
+    `lean-toolchain` (v4.32.0 — a Lake workspace has one toolchain and
+    one Mathlib chosen by the root project, so the bridge must compile
+    under the version its downstream consumers pin; R0.5). -/
 require «mathlib» from git
-  "https://github.com/leanprover-community/mathlib4" @ "v4.30.0-rc2"
+  "https://github.com/leanprover-community/mathlib4" @ "v4.32.0"
 
 /-- Locate the directory containing `proof_broker_ffi.so`. Resolution
     order:
@@ -99,33 +101,6 @@ def ffiLinkArgs : Array String := #[
   "-Wl,--allow-shlib-undefined"
 ]
 
-/-- Absolute `--load-dynlib=` arg for `libLake_shared.so`, computed
-    at lakefile-eval time from `LEAN_SYSROOT`. Mathlib's precompiled
-    `.so` (`libmathlib_Mathlib.so`) NEEDs `libLake_shared.so` at
-    runtime. Lake's `getAugmentedEnv` advertises the toolchain's
-    `lib/lean` on `LD_LIBRARY_PATH` (visible via `lake env`), but
-    the env doesn't propagate to lean's elaboration subprocess on
-    every system, so the dlopen of `libmathlib_Mathlib.so` fails
-    with "libLake_shared.so: cannot open shared object file" when
-    a Mathlib-using lib is built. Loading libLake_shared.so
-    explicitly via `--load-dynlib` puts its symbols in the
-    elaborator's process image so the dynamic loader resolves
-    Mathlib's `.so` against the global namespace, no
-    `LD_LIBRARY_PATH` needed.
-
-    `LEAN_SYSROOT` is set by Lake itself when invoking the
-    lakefile elaborator, so the env lookup at this top-level
-    `def` is reliable. We fall back to a bare filename if it's
-    somehow missing — that case will fail later but with a clear
-    error rather than silent breakage. -/
-unsafe def libLakeSharedDynlibArgImpl : String :=
-  match unsafeBaseIO (IO.getEnv "LEAN_SYSROOT") with
-  | some sr => s!"--load-dynlib={sr}/lib/lean/libLake_shared.so"
-  | none => "--load-dynlib=libLake_shared.so"
-
-@[implemented_by libLakeSharedDynlibArgImpl]
-opaque libLakeSharedDynlibArg : String
-
 lean_lib ProofBroker where
   precompileModules := true
 
@@ -177,11 +152,28 @@ lean_lib ProofBrokerTest where
     `ProofBrokerMathlib` registers a `ReifierExt` that adds Real
     reification and routes LRA certs through `linarith`. Builds
     independently of the core `ProofBroker` lib so projects
-    without Mathlib in their closure can ignore it. -/
+    without Mathlib in their closure can ignore it.
+
+    NOT precompiled (delta.md §5.1, reconsideration record of
+    2026-08-30): `precompileModules := true` here made Lake build
+    `Mathlib:shared` (every Mathlib module's `.c.o` — ~17k of the
+    17,382 jobs `lake build` scheduled with the precompile on
+    2026-08-30, and the bulk of the lean-bridge CI job: 15m09 on the
+    last green `main` run, 2026-06-19) and load the precompiled Mathlib
+    `.so` into the elaborator — which needed the `libLake_shared.so`
+    `--load-dynlib` workaround under Lean v4.30 and fails outright
+    under v4.32 / Lake 5.0 (`symbol lookup error: … libmathlib_Mathlib.so:
+    undefined symbol: initialize_proofwidgets_ProofWidgets_…`, the
+    library `.so`s are loaded without cross-linking). Nothing in this
+    lib needs native code: its `initialize` registration and closers
+    run in the interpreter, and the FFI-bearing `ProofBroker` core
+    lib below stays precompiled. Result (dated measurement, delta.md
+    §5.1): 878 build jobs from an incremental `lake build` on the R0.5
+    tree, 2026-08-30 (885 from `lake clean` on the same tree), instead
+    of 17,382 — and no dynlib plumbing for Mathlib at all. -/
 lean_lib ProofBrokerMathlib where
-  precompileModules := true
+  precompileModules := false
   roots := #[`ProofBrokerMathlib]
-  moreLeanArgs := #[libLakeSharedDynlibArg]
 
 /-- Tactic-elaboration tests for the Mathlib opt-in. Same shape
     as `ProofBrokerTest`: build success is the test. Separated so
@@ -193,7 +185,6 @@ lean_lib ProofBrokerTestMathlib where
   precompileModules := false
   moreLeanArgs := #[
     "--load-dynlib=.lake/build/lib/libpbglue.so",
-    s!"--load-dynlib={ffiSoPath}",
-    libLakeSharedDynlibArg
+    s!"--load-dynlib={ffiSoPath}"
   ]
 

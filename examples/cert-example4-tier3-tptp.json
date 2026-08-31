@@ -16,7 +16,7 @@
   "backend": {
     "name": "vampire",
     "version": "5.0.1",
-    "config_hash": "sha256:2c03efaffcb3c278bf8e110e7eb07b68cebd8fdd44b082a4b2101cb9a0992c7a"
+    "config_hash": "sha256:05a9e0dac60e3224bd0d50e114d20ddb4ee8459eb29a7800b2bdcf9dd6869353"
   },
 
   "resources": {
