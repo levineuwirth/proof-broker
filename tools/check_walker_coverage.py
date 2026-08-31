@@ -60,6 +60,11 @@ def _replay_skips() -> dict:
 def compute() -> dict:
     """Classify every corpus goal against the walker's supported rule set."""
     supported = parity.extract_rules(parity.ROCQ)
+    # The SDK Tier-3 mint gate's dispatch (Tier3_alethe.check_step): a
+    # trace whose full rule set lies within it is MINTABLE — eligible
+    # to become a live Tier-3 cert (the walkers' replay is necessary
+    # but not sufficient; minting is gated SDK-side, R1.4).
+    sdk_gate = parity.extract_rules(parity.SDK)
     index = json.loads(INDEX.read_text(encoding="utf-8"))
     skips = _replay_skips()
 
@@ -68,6 +73,7 @@ def compute() -> dict:
     walkable = 0       # statically walkable: every rule has a dispatch arm
     replayed = 0       # walkable AND not replay_skip'd -> in the dynamic gate
     shape_gapped = 0   # walkable BUT replay_skip'd -> supported rule, bad shape
+    mintable = 0       # rule set within the SDK Tier-3 mint gate
     unsat = 0
     nonunsat = []
     for gid in sorted(index):
@@ -76,12 +82,15 @@ def compute() -> dict:
         if result != "unsat":
             nonunsat.append(gid)
             goals[gid] = {"result": result, "walkable": False, "missing": [],
-                          "replay_skip": None}
+                          "replay_skip": None, "mintable": False}
             continue
         unsat += 1
         rules = set(entry.get("rules", []))
         missing = sorted(rules - supported)
         is_walkable = not missing
+        is_mintable = not (rules - sdk_gate)
+        if is_mintable:
+            mintable += 1
         skip = skips.get(gid)
         if is_walkable:
             walkable += 1
@@ -97,10 +106,12 @@ def compute() -> dict:
             "walkable": is_walkable,
             "missing": missing,
             "replay_skip": skip,
+            "mintable": is_mintable,
         }
 
     return {
         "supported_rule_count": len(supported),
+        "mintable": mintable,
         "summary": {
             "walkable": walkable,
             "replayed": replayed,
@@ -125,6 +136,8 @@ def render(report: dict) -> str:
         f"  dynamic (kernel-replayed):     {s['replayed']}/{s['unsat']}"
         + (f"   [+{s['shape_gapped']} statically walkable but shape-gapped]"
            if s["shape_gapped"] else ""),
+        f"  mintable (within SDK gate):    "
+        f"{report['mintable']}/{s['unsat']}",
         "",
     ]
     for gid in sorted(report["goals"]):

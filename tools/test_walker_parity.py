@@ -101,9 +101,13 @@ def test_empty_block_exits() -> None:
 def test_real_walkers_agree() -> None:
     lean = P.extract_rules(P.LEAN)
     rocq = P.extract_rules(P.ROCQ)
-    _ok(lean == rocq,
-        f"real walkers agree ({len(lean)} rules); "
-        f"lean-only={sorted(lean - rocq)} rocq-only={sorted(rocq - lean)}")
+    sdk = P.extract_rules(P.SDK)
+    _ok(lean == rocq == sdk,
+        f"real walkers + SDK mint gate agree "
+        f"(lean={len(lean)}, rocq={len(rocq)}, sdk={len(sdk)} rules); "
+        f"union-minus-lean={sorted((rocq | sdk) - lean)} "
+        f"union-minus-rocq={sorted((lean | sdk) - rocq)} "
+        f"union-minus-sdk={sorted((lean | rocq) - sdk)}")
 
 
 def main() -> int:

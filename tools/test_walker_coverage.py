@@ -106,6 +106,20 @@ def test_non_unsat_flagged() -> None:
         "non-unsat excluded from walkable/unsat counts")
 
 
+def test_mintable_counts() -> None:
+    rep = _with_index(
+        {
+            "g_in": {"result": "unsat", "rules": ["or", "resolution"]},
+            "g_out": {"result": "unsat", "rules": ["or", "xor"]},
+        },
+        supported={"or", "resolution"},
+    )
+    _ok(rep["mintable"] == 1, "mintable counts SDK-gate-subset traces")
+    _ok(rep["goals"]["g_in"]["mintable"] is True
+        and rep["goals"]["g_out"]["mintable"] is False,
+        "per-goal mintable flags")
+
+
 def main() -> int:
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
