@@ -1,5 +1,6 @@
 /-
-Lake project for the Phase-0 FFI spike's Lean side.
+Lake project for the Lean bridge — the production Lean-side build
+(it started life as the Phase-0 FFI spike's Lean side).
 
 Builds:
 * `ProofBroker` lean_lib — Lean surface (extern wrapper + tactic).

@@ -712,9 +712,10 @@ example (n : Int) : True := by
    Proof terms are constructed by `Classical.em` case analysis on
    the relevant Props, so the footprint is `[propext,
    Classical.choice, Quot.sound]` — the standard classical
-   baseline, no new trust delta. `equiv_simplify` is deferred:
-   its propositional-equality tautologies need propext + Iff
-   reflexivity rather than omega-discharge. -/
+   baseline, no new trust delta. `equiv_simplify` was deferred
+   from this cluster (its propositional-equality tautologies need
+   propext + Iff reflexivity rather than omega-discharge) and has
+   since landed — see the `equiv_simplify` section below. -/
 
 /-- `implies`: from premise `a → b`, derive `¬a ∨ b`. The walker
     builds the proof by case-splitting `a`: if `a`, the premise

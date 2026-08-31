@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-document soundness checks for Phase 0 fixtures.
+"""Cross-document soundness checks for every fixture in examples/.
 
 The JSON Schemas validate structure. This pass validates invariants that
 span multiple documents or require domain knowledge:
@@ -28,6 +28,16 @@ span multiple documents or require domain knowledge:
   Certificates
     - refinement_record.fragment is a registered fragment.
     - Tier 1 witness_kind / Tier 3 trace_format are in the registry.
+    - Strict-identity hash linkage (check_cert_hashes, run here and
+      from validate.py): dispatch_context_hash == canonical SHA-256 of
+      the paired IR and backend.config_hash == canonical SHA-256 of the
+      paired manifest (tools/canonical_hash.py reproduces the OCaml
+      codec canonicalization).
+    - backend.version vs the paired manifest's adapter_version: a
+      mismatch is a WARNING (printed with a `WARNING:` prefix), not an
+      error — the config_hash is the binding identity, the version
+      string is only the adapter's declared label (never cross-checked
+      before, so shipped fixtures can carry a stale one).
 
   Adapter manifests
     - logic_fragments, type_constructions, witness_kinds_produced,
@@ -52,9 +62,8 @@ tracked separately, not silently asserted here):
   - Tier-0 and Tier-2 payload contents (e.g. Tier-2 library-lemma
     content_hash) get no registry/hash cross-check; only the
     refinement_record.fragment is validated for those tiers.
-  - No cross-document IR<->cert canonical-hash *equality* (would need
-    the OCaml codec canonicalization reproduced here); only the
-    within-trace hash chain above is enforced.
+  - backend.version != adapter_version never fails the run (see above);
+    neither label is checked against the installed binary.
 
 Errors fail the run; warnings are surfaced but do not.
 """
@@ -391,18 +400,26 @@ _UNPAIRED_DISPATCH_CONTEXT_HASH = "sha256:" + "0" * 64
 _NO_TRACE_HASH = "sha256:" + "0" * 64
 
 
-def check_cert_hashes(cert, paired_ir=None, paired_manifest=None):
+def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
+                      cert_name=None, manifest_name=None):
     """Verify a certificate's strict-identity hash linkage to its
     paired fixtures.
 
-    Caller (validate.py) does the pairing-name lookup and loads the
-    paired IR / manifest dicts. We compute the canonical SHA-256 and
-    compare; mismatches are errors with both sides reported so the
-    diagnostic is actionable.
+    Callers (main() below, validate.py) do the pairing-name lookup and
+    load the paired IR / manifest dicts. We compute the canonical
+    SHA-256 and compare; mismatches are errors with both sides reported
+    so the diagnostic is actionable.
 
     Both `paired_ir` and `paired_manifest` are optional — a cert with
     no paired IR (synthetic in-process dispatch) is checked for
-    manifest linkage only.
+    manifest linkage only. `cert_name` / `manifest_name` are only used
+    to make the messages name the files.
+
+    Non-blocking: when the paired manifest's `adapter_version` differs
+    from the cert's `backend.version` a WARNING is returned (never an
+    error). The config_hash is what binds the cert to the manifest; the
+    version string is the adapter's declared label and had never been
+    cross-checked, so shipped fixtures may carry stale labels.
     """
     # Local import: canonical_hash is in tools/; check.py is too.
     from canonical_hash import canonical_sha256
@@ -417,6 +434,17 @@ def check_cert_hashes(cert, paired_ir=None, paired_manifest=None):
                 f"of paired manifest), got {actual}. Run "
                 f"`python tools/regen_cert_hashes.py` to re-pin."
             )
+        cert_version = cert.get("backend", {}).get("version")
+        manifest_version = paired_manifest.get("adapter_version")
+        if str(cert_version) != str(manifest_version):
+            warnings.append(
+                f"{cert_name or 'certificate'}: backend.version "
+                f"{cert_version!r} != adapter_version {manifest_version!r} "
+                f"in paired manifest {manifest_name or '(unnamed)'} "
+                "(config_hash still binds the cert to this manifest; the "
+                "version label is declared, not checked against a binary "
+                "— relabel one side; non-blocking)"
+            )
 
     if paired_ir is not None:
         expected = canonical_sha256(paired_ir)
@@ -429,6 +457,15 @@ def check_cert_hashes(cert, paired_ir=None, paired_manifest=None):
             )
 
     return errors, warnings
+
+
+def emit_warnings(warnings, out=sys.stdout) -> None:
+    """Print non-blocking warnings (one per line, `WARNING:` prefix so
+    they are greppable in a CI log; the messages name their files).
+    Shared with validate.py; never affects the exit status of either
+    driver."""
+    for msg in warnings:
+        print(f"WARNING: {msg}", file=out)
 
 
 def check_trace(trace, registry):
@@ -520,6 +557,7 @@ def main() -> int:
 
         errors: list[str] = []
         warnings: list[str] = []
+        hash_warnings: list[str] = []   # non-blocking, WARNING: lines
         if kind == "ir":
             e, w = check_ir(doc)
             errors += e
@@ -531,6 +569,22 @@ def main() -> int:
             e, w = check_certificate(doc, registry)
             errors += e
             warnings += w
+            manifest_name = CERT_MANIFEST_PAIRS.get(fixture.name)
+            if manifest_name is not None:
+                with (EXAMPLES / manifest_name).open() as f:
+                    paired_manifest = json.load(f)
+                paired_ir = None
+                ir_name = CERT_IR_PAIRS.get(fixture.name)
+                if ir_name is not None:
+                    with (EXAMPLES / ir_name).open() as f:
+                        paired_ir = json.load(f)
+                e, w = check_cert_hashes(
+                    doc, paired_ir=paired_ir, paired_manifest=paired_manifest,
+                    cert_name=str(fixture.relative_to(ROOT)),
+                    manifest_name=str((EXAMPLES / manifest_name).relative_to(ROOT)),
+                )
+                errors += e
+                hash_warnings += w
         elif kind == "manifest":
             e, w = check_manifest(doc, registry)
             errors += e
@@ -555,6 +609,9 @@ def main() -> int:
             total_warnings += len(warnings)
         else:
             print(f"OK   {rel}")
+        if hash_warnings:
+            emit_warnings(hash_warnings)
+            total_warnings += len(hash_warnings)
 
     print()
     if failed:

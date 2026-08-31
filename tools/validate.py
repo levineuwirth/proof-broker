@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Validate the Phase 0 reference artifacts against the JSON Schemas.
+"""Validate every fixture in examples/ against the JSON Schemas.
 
 Validates:
-  - examples/example*.json against schemas/v1.0/ir.schema.json
+  - examples/*.json (IRs, certificates, adapter manifests, rewrite
+    traces) against the schemas/v1.0/*.schema.json that `schema_for`
+    maps each fixture name to
   - registry/patterns-v1.json (well-formed JSON only; no schema yet)
 
 Then ALSO co-enforces the registry vocabulary (audit M3): the
@@ -33,6 +35,7 @@ from check import (  # noqa: E402
     # Cross-fixture hash linkage (#18d / #24-M1): see check.py for
     # the pairing convention and the docs on the unpaired sentinels.
     check_cert_hashes,
+    emit_warnings,
     CERT_MANIFEST_PAIRS,
     CERT_IR_PAIRS,
 )
@@ -153,12 +156,17 @@ def main() -> int:
             if example.name in CERT_IR_PAIRS:
                 with (EXAMPLES / CERT_IR_PAIRS[example.name]).open() as f:
                     paired_ir = json.load(f)
-            hash_errors, _hw = check_cert_hashes(
+            hash_errors, hash_warnings = check_cert_hashes(
                 cert,
                 paired_ir=paired_ir,
                 paired_manifest=paired_manifest,
+                cert_name=str(rel),
+                manifest_name=str((EXAMPLES / CERT_MANIFEST_PAIRS[example.name])
+                                  .relative_to(ROOT)),
             )
             errors = errors + [f"hash: {e}" for e in hash_errors]
+        else:
+            hash_warnings = []
 
         if errors:
             print(f"FAIL {rel}  [{schema_name}]")
@@ -167,6 +175,9 @@ def main() -> int:
             failed += 1
         else:
             print(f"OK   {rel}  [{schema_name}]")
+        # Non-blocking (version label drift between a cert and its
+        # paired manifest): printed, never counted as a failure.
+        emit_warnings(hash_warnings)
 
     for data_file in sorted(REGISTRY_DIR.glob("*.json")):
         try:

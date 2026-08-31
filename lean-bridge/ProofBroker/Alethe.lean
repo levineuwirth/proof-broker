@@ -56,10 +56,13 @@ traces (final clause empty `(cl)`) from direct traces, and uses
 `MVarId.falseOrByContra` to expose `¬goal` as a hypothesis for
 non-`False` user goals. Walker failure falls through to omega.
 
-Real cvc5 dispatches still hit rules outside the covered set
-(e.g. `equiv_pos1`/`equiv_pos2` 3-literal Boolean tautologies);
-those fall through to omega, preserving audit H1. Extending
-coverage to the remaining long-tail rules is the next iteration.
+The cluster list above is a summary; the authoritative rule
+inventory is the `PARITY:walker-rules` dispatch block in
+`elabStep` below (mirrored in `rocq-bridge/src/alethe_walker.ml`,
+parity-checked by `tools/check_walker_parity.py`; rule counts: the
+generated status table in README.md, `python3 tools/status_table.py`;
+measured corpus coverage: `corpus/coverage.json`). Any rule outside
+that block falls through to omega, preserving audit H1.
 -/
 
 import Lean
@@ -938,10 +941,11 @@ private def elabTrustTaggedLeaf (ctx : WalkerContext) (s : Step)
    resulting clausal disjunction. The footprint grows to
    `[propext, Classical.choice, Quot.sound]` (via `em`) but stays
    within the standard classical baseline — no new trust axioms.
-   `equiv_simplify` is deferred to a follow-up: its clauses are
-   propositional-equality tautologies (`(= (= a a) true)` etc.)
-   that need a different discharge mechanism (propext + `Iff`
-   reflexivity, not omega).
+   `equiv_simplify` was deferred from this cluster (its clauses are
+   propositional-equality tautologies, `(= (= a a) true)` etc., that
+   need a different discharge mechanism — propext + `Iff`
+   reflexivity, not omega) and has since landed as
+   `elabEquivSimplify` below.
    ---------------------------------------------------------------- -/
 
 /-- `implies`: from premise `(=> a b)` proving `a → b`, derive

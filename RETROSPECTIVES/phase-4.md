@@ -213,7 +213,9 @@ Other open carries:
   don't transfer cheaply" section above for the Stdlib-content
   argument. UF on Rocq has the same shape as BV on Rocq: the
   bridge would need a roll-your-own or a third-party library
-  Stdlib doesn't currently offer.
+  Stdlib doesn't currently offer. *(Since done: UF reach on Rocq
+  shipped — see the "UF reach" theorems in
+  `rocq-bridge/theories/Test.v`.)*
 - Term-mode reconstruction: shipped on Rocq's side (`a495e34`).
   `proof_broker_term [z3]` builds a `farkas_le_2`-applied proof
   term from the cert's coefficients; `ring` discharges the
@@ -227,7 +229,8 @@ Other open carries:
   identical `function | "QF_X" -> "X" | ...` patches across
   `adapter_cvc4.ml` / `adapter_cvc5.ml` / `adapter_z3.ml`). The
   fix is mechanical — a shared `Smtlib.fragment_of_logic` the
-  three adapters call into. Not yet done.
+  three adapters call into. Not yet done at the time of writing;
+  *since done* (`sdk/lib/smtlib.ml`, called from all three adapters).
 - AxiomCheck gate: shipped end-to-end on the Lean side
   (`4bd79fe` for Lean parser + CI wiring) and the Rocq side
   (this commit, dev-mode only — see below). The script parses
@@ -238,6 +241,8 @@ Other open carries:
   rocq-bridge job that installs rocq-runtime + cvc5 + z3, which
   doesn't exist yet — when it does, the gate plugs in by piping
   the captured build output through `tools/check_axioms.py` the
-  same way the Lean side does.
+  same way the Lean side does. *(Since done: the `rocq-bridge` job
+  in `.github/workflows/validate.yml` runs `check_axioms.py
+  --bridge rocq` over the captured build log.)*
 - A `coq.theory` → `rocq.theory` flip when dune's new build
   language ships. One-line change, no new lessons.
