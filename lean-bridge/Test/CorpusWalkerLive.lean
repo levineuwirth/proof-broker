@@ -126,6 +126,13 @@ theorem corpus_live_uf_lia_mix : ∀ (f : Int → Int) (x : Int), f x = x → 0 
 
 #print axioms corpus_live_uf_lia_mix
 
+/-- f c <= T, T < f (c - 1) |- f c < f (c - 1) (threshold-bracket core: UF applied to a difference, the verinf threshold_unique shape; R4 regression, added R1.7) -/
+theorem corpus_live_uf_lia_threshold : ∀ (f : Int → Int) (c T : Int), f c ≤ T → T < f (c - 1) → f c < f (c - 1) := by
+  intro f c T h1 h2
+  proof_broker_walker
+
+#print axioms corpus_live_uf_lia_threshold
+
 /-- a = b, b = c |- a = c (equality transitivity) -/
 theorem corpus_live_uf_trans : ∀ a b c : Int, a = b → b = c → a = c := by
   intro a b c h1 h2

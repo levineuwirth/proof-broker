@@ -46,6 +46,34 @@ Commit the regenerated artifacts; the diffs are the review surface.
   closes (rocq-bridge job).
 - live-drift (blocking since PR #74; the "Walker corpus live-drift" step of
   the rocq-bridge job) — regenerate against CI's cvc5 and fail on any diff.
+- live-strict suite (R1.5) — `gen_corpus_replay.py` also generates
+  `lean-bridge/Test/CorpusWalkerLive.lean` and per-goal
+  `rocq-bridge/theories/CorpusWalkerLive_<id>.v`, each theorem closing ONLY
+  via `proof_broker_walker` (live dispatch → SDK Tier-3 mint gate → walker →
+  kernel; no fallback). Building them in the lean-bridge / rocq-bridge jobs
+  is the live ground truth behind `coverage.json`'s `mintable` count; the
+  goals' `lean_goal` / `coq_goal` fields are the hand-authored statements.
+
+## cvc5 bump playbook
+
+A cvc5 version bump regenerates every committed trace under the blocking
+live-drift gate, so it is always its own PR:
+
+1. Install the new binary; update the CI pin (`validate.yml` env) and its
+   SHA-256, the `~/.local/bin` install note in the local runbook, and the
+   adapter's declared `version` in `sdk/lib/adapter_cvc5.ml` **and**
+   `examples/manifest-cvc5.json` (then `python3 tools/regen_cert_hashes.py`
+   — certs bind to the manifest by `config_hash`).
+2. `dune exec sdk/bin/corpus_gen.exe -- corpus` — regenerate
+   `corpus/index.json` + all traces; review the diff (new rules land in
+   `coverage.json`'s backlog and may need SDK/walker arms before minting).
+3. `python3 tools/check_walker_coverage.py --write` and
+   `python3 tools/gen_corpus_replay.py --write`; regenerate the README table
+   (`python3 tools/status_table.py --write`).
+4. Update any inline verbatim traces in bridge tests (`TestSnapshot.v`,
+   pinned trace tests) via the same regeneration — never by hand-editing.
+5. Full harness on both bridges (the live-strict suites re-dispatch
+   against the new binary; footprints must stay within the allowlist).
 
 ## Adding a goal
 

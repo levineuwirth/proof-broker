@@ -1,0 +1,65 @@
+{
+  "id": "uf_lia_threshold",
+  "description": "f c <= T, T < f (c - 1) |- f c < f (c - 1) (threshold-bracket core: UF applied to a difference, the verinf threshold_unique shape; R4 regression, added R1.7)",
+  "coq_goal": "forall (f : Z -> Z) (c T : Z), f c <= T -> T < f (c - 1) -> f c < f (c - 1)",
+  "lean_goal": "∀ (f : Int → Int) (c T : Int), f c ≤ T → T < f (c - 1) → f c < f (c - 1)",
+  "ir": {
+    "ir_version": "1.0",
+    "source_system": { "name": "corpus", "version": "0.0" },
+    "tier": "goal",
+    "logic_classification": {
+      "order": "first_order", "features_used": [],
+      "first_order_fragment": "UFLIA", "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App", "symbol": "LT.lt", "type_args": [],
+        "args": [
+          { "node": "App", "symbol": "UF.f", "type_args": [],
+            "args": [ { "node": "Var", "name": "c" } ] },
+          { "node": "App", "symbol": "UF.f", "type_args": [],
+            "args": [
+              { "node": "App", "symbol": "HSub.hSub", "type_args": [],
+                "args": [
+                  { "node": "Var", "name": "c" },
+                  { "node": "NumLit", "value": "1", "type": "Int" }
+                ] }
+            ] }
+        ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        { "name": "f", "type": "Int->Int" },
+        { "name": "c", "type": "Int" },
+        { "name": "T", "type": "Int" }
+      ],
+      "hypotheses": [
+        { "name": "h1", "shell": {
+          "node": "App", "symbol": "LE.le", "type_args": [],
+          "args": [
+            { "node": "App", "symbol": "UF.f", "type_args": [],
+              "args": [ { "node": "Var", "name": "c" } ] },
+            { "node": "Var", "name": "T" }
+          ]
+        } },
+        { "name": "h2", "shell": {
+          "node": "App", "symbol": "LT.lt", "type_args": [],
+          "args": [
+            { "node": "Var", "name": "T" },
+            { "node": "App", "symbol": "UF.f", "type_args": [],
+              "args": [
+                { "node": "App", "symbol": "HSub.hSub", "type_args": [],
+                  "args": [
+                    { "node": "Var", "name": "c" },
+                    { "node": "NumLit", "value": "1", "type": "Int" }
+                  ] }
+              ] }
+          ]
+        } }
+      ]
+    },
+    "type_metadata": {}, "definitional_metadata": {}, "library_provenance": {}
+  }
+}

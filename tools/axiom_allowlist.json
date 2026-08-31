@@ -2,6 +2,8 @@
   "_comment": "Allowed axioms per *_axiom_free / pb_*_axiom_free / helper-lemma theorem, partitioned by source bridge. Lean keys use qualified names (e.g. ProofBroker.Test.foo); Rocq keys are unqualified (e.g. pb_lia_axiom_free) because Rocq's Print Assumptions doesn't include the qualifier. The CI gate (tools/check_axioms.py --bridge=lean|rocq|both) parses build output for Lean's '#print axioms' annotations and Rocq's `Print <name>.` + `Print Assumptions <name>.` paired blocks. Per-bridge partitioning lets each CI job (lean-bridge / rocq-bridge) check only its own theorems — the other bridge's missing theorems aren't a regression for that job. Adding a new closure path is a deliberate decision — if it grows the trust footprint, this file documents the new ceiling. See RETROSPECTIVES/phase-4.md.",
 
   "lean": {
+    "ProofBroker.TestCorpusLive.corpus_live_uf_lia_threshold":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestCorpusLive.corpus_live_lia_disjunction":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestCorpusLive.corpus_live_lia_eq_from_bounds":
@@ -241,6 +243,8 @@
   },
 
   "rocq": {
+    "corpus_live_uf_lia_threshold":
+      ["classic", "propositional_extensionality"],
     "corpus_live_lia_disjunction":
       ["classic", "propositional_extensionality"],
     "corpus_live_lia_eq_from_bounds":

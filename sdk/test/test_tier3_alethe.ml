@@ -1979,8 +1979,11 @@ let test_corpus_traces_fully_mintable () =
     |> List.filter (fun f -> Filename.check_suffix f ".json")
     |> List.sort compare
   in
-  Alcotest.(check bool) "corpus present (16 goals)"
-    true (List.length files = 16);
+  (* Non-vacuity guard: the corpus must be present and at least
+     R1-sized; growth is fine (the sweep below covers every goal
+     found). *)
+  Alcotest.(check bool) "corpus present (>= 16 goals)"
+    true (List.length files >= 16);
   let failures =
     List.filter_map (fun f ->
       let j = Yojson.Safe.from_file (Filename.concat goals_dir f) in
@@ -2003,7 +2006,7 @@ let test_corpus_traces_fully_mintable () =
   in
   if failures <> [] then
     Alcotest.fail
-      (Printf.sprintf "corpus traces not fully mintable (%d/16):\n  %s"
+      (Printf.sprintf "corpus traces not fully mintable (%d):\n  %s"
          (List.length failures)
          (String.concat "\n  " failures))
 
