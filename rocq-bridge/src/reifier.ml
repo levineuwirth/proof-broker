@@ -64,6 +64,7 @@ let r_IZR     = lazy (safe_constr_of_ref "reals.R.IZR")
 let r_eq    = lazy (safe_constr_of_ref "core.eq.type")
 let r_and   = lazy (safe_constr_of_ref "core.and.type")
 let r_or    = lazy (safe_constr_of_ref "core.or.type")
+let r_ex    = lazy (safe_constr_of_ref "core.ex.type")
 let r_not   = lazy (safe_constr_of_ref "core.not.type")
 let r_True  = lazy (safe_constr_of_ref "core.True.type")
 let r_False = lazy (safe_constr_of_ref "core.False.type")
@@ -298,6 +299,50 @@ and reify_app env sigma head args full =
     Ir.Or { left = r 0; right = r 1 }
   else if head_is r_not && nargs = 1 then
     Ir.Not { operand = r 0 }
+  else if head_is r_ex && nargs = 2 then begin
+    (* [exists x : T, P] is [ex T (fun x => P)]. Mirror the
+       dependent-Prod (Forall) path in [reify_term]: reify the
+       domain as an IR type-ref, push the binder into the env as
+       a named local, and emit an [Ir.Exists] whose body reifies
+       with the bound name as a free [Ir.Var]. *)
+    let dom = args.(0) in
+    match EConstr.kind sigma args.(1) with
+    | Lambda (binder, _, body) ->
+      let var_name =
+        match binder.Context.binder_name with
+        | Names.Name id -> Names.Id.to_string id
+        | Anonymous -> "_x"
+      in
+      let ty_string =
+        match reify_type env sigma dom with
+        | Some s -> s
+        | None ->
+          reify_error "exists over unsupported type: %s"
+            (pp_econstr env sigma dom)
+      in
+      let fresh_id =
+        let avoid = Termops.vars_of_env env in
+        Namegen.next_ident_away_in_goal env
+          (Names.Id.of_string var_name) avoid
+      in
+      let push_decl =
+        Context.Named.Declaration.LocalAssum
+          (Context.make_annot fresh_id Sorts.Relevant,
+           EConstr.to_constr sigma dom)
+      in
+      let env' = Environ.push_named push_decl env in
+      let body' =
+        EConstr.Vars.subst1 (EConstr.mkVar fresh_id) body
+      in
+      Ir.Exists {
+        var = Names.Id.to_string fresh_id;
+        ty = ty_string;
+        body = reify_term env' sigma body';
+      }
+    | _ ->
+      reify_error "unsupported exists shape (expected a lambda): %s"
+        (pp_econstr env sigma full)
+  end
   else if EConstr.isVar sigma head && nargs > 0 then
     (* UF fallback: head is a local Var whose declared type is an
        arrow chain. Emit [App { symbol = "UF.<name>" }]; the SDK's
@@ -415,6 +460,14 @@ let build_ir gl : Ir.t =
       free_vars := { Ir.name = Names.Id.to_string id; ty = "Int" } :: !free_vars
     else if eq_ref sigma ty r_R then
       free_vars := { Ir.name = Names.Id.to_string id; ty = "Real" } :: !free_vars
+    else if Termops.is_Prop sigma ty then
+      (* A local [p : Prop] is a Boolean ATOM (its type IS Prop),
+         not a hypothesis (a local whose type merely LIVES in
+         Prop; the branch below). Declare it as a free var — the
+         SDK serializer maps the [Prop] type ref to SMT-LIB
+         [Bool] — so pure-propositional goals dispatch with
+         their atoms declared. *)
+      free_vars := { Ir.name = Names.Id.to_string id; ty = "Prop" } :: !free_vars
     else if is_arrow_type sigma ty then
       (* Function-typed local: UF candidate. Encode the type as the
          arrow chain the SDK serializer parses; codomain may be a

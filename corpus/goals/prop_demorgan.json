@@ -2,6 +2,7 @@
   "id": "prop_demorgan",
   "description": "~(p \\/ q) |- ~p /\\ ~q (de Morgan; probes not_or/and rules/and_simplify)",
   "coq_goal": "forall p q : Prop, ~(p \\/ q) -> ~p /\\ ~q",
+  "lean_goal": "∀ p q : Prop, ¬(p ∨ q) → ¬p ∧ ¬q",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

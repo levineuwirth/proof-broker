@@ -370,6 +370,26 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   | (``Eq, #[α, a, b]) =>
       let tref ← reifyType α
       return .eq tref (← reifyTerm a) (← reifyTerm b)
+  | (``Ne, #[α, a, b]) =>
+      -- `a ≠ b` unfolds to `¬(a = b)`; reify it that way so the
+      -- SMT serializer sees the ordinary (not (= a b)) shape
+      -- instead of an uninterpreted `Ne` symbol.
+      let tref ← reifyType α
+      return .not_ (.eq tref (← reifyTerm a) (← reifyTerm b))
+  | (``Exists, #[α, p]) =>
+      -- `∃ x : T, body` is `Exists fun x => body`. Open the
+      -- lambda binder as a local so bound occurrences reify as
+      -- `.var`, then emit the IR's `Exists` shell (the SDK
+      -- serializer renders `(exists ((x T)) body)`).
+      (match p with
+       | .lam nm _ _ _ => do
+         let tref ← reifyType α
+         withLocalDeclD nm α fun x => do
+           let body := (p.bindingBody!).instantiate1 x
+           return .exists_ nm.toString tref (← reifyTerm body)
+       | _ =>
+         throwError "proof_broker: unsupported ∃ shape (expected a \
+           lambda body): {e}")
   | (``And, #[a, b]) =>
       return .and_ (← reifyTerm a) (← reifyTerm b)
   | (``Or, #[a, b]) =>
@@ -498,6 +518,14 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     else if let some n := matchBitVecType? ty then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := s!"BitVec({n})" }]
       sawBV := true
+    else if ty.isProp then
+      -- A local `p : Prop` is a Boolean ATOM, not a hypothesis
+      -- (`isProp ty` above matched locals whose type IS a
+      -- proposition; here the type is `Prop` itself). Declare it
+      -- as a free var — the SDK serializer maps the `Prop` type
+      -- ref to SMT-LIB `Bool` — so pure-propositional goals
+      -- (`∀ p q : Prop, …`) dispatch with their atoms declared.
+      freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Prop" }]
     else if ty.isArrow then
       -- Function-typed local: this is a UF candidate. Encode the
       -- type as the arrow chain the SDK serializer parses.
@@ -717,8 +745,20 @@ private def buildExtractionPath
     (goal : MVarId)
     (adapterNames? : Option (List String))
     (preferHigherTier : Bool)
+    (tierPreference : Option (List String) := none)
     : TacticM ExtractionPath := do
   let ir ← Reify.buildIR goal
+  -- Walker-strict callers pass `tierPreference := some ["3"]`:
+  -- the IR's `user_directives.tier_preference` (spec §5.4) tells
+  -- the cvc5 adapter to mint the verified Tier-3 alethe trace
+  -- ahead of the term-mode-friendly Tier-2/1 witnesses. The
+  -- default dispatch is unchanged.
+  let ir := match tierPreference with
+    | none => ir
+    | some tp =>
+      { ir with userDirectives := some {
+          preferredBackend := none, tierPreference := some tp,
+          rewriterPreferences := none, budget := none } }
   let manifests ← match adapterNames? with
     | some names => loadManifestsByName names
     | none => loadDefaultManifests
@@ -1772,6 +1812,7 @@ def evalProofBrokerWalker : Tactic := fun stx => do
         parseAdapterList none
     | _ => throwError "proof_broker_walker: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
+    (tierPreference := some ["3"])
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_walker: no adapter minted a cert; \

@@ -2,6 +2,7 @@
   "id": "lia_disjunction",
   "description": "|- x <= 0 \\/ 1 <= x (integer trichotomy; probes boolean/case rules)",
   "coq_goal": "forall x : Z, x <= 0 \\/ 1 <= x",
+  "lean_goal": "∀ x : Int, x ≤ 0 ∨ 1 ≤ x",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

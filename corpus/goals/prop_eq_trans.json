@@ -2,6 +2,7 @@
   "id": "prop_eq_trans",
   "description": "p = q, q = r |- p = r (Prop-equality transitivity; Bool-= reifies as @eq Prop, exercising the propext path)",
   "coq_goal": "forall p q r : Prop, p = q -> q = r -> p = r",
+  "lean_goal": "∀ p q r : Prop, p = q → q = r → p = r",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

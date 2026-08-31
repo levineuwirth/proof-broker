@@ -2,6 +2,7 @@
   "id": "lia_strict_trans",
   "description": "x < y, y < z |- x < z (strict transitivity; probes la_generic/comp_simplify)",
   "coq_goal": "forall x y z : Z, x < y -> y < z -> x < z",
+  "lean_goal": "∀ x y z : Int, x < y → y < z → x < z",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

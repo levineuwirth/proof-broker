@@ -408,9 +408,25 @@ let dispatch (ir : Ir.t) : Adapter.result =
                  3. Tier 3 alethe-2024 — full step trace; fallback
                     when neither structural extractor matches.
                  4. Tier 0 oracle — last resort. *)
+            (* R1.5: a walker-strict caller can request the trace
+               cert explicitly via [user_directives.tier_preference
+               = ["3"; ...]]: Tier 3 is then tried FIRST (the
+               verified alethe-2024 trace is the point), falling
+               back to the normal ladder when the full Tier-3
+               verifier rejects the proof. The default ladder is
+               unchanged — term-mode closers keep getting the
+               Farkas / case-split witnesses they consume. *)
+            let prefer_tier3 =
+              match ir.user_directives with
+              | Some { tier_preference = Some ("3" :: _); _ } -> true
+              | _ -> false
+            in
             let cert =
               match extract_proof_body stdout with
               | None -> try_internal_closer ()
+              | Some proof_str when prefer_tier3
+                                 && Option.is_some (try_tier3 proof_str) ->
+                Option.get (try_tier3 proof_str)
               | Some proof_str ->
                 (match Alethe_farkas.extract_case_split_payload ir proof_str with
                  | Ok (lemmas, disjunctive_hyp) ->

@@ -509,45 +509,11 @@ Proof.
 Qed.
 Close Scope R_scope.
 
-(** UF reach: arity-1 congruence, mirroring Lean's
-    [uf_axiom_free]. The reifier walks [f : Z -> Z] into a free_var
-    with [ty = "Int->Int"], the SDK serializer emits
-    [(declare-fun f (Int) Int)], cvc5 returns unsat under QF_UFLIA,
-    the verifier envelope-checks (Tier 0 oracle), and the closer
-    chain ([congruence | subst; assumption]) discharges. *)
-Theorem pb_uf_axiom_free :
-  forall (f : Z -> Z) (x y : Z), x = y -> f x = f y.
-Proof.
-  intros f x y H.
-  proof_broker.
-Qed.
-
-(** UF reach: arity-2 binary function. *)
-Theorem pb_uf_two_arg_axiom_free :
-  forall (f : Z -> Z -> Z) (a b : Z), a = b -> f a b = f a a.
-Proof.
-  intros f a b H.
-  proof_broker.
-Qed.
-
-(** UF reach: composed / nested function applications. *)
-Theorem pb_uf_composed_axiom_free :
-  forall (f g : Z -> Z) (x y : Z), x = y -> f (g x) = f (g y).
-Proof.
-  intros f g x y H.
-  proof_broker.
-Qed.
-
-(** UF reach: predicate-valued UF. The [P : Z -> Prop] free var is
-    arrow-typed with codomain [Prop], which the reifier maps to
-    SMT-LIB sort [Bool] via [Smtlib.sort_of_type_ref]. The closer's
-    [subst; assumption] arm catches the modus-ponens shape. *)
-Theorem pb_uf_predicate_axiom_free :
-  forall (P : Z -> Prop) (x y : Z), P x -> x = y -> P y.
-Proof.
-  intros P x y Hp H.
-  proof_broker.
-Qed.
+(* The four pb_uf_*_axiom_free theorems moved to TestUfWalker.v
+   (R1.5): since the UF arm went walker-first (R1.3) their [Print]
+   dumps are large walker terms, and keeping them here pushed this
+   file's per-action output over dune's truncation cap — evicting
+   a neighbor's [Print] marker from the trust-footprint gate. *)
 
 (** Axiom-footprint check, mirroring lean-bridge/Test/Tactic.lean's
     [#print axioms] discipline. The closer routes through Stdlib's
@@ -661,18 +627,6 @@ Print Assumptions pb_lra_term_gt_goal_strict_a1_axiom_free.
 
 Print pb_term_case_split_axiom_free.
 Print Assumptions pb_term_case_split_axiom_free.
-
-Print pb_uf_axiom_free.
-Print Assumptions pb_uf_axiom_free.
-
-Print pb_uf_two_arg_axiom_free.
-Print Assumptions pb_uf_two_arg_axiom_free.
-
-Print pb_uf_composed_axiom_free.
-Print Assumptions pb_uf_composed_axiom_free.
-
-Print pb_uf_predicate_axiom_free.
-Print Assumptions pb_uf_predicate_axiom_free.
 
 (* ============================================================
    LLM-as-backend home-side replay closer

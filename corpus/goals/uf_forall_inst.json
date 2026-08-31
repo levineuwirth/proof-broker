@@ -2,6 +2,7 @@
   "id": "uf_forall_inst",
   "description": "(forall x, f x <= 10) |- f 3 <= 10 (universal instantiation; quantifier-rule discovery goal)",
   "coq_goal": "forall (f : Z -> Z), (forall x : Z, f x <= 10) -> f 3 <= 10",
+  "lean_goal": "∀ (f : Int → Int), (∀ x : Int, f x ≤ 10) → f 3 ≤ 10",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

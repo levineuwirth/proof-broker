@@ -2,6 +2,7 @@
   "id": "uf_exists_witness",
   "description": "f y = 0 |- exists x, f x = 0 (existential from a witness; quantifier-rule discovery goal)",
   "coq_goal": "forall (f : Z -> Z) (y : Z), f y = 0 -> exists x : Z, f x = 0",
+  "lean_goal": "∀ (f : Int → Int) (y : Int), f y = 0 → ∃ x : Int, f x = 0",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

@@ -2,6 +2,7 @@
   "id": "uf_trans",
   "description": "a = b, b = c |- a = c (equality transitivity)",
   "coq_goal": "forall (a b c : Z), a = b -> b = c -> a = c",
+  "lean_goal": "∀ a b c : Int, a = b → b = c → a = c",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

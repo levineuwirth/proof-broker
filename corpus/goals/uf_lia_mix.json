@@ -2,6 +2,7 @@
   "id": "uf_lia_mix",
   "description": "f x = x, 0 <= x |- 0 <= f x (mixed UF + LIA)",
   "coq_goal": "forall (f : Z -> Z) (x : Z), f x = x -> 0 <= x -> 0 <= f x",
+  "lean_goal": "∀ (f : Int → Int) (x : Int), f x = x → 0 ≤ x → 0 ≤ f x",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

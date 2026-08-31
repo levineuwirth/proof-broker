@@ -2,6 +2,7 @@
   "id": "lia_weaken_bound",
   "description": "3 <= x |- 1 <= x (single-step LIA weakening)",
   "coq_goal": "forall x : Z, 3 <= x -> 1 <= x",
+  "lean_goal": "∀ x : Int, 3 ≤ x → 1 ≤ x",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

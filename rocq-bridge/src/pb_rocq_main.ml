@@ -72,13 +72,28 @@ type path = {
   verify_ms : int;
 }
 
-let build_path (gl : Proofview.Goal.t)
+let build_path ?(tier_preference = [])
+              (gl : Proofview.Goal.t)
               (names : Names.Id.t list option) : path =
   let t0 = now_ms () in
   let ir =
     try Reifier.build_ir gl
     with Reifier.Reify_error msg ->
       CErrors.user_err Pp.(str "proof_broker: " ++ str msg)
+  in
+  (* Walker-strict callers pass [~tier_preference:["3"]]: the IR's
+     [user_directives.tier_preference] (spec §5.4) tells the cvc5
+     adapter to mint the verified Tier-3 alethe trace ahead of the
+     term-mode-friendly Tier-2/1 witnesses. Default dispatch is
+     unchanged. *)
+  let ir =
+    if tier_preference = [] then ir
+    else
+      { ir with Proof_broker.Ir.user_directives =
+          Some { Proof_broker.Ir.preferred_backend = None;
+                 tier_preference = Some tier_preference;
+                 rewriter_preferences = None;
+                 budget = None } }
   in
   let t1 = now_ms () in
   let manifests = resolve_manifests names in
@@ -432,7 +447,7 @@ let run_close (names : Names.Id.t list option) : unit Proofview.tactic =
    [proof_broker], which degrades gracefully. *)
 let run_close_walker (names : Names.Id.t list option) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
-    let path = build_path gl names in
+    let path = build_path ~tier_preference:["3"] gl names in
     match path.cert, path.verify_reason with
     | None, _ ->
       CErrors.user_err Pp.(

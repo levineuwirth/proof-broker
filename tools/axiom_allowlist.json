@@ -2,6 +2,38 @@
   "_comment": "Allowed axioms per *_axiom_free / pb_*_axiom_free / helper-lemma theorem, partitioned by source bridge. Lean keys use qualified names (e.g. ProofBroker.Test.foo); Rocq keys are unqualified (e.g. pb_lia_axiom_free) because Rocq's Print Assumptions doesn't include the qualifier. The CI gate (tools/check_axioms.py --bridge=lean|rocq|both) parses build output for Lean's '#print axioms' annotations and Rocq's `Print <name>.` + `Print Assumptions <name>.` paired blocks. Per-bridge partitioning lets each CI job (lean-bridge / rocq-bridge) check only its own theorems — the other bridge's missing theorems aren't a regression for that job. Adding a new closure path is a deliberate decision — if it grows the trust footprint, this file documents the new ceiling. See RETROSPECTIVES/phase-4.md.",
 
   "lean": {
+    "ProofBroker.TestCorpusLive.corpus_live_lia_disjunction":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_eq_from_bounds":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_false_from_bounds":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_irrefl":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_pigeonhole3":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_strict_trans":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_sum_bound":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_lia_weaken_bound":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_prop_demorgan":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_prop_eq_trans":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_prop_excluded_middle":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_uf_cong":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_uf_exists_witness":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_uf_forall_inst":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_uf_lia_mix":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_uf_trans":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.lia_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
@@ -37,13 +69,13 @@
     "ProofBroker.Test.bv_compare_axiom_free":
       [],
     "ProofBroker.Test.uf_axiom_free":
-      [],
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.uf_two_arg_axiom_free":
-      [],
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.uf_composed_axiom_free":
-      [],
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.uf_predicate_axiom_free":
-      [],
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.llm_replay_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.llm_reconstruct_axiom_free":
@@ -209,6 +241,38 @@
   },
 
   "rocq": {
+    "corpus_live_lia_disjunction":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_eq_from_bounds":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_false_from_bounds":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_irrefl":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_pigeonhole3":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_strict_trans":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_sum_bound":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_lia_weaken_bound":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_prop_demorgan":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_prop_eq_trans":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_prop_excluded_middle":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_uf_cong":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_uf_exists_witness":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_uf_forall_inst":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_uf_lia_mix":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_uf_trans":
+      ["classic", "propositional_extensionality"],
     "farkas_le_2":
       [],
     "le_to_le0":
@@ -483,13 +547,13 @@
         "FunctionalExtensionality.functional_extensionality_dep"
       ],
     "pb_uf_axiom_free":
-      [],
+      ["classic", "propositional_extensionality"],
     "pb_uf_two_arg_axiom_free":
-      [],
+      ["classic", "propositional_extensionality"],
     "pb_uf_composed_axiom_free":
-      [],
+      ["classic", "propositional_extensionality"],
     "pb_uf_predicate_axiom_free":
-      [],
+      ["classic"],
     "pb_hol_function_composition_axiom_free":
       [],
     "pb_llm_replay_axiom_free":
