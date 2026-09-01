@@ -70,6 +70,12 @@
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_nat_term_eq":
       ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_def_unfold":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_def_unfold_plain":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_def_unfold_hyp":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_axiom_free":

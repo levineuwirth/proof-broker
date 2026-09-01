@@ -2306,4 +2306,95 @@ example : True := by
   fail_if_success spec_gate_test poly beta_spec
   trivial
 
+/- ============================================================
+   R3-M3: definitional metadata + def-unfold inversion.
+
+   A numeral-body constant reifies as an opaque leaf plus a
+   `defined_function` metadata entry; the dispatch pipeline's
+   definition-unfolding pass (the registry's always-unfold
+   `numeral_definition` concept + the reifier's directive) replaces
+   it by the numeral, the trace records the unfold, and the
+   term-mode lift inverts it by `Eq.mpr` over the kernel-defeq
+   unfolding equation before consuming the cert. The closures below
+   are load-bearing evidence the pass genuinely fired: with `P`
+   opaque, `Zmax < P` is not even provable, so no cert exists.
+   ============================================================ -/
+
+/-- The R4-D2 constant: 2^64 − 2^32 + 1 as a plain decimal def. -/
+def P : Nat := 18446744069414584321
+
+/-- THE M3 gate (the D2 shape): closes `by proof_broker_term` with
+    the def-unfold pass in the trace and inverted in the term. -/
+theorem pb_nat_def_unfold (Zmax : Nat) (h : Zmax ≤ 2^16) : Zmax < P := by
+  proof_broker_term
+#print axioms pb_nat_def_unfold
+
+/-- Plain mode: the LIA arm applies the same inversion before its
+    cert-gated omega (omega cannot see through a non-reducible
+    def). -/
+theorem pb_nat_def_unfold_plain (Zmax : Nat) (h : Zmax ≤ 2^16) :
+    Zmax < P := by
+  proof_broker
+#print axioms pb_nat_def_unfold_plain
+
+def Qdef : Nat := 65536
+
+/-- A numeral def in HYPOTHESIS position is unfolded and inverted
+    (defeq type swap on the hypothesis) too. -/
+theorem pb_nat_def_unfold_hyp (Zmax : Nat) (h : Zmax ≤ Qdef) :
+    Zmax < P := by
+  proof_broker_term
+#print axioms pb_nat_def_unfold_hyp
+
+/-- Walker-strict stays IDENTITY-only (M3 lifts the guard for the
+    term-mode path, not the walker): named fail-closed error. -/
+example (Zmax : Nat) (h : Zmax ≤ 2^16) : Zmax < P := by
+  fail_if_success proof_broker_walker
+  show Zmax < 18446744069414584321
+  omega
+
+def Qbad : Nat := 6 * 7
+
+/-- Fail fast: a constant whose body is NOT a numeral is outside
+    the M3 scope — named reifier error, nothing dispatches. -/
+example (x : Nat) (h : x ≤ 3) : x < Qbad := by
+  fail_if_success proof_broker_term
+  fail_if_success proof_broker
+  show x < 42
+  omega
+
+/- The M3 trace guard, pinned branch-by-branch on synthetic traces
+   (`trace_guard_test` drives the real `termTraceError?`; no live
+   path produces a foreign unfold or a non-invertible applied
+   pass... except prop-simp, whose live firing is covered by the R2
+   guard tests above). -/
+
+/-- Positive control: identity trace passes. -/
+example : True := by trace_guard_test identity
+
+/-- Positive control: an applied unfold of a symbol this extraction
+    emitted passes (the M3 admission). -/
+example : True := by trace_guard_test def_unfold_ours
+
+/-- An applied unfold of a FOREIGN symbol → fail closed. -/
+example : True := by
+  fail_if_success trace_guard_test def_unfold_foreign
+  trivial
+
+/-- An applied pass with no inversion (prop-simp) → fail closed. -/
+example : True := by
+  fail_if_success trace_guard_test prop_simp_applied
+  trivial
+
+/-- A Failed definition_unfolding entry → fail closed (only APPLIED
+    unfolds are admitted). -/
+example : True := by
+  fail_if_success trace_guard_test failed_pass
+  trivial
+
+/-- A missing trace → fail closed. -/
+example : True := by
+  fail_if_success trace_guard_test no_trace
+  trivial
+
 end ProofBroker.Test
