@@ -222,6 +222,44 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBrokerMathlib.TermMode.rLtViaLe":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pLeToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pGeToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pLtToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pGtToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pEqToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pEqToLe0Flipped":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pNotLeToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pNotGeToLt0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pNotLtToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pNotGtToLe0":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pMulPosNeg":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pAddLeLt":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pAddLtLe":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pAddNeg":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pFarkasContradictN":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pFarkasContradictNStrict":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pZeroNonneg":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pLeViaLt":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBrokerMathlib.TermModePoly.pLtViaLe":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_arity3_goal_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_arity3_lt_axiom_free":
