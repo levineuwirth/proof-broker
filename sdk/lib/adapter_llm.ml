@@ -442,7 +442,7 @@ let extract_script (content : string) : string =
 
 (* --- cert minting ---------------------------------------------------- *)
 
-let mk_cert ~rewrite_trace_hash ~(ir : Ir.t) ~model ~script ~timeout_ms
+let mk_cert ~rewrite_trace_hash ~(ir : Ir.t) ~model ~script ~wall_ms
   : Certificate.t =
   let dialect = dialect_of_ir ir in
   let fragment =
@@ -462,7 +462,9 @@ let mk_cert ~rewrite_trace_hash ~(ir : Ir.t) ~model ~script ~timeout_ms
       config_hash = "sha256:" ^ String.make 64 '0';
     };
     resources = {
-      wall_time_ms = timeout_ms; memory_peak_kb = 0;
+      (* Measured HTTP round-trip (R2); memory not measured, so the
+         field is absent — never a fabricated 0. *)
+      wall_time_ms = wall_ms; memory_peak_kb = None;
       budget_consumed = None;
     };
     refinement_record = {
@@ -507,9 +509,12 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
       build_body ~model ~system_prompt:dialect.system_prompt ~prompt
     in
     (try
+       let t_call = Unix.gettimeofday () in
        let stdout, stderr, code =
          curl_post ~timeout_ms ~url ~api_key ~body
        in
+       let wall_ms =
+         int_of_float ((Unix.gettimeofday () -. t_call) *. 1000.) in
        if code <> 0 then
          Failed (Solver_error {
            stderr = Printf.sprintf "curl exit=%d: %s" code
@@ -530,7 +535,7 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                 detail = "LLM returned an empty tactic script";
               })
             else
-              Cert (mk_cert ~rewrite_trace_hash ~ir ~model ~script ~timeout_ms))
+              Cert (mk_cert ~rewrite_trace_hash ~ir ~model ~script ~wall_ms))
      with
      | Unix.Unix_error (e, _, _) ->
        Failed (Solver_error {

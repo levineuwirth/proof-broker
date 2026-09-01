@@ -214,7 +214,7 @@ let make_cert_for_ir
     };
     resources = {
       wall_time_ms = 1;
-      memory_peak_kb = 1;
+      memory_peak_kb = None;
       budget_consumed = None;
     };
     refinement_record = {

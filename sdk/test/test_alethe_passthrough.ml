@@ -170,7 +170,7 @@ let test_envelope_verifier_tier3 () =
       config_hash = "sha256:" ^ String.make 64 '0';
     };
     resources = {
-      wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+      wall_time_ms = 0; memory_peak_kb = None; budget_consumed = None;
     };
     refinement_record = {
       adapter = "synthetic"; adapter_version = "0.0";

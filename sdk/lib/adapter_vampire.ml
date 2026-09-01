@@ -158,9 +158,11 @@ let backend ~version : Certificate.backend = {
   config_hash = "sha256:" ^ String.make 64 '0';
 }
 
-let resources_now ~timeout_ms : Certificate.resources = {
-  wall_time_ms = timeout_ms;
-  memory_peak_kb = 0;
+(** Measured solver wall clock (R2). [memory_peak_kb] is absent —
+    not measured, never a fabricated 0. *)
+let resources_measured ~wall_ms : Certificate.resources = {
+  wall_time_ms = wall_ms;
+  memory_peak_kb = None;
   budget_consumed = None;
 }
 
@@ -209,7 +211,7 @@ let mint_oracle_cert
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
       ~(szs_word : string)
-      ~timeout_ms
+      ~wall_ms
   : Certificate.t =
   let dispatch_context_hash =
     Hash.sha256_of_json (Codec.to_json original_ir)
@@ -222,7 +224,7 @@ let mint_oracle_cert
     dispatch_context_hash;
     rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version ~dialect ~ir:original_ir specs;
     payload = Tier0_oracle {
@@ -248,7 +250,7 @@ let mint_tier3_cert
       ~(specs : Tptp.specialization list)
       ~(proof_str : string)
       ~(proof : Tptp_proof.proof)
-      ~timeout_ms
+      ~wall_ms
   : Certificate.t =
   let dispatch_context_hash =
     Hash.sha256_of_json (Codec.to_json original_ir)
@@ -262,7 +264,7 @@ let mint_tier3_cert
     dispatch_context_hash;
     rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version ~dialect ~ir:original_ir specs;
     payload = Tptp_passthrough.make_payload ~proof_str ~dialect proof;
@@ -295,7 +297,10 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   | Ok script ->
     let timeout_ms = timeout_of_ir ir in
     (try
+       let t_solve = Unix.gettimeofday () in
        let stdout, stderr, code = run_solver ~timeout_ms script.body in
+       let wall_ms =
+         int_of_float ((Unix.gettimeofday () -. t_solve) *. 1000.) in
        match parse_szs stdout with
        | Proved w ->
          let mk_oracle () =
@@ -306,7 +311,7 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
              ~dialect:script.dialect
              ~specs:script.specializations
              ~szs_word:w
-             ~timeout_ms
+             ~wall_ms
          in
          (* Tier-3 gate (fail closed): parse the TSTP derivation
             and run the provenance + structure verifier; only mint
@@ -329,7 +334,7 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                   ~specs:script.specializations
                   ~proof_str:stdout
                   ~proof
-                  ~timeout_ms
+                  ~wall_ms
               | _ -> mk_oracle ())
          in
          Cert cert

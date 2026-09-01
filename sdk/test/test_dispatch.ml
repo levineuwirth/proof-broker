@@ -296,7 +296,7 @@ let mk_cert ~tier : Certificate.t =
     rewrite_trace_hash = "sha256:" ^ String.make 64 '1';
     backend = { name = "synthetic"; version = "0";
                 config_hash = "sha256:" ^ String.make 64 '0' };
-    resources = { wall_time_ms = 0; memory_peak_kb = 0;
+    resources = { wall_time_ms = 0; memory_peak_kb = None;
                   budget_consumed = None };
     refinement_record = { adapter = "synthetic"; adapter_version = "0";
                           specializations = []; fragment = "LIA";

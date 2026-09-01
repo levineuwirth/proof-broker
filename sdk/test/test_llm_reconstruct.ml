@@ -54,7 +54,7 @@ let sample_cert ?(trace_format = "other-format")
   dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
   rewrite_trace_hash = Pipeline.identity_trace_hash ir;
   backend = { name = "test"; version = "0"; config_hash = zero_hash };
-  resources = { wall_time_ms = 0; memory_peak_kb = 0;
+  resources = { wall_time_ms = 0; memory_peak_kb = None;
                 budget_consumed = None };
   refinement_record = {
     adapter = "test"; adapter_version = "0"; specializations = [];
@@ -78,7 +78,7 @@ let sample_oracle_cert (ir : Ir.t) : Certificate.t = {
   dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
   rewrite_trace_hash = Pipeline.identity_trace_hash ir;
   backend = { name = "test"; version = "0"; config_hash = zero_hash };
-  resources = { wall_time_ms = 0; memory_peak_kb = 0;
+  resources = { wall_time_ms = 0; memory_peak_kb = None;
                 budget_consumed = None };
   refinement_record = {
     adapter = "test"; adapter_version = "0"; specializations = [];
