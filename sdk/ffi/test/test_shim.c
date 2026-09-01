@@ -19,6 +19,10 @@
  *       envelope with kind="unknown_method" and the method name in
  *       message — the dispatcher's only synthetic envelope, and the
  *       reason the C ABI's first argument is a method string at all.
+ *   T6  content_hash (R3-M1) returns the SHA-256 of the content
+ *       string in schema form, pinned against a known vector
+ *       (sha256("") — the reifier's provenance stamps depend on
+ *       this matching Hash.sha256_of_string exactly).
  */
 
 #include "../proof_broker_shim.h"
@@ -127,6 +131,20 @@ int main(int argc, char **argv) {
     must_contain(out, "\"message\":\"does_not_exist\"", "T5 message echoes method");
     pb_ffi_free(out);
     fprintf(stderr, "OK T5: unknown method yields status=error/unknown_method\n");
+
+    /* ---- T6: content_hash pinned vector ----------------------------- */
+    out = NULL;
+    rc = pb_ffi_call("content_hash", "{\"content\":\"\"}", &out);
+    if (rc != 0) {
+        fprintf(stderr, "T6 pb_ffi_call rc=%d\n", rc);
+        return 1;
+    }
+    must_contain(out, "\"status\":\"ok\"", "T6 status");
+    must_contain(out,
+        "\"hash\":\"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"",
+        "T6 sha256 of empty string");
+    pb_ffi_free(out);
+    fprintf(stderr, "OK T6: content_hash matches the pinned sha256 vector\n");
 
     return 0;
 }
