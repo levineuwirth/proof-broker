@@ -212,6 +212,18 @@ initialize reifyConsts : IO.Ref (Array (String × TypeRef)) ← IO.mkRef #[]
     entry, single-goal reification is sequential. -/
 initialize reifyNatAtoms : IO.Ref (Array (String × Expr)) ← IO.mkRef #[]
 
+/-- R3-M3: numeral-definition table, `constant name ↦ (its const
+    Expr, its ℕ value)`. Filled by `Reify.reifyNatTerm` when a
+    non-recursive constant with a numeral body is reified as an
+    opaque IR leaf plus a `defined_function` metadata entry; the
+    dispatch pipeline's definition-unfolding pass replaces the leaf
+    by the numeral (trace entry recorded), and the term-mode lift
+    inverts the unfold by `Eq.mpr` over the (kernel-defeq)
+    unfolding equation. Same threading discipline as
+    `reifyNatAtoms`: `buildIR` clears it on entry and returns the
+    table on the extraction path. -/
+initialize reifyNatDefs : IO.Ref (Array (String × Expr × Nat)) ← IO.mkRef #[]
+
 /- ============================================================
    Reifier: Lean Expr → ProofBroker IR ShellTerm
    ============================================================ -/
@@ -400,11 +412,25 @@ def atomizeNatTerm (e : Expr) : MetaM ShellTerm := do
       pure id
   return .app natCastSymbol [] [.opaque_ id]
 
+/-- R3-M3: recognize a plain definition `c : Nat := <numeral>` — a
+    `defnInfo` constant of type `Nat` whose elaborated body is a
+    numeral. Theorems, opaques, axioms and non-numeral bodies all
+    decline (fail closed into the ordinary unsupported-term error). -/
+def matchNatNumeralDef? (e : Expr) : MetaM (Option (Name × Nat)) := do
+  let .const c _ := e | return none
+  let env ← Lean.getEnv
+  let some (.defnInfo d) := env.find? c | return none
+  unless d.type.isConstOf ``Nat do return none
+  return (matchNatLiteralAtNat? d.value).map (c, ·)
+
 /-- Reify a ℕ-typed `Expr` into the ℤ image of its value (casts
     pushed to atoms). Scope: variables, literals, `+`, `*` (with a
     literal factor — otherwise atomized), `^` with literal base and
-    exponent (constant-folded; otherwise atomized). ℕ subtraction /
-    division / modulo fail fast — never cast naively. -/
+    exponent (constant-folded; otherwise atomized), numeral-body
+    constants (R3-M3 — emitted as an opaque leaf the def-unfold
+    pass replaces, documented in `definitional_metadata`). ℕ
+    subtraction / division / modulo fail fast — never cast
+    naively. -/
 partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
   if let some n := matchNatLiteralAtNat? e then
     return .numLit (toString n) "Int"
@@ -454,9 +480,21 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
       specialization (scope: +, *, ^ with literal exponent, literals, \
       variables; nonlinear products atomize)"
   | _ =>
+    -- R3-M3: a numeral-body constant becomes an opaque `App` leaf
+    -- (no args) at the Int-numeral position. If the pipeline's
+    -- def-unfold pass does NOT replace it (metadata dropped,
+    -- directive lost), the SMT script references an undeclared
+    -- symbol and dispatch fails — never a silent misreading.
+    if let some (c, n) ← matchNatNumeralDef? e then
+      let name := c.toString
+      let defs ← reifyNatDefs.get
+      unless defs.any (·.1 == name) do
+        reifyNatDefs.modify (·.push (name, e, n))
+      return .app name [] []
     throwError "proof_broker: unsupported ℕ term {e} (ℕ→ℤ scope: +, \
       * with a literal factor, ^ with literal base and exponent, \
-      literals, variables; nonlinear products atomize)"
+      literals, variables, numeral-body constants; nonlinear \
+      products atomize)"
 
 /-- Confirm that a comparison/equality at type `α` is over a
     fragment we can reify — `Int` always; anything else only if
@@ -822,7 +860,8 @@ def natTypeMetadata : Json :=
     treated as data: Int-typed ones become `freeVars`, anything else
     is silently ignored (the goal/Prop reifier will trip on them if
     they're actually referenced). -/
-def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
+def buildIR (mvarId : MVarId)
+    : MetaM (IR × Array (String × Expr) × Array (String × Expr × Nat)) :=
   mvarId.withContext do
   -- Instantiate metavariables in the goal type. `apply`-introduced
   -- subgoals may carry deferred unification metavars in their types;
@@ -834,6 +873,7 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
   -- `Function.comp`) so it can be declared as a `freeVar`.
   reifyConsts.set #[]
   reifyNatAtoms.set #[]
+  reifyNatDefs.set #[]
   let goalType ← Lean.instantiateMVars (← mvarId.getType)
   let goalShell ← reifyTerm goalType
   let mut freeVars : List FreeVar := []
@@ -959,6 +999,7 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
   -- HO / extension carriers yet — mixing is a named failure, not a
   -- silent mistranslation.
   let natAtoms ← reifyNatAtoms.get
+  let natDefs ← reifyNatDefs.get
   let natMode := sawNat || !natAtoms.isEmpty
   if natMode && (sawBV || bvInTerms || sawUF || ufInTerms || isHO
                  || sawExtensionType) then
@@ -1043,6 +1084,48 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
     ++ (match polyVar with
         | some (_, info) => if polyMode then info.provenance else []
         | none => [])
+  -- R3-M3: one `defined_function` entry + provenance (content hash
+  -- of the pretty-printed definition body) per numeral-body
+  -- constant, plus the user directive naming the concept tag — the
+  -- registry's always-unfold list carries it too, so the pipeline
+  -- unfolds these on every dispatch and the trace records the
+  -- inversion data the lift consumes.
+  let definitionalMetadata := natDefs.toList.map (fun (name, _e, n) =>
+    (name, Json.mkObj [
+      ("kind", "defined_function"),
+      ("abstract_signature", "Int"),
+      ("definitional_equation",
+        (ShellTerm.eq "Int" (.app name [] [])
+          (.numLit (toString n) "Int")).toJson),
+      ("concept_tag", "numeral_definition")]))
+  let defProvenance ← natDefs.toList.mapM (fun (name, e, _n) => do
+    let .const c _ := e
+      | throwError "proof_broker: numeral-def table holds a non-const"
+    let env ← Lean.getEnv
+    let some (.defnInfo d) := env.find? c
+      | throwError "proof_broker: numeral def {c} vanished"
+    let stmt ← Lean.Meta.ppExpr d.value
+    let hash ← match runContentHash (toString stmt) with
+      | .ok h => pure h
+      | .error err =>
+        throwError "proof_broker: content_hash FFI failed: {repr err}"
+    let modulePath := env.getModuleIdxFor? c |>.map fun idx =>
+      toString env.allImportedModuleNames[idx.toNat]!
+    pure (name, ({
+      library := "user",
+      version := Lean.versionString,
+      modulePath,
+      contentHash := hash } : Provenance)))
+  let libraryProvenance := libraryProvenance ++ defProvenance
+  let userDirectives : Option UserDirectives :=
+    if natDefs.isEmpty then none
+    else some {
+      preferredBackend := none, tierPreference := none,
+      rewriterPreferences := some {
+        enableQuotientElimination := none,
+        enableDefinitionUnfolding := some ["numeral_definition"],
+        disablePasses := none },
+      budget := none }
   let payloads ←
     if natAtoms.isEmpty then pure none
     else do
@@ -1070,10 +1153,10 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
       typeVars := if polyMode then [polyTypeVarName] else [],
       freeVars, hypotheses, librarySlice := none },
     typeMetadata,
-    definitionalMetadata := [],
+    definitionalMetadata,
     libraryProvenance,
-    userDirectives := none
-  }, natAtoms)
+    userDirectives
+  }, natAtoms, natDefs)
 
 end Reify
 
@@ -1175,6 +1258,12 @@ structure ExtractionPath where
       parallel theorem elaboration can reset the ref between the
       reify and the closer. -/
   natAtoms : Array (String × Expr) := #[]
+  /-- R3-M3: `constant name ↦ (const Expr, ℕ value)` for every
+      numeral-body definition this extraction documented in
+      `definitional_metadata` — the set of unfolds the term-mode
+      lift can invert. Carried on the path for the same
+      parallel-elaboration reason as `natAtoms`. -/
+  natDefs : Array (String × Expr × Nat) := #[]
   verifyOk : Option Bool
   /-- Looser-than-`verifyOk` flag: true when envelope checks passed
       but no tier-specific verifier applied (e.g. Tier 0 oracle).
@@ -1245,18 +1334,21 @@ private def buildExtractionPath
     (preferHigherTier : Bool)
     (tierPreference : Option (List String) := none)
     : TacticM ExtractionPath := do
-  let (ir, natAtoms) ← Reify.buildIR goal
+  let (ir, natAtoms, natDefs) ← Reify.buildIR goal
   -- Walker-strict callers pass `tierPreference := some ["3"]`:
   -- the IR's `user_directives.tier_preference` (spec §5.4) tells
   -- the cvc5 adapter to mint the verified Tier-3 alethe trace
   -- ahead of the term-mode-friendly Tier-2/1 witnesses. The
-  -- default dispatch is unchanged.
+  -- default dispatch is unchanged. R3-M3: MERGED into any
+  -- reifier-set directives (the numeral-def unfolding preference
+  -- must survive the override).
   let ir := match tierPreference with
     | none => ir
     | some tp =>
-      { ir with userDirectives := some {
-          preferredBackend := none, tierPreference := some tp,
-          rewriterPreferences := none, budget := none } }
+      let ud := ir.userDirectives.getD {
+        preferredBackend := none, tierPreference := none,
+        rewriterPreferences := none, budget := none }
+      { ir with userDirectives := some { ud with tierPreference := some tp } }
   let manifests ← match adapterNames? with
     | some names => loadManifestsByName names
     | none => loadDefaultManifests
@@ -1287,7 +1379,7 @@ private def buildExtractionPath
     ir, attempts := dispatch.attempts, cert := dispatch.cert,
     trace := dispatch.trace, finalIr := dispatch.finalIr,
     verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs,
-    natAtoms
+    natAtoms, natDefs
   }
 
 /-- Identity-trace guard (R2 soundness rule). The term-mode and
@@ -1304,6 +1396,117 @@ private def identityTraceOk (path : ExtractionPath) : Bool :=
   match path.trace with
   | some d => d.isIdentity
   | none => false
+
+/- ============================================================
+   R3-M3: definition-unfold inversion — the guard lifted for the
+   definition_unfolding pass on the term-mode path.
+
+   The dispatch pipeline may now genuinely rewrite a ℕ goal: a
+   numeral-body constant the reifier documented in
+   `definitional_metadata` is replaced by its numeral (trace entry
+   with `inversion_data.unfolded_symbols`). The term-mode closer
+   admits such traces — and ONLY such traces — by first rewriting
+   the goal (and any hypothesis mentioning the constant) with the
+   unfolding equation `c = <numeral>` via `Eq.mpr` (`rfl` up to
+   kernel delta reduction), so the cert's witness addresses exactly
+   what remains. Every other applied/failed pass keeps the R2
+   identity requirement; the walker paths are unchanged (identity
+   only).
+   ============================================================ -/
+
+/-- Symbols named by a definition_unfolding entry's
+    `inversion_data.unfolded_symbols`. -/
+private def entryUnfoldedSymbols (e : Trace.Entry) : List String :=
+  match e.inversionData with
+  | none => []
+  | some j =>
+    (((j.getObjVal? "unfolded_symbols").toOption.bind
+      (·.getArr?.toOption)).getD #[]).toList.filterMap
+      (fun s => (s.getObjValAs? String "symbol").toOption)
+
+/-- All unfolded symbols across the trace's def-unfold entries. -/
+private def traceUnfoldedSymbols (d : Trace.Document) : List String :=
+  d.entries.foldl (fun acc e =>
+    if e.pass == "definition_unfolding" then acc ++ entryUnfoldedSymbols e
+    else acc) []
+
+/-- Trace admissibility for the TERM-MODE path (R3-M3): `none` when
+    the trace is identity, or when every non-identity entry is an
+    APPLIED definition unfold whose symbols are all ones this
+    extraction emitted the unfolding equation for (`path.natDefs`).
+    Anything else — a missing trace, a failed pass, an applied pass
+    with no inversion here (prop-simp), a foreign unfolded symbol —
+    is a named error, fail closed. -/
+private def termTraceError? (path : ExtractionPath) : Option String :=
+  match path.trace with
+  | none => some "proof_broker_term: the dispatch returned no rewrite \
+      trace, so the cert cannot be tied to this goal (fail closed)"
+  | some d =>
+    if d.isIdentity then none
+    else Id.run do
+      let defNames := path.natDefs.map (·.1)
+      for e in d.entries do
+        let identityShaped :=
+          (match e.outcome with
+           | some .skippedPreconditions | some .noOp => true
+           | _ => false)
+          && e.beforeHash == e.afterHash
+        if identityShaped then continue
+        unless e.pass == "definition_unfolding"
+            && e.outcome == some .applied do
+          return some s!"proof_broker_term: the dispatch pipeline's \
+            '{e.pass}' pass rewrote the goal and this bridge has no \
+            inversion for it; the cert addresses the rewritten IR, \
+            so the goal is left OPEN (fail closed)"
+        for sym in entryUnfoldedSymbols e do
+          unless defNames.contains sym do
+            return some s!"proof_broker_term: the trace unfolds \
+              '{sym}', which this extraction did not emit an \
+              unfolding equation for — refusing to consume the cert \
+              (fail closed)"
+      return none
+
+/-- Apply the def-unfold inversions to `goal`: for every symbol the
+    trace unfolded, rewrite the goal with `c = <numeral>` (proved by
+    `rfl` — the constant's body IS the numeral, so the kernel checks
+    it by delta reduction; the lifted term carries the resulting
+    `Eq.mpr`), and defeq-swap the type of every Prop hypothesis
+    mentioning the constant. No-op on an identity trace. -/
+private def invertDefUnfolds (goal : MVarId) (path : ExtractionPath)
+    : TacticM MVarId := do
+  let some d := path.trace | return goal
+  if d.isIdentity then return goal
+  let mut g := goal
+  for sym in (traceUnfoldedSymbols d).eraseDups do
+    let some (_, constE, val) := path.natDefs.find? (·.1 == sym)
+      | throwError "proof_broker_term: trace unfolds '{sym}' but the \
+          extraction has no such definition (fail closed)"
+    let cName := constE.constName!
+    g ← g.withContext do
+      let litE := Lean.mkNatLit val
+      let eqTy ← Lean.Meta.mkEq constE litE
+      let eqPrf ← Lean.Meta.mkExpectedTypeHint
+        (← Lean.Meta.mkEqRefl constE) eqTy
+      -- Goal: Eq.mpr over the unfolding equation.
+      let mut g' := g
+      let tgt ← g'.getType
+      if tgt.getUsedConstantsAsSet.contains cName then
+        let r ← g'.rewrite tgt eqPrf
+        g' ← g'.replaceTargetEq r.eNew r.eqProof
+      -- Hypotheses: the rewritten type is defeq, so swap in place.
+      let mut swaps : Array (FVarId × Expr) := #[]
+      for decl in (← g'.withContext getLCtx) do
+        if decl.isImplementationDetail then continue
+        if decl.type.getUsedConstantsAsSet.contains cName then
+          if ← g'.withContext (Lean.Meta.isProp decl.type) then
+            let newTy ← g'.withContext do
+              let abst ← Lean.Meta.kabstract decl.type constE
+              pure (abst.instantiate1 litE)
+            swaps := swaps.push (decl.fvarId, newTy)
+      for (fvarId, newTy) in swaps do
+        g' ← g'.replaceLocalDeclDefEq fvarId newTy
+      pure g'
+  return g
 
 /- ============================================================
    R3-M1: the ℕ→ℤ lift
@@ -1928,6 +2131,15 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
               class-polymorphic Farkas term builder. The goal is left \
               OPEN rather than closed by an unjustified axiom."
         else
+          -- R3-M3: omega re-proves the ORIGINAL goal and cannot see
+          -- through a non-reducible numeral definition; when the
+          -- pipeline's only rewrites are invertible definition
+          -- unfolds, apply the same inversion first. A trace this
+          -- bridge cannot invert keeps today's behavior (omega on
+          -- the original goal — sound, possibly incomplete).
+          if !identityTraceOk path && (termTraceError? path).isNone then
+            let g ← invertDefUnfolds (← getMainGoal) path
+            replaceMainGoal [g]
           evalTactic (← `(tactic| omega))
     else if fragment == "BV" then
       -- Cert-gated decide: BitVec has DecidableEq + the operator
@@ -2848,21 +3060,23 @@ private def certStrategyHint (cert : Json) : String :=
 private def runTermModeOnGoal
     (goal : MVarId) (adapterNames? : Option (List String))
     (preferHigherTier : Bool) : TacticM Unit := do
-  let goalType ← goal.getType
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_term: no adapter minted a cert"
-  -- Identity-trace guard (R2): the term-mode closers rebuild the
-  -- proof from the cert's witness against the ORIGINAL goal, so a
-  -- rewritten (or traceless) dispatch is a named failure — term
-  -- mode has no decision-procedure fallback by design.
-  unless identityTraceOk path do
-    throwError "proof_broker_term: identity-trace guard — the dispatch \
-      pipeline rewrote the goal (or returned no trace), so the cert's \
-      witness addresses the rewritten IR, not this goal. Until lifting \
-      lands (R3) term mode only consumes certs that directly address the \
-      goal; use plain `proof_broker` for a decision-procedure closure."
+  -- Trace guard (R2, lifted for definition unfolding in R3-M3): the
+  -- term-mode closers rebuild the proof from the cert's witness, so
+  -- the trace must be identity OR consist solely of definition
+  -- unfolds this extraction emitted the equations for — those are
+  -- inverted below (`invertDefUnfolds`, Eq.mpr over `c = <numeral>`)
+  -- so the witness addresses exactly what remains. Anything else is
+  -- a named failure — term mode has no decision-procedure fallback
+  -- by design.
+  if let some msg := termTraceError? path then
+    throwError msg
+  let goal ← invertDefUnfolds goal path
+  replaceMainGoal [goal]
+  let goalType ← goal.getType
   unless path.verifyOk == some true do
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker_term: cert was minted but verifier did not \
@@ -3080,6 +3294,86 @@ def evalSpecGateTest : Tactic := fun stx => do
     checkCertSpecializations cert specMode
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
+
+/-- TEST-ONLY tactic pinning the R3-M3 term-mode trace guard
+    (`termTraceError?`) branch by branch, independent of live
+    dispatch — the live paths only ever produce identity traces or
+    our own numeral-def unfolds, so without this the guard's refusal
+    branches would be exercised by nothing (the C3a finding-2
+    pattern). Builds a synthetic `ExtractionPath` whose `natDefs`
+    table knows exactly one definition (`ProofBroker.Test.P`) and a
+    synthetic trace per kind:
+
+    * `identity` — identity trace → guard passes.
+    * `def_unfold_ours` — applied definition_unfolding of the known
+      symbol → guard passes (the inversion path's admission).
+    * `def_unfold_foreign` — applied unfold of a symbol the
+      extraction did not emit → named error.
+    * `prop_simp_applied` — an applied pass with no inversion →
+      named error.
+    * `failed_pass` — a Failed definition_unfolding entry → named
+      error (only APPLIED unfolds are admitted).
+    * `no_trace` — no trace on the path → named error. -/
+syntax (name := traceGuardTest) "trace_guard_test" ident : tactic
+
+@[tactic traceGuardTest]
+def evalTraceGuardTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| trace_guard_test $kind) =>
+    let mkEntry (pass : String) (outcome : Trace.Outcome)
+        (syms : List String) : Trace.Entry := {
+      pass, version := "1.0",
+      beforeHash := "sha256:aa", afterHash := "sha256:bb",
+      configuration := none, outcome := some outcome,
+      inversionData := some (Json.mkObj [
+        ("unfolded_symbols", Json.arr (syms.toArray.map (fun s =>
+          Json.mkObj [("symbol", Json.str s)])))]),
+      diagnostics := none }
+    let identityDoc : Trace.Document := {
+      traceVersion := "1.0", initialIrHash := "sha256:aa",
+      finalIrHash := "sha256:aa", entries := [], configuration := none }
+    let nonIdentityDoc (e : Trace.Entry) : Trace.Document := {
+      traceVersion := "1.0", initialIrHash := "sha256:aa",
+      finalIrHash := "sha256:bb", entries := [e], configuration := none }
+    let ourDef := "ProofBroker.Test.P"
+    let trace? : Option Trace.Document ← match kind.getId.toString with
+      | "identity" => pure (some identityDoc)
+      | "def_unfold_ours" =>
+        pure (some (nonIdentityDoc
+          (mkEntry "definition_unfolding" .applied [ourDef])))
+      | "def_unfold_foreign" =>
+        pure (some (nonIdentityDoc
+          (mkEntry "definition_unfolding" .applied ["Foreign.Q"])))
+      | "prop_simp_applied" =>
+        pure (some (nonIdentityDoc
+          (mkEntry "propositional_simplification" .applied [])))
+      | "failed_pass" =>
+        pure (some (nonIdentityDoc
+          (mkEntry "definition_unfolding" .failed [ourDef])))
+      | "no_trace" => pure none
+      | k => throwError "trace_guard_test: unknown kind '{k}'"
+    let dummyIr : IR := {
+      irVersion := "1.0",
+      sourceSystem := { name := "lean", version := "0.0" },
+      tier := "structural",
+      logicClassification := {
+        order := "first_order", featuresUsed := [],
+        firstOrderFragment := "LIA", decidableTheory := none },
+      goal := { shell := .const "False", payloads := none },
+      context := { typeVars := [], freeVars := [],
+                   hypotheses := [], librarySlice := none },
+      typeMetadata := [], definitionalMetadata := [],
+      libraryProvenance := [], userDirectives := none }
+    let path : ExtractionPath := {
+      ir := dummyIr, attempts := [], cert := none, trace := trace?,
+      finalIr := none,
+      natDefs := #[(ourDef, mkConst `x, 42)],
+      verifyOk := none, verifyEnvelopeOk := none, verifyReason := none,
+      dispatchMs := 0, verifyMs := 0 }
+    match termTraceError? path with
+    | some msg => throwError msg
+    | none => evalTactic (← `(tactic| trivial))
+  | _ => throwError "trace_guard_test: malformed invocation"
 
 /-- TEST-ONLY tactic. Drives the exact `replayLlmScriptOrFail`
     path `proof_broker` takes for an LLM `lean-tactic-script`
