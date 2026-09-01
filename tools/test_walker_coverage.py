@@ -30,10 +30,10 @@ def _ok(cond: bool, label: str) -> None:
 
 
 def _with_index(index: dict, supported: set, skips: dict | None = None,
-                gate: set | None = None):
-    """Point cov at a synthetic index + supported set (+ optional replay_skip
-    goal files; `gate` overrides the minter's supported_rules, default =
-    `supported`), return compute()."""
+                gate: set | None = None, static_skips: dict | None = None):
+    """Point cov at a synthetic index + supported set (+ optional
+    replay_skip / static_replay_skip goal files; `gate` overrides the
+    minter's supported_rules, default = `supported`), return compute()."""
     d = Path(tempfile.mkdtemp())
     idx = d / "index.json"
     idx.write_text(json.dumps(index), encoding="utf-8")
@@ -42,6 +42,10 @@ def _with_index(index: dict, supported: set, skips: dict | None = None,
     for gid, reason in (skips or {}).items():
         (goals / f"{gid}.json").write_text(
             json.dumps({"id": gid, "replay_skip": reason}), encoding="utf-8")
+    for gid, reason in (static_skips or {}).items():
+        (goals / f"{gid}.json").write_text(
+            json.dumps({"id": gid, "static_replay_skip": reason}),
+            encoding="utf-8")
     orig = (cov.INDEX, cov.GOALS, cov.parity.extract_rules,
             cov.parity.extract_supported_rules)
     cov.INDEX, cov.GOALS = idx, goals
@@ -68,7 +72,8 @@ def test_walkable_and_blocked() -> None:
     _ok(rep["goals"]["g_block"]["missing"] == ["subproof", "xor"],
         "missing rules sorted")
     _ok(rep["summary"] == {"walkable": 1, "replayed": 1, "shape_gapped": 0,
-                           "unsat": 2, "total": 2, "non_unsat": []},
+                           "live_only": 0, "unsat": 2, "total": 2,
+                           "non_unsat": []},
         "summary counts")
 
 
@@ -87,6 +92,30 @@ def test_shape_gap_splits_walkable() -> None:
         "skip splits walkable into replayed + shape_gapped")
     _ok(rep["goals"]["g_gap"]["replay_skip"] == "supported rule, unhandled shape",
         "skip reason surfaced per goal")
+
+
+def test_static_skip_splits_walkable_into_live_only() -> None:
+    # R3-M1 (C3a ROUND 1 finding 1): static_replay_skip must NOT count
+    # as "replayed" — the goal is not in CorpusReplay.v; its kernel
+    # ground truth is the live-strict suites, reported separately.
+    rep = _with_index(
+        {
+            "g_replay": {"result": "unsat", "rules": ["or"]},
+            "g_live": {"result": "unsat", "rules": ["or"]},
+        },
+        supported={"or"},
+        static_skips={"g_live": "no ℕ→ℤ cast layer in the static walker"},
+    )
+    _ok(rep["summary"]["walkable"] == 2, "both statically walkable")
+    _ok(rep["summary"]["replayed"] == 1 and rep["summary"]["live_only"] == 1,
+        "static skip splits walkable into replayed + live_only")
+    _ok(rep["summary"]["shape_gapped"] == 0,
+        "static skip is NOT a shape gap")
+    _ok(rep["goals"]["g_live"]["static_replay_skip"]
+        == "no ℕ→ℤ cast layer in the static walker",
+        "static skip reason surfaced per goal")
+    _ok(rep["goals"]["g_live"]["replay_skip"] is None,
+        "the two skip kinds stay distinct per goal")
 
 
 def test_backlog_ranked_by_blocking_count() -> None:

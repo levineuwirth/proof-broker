@@ -97,6 +97,9 @@ def corpus(index: dict, coverage: dict) -> dict:
         "steps": sum(g["steps"] for g in index.values()),
         "walkable": s["walkable"],
         "replayed": s["replayed"],
+        # R3-M1: goals whose kernel ground truth is the live-strict
+        # suites, not the static CorpusReplay.v (static_replay_skip).
+        "live_only": s.get("live_only", 0),
         "total": s["total"],
         "supported_rule_count": coverage["supported_rule_count"],
         # R1.4 adds a `mintable` count (traces whose rule set is within
@@ -244,12 +247,16 @@ def render(d: dict) -> str:
 
     mint = (f"{c['mintable']}/{c['total']}" if c["mintable"] is not None
             else "not measured — `coverage.json` has no `mintable` key yet (R1)")
+    live_only = (f" + {c['live_only']}/{c['total']} live-strict only "
+                 "(`CorpusWalkerLive_*` on both bridges — their coqc/kernel "
+                 "ground truth; the static replay has no ℕ→ℤ cast layer)"
+                 if c["live_only"] else "")
     row("Walker corpus",
         f"{c['goals']} goals, {c['steps']} proof steps; statically walkable "
         f"{c['walkable']}/{c['total']}; in the generated `CorpusReplay.v` "
-        f"{c['replayed']}/{c['total']} (the coqc ground truth is that file "
-        "compiling in the rocq-bridge job); live-mintable "
-        f"{mint}",
+        f"{c['replayed']}/{c['total']} (the coqc ground truth for those is "
+        f"that file compiling in the rocq-bridge job){live_only}; "
+        f"live-mintable {mint}",
         "`corpus/index.json`, `corpus/coverage.json` "
         "(`check_walker_coverage.py --check`, `gen_corpus_replay.py --check`)")
 
