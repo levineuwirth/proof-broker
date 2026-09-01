@@ -161,11 +161,42 @@ def test_version_note_declared_vs_pinned() -> None:
         "equal declared/pinned versions render no mismatch list")
 
 
+def test_rocq_deferrals() -> None:
+    # Synthetic delta text: the row is derived from the marker, not typed.
+    text = "\n".join([
+        "### 5.5 Decision record — polymorphic α (2026-09-01, R3-M2)",
+        "body text",
+        "**Rocq port: DEFERRED** (per D3).",
+        "### 5.6 Decision record — def-unfold (2026-09-01, R3-M3)",
+        "**Rocq port: DEFERRED** (same rule).",
+        "### 5.7 Decision record — something ported (2026-09-02, R4-M1)",
+        "The Rocq port landed in the same milestone.",
+        "## 6. References",
+    ])
+    _ok(st.rocq_deferrals(text) == [("R3-M2", "5.5"), ("R3-M3", "5.6")],
+        "rocq_deferrals: exactly the DEFERRED-marked sections, in order")
+    _ok(st.rocq_deferrals("### 5.1 Reconsideration record — x (2026-08-30, R0.5)\n"
+                          "no marker\n") == [],
+        "rocq_deferrals: a section without the marker yields nothing")
+    lifted = text.replace("**Rocq port: DEFERRED** (same rule).", "Ported.")
+    _ok(st.rocq_deferrals(lifted) == [("R3-M2", "5.5")],
+        "rocq_deferrals: lifting a deferral (editing the record) drops its row entry")
+    # Real source: the rendered row carries what delta.md records.
+    d = st.collect()
+    real = st.rocq_deferrals(st.DELTA.read_text(encoding="utf-8"))
+    _ok(d["deferrals"] == real, "collect() deferrals == parsed delta.md")
+    row_value = ("; ".join(f"`{ms}` (delta §{sec})" for ms, sec in real)
+                 if real else "none recorded")
+    _ok(row_value in st.render(d),
+        "the rendered table carries the derived deferral row")
+
+
 def main() -> int:
     test_counts_come_from_sources()
     test_ci_jobs_regex()
     test_check_negative_controls()
     test_version_note_declared_vs_pinned()
+    test_rocq_deferrals()
     print(f"\n{_PASS} passed, {_FAIL} failed")
     return 1 if _FAIL else 0
 
