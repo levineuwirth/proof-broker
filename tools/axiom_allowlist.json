@@ -282,6 +282,22 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_not_hyp_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_example1":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_term_false":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_term_strict":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_term_eq":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_term_eq_hyp":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_term_mul":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_plain":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_scope_int":
+      ["propext", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_arity3_axiom_free":

@@ -2282,4 +2282,28 @@ example : True := by
   fail_if_success spec_gate_test nat mixed_spec
   trivial
 
+/- R3-M2: the gate's `poly` mode (the term-mode path on an α
+   extraction). The alpha → Int record is the invertible set there —
+   and ONLY there: the walker-path modes above keep refusing it
+   (`spec_gate_test int foreign_spec` stays a negative). -/
+
+/-- Positive control: the alpha → Int record passes in poly mode. -/
+example : True := by spec_gate_test poly foreign_spec
+
+/-- α mode with NO recorded specialization → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test poly none
+  trivial
+
+/-- A Nat → Int record on an α extraction → fail closed (the α
+    replay does not invert the ℕ cast layer). -/
+example : True := by
+  fail_if_success spec_gate_test poly nat_spec
+  trivial
+
+/-- A record foreign in EVERY mode (beta → Real) → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test poly beta_spec
+  trivial
+
 end ProofBroker.Test
