@@ -171,6 +171,16 @@ initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
     sequential). -/
 initialize reifyConsts : IO.Ref (Array (String × TypeRef)) ← IO.mkRef #[]
 
+/-- R3-M1: nonlinear-ℕ atomization table, `payload_id ↦ the ℕ
+    subterm it stands for` (e.g. `Zmax * zhigh`). Filled by
+    `Reify.reifyNatTerm` when a product with no literal factor (or a
+    non-foldable power) is atomized to an IR `Opaque` node; consumed
+    by `buildIR` (payloads + nonneg hypotheses) and by the ℕ→ℤ lift
+    (the walker context maps the id back to `↑<subterm>`). Same
+    threading discipline as `reifyConsts`: `buildIR` clears it on
+    entry, single-goal reification is sequential. -/
+initialize reifyNatAtoms : IO.Ref (Array (String × Expr)) ← IO.mkRef #[]
+
 /- ============================================================
    Reifier: Lean Expr → ProofBroker IR ShellTerm
    ============================================================ -/
@@ -273,6 +283,115 @@ def matchBitVecLiteral? (e : Expr) : Option (String × TypeRef) :=
     | _, _ => none
   | _ => none
 
+/- ============================================================
+   R3-M1: ℕ→ℤ specialization — the ℕ reifier
+
+   A ℕ goal is reified as its ℤ image (what `zify` produces): every
+   ℕ atom occurrence sits under the IR cast symbol `Int.ofNat`,
+   literals become Int numerals, `+`/`*`-by-literal distribute, and
+   the ℕ-ness of each atom is carried by explicit `0 ≤ ↑x`
+   hypotheses `buildIR` appends (`_pb_nonneg_*`). The specialization
+   is DOCUMENTED, not silent: `buildIR` emits a `primitive`-kind
+   type_metadata entry for `Nat` whose theory_tags name the
+   embedding and its witness lemmas (`embedding_witness:` tags →
+   the refinement record's real soundness_witness), plus
+   library_provenance entries with content hashes for those lemmas.
+
+   Fail-fast scope (the truncation attack surface): ℕ subtraction,
+   division, modulo are REJECTED — `a - b` over ℕ is truncated and
+   a naive cast to `↑a - ↑b` would be unsound. A product with no
+   literal factor (the D1 `Zmax * zhigh` shape) or a non-foldable
+   power is atomized to an `Opaque` node: a fresh Int atom, nonneg
+   like every ℕ atom, whose payload records the original term.
+   ============================================================ -/
+
+/-- Recognize an `OfNat.ofNat` literal at type `Nat` (the form
+    `(5 : ℕ)` elaborates to) or a bare raw ℕ literal. -/
+def matchNatLiteralAtNat? (e : Expr) : Option Nat :=
+  match e.getAppFnArgs with
+  | (``OfNat.ofNat, #[α, n, _inst]) =>
+    if α.isConstOf ``Nat then n.rawNatLit? else none
+  | _ => e.rawNatLit?
+
+/-- The IR cast symbol both bridges normalize their surface heads
+    to (Lean `Int.ofNat`/`Nat.cast`, Rocq `Z.of_nat`); the SDK's
+    `Farkas.linearize` / `Smtlib.emit` / `Tier3_alethe` treat it as
+    transparent. -/
+def natCastSymbol : String := "Int.ofNat"
+
+/-- Atomize a nonlinear ℕ subterm: reuse the existing payload id if
+    this exact `Expr` was seen before (structural equality — the
+    same product mentioned twice is one atom), else mint
+    `_pb_atom_<k>` and record it. The shell is the atom under the
+    cast, like any ℕ atom. -/
+def atomizeNatTerm (e : Expr) : MetaM ShellTerm := do
+  let atoms ← reifyNatAtoms.get
+  let id ← match atoms.find? (fun (_, e') => e' == e) with
+    | some (id, _) => pure id
+    | none =>
+      let id := s!"_pb_atom_{atoms.size}"
+      reifyNatAtoms.modify (·.push (id, e))
+      pure id
+  return .app natCastSymbol [] [.opaque_ id]
+
+/-- Reify a ℕ-typed `Expr` into the ℤ image of its value (casts
+    pushed to atoms). Scope: variables, literals, `+`, `*` (with a
+    literal factor — otherwise atomized), `^` with literal base and
+    exponent (constant-folded; otherwise atomized). ℕ subtraction /
+    division / modulo fail fast — never cast naively. -/
+partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
+  if let some n := matchNatLiteralAtNat? e then
+    return .numLit (toString n) "Int"
+  if e.isFVar then
+    let decl := (← getLCtx).get! e.fvarId!
+    unless decl.type.isConstOf ``Nat do
+      throwError "proof_broker: ℕ reifier reached non-ℕ variable \
+        {decl.userName} : {decl.type}"
+    return .app natCastSymbol [] [.var decl.userName.toString]
+  match e.getAppFnArgs with
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+    unless α.isConstOf ``Nat do
+      throwError "proof_broker: ℕ reifier reached + at {α}"
+    return .app "HAdd.hAdd" [] [← reifyNatTerm a, ← reifyNatTerm b]
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    unless α.isConstOf ``Nat do
+      throwError "proof_broker: ℕ reifier reached * at {α}"
+    -- Linear iff a factor is a literal; otherwise the product is a
+    -- nonlinear atom (the D1 `Zmax * zhigh` shape).
+    if let some k := matchNatLiteralAtNat? a then
+      return .app "HMul.hMul" [] [.numLit (toString k) "Int", ← reifyNatTerm b]
+    else if let some k := matchNatLiteralAtNat? b then
+      return .app "HMul.hMul" [] [← reifyNatTerm a, .numLit (toString k) "Int"]
+    else
+      atomizeNatTerm e
+  | (``HPow.hPow, #[_, _, _, _, a, b]) =>
+    (match matchNatLiteralAtNat? a, matchNatLiteralAtNat? b with
+     | some base, some exp =>
+       -- Constant-fold closed powers (`2^24` is the numeral
+       -- 16777216 in the image; the lift re-folds by kernel defeq).
+       -- The bound keeps a pathological exponent from building a
+       -- gigantic numeral at reify time; 2^64-scale literals (R4
+       -- D2) stay comfortably inside.
+       if exp > 256 then
+         throwError "proof_broker: ℕ power exponent {exp} exceeds the \
+           constant-folding bound (256)"
+       else
+         return .numLit (toString (base ^ exp)) "Int"
+     | _, _ => atomizeNatTerm e)
+  | (``HSub.hSub, #[_, _, _, _, _, _]) =>
+    throwError "proof_broker: ℕ subtraction is truncated (`a - b` is \
+      not the ℤ difference), so the ℕ→ℤ specialization refuses it \
+      rather than cast naively; restate without ℕ subtraction (e.g. \
+      move the subtrahend to the other side as an addition)"
+  | (``HDiv.hDiv, _) | (``HMod.hMod, _) =>
+    throwError "proof_broker: ℕ division/modulo are outside the ℕ→ℤ \
+      specialization (scope: +, *, ^ with literal exponent, literals, \
+      variables; nonlinear products atomize)"
+  | _ =>
+    throwError "proof_broker: unsupported ℕ term {e} (ℕ→ℤ scope: +, \
+      * with a literal factor, ^ with literal base and exponent, \
+      literals, variables; nonlinear products atomize)"
+
 /-- Confirm that a comparison/equality at type `α` is over a
     fragment we can reify — `Int` always; anything else only if
     the extension's `reifyType` recognizes it. The reified IR
@@ -331,6 +450,15 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       if ← isProp dom then
         return .implies (← reifyTerm dom) (← reifyTerm body)
       else
+        -- R3-M1 scope: a ℕ-sorted quantifier inside a shell has no
+        -- ℤ image yet (it would need the bounded-∀ transform); a
+        -- TOP-LEVEL ∀ (n : ℕ) goal is handled by the tactic
+        -- front-end, which introduces the binder before reifying.
+        if dom.isConstOf ``Nat then
+          throwError "proof_broker: ∀ over ℕ inside a formula is \
+            outside the ℕ→ℤ specialization (a leading ∀ (n : ℕ) on \
+            the goal is introduced automatically; nested ℕ \
+            quantifiers are not yet translated)"
         let tref ← reifyType dom
         return .forall_ decl.userName.toString tref (← reifyTerm body)
   match e.getAppFnArgs with
@@ -342,6 +470,12 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       let sym := if (matchBitVecType? α).isSome then "BV.add" else "HAdd.hAdd"
       return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``HSub.hSub, #[α, _, _, _, a, b]) =>
+      -- R3-M1 attack surface: ℕ subtraction is truncated — never
+      -- cast naively, never reify as ordinary subtraction.
+      if α.isConstOf ``Nat then
+        throwError "proof_broker: ℕ subtraction is truncated (`a - b` \
+          is not the ℤ difference); the ℕ→ℤ specialization refuses it \
+          — restate without ℕ subtraction"
       let sym := if (matchBitVecType? α).isSome then "BV.sub" else "HSub.hSub"
       return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
@@ -350,32 +484,57 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   | (``Neg.neg, #[_, _, a]) =>
       return .app "Neg.neg" [] [← reifyTerm a]
   | (``LE.le, #[α, _, a, b]) =>
+      -- R3-M1: ℕ comparisons reify as their ℤ image.
+      if α.isConstOf ``Nat then
+        return .app "LE.le" [] [← reifyNatTerm a, ← reifyNatTerm b]
       expectArithCarrier α
       -- Lean's [<=] over BitVec resolves to BitVec.ule (unsigned).
       -- Signed comparisons need [BitVec.sle] written explicitly.
       let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
       return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``LT.lt, #[α, _, a, b]) =>
+      if α.isConstOf ``Nat then
+        return .app "LT.lt" [] [← reifyNatTerm a, ← reifyNatTerm b]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
       return .app sym [] [← reifyTerm a, ← reifyTerm b]
   | (``GE.ge, #[α, _, a, b]) =>
+      if α.isConstOf ``Nat then
+        return .app "LE.le" [] [← reifyNatTerm b, ← reifyNatTerm a]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
       return .app sym [] [← reifyTerm b, ← reifyTerm a]
   | (``GT.gt, #[α, _, a, b]) =>
+      if α.isConstOf ``Nat then
+        return .app "LT.lt" [] [← reifyNatTerm b, ← reifyNatTerm a]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
       return .app sym [] [← reifyTerm b, ← reifyTerm a]
   | (``Eq, #[α, a, b]) =>
+      -- R3-M1: an equality at ℕ images to an Int equality of the
+      -- cast operands.
+      if α.isConstOf ``Nat then
+        return .eq "Int" (← reifyNatTerm a) (← reifyNatTerm b)
       let tref ← reifyType α
       return .eq tref (← reifyTerm a) (← reifyTerm b)
   | (``Ne, #[α, a, b]) =>
       -- `a ≠ b` unfolds to `¬(a = b)`; reify it that way so the
       -- SMT serializer sees the ordinary (not (= a b)) shape
       -- instead of an uninterpreted `Ne` symbol.
+      if α.isConstOf ``Nat then
+        return .not_ (.eq "Int" (← reifyNatTerm a) (← reifyNatTerm b))
       let tref ← reifyType α
       return .not_ (.eq tref (← reifyTerm a) (← reifyTerm b))
+  | (``Nat.cast, #[α, _, a]) | (``NatCast.natCast, #[α, _, a]) =>
+      -- R3-M1: an explicit ℕ→ℤ cast in the source (a hand-zify'd
+      -- goal) reifies as the operand's ℤ image — same shell the ℕ
+      -- reifier produces, so mixed `↑x`-style Int goals join the
+      -- specialization path.
+      if α.isConstOf ``Int then reifyNatTerm a
+      else throwError "proof_broker: ℕ cast into {α} unsupported \
+             (only ↑(ℕ) : ℤ)"
+  | (``Int.ofNat, #[a]) =>
+      reifyNatTerm a
   | (``Exists, #[α, p]) =>
       -- `∃ x : T, body` is `Exists fun x => body`. Open the
       -- lambda binder as a local so bound occurrences reify as
@@ -383,6 +542,12 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       -- serializer renders `(exists ((x T)) body)`).
       (match p with
        | .lam nm _ _ _ => do
+         -- R3-M1 scope: same rule as ∀ — no ℕ-sorted binders in
+         -- shells (see the forall arm).
+         if α.isConstOf ``Nat then
+           throwError "proof_broker: ∃ over ℕ is outside the ℕ→ℤ \
+             specialization (nested ℕ quantifiers are not yet \
+             translated)"
          let tref ← reifyType α
          withLocalDeclD nm α fun x => do
            let body := (p.bindingBody!).instantiate1 x
@@ -503,6 +668,53 @@ partial def shellQuantEqFlags : ShellTerm → Bool × Bool × Bool
       let (f', e', q') := shellQuantEqFlags a
       (f || f', e || e', q || q')) (false, false, false)
 
+/-- The embedding-witness lemmas the ℕ→ℤ lift applies (all core
+    Lean, axiom-free): the comparison/equality transfer iffs plus
+    the nonneg fact behind every `_pb_nonneg_*` hypothesis. Their
+    names flow into the metadata's `embedding_witness:` tags →
+    the refinement record's `soundness_witness`, and each gets a
+    `library_provenance` entry with a real content hash. -/
+def natEmbeddingWitnessLemmas : List Name :=
+  [``Int.ofNat_le, ``Int.ofNat_lt, ``Int.ofNat_inj, ``Int.natCast_nonneg]
+
+/-- Provenance entry for one embedding-witness lemma: the defining
+    module from the environment, content hash = SHA-256 (via the
+    SDK's `content_hash` FFI) of the lemma's pretty-printed
+    statement. -/
+def natWitnessProvenance (name : Name) : MetaM (String × Provenance) := do
+  let env ← Lean.getEnv
+  let some info := env.find? name
+    | throwError "proof_broker: embedding-witness lemma {name} not found"
+  let stmt ← Lean.Meta.ppExpr info.type
+  let hash ← match runContentHash (toString stmt) with
+    | .ok h => pure h
+    | .error e =>
+      throwError "proof_broker: content_hash FFI failed: {repr e}"
+  let modulePath := env.getModuleIdxFor? name |>.map fun idx =>
+    toString env.allImportedModuleNames[idx.toNat]!
+  return (name.toString, {
+    library := "lean-core",
+    version := Lean.versionString,
+    modulePath,
+    contentHash := hash })
+
+/-- The `primitive`-kind type_metadata entry for `Nat` (spec §4.6;
+    the `type_variable` alternative was rejected — its schema
+    requires a typeclass instance object ℕ does not have; decision
+    recorded in delta.md §5). The `embedding_witness:` tags name
+    the lemmas in `natEmbeddingWitnessLemmas`; the SDK refinement
+    pass copies them into the `type_specialization` record's
+    `soundness_witness`, and check.py requires each to resolve in
+    `library_provenance`. -/
+def natTypeMetadata : Json :=
+  Json.mkObj [
+    ("kind", "primitive"),
+    ("name", "Nat"),
+    ("theory_tags", Json.arr (
+      #[Json.str "embeds_into:Int_for_universal_LIA"]
+      ++ natEmbeddingWitnessLemmas.toArray.map
+           (fun n => Json.str s!"embedding_witness:{n}")))]
+
 /-- Reify the goal + Prop-typed hypotheses + Int-typed free variables
     of `mvarId` into an IR document tagged for the LIA fragment.
 
@@ -521,6 +733,7 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   -- global constant it treats as uninterpreted (e.g.
   -- `Function.comp`) so it can be declared as a `freeVar`.
   reifyConsts.set #[]
+  reifyNatAtoms.set #[]
   let goalType ← Lean.instantiateMVars (← mvarId.getType)
   let goalShell ← reifyTerm goalType
   let mut freeVars : List FreeVar := []
@@ -529,6 +742,7 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   let mut sawExtensionType : Bool := false
   let mut sawBV : Bool := false
   let mut sawUF : Bool := false
+  let mut sawNat : Bool := false
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
     let ty := decl.type
@@ -540,6 +754,14 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     else if let some n := matchBitVecType? ty then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := s!"BitVec({n})" }]
       sawBV := true
+    else if ty.isConstOf ``Nat then
+      -- R3-M1: ℕ locals are arithmetic free vars declared at their
+      -- TRUE carrier "Nat"; the SDK refinement pass substitutes
+      -- Nat → Int (recorded with a real witness) before the SMT
+      -- serializer runs. Shell occurrences sit under the
+      -- `Int.ofNat` cast (see `reifyNatTerm`).
+      freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Nat" }]
+      sawNat := true
     else if ty.isProp then
       -- A local `p : Prop` is a Boolean ATOM, not a hypothesis
       -- (`isProp ty` above matched locals whose type IS a
@@ -598,6 +820,35 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
   -- advertises FOL/HOL/UF; the cert's refinement fragment is the
   -- closer key, set to "HOL" by the adapter for the THF dialect).
   let isHO := freeVars.any (fun fv => fv.ty.any (· == '('))
+  -- R3-M1: ℕ mode = a ℕ free var or an atomized ℕ subterm was seen.
+  -- M1 scope: the ℕ→ℤ specialization does not compose with UF / BV /
+  -- HO / extension carriers yet — mixing is a named failure, not a
+  -- silent mistranslation.
+  let natAtoms ← reifyNatAtoms.get
+  let natMode := sawNat || !natAtoms.isEmpty
+  if natMode && (sawBV || bvInTerms || sawUF || ufInTerms || isHO
+                 || sawExtensionType) then
+    throwError "proof_broker: ℕ variables cannot mix with UF / BV / \
+      higher-order / extension carriers yet (R3-M1 scope: pure ℕ \
+      linear arithmetic)"
+  if natMode then
+    -- Nonneg hypotheses — what `zify` adds: `0 ≤ ↑x` per ℕ free
+    -- var, `0 ≤ ↑<subterm>` per atomized ℕ product. These carry the
+    -- ℕ-ness of the atoms into the ℤ image; the lift proves them
+    -- via `Int.natCast_nonneg`.
+    for fv in freeVars do
+      if fv.ty == "Nat" then
+        hypotheses := hypotheses ++ [{
+          name := s!"_pb_nonneg_{fv.name}",
+          shell := .app "LE.le" [] [
+            .numLit "0" "Int",
+            .app natCastSymbol [] [.var fv.name]] }]
+    for (id, _) in natAtoms do
+      hypotheses := hypotheses ++ [{
+        name := "_pb_nonneg_" ++ id.drop "_pb_".length,
+        shell := .app "LE.le" [] [
+          .numLit "0" "Int",
+          .app natCastSymbol [] [.opaque_ id]] }]
   let order := if isHO then "higher_order" else "first_order"
   let fragment :=
     if isHO then "none"
@@ -621,6 +872,22 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     ++ (if hasExists then ["existential_quantification_over_first_order"] else [])
     ++ (if hasEq then ["equality_at_first_order_type"] else [])
     ++ (if isHO then ["function_quantification"] else [])
+  -- R3-M1: the ℕ→ℤ specialization is documented in the IR itself —
+  -- metadata naming the embedding + witnesses, provenance with real
+  -- content hashes, and one payload per atomized subterm.
+  let typeMetadata := if natMode then [("Nat", natTypeMetadata)] else []
+  let libraryProvenance ←
+    if natMode then natEmbeddingWitnessLemmas.mapM natWitnessProvenance
+    else pure []
+  let payloads ←
+    if natAtoms.isEmpty then pure none
+    else do
+      let entries ← natAtoms.toList.mapM (fun (id, e) => do
+        let pp ← Lean.Meta.ppExpr e
+        return (id, Json.mkObj [
+          ("kind", "nat_nonlinear_atom"),
+          ("lean", Json.str (toString pp))]))
+      pure (some (Json.mkObj entries))
   return {
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
@@ -629,11 +896,11 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
       order, featuresUsed,
       firstOrderFragment := fragment, decidableTheory := none
     },
-    goal := { shell := goalShell, payloads := none },
+    goal := { shell := goalShell, payloads },
     context := { typeVars := [], freeVars, hypotheses, librarySlice := none },
-    typeMetadata := [],
+    typeMetadata,
     definitionalMetadata := [],
-    libraryProvenance := [],
+    libraryProvenance,
     userDirectives := none
   }
 
@@ -1873,9 +2140,30 @@ private def parseAdapterList (lst : Option (Array Ident))
       throwError "proof_broker: empty adapter list; omit the brackets to use defaults"
     pure (some xs, false)
 
+/-- R3-M1: introduce every LEADING `∀ (n : ℕ)` binder of the goal
+    before reification. ℕ universals have no shell translation yet
+    (the bounded-∀ transform is future work), but a leading goal
+    binder is just a free variable — introducing it is the standard
+    sound move and the cert then addresses the introduced form.
+    Goals with other binder types (notably ∀-Int, which the walker
+    corpus reifies as `forall_` shells) are untouched. The result
+    is installed as the main goal. -/
+private partial def introLeadingNatForalls (goal : MVarId) : TacticM MVarId := do
+  let ty ← goal.withContext do Lean.instantiateMVars (← goal.getType)
+  match ty with
+  | .forallE _ dom _ _ =>
+    if dom.isConstOf ``Nat then
+      let (_, goal') ← goal.intro1P
+      let goal'' ← introLeadingNatForalls goal'
+      replaceMainGoal [goal'']
+      return goal''
+    else return goal
+  | _ => return goal
+
 @[tactic proofBroker]
 def evalProofBroker : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← introLeadingNatForalls goal
   let goalType ← goal.getType
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker [$names,*]) =>
@@ -1889,6 +2177,7 @@ def evalProofBroker : Tactic := fun stx => do
 @[tactic proofBrokerWalker]
 def evalProofBrokerWalker : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← introLeadingNatForalls goal
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker_walker [$names,*]) =>
         parseAdapterList (some names.getElems)
@@ -1920,6 +2209,7 @@ def evalProofBrokerWalker : Tactic := fun stx => do
 @[tactic proofBrokerQ]
 def evalProofBrokerQ : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← introLeadingNatForalls goal
   let goalType ← goal.getType
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker? [$names,*]) =>
@@ -2028,6 +2318,7 @@ private def matchExtensionEqGoal? (goalType : Expr) : MetaM (Option Expr) := do
 @[tactic proofBrokerTerm]
 def evalProofBrokerTerm : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← introLeadingNatForalls goal
   let goalType ← goal.getType
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker_term [$names,*]) =>
