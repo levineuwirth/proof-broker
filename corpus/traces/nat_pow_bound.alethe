@@ -1,8 +1,8 @@
 (
-(assume a0 (! (< x 16777216) :named @p_1))
+(assume a0 (! (< x 65536) :named @p_1))
 (assume a1 (<= 0 x))
-(assume a2 (! (not (! (<= x 16777215) :named @p_2)) :named @p_3))
-(step t0 (cl (not (! (= @p_3 (! (>= x 16777216) :named @p_4)) :named @p_7)) (not @p_3) @p_4) :rule equiv_pos2)
+(assume a2 (! (not (! (<= x 65535) :named @p_2)) :named @p_3))
+(step t0 (cl (not (! (= @p_3 (! (>= x 65536) :named @p_4)) :named @p_7)) (not @p_3) @p_4) :rule equiv_pos2)
 (step t1 (cl (! (= @p_2 (! (not @p_4) :named @p_5)) :named @p_10)) :rule hole :args ("TRUST_THEORY_REWRITE" @p_10 3 7))
 (step t2 (cl (= @p_3 (! (not @p_5) :named @p_8))) :rule cong :premises (t1))
 (step t3 (cl (! (= @p_8 @p_4) :named @p_9)) :rule hole :args ("TRUST_THEORY_REWRITE" @p_9 1 7))

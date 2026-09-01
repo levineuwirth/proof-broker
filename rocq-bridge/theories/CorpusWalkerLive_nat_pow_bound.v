@@ -16,9 +16,9 @@ Declare ML Module "proof_broker_rocq.plugin".
 
 Open Scope Z_scope.
 
-(* x < 2^24 |- x <= 16777215 over ℕ (2^24-scale literal via reifier pow folding; R3-M1 gate shape) *)
+(* x < 2^16 |- x <= 65535 over ℕ (2^16-scale literal via reifier pow folding; R3-M1 gate shape. Scale is capped at 2^16 on purpose: the Rocq lift discharges plain ℕ decimal-literal leaves by kernel conversion, which normalizes the unary nat (2^24 measured at 7.4GB RSS / ~150s per coqc; see delta §5.4)) *)
 Theorem corpus_live_nat_pow_bound :
-  forall x : nat, (x < 2^24)%nat -> (x <= 16777215)%nat.
+  forall x : nat, (x < 2^16)%nat -> (x <= 65535)%nat.
 Proof. intros x h. proof_broker_walker. Qed.
 
 Print corpus_live_nat_pow_bound.

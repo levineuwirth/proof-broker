@@ -1,8 +1,8 @@
 {
   "id": "nat_pow_bound",
-  "description": "x < 2^24 |- x <= 16777215 over ℕ (2^24-scale literal via reifier pow folding; R3-M1 gate shape)",
-  "coq_goal": "forall x : nat, (x < 2^24)%nat -> (x <= 16777215)%nat",
-  "lean_goal": "∀ (x : Nat), x < 2^24 → x ≤ 16777215",
+  "description": "x < 2^16 |- x <= 65535 over ℕ (2^16-scale literal via reifier pow folding; R3-M1 gate shape. Scale is capped at 2^16 on purpose: the Rocq lift discharges plain ℕ decimal-literal leaves by kernel conversion, which normalizes the unary nat (2^24 measured at 7.4GB RSS / ~150s per coqc; see delta §5.4))",
+  "coq_goal": "forall x : nat, (x < 2^16)%nat -> (x <= 65535)%nat",
+  "lean_goal": "∀ (x : Nat), x < 2^16 → x ≤ 65535",
   "static_replay_skip": "ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
   "ir": {
     "context": {
@@ -31,7 +31,7 @@
               {
                 "node": "NumLit",
                 "type": "Int",
-                "value": "16777216"
+                "value": "65536"
               }
             ],
             "node": "App",
@@ -86,7 +86,7 @@
           {
             "node": "NumLit",
             "type": "Int",
-            "value": "16777215"
+            "value": "65535"
           }
         ],
         "node": "App",

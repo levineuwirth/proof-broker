@@ -56,11 +56,14 @@ Proof. intros x y h1 h2. proof_broker_walker. Qed.
 Print pb_nat_walker_axiom_free.
 Print Assumptions pb_nat_walker_axiom_free.
 
-(* 2^24-scale literals: the reifier constant-folds the closed pow;
+(* 2^16-scale literals: the reifier constant-folds the closed pow;
    the push-cast discharges the Z-side computation by [eq_refl]
-   (binary Z literals — never the unary numeral). *)
+   (binary Z literals). The PLAIN decimal literal in the goal is the
+   scale cap: its [Z.of_nat] leaf is kernel conversion over the unary
+   numeral — linear in the VALUE (2^24 measured at 7.4GB RSS / ~150s
+   per coqc, which OOMs the 16GB CI runner; see delta §5.4). *)
 Theorem pb_nat_walker_pow_axiom_free :
-  forall x : nat, (x < 2^24)%nat -> (x <= 16777215)%nat.
+  forall x : nat, (x < 2^16)%nat -> (x <= 65535)%nat.
 Proof. intros x h. proof_broker_walker. Qed.
 
 Print pb_nat_walker_pow_axiom_free.

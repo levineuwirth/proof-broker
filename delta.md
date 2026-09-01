@@ -1110,6 +1110,25 @@ are their ground truth), and cvc5 mints Tier-1 Farkas only for
 shapes whose proofs contain `la_generic` — corpus goal shapes and
 the term-mode tests were chosen accordingly.
 
+**Known limitation — Rocq plain-decimal literal scale** (2026-09-01,
+found by CI, post-C3a): the Rocq lift discharges the literal leaf
+`Z.of_nat <lit> = <lit>%Z` by kernel conversion, and for a PLAIN
+decimal ℕ literal that normalizes `Nat.of_num_uint` through the unary
+numeral — cost linear in the literal's VALUE. Measured standalone
+(`Goal Z.of_nat <lit> = <lit>%Z. reflexivity.`): 65535 → 0.7s/0.4GB;
+1048575 → 8s/0.9GB; 16777215 → 153s/7.4GB per coqc. Two 2^24-scale
+test files at `dune -j4` OOMed the 16GB `ubuntu-latest` runner (step
+SIGTERM, exit 143, no output). Closed pow forms are exempt:
+`2^k` bridges via `nat_push_pow` + binary ℤ computation (the D1
+goals keep `2^24` untouched). Disposition: the exercised plain-decimal
+scale is capped at 2^16 (`nat_pow_bound`, `pb_nat_walker_pow_axiom_free`);
+Lean keeps its own 2^24 theorems (binary literals — cheap; they pin
+the `defEqCapped`/`tryCatchRuntimeEx` maxRecDepth regressions).
+Real fix, deliberately deferred past M1: prove
+`Z.of_nat (Nat.of_num_uint d) = Z.of_num_uint d` by decimal induction
+(no stdlib lemma exists) and route big literal leaves through it —
+touches `term_mode.ml` leaf construction, so it takes its own review.
+
 ---
 
 ---
