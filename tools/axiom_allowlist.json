@@ -365,6 +365,16 @@
       [],
     "pb_nat_uf_mix_fails_closed":
       [],
+    "pb_spec_gate_nat_spec_passes":
+      [],
+    "pb_spec_gate_int_none_passes":
+      [],
+    "pb_spec_gate_missing_fails_closed":
+      [],
+    "pb_spec_gate_foreign_fails_closed":
+      [],
+    "pb_spec_gate_mixed_fails_closed":
+      [],
     "nat_push_add":
       [],
     "nat_push_mul":

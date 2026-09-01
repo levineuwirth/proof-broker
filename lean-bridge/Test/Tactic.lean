@@ -2232,4 +2232,33 @@ example (x : Nat) (f : Int → Int) (hf : f 0 = 0) (h : x ≤ 3) :
   fail_if_success proof_broker
   omega
 
+/- The R3-M1 specialization gate, pinned fail-closed INDEPENDENT of
+   live dispatch (C3a ROUND 1 finding 2): no live path mints a foreign
+   specialization or a spec-less ℕ cert, so these drive the real
+   `checkCertSpecializations` on synthetic certs. Deleting the "cannot
+   invert" branch flips the foreign/mixed tests; deleting the "records
+   no Nat → Int" branch flips the nat-none test. -/
+
+/-- Positive control: the exact invertible record passes. -/
+example : True := by spec_gate_test nat nat_spec
+
+/-- Positive control: non-ℕ extraction with no records passes. -/
+example : True := by spec_gate_test int none
+
+/-- ℕ mode with NO recorded specialization → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test nat none
+  trivial
+
+/-- A specialization this bridge cannot invert → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test int foreign_spec
+  trivial
+
+/-- A foreign record riding NEXT TO a valid Nat → Int record still
+    fails closed (the gate rejects per-record, not first-match). -/
+example : True := by
+  fail_if_success spec_gate_test nat mixed_spec
+  trivial
+
 end ProofBroker.Test

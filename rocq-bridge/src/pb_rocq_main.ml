@@ -579,6 +579,62 @@ let rec intro_leading_nat_foralls () : unit Proofview.tactic =
        | _ -> Proofview.tclUNIT ())
     | _ -> Proofview.tclUNIT ())
 
+(* TEST-ONLY tactic pinning the R3-M1 specialization gate
+   ([check_cert_specializations]) fail-closed, independent of any live
+   dispatch — no live path mints a foreign specialization or a
+   spec-less ℕ cert, so without this the gate's error branches would
+   be exercised by nothing (C3a ROUND 1 finding 2; mirror of
+   lean-bridge's [spec_gate_test]). Builds a synthetic [Cert.t]
+   carrying only what the gate reads and runs the REAL gate; on a pass
+   the [True] test goal is closed by [exact I]. Surfaced in
+   g_proof_broker.mlg as [pb_spec_gate_test <mode> <kind>]. *)
+let run_spec_gate_test (mode : string) (kind : string)
+  : unit Proofview.tactic =
+  Proofview.Goal.enter (fun _ ->
+    let nat_mode = match mode with
+      | "nat" -> true
+      | "int" -> false
+      | m ->
+        CErrors.user_err Pp.(
+          str ("pb_spec_gate_test: unknown mode '" ^ m ^ "' (nat | int)"))
+    in
+    let spec source target
+      : Proof_broker.Refinement_record.specialization = {
+      kind = Proof_broker.Refinement_record.Type_specialization;
+      source; target;
+      justification = Some "embeds_into:Int_for_universal_LIA";
+      soundness_witness = Some "Nat2Z.inj_le";
+    } in
+    let specs = match kind with
+      | "none" -> []
+      | "nat_spec" -> [ spec "Nat" "Int" ]
+      | "foreign_spec" -> [ spec "alpha" "Int" ]
+      | "mixed_spec" -> [ spec "Nat" "Int"; spec "alpha" "Int" ]
+      | k ->
+        CErrors.user_err Pp.(
+          str ("pb_spec_gate_test: unknown kind '" ^ k ^ "' \
+                (none | nat_spec | foreign_spec | mixed_spec)"))
+    in
+    let cert : Cert.t = {
+      cert_version = "1.0";
+      tier = 1;
+      format = "farkas";
+      goal = { shell = Ir.Const { name = "True" }; payloads = None };
+      dispatch_context_hash = "sha256:" ^ String.make 64 '1';
+      rewrite_trace_hash = "sha256:" ^ String.make 64 '1';
+      backend = { name = "test"; version = "0";
+                  config_hash = "sha256:" ^ String.make 64 '1' };
+      resources = { wall_time_ms = 0; memory_peak_kb = None;
+                    budget_consumed = None };
+      refinement_record = { adapter = "test"; adapter_version = "0";
+                            specializations = specs; fragment = "LIA";
+                            auxiliary = None };
+      payload = Tier0_oracle { claim = "spec-gate test";
+                               backend_attestation = None };
+    } in
+    check_cert_specializations cert nat_mode;
+    invoke_named_tactic "exact I")
+
 (* --- public entry points ------------------------------------------- *)
 
 let run_close (names : Names.Id.t list option) : unit Proofview.tactic =

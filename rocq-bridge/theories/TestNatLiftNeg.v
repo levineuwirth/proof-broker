@@ -61,3 +61,41 @@ Qed.
 
 Print pb_nat_uf_mix_fails_closed.
 Print Assumptions pb_nat_uf_mix_fails_closed.
+
+(* The R3-M1 specialization gate, pinned fail-closed INDEPENDENT of
+   live dispatch (C3a ROUND 1 finding 2): no live path mints a foreign
+   specialization or a spec-less ℕ cert, so these drive the real
+   [check_cert_specializations] on synthetic certs via the test-only
+   [pb_spec_gate_test]. Deleting the "cannot invert" branch flips the
+   foreign/mixed tests; deleting the "records no Nat -> Int" branch
+   flips the nat-none test. *)
+
+Theorem pb_spec_gate_nat_spec_passes : True.
+Proof. pb_spec_gate_test nat nat_spec. Qed.
+
+Print pb_spec_gate_nat_spec_passes.
+Print Assumptions pb_spec_gate_nat_spec_passes.
+
+Theorem pb_spec_gate_int_none_passes : True.
+Proof. pb_spec_gate_test int none. Qed.
+
+Print pb_spec_gate_int_none_passes.
+Print Assumptions pb_spec_gate_int_none_passes.
+
+Theorem pb_spec_gate_missing_fails_closed : True.
+Proof. Fail pb_spec_gate_test nat none. exact I. Qed.
+
+Print pb_spec_gate_missing_fails_closed.
+Print Assumptions pb_spec_gate_missing_fails_closed.
+
+Theorem pb_spec_gate_foreign_fails_closed : True.
+Proof. Fail pb_spec_gate_test int foreign_spec. exact I. Qed.
+
+Print pb_spec_gate_foreign_fails_closed.
+Print Assumptions pb_spec_gate_foreign_fails_closed.
+
+Theorem pb_spec_gate_mixed_fails_closed : True.
+Proof. Fail pb_spec_gate_test nat mixed_spec. exact I. Qed.
+
+Print pb_spec_gate_mixed_fails_closed.
+Print Assumptions pb_spec_gate_mixed_fails_closed.

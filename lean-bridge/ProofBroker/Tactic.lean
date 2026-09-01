@@ -2763,6 +2763,58 @@ where
    Test-only entry point for the LLM-replay closer
    ============================================================ -/
 
+/-- TEST-ONLY tactic pinning the R3-M1 specialization gate
+    (`checkCertSpecializations`) fail-closed, independent of any live
+    dispatch — no live path today mints a foreign specialization or a
+    spec-less ℕ cert, so without this the gate's throw branches would
+    be exercised by nothing (C3a ROUND 1 finding 2, the C2 envelope-arm
+    vacuity pattern). The tactic builds a synthetic cert carrying only
+    the field the gate reads and runs the REAL gate:
+
+    * `spec_gate_test nat nat_spec` — ℕ mode, exactly the Nat → Int
+      record → gate passes, `trivial` closes the `True` goal.
+    * `spec_gate_test int none` — non-ℕ, no records → passes.
+    * `spec_gate_test nat none` — ℕ mode, record MISSING → the
+      "records no Nat → Int type specialization" branch throws.
+    * `spec_gate_test int foreign_spec` / `spec_gate_test nat
+      foreign_spec` / `spec_gate_test nat mixed_spec` — a
+      specialization this bridge cannot invert (alone, or riding next
+      to a valid Nat → Int record) → the "cannot invert" branch
+      throws. Deleting either throw branch flips the matching
+      `fail_if_success` tests in `Test/Tactic.lean`. -/
+syntax (name := specGateTest) "spec_gate_test" ident ident : tactic
+
+@[tactic specGateTest]
+def evalSpecGateTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| spec_gate_test $mode $kind) =>
+    let natMode ← match mode.getId.toString with
+      | "nat" => pure true
+      | "int" => pure false
+      | m => throwError "spec_gate_test: unknown mode '{m}' (nat | int)"
+    let natSpec := Json.mkObj [
+      ("kind", "type_specialization"),
+      ("source", "Nat"), ("target", "Int"),
+      ("justification", "embeds_into:Int_for_universal_LIA"),
+      ("soundness_witness", "Int.ofNat_le")]
+    let foreignSpec := Json.mkObj [
+      ("kind", "type_specialization"),
+      ("source", "alpha"), ("target", "Int"),
+      ("justification", "embeds_into:Int_for_universal_LIA"),
+      ("soundness_witness", "linear_ordered_comm_ring_lia_embedding")]
+    let specs : Json ← match kind.getId.toString with
+      | "none" => pure (Json.arr #[])
+      | "nat_spec" => pure (Json.arr #[natSpec])
+      | "foreign_spec" => pure (Json.arr #[foreignSpec])
+      | "mixed_spec" => pure (Json.arr #[natSpec, foreignSpec])
+      | k => throwError "spec_gate_test: unknown kind '{k}' \
+          (none | nat_spec | foreign_spec | mixed_spec)"
+    let cert := Json.mkObj [
+      ("refinement_record", Json.mkObj [("specializations", specs)])]
+    checkCertSpecializations cert natMode
+    evalTactic (← `(tactic| trivial))
+  | _ => throwError "spec_gate_test: malformed invocation"
+
 /-- TEST-ONLY tactic. Drives the exact `replayLlmScriptOrFail`
     path `proof_broker` takes for an LLM `lean-tactic-script`
     cert, but feeds the string literal directly as the cert's
