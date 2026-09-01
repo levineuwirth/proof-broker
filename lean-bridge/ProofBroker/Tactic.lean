@@ -329,9 +329,21 @@ def natCastSymbol : String := "Int.ofNat"
     reduction. -/
 private partial def natAtomForbiddenOp? (e : Expr) : Option Name :=
   match e.getAppFnArgs with
-  | (``HSub.hSub, args) | (``HDiv.hDiv, args) | (``HMod.hMod, args) =>
+  | (``HSub.hSub, args) | (``HDiv.hDiv, args) | (``HMod.hMod, args)
+  | (``Nat.sub, args) | (``Nat.div, args) | (``Nat.mod, args)
+  | (``Nat.pred, args) =>
     -- Inside a ℕ atom every subterm is ℕ-typed, so the head alone
     -- condemns it; report the innermost occurrence when nested.
+    -- Both the notation heads (`HSub.hSub`, …) and the
+    -- directly-spelled core names (`Nat.sub`, …, plus `Nat.pred` —
+    -- truncated subtraction by one) are matched: the scan is a
+    -- named-head check over the core ℕ arithmetic vocabulary, and
+    -- ROUND 2 (C3a finding 6) showed the notation set alone lets a
+    -- spelled `Nat.sub a b * c` through. An opaque FUNCTION
+    -- application inside an atom stays honestly opaque — the atom
+    -- is uninterpreted either way; this scan enforces the
+    -- documented fail-fast contract for the core operations, not a
+    -- semantic subtraction detector.
     (match args.foldl (fun acc a => acc <|> natAtomForbiddenOp? a) none with
      | some inner => some inner
      | none => e.getAppFn.constName?)

@@ -67,6 +67,7 @@ let r_natS    = lazy (safe_constr_of_ref "num.nat.S")
 let r_nat_add = lazy (safe_constr_of_ref "num.nat.add")
 let r_nat_mul = lazy (safe_constr_of_ref "num.nat.mul")
 let r_nat_sub = lazy (safe_constr_of_ref "num.nat.sub")
+let r_nat_pred = lazy (safe_constr_of_ref "num.nat.pred")
 let r_nat_le  = lazy (safe_constr_of_ref "num.nat.le")
 let r_nat_lt  = lazy (safe_constr_of_ref "num.nat.lt")
 let r_nat_ge  = lazy (safe_constr_of_ref "num.nat.ge")
@@ -346,10 +347,17 @@ let rec reify_nat_term env sigma t : Ir.shell_term =
 and nat_atom_forbidden_op sigma t : string option =
   match EConstr.kind sigma t with
   | App (head, args) ->
+    (* Named-head check over the core ℕ arithmetic vocabulary —
+       [Nat.pred] included (truncated subtraction by one; C3a ROUND 2
+       finding 6). An opaque FUNCTION application inside an atom
+       stays honestly opaque; this enforces the documented fail-fast
+       contract for the core operations, not a semantic subtraction
+       detector. *)
     let this =
       if eq_ref sigma head r_nat_sub then Some "subtraction"
       else if eq_ref sigma head r_nat_div then Some "division"
       else if eq_ref sigma head r_nat_mod then Some "modulo"
+      else if eq_ref sigma head r_nat_pred then Some "predecessor"
       else None
     in
     let inner =

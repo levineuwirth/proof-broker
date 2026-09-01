@@ -1044,8 +1044,13 @@ to a spec-§4.4 `Opaque` node — a fresh Int atom, nonneg like every
 producer of `Opaque`. Fail-fast scope (the R3 attack surface): ℕ
 subtraction, division, modulo, and nested ℕ quantifiers are named
 reifier errors (a leading `∀ (n : ℕ)` goal binder is introduced by
-the tactic front-end instead); ℕ does not compose with UF/BV/HO/Real
-carriers yet.
+the tactic front-end instead); the refusal holds inside atomized
+products too, as a named-head scan over the core ℕ arithmetic
+vocabulary — the notation heads, the directly-spelled `Nat.sub`/
+`Nat.div`/`Nat.mod`, and `Nat.pred` (C3a rounds 1–2) — while an
+opaque FUNCTION application inside an atom stays an honestly opaque,
+uninterpreted atom; ℕ does not compose with UF/BV/HO/Real carriers
+yet.
 
 **Decision 2 — spec §4.6 kind + real witnesses (fail closed).** The
 metadata entry for ℕ uses the **`primitive` kind** (the

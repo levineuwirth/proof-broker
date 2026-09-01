@@ -2239,6 +2239,20 @@ example (a b c : Nat) (h : (a - b) * c ≤ 3) : (a - b) * c ≤ 4 := by
   fail_if_success proof_broker
   omega
 
+/-- ROUND 2 finding 6 (probe-derived): the atom scan matches the
+    directly-spelled core name, not just the `-` notation head. -/
+example (a b c : Nat) (h : Nat.sub a b * c ≤ 3) :
+    Nat.sub a b * c ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- ROUND 2 finding 6 (probe-derived): `Nat.pred` is truncated
+    subtraction by one — refused inside atoms like `Nat.sub`. -/
+example (a c : Nat) (h : Nat.pred a * c ≤ 3) :
+    Nat.pred a * c ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
 /- The R3-M1 specialization gate, pinned fail-closed INDEPENDENT of
    live dispatch (C3a ROUND 1 finding 2): no live path mints a foreign
    specialization or a spec-less ℕ cert, so these drive the real

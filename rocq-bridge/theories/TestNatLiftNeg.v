@@ -113,3 +113,18 @@ Qed.
 
 Print pb_nat_sub_in_atom_fails_closed.
 Print Assumptions pb_nat_sub_in_atom_fails_closed.
+
+(* ROUND 2 finding 6 (probe-derived): [Nat.pred] is truncated
+   subtraction by one — refused inside atoms like [Nat.sub] (the
+   direct [Nat.sub] spelling shares the [-] notation's head on this
+   bridge and is covered by the test above). *)
+Theorem pb_nat_pred_in_atom_fails_closed :
+  forall a c : nat, (Nat.pred a * c <= 3)%nat -> (Nat.pred a * c <= 4)%nat.
+Proof.
+  intros a c h.
+  Fail proof_broker.
+  lia.
+Qed.
+
+Print pb_nat_pred_in_atom_fails_closed.
+Print Assumptions pb_nat_pred_in_atom_fails_closed.
