@@ -28,7 +28,15 @@
       binder per IR node; nesting composes). Their presence drops
       the [QF_] prefix from the picked logic.
 
-    Out of scope. [Lambda]/[Opaque], type-class methods that
+    * [Opaque { payload_id }] (R3-M1): an atomized subterm — the
+      reifiers' nonlinear-ℕ-product atomization. Emitted as a bare
+      identifier and declared [(declare-const <payload_id> Int)].
+    * [Int.ofNat t] (R3-M1): the ℕ→ℤ cast, emitted transparently
+      as [t] — the adapter serializes the refined IR, where every
+      ℕ atom is an Int const with an explicit nonneg hypothesis,
+      so the cast is the identity there.
+
+    Out of scope. [Lambda], type-class methods that
     haven't been refined to primitives ([HAdd.hAdd] is accepted
     but indicates pre-refinement IR — adapter callers usually want
     a refined IR), string/array sorts.
@@ -356,11 +364,12 @@ let rec emit_term ~specs (t : Ir.shell_term) : (string, error) result =
       node = "Lambda";
       detail = "lambdas not supported";
     })
-  | Opaque _ ->
-    Error (Unsupported_node {
-      node = "Opaque";
-      detail = "opaque payloads not supported";
-    })
+  (* R3-M1: an [Opaque] node is an atomized subterm — emitted as a
+     bare identifier named by its payload id, declared as an [Int]
+     const by [emit] (v1 scope: the only producer is the reifiers'
+     nonlinear-ℕ-product atomization, always Int-valued). *)
+  | Opaque { payload_id } ->
+    format_identifier ~site:"Opaque" payload_id
 
 and emit_bin_op ~specs op a b =
   let ( let* ) = Result.bind in
@@ -384,6 +393,17 @@ and emit_binder ~specs quant var ty body =
   Ok (Printf.sprintf "(%s ((%s %s)) %s)" quant v sort b)
 
 and emit_app ~specs symbol args =
+  (* R3-M1 ℕ→ℤ cast transparency: [Int.ofNat t] emits as its operand.
+     Sound at emission because the adapter serializes the REFINED IR,
+     where every ℕ atom has been substituted to an [Int] const with an
+     explicit [0 <= x] nonneg hypothesis riding along — the cast is
+     the identity there. Mirrors [Farkas.linearize] and
+     [Tier3_alethe.shell_to_sexp]. *)
+  if String.equal symbol "Int.ofNat" then
+    match args with
+    | [ a ] -> emit_term ~specs a
+    | _ -> Error (Bad_arity { symbol; expected = 1; got = List.length args })
+  else
   (* UF.<name> symbols correspond to declared uninterpreted
      functions; strip the prefix and emit a generic application.
      The free-var declaration ([emit_decls]) handles the matching
@@ -653,6 +673,41 @@ let emit (ir : Ir.t) : (script, error) result =
            emit_decls rest)
     in
     emit_decls ir.context.free_vars
+  in
+  (* R3-M1: declare every [Opaque] atom (goal + hypotheses, first-
+     occurrence order, deduped) as an [Int] const. The only v1
+     producer is the reifiers' nonlinear-ℕ-product atomization, so
+     the sort is fixed at Int; a payload-typed generalization waits
+     for a producer that needs it. *)
+  let* () =
+    let rec collect acc (t : Ir.shell_term) =
+      match t with
+      | Opaque { payload_id } ->
+        if List.mem payload_id acc then acc else acc @ [ payload_id ]
+      | Var _ | Const _ | Num_lit _ -> acc
+      | Not { operand } -> collect acc operand
+      | Eq { left; right; _ } -> collect (collect acc left) right
+      | And { left; right } | Or { left; right } ->
+        collect (collect acc left) right
+      | Implies { antecedent; consequent } ->
+        collect (collect acc antecedent) consequent
+      | Forall { body; _ } | Exists { body; _ } | Lambda { body; _ } ->
+        collect acc body
+      | App { args; _ } -> List.fold_left collect acc args
+    in
+    let atoms =
+      List.fold_left
+        (fun acc (h : Ir.hypothesis) -> collect acc h.shell)
+        (collect [] ir.goal.shell)
+        ir.context.hypotheses
+    in
+    List.fold_left (fun acc id ->
+      let* () = acc in
+      let* name = format_identifier ~site:("Opaque:" ^ id) id in
+      Buffer.add_string buf
+        (Printf.sprintf "(declare-const %s Int)\n" name);
+      Ok ())
+      (Ok ()) atoms
   in
   let* () =
     let rec emit_hyps = function

@@ -249,6 +249,62 @@ let test_verify_synthetic_la_generic_only () =
       "expected Verified, got Step_failed at %s (rule=%s): %s"
       step_id rule detail)
 
+(* R3-M1 cast transparency: the same synthetic proof verifies against
+   the ℕ-image form of the IR — hypotheses whose atoms sit under
+   [Int.ofNat] casts (the SMT script erased them, so cvc5's assumes
+   state the bare atoms; [shell_to_sexp] must match through the
+   cast). Also pins that a WRONG operand under the cast still fails:
+   the cast is transparent, not a wildcard. *)
+let test_verify_cast_image_ir () =
+  let cast t : Ir.shell_term =
+    App { symbol = "Int.ofNat"; type_args = []; args = [ t ] } in
+  let x = cast (Var { name = "x" }) in
+  let one : Ir.shell_term = Num_lit { value = "1"; ty = "Int" } in
+  let three : Ir.shell_term = Num_lit { value = "3"; ty = "Int" } in
+  let h0 : Ir.hypothesis = {
+    name = "h0";
+    shell = App { symbol = ">="; type_args = []; args = [ x; three ] };
+  } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "<="; type_args = []; args = [ x; one ] };
+  } in
+  let ir = {
+    (make_x_ir ()) with
+    logic_classification = lia_logic;
+    goal = { shell = Const { name = "False" }; payloads = None };
+    context = {
+      type_vars = [];
+      free_vars = [ { name = "x"; ty = "Nat" } ];
+      hypotheses = [ h0; h1 ];
+      library_slice = None;
+    };
+  } in
+  (match Tier3_alethe.verify ir synthetic_la_generic_only_proof with
+   | Verified -> ()
+   | Unsupported_rule { rule; step_id } ->
+     Alcotest.fail (Printf.sprintf
+       "expected Verified, got Unsupported_rule(%s) at %s" rule step_id)
+   | Step_failed { rule; step_id; detail } ->
+     Alcotest.fail (Printf.sprintf
+       "expected Verified, got Step_failed at %s (rule=%s): %s"
+       step_id rule detail));
+  (* Wrong atom under the cast: assume (>= x 3) must NOT match a
+     hypothesis about y. *)
+  let y = cast (Var { name = "y" }) in
+  let ir_wrong = { ir with
+    context = { ir.context with
+      hypotheses = [
+        { name = "h0";
+          shell = App { symbol = ">="; type_args = []; args = [ y; three ] } };
+        h1 ];
+      free_vars = [ { name = "y"; ty = "Nat" }; { name = "x"; ty = "Nat" } ];
+    } } in
+  match Tier3_alethe.verify ir_wrong synthetic_la_generic_only_proof with
+  | Verified ->
+    Alcotest.fail "cast transparency must not make a wrong atom match"
+  | _ -> ()
+
 let test_verify_real_fixture_verified () =
   (* The alethe-x-3-x-1 fixture uses 14 distinct Alethe rules.
      With the full registry — la_generic, refl, trans, cong,
@@ -2282,6 +2338,8 @@ let () =
         `Quick test_verify_synthetic_la_generic_only;
       Alcotest.test_case "rejects unbacked top-level assume"
         `Quick test_verify_rejects_unbacked_top_level_assume;
+      Alcotest.test_case "cast-image IR verifies; wrong atom still fails (R3-M1)"
+        `Quick test_verify_cast_image_ir;
       Alcotest.test_case "proven_in_scope filters local assumes by ID prefix"
         `Quick test_proven_in_scope_filters_local_assumes;
       Alcotest.test_case "local_assume_atoms excludes descendant scope"
