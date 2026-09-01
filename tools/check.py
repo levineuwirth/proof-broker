@@ -524,6 +524,7 @@ CERT_MANIFEST_PAIRS = {
     "cert-example1-tier3-alethe.json":    "manifest-cvc5.json",
     "cert-example2-tier2-casesplit.json": "manifest-cvc5.json",
     "cert-example4-tier3-tptp.json":      "manifest-vampire.json",
+    "cert-example-nat-tier1-farkas.json": "manifest-cvc5.json",
 }
 
 # cert filename -> IR filename. R2: every shipped cert pairs with a
@@ -535,6 +536,7 @@ CERT_IR_PAIRS = {
     "cert-example1-tier3-alethe.json": "example1-lia-typeclass.json",
     "cert-example2-tier2-casesplit.json": "example-casesplit-lra.json",
     "cert-example4-tier3-tptp.json": "example-tstp-fol.json",
+    "cert-example-nat-tier1-farkas.json": "example-nat-bound.json",
 }
 
 # cert filename -> rewrite-trace filename (R2). Every cert's
@@ -546,6 +548,7 @@ CERT_TRACE_PAIRS = {
     "cert-example1-tier3-alethe.json": "rewrite-trace-example1-identity.json",
     "cert-example2-tier2-casesplit.json": "rewrite-trace-casesplit-identity.json",
     "cert-example4-tier3-tptp.json": "rewrite-trace-tstp-identity.json",
+    "cert-example-nat-tier1-farkas.json": "rewrite-trace-nat-identity.json",
 }
 
 # rewrite-trace filename -> the IR fixture whose canonical hash every
@@ -556,6 +559,7 @@ TRACE_IR_PAIRS = {
     "rewrite-trace-example1-identity.json": "example1-lia-typeclass.json",
     "rewrite-trace-casesplit-identity.json": "example-casesplit-lra.json",
     "rewrite-trace-tstp-identity.json": "example-tstp-fol.json",
+    "rewrite-trace-nat-identity.json": "example-nat-bound.json",
 }
 
 # The all-zeros "no trace" sentinel is REJECTED as of R2: every mint
