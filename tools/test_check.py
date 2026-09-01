@@ -27,6 +27,7 @@ from check import (  # noqa: E402
     check_cert_manifest_consistency,
     check_certificate,
     check_fixture_pairing_completeness,
+    check_unknown_fixture_names,
     check_identity_trace_hashes,
     check_ir,
     check_ir_against_registry,
@@ -435,6 +436,19 @@ def _non_identity_trace_exempt():
     # slots cannot all equal one IR's hash, so TRACE_IR_PAIRS carries
     # no entry for it by design. Only chain continuity applies.
     e = check_fixture_pairing_completeness(["rewrite-trace-example3.json"])
+    assert not e, e
+
+
+@register("discovery (C2 R2): an unrecognized fixture name errors")
+def _unrecognized_fixture_name_errors():
+    e = check_unknown_fixture_names(["probe-cert.json"])
+    assert_contains(e, "examples/probe-cert.json", "error")
+    assert_contains(e, "PREFIX_HANDLER", "error")
+
+
+@register("discovery (C2 R2): every shipped fixture name is recognized")
+def _shipped_fixture_names_recognized():
+    e = check_unknown_fixture_names()
     assert not e, e
 
 

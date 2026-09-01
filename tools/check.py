@@ -773,6 +773,26 @@ def kind_for(name: str) -> str | None:
     return None
 
 
+def check_unknown_fixture_names(fixture_names=None):
+    """C2 round 2, Low: discovery itself was prefix-opt-in — a fixture
+    whose name matches no PREFIX_HANDLER prefix (e.g. probe-cert.json)
+    was checked by nothing and mentioned nowhere, the same vacuity
+    pattern one level above pairing completeness. Every examples/*.json
+    must match a known prefix; an unrecognized name is an error, not a
+    silent skip."""
+    if fixture_names is None:
+        fixture_names = sorted(p.name for p in EXAMPLES.glob("*.json"))
+    prefixes = ", ".join(p for p, _ in PREFIX_HANDLER)
+    errors = []
+    for name in fixture_names:
+        if kind_for(name) is None:
+            errors.append(
+                f"examples/{name}: name matches no PREFIX_HANDLER prefix "
+                f"({prefixes}) — an unrecognized fixture is checked by "
+                "nothing; rename it or add a handler (tools/check.py)")
+    return errors
+
+
 def main() -> int:
     with REGISTRY_FILE.open() as f:
         registry = json.load(f)
@@ -806,6 +826,16 @@ def main() -> int:
     else:
         print("OK   examples/ pairing completeness (every cert in all "
               "three pairing maps; every identity trace in TRACE_IR_PAIRS)")
+
+    name_errors = check_unknown_fixture_names()
+    if name_errors:
+        print("FAIL examples/ fixture-name discovery")
+        for msg in name_errors:
+            print(f"  ERROR  {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ fixture-name discovery (every *.json matches "
+              "a PREFIX_HANDLER prefix)")
 
     for fixture in sorted(EXAMPLES.glob("*.json")):
         kind = kind_for(fixture.name)

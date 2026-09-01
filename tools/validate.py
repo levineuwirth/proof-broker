@@ -44,6 +44,7 @@ from check import (  # noqa: E402
     # pairing-map-opt-in, so an unpaired cert-*.json would silently
     # skip it; check.py owns the maps and the completeness check.
     check_fixture_pairing_completeness,
+    check_unknown_fixture_names,
     emit_warnings,
     CERT_MANIFEST_PAIRS,
     CERT_IR_PAIRS,
@@ -143,6 +144,15 @@ def main() -> int:
         failed += 1
     else:
         print("OK   examples/ pairing completeness")
+
+    name_errors = check_unknown_fixture_names()
+    if name_errors:
+        print("FAIL examples/ fixture-name discovery")
+        for msg in name_errors:
+            print(f"  - {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ fixture-name discovery")
 
     for example in sorted(EXAMPLES.glob("*.json")):
         schema_name = schema_for(example.name)
