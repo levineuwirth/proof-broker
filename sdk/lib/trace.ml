@@ -126,6 +126,28 @@ let to_json (tr : t) : Yojson.Safe.t =
   in
   `Assoc fields
 
+(** [is_identity tr]: the trace certifies that the pipeline left the
+    IR untouched. True iff the initial and final IR hashes agree AND
+    every entry both reports a non-rewriting outcome
+    ([Skipped_preconditions] / [No_op]) and leaves its own
+    before/after hashes equal. The outcome check is not redundant
+    with the hash check: a pass pair that rewrote and then exactly
+    un-rewrote would have equal endpoint hashes but [Applied]
+    outcomes, and MUST NOT count as identity — its inversion data
+    would still be load-bearing for a lifter. A [Failed] or
+    outcome-less entry is conservatively non-identity even though
+    the failure contract reverts the IR: identity is a positive
+    claim the guard (R2) acts on, so anything ambiguous fails it. *)
+let is_identity (tr : t) : bool =
+  String.equal tr.initial_ir_hash tr.final_ir_hash
+  && List.for_all
+       (fun (e : entry) ->
+         (match e.outcome with
+          | Some Skipped_preconditions | Some No_op -> true
+          | Some Applied | Some Failed | None -> false)
+         && String.equal e.before_hash e.after_hash)
+       tr.entries
+
 let of_json (j : Yojson.Safe.t) : t =
   let p = match j with
     | `Assoc pairs -> pairs

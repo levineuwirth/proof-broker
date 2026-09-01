@@ -100,7 +100,9 @@ let test_extract_script_bare () =
 
 let test_fail_closed () =
   Unix.putenv "PROOF_BROKER_LLM_ENDPOINT" "";
-  match Adapter_llm.dispatch (sample_ir ()) with
+  match (let __ir = (sample_ir ()) in
+          Adapter_llm.dispatch
+            ~rewrite_trace_hash:(Pipeline.identity_trace_hash __ir) __ir) with
   | Failed (Solver_error { stderr }) ->
     Alcotest.(check bool) "names the missing config" true
       (contains stderr "PROOF_BROKER_LLM_ENDPOINT")
@@ -145,7 +147,9 @@ let test_mock_endpoint () =
       (Printf.sprintf "http://127.0.0.1:%d/v1/chat/completions" port);
     Unix.putenv "PROOF_BROKER_LLM_MODEL" "mock-model";
     Unix.putenv "PROOF_BROKER_LLM_API_KEY" "";
-    let result = Adapter_llm.dispatch (sample_ir ()) in
+    let result = (let __ir = (sample_ir ()) in
+          Adapter_llm.dispatch
+            ~rewrite_trace_hash:(Pipeline.identity_trace_hash __ir) __ir) in
     ignore (Unix.waitpid [] child);
     (match result with
      | Cert c ->
@@ -216,7 +220,9 @@ let test_mock_endpoint_rocq () =
       (Printf.sprintf "http://127.0.0.1:%d/v1/chat/completions" port);
     Unix.putenv "PROOF_BROKER_LLM_MODEL" "mock-model-rocq";
     Unix.putenv "PROOF_BROKER_LLM_API_KEY" "";
-    let result = Adapter_llm.dispatch (sample_ir_rocq ()) in
+    let result = (let __ir = (sample_ir_rocq ()) in
+          Adapter_llm.dispatch
+            ~rewrite_trace_hash:(Pipeline.identity_trace_hash __ir) __ir) in
     ignore (Unix.waitpid [] child);
     (match result with
      | Cert c ->

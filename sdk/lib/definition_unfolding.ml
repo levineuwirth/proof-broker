@@ -254,9 +254,17 @@ type result = {
   trace : Trace.entry;
 }
 
-let run (ir : Ir.t) : result =
+(** [run ?concepts ir]: unfold definitions whose concept tags appear
+    in the union of [concepts] (step-level configuration — the
+    dispatch pipeline passes the registry's
+    [always_unfold_for_dispatch] list here, spec §5.4) and the IR's
+    own [user_directives.rewriter_preferences.enable_definition_unfolding]
+    allow-list. The default [concepts = []] preserves the original
+    directive-only behavior for the standalone FFI pass. *)
+let run ?(concepts : string list = []) (ir : Ir.t) : result =
   let before_hash = Hash.sha256_of_json (Codec.to_json ir) in
-  let concept_tags = configured_concept_tags ir in
+  let concept_tags =
+    SS.union (SS.of_list concepts) (configured_concept_tags ir) in
   let defns = Dm.defined_functions ir in
   let unfold_at site t = unfold_to_fixpoint concept_tags defns t |> fun (t', rs) ->
                          t', inversion_entries site rs in

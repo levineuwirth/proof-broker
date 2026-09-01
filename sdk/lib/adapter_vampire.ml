@@ -204,6 +204,7 @@ let mk_refinement_record
 
 let mint_oracle_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
@@ -219,7 +220,7 @@ let mint_oracle_cert
     format = "oracle";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -241,6 +242,7 @@ let mint_oracle_cert
     provenance-level, not per-step (see [Tptp_passthrough]). *)
 let mint_tier3_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
@@ -258,7 +260,7 @@ let mint_tier3_cert
               | Tptp.Fof -> "tstp-fof" | Tptp.Thf -> "tstp-thf");
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -268,7 +270,7 @@ let mint_tier3_cert
 
 (* --- top-level dispatch --------------------------------------------- *)
 
-let dispatch (ir : Ir.t) : Adapter.result =
+let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   (* R1.8: certs stamp the probed binary version (declared constant
      as fallback). On a major.minor mismatch, emit a named
      diagnostic and skip the version-sensitive Tier-3 TSTP
@@ -299,6 +301,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
          let mk_oracle () =
            mint_oracle_cert
              ~adapter_version:stamped_version
+             ~rewrite_trace_hash
              ~original_ir:ir
              ~dialect:script.dialect
              ~specs:script.specializations
@@ -320,6 +323,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Verified_provenance ->
                 mint_tier3_cert
                   ~adapter_version:stamped_version
+                  ~rewrite_trace_hash
                   ~original_ir:ir
                   ~dialect:script.dialect
                   ~specs:script.specializations

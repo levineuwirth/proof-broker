@@ -442,7 +442,8 @@ let extract_script (content : string) : string =
 
 (* --- cert minting ---------------------------------------------------- *)
 
-let mk_cert ~(ir : Ir.t) ~model ~script ~timeout_ms : Certificate.t =
+let mk_cert ~rewrite_trace_hash ~(ir : Ir.t) ~model ~script ~timeout_ms
+  : Certificate.t =
   let dialect = dialect_of_ir ir in
   let fragment =
     let f = ir.logic_classification.first_order_fragment in
@@ -454,7 +455,7 @@ let mk_cert ~(ir : Ir.t) ~model ~script ~timeout_ms : Certificate.t =
     format = dialect.cert_format;
     goal = ir.goal;
     dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = {
       name = "llm";
       version = model;
@@ -484,7 +485,7 @@ let mk_cert ~(ir : Ir.t) ~model ~script ~timeout_ms : Certificate.t =
 
 let version = "0"
 
-let dispatch (ir : Ir.t) : Adapter.result =
+let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   match Sys.getenv_opt "PROOF_BROKER_LLM_ENDPOINT" with
   | None | Some "" ->
     (* Fail closed: no endpoint ⇒ this adapter does not run. The
@@ -529,7 +530,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
                 detail = "LLM returned an empty tactic script";
               })
             else
-              Cert (mk_cert ~ir ~model ~script ~timeout_ms))
+              Cert (mk_cert ~rewrite_trace_hash ~ir ~model ~script ~timeout_ms))
      with
      | Unix.Unix_error (e, _, _) ->
        Failed (Solver_error {

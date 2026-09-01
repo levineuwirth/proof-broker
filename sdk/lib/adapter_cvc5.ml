@@ -131,6 +131,7 @@ let mk_refinement_record
 
 let mint_oracle_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
@@ -145,7 +146,7 @@ let mint_oracle_cert
     format = "oracle";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -163,6 +164,7 @@ let mint_oracle_cert
     names and the verifier can look them up directly. *)
 let mint_farkas_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
@@ -178,7 +180,7 @@ let mint_farkas_cert
     format = "farkas";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -202,6 +204,7 @@ let mint_farkas_cert
     Tier 3 cert the verifier can't re-check at mint time. *)
 let mint_tier3_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
@@ -218,7 +221,7 @@ let mint_tier3_cert
     format = "alethe-2024";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -234,6 +237,7 @@ let mint_tier3_cert
     hypothesis named in [structural_hint]. *)
 let mint_case_split_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
@@ -250,7 +254,7 @@ let mint_case_split_cert
     format = "case_split_farkas";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -305,7 +309,7 @@ let extract_proof_body (stdout : string) : string option =
     backend.version stay synchronized. *)
 let version = "1.3.0"
 
-let dispatch (ir : Ir.t) : Adapter.result =
+let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   (* R1.8: certs stamp the PROBED binary version (declared constant
      as fallback when the probe fails). On a major.minor mismatch
      between the binary on PATH and the declared version, emit a
@@ -364,6 +368,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
             let mk_oracle () =
               mint_oracle_cert
                 ~adapter_version:version
+                ~rewrite_trace_hash
                 ~original_ir:ir
                 ~specs:refinement.specializations
                 ~logic:script.logic
@@ -372,6 +377,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
             let mk_farkas witness =
               mint_farkas_cert
                 ~adapter_version:version
+                ~rewrite_trace_hash
                 ~original_ir:ir
                 ~specs:refinement.specializations
                 ~logic:script.logic
@@ -404,6 +410,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
                  | Verified ->
                    Some (mint_tier3_cert
                            ~adapter_version:version
+                           ~rewrite_trace_hash
                            ~original_ir:ir
                            ~specs:refinement.specializations
                            ~logic:script.logic
@@ -449,6 +456,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
                  | Ok (lemmas, disjunctive_hyp) ->
                    mint_case_split_cert
                      ~adapter_version:version
+                     ~rewrite_trace_hash
                      ~original_ir:ir
                      ~specs:refinement.specializations
                      ~logic:script.logic

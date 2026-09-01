@@ -74,7 +74,9 @@ let with_cvc4 f =
 let test_dispatch_unsat_mints_farkas_cert () =
   with_cvc4 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_cvc4.dispatch ir with
+  match Adapter_cvc4.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* cvc4 has no proof trace; the internal Farkas closer runs
        after cvc4's [unsat] verdict and discovers a witness for
@@ -131,7 +133,9 @@ let test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle () =
     ~hypotheses:[ h1; h2 ]
     (Const { name = "False" })
   in
-  match Adapter_cvc4.dispatch ir with
+  match Adapter_cvc4.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     Alcotest.(check int) "tier=0" 0 cert.tier;
     Alcotest.(check string) "format=oracle" "oracle" cert.format
@@ -156,7 +160,9 @@ let test_dispatch_on_typeclass_fixture () =
     "../../../../examples/example1-lia-typeclass.json" in
   let raw = In_channel.with_open_text path In_channel.input_all in
   let ir = Codec.of_json (Yojson.Safe.from_string raw) in
-  match Adapter_cvc4.dispatch ir with
+  match Adapter_cvc4.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     let kinds =
       List.map
@@ -197,7 +203,9 @@ let test_dispatch_sat_returns_failure () =
     ~free_vars:[ { name = "n"; ty = "Int" } ]
     (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
   in
-  match Adapter_cvc4.dispatch ir with
+  match Adapter_cvc4.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed Sat_returned -> ()
   | Failed f ->
     Alcotest.fail
@@ -212,7 +220,9 @@ let test_dispatch_unsupported_ir () =
   let ir = make_ir
     (Lambda { binders = [ { var = "x"; ty = "Int" } ]; body = Var { name = "x" } })
   in
-  match Adapter_cvc4.dispatch ir with
+  match Adapter_cvc4.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed (Unsupported_ir { kind; _ }) ->
     Alcotest.(check string) "kind = unsupported_node"
       "unsupported_node" kind
@@ -226,7 +236,9 @@ let test_dispatch_unsupported_ir () =
 let test_minted_cert_passes_envelope_verifier () =
   with_cvc4 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_cvc4.dispatch ir with
+  match Adapter_cvc4.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* With the internal Farkas closer wired in, cvc4 mints Tier 1
        on this Farkas-shaped goal. The cert's dispatch_context_hash

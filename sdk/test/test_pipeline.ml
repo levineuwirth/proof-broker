@@ -184,7 +184,7 @@ let test_exception_capture () =
   (* Register a pass that raises; verify the pipeline catches the
      exception and synthesizes a Failed entry with diagnostics. *)
   Pipeline.register_pass "always_raises"
-    (fun _ -> failwith "boom");
+    (fun _config _ir -> failwith "boom");
   let ir = make_ir (v "p") in
   let config : Pipeline.config = {
     pipeline = [ { pass = "always_raises"; config = None } ];
@@ -209,7 +209,7 @@ let test_lying_pass_before_hash () =
      and replaced with a Failed entry. The IR going into the next
      step is the pre-pass IR (failure leaves IR untouched). *)
   Pipeline.register_pass "liar_before"
-    (fun ir ->
+    (fun _config ir ->
        let dummy_after = Hash.sha256_of_json (Codec.to_json ir) in
        { ir;
          entry = {
@@ -247,7 +247,7 @@ let test_lying_pass_after_hash () =
   (* A pass that reports an after_hash that doesn't match its
      actual returned IR should also be flagged. *)
   Pipeline.register_pass "liar_after"
-    (fun ir ->
+    (fun _config ir ->
        let real_before = Hash.sha256_of_json (Codec.to_json ir) in
        { ir;
          entry = {
@@ -276,7 +276,7 @@ let test_lying_pass_breaks_chain_caught () =
   (* A lying pass in the middle of a chain must not corrupt the
      downstream IR. The next pass should see the pre-failure IR. *)
   Pipeline.register_pass "liar_mid"
-    (fun _ir ->
+    (fun _config _ir ->
        (* Returns an IR different from the input, with a fabricated
           after_hash that matches neither input nor output. *)
        let bogus_ir = make_ir (v "ghost") in

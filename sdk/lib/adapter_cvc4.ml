@@ -142,6 +142,7 @@ let mk_refinement_record
 (** Mint a Tier 0 oracle cert addressing [original_ir] (pre-refinement). *)
 let mint_oracle_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
@@ -156,7 +157,7 @@ let mint_oracle_cert
     format = "oracle";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -176,6 +177,7 @@ let mint_oracle_cert
     actual subprocess outcome. *)
 let mint_farkas_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
@@ -191,7 +193,7 @@ let mint_farkas_cert
     format = "farkas";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
     resources = resources_now ~timeout_ms;
     refinement_record =
@@ -207,7 +209,7 @@ let mint_farkas_cert
 
 let version = "1.8"
 
-let dispatch (ir : Ir.t) : Adapter.result =
+let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   (* R1.8: certs stamp the probed binary version (declared constant
      as fallback). cvc4 mints only Tier 1 / Tier 0 — no
      version-sensitive trace passthrough to skip. *)
@@ -247,6 +249,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Ok witness ->
                 mint_farkas_cert
                   ~adapter_version:version
+                  ~rewrite_trace_hash
                   ~original_ir:ir
                   ~specs:refinement.specializations
                   ~logic:script.logic
@@ -255,6 +258,7 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Error _ ->
                 mint_oracle_cert
                   ~adapter_version:version
+                  ~rewrite_trace_hash
                   ~original_ir:ir
                   ~specs:refinement.specializations
                   ~logic:script.logic
