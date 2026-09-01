@@ -70,6 +70,66 @@
     "steps": 40,
     "assumes": 2
   },
+  "nat_d1_bracket": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 56,
+    "assumes": 9
+  },
+  "nat_eq_from_bounds": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "and_pos", "cong", "contraction", "equiv1", "equiv_pos2",
+      "equiv_simplify", "hole", "implies", "implies_neg1", "implies_neg2",
+      "implies_simplify", "la_generic", "la_mult_neg", "not_and", "or",
+      "or_neg", "rare_rewrite", "refl", "reordering", "resolution",
+      "subproof", "symm", "trans"
+    ],
+    "steps": 199,
+    "assumes": 15
+  },
+  "nat_false_from_bounds": {
+    "result": "unsat",
+    "rules": [ "cong", "equiv_pos2", "hole", "refl", "resolution", "trans" ],
+    "steps": 11,
+    "assumes": 5
+  },
+  "nat_forall_instance": {
+    "result": "unsat",
+    "rules": [ "cong", "equiv_pos2", "hole", "refl", "resolution", "trans" ],
+    "steps": 12,
+    "assumes": 2
+  },
+  "nat_pow_bound": {
+    "result": "unsat",
+    "rules": [ "cong", "equiv_pos2", "hole", "resolution", "trans" ],
+    "steps": 10,
+    "assumes": 3
+  },
+  "nat_strict_trans": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 66,
+    "assumes": 6
+  },
+  "nat_sum_bound": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 49,
+    "assumes": 5
+  },
   "prop_demorgan": {
     "result": "unsat",
     "rules": [ "and_neg", "not_or", "resolution" ],

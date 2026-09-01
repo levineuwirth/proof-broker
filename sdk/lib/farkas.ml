@@ -70,11 +70,28 @@ let rec linearize (t : Ir.shell_term) : Linear_arith.t option =
     (match Linear_arith.rat_of_string value with
      | Some r -> Some (Linear_arith.const r)
      | None -> None)
+  (* R3-M1: an [Opaque] node is an atomized subterm (the reifier's
+     nonlinear-ℕ-product atomization) — a fresh variable keyed by its
+     payload id. Sound for Farkas checking: the combination is valid
+     for ALL integer values of the atom, in particular the value of
+     the term it stands for; the atom's range constraints ride along
+     as ordinary hypotheses (the reifier's [_pb_nonneg_*] and the
+     user's bounds). *)
+  | Opaque { payload_id } -> Some (Linear_arith.var payload_id)
   | App { symbol; args; _ } -> linearize_app symbol args
   | _ -> None
 
 and linearize_app symbol args =
   match symbol, args with
+  (* R3-M1 ℕ→ℤ cast transparency: [Int.ofNat t] denotes the same
+     integer as its ℕ operand's image, so it linearizes to the
+     operand's form. Both bridge reifiers normalize their surface
+     cast heads (Lean [Int.ofNat]/[Nat.cast], Rocq [Z.of_nat]) to
+     the single IR symbol ["Int.ofNat"]. Sound: the ℕ-ness of the
+     atom is carried by the explicit [0 <= Int.ofNat x] nonneg
+     hypotheses, not by the cast node — a Farkas combination over
+     the atoms is valid over all of ℤ regardless. *)
+  | "Int.ofNat", [ a ] -> linearize a
   | ("HAdd.hAdd" | "Int.add" | "Add.add" | "+"), [ a; b ] ->
     bin_lin Linear_arith.add a b
   | ("HSub.hSub" | "Int.sub" | "Sub.sub" | "-"), [ a; b ] ->

@@ -25,6 +25,7 @@ from check import (  # noqa: E402
     check_always_unfold_pin,
     check_cert_hashes,
     check_cert_manifest_consistency,
+    check_cert_witness_provenance,
     check_certificate,
     check_fixture_pairing_completeness,
     check_unknown_fixture_names,
@@ -217,6 +218,38 @@ def _reg_unknown_theory_tag():
     assert_contains(e, "unknown 'fake_embedding_tag'", "error")
 
 
+@register("registry: embedding_witness tag with no provenance entry")
+def _reg_dangling_embedding_witness():
+    bad = copy.deepcopy(IR1)
+    inst = bad["type_metadata"]["alpha"]["instances"][0]
+    inst["theory_classification_tags"].append("embedding_witness:no_such_key")
+    e, _ = check_ir_against_registry(bad, REGISTRY)
+    assert_contains(e, "embedding_witness 'no_such_key' has no "
+                       "library_provenance entry", "error")
+
+
+@register("registry: primitive theory_tags are registry-checked (R3-M1)")
+def _reg_primitive_theory_tag_checked():
+    bad = copy.deepcopy(IR1)
+    bad["type_metadata"]["NatProbe"] = {
+        "kind": "primitive",
+        "name": "NatProbe",
+        "theory_tags": ["totally_made_up_tag"],
+    }
+    e, _ = check_ir_against_registry(bad, REGISTRY)
+    assert_contains(e, "unknown 'totally_made_up_tag'", "error")
+
+
+@register("registry: specialization_target witness with no provenance entry")
+def _reg_dangling_method_witness():
+    bad = copy.deepcopy(IR1)
+    tgt = bad["definitional_metadata"]["HAdd.hAdd"]["specialization_targets"][0]
+    tgt["soundness_witness"] = "dangling_method_witness"
+    e, _ = check_ir_against_registry(bad, REGISTRY)
+    assert_contains(e, "soundness_witness 'dangling_method_witness' has no "
+                       "library_provenance entry", "error")
+
+
 @register("registry: unknown axiom shape")
 def _reg_unknown_axiom_shape():
     bad = copy.deepcopy(IR1)
@@ -304,6 +337,22 @@ def _cert_trace_hash_mismatch_errors():
     e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5,
                              paired_trace=trace)
     assert_contains(e, "rewrite_trace_hash: expected", "error")
+
+
+@register("witness (R3-M1): spec witness token not in paired IR provenance")
+def _cert_witness_dangling_errors():
+    cert = copy.deepcopy(CERT1)
+    cert["refinement_record"]["specializations"][0]["soundness_witness"] = \
+        "linear_ordered_comm_ring_lia_embedding,phantom_lemma"
+    e = check_cert_witness_provenance(cert, IR1, cert_name="cert-x.json")
+    assert_contains(e, "'phantom_lemma' has no library_provenance entry",
+                    "error")
+
+
+@register("witness (R3-M1): resolving witness tokens pass")
+def _cert_witness_resolving_ok():
+    e = check_cert_witness_provenance(CERT1, IR1, cert_name="cert-x.json")
+    assert not e, f"unmutated cert/IR pair must pass; got {e}"
 
 
 @register("hash (R2): identity trace slot drift from paired IR is an error")

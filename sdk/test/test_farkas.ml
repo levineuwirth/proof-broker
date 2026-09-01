@@ -97,6 +97,27 @@ let test_linearize_unknown_symbol () =
   Alcotest.(check bool) "exp(x) not linear" true
     (Option.is_none (Farkas.linearize t))
 
+(* R3-M1: the ℕ→ℤ cast is transparent to linearization — [Int.ofNat x]
+   is the atom [x]. *)
+let test_linearize_cast_transparent () =
+  let t = Ir.App {
+    symbol = "Int.ofNat"; type_args = [];
+    args = [ Var { name = "x" } ];
+  } in
+  match Farkas.linearize t with
+  | Some f ->
+    Alcotest.(check int) "1 coef" 1 (List.length f.coeffs);
+    Alcotest.(check string) "atom name=x" "x" (fst (List.hd f.coeffs))
+  | None -> Alcotest.fail "Int.ofNat x not linear"
+
+(* R3-M1: an [Opaque] node is a fresh atom keyed by payload id. *)
+let test_linearize_opaque_atom () =
+  match Farkas.linearize (Ir.Opaque { payload_id = "_pb_atom_0" }) with
+  | Some f ->
+    Alcotest.(check string) "atom name=payload id" "_pb_atom_0"
+      (fst (List.hd f.coeffs))
+  | None -> Alcotest.fail "Opaque atom not linear"
+
 (* --- compile_hypothesis --------------------------------------------- *)
 
 let test_compile_le () =
@@ -260,6 +281,60 @@ let test_verify_example1 () =
       | Verified -> "Verified" (* unreachable *)
     in
     Alcotest.fail ("expected Verified, got " ^ detail)
+
+(* R3-M1 end-to-end: a ℕ-image IR (every atom under [Int.ofNat])
+   verifies a Farkas witness — h1: ↑x + 1 ≤ ↑y, h2: ↑y ≤ ↑x sum to
+   the contradictory 1 ≤ 0. *)
+let test_verify_cast_hypotheses () =
+  let cast t = Ir.App { symbol = "Int.ofNat"; type_args = []; args = [ t ] } in
+  let x = cast (Ir.Var { name = "x" }) in
+  let y = cast (Ir.Var { name = "y" }) in
+  let one = Ir.Num_lit { value = "1"; ty = "Int" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [
+      App { symbol = "HAdd.hAdd"; type_args = []; args = [ x; one ] }; y
+    ] };
+  } in
+  let h2 : Ir.hypothesis = {
+    name = "h2";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ y; x ] };
+  } in
+  let ir = make_ir ~hypotheses:[ h1; h2 ] (Const { name = "False" }) in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "h1"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h2"; "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify ir witness with
+  | Verified -> ()
+  | _ -> Alcotest.fail "cast-image Farkas witness should verify"
+
+(* R3-M1: opaque atoms participate in the combination like variables —
+   h1: a0 ≤ 5, h2: 6 ≤ a0 sum to 1 ≤ 0. *)
+let test_verify_opaque_atom_hypotheses () =
+  let a0 = Ir.Opaque { payload_id = "_pb_atom_0" } in
+  let five = Ir.Num_lit { value = "5"; ty = "Int" } in
+  let six = Ir.Num_lit { value = "6"; ty = "Int" } in
+  let h1 : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ a0; five ] };
+  } in
+  let h2 : Ir.hypothesis = {
+    name = "h2";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ six; a0 ] };
+  } in
+  let ir = make_ir ~hypotheses:[ h1; h2 ] (Const { name = "False" }) in
+  let witness : Yojson.Safe.t = `Assoc [
+    "coefficients", `List [
+      `Assoc [ "hypothesis", `String "h1"; "coefficient", `String "1" ];
+      `Assoc [ "hypothesis", `String "h2"; "coefficient", `String "1" ];
+    ];
+  ] in
+  match Farkas.verify ir witness with
+  | Verified -> ()
+  | _ -> Alcotest.fail "opaque-atom Farkas witness should verify"
 
 let test_verify_unknown_hypothesis () =
   let witness : Yojson.Safe.t = `Assoc [
@@ -699,6 +774,8 @@ let () =
       Alcotest.test_case "const * var" `Quick test_linearize_const_mul;
       Alcotest.test_case "var * var rejected" `Quick test_linearize_var_mul_var_rejected;
       Alcotest.test_case "unknown symbol rejected" `Quick test_linearize_unknown_symbol;
+      Alcotest.test_case "Int.ofNat cast transparent (R3-M1)" `Quick test_linearize_cast_transparent;
+      Alcotest.test_case "Opaque payload atom (R3-M1)" `Quick test_linearize_opaque_atom;
     ];
     "compile_hypothesis", [
       Alcotest.test_case "LE.le" `Quick test_compile_le;
@@ -714,6 +791,8 @@ let () =
     ];
     "verify", [
       Alcotest.test_case "example1 cert verifies" `Quick test_verify_example1;
+      Alcotest.test_case "cast-image hypotheses verify (R3-M1)" `Quick test_verify_cast_hypotheses;
+      Alcotest.test_case "opaque-atom hypotheses verify (R3-M1)" `Quick test_verify_opaque_atom_hypotheses;
       Alcotest.test_case "unknown hypothesis" `Quick test_verify_unknown_hypothesis;
       Alcotest.test_case "negative coef on inequality" `Quick test_verify_negative_coefficient_on_le;
       Alcotest.test_case "negative coef on equality OK" `Quick test_verify_negative_coefficient_on_eq_allowed;

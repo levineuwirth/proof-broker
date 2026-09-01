@@ -1,0 +1,223 @@
+{
+  "id": "nat_sum_bound",
+  "description": "x+1 <= y, y <= 5 |- x <= 4 over ℕ (the R3-M1 baseline: cast shells, nonneg hyps, primitive Nat metadata; term-mode AND walker shapes)",
+  "coq_goal": "forall x y : nat, (x + 1 <= y)%nat -> (y <= 5)%nat -> (x <= 4)%nat",
+  "lean_goal": "∀ (x y : Nat), x + 1 ≤ y → y ≤ 5 → x ≤ 4",
+  "static_replay_skip": "ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+  "ir": {
+    "context": {
+      "free_vars": [
+        {
+          "name": "x",
+          "type": "Nat"
+        },
+        {
+          "name": "y",
+          "type": "Nat"
+        }
+      ],
+      "hypotheses": [
+        {
+          "name": "h1",
+          "shell": {
+            "args": [
+              {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "x",
+                        "node": "Var"
+                      }
+                    ],
+                    "node": "App",
+                    "symbol": "Int.ofNat",
+                    "type_args": []
+                  },
+                  {
+                    "node": "NumLit",
+                    "type": "Int",
+                    "value": "1"
+                  }
+                ],
+                "node": "App",
+                "symbol": "HAdd.hAdd",
+                "type_args": []
+              },
+              {
+                "args": [
+                  {
+                    "name": "y",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": []
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        },
+        {
+          "name": "h2",
+          "shell": {
+            "args": [
+              {
+                "args": [
+                  {
+                    "name": "y",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": []
+              },
+              {
+                "node": "NumLit",
+                "type": "Int",
+                "value": "5"
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        },
+        {
+          "name": "_pb_nonneg_x",
+          "shell": {
+            "args": [
+              {
+                "node": "NumLit",
+                "type": "Int",
+                "value": "0"
+              },
+              {
+                "args": [
+                  {
+                    "name": "x",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": []
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        },
+        {
+          "name": "_pb_nonneg_y",
+          "shell": {
+            "args": [
+              {
+                "node": "NumLit",
+                "type": "Int",
+                "value": "0"
+              },
+              {
+                "args": [
+                  {
+                    "name": "y",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": []
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        }
+      ],
+      "type_vars": []
+    },
+    "definitional_metadata": {},
+    "goal": {
+      "shell": {
+        "args": [
+          {
+            "args": [
+              {
+                "name": "x",
+                "node": "Var"
+              }
+            ],
+            "node": "App",
+            "symbol": "Int.ofNat",
+            "type_args": []
+          },
+          {
+            "node": "NumLit",
+            "type": "Int",
+            "value": "4"
+          }
+        ],
+        "node": "App",
+        "symbol": "LE.le",
+        "type_args": []
+      }
+    },
+    "ir_version": "1.0",
+    "library_provenance": {
+      "Int.natCast_nonneg": {
+        "content_hash": "sha256:8695c21ef990935032681c21ed366496c0552c3acc52a4d613fc92fa77315ed1",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Order",
+        "version": "4.32.0"
+      },
+      "Int.ofNat_inj": {
+        "content_hash": "sha256:2c9b5310671ab0980cce6dbf47c9df3370fae99685e3499d4c28652bd64700dd",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Lemmas",
+        "version": "4.32.0"
+      },
+      "Int.ofNat_le": {
+        "content_hash": "sha256:d26a52e45de6556aea35dd4560c3b900da83b1fb8fc696424e8467f3f0cf97cd",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Order",
+        "version": "4.32.0"
+      },
+      "Int.ofNat_lt": {
+        "content_hash": "sha256:d16b2fbb2ad675b56cd6d436e22d77c9e9bc6e78dc3beb3622b1d7d94c46d6f9",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Order",
+        "version": "4.32.0"
+      }
+    },
+    "logic_classification": {
+      "decidable_theory": null,
+      "features_used": [],
+      "first_order_fragment": "LIA",
+      "order": "first_order"
+    },
+    "source_system": {
+      "name": "corpus",
+      "version": "0.0"
+    },
+    "tier": "structural",
+    "type_metadata": {
+      "Nat": {
+        "kind": "primitive",
+        "name": "Nat",
+        "theory_tags": [
+          "embeds_into:Int_for_universal_LIA",
+          "embedding_witness:Int.ofNat_le",
+          "embedding_witness:Int.ofNat_lt",
+          "embedding_witness:Int.ofNat_inj",
+          "embedding_witness:Int.natCast_nonneg"
+        ]
+      }
+    }
+  }
+}

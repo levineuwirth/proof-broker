@@ -127,6 +127,18 @@ def decodeEnvelope (envelopeStr : String) : Except FfiError Json := do
   | .ok status => throw (.other "envelope_parse_error" s!"unexpected status: {status}")
   | .error e => throw (.other "envelope_parse_error" s!"missing status: {e}")
 
+/-- SHA-256 of a string, in the schema's `"sha256:<hex>"` form
+    (R3-M1). The reifier stamps `library_provenance` content hashes
+    for the ℕ→ℤ embedding-witness lemmas with it — Lean core has no
+    SHA-256, and the SDK's `Hash.sha256_of_string` is the single
+    implementation every driver shares. -/
+def runContentHash (content : String) : Except FfiError String := do
+  let input := Json.mkObj [("content", Json.str content)]
+  let payload ← decodeEnvelope (pbCall "content_hash" input.compress)
+  match payload.getObjValAs? String "hash" with
+  | .ok h => .ok h
+  | .error e => .error (.decodeError s!"content_hash payload: {e}" none)
+
 /-- Round-trip a typed IR document through OCaml's `Codec.of_json`
     and `Codec.to_json`. Serializes the IR, ships it through `pbCall`,
     decodes the envelope, and re-decodes the payload back into a

@@ -2127,4 +2127,159 @@ example (x : Int) (h : True ∧ x ≤ 5) : x ≤ 5 := by
   fail_if_success proof_broker_term
   omega
 
+/- ============================================================
+   R3-M1: ℕ→ℤ specialization + lift
+
+   The reifier hands the broker the ℤ image of a ℕ goal (cast
+   shells, `_pb_nonneg_*` hypotheses, primitive-kind metadata with
+   real embedding witnesses); the cert-consuming closers rebuild
+   the ℕ proof from the ℤ certificate through the `natCast*` shims.
+   Positive tests pin each lift leg's footprint; negative tests pin
+   the fail-fast scope rules — ℕ subtraction (the truncation attack
+   surface), division, nested ℕ quantifiers, ℕ×UF mixing.
+   ============================================================ -/
+
+/-- Plain `proof_broker` on ℕ: reify ℤ image → dispatch → cert
+    gates omega on the original ℕ goal. -/
+theorem pb_nat_plain (x y : Nat) (h1 : x + 1 ≤ y) (h2 : y ≤ 5) :
+    x ≤ 4 := by
+  proof_broker
+#print axioms pb_nat_plain
+
+/-- Term mode on ℕ: the Tier-1 Farkas witness is consumed against
+    the ℤ images of the hypotheses (cast by term construction via
+    `natCastLe`/`natCastNonneg`), the goal enters through the
+    axiom-free `natLeViaLt` wrapper — no decision procedure touches
+    the original goal. -/
+theorem pb_nat_term (x y : Nat) (h1 : x + 1 ≤ y) (h2 : y ≤ 5) :
+    x ≤ 4 := by
+  proof_broker_term
+#print axioms pb_nat_term
+
+/-- Walker-strict on ℕ: the live cvc5 alethe trace is walked into a
+    kernel term through the cast layer ("cert IS the proof" at ℕ). -/
+theorem pb_nat_walker (x y : Nat) (h1 : x + 1 ≤ y) (h2 : y ≤ 5) :
+    x ≤ 4 := by
+  proof_broker_walker
+#print axioms pb_nat_walker
+
+/-- 2^24-scale literals: the reifier constant-folds the closed pow;
+    the walker matches the folded literal by kernel defeq. -/
+theorem pb_nat_walker_pow (x : Nat) (h : x < 2^24) : x ≤ 16777215 := by
+  proof_broker_walker
+#print axioms pb_nat_walker_pow
+
+/-- A leading `∀ (n : ℕ)` goal binder is introduced before
+    reification; the introduced form dispatches and walks. -/
+theorem pb_nat_walker_forall : ∀ n : Nat, n + 1 ≥ 1 := by
+  proof_broker_walker
+#print axioms pb_nat_walker_forall
+
+/-- The D1 shape (verinf `lift_cell` core): a nonlinear ℕ product
+    `zmax * zhigh` is atomized to an `Opaque` payload atom, its
+    bound rides along as a hypothesis, and the goal closes through
+    the walker with the atom mapped back to `↑(zmax * zhigh)`. -/
+theorem pb_nat_walker_d1 (x z zmax zhigh : Nat)
+    (hx : x < 2^24) (hz : z < 2 * zmax)
+    (_hprod : zmax * zhigh ≤ zmax) :
+    x + z < 2^24 + 2 * zmax := by
+  proof_broker_walker
+#print axioms pb_nat_walker_d1
+
+/-- Term mode consumes the atomized product: the atom is the middle
+    variable of a bound chain, so the Farkas witness names both its
+    bound and its nonneg fact. (Term mode needs a Tier-1 cert, and
+    cvc5 emits `la_generic` only for real multi-hypothesis
+    combinations — shape chosen accordingly, like every other
+    `pb_term_*` test.) -/
+theorem pb_nat_term_d1 (x zmax zhigh : Nat)
+    (hx : x + 1 ≤ zmax * zhigh) (hp : zmax * zhigh ≤ 5) :
+    x ≤ 4 := by
+  proof_broker_term
+#print axioms pb_nat_term_d1
+
+/-- ℕ equality goal: split via `Nat.le_antisymm`, each direction a
+    fresh dispatch + lift. Both directions are multi-hypothesis
+    combinations (so each mints a Tier-1 Farkas witness). -/
+theorem pb_nat_term_eq (x y w : Nat)
+    (h1 : x + 1 ≤ y) (h2 : y ≤ 5)
+    (h3 : 6 ≤ x + 2 * w) (h4 : w ≤ 1) : x = 4 := by
+  proof_broker_term
+#print axioms pb_nat_term_eq
+
+/-- ATTACK SURFACE (fail fast): ℕ subtraction is truncated — the
+    reifier refuses it with a named error rather than cast naively.
+    The whole tactic aborts BEFORE dispatch, so even plain
+    `proof_broker`'s omega fallback never sees the goal. -/
+example (a b : Nat) (h : a - b ≤ 3) : a - b ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- Fail fast: ℕ division is outside the specialization. -/
+example (a : Nat) (h : a / 2 ≤ 3) : a / 2 ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- Fail fast: a ℕ quantifier INSIDE the formula (hypothesis
+    position) has no ℤ image yet. -/
+example (x : Nat) (h : ∀ n : Nat, x ≤ x + n) : x ≤ x + 1 := by
+  fail_if_success proof_broker
+  omega
+
+/-- Fail fast: ℕ arithmetic cannot mix with UF carriers in M1. -/
+example (x : Nat) (f : Int → Int) (hf : f 0 = 0) (h : x ≤ 3) :
+    x ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- Fail fast even under atomization (C3a ROUND 1 finding 5): a
+    nonlinear product HIDING ℕ subtraction is refused with the named
+    error, not silently swallowed as an Opaque atom. -/
+example (a b c : Nat) (h : (a - b) * c ≤ 3) : (a - b) * c ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- ROUND 2 finding 6 (probe-derived): the atom scan matches the
+    directly-spelled core name, not just the `-` notation head. -/
+example (a b c : Nat) (h : Nat.sub a b * c ≤ 3) :
+    Nat.sub a b * c ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- ROUND 2 finding 6 (probe-derived): `Nat.pred` is truncated
+    subtraction by one — refused inside atoms like `Nat.sub`. -/
+example (a c : Nat) (h : Nat.pred a * c ≤ 3) :
+    Nat.pred a * c ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/- The R3-M1 specialization gate, pinned fail-closed INDEPENDENT of
+   live dispatch (C3a ROUND 1 finding 2): no live path mints a foreign
+   specialization or a spec-less ℕ cert, so these drive the real
+   `checkCertSpecializations` on synthetic certs. Deleting the "cannot
+   invert" branch flips the foreign/mixed tests; deleting the "records
+   no Nat → Int" branch flips the nat-none test. -/
+
+/-- Positive control: the exact invertible record passes. -/
+example : True := by spec_gate_test nat nat_spec
+
+/-- Positive control: non-ℕ extraction with no records passes. -/
+example : True := by spec_gate_test int none
+
+/-- ℕ mode with NO recorded specialization → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test nat none
+  trivial
+
+/-- A specialization this bridge cannot invert → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test int foreign_spec
+  trivial
+
+/-- A foreign record riding NEXT TO a valid Nat → Int record still
+    fails closed (the gate rejects per-record, not first-match). -/
+example : True := by
+  fail_if_success spec_gate_test nat mixed_spec
+  trivial
+
 end ProofBroker.Test

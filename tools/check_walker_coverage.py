@@ -39,22 +39,32 @@ INDEX = ROOT / "corpus" / "index.json"
 COVERAGE = ROOT / "corpus" / "coverage.json"
 
 
-def _replay_skips() -> dict:
-    """Map goal id -> replay_skip reason, for goals carrying one.
+def _replay_skips() -> tuple:
+    """Two maps, goal id -> reason, for goals carrying a skip field.
 
-    A statically walkable goal (all rules dispatched) can still hit an
-    unhandled SHAPE of a supported rule under coqc; such a goal carries
-    "replay_skip" in its goal file and is excluded from the dynamic gate.
-    Tracking it here lets the report separate "walkable on paper" from
-    "actually replayed", which is the honest coverage number.
+    "replay_skip": a statically walkable goal (all rules dispatched)
+    that hits an unhandled SHAPE of a supported rule under coqc — it
+    is excluded from BOTH the static CorpusReplay.v gate and the
+    live-strict suites. Tracking it separates "walkable on paper"
+    from "actually replayed".
+
+    "static_replay_skip" (R3-M1): excluded from the static
+    CorpusReplay.v ONLY — the goal stays in the live-strict suites,
+    which are its kernel ground truth (the ℕ goals: the hand-fed
+    static walker has no ℕ→ℤ cast layer, but the live path lifts).
+    The two must be reported separately or the coverage numbers send
+    a reader to a file that does not contain the goal (C3a ROUND 1
+    finding 1).
     """
-    skips = {}
+    skips, static_skips = {}, {}
     if GOALS.exists():
         for f in sorted(GOALS.glob("*.json")):
             g = json.loads(f.read_text(encoding="utf-8"))
             if g.get("replay_skip"):
                 skips[g["id"]] = g["replay_skip"]
-    return skips
+            elif g.get("static_replay_skip"):
+                static_skips[g["id"]] = g["static_replay_skip"]
+    return skips, static_skips
 
 
 def compute() -> dict:
@@ -69,13 +79,15 @@ def compute() -> dict:
     # sets equal in both directions.
     sdk_gate = parity.extract_supported_rules()
     index = json.loads(INDEX.read_text(encoding="utf-8"))
-    skips = _replay_skips()
+    skips, static_skips = _replay_skips()
 
     goals = {}
     backlog: dict[str, int] = {}
     walkable = 0       # statically walkable: every rule has a dispatch arm
-    replayed = 0       # walkable AND not replay_skip'd -> in the dynamic gate
+    replayed = 0       # walkable AND unskipped -> in the static CorpusReplay.v gate
     shape_gapped = 0   # walkable BUT replay_skip'd -> supported rule, bad shape
+    live_only = 0      # walkable BUT static_replay_skip'd -> kernel ground
+                       # truth is the live-strict suites, not CorpusReplay.v
     mintable = 0       # rule set within the SDK Tier-3 mint gate
     unsat = 0
     nonunsat = []
@@ -85,7 +97,8 @@ def compute() -> dict:
         if result != "unsat":
             nonunsat.append(gid)
             goals[gid] = {"result": result, "walkable": False, "missing": [],
-                          "replay_skip": None, "mintable": False}
+                          "replay_skip": None, "static_replay_skip": None,
+                          "mintable": False}
             continue
         unsat += 1
         rules = set(entry.get("rules", []))
@@ -95,10 +108,13 @@ def compute() -> dict:
         if is_mintable:
             mintable += 1
         skip = skips.get(gid)
+        static_skip = static_skips.get(gid)
         if is_walkable:
             walkable += 1
             if skip:
                 shape_gapped += 1
+            elif static_skip:
+                live_only += 1
             else:
                 replayed += 1
         else:
@@ -109,6 +125,7 @@ def compute() -> dict:
             "walkable": is_walkable,
             "missing": missing,
             "replay_skip": skip,
+            "static_replay_skip": static_skip,
             "mintable": is_mintable,
         }
 
@@ -119,6 +136,7 @@ def compute() -> dict:
             "walkable": walkable,
             "replayed": replayed,
             "shape_gapped": shape_gapped,
+            "live_only": live_only,
             "unsat": unsat,
             "total": len(index),
             "non_unsat": sorted(nonunsat),
@@ -136,9 +154,12 @@ def render(report: dict) -> str:
         f"Walker replay coverage ({report['supported_rule_count']} rules "
         f"supported), over {s['unsat']} unsat corpus traces:",
         f"  static (all rules dispatched): {s['walkable']}/{s['unsat']}",
-        f"  dynamic (kernel-replayed):     {s['replayed']}/{s['unsat']}"
+        f"  static CorpusReplay.v gate:    {s['replayed']}/{s['unsat']}"
         + (f"   [+{s['shape_gapped']} statically walkable but shape-gapped]"
            if s["shape_gapped"] else ""),
+        f"  live-strict suites only:       "
+        f"{s.get('live_only', 0)}/{s['unsat']}   [kernel ground truth = "
+        "CorpusWalkerLive_* on both bridges]",
         f"  mintable (within SDK gate):    "
         f"{report['mintable']}/{s['unsat']}",
         "",
@@ -150,6 +171,9 @@ def render(report: dict) -> str:
         elif g["walkable"] and g["replay_skip"]:
             lines.append(f"  ~~   {gid:<22} shape-gap (static-only): "
                          f"{g['replay_skip'].split('.')[0]}.")
+        elif g["walkable"] and g.get("static_replay_skip"):
+            lines.append(f"  ~L   {gid:<22} live-strict only (not in "
+                         "CorpusReplay.v)")
         elif g["walkable"]:
             lines.append(f"  OK   {gid:<22} replayed")
         else:

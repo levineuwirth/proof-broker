@@ -102,4 +102,7 @@ END
    [tclORELSE → lia] for production. *)
 TACTIC EXTEND ProofBrokerAletheWalkerTest
 | [ "alethe_walker_test" string(s) ] -> { Alethe_walker.walker_test s }
+| [ "pb_spec_gate_test" ident(mode) ident(kind) ] ->
+  { Pb_rocq_main.run_spec_gate_test
+      (Names.Id.to_string mode) (Names.Id.to_string kind) }
 END

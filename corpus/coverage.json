@@ -1,12 +1,13 @@
 {
   "supported_rule_count": 31,
-  "mintable": 17,
+  "mintable": 24,
   "summary": {
-    "walkable": 17,
+    "walkable": 24,
     "replayed": 17,
     "shape_gapped": 0,
-    "unsat": 17,
-    "total": 17,
+    "live_only": 7,
+    "unsat": 24,
+    "total": 24,
     "non_unsat": []
   },
   "backlog": {},
@@ -16,6 +17,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_eq_from_bounds": {
@@ -23,6 +25,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_false_from_bounds": {
@@ -30,6 +33,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_irrefl": {
@@ -37,6 +41,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_pigeonhole3": {
@@ -44,6 +49,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_strict_trans": {
@@ -51,6 +57,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_sum_bound": {
@@ -58,6 +65,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "lia_weaken_bound": {
@@ -65,6 +73,63 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
+      "mintable": true
+    },
+    "nat_d1_bracket": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+      "mintable": true
+    },
+    "nat_eq_from_bounds": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+      "mintable": true
+    },
+    "nat_false_from_bounds": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+      "mintable": true
+    },
+    "nat_forall_instance": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+      "mintable": true
+    },
+    "nat_pow_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+      "mintable": true
+    },
+    "nat_strict_trans": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
+      "mintable": true
+    },
+    "nat_sum_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "static_replay_skip": "\u2115 goal: the static CorpusReplay walker has no \u2115\u2192\u2124 cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals",
       "mintable": true
     },
     "prop_demorgan": {
@@ -72,6 +137,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "prop_eq_trans": {
@@ -79,6 +145,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "prop_excluded_middle": {
@@ -86,6 +153,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "uf_cong": {
@@ -93,6 +161,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "uf_exists_witness": {
@@ -100,6 +169,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "uf_forall_inst": {
@@ -107,6 +177,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "uf_lia_mix": {
@@ -114,6 +185,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "uf_lia_threshold": {
@@ -121,6 +193,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     },
     "uf_trans": {
@@ -128,6 +201,7 @@
       "walkable": true,
       "missing": [],
       "replay_skip": null,
+      "static_replay_skip": null,
       "mintable": true
     }
   }

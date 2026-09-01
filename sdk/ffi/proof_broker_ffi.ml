@@ -254,6 +254,40 @@ let parse_alethe_proof (input : string) : string =
   | Proof_broker.Alethe.Parse_error msg ->
     envelope_error ~kind:"alethe_parse_error" ~message:msg []
 
+(* [content_hash] (R3-M1): SHA-256 of an arbitrary string, in the
+   schema's ["sha256:<hex>"] form. The Lean reifier uses it to stamp
+   real content hashes for the cast-lemma statements it records in
+   [library_provenance] (Lean core has no SHA-256; the SDK's
+   [Hash.sha256_of_string] is the single implementation both the
+   fixtures' regen tooling and the bridges share). Input:
+   {"content": "<string>"}; payload: {"hash": "sha256:..."}. *)
+let content_hash (input : string) : string =
+  try
+    let j = from_string input in
+    let pairs = match j with
+      | `Assoc p -> p
+      | _ -> raise (Proof_broker.Codec.Decode_error
+                      ("expected object", j))
+    in
+    let content = match List.assoc_opt "content" pairs with
+      | Some (`String s) -> s
+      | Some other ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("expected string at content", other))
+      | None ->
+        raise (Proof_broker.Codec.Decode_error
+                 ("missing field: content", j))
+    in
+    envelope_ok (`Assoc [
+      "hash", `String (Proof_broker.Hash.sha256_of_string content);
+    ])
+  with
+  | Proof_broker.Codec.Decode_error (msg, j) ->
+    envelope_error ~kind:"decode_error" ~message:msg
+      [ "site", `String (to_string j) ]
+  | Yojson.Json_error msg ->
+    envelope_error ~kind:"json_parse_error" ~message:msg []
+
 (* [llm_translate_trace] (roadmap §Phase 3 deliverable 4 — LLM-assisted
    Tier-3 reconstruction) takes
      {"ir": <Ir>, "cert": <Certificate>}
@@ -679,6 +713,7 @@ let () =
   register_method "verify_certificate" verify_certificate;
   register_method "llm_translate_trace" llm_translate_trace;
   register_method "parse_alethe_proof" parse_alethe_proof;
+  register_method "content_hash" content_hash;
   register_method "dispatch_to_adapter" dispatch_to_adapter;
   register_method "dispatch_broker" dispatch_broker;
   register_method "check_alethe_step" check_alethe_step;

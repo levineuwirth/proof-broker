@@ -51,8 +51,23 @@ type goal_kind =
   | Goal_ge of EConstr.t * EConstr.t * universe_tag
   | Goal_gt of EConstr.t * EConstr.t * universe_tag
   | Goal_eq of EConstr.t * EConstr.t * universe_tag
+  (* R3-M1: ℕ comparison goals; nat [>=]/[>] arrive pre-swapped (they
+     are definitionally the swapped [<=]/[<]). *)
+  | Goal_nat_le of EConstr.t * EConstr.t
+  | Goal_nat_lt of EConstr.t * EConstr.t
+  | Goal_nat_eq
 
 val goal_kind : Evd.evar_map -> EConstr.t -> goal_kind option
+
+val nat_walker_facts :
+  Environ.env -> Evd.evar_map ->
+  nat_atoms:(string * EConstr.t) list ->
+  (string * EConstr.t) list
+(** R3-M1: the walker cast layer's ℤ-image facts — one per ℕ-shaped
+    named Prop hypothesis (positive transfer via the [nat_cast_*]
+    shims) plus a nonneg fact per ℕ atom (named nat locals and the
+    atomized products in [nat_atoms]). Returned as
+    [(pose name, proof)] pairs; everything applied is constructive. *)
 (** [goal_kind sigma ty] classifies a goal type [ty]. Used by
     [pb_rocq_main.run_close_term] to decide whether to apply a
     normalization step ([Z.le_ge] / [Z.lt_gt] / [Z.le_antisymm] for
@@ -61,7 +76,9 @@ val goal_kind : Evd.evar_map -> EConstr.t -> goal_kind option
     matching universe-specific helper. *)
 
 val close_term :
-  Proof_broker.Ir.t -> Yojson.Safe.t -> unit Proofview.tactic
+  Proof_broker.Ir.t ->
+  ?nat_atoms:(string * EConstr.t) list ->
+  Yojson.Safe.t -> unit Proofview.tactic
 (** [close_term ir witness] reifies the witness into an applied
     [farkas_contradict_n] (or R-typed counterpart) term and refines
     the goal with it, then discharges the residual polynomial-identity

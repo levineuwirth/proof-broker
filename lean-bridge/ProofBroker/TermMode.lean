@@ -138,4 +138,63 @@ theorem intLtViaLe {b c : Int} (h : c ≤ b → False) : b < c :=
   Decidable.byContradiction fun hng =>
     h (Int.not_lt.mp hng)
 
+/-- R3-M1 ℕ comparison-goal wrappers: the ℕ analogues of
+    `intLeViaLt` / `intLtViaLe`. The ℕ→ℤ lift applies one of these
+    to the ORIGINAL ℕ goal, obtains the positive ℕ counterexample
+    hypothesis, casts it (and every witness-named hypothesis) to ℤ
+    by term construction, and runs the Int Farkas fold — no
+    decision procedure ever touches the original goal on this
+    path. Axiom-free: `Decidable.byContradiction` over `Nat.decLe`
+    / `Nat.decLt`, and `Nat.not_le` / `Nat.not_lt` are core. -/
+theorem natLeViaLt {b c : Nat} (h : c < b → False) : b ≤ c :=
+  Decidable.byContradiction fun hng =>
+    h (Nat.not_le.mp hng)
+
+theorem natLtViaLe {b c : Nat} (h : c ≤ b → False) : b < c :=
+  Decidable.byContradiction fun hng =>
+    h (Nat.not_lt.mp hng)
+
+/-- R3-M1 cast-transfer shims: one per ℕ hypothesis shape the lift
+    inverts, each a direct application of the embedding-witness
+    lemmas the reifier records (`Int.ofNat_le` / `Int.ofNat_lt` /
+    `Int.ofNat_inj` / `Int.natCast_nonneg` — see
+    `Reify.natEmbeddingWitnessLemmas`). The closer applies the shim
+    matching the hypothesis's shape and the kernel's defeq folds the
+    cast through `+`/`*`/literals (core's `Int.natCast_add`/`_mul`
+    are `rfl`), so no rewriting pass is needed. The `≥`/`>` variants
+    lean on `GE.ge`/`GT.gt` reducing to the swapped `≤`/`<`. All
+    axiom-free. -/
+theorem natCastLe {a b : Nat} (h : a ≤ b) :
+    (a : Int) ≤ (b : Int) := Int.ofNat_le.mpr h
+
+theorem natCastLt {a b : Nat} (h : a < b) :
+    (a : Int) < (b : Int) := Int.ofNat_lt.mpr h
+
+theorem natCastGe {a b : Nat} (h : a ≥ b) :
+    (b : Int) ≤ (a : Int) := Int.ofNat_le.mpr h
+
+theorem natCastGt {a b : Nat} (h : a > b) :
+    (b : Int) < (a : Int) := Int.ofNat_lt.mpr h
+
+theorem natCastEq {a b : Nat} (h : a = b) :
+    (a : Int) = (b : Int) := Int.ofNat_inj.mpr h
+
+theorem natCastNotLe {a b : Nat} (h : ¬(a ≤ b)) :
+    ¬((a : Int) ≤ (b : Int)) := fun hz => h (Int.ofNat_le.mp hz)
+
+theorem natCastNotLt {a b : Nat} (h : ¬(a < b)) :
+    ¬((a : Int) < (b : Int)) := fun hz => h (Int.ofNat_lt.mp hz)
+
+theorem natCastNotGe {a b : Nat} (h : ¬(a ≥ b)) :
+    ¬((b : Int) ≤ (a : Int)) := fun hz => h (Int.ofNat_le.mp hz)
+
+theorem natCastNotGt {a b : Nat} (h : ¬(a > b)) :
+    ¬((b : Int) < (a : Int)) := fun hz => h (Int.ofNat_lt.mp hz)
+
+theorem natCastNotEq {a b : Nat} (h : ¬(a = b)) :
+    ¬((a : Int) = (b : Int)) := fun hz => h (Int.ofNat_inj.mp hz)
+
+theorem natCastNonneg (a : Nat) : (0 : Int) ≤ (a : Int) :=
+  Int.natCast_nonneg a
+
 end ProofBroker.TermMode

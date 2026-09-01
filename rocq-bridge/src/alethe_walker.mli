@@ -68,7 +68,10 @@ val parse_trace : string -> (proof, string) result
     in [Proofview.tclORELSE] (the production fallback to [lia])
     fires cleanly — audit H1: walker failure is a tactic failure,
     never an admitted theorem. *)
-val walk_proof_into_goal : proof -> unit Proofview.tactic
+val walk_proof_into_goal :
+  ?var_overrides:(Names.Id.t * EConstr.t) list ->
+  ?after_contra:unit Proofview.tactic ->
+  proof -> unit Proofview.tactic
 
 (** TEST-ONLY tactic for the Alethe walker (mirror of Lean's
     [alethe_walker_test] in lean-bridge/ProofBroker/Tactic.lean).

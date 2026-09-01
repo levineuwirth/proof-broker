@@ -113,6 +113,31 @@ let r_Rge     = lazy (safe_constr_of_ref "reals.R.Rge")
 let r_Rgt     = lazy (safe_constr_of_ref "reals.R.Rgt")
 let r_IZR     = lazy (safe_constr_of_ref "reals.R.IZR")
 
+(* R3-M1: nat atoms + the ℕ→ℤ push-cast/transfer shims registered in
+   ProofBrokerTermMode.v. *)
+let r_nat    = lazy (safe_constr_of_ref "num.nat.type")
+let r_nat_le = lazy (safe_constr_of_ref "num.nat.le")
+let r_nat_lt = lazy (safe_constr_of_ref "num.nat.lt")
+let r_nat_ge = lazy (safe_constr_of_ref "num.nat.ge")
+let r_nat_gt = lazy (safe_constr_of_ref "num.nat.gt")
+let r_nat_add = lazy (safe_constr_of_ref "num.nat.add")
+let r_nat_mul = lazy (safe_constr_of_ref "num.nat.mul")
+let r_eq_refl = lazy (safe_constr_of_ref "core.eq.refl")
+let nat_push_add_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_add")
+let nat_push_mul_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_mul")
+let nat_push_pow_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_pow")
+let nat_cast_le_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_le")
+let nat_cast_lt_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_lt")
+let nat_cast_ge_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_ge")
+let nat_cast_gt_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_gt")
+let nat_cast_eq_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_eq")
+let nat_cast_not_le_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_le")
+let nat_cast_not_lt_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_lt")
+let nat_cast_not_ge_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_ge")
+let nat_cast_not_gt_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_gt")
+let nat_cast_not_eq_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_eq")
+let nat_cast_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_nonneg")
+
 let force lz =
   match Lazy.force lz with
   | Some t -> t
@@ -332,10 +357,28 @@ type goal_kind =
   | Goal_ge of EConstr.t * EConstr.t * universe_tag
   | Goal_gt of EConstr.t * EConstr.t * universe_tag
   | Goal_eq of EConstr.t * EConstr.t * universe_tag
+  (* R3-M1: ℕ comparison goals. nat [>=] / [>] are DEFINITIONALLY the
+     swapped [<=] / [<] (unlike Z's compare-based forms), so the
+     matcher swaps here and the wrapper apply unifies by conversion —
+     no per-direction lemma needed. -*)
+  | Goal_nat_le of EConstr.t * EConstr.t
+  | Goal_nat_lt of EConstr.t * EConstr.t
+  | Goal_nat_eq
 
 let goal_kind sigma (ty : EConstr.t) : goal_kind option =
   if eq_ref sigma ty r_False then Some Goal_false
   else match EConstr.kind sigma ty with
+    | App (head, [| b; c |]) when eq_ref sigma head r_nat_le ->
+      Some (Goal_nat_le (b, c))
+    | App (head, [| b; c |]) when eq_ref sigma head r_nat_lt ->
+      Some (Goal_nat_lt (b, c))
+    | App (head, [| a; b |]) when eq_ref sigma head r_nat_ge ->
+      Some (Goal_nat_le (b, a))
+    | App (head, [| a; b |]) when eq_ref sigma head r_nat_gt ->
+      Some (Goal_nat_lt (b, a))
+    | App (head, [| ty_arg; _; _ |])
+        when eq_ref sigma head r_eq && eq_ref sigma ty_arg r_nat ->
+      Some Goal_nat_eq
     | App (head, [| b; c |]) when eq_ref sigma head r_Zle ->
       Some (Goal_le (b, c, U_Z))
     | App (head, [| b; c |]) when eq_ref sigma head r_Zlt ->
@@ -493,9 +536,267 @@ type normalized_hyp = {
    [b - a <= 0] (matches negative coefficients, after the caller
    has converted to |c|). [flipped] is ignored on inequality
    hypotheses — those have a unique normalized form. *)
+(* --- R3-M1: the ℕ→ℤ lift (push-cast + hypothesis transfer) --------- *)
+
+(* [(pushed Z form, proof [Z.of_nat t = pushed])] for a nat term [t].
+   The recursive push mirrors the reifier's ℤ-image emission:
+   literals fold, [+] and [*]-by-literal distribute through the
+   [nat_push_*] shims, a product with no literal factor stays one
+   [Z.of_nat _] atom (the reifier's Opaque atomization), and closed
+   powers fold with the Z-side computation discharged by [eq_refl]
+   (kernel-cheap on binary Z literals — normalizing
+   [Z.of_nat (2^24)] through the unary numeral is exactly what this
+   avoids). Everything applied is constructive, keeping the ℕ
+   term-mode footprint EMPTY (the M1 Rocq gate). *)
+let rec push_nat_to_z (u : universe) env sigma (t : EConstr.t)
+  : EConstr.t * EConstr.t =
+  let of_nat x = EConstr.mkApp (force Reifier.r_z_of_nat, [| x |]) in
+  let refl_at z = EConstr.mkApp (force r_eq_refl, [| u.ty; z |]) in
+  let atom () = let z = of_nat t in (z, refl_at z) in
+  match Reifier.nat_literal sigma t with
+  | Some n -> let z = u.lit n in (z, refl_at z)
+  | None ->
+    if EConstr.isVar sigma t then atom ()
+    else
+      (match EConstr.kind sigma t with
+       | App (head, [| a; b |]) ->
+         if eq_ref sigma head r_nat_add then
+           let (za, pa) = push_nat_to_z u env sigma a in
+           let (zb, pb) = push_nat_to_z u env sigma b in
+           (EConstr.mkApp (u.add, [| za; zb |]),
+            EConstr.mkApp (force nat_push_add_ref,
+              [| a; b; za; zb; pa; pb |]))
+         else if eq_ref sigma head r_nat_mul then begin
+           match Reifier.nat_literal sigma a, Reifier.nat_literal sigma b with
+           | None, None -> atom ()  (* the reifier's Opaque atom *)
+           | _ ->
+             let (za, pa) = push_nat_to_z u env sigma a in
+             let (zb, pb) = push_nat_to_z u env sigma b in
+             (EConstr.mkApp (u.mul, [| za; zb |]),
+              EConstr.mkApp (force nat_push_mul_ref,
+                [| a; b; za; zb; pa; pb |]))
+         end
+         else if eq_ref sigma head Reifier.r_nat_pow then begin
+           match Reifier.nat_literal sigma a, Reifier.nat_literal sigma b with
+           | Some base, Some exp when Z.compare exp (Z.of_int 256) <= 0 ->
+             let z = u.lit (Z.pow base (Z.to_int exp)) in
+             (z, EConstr.mkApp (force nat_push_pow_ref,
+                   [| a; b; z; refl_at z |]))
+           | _ -> atom ()
+         end
+         else atom ()
+       | _ -> atom ())
+
+let starts_with prefix s =
+  String.length s >= String.length prefix
+  && String.sub s 0 (String.length prefix) = prefix
+
+(* ℕ hypothesis transfer: witness-named ℕ facts become their ℤ
+   images by term construction, then flow through the SAME Z
+   normalization the Int path uses — so the fold, residual and
+   [ring] discharge are shared verbatim. [None] = not a ℕ-shaped
+   entry (the caller falls through to the Z/R dispatch).
+
+   [_pb_nonneg_*] entries are SYNTHETIC — no named hypothesis
+   exists; the fact [0 <= z] is proved outright by
+   [nat_cast_nonneg] on the atom (a variable, or an atomized
+   product resolved through [nat_atoms]). *)
+let normalize_nat_hyp (u : universe) env sigma (name : string)
+    ~(flipped : bool) ~(nat_atoms : (string * EConstr.t) list)
+  : normalized_hyp option =
+  if starts_with "_pb_nonneg_" name then begin
+    let key = String.sub name 11 (String.length name - 11) in
+    let nat_e =
+      if starts_with "atom_" key then
+        (match List.assoc_opt ("_pb_" ^ key) nat_atoms with
+         | Some e -> e
+         | None ->
+           unsupported "term_mode: witness names %s but the extraction \
+                        has no atom _pb_%s" name key)
+      else EConstr.mkVar (Names.Id.of_string key)
+    in
+    let (z, p) = push_nat_to_z u env sigma nat_e in
+    let casted =
+      EConstr.mkApp (force nat_cast_nonneg_ref, [| nat_e; z; p |]) in
+    let zero = u.lit Z.zero in
+    Some { expr = EConstr.mkApp (u.sub, [| zero; z |]);
+           proof = EConstr.mkApp (u.le_to_le0, [| zero; z; casted |]);
+           strict = false }
+  end else
+  match
+    (try Some (Environ.lookup_named (Names.Id.of_string name) env)
+     with Not_found -> None)
+  with
+  | None -> None
+  | Some decl ->
+    let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
+    let h_term = EConstr.mkVar (Names.Id.of_string name) in
+    let cast2 shim a b =
+      let (za, pa) = push_nat_to_z u env sigma a in
+      let (zb, pb) = push_nat_to_z u env sigma b in
+      (za, zb,
+       EConstr.mkApp (force shim, [| a; b; za; zb; pa; pb; h_term |]))
+    in
+    let le_norm za zb casted =
+      Some { expr = EConstr.mkApp (u.sub, [| za; zb |]);
+             proof = EConstr.mkApp (u.le_to_le0, [| za; zb; casted |]);
+             strict = false }
+    in
+    let lt_norm za zb casted =
+      (* Z +1 trick — the SDK compiled the strict shape the same way. *)
+      match u.lt_to_le0 with
+      | Some lemma ->
+        let za1 = EConstr.mkApp (u.add, [| za; u.lit Z.one |]) in
+        Some { expr = EConstr.mkApp (u.sub, [| za1; zb |]);
+               proof = EConstr.mkApp (lemma, [| za; zb; casted |]);
+               strict = false }
+      | None ->
+        unsupported "term_mode: ℕ lift needs the Z +1-trick lemma wired"
+    in
+    (match EConstr.kind sigma ty with
+     | App (head, [| a; b |]) ->
+       if eq_ref sigma head r_nat_le then
+         let (za, zb, c) = cast2 nat_cast_le_ref a b in le_norm za zb c
+       else if eq_ref sigma head r_nat_lt then
+         let (za, zb, c) = cast2 nat_cast_lt_ref a b in lt_norm za zb c
+       else if eq_ref sigma head r_nat_ge then
+         (* casted : zb <= za *)
+         let (za, zb, c) = cast2 nat_cast_ge_ref a b in le_norm zb za c
+       else if eq_ref sigma head r_nat_gt then
+         let (za, zb, c) = cast2 nat_cast_gt_ref a b in lt_norm zb za c
+       else None
+     | App (head, [| inner |]) when eq_ref sigma head r_not ->
+       (match EConstr.kind sigma inner with
+        | App (inner_head, [| a; b |]) ->
+          if eq_ref sigma inner_head r_nat_le then
+            (* casted : ~ (za <= zb) → SDK compiled (zb+1) - za <= 0. *)
+            let (za, zb, c) = cast2 nat_cast_not_le_ref a b in
+            Some { expr = EConstr.mkApp (u.sub,
+                     [| EConstr.mkApp (u.add, [| zb; u.lit Z.one |]); za |]);
+                   proof = EConstr.mkApp (u.not_le_to_le0, [| za; zb; c |]);
+                   strict = false }
+          else if eq_ref sigma inner_head r_nat_lt then
+            (* casted : ~ (za < zb) → zb - za <= 0. *)
+            let (za, zb, c) = cast2 nat_cast_not_lt_ref a b in
+            Some { expr = EConstr.mkApp (u.sub, [| zb; za |]);
+                   proof = EConstr.mkApp (u.not_lt_to_le0, [| za; zb; c |]);
+                   strict = false }
+          else if eq_ref sigma inner_head r_nat_ge then
+            (* casted : ~ (zb <= za) → (za+1) - zb <= 0. *)
+            let (za, zb, c) = cast2 nat_cast_not_ge_ref a b in
+            Some { expr = EConstr.mkApp (u.sub,
+                     [| EConstr.mkApp (u.add, [| za; u.lit Z.one |]); zb |]);
+                   proof = EConstr.mkApp (u.not_le_to_le0, [| zb; za; c |]);
+                   strict = false }
+          else if eq_ref sigma inner_head r_nat_gt then
+            (* casted : ~ (zb < za) → za - zb <= 0. *)
+            let (za, zb, c) = cast2 nat_cast_not_gt_ref a b in
+            Some { expr = EConstr.mkApp (u.sub, [| za; zb |]);
+                   proof = EConstr.mkApp (u.not_lt_to_le0, [| zb; za; c |]);
+                   strict = false }
+          else None
+        | _ -> None)
+     | App (head, [| ty_arg; a; b |])
+         when eq_ref sigma head r_eq && eq_ref sigma ty_arg r_nat ->
+       let (za, zb, c) = cast2 nat_cast_eq_ref a b in
+       if flipped then
+         Some { expr = EConstr.mkApp (u.sub, [| zb; za |]);
+                proof = EConstr.mkApp (u.eq_to_le0_flipped, [| za; zb; c |]);
+                strict = false }
+       else
+         Some { expr = EConstr.mkApp (u.sub, [| za; zb |]);
+                proof = EConstr.mkApp (u.eq_to_le0, [| za; zb; c |]);
+                strict = false }
+     | _ -> None)
+
+(* Positive ℤ-image transfer for the WALKER's cast layer: the shims
+   applied without ≤0-normalization (the walker matches trace
+   assumes against the posed facts by conversion; the Farkas fold
+   is not involved). [None] = not a ℕ-shaped Prop. *)
+let nat_cast_fact_opt (u : universe) env sigma (ty : EConstr.t)
+    (h_term : EConstr.t) : EConstr.t option =
+  let cast2 shim a b =
+    let (za, pa) = push_nat_to_z u env sigma a in
+    let (zb, pb) = push_nat_to_z u env sigma b in
+    EConstr.mkApp (force shim, [| a; b; za; zb; pa; pb; h_term |])
+  in
+  match EConstr.kind sigma ty with
+  | App (head, [| a; b |]) ->
+    if eq_ref sigma head r_nat_le then Some (cast2 nat_cast_le_ref a b)
+    else if eq_ref sigma head r_nat_lt then Some (cast2 nat_cast_lt_ref a b)
+    else if eq_ref sigma head r_nat_ge then Some (cast2 nat_cast_ge_ref a b)
+    else if eq_ref sigma head r_nat_gt then Some (cast2 nat_cast_gt_ref a b)
+    else None
+  | App (head, [| inner |]) when eq_ref sigma head r_not ->
+    (match EConstr.kind sigma inner with
+     | App (inner_head, [| a; b |]) ->
+       if eq_ref sigma inner_head r_nat_le then
+         Some (cast2 nat_cast_not_le_ref a b)
+       else if eq_ref sigma inner_head r_nat_lt then
+         Some (cast2 nat_cast_not_lt_ref a b)
+       else if eq_ref sigma inner_head r_nat_ge then
+         Some (cast2 nat_cast_not_ge_ref a b)
+       else if eq_ref sigma inner_head r_nat_gt then
+         Some (cast2 nat_cast_not_gt_ref a b)
+       else None
+     | App (inner_head, [| ty_arg; a; b |])
+         when eq_ref sigma inner_head r_eq && eq_ref sigma ty_arg r_nat ->
+       Some (cast2 nat_cast_not_eq_ref a b)
+     | _ -> None)
+  | App (head, [| ty_arg; a; b |])
+      when eq_ref sigma head r_eq && eq_ref sigma ty_arg r_nat ->
+    Some (cast2 nat_cast_eq_ref a b)
+  | _ -> None
+
+(* Every ℤ-image fact the walker's cast layer poses: the cast image
+   of each ℕ-shaped named Prop hypothesis (opportunistic — the
+   walker matches what the trace needs), plus one nonneg fact per ℕ
+   atom (named locals of type nat, and the atomized products). *)
+let nat_walker_facts env sigma
+    ~(nat_atoms : (string * EConstr.t) list)
+  : (string * EConstr.t) list =
+  let u = z_universe () in
+  let named = Environ.named_context env in
+  let hyp_facts =
+    List.filter_map (fun decl ->
+      let id = Context.Named.Declaration.get_id decl in
+      let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
+      match nat_cast_fact_opt u env sigma ty (EConstr.mkVar id) with
+      | Some proof -> Some ("_pb_z_" ^ Names.Id.to_string id, proof)
+      | None -> None)
+      named
+  in
+  let nonneg_of name e =
+    let (z, p) = push_nat_to_z u env sigma e in
+    (name, EConstr.mkApp (force nat_cast_nonneg_ref, [| e; z; p |]))
+  in
+  let var_nonneg =
+    List.filter_map (fun decl ->
+      let id = Context.Named.Declaration.get_id decl in
+      let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
+      if eq_ref sigma ty r_nat then
+        Some (nonneg_of ("_pb_z_nonneg_" ^ Names.Id.to_string id)
+                (EConstr.mkVar id))
+      else None)
+      named
+  in
+  let atom_nonneg =
+    List.map (fun (aid, e) -> nonneg_of ("_pb_z_nonneg" ^ aid) e) nat_atoms
+  in
+  hyp_facts @ var_nonneg @ atom_nonneg
+
 let normalize_hypothesis (u : universe) env sigma (id : Names.Id.t)
+    ~(nat_atoms : (string * EConstr.t) list)
     ~(flipped : bool)
   : normalized_hyp =
+  (* R3-M1: ℕ-shaped entries (and the synthetic [_pb_nonneg_*]
+     facts) go through the cast layer; everything else takes the
+     pre-existing Z/R dispatch below. *)
+  match
+    normalize_nat_hyp u env sigma (Names.Id.to_string id) ~flipped ~nat_atoms
+  with
+  | Some nh -> nh
+  | None ->
   let decl = Environ.lookup_named id env in
   let ty = EConstr.of_constr (Context.Named.Declaration.get_type decl) in
   let h_term = EConstr.mkVar id in
@@ -708,6 +1009,7 @@ let check_signed_coef ~slot env sigma (cz : Z.t) (is_eq : bool) =
    Z always stays in the Le-form branch ([strict] is forced false via
    the +1 trick at normalization time); R can land in either branch. *)
 let close_term_false (u : universe) env sigma (ir : Ir.t)
+    ?(nat_atoms : (string * EConstr.t) list = [])
     (entries : (string * Z.t) list) : unit Proofview.tactic =
   (* Pre-process: drop zero-coefficient entries (they contribute
      nothing to the Farkas sum), and split each remaining entry's
@@ -732,7 +1034,7 @@ let close_term_false (u : universe) env sigma (ir : Ir.t)
   let normalized = List.map (fun (name, c_abs, flipped) ->
     let id = Names.Id.of_string name in
     let { expr = a; proof = h_a; strict = a_strict } =
-      normalize_hypothesis u env sigma id ~flipped
+      normalize_hypothesis u env sigma id ~nat_atoms ~flipped
     in
     let c_econstr = u.lit c_abs in
     let h_c =
@@ -837,15 +1139,22 @@ let close_term_false (u : universe) env sigma (ir : Ir.t)
    [neg_goal], whose normalization (Z: +1 trick; R: strict-
    preserving) flows through the existing per-universe machinery. *)
 let close_term_comparison (u : universe) (ir : Ir.t)
+    ?(nat_atoms : (string * EConstr.t) list = [])
+    ?(nat_goal : bool = false)
     (entries : (string * Z.t) list)
     (tag : universe_tag) (goal_shape : [`Le | `Lt])
   : unit Proofview.tactic =
   let _ = u in
-  let wrapper_name = match tag, goal_shape with
-    | U_Z, `Le -> "z_le_via_lt"
-    | U_Z, `Lt -> "z_lt_via_le"
-    | U_R, `Le -> "r_le_via_lt"
-    | U_R, `Lt -> "r_lt_via_le"
+  (* R3-M1: a ℕ comparison goal enters through the constructive ℕ
+     wrappers; the introduced [neg_goal] is a positive ℕ strict
+     fact the cast layer transfers like any other hypothesis. *)
+  let wrapper_name = match tag, goal_shape, nat_goal with
+    | _, `Le, true -> "nat_le_via_lt"
+    | _, `Lt, true -> "nat_lt_via_le"
+    | U_Z, `Le, false -> "z_le_via_lt"
+    | U_Z, `Lt, false -> "z_lt_via_le"
+    | U_R, `Le, false -> "r_le_via_lt"
+    | U_R, `Lt, false -> "r_lt_via_le"
   in
   let apply_wrapper = invoke_tactic (Printf.sprintf "apply %s" wrapper_name) in
   let intro_neg = invoke_tactic "intro neg_goal" in
@@ -853,7 +1162,7 @@ let close_term_comparison (u : universe) (ir : Ir.t)
     Proofview.Goal.enter (fun gl' ->
       let env' = Proofview.Goal.env gl' in
       let sigma' = Proofview.Goal.sigma gl' in
-      try close_term_false u env' sigma' ir entries
+      try close_term_false u env' sigma' ir ~nat_atoms entries
       with Unsupported msg ->
         CErrors.user_err Pp.(str (Printf.sprintf "proof_broker_term: %s" msg)))
   in
@@ -862,7 +1171,9 @@ let close_term_comparison (u : universe) (ir : Ir.t)
 
 (* --- top-level Tier 1 closer --------------------------------------- *)
 
-let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
+let close_term (ir : Ir.t)
+    ?(nat_atoms : (string * EConstr.t) list = [])
+    (witness : Yojson.Safe.t) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
     try
     let sigma = Proofview.Goal.sigma gl in
@@ -876,11 +1187,22 @@ let close_term (ir : Ir.t) (witness : Yojson.Safe.t) : unit Proofview.tactic =
     let u = universe_for_ir ir in
     match kind, neg_entry with
     | Some Goal_false, None ->
-      close_term_false u env sigma ir entries
+      close_term_false u env sigma ir ~nat_atoms entries
+    | Some (Goal_nat_le _), Some _ ->
+      close_term_comparison u ir ~nat_atoms ~nat_goal:true entries U_Z `Le
+    | Some (Goal_nat_lt _), Some _ ->
+      close_term_comparison u ir ~nat_atoms ~nat_goal:true entries U_Z `Lt
+    | Some (Goal_nat_le _), None | Some (Goal_nat_lt _), None ->
+      unsupported "term_mode: witness lacks neg_goal but goal is a ℕ \
+                   comparison (cert/goal mismatch)"
+    | Some Goal_nat_eq, _ ->
+      unsupported "term_mode: ℕ equality goals are pre-split via \
+                   Nat.le_antisymm by the dispatcher before reaching \
+                   close_term (internal invariant violation)"
     | Some (Goal_le (_, _, tag)), Some _ ->
-      close_term_comparison u ir entries tag `Le
+      close_term_comparison u ir ~nat_atoms entries tag `Le
     | Some (Goal_lt (_, _, tag)), Some _ ->
-      close_term_comparison u ir entries tag `Lt
+      close_term_comparison u ir ~nat_atoms entries tag `Lt
     | Some Goal_false, Some _ ->
       unsupported "term_mode: witness names neg_goal but goal is False \
                    (cert/goal mismatch)"

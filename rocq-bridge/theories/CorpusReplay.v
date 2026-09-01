@@ -971,6 +971,20 @@ Proof. intros x h1. alethe_walker_test "(
 (step t39 (cl) :rule resolution :premises (t37 t38))
 )". Qed.
 
+(* SKIPPED corpus_nat_d1_bracket: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
+(* SKIPPED corpus_nat_eq_from_bounds: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
+(* SKIPPED corpus_nat_false_from_bounds: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
+(* SKIPPED corpus_nat_forall_instance: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
+(* SKIPPED corpus_nat_pow_bound: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
+(* SKIPPED corpus_nat_strict_trans: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
+(* SKIPPED corpus_nat_sum_bound: statically walkable but skipped: ℕ goal: the static CorpusReplay walker has no ℕ→ℤ cast layer (atoms resolve to nat vars); the LIVE-strict suites on both bridges are the kernel ground truth for these goals *)
+
 (* ~(p \/ q) |- ~p /\ ~q (de Morgan; probes not_or/and rules/and_simplify) *)
 Theorem corpus_prop_demorgan :
   forall p q : Prop, ~(p \/ q) -> ~p /\ ~q.

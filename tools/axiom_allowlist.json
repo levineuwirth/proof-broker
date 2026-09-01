@@ -36,10 +36,40 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestCorpusLive.corpus_live_uf_trans":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_d1_bracket":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_eq_from_bounds":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_false_from_bounds":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_forall_instance":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_pow_bound":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_strict_trans":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_sum_bound":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.lia_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.pb_guard_nonidentity_falls_back_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_plain":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_term":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker_pow":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker_forall":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker_d1":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_term_d1":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_term_eq":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_axiom_free":
@@ -279,6 +309,20 @@
       ["classic", "propositional_extensionality"],
     "corpus_live_uf_trans":
       ["classic", "propositional_extensionality"],
+    "corpus_live_nat_d1_bracket":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_eq_from_bounds":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_false_from_bounds":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_forall_instance":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_pow_bound":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_strict_trans":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_sum_bound":
+      ["classic", "propositional_extensionality"],
     "farkas_le_2":
       [],
     "le_to_le0":
@@ -296,6 +340,76 @@
     "pb_lia_axiom_free":
       [],
     "pb_guard_nonidentity_falls_back_axiom_free":
+      [],
+    "pb_nat_plain_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "pb_nat_term_axiom_free":
+      [],
+    "pb_nat_walker_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "pb_nat_walker_pow_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "pb_nat_walker_forall_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "pb_nat_walker_d1_axiom_free":
+      ["classic", "propositional_extensionality"],
+    "pb_nat_term_d1_axiom_free":
+      [],
+    "pb_nat_term_eq_axiom_free":
+      [],
+    "pb_nat_sub_fails_closed":
+      [],
+    "pb_nat_div_fails_closed":
+      [],
+    "pb_nat_nested_forall_fails_closed":
+      [],
+    "pb_nat_uf_mix_fails_closed":
+      [],
+    "pb_spec_gate_nat_spec_passes":
+      [],
+    "pb_spec_gate_int_none_passes":
+      [],
+    "pb_spec_gate_missing_fails_closed":
+      [],
+    "pb_spec_gate_foreign_fails_closed":
+      [],
+    "pb_spec_gate_mixed_fails_closed":
+      [],
+    "pb_nat_sub_in_atom_fails_closed":
+      [],
+    "pb_nat_pred_in_atom_fails_closed":
+      [],
+    "nat_push_add":
+      [],
+    "nat_push_mul":
+      [],
+    "nat_push_pow":
+      [],
+    "nat_cast_le":
+      [],
+    "nat_cast_lt":
+      [],
+    "nat_cast_ge":
+      [],
+    "nat_cast_gt":
+      [],
+    "nat_cast_eq":
+      [],
+    "nat_cast_not_le":
+      [],
+    "nat_cast_not_lt":
+      [],
+    "nat_cast_not_ge":
+      [],
+    "nat_cast_not_gt":
+      [],
+    "nat_cast_not_eq":
+      [],
+    "nat_cast_nonneg":
+      [],
+    "nat_le_via_lt":
+      [],
+    "nat_lt_via_le":
       [],
     "pb_guard_walker_fails_closed":
       [],

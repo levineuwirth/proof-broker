@@ -31,6 +31,13 @@ val run_close_walker : Names.Id.t list option -> unit Proofview.tactic
     [run_close]'s [tclORELSE _ lia] otherwise masks. Test-only. *)
 
 val run_test : Names.Id.t list option -> unit Proofview.tactic
+
+val run_spec_gate_test : string -> string -> unit Proofview.tactic
+(** TEST-ONLY (R3-M1, C3a ROUND 1 finding 2): drive
+    [check_cert_specializations] on a synthetic cert —
+    mode ∈ {nat, int}, kind ∈ {none, nat_spec, foreign_spec,
+    mixed_spec}; the fail-closed branches must throw, the invertible
+    shapes must pass and close a [True] goal. *)
 (** Dispatch + verify + print summary; does not close. *)
 
 val run_verbose : Names.Id.t list option -> unit Proofview.tactic

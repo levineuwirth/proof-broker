@@ -138,6 +138,9 @@ let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
   in
   match t with
   | Var { name } -> Some (Atom name)
+  (* R3-M1: an atomized subterm is an SMT constant named by its
+     payload id (see [Farkas.linearize]'s Opaque arm). *)
+  | Opaque { payload_id } -> Some (Atom payload_id)
   | Const { name = "True" } -> Some (Atom "true")
   | Const { name = "False" } -> Some (Atom "false")
   | Const { name } -> Some (Atom name)
@@ -153,6 +156,11 @@ let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
   | Eq { left; right; _ } -> bin "=" left right
   | Forall { var; ty; body } -> quant "forall" var ty body
   | Exists { var; ty; body } -> quant "exists" var ty body
+  (* R3-M1 cast transparency: the SMT problem is emitted with
+     [Int.ofNat] erased (the refined IR's ℕ atoms are Int consts
+     constrained nonneg), so cvc5's assumes state the operand
+     directly — match against it. Mirrors [Farkas.linearize]. *)
+  | App { symbol = "Int.ofNat"; args = [ a ]; _ } -> shell_to_sexp a
   | App { symbol; args; _ } ->
     let sargs = List.map shell_to_sexp args in
     if List.for_all Option.is_some sargs then

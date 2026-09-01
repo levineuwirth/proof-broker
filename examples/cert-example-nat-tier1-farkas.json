@@ -1,0 +1,77 @@
+{
+  "cert_version": "1.0",
+  "tier": 1,
+  "format": "farkas",
+  "goal": {
+    "shell": {
+      "args": [
+        {
+          "args": [
+            {
+              "name": "x",
+              "node": "Var"
+            }
+          ],
+          "node": "App",
+          "symbol": "Int.ofNat",
+          "type_args": []
+        },
+        {
+          "node": "NumLit",
+          "type": "Int",
+          "value": "4"
+        }
+      ],
+      "node": "App",
+      "symbol": "LE.le",
+      "type_args": []
+    }
+  },
+  "dispatch_context_hash": "sha256:9c9657f6c18cc657cc5b071b93da80a490595a803d51aba0b8508df13703fbf2",
+  "rewrite_trace_hash": "sha256:8b100ff1ae7640130e9eef3eca00b8fe7b4acd3682db2e48c980cfb1eafee298",
+  "backend": {
+    "name": "cvc5",
+    "version": "1.3.0",
+    "config_hash": "sha256:2f0529604f8b36ad50c5929546b583ce477e0592743e51be53ffc327f07fefb5"
+  },
+  "resources": {
+    "wall_time_ms": 12
+  },
+  "refinement_record": {
+    "adapter": "cvc5",
+    "adapter_version": "1.3.0",
+    "fragment": "LIA",
+    "specializations": [
+      {
+        "kind": "type_specialization",
+        "source": "Nat",
+        "target": "Int",
+        "justification": "embeds_into:Int_for_universal_LIA",
+        "soundness_witness": "Int.ofNat_le,Int.ofNat_lt,Int.ofNat_inj,Int.natCast_nonneg"
+      }
+    ],
+    "auxiliary": {
+      "smtlib_logic": "QF_LIA"
+    }
+  },
+  "payload": {
+    "witness_kind": "farkas",
+    "witness_data": {
+      "coefficients": [
+        {
+          "hypothesis": "h1",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "h2",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ]
+    },
+    "checking_recipe": "lean.farkas_check"
+  }
+}

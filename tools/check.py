@@ -16,7 +16,11 @@ span multiple documents or require domain knowledge:
       registered (features list / first-order-fragment ids).
     - definitional_metadata[*].concept_tag is a registered concept tag.
     - type_metadata type_variable instances' theory_classification_tags
-      are registered theory tags.
+      and primitive entries' theory_tags are registered theory tags —
+      or (R3-M1) `embedding_witness:<name>` tags whose <name> resolves
+      in library_provenance.
+    - definitional_metadata specialization_targets' soundness_witness
+      entries resolve in library_provenance (R3-M1).
     - abstract_axioms given in the *string* "shape:detail" form have a
       registered shape id. (The explicit-object form
       {"shape": "explicit", ...} is NOT registry-checked — see below.)
@@ -38,6 +42,9 @@ span multiple documents or require domain knowledge:
       error — the config_hash is the binding identity, the version
       string is only the adapter's declared label (never cross-checked
       before, so shipped fixtures can carry a stale one).
+    - refinement_record.specializations[].soundness_witness tokens
+      (comma-split) resolve to library_provenance entries of the
+      paired IR (R3-M1).
 
   Adapter manifests
     - logic_fragments, type_constructions, witness_kinds_produced,
@@ -63,9 +70,6 @@ not overclaim; audit M7. Closing these is behaviour-affecting and is
 tracked separately, not silently asserted here):
   - Explicit-object abstract_axioms ({"shape": "explicit", ...}): the
     shape id and any embedded shell term are not validated.
-  - TypeMetadata_Primitive.theory_tags: only the type_variable
-    instances' theory_classification_tags are registry-checked; the
-    primitive-level theory_tags field is not.
   - collect_subshells does not descend into instances[].abstract_signature,
     explicit abstract_axiom shells, or lifting_obligation subterms, so an
     unresolved TypeRef/symbol hiding only there is not caught.
@@ -265,15 +269,51 @@ def check_ir_against_registry(ir, registry):
         if "concept_tag" in dm and dm["concept_tag"] not in concept_ids:
             errors.append(f"definitional_metadata['{sym}'].concept_tag: unknown '{dm['concept_tag']}'")
 
+    # Theory tags: registered ids, plus the R3-M1 witness form
+    # `embedding_witness:<name>` where <name> must be a
+    # library_provenance key (refinement joins these payloads into the
+    # specialization record's soundness_witness, so a dangling name
+    # here becomes an unverifiable witness there). Covers both
+    # type_variable instances' theory_classification_tags and — new in
+    # R3-M1, closing a documented gap — primitive entries' theory_tags.
     theory_tag_ids = {t["id"] for t in registry["theory_tags"]}
+
+    def check_tag(tag, where):
+        if tag.startswith("embedding_witness:"):
+            name = tag.split(":", 1)[1]
+            if name not in provenance:
+                errors.append(
+                    f"{where}: embedding_witness '{name}' has no "
+                    "library_provenance entry"
+                )
+        elif tag not in theory_tag_ids:
+            errors.append(f"{where}: unknown '{tag}'")
+
     for tid, tm in type_metadata.items():
         if tm.get("kind") == "type_variable":
             for inst in tm.get("instances", []):
                 for tag in inst.get("theory_classification_tags", []):
-                    if tag not in theory_tag_ids:
-                        errors.append(
-                            f"type_metadata['{tid}'].instances[].theory_classification_tags: unknown '{tag}'"
-                        )
+                    check_tag(
+                        tag,
+                        f"type_metadata['{tid}'].instances[].theory_classification_tags",
+                    )
+        elif tm.get("kind") == "primitive":
+            for tag in tm.get("theory_tags", []):
+                check_tag(tag, f"type_metadata['{tid}'].theory_tags")
+
+    # R3-M1: a specialization_targets entry's soundness_witness must
+    # resolve in library_provenance — same rule as the embedding
+    # witness tags (the method_specialization record copies it).
+    for sym, dm in defn_metadata.items():
+        if dm.get("kind") == "typeclass_method":
+            for tgt in dm.get("specialization_targets", []):
+                w = tgt.get("soundness_witness")
+                if w is not None and w not in provenance:
+                    errors.append(
+                        f"definitional_metadata['{sym}'].specialization_targets"
+                        f"[theory={tgt.get('theory')}]: soundness_witness "
+                        f"'{w}' has no library_provenance entry"
+                    )
 
     axiom_shape_ids = {a["id"] for a in registry["axiom_shape_descriptors"]}
     for tid, tm in type_metadata.items():
@@ -484,6 +524,7 @@ CERT_MANIFEST_PAIRS = {
     "cert-example1-tier3-alethe.json":    "manifest-cvc5.json",
     "cert-example2-tier2-casesplit.json": "manifest-cvc5.json",
     "cert-example4-tier3-tptp.json":      "manifest-vampire.json",
+    "cert-example-nat-tier1-farkas.json": "manifest-cvc5.json",
 }
 
 # cert filename -> IR filename. R2: every shipped cert pairs with a
@@ -495,6 +536,7 @@ CERT_IR_PAIRS = {
     "cert-example1-tier3-alethe.json": "example1-lia-typeclass.json",
     "cert-example2-tier2-casesplit.json": "example-casesplit-lra.json",
     "cert-example4-tier3-tptp.json": "example-tstp-fol.json",
+    "cert-example-nat-tier1-farkas.json": "example-nat-bound.json",
 }
 
 # cert filename -> rewrite-trace filename (R2). Every cert's
@@ -506,6 +548,7 @@ CERT_TRACE_PAIRS = {
     "cert-example1-tier3-alethe.json": "rewrite-trace-example1-identity.json",
     "cert-example2-tier2-casesplit.json": "rewrite-trace-casesplit-identity.json",
     "cert-example4-tier3-tptp.json": "rewrite-trace-tstp-identity.json",
+    "cert-example-nat-tier1-farkas.json": "rewrite-trace-nat-identity.json",
 }
 
 # rewrite-trace filename -> the IR fixture whose canonical hash every
@@ -516,6 +559,7 @@ TRACE_IR_PAIRS = {
     "rewrite-trace-example1-identity.json": "example1-lia-typeclass.json",
     "rewrite-trace-casesplit-identity.json": "example-casesplit-lra.json",
     "rewrite-trace-tstp-identity.json": "example-tstp-fol.json",
+    "rewrite-trace-nat-identity.json": "example-nat-bound.json",
 }
 
 # The all-zeros "no trace" sentinel is REJECTED as of R2: every mint
@@ -652,6 +696,33 @@ def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
             )
 
     return errors, warnings
+
+
+def check_cert_witness_provenance(cert, paired_ir, cert_name=None):
+    """R3-M1 gate: every specialization's soundness_witness in a cert
+    must resolve to library_provenance entries of the cert's paired
+    IR. The witness is a comma-joined list of provenance keys (the
+    refinement pass builds it from `embedding_witness:` tags /
+    specialization_targets witnesses), so each token is checked
+    individually. A dangling witness would let a cert claim an
+    embedding lemma nothing in the IR names."""
+    errors = []
+    name = cert_name or "certificate"
+    provenance = paired_ir.get("library_provenance", {})
+    specs = cert.get("refinement_record", {}).get("specializations", [])
+    for i, spec in enumerate(specs):
+        w = spec.get("soundness_witness")
+        if w is None:
+            continue
+        for token in w.split(","):
+            if token not in provenance:
+                errors.append(
+                    f"{name}: refinement_record.specializations[{i}] "
+                    f"({spec.get('kind')}, source={spec.get('source')}): "
+                    f"soundness_witness token '{token}' has no "
+                    "library_provenance entry in the paired IR"
+                )
+    return errors
 
 
 def check_identity_trace_hashes(trace, paired_ir, trace_name=None):
@@ -883,6 +954,10 @@ def main() -> int:
                 errors += check_cert_manifest_consistency(
                     doc, paired_manifest,
                     cert_name=str(fixture.relative_to(ROOT)))
+                if paired_ir is not None:
+                    errors += check_cert_witness_provenance(
+                        doc, paired_ir,
+                        cert_name=str(fixture.relative_to(ROOT)))
         elif kind == "manifest":
             e, w = check_manifest(doc, registry)
             errors += e

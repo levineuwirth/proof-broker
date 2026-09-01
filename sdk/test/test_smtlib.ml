@@ -12,8 +12,9 @@
       [(assert (not ...))].
     * Quantifiers: [Forall]/[Exists] binder emission, nesting,
       binder-name sanitization, QF_-prefix drop in [pick_logic].
-    * Errors: lambda rejected, opaque rejected, unsupported
-      symbol rejected.
+    * Errors: lambda rejected, unsupported symbol rejected.
+    * R3-M1: [Opaque] emits as its payload-id identifier and is
+      declared as an Int const; [Int.ofNat] emits transparently.
     * Specialization side-channel: [HAdd.hAdd]/[LE.le] are recorded;
       primitive symbols are also recorded with their canonical
       source name. *)
@@ -225,12 +226,58 @@ let test_emit_unknown_symbol_rejected () =
   | Error (Unsupported_symbol { symbol = "Real.exp"; _ }) -> ()
   | _ -> Alcotest.fail "expected Unsupported_symbol"
 
-let test_emit_opaque_rejected () =
+(* R3-M1: an Opaque node emits as its payload-id identifier (the
+   former Unsupported_node rejection is gone — atomized ℕ products
+   ride through as declared Int consts). *)
+let test_emit_opaque_as_identifier () =
+  Alcotest.(check string) "opaque = its payload id" "_pb_atom_0"
+    (emit_term_ok (Opaque { payload_id = "_pb_atom_0" }))
+
+(* R3-M1: the ℕ→ℤ cast is transparent — [Int.ofNat x] emits as [x]. *)
+let test_emit_cast_transparent () =
+  let t = Ir.App {
+    symbol = "Int.ofNat"; type_args = [];
+    args = [ Var { name = "x" } ];
+  } in
+  Alcotest.(check string) "cast erased" "x" (emit_term_ok t)
+
+let test_emit_cast_bad_arity_rejected () =
   let specs = ref [] in
-  match Smtlib.emit_term ~specs
-          (Opaque { payload_id = "p" }) with
-  | Error (Unsupported_node { node = "Opaque"; _ }) -> ()
-  | _ -> Alcotest.fail "expected Unsupported_node Opaque"
+  let t = Ir.App {
+    symbol = "Int.ofNat"; type_args = [];
+    args = [ Var { name = "x" }; Var { name = "y" } ];
+  } in
+  match Smtlib.emit_term ~specs t with
+  | Error (Bad_arity { symbol = "Int.ofNat"; expected = 1; got = 2 }) -> ()
+  | _ -> Alcotest.fail "expected Bad_arity on 2-arg Int.ofNat"
+
+(* R3-M1: every Opaque atom in the goal/hypotheses gets one
+   [(declare-const <id> Int)], first-occurrence order, deduped. *)
+let test_emit_script_declares_opaque_atoms () =
+  let a0 = Ir.Opaque { payload_id = "_pb_atom_0" } in
+  let five = Ir.Num_lit { value = "5"; ty = "Int" } in
+  let hyp : Ir.hypothesis = {
+    name = "h1";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ a0; five ] };
+  } in
+  let goal = Ir.App {
+    symbol = "LE.le"; type_args = []; args = [ a0; five ];
+  } in
+  let ir = make_ir ~hypotheses:[ hyp ] goal in
+  match Smtlib.emit ir with
+  | Ok script ->
+    let count_decls s =
+      let re = Str.regexp_string "(declare-const _pb_atom_0 Int)" in
+      let rec loop i acc =
+        match Str.search_forward re s i with
+        | j -> loop (j + 1) (acc + 1)
+        | exception Not_found -> acc
+      in
+      loop 0 0
+    in
+    Alcotest.(check int) "exactly one decl for the atom" 1
+      (count_decls script.body)
+  | Error e -> Alcotest.fail ("emit failed: " ^ Smtlib.detail_of_error e)
 
 (* --- specialization side-channel ------------------------------------- *)
 
@@ -700,7 +747,14 @@ let () =
     "errors", [
       Alcotest.test_case "Lambda rejected" `Quick test_emit_lambda_rejected;
       Alcotest.test_case "unknown symbol rejected" `Quick test_emit_unknown_symbol_rejected;
-      Alcotest.test_case "Opaque rejected" `Quick test_emit_opaque_rejected;
+      Alcotest.test_case "Opaque emits as its payload id (R3-M1)"
+        `Quick test_emit_opaque_as_identifier;
+      Alcotest.test_case "Int.ofNat cast transparent (R3-M1)"
+        `Quick test_emit_cast_transparent;
+      Alcotest.test_case "Int.ofNat bad arity rejected"
+        `Quick test_emit_cast_bad_arity_rejected;
+      Alcotest.test_case "Opaque atoms declared once (R3-M1)"
+        `Quick test_emit_script_declares_opaque_atoms;
       Alcotest.test_case "unsupported type rejected" `Quick test_emit_unsupported_type_rejected;
     ];
     "specialization side-channel", [

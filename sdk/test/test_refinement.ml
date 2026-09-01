@@ -13,7 +13,13 @@
       no-substitution fragments (UF, BV) pass through as no-ops.
     * LRA target on the same fixture (with theory_classification_tag
       [embeds_into:Int_for_universal_LRA] absent): no
-      type_specialization (the tag for LRA isn't there). *)
+      type_specialization (the tag for LRA isn't there).
+    * R3-M1 witness honesty: soundness_witness is the comma-joined
+      [embedding_witness:] tag payloads, verbatim; an embed tag
+      WITHOUT a witness tag yields no specialization and no
+      substitution (fail closed); the [primitive] kind (Nat) embeds
+      through [theory_tags] under the same rules; method
+      specialization requires a target-level soundness_witness. *)
 
 open Proof_broker
 
@@ -89,21 +95,23 @@ let test_no_substitution_fragments_passthrough () =
         (fragment ^ ": unexpected error: " ^ Refinement.detail_of_error e)
   ) ["UF"; "BV"; "NIA"; "NRA"; "FOL"; "UFLIA"; "UFLRA"]
 
-let test_alpha_type_var_substituted () =
-  let alpha_meta = `Assoc [
-    "kind", `String "type_variable";
-    "name", `String "alpha";
-    "instances", `List [
-      `Assoc [
-        "instance_name", `String "inst_alpha";
-        "theory_classification_tags", `List [
-          `String "embeds_into:Int_for_universal_LIA";
-        ];
+let alpha_meta_with_witness = `Assoc [
+  "kind", `String "type_variable";
+  "name", `String "alpha";
+  "instances", `List [
+    `Assoc [
+      "instance_name", `String "inst_alpha";
+      "theory_classification_tags", `List [
+        `String "embeds_into:Int_for_universal_LIA";
+        `String "embedding_witness:alpha_int_embedding_lemma";
       ];
     ];
-  ] in
+  ];
+]
+
+let test_alpha_type_var_substituted () =
   let ir = make_ir
-    ~type_metadata:[ ("alpha", alpha_meta) ]
+    ~type_metadata:[ ("alpha", alpha_meta_with_witness) ]
     ~free_vars:[ { name = "n"; ty = "alpha" } ]
     (Eq {
       ty = "alpha";
@@ -120,8 +128,9 @@ let test_alpha_type_var_substituted () =
       (Refinement_record.specialization_kind_to_string s.kind);
     Alcotest.(check string) "source = alpha" "alpha" s.source;
     Alcotest.(check string) "target = Int" "Int" s.target;
-    Alcotest.(check bool) "soundness_witness present" true
-      (Option.is_some s.soundness_witness);
+    Alcotest.(check (option string))
+      "soundness_witness = the embedding_witness tag payload, verbatim"
+      (Some "alpha_int_embedding_lemma") s.soundness_witness;
     (* Check IR substitution actually happened: free_var, NumLit
        type tag, Eq.ty all moved alpha → Int. *)
     let fv = List.hd r.refined_ir.context.free_vars in
@@ -139,18 +148,7 @@ let test_library_slice_substituted () =
      refined alongside hypotheses and free_vars; otherwise the
      refined IR still carries a stray [alpha] type tag in a slice
      and downstream consumers see an unresolved type ref. *)
-  let alpha_meta = `Assoc [
-    "kind", `String "type_variable";
-    "name", `String "alpha";
-    "instances", `List [
-      `Assoc [
-        "instance_name", `String "inst_alpha";
-        "theory_classification_tags", `List [
-          `String "embeds_into:Int_for_universal_LIA";
-        ];
-      ];
-    ];
-  ] in
+  let alpha_meta = alpha_meta_with_witness in
   let slice : Ir.library_slice_entry list = [
     {
       entity_name = "Stub.lemma";
@@ -183,7 +181,106 @@ let test_library_slice_substituted () =
   | Error e ->
     Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
 
+(* R3-M1 fail-closed: an embed tag with NO embedding_witness tag
+   justifies nothing — no specialization is recorded and the IR is
+   left unsubstituted (the stray [alpha] then surfaces downstream as
+   an unsupported-type dispatch failure, never as a record whose
+   witness was fabricated). This pins the removal of the
+   ["<Host>_embedding"] fabrication at the former refinement.ml:205. *)
+let test_embed_tag_without_witness_fails_closed () =
+  let alpha_meta = `Assoc [
+    "kind", `String "type_variable";
+    "name", `String "alpha";
+    "instances", `List [
+      `Assoc [
+        "instance_name", `String "inst_alpha";
+        "theory_classification_tags", `List [
+          `String "embeds_into:Int_for_universal_LIA";
+        ];
+      ];
+    ];
+  ] in
+  let ir = make_ir
+    ~type_metadata:[ ("alpha", alpha_meta) ]
+    ~free_vars:[ { name = "n"; ty = "alpha" } ]
+    (Var { name = "n" })
+  in
+  match Refinement.run ~fragment:"LIA" ir with
+  | Ok r ->
+    Alcotest.(check int) "no specs without a witness tag" 0
+      (List.length r.specializations);
+    let fv = List.hd r.refined_ir.context.free_vars in
+    Alcotest.(check string) "alpha NOT substituted" "alpha" fv.ty
+  | Error e ->
+    Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
+
+(* R3-M1: the [primitive] metadata kind's embedding path (Nat → Int).
+   The embed + witness tags live in the entry's [theory_tags]; the
+   witness joins every [embedding_witness:] payload in tag order. *)
+let nat_meta_with_witness = `Assoc [
+  "kind", `String "primitive";
+  "name", `String "Nat";
+  "theory_tags", `List [
+    `String "embeds_into:Int_for_universal_LIA";
+    `String "embedding_witness:Int.ofNat_le";
+    `String "embedding_witness:Int.natCast_nonneg";
+  ];
+]
+
+let test_primitive_nat_embeds () =
+  let ir = make_ir
+    ~type_metadata:[ ("Nat", nat_meta_with_witness) ]
+    ~free_vars:[ { name = "x"; ty = "Nat" } ]
+    (App { symbol = "LE.le"; type_args = []; args = [
+       Num_lit { value = "0"; ty = "Int" };
+       App { symbol = "Int.ofNat"; type_args = [];
+             args = [ Var { name = "x" } ] };
+     ] })
+  in
+  match Refinement.run ~fragment:"LIA" ir with
+  | Ok r ->
+    Alcotest.(check int) "1 spec recorded" 1 (List.length r.specializations);
+    let s = List.hd r.specializations in
+    Alcotest.(check string) "kind = type_specialization"
+      "type_specialization"
+      (Refinement_record.specialization_kind_to_string s.kind);
+    Alcotest.(check string) "source = Nat" "Nat" s.source;
+    Alcotest.(check string) "target = Int" "Int" s.target;
+    Alcotest.(check (option string))
+      "witness = joined embedding_witness payloads, tag order"
+      (Some "Int.ofNat_le,Int.natCast_nonneg") s.soundness_witness;
+    let fv = List.hd r.refined_ir.context.free_vars in
+    Alcotest.(check string) "free_var x: Nat → Int" "Int" fv.ty
+  | Error e ->
+    Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
+
+let test_primitive_without_witness_fails_closed () =
+  let nat_meta = `Assoc [
+    "kind", `String "primitive";
+    "name", `String "Nat";
+    "theory_tags", `List [
+      `String "embeds_into:Int_for_universal_LIA";
+    ];
+  ] in
+  let ir = make_ir
+    ~type_metadata:[ ("Nat", nat_meta) ]
+    ~free_vars:[ { name = "x"; ty = "Nat" } ]
+    (Var { name = "x" })
+  in
+  match Refinement.run ~fragment:"LIA" ir with
+  | Ok r ->
+    Alcotest.(check int) "no specs without a witness tag" 0
+      (List.length r.specializations);
+    let fv = List.hd r.refined_ir.context.free_vars in
+    Alcotest.(check string) "Nat NOT substituted" "Nat" fv.ty
+  | Error e ->
+    Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
+
 let test_typeclass_method_specs () =
+  (* HAdd.hAdd's LIA target carries a soundness_witness → emitted;
+     LE.le's does not → fail closed, no record (the schema requires
+     the witness on method_specialization, so emitting one would
+     mint schema-invalid certs — the pre-R3 behavior). *)
   let hadd_meta = `Assoc [
     "kind", `String "typeclass_method";
     "method_name", `String "HAdd.hAdd";
@@ -192,6 +289,7 @@ let test_typeclass_method_specs () =
       `Assoc [
         "theory", `String "LIA";
         "operator", `String "+";
+        "soundness_witness", `String "int_add_hom_lemma";
       ];
       `Assoc [
         "theory", `String "BV";
@@ -217,7 +315,9 @@ let test_typeclass_method_specs () =
   match Refinement.run ~fragment:"LIA" ir with
   | Ok r ->
     let specs = r.specializations in
-    Alcotest.(check int) "2 method specs" 2 (List.length specs);
+    Alcotest.(check int)
+      "1 method spec (witness-less target emits none)" 1
+      (List.length specs);
     let hadd =
       List.find (fun (s : Refinement_record.specialization) ->
         s.source = "HAdd.hAdd") specs
@@ -226,11 +326,11 @@ let test_typeclass_method_specs () =
     Alcotest.(check string) "HAdd.hAdd is method_specialization"
       "method_specialization"
       (Refinement_record.specialization_kind_to_string hadd.kind);
-    let le =
-      List.find (fun (s : Refinement_record.specialization) ->
-        s.source = "LE.le") specs
-    in
-    Alcotest.(check string) "LE.le target" "<=" le.target
+    Alcotest.(check (option string)) "HAdd.hAdd witness verbatim"
+      (Some "int_add_hom_lemma") hadd.soundness_witness;
+    Alcotest.(check bool) "LE.le spec NOT emitted" false
+      (List.exists (fun (s : Refinement_record.specialization) ->
+         s.source = "LE.le") specs)
   | Error e ->
     Alcotest.fail ("unexpected error: " ^ Refinement.detail_of_error e)
 
@@ -267,6 +367,18 @@ let test_fixture_example1 () =
       (List.exists (fun (s : Refinement_record.specialization) ->
          s.kind = Type_specialization && s.source = "alpha")
          specs);
+    (* R3-M1: the witness comes from the fixture's embedding_witness
+       tag — a library_provenance key — not a fabricated string. *)
+    let alpha_spec =
+      List.find (fun (s : Refinement_record.specialization) ->
+        s.kind = Type_specialization && s.source = "alpha") specs
+    in
+    Alcotest.(check (option string)) "alpha witness from fixture tag"
+      (Some "linear_ordered_comm_ring_lia_embedding")
+      alpha_spec.soundness_witness;
+    Alcotest.(check bool) "every emitted spec carries a witness" true
+      (List.for_all (fun (s : Refinement_record.specialization) ->
+         Option.is_some s.soundness_witness) specs);
     Alcotest.(check bool) "HAdd.hAdd method_specialization present" true
       (List.exists (fun (s : Refinement_record.specialization) ->
          s.kind = Method_specialization && s.source = "HAdd.hAdd")
@@ -305,6 +417,12 @@ let () =
         `Quick test_no_substitution_fragments_passthrough;
       Alcotest.test_case "alpha → Int via type_metadata"
         `Quick test_alpha_type_var_substituted;
+      Alcotest.test_case "embed tag without witness tag fails closed"
+        `Quick test_embed_tag_without_witness_fails_closed;
+      Alcotest.test_case "primitive Nat → Int via theory_tags"
+        `Quick test_primitive_nat_embeds;
+      Alcotest.test_case "primitive without witness fails closed"
+        `Quick test_primitive_without_witness_fails_closed;
       Alcotest.test_case "library_slice entries refined alongside hyps"
         `Quick test_library_slice_substituted;
       Alcotest.test_case "typeclass method specs"

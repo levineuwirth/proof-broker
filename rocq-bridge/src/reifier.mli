@@ -11,6 +11,23 @@
 
 exception Reify_error of string
 
+val nat_atoms : (string * EConstr.t) list ref
+(** R3-M1: [payload_id ↦ nat subterm] for every atomized nonlinear ℕ
+    product of the LAST [build_ir] run (reset on entry; the plugin's
+    tactic execution is single-threaded). [pb_rocq_main] snapshots it
+    into the extraction path right after reification. *)
+
+val nat_literal : Evd.evar_map -> EConstr.t -> Z.t option
+(** Structural nat-literal walker ([O]/[S]-chains only, no
+    reduction). Shared with [Term_mode]'s push-cast so the lift's
+    literal/atom decisions coincide with the reifier's. *)
+
+val r_nat_pow : EConstr.t option Lazy.t
+(** [Nat.pow], resolved by qualid (no lib_ref registration). *)
+
+val r_z_of_nat : EConstr.t option Lazy.t
+(** [Z.of_nat], resolved by qualid. *)
+
 val reify_z_literal :
   Environ.env -> Evd.evar_map -> EConstr.t -> string option
 (** Walk a [Z]-typed closed literal — [Z0]/[Zpos p]/[Zneg p] with [p]

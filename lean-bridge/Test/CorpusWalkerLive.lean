@@ -77,6 +77,55 @@ theorem corpus_live_lia_weaken_bound : ∀ x : Int, 3 ≤ x → 1 ≤ x := by
 
 #print axioms corpus_live_lia_weaken_bound
 
+/-- x < 2^24, z < 2*zmax, zmax*zhigh <= zmax |- x + z < 2^24 + 2*zmax over ℕ (the R4 D1 lift_cell shape: nonlinear atom zmax*zhigh atomized to an Opaque payload; forces Opaque into M1) -/
+theorem corpus_live_nat_d1_bracket : ∀ (x z zmax zhigh : Nat), x < 2^24 → z < 2 * zmax → zmax * zhigh ≤ zmax → x + z < 2^24 + 2 * zmax := by
+  intro x z zmax zhigh hx hz hprod
+  proof_broker_walker
+
+#print axioms corpus_live_nat_d1_bracket
+
+/-- x+1 <= y, y <= 5, 6 <= x+w, w <= 2 |- x = 4 over ℕ (equality conclusion; the negated goal is a disjunction the walker case-handles — walker-live shape; the term-mode Nat.le_antisymm split is gated by the pb_nat_term_eq bridge tests) -/
+theorem corpus_live_nat_eq_from_bounds : ∀ (x y w : Nat), x + 1 ≤ y → y ≤ 5 → 6 ≤ x + w → w ≤ 2 → x = 4 := by
+  intro x y w h1 h2 h3 h4
+  proof_broker_walker
+
+#print axioms corpus_live_nat_eq_from_bounds
+
+/-- x+1 <= y, y <= x |- False over ℕ (contradictory bounds, False conclusion) -/
+theorem corpus_live_nat_false_from_bounds : ∀ (x y : Nat), x + 1 ≤ y → y ≤ x → False := by
+  intro x y h1 h2
+  proof_broker_walker
+
+#print axioms corpus_live_nat_false_from_bounds
+
+/-- forall n : ℕ, n + 1 >= 1 (leading ∀ℕ binder introduced by the tactic front-end; R3-M1 gate shape) -/
+theorem corpus_live_nat_forall_instance : ∀ n : Nat, n + 1 ≥ 1 := by
+  intro n
+  proof_broker_walker
+
+#print axioms corpus_live_nat_forall_instance
+
+/-- x < 2^16 |- x <= 65535 over ℕ (2^16-scale literal via reifier pow folding; R3-M1 gate shape. Scale is capped at 2^16 on purpose: the Rocq lift discharges plain ℕ decimal-literal leaves by kernel conversion, which normalizes the unary nat (2^24 measured at 7.4GB RSS / ~150s per coqc; see delta §5.4)) -/
+theorem corpus_live_nat_pow_bound : ∀ (x : Nat), x < 2^16 → x ≤ 65535 := by
+  intro x h
+  proof_broker_walker
+
+#print axioms corpus_live_nat_pow_bound
+
+/-- a < b, b < c |- a < c over ℕ (strict chain; the ℕ image uses the +1 trick end-to-end) -/
+theorem corpus_live_nat_strict_trans : ∀ (a b c : Nat), a < b → b < c → a < c := by
+  intro a b c h1 h2
+  proof_broker_walker
+
+#print axioms corpus_live_nat_strict_trans
+
+/-- x+1 <= y, y <= 5 |- x <= 4 over ℕ (the R3-M1 baseline: cast shells, nonneg hyps, primitive Nat metadata; term-mode AND walker shapes) -/
+theorem corpus_live_nat_sum_bound : ∀ (x y : Nat), x + 1 ≤ y → y ≤ 5 → x ≤ 4 := by
+  intro x y h1 h2
+  proof_broker_walker
+
+#print axioms corpus_live_nat_sum_bound
+
 /-- ~(p \/ q) |- ~p /\ ~q (de Morgan; probes not_or/and rules/and_simplify) -/
 theorem corpus_live_prop_demorgan : ∀ p q : Prop, ¬(p ∨ q) → ¬p ∧ ¬q := by
   intro p q h1

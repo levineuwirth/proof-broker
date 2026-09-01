@@ -25,7 +25,7 @@
     convert each goal shape to an implication-False whose body the
     closer recurses into. *)
 
-From Stdlib Require Import ZArith Reals.
+From Stdlib Require Import ZArith Reals Arith.
 
 Open Scope Z_scope.
 
@@ -447,6 +447,132 @@ Open Scope Z_scope.
     [Print Assumptions] block — Rocq's [Print Assumptions] alone
     doesn't include the theorem name in its output, so we need
     the explicit [Print] to anchor the parse. *)
+(* ============================================================
+   R3-M1: ℕ→ℤ push-cast + transfer shims.
+
+   The ℕ lift casts every witness-named ℕ hypothesis to its ℤ image
+   by TERM CONSTRUCTION before the Z Farkas fold runs. Unlike Lean
+   (where core's cast-distribution lemmas are `rfl` and kernel
+   defeq folds the cast through +/*/literals), Coq's [Z.of_nat]
+   does not reduce on open terms — so the push is explicit: each
+   shim takes the pushed forms [za]/[zb] together with push
+   equations [Z.of_nat a = za] (built recursively from the
+   [nat_push_*] lemmas; [eq_refl] at leaves), and transfers the ℕ
+   fact through [Nat2Z]. Everything is constructive — [Print
+   Assumptions] below pins the whole family "Closed under the
+   global context", which is what keeps the ℕ term-mode footprint
+   EMPTY (the M1 Rocq gate).
+   ============================================================ *)
+
+Lemma nat_push_add (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb) :
+  Z.of_nat (a + b) = za + zb.
+Proof. subst; apply Nat2Z.inj_add. Qed.
+
+Lemma nat_push_mul (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb) :
+  Z.of_nat (a * b) = za * zb.
+Proof. subst; apply Nat2Z.inj_mul. Qed.
+
+(* The pow case carries the FOLDED literal: the reifier emits
+   [2^24] as the numeral 16777216, and [H] is discharged by
+   [eq_refl] at application time — [Z.pow] on binary literals is
+   kernel-cheap, where normalizing [Z.of_nat (2^24)] through the
+   unary numeral would not be. *)
+Lemma nat_push_pow (a b : nat) (z : Z)
+  (H : (Z.of_nat a) ^ (Z.of_nat b) = z) :
+  Z.of_nat (a ^ b) = z.
+Proof. subst; apply Nat2Z.inj_pow. Qed.
+
+Lemma nat_cast_le (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : (a <= b)%nat) : za <= zb.
+Proof. subst; exact (proj1 (Nat2Z.inj_le a b) H). Qed.
+
+Lemma nat_cast_lt (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : (a < b)%nat) : za < zb.
+Proof. subst; exact (proj1 (Nat2Z.inj_lt a b) H). Qed.
+
+(* [ge]/[gt] at nat are definitionally the swapped [le]/[lt]; the
+   shims emit the swapped Z form directly (the IR reifier swapped
+   the operands the same way). *)
+Lemma nat_cast_ge (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : (a >= b)%nat) : zb <= za.
+Proof. subst; exact (proj1 (Nat2Z.inj_le b a) H). Qed.
+
+Lemma nat_cast_gt (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : (a > b)%nat) : zb < za.
+Proof. subst; exact (proj1 (Nat2Z.inj_lt b a) H). Qed.
+
+Lemma nat_cast_eq (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : a = b) : za = zb.
+Proof. subst za zb. now rewrite H. Qed.
+
+Lemma nat_cast_not_le (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : ~ (a <= b)%nat) : ~ (za <= zb).
+Proof. subst; intro hz; exact (H (proj2 (Nat2Z.inj_le a b) hz)). Qed.
+
+Lemma nat_cast_not_lt (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : ~ (a < b)%nat) : ~ (za < zb).
+Proof. subst; intro hz; exact (H (proj2 (Nat2Z.inj_lt a b) hz)). Qed.
+
+Lemma nat_cast_not_ge (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : ~ (a >= b)%nat) : ~ (zb <= za).
+Proof. subst; intro hz; exact (H (proj2 (Nat2Z.inj_le b a) hz)). Qed.
+
+Lemma nat_cast_not_gt (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : ~ (a > b)%nat) : ~ (zb < za).
+Proof. subst; intro hz; exact (H (proj2 (Nat2Z.inj_lt b a) hz)). Qed.
+
+Lemma nat_cast_not_eq (a b : nat) (za zb : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : a <> b) : za <> zb.
+Proof. subst; intro hz; exact (H (Nat2Z.inj _ _ hz)). Qed.
+
+(* One nonneg fact per ℕ atom — the ℤ image of what the reifier's
+   [_pb_nonneg_*] hypotheses assert. *)
+Lemma nat_cast_nonneg (a : nat) (za : Z)
+  (Ha : Z.of_nat a = za) : 0 <= za.
+Proof. subst; apply Nat2Z.is_nonneg. Qed.
+
+(* ℕ comparison-goal wrappers (mirror of [z_le_via_lt]/[z_lt_via_le],
+   constructive via [le_lt_dec]). -*)
+Lemma nat_le_via_lt (b c : nat) (H : (c < b)%nat -> False) : (b <= c)%nat.
+Proof.
+  destruct (le_lt_dec b c) as [Hle | Hgt]; [exact Hle | exfalso].
+  exact (H Hgt).
+Qed.
+
+Lemma nat_lt_via_le (b c : nat) (H : (c <= b)%nat -> False) : (b < c)%nat.
+Proof.
+  destruct (le_lt_dec c b) as [Hle | Hgt]; [exfalso; exact (H Hle) | exact Hgt].
+Qed.
+
+Register nat_push_add as proof_broker.term_mode.nat_push_add.
+Register nat_push_mul as proof_broker.term_mode.nat_push_mul.
+Register nat_push_pow as proof_broker.term_mode.nat_push_pow.
+Register nat_cast_le as proof_broker.term_mode.nat_cast_le.
+Register nat_cast_lt as proof_broker.term_mode.nat_cast_lt.
+Register nat_cast_ge as proof_broker.term_mode.nat_cast_ge.
+Register nat_cast_gt as proof_broker.term_mode.nat_cast_gt.
+Register nat_cast_eq as proof_broker.term_mode.nat_cast_eq.
+Register nat_cast_not_le as proof_broker.term_mode.nat_cast_not_le.
+Register nat_cast_not_lt as proof_broker.term_mode.nat_cast_not_lt.
+Register nat_cast_not_ge as proof_broker.term_mode.nat_cast_not_ge.
+Register nat_cast_not_gt as proof_broker.term_mode.nat_cast_not_gt.
+Register nat_cast_not_eq as proof_broker.term_mode.nat_cast_not_eq.
+Register nat_cast_nonneg as proof_broker.term_mode.nat_cast_nonneg.
+Register nat_le_via_lt as proof_broker.term_mode.nat_le_via_lt.
+Register nat_lt_via_le as proof_broker.term_mode.nat_lt_via_le.
+
 Print farkas_le_2.
 Print Assumptions farkas_le_2.
 
@@ -569,3 +695,51 @@ Print Assumptions r_not_lt_to_le0.
 
 Print r_not_gt_to_le0.
 Print Assumptions r_not_gt_to_le0.
+
+Print nat_push_add.
+Print Assumptions nat_push_add.
+
+Print nat_push_mul.
+Print Assumptions nat_push_mul.
+
+Print nat_push_pow.
+Print Assumptions nat_push_pow.
+
+Print nat_cast_le.
+Print Assumptions nat_cast_le.
+
+Print nat_cast_lt.
+Print Assumptions nat_cast_lt.
+
+Print nat_cast_ge.
+Print Assumptions nat_cast_ge.
+
+Print nat_cast_gt.
+Print Assumptions nat_cast_gt.
+
+Print nat_cast_eq.
+Print Assumptions nat_cast_eq.
+
+Print nat_cast_not_le.
+Print Assumptions nat_cast_not_le.
+
+Print nat_cast_not_lt.
+Print Assumptions nat_cast_not_lt.
+
+Print nat_cast_not_ge.
+Print Assumptions nat_cast_not_ge.
+
+Print nat_cast_not_gt.
+Print Assumptions nat_cast_not_gt.
+
+Print nat_cast_not_eq.
+Print Assumptions nat_cast_not_eq.
+
+Print nat_cast_nonneg.
+Print Assumptions nat_cast_nonneg.
+
+Print nat_le_via_lt.
+Print Assumptions nat_le_via_lt.
+
+Print nat_lt_via_le.
+Print Assumptions nat_lt_via_le.

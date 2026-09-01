@@ -107,6 +107,12 @@
   "type_metadata": {},
   "definitional_metadata": {},
   "library_provenance": {
+    "linear_ordered_field_lra_embedding": {
+      "library": "mathlib",
+      "version": "4.13.0",
+      "module_path": "Mathlib.Algebra.Order.Field.Basic",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000003"
+    },
     "<=": {
       "library": "lean-stdlib",
       "version": "4.13.0",

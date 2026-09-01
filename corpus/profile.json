@@ -72,6 +72,69 @@
       "arith_leaves": 12,
       "resolution": 9
     },
+    "nat_d1_bracket": {
+      "steps": 56,
+      "assumes": 9,
+      "subproofs": 0,
+      "rule_apps": 56,
+      "distinct_rules": 15,
+      "arith_leaves": 19,
+      "resolution": 9
+    },
+    "nat_eq_from_bounds": {
+      "steps": 199,
+      "assumes": 15,
+      "subproofs": 3,
+      "rule_apps": 199,
+      "distinct_rules": 24,
+      "arith_leaves": 39,
+      "resolution": 42
+    },
+    "nat_false_from_bounds": {
+      "steps": 11,
+      "assumes": 5,
+      "subproofs": 0,
+      "rule_apps": 11,
+      "distinct_rules": 6,
+      "arith_leaves": 3,
+      "resolution": 3
+    },
+    "nat_forall_instance": {
+      "steps": 12,
+      "assumes": 2,
+      "subproofs": 0,
+      "rule_apps": 12,
+      "distinct_rules": 6,
+      "arith_leaves": 3,
+      "resolution": 3
+    },
+    "nat_pow_bound": {
+      "steps": 10,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 10,
+      "distinct_rules": 5,
+      "arith_leaves": 3,
+      "resolution": 3
+    },
+    "nat_strict_trans": {
+      "steps": 66,
+      "assumes": 6,
+      "subproofs": 0,
+      "rule_apps": 66,
+      "distinct_rules": 15,
+      "arith_leaves": 21,
+      "resolution": 11
+    },
+    "nat_sum_bound": {
+      "steps": 49,
+      "assumes": 5,
+      "subproofs": 0,
+      "rule_apps": 49,
+      "distinct_rules": 15,
+      "arith_leaves": 15,
+      "resolution": 9
+    },
     "prop_demorgan": {
       "steps": 5,
       "assumes": 2,
@@ -155,9 +218,9 @@
     }
   },
   "totals": {
-    "goals": 17,
-    "steps": 1138,
-    "arith_leaves": 232,
+    "goals": 24,
+    "steps": 1541,
+    "arith_leaves": 335,
     "max_steps": 636,
     "max_arith_leaves": 118
   }
