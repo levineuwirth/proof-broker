@@ -36,6 +36,20 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestCorpusLive.corpus_live_uf_trans":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_d1_bracket":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_eq_from_bounds":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_false_from_bounds":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_forall_instance":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_pow_bound":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_strict_trans":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestCorpusLive.corpus_live_nat_sum_bound":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.lia_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.pb_guard_nonidentity_falls_back_axiom_free":
@@ -294,6 +308,20 @@
     "corpus_live_uf_lia_mix":
       ["classic", "propositional_extensionality"],
     "corpus_live_uf_trans":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_d1_bracket":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_eq_from_bounds":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_false_from_bounds":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_forall_instance":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_pow_bound":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_strict_trans":
+      ["classic", "propositional_extensionality"],
+    "corpus_live_nat_sum_bound":
       ["classic", "propositional_extensionality"],
     "farkas_le_2":
       [],

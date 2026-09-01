@@ -139,10 +139,13 @@ def _intro_names(meta: dict) -> list:
     """Binders to introduce, in goal order: the universally-quantified
     free vars, then the hypotheses — mirroring TestSnapshot.v's
     `intros n m h1 h3` so trace/goal atoms resolve against local
-    hypotheses on both bridges."""
+    hypotheses on both bridges. The reifier-synthesized ℕ nonneg
+    facts (`_pb_nonneg_*`, R3-M1) live only in the IR — they are not
+    premises of the stated goal and must not be introduced."""
     ctx = meta["ir"]["context"]
     return ([fv["name"] for fv in ctx.get("free_vars", [])]
-            + [h["name"] for h in ctx.get("hypotheses", [])])
+            + [h["name"] for h in ctx.get("hypotheses", [])
+               if not h["name"].startswith("_pb_nonneg_")])
 
 
 def render() -> str:
@@ -160,11 +163,16 @@ def render() -> str:
         # "replay_skip": "<reason>" in its goal file: excluded from the build
         # gate but still counted walkable by the static report. The mismatch
         # is the harness honestly recording a walker gap, not hiding it.
-        skip = meta.get("replay_skip")
+        # R3-M1 adds "static_replay_skip": same exclusion from THIS
+        # file only — the goal stays in the live-strict suites (the
+        # ℕ goals: the static walker_test has no ℕ→ℤ cast layer, but
+        # the live path lifts; the live suites are the kernel ground
+        # truth for them).
+        skip = meta.get("replay_skip") or meta.get("static_replay_skip")
         if skip:
             blocks.append(
                 f"\n(* SKIPPED corpus_{gid}: statically walkable but "
-                f"replay_skip: {skip} *)\n")
+                f"skipped: {skip} *)\n")
             continue
         trace = (TRACES / f"{gid}.alethe").read_text(encoding="utf-8").strip()
         intro_names = _intro_names(meta)

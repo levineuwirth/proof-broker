@@ -1,12 +1,12 @@
 {
   "supported_rule_count": 31,
-  "mintable": 17,
+  "mintable": 24,
   "summary": {
-    "walkable": 17,
-    "replayed": 17,
+    "walkable": 24,
+    "replayed": 24,
     "shape_gapped": 0,
-    "unsat": 17,
-    "total": 17,
+    "unsat": 24,
+    "total": 24,
     "non_unsat": []
   },
   "backlog": {},
@@ -61,6 +61,55 @@
       "mintable": true
     },
     "lia_weaken_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_d1_bracket": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_eq_from_bounds": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_false_from_bounds": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_forall_instance": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_pow_bound": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_strict_trans": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
+    },
+    "nat_sum_bound": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
