@@ -356,6 +356,18 @@ theorem pb_poly_plain {α : Type} [CommRing α] [LinearOrder α]
 
 #print axioms pb_poly_plain
 
+/-- R2 trace guard on the plain α route: the replay consumes the
+    cert, so a NON-IDENTITY trace is a named refusal exactly as in
+    term mode. The `True ∧ _` hypothesis makes the pipeline's
+    prop-simp pass apply (the trace records a real rewrite), so
+    plain `proof_broker` must refuse rather than replay a cert
+    minted on the rewritten IR; the goal then closes honestly from
+    the hypothesis the pipeline never touched. -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (h : True ∧ n ≤ 7) (h2 : n ≤ 5) : n ≤ 5 := by
+  fail_if_success proof_broker [z3]
+  exact h2
+
 /-- SOUNDNESS (the M2 attack surface): a Farkas witness valid over
     ℤ only — the +1-trick combination `{h: 1, neg_goal: 1}` for
     `0 < n ⊢ 1 ≤ n`, whose Int residual is `1 - n + n = 1 > 0` but

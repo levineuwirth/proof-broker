@@ -2119,8 +2119,16 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- (omega is Int/ℕ-only). If the cert is a Tier-1 Farkas
         -- witness whose specializations the term-mode path inverts,
         -- replay it at α through the extension's polymorphic family;
-        -- anything else is an honest tactic failure.
+        -- anything else is an honest tactic failure. The replay
+        -- CONSUMES the cert, so the R2 trace requirement applies
+        -- here exactly as on the term-mode entry: an α extraction
+        -- emits no unfolding equations, so what `termTraceError?`
+        -- admits reduces to the identity trace — and with no
+        -- decision-procedure fallback at α, a rewritten trace is a
+        -- named failure, never a silent consume.
         if polyModeOf path.ir then
+          if let some msg := termTraceError? path then
+            throwError msg
           checkCertSpecializations cert (termSpecMode path.ir)
           match ← reifierExt.get with
           | some ext => ext.polyFarkasCloser cert path.ir
