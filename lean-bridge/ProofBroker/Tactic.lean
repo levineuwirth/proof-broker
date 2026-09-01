@@ -1458,6 +1458,18 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
             '{e.pass}' pass rewrote the goal and this bridge has no \
             inversion for it; the cert addresses the rewritten IR, \
             so the goal is left OPEN (fail closed)"
+        -- An APPLIED unfold must name what it unfolded: admission
+        -- means "every rewrite is one we invert", so an entry whose
+        -- inversion_data is absent, malformed or empty is a refusal,
+        -- not a vacuous pass over zero symbols. (The SDK cannot emit
+        -- this shape — Applied implies non-empty inversion data —
+        -- so this branch only fires on a hand-built or drifted
+        -- trace.)
+        if (entryUnfoldedSymbols e).isEmpty then
+          return some s!"proof_broker_term: the trace's applied \
+            'definition_unfolding' entry names no parseable \
+            unfolded symbols, so its rewrite cannot be inverted — \
+            refusing to consume the cert (fail closed)"
         for sym in entryUnfoldedSymbols e do
           unless defNames.contains sym do
             return some s!"proof_broker_term: the trace unfolds \
@@ -3317,6 +3329,9 @@ def evalSpecGateTest : Tactic := fun stx => do
       symbol → guard passes (the inversion path's admission).
     * `def_unfold_foreign` — applied unfold of a symbol the
       extraction did not emit → named error.
+    * `def_unfold_empty` — applied unfold naming NO symbols (absent/
+      malformed/empty `inversion_data`) → named error, not a vacuous
+      pass.
     * `prop_simp_applied` — an applied pass with no inversion →
       named error.
     * `failed_pass` — a Failed definition_unfolding entry → named
@@ -3352,6 +3367,9 @@ def evalTraceGuardTest : Tactic := fun stx => do
       | "def_unfold_foreign" =>
         pure (some (nonIdentityDoc
           (mkEntry "definition_unfolding" .applied ["Foreign.Q"])))
+      | "def_unfold_empty" =>
+        pure (some (nonIdentityDoc
+          (mkEntry "definition_unfolding" .applied [])))
       | "prop_simp_applied" =>
         pure (some (nonIdentityDoc
           (mkEntry "propositional_simplification" .applied [])))

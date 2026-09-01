@@ -2381,6 +2381,13 @@ example : True := by
   fail_if_success trace_guard_test def_unfold_foreign
   trivial
 
+/-- An applied unfold naming NO symbols (absent/malformed/empty
+    `inversion_data`) → fail closed, not a vacuous pass over zero
+    inversions. -/
+example : True := by
+  fail_if_success trace_guard_test def_unfold_empty
+  trivial
+
 /-- An applied pass with no inversion (prop-simp) → fail closed. -/
 example : True := by
   fail_if_success trace_guard_test prop_simp_applied
