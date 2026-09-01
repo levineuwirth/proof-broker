@@ -948,13 +948,22 @@ private def polyLitExpr (αE : Expr) (c : Int) : MetaM Expr := do
 /-- Discharge a residual subgoal (`0 ≤ c` / `0 < c` for a literal, or
     the fold's ring-identity positivity claim) in isolation:
     `ring_nf` normalizes the literal-coefficient combination, then
-    `norm_num` decides the numeral (in)equality; `done` makes an
-    undischarged residual a hard failure — this is exactly where an
-    Int-only (integrality-dependent) witness fails the α replay. -/
+    `norm_num` decides the numeral (in)equality; an undischarged
+    residual is rethrown as the NAMED integrality refusal — this is
+    exactly where an Int-only witness fails the α replay, and the
+    designed refusal should say so rather than surface as raw
+    `unsolved goals`. -/
 private def closePolyResidual (mv : MVarId) : TacticM Unit := do
   let prevGoals ← getGoals
   setGoals [mv]
-  evalTactic (← `(tactic| ((try ring_nf) <;> norm_num) <;> done))
+  try
+    evalTactic (← `(tactic| ((try ring_nf) <;> norm_num) <;> done))
+  catch _ =>
+    setGoals prevGoals
+    throwError "proof_broker_term: the cert's Farkas witness is \
+      Int-only — its strictness-preserving α residual is false \
+      (integrality-dependent), so replaying it at a possibly-dense \
+      α would be unsound; refusing (fail closed)"
   setGoals prevGoals
 
 /-- Proof of `(0 : α) ≤ c` for a literal `c`. -/
@@ -1072,15 +1081,20 @@ private def closeViaTermModePolyComparison
   let (wrapperName, negHead) := match kind with
     | .le => (``ProofBrokerMathlib.TermModePoly.pLeViaLt, ``LT.lt)
     | .lt => (``ProofBrokerMathlib.TermModePoly.pLtViaLe, ``LE.le)
+  -- The fold runs BEFORE the outer goal is assigned: a refusal
+  -- (the integrality residual) must leave the goal untouched with
+  -- one named error, not an assigned goal over an unassigned body
+  -- mvar (which adds a spurious kernel "declaration has
+  -- metavariables" complaint after the real message).
   let bodyMV ← goal.withContext do
     let negTy ← Lean.Meta.mkAppM negHead #[c, b]
     let bodyTy ← mkArrow negTy (mkConst ``False)
-    let bodyMV ← Lean.Meta.mkFreshExprMVar bodyTy
-    let term ← Lean.Meta.mkAppM wrapperName #[bodyMV]
-    goal.assign term
-    return bodyMV
+    Lean.Meta.mkFreshExprMVar bodyTy
   let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
   closeViaTermModeFalsePoly newGoal entries
+  goal.withContext do
+    let term ← Lean.Meta.mkAppM wrapperName #[bodyMV]
+    goal.assign term
 
 /-- Tier 1 α closer entry point. Wired into
     `ProofBroker.Tactic.ReifierExt.polyFarkasCloser`. Dispatches by
