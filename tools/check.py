@@ -48,6 +48,16 @@ span multiple documents or require domain knowledge:
     - Hash-chain continuity: initial -> per-entry before/after chain ->
       final, and a failed/no_op pass leaves the IR unchanged.
 
+  Fixture pairing completeness (C2 round 1)
+    - Every cert-*.json in examples/ must key into all three cert
+      pairing maps (CERT_MANIFEST_PAIRS, CERT_IR_PAIRS,
+      CERT_TRACE_PAIRS), and every rewrite-trace-*-identity.json into
+      TRACE_IR_PAIRS. The hash/sentinel gates above are driven by
+      those maps, so an unpaired fixture would silently skip them; an
+      unpaired fixture is an ERROR in both drivers. A non-identity
+      trace (rewrite-trace-example3.json) has no IR pairing by design
+      — only chain continuity applies to it.
+
 NOT enforced (known, scoped gaps — documented so this docstring does
 not overclaim; audit M7. Closing these is behaviour-affecting and is
 tracked separately, not silently asserted here):
@@ -516,6 +526,54 @@ TRACE_IR_PAIRS = {
 _ZERO_SENTINEL_HASH = "sha256:" + "0" * 64
 
 
+def check_fixture_pairing_completeness(fixture_names=None):
+    """C2 round 1, finding 1: the R2 hash/sentinel gates are keyed by
+    the pairing maps above, so a cert-*.json dropped into examples/
+    without entries there used to get vocabulary checks only — no
+    sentinel rejection, no hash linkage, no cert-vs-manifest
+    consistency — and still print OK. Completeness closes that: every
+    cert fixture must key into ALL THREE cert maps
+    (CERT_MANIFEST_PAIRS, CERT_IR_PAIRS, CERT_TRACE_PAIRS), and every
+    identity-trace fixture (rewrite-trace-*-identity.json) into
+    TRACE_IR_PAIRS. An unpaired fixture is an error, not a skip.
+
+    A non-identity trace (rewrite-trace-example3.json) has no IR
+    pairing by design — every hash slot of an identity trace equals
+    one IR's hash, which is false for a real rewrite — so only chain
+    continuity applies there and it is exempt here.
+
+    `fixture_names` defaults to the examples/ listing; tests inject
+    synthetic names."""
+    if fixture_names is None:
+        fixture_names = sorted(p.name for p in EXAMPLES.glob("*.json"))
+    cert_maps = [
+        ("CERT_MANIFEST_PAIRS", CERT_MANIFEST_PAIRS),
+        ("CERT_IR_PAIRS", CERT_IR_PAIRS),
+        ("CERT_TRACE_PAIRS", CERT_TRACE_PAIRS),
+    ]
+    errors = []
+    for name in fixture_names:
+        if name.startswith("cert-"):
+            missing = [label for label, m in cert_maps if name not in m]
+            if missing:
+                errors.append(
+                    f"examples/{name}: cert fixture has no entry in "
+                    f"pairing map(s) {', '.join(missing)} "
+                    "(tools/check.py) — an unpaired cert skips the "
+                    "sentinel/hash-linkage/manifest-consistency gates; "
+                    "pair it in all three maps and run "
+                    "`python tools/regen_cert_hashes.py`")
+        elif (name.startswith("rewrite-trace-")
+                and name.endswith("-identity.json")
+                and name not in TRACE_IR_PAIRS):
+            errors.append(
+                f"examples/{name}: identity-trace fixture has no entry "
+                "in TRACE_IR_PAIRS (tools/check.py) — an unpaired "
+                "identity trace skips the hash-slot check against its "
+                "paired IR")
+    return errors
+
+
 def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
                       cert_name=None, manifest_name=None,
                       paired_trace=None):
@@ -735,6 +793,20 @@ def main() -> int:
     else:
         print("OK   sdk/lib source-scan checks (trace_format literals, "
               "always_unfold pin)")
+
+    # Pairing completeness (C2 round 1): the per-fixture R2 gates below
+    # only fire for fixtures the pairing maps know about, so an unpaired
+    # fixture must be an error here, not a silent skip there.
+    pairing_errors = check_fixture_pairing_completeness()
+    if pairing_errors:
+        print("FAIL examples/ pairing completeness")
+        for msg in pairing_errors:
+            print(f"  ERROR  {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ pairing completeness (every cert in all "
+              "three pairing maps; every identity trace in TRACE_IR_PAIRS)")
+
     for fixture in sorted(EXAMPLES.glob("*.json")):
         kind = kind_for(fixture.name)
         if kind is None:

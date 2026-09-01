@@ -26,6 +26,7 @@ from check import (  # noqa: E402
     check_cert_hashes,
     check_cert_manifest_consistency,
     check_certificate,
+    check_fixture_pairing_completeness,
     check_identity_trace_hashes,
     check_ir,
     check_ir_against_registry,
@@ -408,6 +409,39 @@ def _trace_no_op_change_errors():
     assert entry["before_hash"] != entry["after_hash"], "fixture assumption"
     e, _ = check_trace(trace, REGISTRY)
     assert_contains(e, "outcome='no_op' must leave the IR unchanged", "error")
+
+
+# --- Pairing-map completeness (C2 round 1) -----------------------------------
+
+
+@register("pairing (C2 R1): an unpaired cert fixture errors, naming all three maps")
+def _unpaired_cert_fixture_errors():
+    e = check_fixture_pairing_completeness(["cert-zz-unpaired.json"])
+    assert_contains(e, "examples/cert-zz-unpaired.json", "error")
+    assert_contains(e, "CERT_MANIFEST_PAIRS", "error")
+    assert_contains(e, "CERT_IR_PAIRS", "error")
+    assert_contains(e, "CERT_TRACE_PAIRS", "error")
+
+
+@register("pairing (C2 R1): an unpaired identity-trace fixture errors")
+def _unpaired_identity_trace_errors():
+    e = check_fixture_pairing_completeness(["rewrite-trace-zz-identity.json"])
+    assert_contains(e, "TRACE_IR_PAIRS", "error")
+
+
+@register("pairing (C2 R1): a non-identity trace needs no IR pairing")
+def _non_identity_trace_exempt():
+    # rewrite-trace-example3.json documents a real rewrite; its hash
+    # slots cannot all equal one IR's hash, so TRACE_IR_PAIRS carries
+    # no entry for it by design. Only chain continuity applies.
+    e = check_fixture_pairing_completeness(["rewrite-trace-example3.json"])
+    assert not e, e
+
+
+@register("pairing (C2 R1): the shipped examples/ set is fully paired")
+def _shipped_examples_fully_paired():
+    e = check_fixture_pairing_completeness()
+    assert not e, e
 
 
 # --- Tier 2 schema checks ----------------------------------------------------
