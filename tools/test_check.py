@@ -22,12 +22,15 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check import (  # noqa: E402
+    check_always_unfold_pin,
     check_cert_hashes,
+    check_cert_manifest_consistency,
     check_certificate,
     check_identity_trace_hashes,
     check_ir,
     check_ir_against_registry,
     check_manifest,
+    check_sdk_trace_format_literals,
     check_trace,
 )
 from jsonschema import Draft202012Validator  # noqa: E402
@@ -317,6 +320,96 @@ def _identity_trace_applied_entry_errors():
     assert_contains(e, "rewriting outcome", "error")
 
 
+# --- Cert <-> manifest consistency (R2.4) ------------------------------------
+
+
+@register("manifest (R2.4): cert tier outside tiers_produced is an error")
+def _cert_tier_outside_manifest_errors():
+    cert = copy.deepcopy(CERT1)  # tier 1
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["tiers_produced"] = [0]
+    e = check_cert_manifest_consistency(cert, manifest, cert_name="c.json")
+    assert_contains(e, "tier 1 not in paired manifest's tiers_produced", "error")
+
+
+@register("manifest (R2.4): tier-3 trace_format not produced is an error")
+def _cert_trace_format_not_produced_errors():
+    cert = load(ROOT / "examples" / "cert-example1-tier3-alethe.json")
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["trace_formats_produced"] = ["lfsc"]
+    e = check_cert_manifest_consistency(cert, manifest, cert_name="c.json")
+    assert_contains(e, "'alethe-2024' not in paired manifest's "
+                       "trace_formats_produced", "error")
+
+
+@register("manifest (R2.4): tier-1 witness_kind not produced is an error")
+def _cert_witness_kind_not_produced_errors():
+    cert = copy.deepcopy(CERT1)
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["witness_kinds_produced"] = []
+    e = check_cert_manifest_consistency(cert, manifest, cert_name="c.json")
+    assert_contains(e, "witness_kind 'farkas' not in paired manifest's",
+                    "error")
+
+
+@register("manifest (R2.4): advertising a v1:false witness kind is an error")
+def _manifest_v1_false_witness_kind_errors():
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["witness_kinds_produced"] = ["farkas", "sat_assignment"]
+    e, _ = check_manifest(manifest, REGISTRY)
+    assert_contains(e, "'sat_assignment' is v1:false", "error")
+
+
+# --- Repo-level source scans (R2.4) ------------------------------------------
+
+
+@register("scan (R2.4): unregistered trace_format literal in sdk/lib errors")
+def _sdk_trace_format_literal_scan_errors(tmpdir=None):
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "fake_adapter.ml"
+        p.write_text('let payload = { trace_format = "not-a-format"; }\n')
+        e = check_sdk_trace_format_literals(REGISTRY, sdk_lib=d)
+        assert_contains(e, "'not-a-format' is not a registered", "error")
+
+
+@register("scan (R2.4): the shipped sdk/lib literals are all registered")
+def _sdk_trace_format_literal_scan_clean():
+    e = check_sdk_trace_format_literals(REGISTRY)
+    assert not e, e
+
+
+@register("scan (R2.4): a drifted always_unfold pin errors")
+def _always_unfold_pin_drift_errors():
+    import tempfile
+    real = (ROOT / "sdk" / "lib" / "pipeline.ml").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "pipeline.ml"
+        p.write_text(real.replace('"function_identity";', ""))
+        e = check_always_unfold_pin(REGISTRY, pipeline_ml=p)
+        assert_contains(e, "edit both together", "error")
+
+
+@register("scan (R2.4): the shipped pin matches the registry")
+def _always_unfold_pin_clean():
+    e = check_always_unfold_pin(REGISTRY)
+    assert not e, e
+
+
+@register("trace (R2.4 bugfix): a no_op entry that changes the IR errors")
+def _trace_no_op_change_errors():
+    # Regression pin: check_trace used to read entry["status"] (a
+    # field that doesn't exist — the schema calls it "outcome"), so
+    # this invariant never fired.
+    trace = copy.deepcopy(TRACE3)
+    entry = trace["entries"][0]
+    entry["outcome"] = "no_op"
+    # keep chain continuity intact so only the no_op invariant trips
+    assert entry["before_hash"] != entry["after_hash"], "fixture assumption"
+    e, _ = check_trace(trace, REGISTRY)
+    assert_contains(e, "outcome='no_op' must leave the IR unchanged", "error")
+
+
 # --- Tier 2 schema checks ----------------------------------------------------
 
 # Synthetic Tier 2 cert template. Values that aren't relevant to the
@@ -548,7 +641,10 @@ def _trace_failed_must_not_mutate():
     bad = copy.deepcopy(TRACE3)
     # Mark a pass 'failed' but keep its (distinct) after_hash: the
     # schema can't express "failed => after == before"; check.py must.
-    bad["entries"][0]["status"] = "failed"
+    # (R2.4 bugfix: this test used to set entry["status"], mirroring
+    # the same wrong field name check_trace read — the pair agreed
+    # while the real schema field, "outcome", went unchecked.)
+    bad["entries"][0]["outcome"] = "failed"
     e, _ = check_trace(bad, REGISTRY)
     assert_contains(e, "must leave the IR", "error")
 

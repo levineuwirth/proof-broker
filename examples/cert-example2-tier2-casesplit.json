@@ -13,7 +13,7 @@
   "backend": {
     "name": "cvc5",
     "version": "1.2.0",
-    "config_hash": "sha256:fdd1ce259b926b97ef499d3e0a604381aa5595ba2a3b784886548b035785bd46"
+    "config_hash": "sha256:2f0529604f8b36ad50c5929546b583ce477e0592743e51be53ffc327f07fefb5"
   },
 
   "resources": {

@@ -13,13 +13,14 @@
 
   "max_order": "higher_order",
 
-  "tiers_produced": [0],
+  "tiers_produced": [0, 3],
+
+  "trace_formats_produced": ["tstp-fof", "tstp-thf"],
 
   "preferred_rewrite_pipeline": [
     { "pass": "definition_unfolding",
       "config": { "concepts": ["function_composition"] } },
-    { "pass": "propositional_simplification" },
-    { "pass": "skolemization" }
+    { "pass": "propositional_simplification" }
   ],
 
   "concurrency": {

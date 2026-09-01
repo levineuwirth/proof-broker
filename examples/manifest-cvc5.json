@@ -4,7 +4,7 @@
   "adapter_version": "1.3.0",
   "backends_supported": ["cvc5"],
 
-  "logic_fragments": ["LIA", "LRA", "BV", "UF", "UFLIA", "UFLRA", "ARRAY"],
+  "logic_fragments": ["LIA", "LRA", "BV", "UF", "UFLIA", "UFLRA"],
 
   "type_constructions": [
     "primitive",
@@ -17,14 +17,13 @@
 
   "trace_formats_produced": ["alethe-2024"],
 
-  "witness_kinds_produced": ["farkas", "sat_assignment", "sat_unsat_core"],
+  "witness_kinds_produced": ["farkas"],
 
   "preferred_rewrite_pipeline": [
     { "pass": "definition_unfolding",
       "config": { "concepts": ["integer_addition", "integer_subtraction", "integer_negation", "integer_multiplication"] } },
     { "pass": "quotient_elimination", "config": { "aggressive": false } },
-    { "pass": "propositional_simplification" },
-    { "pass": "skolemization" }
+    { "pass": "propositional_simplification" }
   ],
 
   "concurrency": {

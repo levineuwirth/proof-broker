@@ -71,6 +71,7 @@ Errors fail the run; warnings are surfaced but do not.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -346,10 +347,16 @@ def check_manifest(manifest, registry):
             errors.append(f"type_constructions: unknown '{tc}'")
 
     if 1 in manifest["tiers_produced"]:
-        wk_ids = {w["id"] for w in registry["adapter_capability_vocabulary"]["witness_kinds"]}
+        wks = {w["id"]: w for w in registry["adapter_capability_vocabulary"]["witness_kinds"]}
         for w in manifest.get("witness_kinds_produced", []):
-            if w not in wk_ids:
+            if w not in wks:
                 errors.append(f"witness_kinds_produced: unknown '{w}'")
+            elif not wks[w].get("v1", False):
+                # R2: sat_* were demoted to v1:false — nothing mints
+                # them; a manifest advertising one overclaims.
+                errors.append(
+                    f"witness_kinds_produced: '{w}' is v1:false in the "
+                    "registry (not produced by any v1 adapter)")
     if 3 in manifest["tiers_produced"]:
         tf_ids = {t["id"] for t in registry["adapter_capability_vocabulary"]["trace_formats"]}
         for tf in manifest.get("trace_formats_produced", []):
@@ -357,6 +364,94 @@ def check_manifest(manifest, registry):
                 errors.append(f"trace_formats_produced: unknown '{tf}'")
 
     return errors, warnings
+
+
+def check_cert_manifest_consistency(cert, manifest, cert_name=None):
+    """R2.4: a cert must be producible by its paired manifest —
+    `cert.tier ∈ manifest.tiers_produced`, and a Tier-3 cert's
+    `payload.trace_format ∈ manifest.trace_formats_produced` (a
+    Tier-1 cert's witness_kind likewise). This is what the old
+    config_hash-only pairing could not catch (STATUS §3.3 #7:
+    manifest-vampire claimed tiers_produced=[0] while the adapter
+    minted Tier 3)."""
+    errors = []
+    name = cert_name or "certificate"
+    tier = cert.get("tier")
+    tiers = manifest.get("tiers_produced", [])
+    if tier not in tiers:
+        errors.append(
+            f"{name}: tier {tier} not in paired manifest's "
+            f"tiers_produced {tiers}")
+    if tier == 3:
+        tf = cert.get("payload", {}).get("trace_format")
+        produced = manifest.get("trace_formats_produced", [])
+        if tf not in produced:
+            errors.append(
+                f"{name}: payload.trace_format '{tf}' not in paired "
+                f"manifest's trace_formats_produced {produced}")
+    if tier == 1:
+        wk = cert.get("payload", {}).get("witness_kind")
+        produced = manifest.get("witness_kinds_produced", [])
+        if wk not in produced:
+            errors.append(
+                f"{name}: payload.witness_kind '{wk}' not in paired "
+                f"manifest's witness_kinds_produced {produced}")
+    return errors
+
+
+# --- Repo-level source-scan checks (R2.4) --------------------------------
+
+SDK_LIB = ROOT / "sdk" / "lib"
+
+_QUOTED_ID_RE = re.compile(r'"([a-z0-9][a-z0-9-]*)"')
+
+
+def check_sdk_trace_format_literals(registry, sdk_lib=None):
+    """Every trace_format string literal in sdk/lib must be a
+    registered trace format: an unregistered literal is either a
+    typo (a dead verifier/minting arm) or a format the registry
+    fails to admit exists (the `rocq-tactic-script` gap this check
+    was written for)."""
+    sdk_lib = Path(sdk_lib) if sdk_lib else SDK_LIB
+    tf_ids = {t["id"] for t in registry["adapter_capability_vocabulary"]["trace_formats"]}
+    errors = []
+    for path in sorted(sdk_lib.glob("*.ml")):
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            if "trace_format" not in line:
+                continue
+            for lit in _QUOTED_ID_RE.findall(line):
+                if lit not in tf_ids:
+                    errors.append(
+                        f"{path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}"
+                        f":{lineno}: trace_format literal '{lit}' is not "
+                        "a registered trace format "
+                        "(registry/patterns-v1.json "
+                        "adapter_capability_vocabulary.trace_formats)")
+    return errors
+
+
+_PIN_RE = re.compile(
+    r'\(\* PIN:always-unfold-for-dispatch \*\)(.*?)'
+    r'\(\* ENDPIN:always-unfold-for-dispatch \*\)', re.S)
+
+
+def check_always_unfold_pin(registry, pipeline_ml=None):
+    """The SDK's baked-in dispatch unfold list (sdk/lib/pipeline.ml,
+    between the PIN markers) must equal the registry's
+    always_unfold_for_dispatch — the two-way pin that lets the SDK
+    avoid a runtime file dependency on the registry JSON."""
+    path = Path(pipeline_ml) if pipeline_ml else SDK_LIB / "pipeline.ml"
+    text = path.read_text()
+    m = _PIN_RE.search(text)
+    if m is None:
+        return [f"{path}: PIN:always-unfold-for-dispatch markers not found"]
+    pinned = re.findall(r'"([a-z_]+)"', m.group(1))
+    expected = registry.get("always_unfold_for_dispatch", [])
+    if pinned != expected:
+        return [
+            f"{path}: pinned always_unfold_for_dispatch {pinned} != "
+            f"registry {expected} — edit both together"]
+    return []
 
 
 # --- Cross-fixture hash linkage (#18d / #24-M1) ---------------------------
@@ -589,12 +684,15 @@ def check_trace(trace, registry):
         # The schema says a 'failed' pass leaves the IR untouched
         # (after_hash == before_hash); a 'no_op' likewise made no
         # changes. Enforce that invariant here (the schema cannot).
+        # (R2 bugfix: this read entry["status"], a field that does
+        # not exist — the schema and both codecs call it "outcome" —
+        # so the invariant had never actually fired.)
         for i, entry in enumerate(entries):
-            st = entry.get("status")
+            st = entry.get("outcome")
             if st in ("failed", "no_op") and \
                     entry["after_hash"] != entry["before_hash"]:
                 errors.append(
-                    f"entries[{i}] status='{st}' must leave the IR "
+                    f"entries[{i}] outcome='{st}' must leave the IR "
                     f"unchanged (after_hash == before_hash), got "
                     f"{entry['before_hash']} -> {entry['after_hash']}"
                 )
@@ -623,6 +721,20 @@ def main() -> int:
 
     failed = 0
     total_warnings = 0
+
+    # Repo-level source-scan checks (R2.4): trace_format literals in
+    # sdk/lib registered; the SDK's baked-in always-unfold list in
+    # sync with the registry.
+    repo_errors = (check_sdk_trace_format_literals(registry)
+                   + check_always_unfold_pin(registry))
+    if repo_errors:
+        print("FAIL sdk/lib source-scan checks")
+        for msg in repo_errors:
+            print(f"  ERROR  {msg}")
+        failed += 1
+    else:
+        print("OK   sdk/lib source-scan checks (trace_format literals, "
+              "always_unfold pin)")
     for fixture in sorted(EXAMPLES.glob("*.json")):
         kind = kind_for(fixture.name)
         if kind is None:
@@ -666,6 +778,9 @@ def main() -> int:
                 )
                 errors += e
                 hash_warnings += w
+                errors += check_cert_manifest_consistency(
+                    doc, paired_manifest,
+                    cert_name=str(fixture.relative_to(ROOT)))
         elif kind == "manifest":
             e, w = check_manifest(doc, registry)
             errors += e
