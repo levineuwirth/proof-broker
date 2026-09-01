@@ -69,7 +69,9 @@ let example1_ir () =
 let test_dispatch_unsat_mints_tier3_cert () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* cvc5 closes example1's LIA shape via a chain of theory
        rewrites (LIA tightening + variable isolation + direction
@@ -103,7 +105,9 @@ let test_dispatch_sat_returns_failure () =
     ~free_vars:[ { name = "n"; ty = "Int" } ]
     (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
   in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed Sat_returned -> ()
   | Failed f ->
     Alcotest.fail
@@ -116,7 +120,9 @@ let test_dispatch_unsupported_ir () =
   let ir = make_ir
     (Lambda { binders = [ { var = "x"; ty = "Int" } ]; body = Var { name = "x" } })
   in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed (Unsupported_ir { kind; _ }) ->
     Alcotest.(check string) "kind = unsupported_node"
       "unsupported_node" kind
@@ -130,7 +136,9 @@ let test_dispatch_unsupported_ir () =
 let test_minted_cert_passes_envelope_verifier () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* The Tier 3 cert minted for example1 verifies end-to-end via
        the envelope verifier: [Tier3_alethe.verify] walks every
@@ -205,7 +213,9 @@ let lra_farkas_ir () =
 let test_dispatch_lra_mints_farkas_cert () =
   with_cvc5 @@ fun () ->
   let ir = lra_farkas_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     Alcotest.(check int) "tier=1" 1 cert.tier;
     Alcotest.(check string) "format=farkas" "farkas" cert.format;
@@ -270,7 +280,9 @@ let lia_farkas_ir () =
 let test_dispatch_lia_mints_farkas_cert () =
   with_cvc5 @@ fun () ->
   let ir = lia_farkas_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     Alcotest.(check int) "tier=1" 1 cert.tier;
     Alcotest.(check string) "format=farkas" "farkas" cert.format;
@@ -332,7 +344,9 @@ let case_split_ir () : Ir.t =
 let test_dispatch_case_split_mints_tier2 () =
   with_cvc5 @@ fun () ->
   let ir = case_split_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* The adapter prefers Tier 2 case-split over Tier 3 alethe
        whenever the IR has a disjunctive hypothesis the proof
@@ -357,7 +371,9 @@ let test_dispatch_case_split_mints_tier2 () =
 let test_case_split_cert_envelope_verifies () =
   with_cvc5 @@ fun () ->
   let ir = case_split_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (match Verifier.verify cert ir with
      | Verified_case_split -> ()
@@ -374,7 +390,9 @@ let test_case_split_cert_envelope_verifies () =
 let test_lra_farkas_cert_envelope_verifies () =
   with_cvc5 @@ fun () ->
   let ir = lra_farkas_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (match Verifier.verify cert ir with
      | Verified_farkas -> ()
@@ -399,7 +417,9 @@ let test_lra_farkas_cert_envelope_verifies () =
 let test_dispatch_tier3_gate_admits_real_proof () =
   with_cvc5 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_cvc5.dispatch ir with
+  match Adapter_cvc5.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     Alcotest.(check int) "strict gate admits example1's proof at Tier 3"
       3 cert.tier;

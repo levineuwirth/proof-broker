@@ -452,11 +452,19 @@ let dispatch_to_adapter (input : string) : string =
       ] in
       envelope_ok payload
     | Some adapter ->
-      (match adapter.dispatch ir with
+      (* R2: the single-adapter path runs the same dispatch
+         pipeline as the broker, so no FFI route reaches an
+         adapter without a trace. The rewritten IR and the trace
+         ride back with the cert for verification. *)
+      let final_ir, trace, rewrite_trace_hash =
+        Proof_broker.Dispatch.run_dispatch_pipeline ir in
+      (match adapter.dispatch ~rewrite_trace_hash final_ir with
        | Cert cert ->
          envelope_ok (`Assoc [
            "ok", `Bool true;
            "cert", Proof_broker.Certificate.to_json cert;
+           "final_ir", Proof_broker.Codec.to_json final_ir;
+           "trace", Proof_broker.Trace.to_json trace;
          ])
        | Failed failure ->
          envelope_ok (`Assoc [
@@ -474,13 +482,18 @@ let dispatch_to_adapter (input : string) : string =
      {"ir": <IR>, "manifests": [<Manifest>, ...],
       "prefer_higher_tier": <bool>?}
    and returns
-     {"cert": <Certificate>?, "attempts": [<attempt>, ...]}
+     {"cert": <Certificate>?, "attempts": [<attempt>, ...],
+      "final_ir": <IR>, "trace": <Trace>}
    under [payload]. The [cert] field is omitted when no adapter
    succeeded. [attempts] lists the per-manifest outcomes in the
    order they were exercised (after any reordering), with kind
    ∈ {skipped, no_implementation, failed, succeeded}; the rich
    detail is under [reason] (skipped) or [failure] (failed). The
    cert is at the top level (not duplicated inside [attempts]).
+   [final_ir]/[trace] (R2) are the dispatch rewrite pipeline's
+   output: the IR the adapters actually saw and the trace that
+   produced it — pass them to [verify_certificate] as the cert's
+   addressed IR and its ~trace.
 
    Ordering. When [prefer_higher_tier] is [true] (the default),
    the broker stable-sorts manifests by max declared tier
@@ -544,10 +557,17 @@ let dispatch_broker (input : string) : string =
       | None -> []
       | Some c -> [ "cert", Proof_broker.Certificate.to_json c ]
     in
+    (* R2: the rewrite pipeline now runs inside the dispatch driver;
+       its output IR (what every adapter actually saw, and what the
+       cert's [dispatch_context_hash] addresses) and the trace ride
+       back so the home bridge can verify the cert against them and
+       apply the identity-trace guard. *)
     let payload = `Assoc (cert_field @ [
       "attempts",
       `List (List.map Proof_broker.Dispatch.attempt_to_json
                result.attempts);
+      "final_ir", Proof_broker.Codec.to_json result.final_ir;
+      "trace", Proof_broker.Trace.to_json result.trace;
     ]) in
     envelope_ok payload
   with

@@ -142,4 +142,21 @@ def Document.fromJson? (j : Json) : Except String Document := do
 instance : ToJson Document := ⟨Document.toJson⟩
 instance : FromJson Document := ⟨Document.fromJson?⟩
 
+/-- The trace certifies that the pipeline left the IR untouched.
+    Mirror of `sdk/lib/trace.ml`'s `is_identity`: initial and final
+    IR hashes agree AND every entry both reports a non-rewriting
+    outcome (`skippedPreconditions` / `noOp`) and leaves its own
+    before/after hashes equal. `applied`, `failed`, and
+    outcome-less entries are conservatively non-identity — identity
+    is a positive claim the R2 guard acts on (the term-mode /
+    walker closers consume the cert against the ORIGINAL goal, so
+    they may only run when the cert's IR provably is that goal). -/
+def Document.isIdentity (d : Document) : Bool :=
+  d.initialIrHash == d.finalIrHash
+  && d.entries.all fun e =>
+       (match e.outcome with
+        | some .skippedPreconditions | some .noOp => true
+        | _ => false)
+       && e.beforeHash == e.afterHash
+
 end ProofBroker.Trace

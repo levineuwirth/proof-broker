@@ -183,6 +183,7 @@
       { "id": "tstp-fof",          "produced_by": "vampire",       "v1_replayer": "lean-symbolic-partial" },
       { "id": "tstp-thf",          "produced_by": "vampire-hol",   "v1_replayer": "lean-symbolic-partial" },
       { "id": "lean-tactic-script","produced_by": "llm-prover",    "v1_replayer": "lean-direct-elaboration" },
+      { "id": "rocq-tactic-script","produced_by": "llm-prover",    "v1_replayer": "rocq-direct-elaboration" },
       { "id": "lfsc",              "produced_by": "cvc5",          "v1_replayer": "deferred-v2" }
     ],
     "witness_kinds": [
@@ -191,10 +192,10 @@
         "v1": true },
       { "id": "sat_assignment",
         "applies_to_fragments": ["FOL"],
-        "v1": true },
+        "v1": false },
       { "id": "sat_unsat_core",
         "applies_to_fragments": ["FOL"],
-        "v1": true },
+        "v1": false },
       { "id": "polynomial_positivstellensatz",
         "applies_to_fragments": ["NRA"],
         "v1": false }

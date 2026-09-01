@@ -14,6 +14,11 @@ authoritative source. This step runs check.py's registry validators
 so `python tools/validate.py` alone rejects an unknown
 fragment/feature/construction.
 
+Also runs check.py's pairing-completeness check (C2 round 1): a
+cert-*.json or rewrite-trace-*-identity.json in examples/ that is
+missing from the pairing maps fails validation here too — the hash
+linkage below is pairing-map-driven and must not be skippable.
+
 Usage: python tools/validate.py
 """
 
@@ -35,6 +40,11 @@ from check import (  # noqa: E402
     # Cross-fixture hash linkage (#18d / #24-M1): see check.py for
     # the pairing convention and the docs on the unpaired sentinels.
     check_cert_hashes,
+    # Pairing completeness (C2 round 1): the hash-linkage step below is
+    # pairing-map-opt-in, so an unpaired cert-*.json would silently
+    # skip it; check.py owns the maps and the completeness check.
+    check_fixture_pairing_completeness,
+    check_unknown_fixture_names,
     emit_warnings,
     CERT_MANIFEST_PAIRS,
     CERT_IR_PAIRS,
@@ -121,6 +131,28 @@ def main() -> int:
 
     with (REGISTRY_DIR / "patterns-v1.json").open() as f:
         patterns = json.load(f)
+
+    # Pairing completeness (C2 round 1): every cert-*.json must key
+    # into all three of check.py's cert pairing maps and every
+    # rewrite-trace-*-identity.json into TRACE_IR_PAIRS — otherwise
+    # the hash-linkage step below would silently skip the fixture.
+    pairing_errors = check_fixture_pairing_completeness()
+    if pairing_errors:
+        print("FAIL examples/ pairing completeness")
+        for msg in pairing_errors:
+            print(f"  - {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ pairing completeness")
+
+    name_errors = check_unknown_fixture_names()
+    if name_errors:
+        print("FAIL examples/ fixture-name discovery")
+        for msg in name_errors:
+            print(f"  - {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ fixture-name discovery")
 
     for example in sorted(EXAMPLES.glob("*.json")):
         schema_name = schema_for(example.name)

@@ -37,8 +37,10 @@ let test_codec_round_trip_cvc5 () =
     (Yojson.Safe.to_string (Codec.normalize original))
     (Yojson.Safe.to_string (Codec.normalize re));
   Alcotest.(check string) "adapter is cvc5" "cvc5" m.adapter;
+  (* R2.4: ARRAY dropped from the fixture — the adapter never
+     dispatched it (no IR ever carries the fragment). *)
   Alcotest.(check (list string)) "logic_fragments preserved"
-    [ "LIA"; "LRA"; "BV"; "UF"; "UFLIA"; "UFLRA"; "ARRAY" ]
+    [ "LIA"; "LRA"; "BV"; "UF"; "UFLIA"; "UFLRA" ]
     m.logic_fragments;
   Alcotest.(check (list int)) "tiers_produced preserved"
     [ 0; 1; 2; 3 ] m.tiers_produced

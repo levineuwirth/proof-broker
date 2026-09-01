@@ -388,11 +388,12 @@ private def parseCertReason (j : Json) : CertReason :=
     Certificates are caller-supplied JSON because there's no
     Lean-side `Certificate` ADT yet — consistent with the
     pass-through stance for adapter manifests. -/
-def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := none)
+def runVerifyCertificateJson (cert : Json) (irJson : Json)
+    (trace : Option Document := none)
     : Except FfiError CertVerification := do
   let baseFields : List (String × Json) := [
     ("cert", cert),
-    ("ir", ProofBroker.IR.IR.toJson ir)
+    ("ir", irJson)
   ]
   let fields := match trace with
     | none => baseFields
@@ -406,6 +407,14 @@ def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := non
     | .ok v => pure v
     | .error _ => .error (.decodeError "missing 'reason'" none)
   return { ok, envelopeOk, reason := parseCertReason reasonJ }
+
+/-- Typed-IR convenience wrapper over `runVerifyCertificateJson`.
+    R2 callers verifying a broker-dispatched cert should prefer the
+    raw variant with the broker's `final_ir` passthrough JSON — the
+    cert addresses the pipeline's output IR, not the reified input. -/
+def runVerifyCertificate (cert : Json) (ir : IR) (trace : Option Document := none)
+    : Except FfiError CertVerification :=
+  runVerifyCertificateJson cert (ProofBroker.IR.IR.toJson ir) trace
 
 /-- Ask the SDK to translate an un-replayable Tier-3 trace `cert`
     into a candidate Lean tactic script via the configured LLM
@@ -540,6 +549,16 @@ deriving Repr, Inhabited
 structure BrokerResult where
   cert : Option Json
   attempts : List Attempt
+  /-- R2: the IR the adapters actually dispatched on — the dispatch
+      rewrite pipeline's output, and the IR the cert's
+      `dispatch_context_hash` addresses. Raw JSON passthrough (no
+      Lean-side re-encode) so verification hashes exactly what the
+      SDK emitted. `none` only when talking to a pre-R2 SDK. -/
+  finalIr : Option Json
+  /-- R2: the rewrite trace that produced `finalIr` from the input
+      IR. Pass to `verify_certificate`; its `isIdentity` gates the
+      cert-consuming closers (identity-trace guard). -/
+  trace : Option Trace.Document
 deriving Inhabited
 
 private def parseAttempt (j : Json) : Attempt :=
@@ -586,7 +605,13 @@ def runDispatchBroker (ir : IR) (manifests : List Json)
     | .ok a => pure a
     | .error e => .error (.decodeError s!"attempts not array: {e}" none)
   let attempts := arr.toList.map parseAttempt
-  return { cert, attempts }
+  let finalIr := (payload.getObjVal? "final_ir").toOption
+  let trace ← match payload.getObjVal? "trace" with
+    | .error _ => pure none
+    | .ok tj => match Trace.Document.fromJson? tj with
+      | .ok d => pure (some d)
+      | .error e => .error (.decodeError s!"decoding 'trace': {e}" none)
+  return { cert, attempts, finalIr, trace }
 
 /-- Submit an IR + a list of manifest JSON values to the dispatcher's
     capability-matching layer (spec §7.4). Returns the partition of

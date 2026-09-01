@@ -46,7 +46,9 @@ let test_unsupported_ir_num_lit () =
   (* Num_lit is out of M1 Vampire scope; the adapter must surface a
      typed Unsupported_ir, not spawn vampire. *)
   let ir = make_ir (Num_lit { value = "3"; ty = "Int" }) in
-  match Adapter_vampire.dispatch ir with
+  match Adapter_vampire.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed (Unsupported_ir { kind; _ }) ->
     Alcotest.(check string) "bad_literal kind" "bad_literal" kind
   | _ -> Alcotest.fail "expected Unsupported_ir for Num_lit goal"
@@ -61,7 +63,9 @@ let test_unsupported_ir_undeclared_thf () =
              args = [ App { symbol = "Function.comp"; type_args = [];
                             args = [ Var { name = "g" } ] } ] })
   in
-  match Adapter_vampire.dispatch ir with
+  match Adapter_vampire.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed (Unsupported_ir { kind; _ }) ->
     Alcotest.(check string) "unsupported_symbol kind"
       "unsupported_symbol" kind
@@ -103,7 +107,9 @@ let test_provable_tier3 () =
   if not (vampire_available ()) then
     Alcotest.skip ()
   else
-    match Adapter_vampire.dispatch (provable_ir ()) with
+    match (let __ir = (provable_ir ()) in
+          Adapter_vampire.dispatch
+            ~rewrite_trace_hash:(Pipeline.identity_trace_hash __ir) __ir) with
     | Cert c ->
       Alcotest.(check string) "backend vampire" "vampire" c.backend.name;
       (* The whole point of M2: this provable FOF goal's Vampire
@@ -138,7 +144,9 @@ let test_non_theorem_sat () =
   if not (vampire_available ()) then
     Alcotest.skip ()
   else
-    match Adapter_vampire.dispatch (non_theorem_ir ()) with
+    match (let __ir = (non_theorem_ir ()) in
+          Adapter_vampire.dispatch
+            ~rewrite_trace_hash:(Pipeline.identity_trace_hash __ir) __ir) with
     | Failed Sat_returned -> ()
     | Failed f ->
       Alcotest.fail

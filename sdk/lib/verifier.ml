@@ -11,10 +11,13 @@
     must equal [Hash.sha256_of_json (Codec.to_json ir)] —
     same canonicalization the rewriter uses for trace before/after
     hashes. The [rewrite_trace_hash] is checked the same way
-    against [Trace.to_json] when a trace is supplied; when
-    [trace] is [None], that check is skipped (some certificates
-    are produced against an unrewritten IR, in which case there
-    is no trace to hash).
+    against [Trace.to_json] when a trace is supplied, and the
+    trace's [final_ir_hash] must then equal the hash of [ir] (the
+    IR being verified is the trace's endpoint). When [trace] is
+    [None] those two checks are skipped — but the all-zeros
+    sentinel [rewrite_trace_hash] is rejected unconditionally
+    (R2): every mint path stamps the real trace hash, so a
+    sentinel-bearing cert never passes the envelope.
 
     Tier-specific verification implemented. Tier 1 [farkas]
     witnesses are checked by [Farkas.verify]: hypotheses (and the
@@ -96,6 +99,13 @@ type reason =
   | Tier3_replay_deferred of { trace_format : string }
   | Unsupported_witness_kind of { kind : string }
   | Tier_check_deferred of { tier : int }
+  (** The cert carries the all-zeros [rewrite_trace_hash] sentinel
+      (R2). No dispatch path mints it any more — every adapter
+      stamps the real trace hash — so a sentinel here means the
+      cert predates R2 or was hand-built to dodge the trace check.
+      Rejected unconditionally, [trace] supplied or not: envelope
+      verification must never pass on a cert that names no trace. *)
+  | Trace_hash_sentinel
   | Other of { kind : string; detail : string }
 
 let kind_of_reason = function
@@ -122,6 +132,7 @@ let kind_of_reason = function
   | Tier3_replay_deferred _ -> "tier3_replay_deferred"
   | Unsupported_witness_kind _ -> "unsupported_witness_kind"
   | Tier_check_deferred _ -> "tier_check_deferred"
+  | Trace_hash_sentinel -> "trace_hash_sentinel"
   | Other { kind; _ } -> kind
 
 let detail_of_reason = function
@@ -179,6 +190,10 @@ let detail_of_reason = function
   | Tier_check_deferred { tier } ->
     Printf.sprintf "tier-%d soundness check not implemented \
                     (envelope verified)" tier
+  | Trace_hash_sentinel ->
+    "rewrite_trace_hash is the all-zeros sentinel: the cert names \
+     no rewrite trace, so it cannot be tied to the IR it claims to \
+     address (R2 deleted the sentinel from every mint path)"
   | Other { detail; _ } -> detail
 
 let reason_to_json (r : reason) : Yojson.Safe.t =
@@ -232,6 +247,30 @@ let check_rewrite_trace_hash (cert : Certificate.t) (trace : Trace.t)
     got = computed;
   })
 
+(** The all-zeros "no trace" sentinel R2 deleted from every mint
+    path. Rejected in [envelope_check] whether or not a trace is
+    supplied. *)
+let zero_sentinel_hash = "sha256:" ^ String.make 64 '0'
+
+let check_trace_hash_sentinel (cert : Certificate.t) : reason option =
+  if String.equal cert.rewrite_trace_hash zero_sentinel_hash
+  then Some Trace_hash_sentinel
+  else None
+
+(** [check_trace_endpoint trace ir]: the IR being verified must be
+    the trace's endpoint — [trace.final_ir_hash] equals the
+    computed hash of [ir]. Together with [check_dispatch_context_hash]
+    this makes replaying a (cert, trace) pair against any IR other
+    than the pipeline's output a hash mismatch by construction. *)
+let check_trace_endpoint (trace : Trace.t) (ir : Ir.t) : reason option =
+  let computed = Hash.sha256_of_json (Codec.to_json ir) in
+  if computed = trace.final_ir_hash then None
+  else Some (Hash_mismatch {
+    field = "trace.final_ir_hash";
+    expected = trace.final_ir_hash;
+    got = computed;
+  })
+
 (* --- driver ---------------------------------------------------------- *)
 
 (** Run the envelope checks in order; return the first failing
@@ -248,18 +287,24 @@ let envelope_check
   match check_cert_version cert with
   | Some r -> r
   | None ->
-    match check_tier_payload_match cert with
+    match check_trace_hash_sentinel cert with
     | Some r -> r
     | None ->
-      match check_dispatch_context_hash cert ir with
+      match check_tier_payload_match cert with
       | Some r -> r
       | None ->
-        match trace with
-        | None -> Verified_envelope
-        | Some tr ->
-          (match check_rewrite_trace_hash cert tr with
-           | Some r -> r
-           | None -> Verified_envelope)
+        match check_dispatch_context_hash cert ir with
+        | Some r -> r
+        | None ->
+          match trace with
+          | None -> Verified_envelope
+          | Some tr ->
+            (match check_rewrite_trace_hash cert tr with
+             | Some r -> r
+             | None ->
+               match check_trace_endpoint tr ir with
+               | Some r -> r
+               | None -> Verified_envelope)
 
 (** Map a [Farkas.verdict] to the verifier's [reason] taxonomy. The
     [Verified] case becomes [Verified_farkas] (envelope + arithmetic);

@@ -158,9 +158,11 @@ let backend ~version : Certificate.backend = {
   config_hash = "sha256:" ^ String.make 64 '0';
 }
 
-let resources_now ~timeout_ms : Certificate.resources = {
-  wall_time_ms = timeout_ms;
-  memory_peak_kb = 0;
+(** Measured solver wall clock (R2). [memory_peak_kb] is absent —
+    not measured, never a fabricated 0. *)
+let resources_measured ~wall_ms : Certificate.resources = {
+  wall_time_ms = wall_ms;
+  memory_peak_kb = None;
   budget_consumed = None;
 }
 
@@ -204,11 +206,12 @@ let mk_refinement_record
 
 let mint_oracle_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
       ~(szs_word : string)
-      ~timeout_ms
+      ~wall_ms
   : Certificate.t =
   let dispatch_context_hash =
     Hash.sha256_of_json (Codec.to_json original_ir)
@@ -219,9 +222,9 @@ let mint_oracle_cert
     format = "oracle";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version ~dialect ~ir:original_ir specs;
     payload = Tier0_oracle {
@@ -241,12 +244,13 @@ let mint_oracle_cert
     provenance-level, not per-step (see [Tptp_passthrough]). *)
 let mint_tier3_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(dialect : Tptp.dialect)
       ~(specs : Tptp.specialization list)
       ~(proof_str : string)
       ~(proof : Tptp_proof.proof)
-      ~timeout_ms
+      ~wall_ms
   : Certificate.t =
   let dispatch_context_hash =
     Hash.sha256_of_json (Codec.to_json original_ir)
@@ -258,9 +262,9 @@ let mint_tier3_cert
               | Tptp.Fof -> "tstp-fof" | Tptp.Thf -> "tstp-thf");
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version ~dialect ~ir:original_ir specs;
     payload = Tptp_passthrough.make_payload ~proof_str ~dialect proof;
@@ -268,7 +272,7 @@ let mint_tier3_cert
 
 (* --- top-level dispatch --------------------------------------------- *)
 
-let dispatch (ir : Ir.t) : Adapter.result =
+let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   (* R1.8: certs stamp the probed binary version (declared constant
      as fallback). On a major.minor mismatch, emit a named
      diagnostic and skip the version-sensitive Tier-3 TSTP
@@ -293,17 +297,21 @@ let dispatch (ir : Ir.t) : Adapter.result =
   | Ok script ->
     let timeout_ms = timeout_of_ir ir in
     (try
+       let t_solve = Unix.gettimeofday () in
        let stdout, stderr, code = run_solver ~timeout_ms script.body in
+       let wall_ms =
+         int_of_float ((Unix.gettimeofday () -. t_solve) *. 1000.) in
        match parse_szs stdout with
        | Proved w ->
          let mk_oracle () =
            mint_oracle_cert
              ~adapter_version:stamped_version
+             ~rewrite_trace_hash
              ~original_ir:ir
              ~dialect:script.dialect
              ~specs:script.specializations
              ~szs_word:w
-             ~timeout_ms
+             ~wall_ms
          in
          (* Tier-3 gate (fail closed): parse the TSTP derivation
             and run the provenance + structure verifier; only mint
@@ -320,12 +328,13 @@ let dispatch (ir : Ir.t) : Adapter.result =
               | Verified_provenance ->
                 mint_tier3_cert
                   ~adapter_version:stamped_version
+                  ~rewrite_trace_hash
                   ~original_ir:ir
                   ~dialect:script.dialect
                   ~specs:script.specializations
                   ~proof_str:stdout
                   ~proof
-                  ~timeout_ms
+                  ~wall_ms
               | _ -> mk_oracle ())
          in
          Cert cert

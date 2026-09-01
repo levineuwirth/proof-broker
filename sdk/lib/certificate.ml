@@ -83,9 +83,14 @@ type backend = {
   config_hash : string;
 }
 
+(** [memory_peak_kb] is optional as of R2: no adapter measures peak
+    memory, and the honest encoding of "not measured" is field
+    absence, never a fabricated [0] (the schema's `minimum: 0` made
+    zero look like a measurement). [wall_time_ms] stays required —
+    adapters stamp the measured solver wall clock. *)
 type resources = {
   wall_time_ms : int;
-  memory_peak_kb : int;
+  memory_peak_kb : int option;
   budget_consumed : float option;
 }
 
@@ -154,15 +159,16 @@ let resources_of_json (j : Yojson.Safe.t) : resources =
   let pairs = assoc j in
   {
     wall_time_ms = int_of (req "wall_time_ms" pairs);
-    memory_peak_kb = int_of (req "memory_peak_kb" pairs);
+    memory_peak_kb = Option.map int_of (opt "memory_peak_kb" pairs);
     budget_consumed = Option.map float_of (opt "budget_consumed" pairs);
   }
 
 let resources_to_json (r : resources) : Yojson.Safe.t =
-  let f = [
-    "wall_time_ms", `Int r.wall_time_ms;
-    "memory_peak_kb", `Int r.memory_peak_kb;
-  ] in
+  let f = [ "wall_time_ms", `Int r.wall_time_ms ] in
+  let f = match r.memory_peak_kb with
+    | None -> f
+    | Some m -> f @ [ "memory_peak_kb", `Int m ]
+  in
   let f = match r.budget_consumed with
     | None -> f
     | Some b -> f @ [ "budget_consumed", `Float b ]

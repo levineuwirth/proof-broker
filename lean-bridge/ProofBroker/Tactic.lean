@@ -481,6 +481,28 @@ partial def shellMentionsUF : ShellTerm → Bool
   | .lambda _ b => shellMentionsUF b
   | .opaque_ _ => false
 
+/-- Node-presence flags for the honest `features_used` label (R2):
+    `(hasForall, hasExists, hasEq)`, walked over one shell. The
+    reifier reports only features it actually emitted, with tags
+    drawn from the registry's `logical_features` ids. -/
+partial def shellQuantEqFlags : ShellTerm → Bool × Bool × Bool
+  | .var _ | .const _ | .numLit _ _ | .opaque_ _ => (false, false, false)
+  | .forall_ _ _ b => let (_, e, q) := shellQuantEqFlags b; (true, e, q)
+  | .exists_ _ _ b => let (f, _, q) := shellQuantEqFlags b; (f, true, q)
+  | .lambda _ b | .not_ b => shellQuantEqFlags b
+  | .eq _ a b =>
+    let (f1, e1, _) := shellQuantEqFlags a
+    let (f2, e2, _) := shellQuantEqFlags b
+    (f1 || f2, e1 || e2, true)
+  | .implies a b | .and_ a b | .or_ a b =>
+    let (f1, e1, q1) := shellQuantEqFlags a
+    let (f2, e2, q2) := shellQuantEqFlags b
+    (f1 || f2, e1 || e2, q1 || q2)
+  | .app _ _ args =>
+    args.foldl (fun (f, e, q) a =>
+      let (f', e', q') := shellQuantEqFlags a
+      (f || f', e || e', q || q')) (false, false, false)
+
 /-- Reify the goal + Prop-typed hypotheses + Int-typed free variables
     of `mvarId` into an IR document tagged for the LIA fragment.
 
@@ -584,12 +606,27 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     else match extOpt with
       | some ext => if sawExtensionType then ext.irFragment else "LIA"
       | none => "LIA"
+  -- R2 honesty: the context tier is "structural" whenever typed
+  -- hypotheses ride along (spec §4.5: "goal" = proposition only),
+  -- and features_used reports what the reifier actually emitted.
+  let tier := if hypotheses.isEmpty then "goal" else "structural"
+  let (hasForall, hasExists, hasEq) :=
+    (goalShell :: hypotheses.map (·.shell)).foldl
+      (fun (f, e, q) s =>
+        let (f', e', q') := shellQuantEqFlags s
+        (f || f', e || e', q || q'))
+      (false, false, false)
+  let featuresUsed :=
+    (if hasForall then ["universal_quantification_over_first_order"] else [])
+    ++ (if hasExists then ["existential_quantification_over_first_order"] else [])
+    ++ (if hasEq then ["equality_at_first_order_type"] else [])
+    ++ (if isHO then ["function_quantification"] else [])
   return {
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
-    tier := "goal",
+    tier,
     logicClassification := {
-      order, featuresUsed := [],
+      order, featuresUsed,
       firstOrderFragment := fragment, decidableTheory := none
     },
     goal := { shell := goalShell, payloads := none },
@@ -683,6 +720,17 @@ structure ExtractionPath where
   ir : IR
   attempts : List Attempt
   cert : Option Json
+  /-- R2: the broker's rewrite trace for this dispatch. Its
+      `isIdentity` is the identity-trace guard's input: the
+      term-mode / walker closers consume the cert against the
+      ORIGINAL goal, so they only run when the trace proves the
+      dispatched IR is that goal (`none` — no trace returned —
+      fails the guard, closed). -/
+  trace : Option Trace.Document
+  /-- R2: raw passthrough of the broker's `final_ir` — the IR the
+      cert addresses. Verification runs against this, never the
+      reified input. -/
+  finalIr : Option Json
   verifyOk : Option Bool
   /-- Looser-than-`verifyOk` flag: true when envelope checks passed
       but no tier-specific verifier applied (e.g. Tier 0 oracle).
@@ -724,10 +772,16 @@ private def renderPath (path : ExtractionPath) : MessageData :=
       let tier := (c.getObjValAs? Int "tier").toOption.getD (-1)
       let fmt := (c.getObjValAs? String "format").toOption.getD "?"
       s!"  cert:     tier={tier}, format={fmt}"
+  let traceLine := match path.trace with
+    | none => "  trace:    none"
+    | some d =>
+      let idty := if d.isIdentity then "identity" else "NON-IDENTITY"
+      s!"  trace:    {idty}, {d.entries.length} pass(es)"
   let verifyLine := match path.verifyOk, path.verifyReason with
     | some ok, some r => s!"  verify:   {path.verifyMs}ms, ok={ok} ({reprStr r})"
     | _, _ => "  verify:   skipped"
-  let lines := ["proof_broker?:", irLine, dispatchLine] ++ attemptLines ++ [certLine, verifyLine]
+  let lines := ["proof_broker?:", irLine, dispatchLine] ++ attemptLines
+    ++ [certLine, traceLine, verifyLine]
   m!"{String.intercalate "\n" lines}"
 
 /- ============================================================
@@ -773,7 +827,12 @@ private def buildExtractionPath
   let mut verifyMs : Nat := 0
   if let some cert := dispatch.cert then
     let t1 ← IO.monoMsNow
-    let verif ← match runVerifyCertificate cert ir with
+    -- R2: the cert addresses the dispatch pipeline's output IR
+    -- (`final_ir`), not the reified input — verify against that,
+    -- with the trace, so a cert/trace/IR triple that doesn't
+    -- cohere is a hash mismatch here rather than a silent pass.
+    let irForVerify := dispatch.finalIr.getD (ProofBroker.IR.IR.toJson ir)
+    let verif ← match runVerifyCertificateJson cert irForVerify dispatch.trace with
       | .ok v => pure v
       | .error e => throwError "proof_broker: verify_certificate failed: {repr e}"
     verifyMs ← msSince t1
@@ -782,8 +841,24 @@ private def buildExtractionPath
     verifyReason := some verif.reason
   return {
     ir, attempts := dispatch.attempts, cert := dispatch.cert,
+    trace := dispatch.trace, finalIr := dispatch.finalIr,
     verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs
   }
+
+/-- Identity-trace guard (R2 soundness rule). The term-mode and
+    walker closers consume the cert's content against the ORIGINAL
+    goal, but the cert addresses the dispatch pipeline's output IR.
+    Until R3 lands lifting, those closers may only run when the
+    trace proves the two coincide: every pass skipped/no-op and
+    equal endpoint hashes (`Trace.Document.isIdentity`). A missing
+    trace fails the guard — closed. Decision-procedure closers
+    (omega & co.) are exempt: they re-prove the original goal
+    themselves, so the cert is only a gate there. The guard is
+    removed pass-by-pass in R3 as each inversion lands. -/
+private def identityTraceOk (path : ExtractionPath) : Bool :=
+  match path.trace with
+  | some d => d.isIdentity
+  | none => false
 
 /-- Read the fragment label out of a cert's `refinement_record`.
     Returns `""` when the field is missing or the cert is malformed
@@ -1121,7 +1196,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- `python3 tools/status_table.py`); omega catches anything
       -- outside that scope.
       let walkerHandled ← do
-        if certTraceFormat cert == "alethe-2024" then
+        -- Identity-trace guard (R2): the walker elaborates the
+        -- cert's trace against the ORIGINAL goal, so it only runs
+        -- when the dispatch pipeline provably didn't rewrite it.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
           tryAletheWalker cert
         else
           pure false
@@ -1177,7 +1255,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- proof") before the re-proving chain; any walker failure
       -- falls through to it — audit H1 preserved.
       let walkerHandled ← do
-        if certTraceFormat cert == "alethe-2024" then
+        -- Identity-trace guard (R2): the walker elaborates the
+        -- cert's trace against the ORIGINAL goal, so it only runs
+        -- when the dispatch pipeline provably didn't rewrite it.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
           tryAletheWalker cert
         else
           pure false
@@ -1201,7 +1282,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- `omega` fallback chain (both axiom-free), then an honest
       -- tactic failure.
       let walkerHandled ← do
-        if certTraceFormat cert == "alethe-2024" then
+        -- Identity-trace guard (R2): the walker elaborates the
+        -- cert's trace against the ORIGINAL goal, so it only runs
+        -- when the dispatch pipeline provably didn't rewrite it.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
           tryAletheWalker cert
         else
           pure false
@@ -1817,6 +1901,15 @@ def evalProofBrokerWalker : Tactic := fun stx => do
     | some c => pure c
     | none => throwError "proof_broker_walker: no adapter minted a cert; \
         attempts: {path.attempts.map (·.adapter)}"
+  -- Identity-trace guard (R2): walker-strict has no fallback, so a
+  -- rewritten (or traceless) dispatch is a named failure here.
+  unless identityTraceOk path do
+    throwError "proof_broker_walker: identity-trace guard — the dispatch \
+      pipeline rewrote the goal (or returned no trace), so the cert \
+      addresses the rewritten IR, not this goal. Until lifting lands (R3) \
+      the walker only closes goals its cert directly addresses; use plain \
+      `proof_broker`, which falls back to a decision procedure on the \
+      original goal."
   -- Walker-strict: require the Alethe walker to close from the live
   -- cert; no `omega` fallback (that is what `proof_broker` adds).
   unless (← tryAletheWalker cert) do
@@ -1867,6 +1960,16 @@ private def runTermModeOnGoal
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_term: no adapter minted a cert"
+  -- Identity-trace guard (R2): the term-mode closers rebuild the
+  -- proof from the cert's witness against the ORIGINAL goal, so a
+  -- rewritten (or traceless) dispatch is a named failure — term
+  -- mode has no decision-procedure fallback by design.
+  unless identityTraceOk path do
+    throwError "proof_broker_term: identity-trace guard — the dispatch \
+      pipeline rewrote the goal (or returned no trace), so the cert's \
+      witness addresses the rewritten IR, not this goal. Until lifting \
+      lands (R3) term mode only consumes certs that directly address the \
+      goal; use plain `proof_broker` for a decision-procedure closure."
   unless path.verifyOk == some true do
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker_term: cert was minted but verifier did not \

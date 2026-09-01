@@ -7,13 +7,13 @@
     "shell": { "node": "Const", "name": "False" }
   },
 
-  "dispatch_context_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-  "rewrite_trace_hash":    "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "dispatch_context_hash": "sha256:ff26aa93ef71b7e94095dc5535bb6bf8e91572c622ec20b572bf2a3e703c6cc8",
+  "rewrite_trace_hash":    "sha256:b7113a9d0a695dbabd238dfdc6bc8e299cff40900680299de5281069739604cf",
 
   "backend": {
     "name": "cvc5",
     "version": "1.2.0",
-    "config_hash": "sha256:fdd1ce259b926b97ef499d3e0a604381aa5595ba2a3b784886548b035785bd46"
+    "config_hash": "sha256:2f0529604f8b36ad50c5929546b583ce477e0592743e51be53ffc327f07fefb5"
   },
 
   "resources": {

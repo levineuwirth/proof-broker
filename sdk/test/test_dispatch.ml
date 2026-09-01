@@ -293,10 +293,10 @@ let mk_cert ~tier : Certificate.t =
     format = (if tier = 3 then "tstp-fof" else "oracle");
     goal = { shell = Ir.Const { name = "True" }; payloads = None };
     dispatch_context_hash = "sha256:" ^ String.make 64 '0';
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '1';
     backend = { name = "synthetic"; version = "0";
                 config_hash = "sha256:" ^ String.make 64 '0' };
-    resources = { wall_time_ms = 0; memory_peak_kb = 0;
+    resources = { wall_time_ms = 0; memory_peak_kb = None;
                   budget_consumed = None };
     refinement_record = { adapter = "synthetic"; adapter_version = "0";
                           specializations = []; fragment = "LIA";
@@ -307,7 +307,7 @@ let mk_cert ~tier : Certificate.t =
 let mk_adapter name ~delay_ms ~(result : Adapter.result) : Adapter.t = {
   name;
   version = "0";
-  dispatch = (fun _ir ->
+  dispatch = (fun ~rewrite_trace_hash:_ _ir ->
     if delay_ms > 0 then Unix.sleepf (float_of_int delay_ms /. 1000.);
     result);
 }
@@ -411,6 +411,128 @@ let test_par_all_fail () =
   Alcotest.(check bool) "none succeeded" true
     (not (List.exists succeeded r.attempts))
 
+(* --- R2: rewrite pipeline inside the dispatch driver ----------------- *)
+
+(** Echo adapter: mints a cert stamping exactly what the driver hands
+    it — the [rewrite_trace_hash] argument and the hash of the IR it
+    was dispatched on. The trace-plumbing tests below assert on the
+    minted cert, so they prove the driver→adapter handoff rather
+    than trusting a fixed synthetic result. *)
+let echo_adapter name : Adapter.t = {
+  name;
+  version = "0";
+  dispatch = (fun ~rewrite_trace_hash ir ->
+    let c = mk_cert ~tier:0 in
+    Cert { c with
+      goal = ir.Ir.goal;
+      dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
+      rewrite_trace_hash });
+}
+
+(** [provable_lia_ir] with a propositional redex: the [0 <= m]
+    hypothesis is wrapped as [True ∧ (0 <= m)], which the default
+    dispatch pipeline's prop-simp pass rewrites (And_True_left) —
+    so dispatching it produces a non-identity trace. *)
+let redex_lia_ir () =
+  let ir = provable_lia_ir () in
+  let hyps =
+    List.map (fun (h : Ir.hypothesis) ->
+      if h.name = "h3" then
+        { h with shell = Ir.And {
+            left = Const { name = "True" }; right = h.shell } }
+      else h)
+      ir.context.hypotheses
+  in
+  { ir with context = { ir.context with hypotheses = hyps } }
+
+let trace_hash (tr : Trace.t) : string =
+  Hash.canonical_sha256 (Trace.to_json tr)
+
+let ir_hash (ir : Ir.t) : string =
+  Hash.sha256_of_json (Codec.to_json ir)
+
+let test_run_identity_trace () =
+  let input = provable_lia_ir () in
+  let r = Dispatch.run
+    ~manifests:[ synthetic_manifest "echo" ]
+    ~adapters:(registry_of [ echo_adapter "echo" ]) input in
+  Alcotest.(check bool) "trace is identity" true (Trace.is_identity r.trace);
+  Alcotest.(check int) "both default passes traced" 2
+    (List.length r.trace.entries);
+  Alcotest.(check string) "trace starts at the input IR"
+    (ir_hash input) r.trace.initial_ir_hash;
+  Alcotest.(check string) "final_ir is the input IR"
+    (ir_hash input) (ir_hash r.final_ir);
+  match r.cert with
+  | None -> Alcotest.fail "expected a cert"
+  | Some c ->
+    Alcotest.(check string) "cert stamps the trace's canonical hash"
+      (trace_hash r.trace) c.rewrite_trace_hash;
+    Alcotest.(check bool) "no zero-sentinel trace hash" false
+      (c.rewrite_trace_hash = "sha256:" ^ String.make 64 '0');
+    Alcotest.(check string) "cert addresses final_ir"
+      (ir_hash r.final_ir) c.dispatch_context_hash
+
+let test_run_non_identity_trace () =
+  let input = redex_lia_ir () in
+  let r = Dispatch.run
+    ~manifests:[ synthetic_manifest "echo" ]
+    ~adapters:(registry_of [ echo_adapter "echo" ]) input in
+  Alcotest.(check bool) "trace is NOT identity" false
+    (Trace.is_identity r.trace);
+  Alcotest.(check bool) "final_ir differs from input" false
+    (ir_hash r.final_ir = ir_hash input);
+  Alcotest.(check string) "trace endpoints bracket the rewrite"
+    (ir_hash r.final_ir) r.trace.final_ir_hash;
+  Alcotest.(check string) "trace starts at the input IR"
+    (ir_hash input) r.trace.initial_ir_hash;
+  match r.cert with
+  | None -> Alcotest.fail "expected a cert"
+  | Some c ->
+    Alcotest.(check string) "cert stamps the trace's canonical hash"
+      (trace_hash r.trace) c.rewrite_trace_hash;
+    Alcotest.(check string) "cert addresses final_ir, not the input"
+      (ir_hash r.final_ir) c.dispatch_context_hash;
+    (* Attack surface (R2 gate): a cert minted on final_ir can NOT
+       be replayed against the original IR — the envelope check
+       fails by hash mismatch, with or without the trace. *)
+    (match Verifier.verify ~trace:(Some r.trace) c input with
+     | Hash_mismatch { field = "dispatch_context_hash"; _ } -> ()
+     | other ->
+       Alcotest.failf "replay against original IR must hash-mismatch, got %s"
+         (Verifier.kind_of_reason other));
+    (* Against final_ir with the true trace the envelope passes
+       (Tier 0 ⇒ deferred tier check). *)
+    (match Verifier.verify ~trace:(Some r.trace) c r.final_ir with
+     | Tier_check_deferred _ -> ()
+     | other ->
+       Alcotest.failf "expected tier_check_deferred, got %s"
+         (Verifier.kind_of_reason other));
+    (* A tampered trace (entry dropped) is rejected. *)
+    let tampered = { r.trace with entries = [] } in
+    (match Verifier.verify ~trace:(Some tampered) c r.final_ir with
+     | Hash_mismatch { field = "rewrite_trace_hash"; _ } -> ()
+     | other ->
+       Alcotest.failf "tampered trace must hash-mismatch, got %s"
+         (Verifier.kind_of_reason other))
+
+let test_par_trace_plumbing () =
+  let input = redex_lia_ir () in
+  let r = Dispatch.run_parallel
+    ~manifests:[ synthetic_manifest "echo" ]
+    ~adapters:(registry_of [ echo_adapter "echo" ]) input in
+  Alcotest.(check bool) "trace is NOT identity" false
+    (Trace.is_identity r.trace);
+  Alcotest.(check string) "trace endpoints bracket the rewrite"
+    (ir_hash r.final_ir) r.trace.final_ir_hash;
+  match r.cert with
+  | None -> Alcotest.fail "expected a cert"
+  | Some c ->
+    Alcotest.(check string) "cert stamps the trace's canonical hash"
+      (trace_hash r.trace) c.rewrite_trace_hash;
+    Alcotest.(check string) "cert addresses final_ir"
+      (ir_hash r.final_ir) c.dispatch_context_hash
+
 let () =
   Alcotest.run "dispatch" [
     "driver", [
@@ -441,5 +563,13 @@ let () =
         test_par_attempts_input_order;
       Alcotest.test_case "all skipped" `Quick test_par_all_skipped;
       Alcotest.test_case "all fail" `Quick test_par_all_fail;
+    ];
+    "pipeline-in-dispatch", [
+      Alcotest.test_case "identity trace through run"
+        `Quick test_run_identity_trace;
+      Alcotest.test_case "non-identity trace through run"
+        `Quick test_run_non_identity_trace;
+      Alcotest.test_case "trace plumbing through run_parallel"
+        `Quick test_par_trace_plumbing;
     ];
   ]

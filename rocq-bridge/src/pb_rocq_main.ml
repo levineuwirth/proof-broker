@@ -61,9 +61,14 @@ let resolve_manifests (names : Names.Id.t list option)
     Manifest_loading.load_named (List.map Names.Id.to_string ids)
 
 (* Path data captured for both verbose-form rendering and plain-form
-   summaries. Mirrors Lean's [ExtractionPath]. *)
+   summaries. Mirrors Lean's [ExtractionPath]. [final_ir]/[trace]
+   (R2) are the dispatch rewrite pipeline's output: the cert
+   addresses [final_ir], and [Trace.is_identity trace] is the
+   identity-trace guard's input for the cert-consuming closers. *)
 type path = {
   ir : Ir.t;
+  final_ir : Ir.t;
+  trace : Proof_broker.Trace.t;
   attempts : Proof_broker.Dispatch.attempt list;
   cert : Cert.t option;
   verify_reason : Proof_broker.Verifier.reason option;
@@ -100,13 +105,20 @@ let build_path ?(tier_preference = [])
   let adapters = adapter_registry () in
   let result = Proof_broker.Dispatch.run ~manifests ~adapters ir in
   let t2 = now_ms () in
+  (* R2: the cert addresses the dispatch pipeline's output IR
+     ([final_ir]), not the reified input — verify against that,
+     with the trace. *)
   let verify_reason = match result.cert with
     | None -> None
-    | Some cert -> Some (Proof_broker.Verifier.verify ~trace:None cert ir)
+    | Some cert ->
+      Some (Proof_broker.Verifier.verify
+              ~trace:(Some result.trace) cert result.final_ir)
   in
   let t3 = now_ms () in
   {
     ir;
+    final_ir = result.final_ir;
+    trace = result.trace;
     attempts = result.attempts;
     cert = result.cert;
     verify_reason;
@@ -144,6 +156,12 @@ let render_path (p : path) : string =
     | Some c ->
       Printf.sprintf "  cert:     tier=%d, format=%s" c.tier c.format
   in
+  let trace_line =
+    Printf.sprintf "  trace:    %s, %d pass(es)"
+      (if Proof_broker.Trace.is_identity p.trace
+       then "identity" else "NON-IDENTITY")
+      (List.length p.trace.entries)
+  in
   let verify_line = match p.verify_reason with
     | None -> "  verify:   skipped"
     | Some r ->
@@ -158,7 +176,7 @@ let render_path (p : path) : string =
   in
   String.concat "\n"
     ([ "proof_broker:"; ir_line; dispatch_line ]
-     @ attempt_lines @ [ cert_line; verify_line ])
+     @ attempt_lines @ [ cert_line; trace_line; verify_line ])
 
 (* --- closure logic (cert-gated lia / lra) -------------------------- *)
 
@@ -269,11 +287,19 @@ let try_alethe_walker (cert : Cert.t) : unit Proofview.tactic =
    trace / parse error / unsupported rule / walked-term type
    mismatch) falls back to [closer_for_fragment]. The walker only
    ever ADDS an attempt ahead of the existing closer, never
-   replaces one; other fragments are unchanged. *)
-let closer_for_fragment_with_walker (cert : Cert.t) (fragment : string)
-    : unit Proofview.tactic =
+   replaces one; other fragments are unchanged.
+
+   Identity-trace guard (R2 soundness rule): the walker elaborates
+   the cert's trace against the ORIGINAL goal, but the cert
+   addresses the dispatch pipeline's output IR — so the walker arm
+   only runs when [identity] (every pass skipped/no-op, equal
+   endpoint hashes). Non-identity dispatches go straight to the
+   re-proving closer, which proves the original goal itself. The
+   guard is removed pass-by-pass in R3 as each inversion lands. *)
+let closer_for_fragment_with_walker ~identity (cert : Cert.t)
+    (fragment : string) : unit Proofview.tactic =
   match fragment with
-  | "LIA" | "UF" | "UFLIA" ->
+  | ("LIA" | "UF" | "UFLIA") when identity ->
     Proofview.tclORELSE
       (try_alethe_walker cert)
       (fun _ -> closer_for_fragment fragment)
@@ -340,7 +366,9 @@ let close_or_fail_primary (p : path) : unit Proofview.tactic =
         verifier) shipped — Verified_tier3_provenance is the
         gate for the Vampire HOL path. *)
      | Verified_tier3_provenance ->
-       closer_for_fragment_with_walker cert cert.refinement_record.fragment
+       closer_for_fragment_with_walker
+         ~identity:(Proof_broker.Trace.is_identity p.trace)
+         cert cert.refinement_record.fragment
      | Tier_check_deferred _ ->
        (* Tier 0 oracle path: no soundness verifier ran but the
           envelope checked out and the solver returned [unsat]. The
@@ -349,7 +377,9 @@ let close_or_fail_primary (p : path) : unit Proofview.tactic =
           (we know the goal is provable) rather than carrying the
           proof. Mirror lean-bridge's [closeOrFail] envelope-only
           acceptance — the trust footprint is identical. *)
-       closer_for_fragment_with_walker cert cert.refinement_record.fragment
+       closer_for_fragment_with_walker
+         ~identity:(Proof_broker.Trace.is_identity p.trace)
+         cert cert.refinement_record.fragment
      | _ ->
        CErrors.user_err Pp.(
          str (Printf.sprintf
@@ -448,6 +478,17 @@ let run_close (names : Names.Id.t list option) : unit Proofview.tactic =
 let run_close_walker (names : Names.Id.t list option) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
     let path = build_path ~tier_preference:["3"] gl names in
+    (* Identity-trace guard (R2): walker-strict has no fallback, so
+       a rewritten dispatch is a named failure here. *)
+    if not (Proof_broker.Trace.is_identity path.trace) then
+      CErrors.user_err Pp.(
+        str "proof_broker_walker: identity-trace guard — the dispatch \
+             pipeline rewrote the goal, so the cert addresses the \
+             rewritten IR, not this goal. Until lifting lands (R3) the \
+             walker only closes goals its cert directly addresses; use \
+             plain proof_broker, which falls back to a decision \
+             procedure on the original goal.")
+    else
     match path.cert, path.verify_reason with
     | None, _ ->
       CErrors.user_err Pp.(
@@ -496,6 +537,19 @@ let run_verbose (names : Names.Id.t list option) : unit Proofview.tactic =
 let run_close_term_single (gl : Proofview.Goal.t)
     (names : Names.Id.t list option) : unit Proofview.tactic =
   let path = build_path gl names in
+  (* Identity-trace guard (R2): the term-mode closers rebuild the
+     proof from the cert's witness against the ORIGINAL goal — a
+     rewritten dispatch is a named failure (term mode has no
+     decision-procedure fallback by design). *)
+  if not (Proof_broker.Trace.is_identity path.trace) then
+    CErrors.user_err Pp.(
+      str "proof_broker_term: identity-trace guard — the dispatch \
+           pipeline rewrote the goal, so the cert's witness addresses \
+           the rewritten IR, not this goal. Until lifting lands (R3) \
+           term mode only consumes certs that directly address the \
+           goal; use plain proof_broker for a decision-procedure \
+           closure.")
+  else
   let wrap_unsupported tac =
     try tac
     with Term_mode.Unsupported msg ->

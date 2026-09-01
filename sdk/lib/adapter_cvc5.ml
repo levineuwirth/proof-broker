@@ -106,9 +106,11 @@ let backend ~version : Certificate.backend = {
   config_hash = "sha256:" ^ String.make 64 '0';
 }
 
-let resources_now ~timeout_ms : Certificate.resources = {
-  wall_time_ms = timeout_ms;
-  memory_peak_kb = 0;
+(** Measured solver wall clock (R2). [memory_peak_kb] is absent —
+    not measured, never a fabricated 0. *)
+let resources_measured ~wall_ms : Certificate.resources = {
+  wall_time_ms = wall_ms;
+  memory_peak_kb = None;
   budget_consumed = None;
 }
 
@@ -131,10 +133,11 @@ let mk_refinement_record
 
 let mint_oracle_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
-      ~timeout_ms
+      ~wall_ms
   : Certificate.t =
   let dispatch_context_hash =
     Hash.sha256_of_json (Codec.to_json original_ir)
@@ -145,9 +148,9 @@ let mint_oracle_cert
     format = "oracle";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version specs ~logic;
     payload = Tier0_oracle {
@@ -163,10 +166,11 @@ let mint_oracle_cert
     names and the verifier can look them up directly. *)
 let mint_farkas_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
-      ~timeout_ms
+      ~wall_ms
       ~(witness : Yojson.Safe.t)
   : Certificate.t =
   let dispatch_context_hash =
@@ -178,9 +182,9 @@ let mint_farkas_cert
     format = "farkas";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version specs ~logic;
     payload = Tier1_witness {
@@ -202,10 +206,11 @@ let mint_farkas_cert
     Tier 3 cert the verifier can't re-check at mint time. *)
 let mint_tier3_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
-      ~timeout_ms
+      ~wall_ms
       ~(proof_str : string)
       ~(proof : Alethe.proof)
   : Certificate.t =
@@ -218,9 +223,9 @@ let mint_tier3_cert
     format = "alethe-2024";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version specs ~logic;
     payload = Alethe_passthrough.make_payload ~proof_str proof;
@@ -234,10 +239,11 @@ let mint_tier3_cert
     hypothesis named in [structural_hint]. *)
 let mint_case_split_cert
       ~adapter_version
+      ~rewrite_trace_hash
       ~(original_ir : Ir.t)
       ~(specs : Refinement_record.specialization list)
       ~logic
-      ~timeout_ms
+      ~wall_ms
       ~(lemmas : Yojson.Safe.t list)
       ~(disjunctive_hyp : string)
   : Certificate.t =
@@ -250,9 +256,9 @@ let mint_case_split_cert
     format = "case_split_farkas";
     goal = original_ir.goal;
     dispatch_context_hash;
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash;
     backend = backend ~version:adapter_version;
-    resources = resources_now ~timeout_ms;
+    resources = resources_measured ~wall_ms;
     refinement_record =
       mk_refinement_record ~adapter_version specs ~logic;
     payload = Tier2_lemma_list {
@@ -305,7 +311,7 @@ let extract_proof_body (stdout : string) : string option =
     backend.version stay synchronized. *)
 let version = "1.3.0"
 
-let dispatch (ir : Ir.t) : Adapter.result =
+let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
   (* R1.8: certs stamp the PROBED binary version (declared constant
      as fallback when the probe fails). On a major.minor mismatch
      between the binary on PATH and the declared version, emit a
@@ -340,7 +346,10 @@ let dispatch (ir : Ir.t) : Adapter.result =
        let timeout_ms = timeout_of_ir ir in
        let body = script.body ^ "(check-sat)\n(get-proof)\n(exit)\n" in
        (try
+          let t_solve = Unix.gettimeofday () in
           let stdout, stderr, code = run_solver ~timeout_ms body in
+          let wall_ms =
+            int_of_float ((Unix.gettimeofday () -. t_solve) *. 1000.) in
           match parse_response stdout, code with
           | Unsat, _ ->
             (* Dispatch ladder:
@@ -364,18 +373,20 @@ let dispatch (ir : Ir.t) : Adapter.result =
             let mk_oracle () =
               mint_oracle_cert
                 ~adapter_version:version
+                ~rewrite_trace_hash
                 ~original_ir:ir
                 ~specs:refinement.specializations
                 ~logic:script.logic
-                ~timeout_ms
+                ~wall_ms
             in
             let mk_farkas witness =
               mint_farkas_cert
                 ~adapter_version:version
+                ~rewrite_trace_hash
                 ~original_ir:ir
                 ~specs:refinement.specializations
                 ~logic:script.logic
-                ~timeout_ms
+                ~wall_ms
                 ~witness
             in
             let try_internal_closer () =
@@ -404,10 +415,11 @@ let dispatch (ir : Ir.t) : Adapter.result =
                  | Verified ->
                    Some (mint_tier3_cert
                            ~adapter_version:version
+                           ~rewrite_trace_hash
                            ~original_ir:ir
                            ~specs:refinement.specializations
                            ~logic:script.logic
-                           ~timeout_ms
+                           ~wall_ms
                            ~proof_str
                            ~proof)
                  | _ -> None)
@@ -449,10 +461,11 @@ let dispatch (ir : Ir.t) : Adapter.result =
                  | Ok (lemmas, disjunctive_hyp) ->
                    mint_case_split_cert
                      ~adapter_version:version
+                     ~rewrite_trace_hash
                      ~original_ir:ir
                      ~specs:refinement.specializations
                      ~logic:script.logic
-                     ~timeout_ms
+                     ~wall_ms
                      ~lemmas
                      ~disjunctive_hyp
                  | Error _ ->

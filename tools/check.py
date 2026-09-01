@@ -48,6 +48,16 @@ span multiple documents or require domain knowledge:
     - Hash-chain continuity: initial -> per-entry before/after chain ->
       final, and a failed/no_op pass leaves the IR unchanged.
 
+  Fixture pairing completeness (C2 round 1)
+    - Every cert-*.json in examples/ must key into all three cert
+      pairing maps (CERT_MANIFEST_PAIRS, CERT_IR_PAIRS,
+      CERT_TRACE_PAIRS), and every rewrite-trace-*-identity.json into
+      TRACE_IR_PAIRS. The hash/sentinel gates above are driven by
+      those maps, so an unpaired fixture would silently skip them; an
+      unpaired fixture is an ERROR in both drivers. A non-identity
+      trace (rewrite-trace-example3.json) has no IR pairing by design
+      — only chain continuity applies to it.
+
 NOT enforced (known, scoped gaps — documented so this docstring does
 not overclaim; audit M7. Closing these is behaviour-affecting and is
 tracked separately, not silently asserted here):
@@ -71,6 +81,7 @@ Errors fail the run; warnings are surfaced but do not.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -346,10 +357,16 @@ def check_manifest(manifest, registry):
             errors.append(f"type_constructions: unknown '{tc}'")
 
     if 1 in manifest["tiers_produced"]:
-        wk_ids = {w["id"] for w in registry["adapter_capability_vocabulary"]["witness_kinds"]}
+        wks = {w["id"]: w for w in registry["adapter_capability_vocabulary"]["witness_kinds"]}
         for w in manifest.get("witness_kinds_produced", []):
-            if w not in wk_ids:
+            if w not in wks:
                 errors.append(f"witness_kinds_produced: unknown '{w}'")
+            elif not wks[w].get("v1", False):
+                # R2: sat_* were demoted to v1:false — nothing mints
+                # them; a manifest advertising one overclaims.
+                errors.append(
+                    f"witness_kinds_produced: '{w}' is v1:false in the "
+                    "registry (not produced by any v1 adapter)")
     if 3 in manifest["tiers_produced"]:
         tf_ids = {t["id"] for t in registry["adapter_capability_vocabulary"]["trace_formats"]}
         for tf in manifest.get("trace_formats_produced", []):
@@ -357,6 +374,94 @@ def check_manifest(manifest, registry):
                 errors.append(f"trace_formats_produced: unknown '{tf}'")
 
     return errors, warnings
+
+
+def check_cert_manifest_consistency(cert, manifest, cert_name=None):
+    """R2.4: a cert must be producible by its paired manifest —
+    `cert.tier ∈ manifest.tiers_produced`, and a Tier-3 cert's
+    `payload.trace_format ∈ manifest.trace_formats_produced` (a
+    Tier-1 cert's witness_kind likewise). This is what the old
+    config_hash-only pairing could not catch (STATUS §3.3 #7:
+    manifest-vampire claimed tiers_produced=[0] while the adapter
+    minted Tier 3)."""
+    errors = []
+    name = cert_name or "certificate"
+    tier = cert.get("tier")
+    tiers = manifest.get("tiers_produced", [])
+    if tier not in tiers:
+        errors.append(
+            f"{name}: tier {tier} not in paired manifest's "
+            f"tiers_produced {tiers}")
+    if tier == 3:
+        tf = cert.get("payload", {}).get("trace_format")
+        produced = manifest.get("trace_formats_produced", [])
+        if tf not in produced:
+            errors.append(
+                f"{name}: payload.trace_format '{tf}' not in paired "
+                f"manifest's trace_formats_produced {produced}")
+    if tier == 1:
+        wk = cert.get("payload", {}).get("witness_kind")
+        produced = manifest.get("witness_kinds_produced", [])
+        if wk not in produced:
+            errors.append(
+                f"{name}: payload.witness_kind '{wk}' not in paired "
+                f"manifest's witness_kinds_produced {produced}")
+    return errors
+
+
+# --- Repo-level source-scan checks (R2.4) --------------------------------
+
+SDK_LIB = ROOT / "sdk" / "lib"
+
+_QUOTED_ID_RE = re.compile(r'"([a-z0-9][a-z0-9-]*)"')
+
+
+def check_sdk_trace_format_literals(registry, sdk_lib=None):
+    """Every trace_format string literal in sdk/lib must be a
+    registered trace format: an unregistered literal is either a
+    typo (a dead verifier/minting arm) or a format the registry
+    fails to admit exists (the `rocq-tactic-script` gap this check
+    was written for)."""
+    sdk_lib = Path(sdk_lib) if sdk_lib else SDK_LIB
+    tf_ids = {t["id"] for t in registry["adapter_capability_vocabulary"]["trace_formats"]}
+    errors = []
+    for path in sorted(sdk_lib.glob("*.ml")):
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            if "trace_format" not in line:
+                continue
+            for lit in _QUOTED_ID_RE.findall(line):
+                if lit not in tf_ids:
+                    errors.append(
+                        f"{path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}"
+                        f":{lineno}: trace_format literal '{lit}' is not "
+                        "a registered trace format "
+                        "(registry/patterns-v1.json "
+                        "adapter_capability_vocabulary.trace_formats)")
+    return errors
+
+
+_PIN_RE = re.compile(
+    r'\(\* PIN:always-unfold-for-dispatch \*\)(.*?)'
+    r'\(\* ENDPIN:always-unfold-for-dispatch \*\)', re.S)
+
+
+def check_always_unfold_pin(registry, pipeline_ml=None):
+    """The SDK's baked-in dispatch unfold list (sdk/lib/pipeline.ml,
+    between the PIN markers) must equal the registry's
+    always_unfold_for_dispatch — the two-way pin that lets the SDK
+    avoid a runtime file dependency on the registry JSON."""
+    path = Path(pipeline_ml) if pipeline_ml else SDK_LIB / "pipeline.ml"
+    text = path.read_text()
+    m = _PIN_RE.search(text)
+    if m is None:
+        return [f"{path}: PIN:always-unfold-for-dispatch markers not found"]
+    pinned = re.findall(r'"([a-z_]+)"', m.group(1))
+    expected = registry.get("always_unfold_for_dispatch", [])
+    if pinned != expected:
+        return [
+            f"{path}: pinned always_unfold_for_dispatch {pinned} != "
+            f"registry {expected} — edit both together"]
+    return []
 
 
 # --- Cross-fixture hash linkage (#18d / #24-M1) ---------------------------
@@ -381,27 +486,97 @@ CERT_MANIFEST_PAIRS = {
     "cert-example4-tier3-tptp.json":      "manifest-vampire.json",
 }
 
-# cert filename -> IR filename. Only certs whose dispatch IR is shipped
-# as an example fixture appear. cert-example2 (synthetic H2 case-split)
-# and cert-example4 (synthetic Tier-3 TPTP) construct their dispatch IR
-# in-process and do NOT have a paired example IR; their
-# dispatch_context_hash uses the documented unpaired sentinel.
+# cert filename -> IR filename. R2: every shipped cert pairs with a
+# shipped IR fixture — the old "unpaired dispatch IR" sentinel is
+# gone (cert-example2 / cert-example4 gained example-casesplit-lra /
+# example-tstp-fol as their dispatch IRs).
 CERT_IR_PAIRS = {
     "cert-example1-tier1-farkas.json": "example1-lia-typeclass.json",
     "cert-example1-tier3-alethe.json": "example1-lia-typeclass.json",
+    "cert-example2-tier2-casesplit.json": "example-casesplit-lra.json",
+    "cert-example4-tier3-tptp.json": "example-tstp-fol.json",
 }
 
-# Documented "not a real digest" sentinels. Anything appearing in a cert
-# field with one of these values is intentionally not checked for hash
-# equality, just for shape conformance (which the schema's ContentHash
-# pattern already does). Pinning the exact strings here keeps the
-# regen tool and the checker agreed on the convention.
-_UNPAIRED_DISPATCH_CONTEXT_HASH = "sha256:" + "0" * 64
-_NO_TRACE_HASH = "sha256:" + "0" * 64
+# cert filename -> rewrite-trace filename (R2). Every cert's
+# rewrite_trace_hash is the canonical hash of its paired trace
+# fixture; the paired traces here are identity traces of the default
+# dispatch pipeline (both passes no-op) over the cert's paired IR.
+CERT_TRACE_PAIRS = {
+    "cert-example1-tier1-farkas.json": "rewrite-trace-example1-identity.json",
+    "cert-example1-tier3-alethe.json": "rewrite-trace-example1-identity.json",
+    "cert-example2-tier2-casesplit.json": "rewrite-trace-casesplit-identity.json",
+    "cert-example4-tier3-tptp.json": "rewrite-trace-tstp-identity.json",
+}
+
+# rewrite-trace filename -> the IR fixture whose canonical hash every
+# hash field of the (identity) trace must carry. A non-identity trace
+# fixture (rewrite-trace-example3.json) has no entry — only chain
+# continuity applies there.
+TRACE_IR_PAIRS = {
+    "rewrite-trace-example1-identity.json": "example1-lia-typeclass.json",
+    "rewrite-trace-casesplit-identity.json": "example-casesplit-lra.json",
+    "rewrite-trace-tstp-identity.json": "example-tstp-fol.json",
+}
+
+# The all-zeros "no trace" sentinel is REJECTED as of R2: every mint
+# path stamps the real trace hash, and the OCaml verifier
+# (Verifier.check_trace_hash_sentinel) refuses envelope verification
+# on a sentinel-bearing cert. The name survives only so the checker
+# and regen agree on what must never appear.
+_ZERO_SENTINEL_HASH = "sha256:" + "0" * 64
+
+
+def check_fixture_pairing_completeness(fixture_names=None):
+    """C2 round 1, finding 1: the R2 hash/sentinel gates are keyed by
+    the pairing maps above, so a cert-*.json dropped into examples/
+    without entries there used to get vocabulary checks only — no
+    sentinel rejection, no hash linkage, no cert-vs-manifest
+    consistency — and still print OK. Completeness closes that: every
+    cert fixture must key into ALL THREE cert maps
+    (CERT_MANIFEST_PAIRS, CERT_IR_PAIRS, CERT_TRACE_PAIRS), and every
+    identity-trace fixture (rewrite-trace-*-identity.json) into
+    TRACE_IR_PAIRS. An unpaired fixture is an error, not a skip.
+
+    A non-identity trace (rewrite-trace-example3.json) has no IR
+    pairing by design — every hash slot of an identity trace equals
+    one IR's hash, which is false for a real rewrite — so only chain
+    continuity applies there and it is exempt here.
+
+    `fixture_names` defaults to the examples/ listing; tests inject
+    synthetic names."""
+    if fixture_names is None:
+        fixture_names = sorted(p.name for p in EXAMPLES.glob("*.json"))
+    cert_maps = [
+        ("CERT_MANIFEST_PAIRS", CERT_MANIFEST_PAIRS),
+        ("CERT_IR_PAIRS", CERT_IR_PAIRS),
+        ("CERT_TRACE_PAIRS", CERT_TRACE_PAIRS),
+    ]
+    errors = []
+    for name in fixture_names:
+        if name.startswith("cert-"):
+            missing = [label for label, m in cert_maps if name not in m]
+            if missing:
+                errors.append(
+                    f"examples/{name}: cert fixture has no entry in "
+                    f"pairing map(s) {', '.join(missing)} "
+                    "(tools/check.py) — an unpaired cert skips the "
+                    "sentinel/hash-linkage/manifest-consistency gates; "
+                    "pair it in all three maps and run "
+                    "`python tools/regen_cert_hashes.py`")
+        elif (name.startswith("rewrite-trace-")
+                and name.endswith("-identity.json")
+                and name not in TRACE_IR_PAIRS):
+            errors.append(
+                f"examples/{name}: identity-trace fixture has no entry "
+                "in TRACE_IR_PAIRS (tools/check.py) — an unpaired "
+                "identity trace skips the hash-slot check against its "
+                "paired IR")
+    return errors
 
 
 def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
-                      cert_name=None, manifest_name=None):
+                      cert_name=None, manifest_name=None,
+                      paired_trace=None):
     """Verify a certificate's strict-identity hash linkage to its
     paired fixtures.
 
@@ -456,7 +631,60 @@ def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
                 f"`python tools/regen_cert_hashes.py` to re-pin."
             )
 
+    # R2: the zero-sentinel rewrite_trace_hash is rejected everywhere —
+    # the OCaml verifier refuses it, so a fixture carrying it would
+    # document a cert that can never verify.
+    rth = cert.get("rewrite_trace_hash")
+    if rth == _ZERO_SENTINEL_HASH:
+        errors.append(
+            "rewrite_trace_hash is the all-zeros sentinel; R2 deleted it "
+            "from every mint path and the verifier rejects it. Pair the "
+            "cert with a trace fixture and run "
+            "`python tools/regen_cert_hashes.py`."
+        )
+    if paired_trace is not None and rth != _ZERO_SENTINEL_HASH:
+        expected = canonical_sha256(paired_trace)
+        if rth != expected:
+            errors.append(
+                f"rewrite_trace_hash: expected {expected} (canonical hash "
+                f"of paired trace), got {rth}. Run "
+                f"`python tools/regen_cert_hashes.py` to re-pin."
+            )
+
     return errors, warnings
+
+
+def check_identity_trace_hashes(trace, paired_ir, trace_name=None):
+    """R2: an identity trace fixture must carry the canonical hash of
+    its paired IR in EVERY hash slot (initial, final, each entry's
+    before/after) and only non-rewriting outcomes — it documents 'the
+    default dispatch pipeline left this IR untouched'."""
+    from canonical_hash import canonical_sha256
+    errors = []
+    ir_hash = canonical_sha256(paired_ir)
+    name = trace_name or "trace"
+    for field in ("initial_ir_hash", "final_ir_hash"):
+        if trace.get(field) != ir_hash:
+            errors.append(
+                f"{name}: {field} must equal the paired IR's canonical "
+                f"hash {ir_hash}, got {trace.get(field)}. Run "
+                f"`python tools/regen_cert_hashes.py` to re-pin."
+            )
+    for i, entry in enumerate(trace.get("entries", [])):
+        for field in ("before_hash", "after_hash"):
+            if entry.get(field) != ir_hash:
+                errors.append(
+                    f"{name}: entries[{i}].{field} must equal the paired "
+                    f"IR's canonical hash, got {entry.get(field)}"
+                )
+        if entry.get("outcome") not in ("no_op", "skipped_preconditions"):
+            errors.append(
+                f"{name}: entries[{i}].outcome "
+                f"'{entry.get('outcome')}' is a rewriting outcome — an "
+                "identity trace may only carry no_op / "
+                "skipped_preconditions entries"
+            )
+    return errors
 
 
 def emit_warnings(warnings, out=sys.stdout) -> None:
@@ -514,12 +742,15 @@ def check_trace(trace, registry):
         # The schema says a 'failed' pass leaves the IR untouched
         # (after_hash == before_hash); a 'no_op' likewise made no
         # changes. Enforce that invariant here (the schema cannot).
+        # (R2 bugfix: this read entry["status"], a field that does
+        # not exist — the schema and both codecs call it "outcome" —
+        # so the invariant had never actually fired.)
         for i, entry in enumerate(entries):
-            st = entry.get("status")
+            st = entry.get("outcome")
             if st in ("failed", "no_op") and \
                     entry["after_hash"] != entry["before_hash"]:
                 errors.append(
-                    f"entries[{i}] status='{st}' must leave the IR "
+                    f"entries[{i}] outcome='{st}' must leave the IR "
                     f"unchanged (after_hash == before_hash), got "
                     f"{entry['before_hash']} -> {entry['after_hash']}"
                 )
@@ -542,12 +773,70 @@ def kind_for(name: str) -> str | None:
     return None
 
 
+def check_unknown_fixture_names(fixture_names=None):
+    """C2 round 2, Low: discovery itself was prefix-opt-in — a fixture
+    whose name matches no PREFIX_HANDLER prefix (e.g. probe-cert.json)
+    was checked by nothing and mentioned nowhere, the same vacuity
+    pattern one level above pairing completeness. Every examples/*.json
+    must match a known prefix; an unrecognized name is an error, not a
+    silent skip."""
+    if fixture_names is None:
+        fixture_names = sorted(p.name for p in EXAMPLES.glob("*.json"))
+    prefixes = ", ".join(p for p, _ in PREFIX_HANDLER)
+    errors = []
+    for name in fixture_names:
+        if kind_for(name) is None:
+            errors.append(
+                f"examples/{name}: name matches no PREFIX_HANDLER prefix "
+                f"({prefixes}) — an unrecognized fixture is checked by "
+                "nothing; rename it or add a handler (tools/check.py)")
+    return errors
+
+
 def main() -> int:
     with REGISTRY_FILE.open() as f:
         registry = json.load(f)
 
     failed = 0
     total_warnings = 0
+
+    # Repo-level source-scan checks (R2.4): trace_format literals in
+    # sdk/lib registered; the SDK's baked-in always-unfold list in
+    # sync with the registry.
+    repo_errors = (check_sdk_trace_format_literals(registry)
+                   + check_always_unfold_pin(registry))
+    if repo_errors:
+        print("FAIL sdk/lib source-scan checks")
+        for msg in repo_errors:
+            print(f"  ERROR  {msg}")
+        failed += 1
+    else:
+        print("OK   sdk/lib source-scan checks (trace_format literals, "
+              "always_unfold pin)")
+
+    # Pairing completeness (C2 round 1): the per-fixture R2 gates below
+    # only fire for fixtures the pairing maps know about, so an unpaired
+    # fixture must be an error here, not a silent skip there.
+    pairing_errors = check_fixture_pairing_completeness()
+    if pairing_errors:
+        print("FAIL examples/ pairing completeness")
+        for msg in pairing_errors:
+            print(f"  ERROR  {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ pairing completeness (every cert in all "
+              "three pairing maps; every identity trace in TRACE_IR_PAIRS)")
+
+    name_errors = check_unknown_fixture_names()
+    if name_errors:
+        print("FAIL examples/ fixture-name discovery")
+        for msg in name_errors:
+            print(f"  ERROR  {msg}")
+        failed += 1
+    else:
+        print("OK   examples/ fixture-name discovery (every *.json matches "
+              "a PREFIX_HANDLER prefix)")
+
     for fixture in sorted(EXAMPLES.glob("*.json")):
         kind = kind_for(fixture.name)
         if kind is None:
@@ -578,13 +867,22 @@ def main() -> int:
                 if ir_name is not None:
                     with (EXAMPLES / ir_name).open() as f:
                         paired_ir = json.load(f)
+                paired_trace = None
+                trace_name = CERT_TRACE_PAIRS.get(fixture.name)
+                if trace_name is not None:
+                    with (EXAMPLES / trace_name).open() as f:
+                        paired_trace = json.load(f)
                 e, w = check_cert_hashes(
                     doc, paired_ir=paired_ir, paired_manifest=paired_manifest,
                     cert_name=str(fixture.relative_to(ROOT)),
                     manifest_name=str((EXAMPLES / manifest_name).relative_to(ROOT)),
+                    paired_trace=paired_trace,
                 )
                 errors += e
                 hash_warnings += w
+                errors += check_cert_manifest_consistency(
+                    doc, paired_manifest,
+                    cert_name=str(fixture.relative_to(ROOT)))
         elif kind == "manifest":
             e, w = check_manifest(doc, registry)
             errors += e
@@ -593,6 +891,12 @@ def main() -> int:
             e, w = check_trace(doc, registry)
             errors += e
             warnings += w
+            ir_name = TRACE_IR_PAIRS.get(fixture.name)
+            if ir_name is not None:
+                with (EXAMPLES / ir_name).open() as f:
+                    paired_ir = json.load(f)
+                errors += check_identity_trace_hashes(
+                    doc, paired_ir, trace_name=str(fixture.relative_to(ROOT)))
 
         rel = fixture.relative_to(ROOT)
         if errors:

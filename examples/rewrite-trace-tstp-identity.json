@@ -1,0 +1,52 @@
+{
+  "trace_version": "1.0",
+  "initial_ir_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+  "final_ir_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+  "entries": [
+    {
+      "pass": "propositional_simplification",
+      "version": "1.0",
+      "before_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+      "after_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+      "outcome": "no_op",
+      "inversion_data": {
+        "simplifications": []
+      }
+    },
+    {
+      "pass": "definition_unfolding",
+      "version": "1.0",
+      "before_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+      "after_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+      "configuration": {
+        "concepts": [
+          "function_application",
+          "function_composition",
+          "function_identity"
+        ]
+      },
+      "outcome": "no_op",
+      "inversion_data": {
+        "unfolded_symbols": []
+      }
+    }
+  ],
+  "configuration": {
+    "pipeline": [
+      {
+        "pass": "propositional_simplification"
+      },
+      {
+        "pass": "definition_unfolding",
+        "config": {
+          "concepts": [
+            "function_composition",
+            "function_identity",
+            "function_application"
+          ]
+        }
+      }
+    ],
+    "stop_on_failure": false
+  }
+}

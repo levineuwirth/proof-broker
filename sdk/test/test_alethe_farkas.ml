@@ -241,13 +241,13 @@ let test_extract_case_split () =
       format = "case_split_farkas";
       goal = ir.goal;
       dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
-      rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+      rewrite_trace_hash = Pipeline.identity_trace_hash ir;
       backend = {
         name = "cvc5"; version = "1.3.0";
         config_hash = "sha256:" ^ String.make 64 '0';
       };
       resources = {
-        wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+        wall_time_ms = 0; memory_peak_kb = None; budget_consumed = None;
       };
       refinement_record = {
         adapter = "cvc5"; adapter_version = "1.3.0";
@@ -350,13 +350,13 @@ let test_extract_case_split_arity3 () =
       format = "case_split_farkas";
       goal = ir.goal;
       dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
-      rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+      rewrite_trace_hash = Pipeline.identity_trace_hash ir;
       backend = {
         name = "synthetic"; version = "0.0";
         config_hash = "sha256:" ^ String.make 64 '0';
       };
       resources = {
-        wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+        wall_time_ms = 0; memory_peak_kb = None; budget_consumed = None;
       };
       refinement_record = {
         adapter = "synthetic"; adapter_version = "0.0";
@@ -416,13 +416,13 @@ let test_case_split_rejects_non_or_hypothesis () =
       format = "case_split_farkas";
       goal = ir.goal;
       dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
-      rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+      rewrite_trace_hash = Pipeline.identity_trace_hash ir;
       backend = {
         name = "cvc5"; version = "1.3.0";
         config_hash = "sha256:" ^ String.make 64 '0';
       };
       resources = {
-        wall_time_ms = 0; memory_peak_kb = 0; budget_consumed = None;
+        wall_time_ms = 0; memory_peak_kb = None; budget_consumed = None;
       };
       refinement_record = {
         adapter = "cvc5"; adapter_version = "1.3.0";

@@ -958,6 +958,67 @@ by unit tests plus the corpus sweep.
 
 ---
 
+### 5.3 Decision record — pipeline placement, envelope hashes, identity-trace guard (2026-09-01, R2)
+
+**Question** (roadmap R2). The rewriter had never run on the live
+path: both bridges dispatched the reified IR directly, every cert
+carried the all-zeros `rewrite_trace_hash` sentinel, and the envelope
+addressed the pre-rewrite IR — spec §6.1's cross-document hash
+contract was unimplemented wherever it mattered.
+
+**Decision 1 — the pipeline runs inside the SDK dispatch driver.**
+`Dispatch.run` / `run_parallel` call `Pipeline.run` on the input IR
+(default: prop-simp + definition unfolding configured from the
+registry's `always_unfold_for_dispatch` per spec §5.4, not from user
+directives), dispatch adapters on the rewritten `final_ir`, and
+return `(final_ir, trace)` to the caller. Placing it in the driver —
+rather than in each bridge — means no bridge or FFI path can reach an
+adapter without a trace, by construction; the single-adapter FFI
+method runs the same pipeline. The SDK carries the always-unfold list
+as a baked-in constant two-way-pinned to the registry JSON by
+`tools/check.py` (no runtime file dependency).
+
+**Decision 2 — spec §6.1 conformance restored.** Adapters take a
+required `rewrite_trace_hash` argument (the canonical hash of the
+dispatch trace) and mint `dispatch_context_hash` over the IR they
+were actually handed — `final_ir`, the post-rewrite document, as
+§6.1 specifies. The sentinel is deleted from all eleven mint sites
+and `Verifier.envelope_check` rejects it unconditionally
+(`trace_hash_sentinel`); with a trace supplied the verifier also
+requires `trace.final_ir_hash` to equal the verified IR's hash, so a
+cert minted on `final_ir` can never be replayed against the original
+goal — the mismatch is structural. Related honesty fixes ride along:
+`resources.wall_time_ms` is the measured solver wall clock (was: the
+timeout budget), and `resources.memory_peak_kb` becomes optional in
+`certificate.schema.json` — nothing measures it, and absence is the
+honest encoding, never a fabricated `0`. That schema relaxation is a
+v1.1-bound spec delta recorded here.
+
+**Decision 3 — identity-trace guard (R2 soundness rule).** The
+term-mode and walker closers consume the cert's content against the
+ORIGINAL goal, but the cert now addresses `final_ir`. Until lifting
+lands (R3), both bridges gate those closers on
+`Trace.is_identity`: every pass skipped/no-op AND equal
+per-entry and endpoint hashes (outcome check included so an
+apply-then-invert pair can't masquerade as identity). Non-identity
+dispatches fall back to the decision-procedure closers on the
+original goal — sound regardless, since those closers are the proof
+— while the strict entry points (`proof_broker_walker`,
+`proof_broker_term`) fail closed with a named guard error. The guard
+is removed pass-by-pass in R3 as each inversion lands.
+
+**Measured** (2026-09-01, branch `r2/cert-load-bearing`, command:
+full harness per RESUME §3): all four legs green with the pipeline
+live — lean 120 allowlisted theorems within ceiling + 37 round-trips,
+rocq 134 within ceiling from a clean build, corpus byte-identical,
+sdk 29 suites. The guard's fallback theorem
+(`pb_guard_nonidentity_falls_back_axiom_free`, a `True ∧ P` prop-simp
+redex) closes on both bridges with footprint `[propext, Quot.sound]`
+(Lean) / axiom-free (Rocq) — the decision procedure, not the walker,
+emitted the proof.
+
+---
+
 ---
 
 ## 6. References

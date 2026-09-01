@@ -22,11 +22,17 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check import (  # noqa: E402
+    check_always_unfold_pin,
     check_cert_hashes,
+    check_cert_manifest_consistency,
     check_certificate,
+    check_fixture_pairing_completeness,
+    check_unknown_fixture_names,
+    check_identity_trace_hashes,
     check_ir,
     check_ir_against_registry,
     check_manifest,
+    check_sdk_trace_format_literals,
     check_trace,
 )
 from jsonschema import Draft202012Validator  # noqa: E402
@@ -282,6 +288,176 @@ def _cert_config_hash_tamper_errors():
     assert_contains(e, "backend.config_hash", "error")
 
 
+@register("hash (R2): zero-sentinel rewrite_trace_hash is an error")
+def _cert_zero_trace_hash_errors():
+    cert = copy.deepcopy(CERT1)
+    cert["rewrite_trace_hash"] = "sha256:" + "0" * 64
+    e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5)
+    assert_contains(e, "all-zeros sentinel", "error")
+
+
+@register("hash (R2): rewrite_trace_hash must match the paired trace")
+def _cert_trace_hash_mismatch_errors():
+    cert = copy.deepcopy(CERT1)
+    cert["rewrite_trace_hash"] = "sha256:" + "d" * 64
+    trace = load(ROOT / "examples" / "rewrite-trace-example1-identity.json")
+    e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5,
+                             paired_trace=trace)
+    assert_contains(e, "rewrite_trace_hash: expected", "error")
+
+
+@register("hash (R2): identity trace slot drift from paired IR is an error")
+def _identity_trace_slot_drift_errors():
+    trace = load(ROOT / "examples" / "rewrite-trace-example1-identity.json")
+    trace["final_ir_hash"] = "sha256:" + "e" * 64
+    e = check_identity_trace_hashes(trace, IR1, trace_name="t.json")
+    assert_contains(e, "final_ir_hash", "error")
+
+
+@register("hash (R2): identity trace with an applied entry is an error")
+def _identity_trace_applied_entry_errors():
+    trace = load(ROOT / "examples" / "rewrite-trace-example1-identity.json")
+    trace["entries"][0]["outcome"] = "applied"
+    e = check_identity_trace_hashes(trace, IR1, trace_name="t.json")
+    assert_contains(e, "rewriting outcome", "error")
+
+
+# --- Cert <-> manifest consistency (R2.4) ------------------------------------
+
+
+@register("manifest (R2.4): cert tier outside tiers_produced is an error")
+def _cert_tier_outside_manifest_errors():
+    cert = copy.deepcopy(CERT1)  # tier 1
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["tiers_produced"] = [0]
+    e = check_cert_manifest_consistency(cert, manifest, cert_name="c.json")
+    assert_contains(e, "tier 1 not in paired manifest's tiers_produced", "error")
+
+
+@register("manifest (R2.4): tier-3 trace_format not produced is an error")
+def _cert_trace_format_not_produced_errors():
+    cert = load(ROOT / "examples" / "cert-example1-tier3-alethe.json")
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["trace_formats_produced"] = ["lfsc"]
+    e = check_cert_manifest_consistency(cert, manifest, cert_name="c.json")
+    assert_contains(e, "'alethe-2024' not in paired manifest's "
+                       "trace_formats_produced", "error")
+
+
+@register("manifest (R2.4): tier-1 witness_kind not produced is an error")
+def _cert_witness_kind_not_produced_errors():
+    cert = copy.deepcopy(CERT1)
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["witness_kinds_produced"] = []
+    e = check_cert_manifest_consistency(cert, manifest, cert_name="c.json")
+    assert_contains(e, "witness_kind 'farkas' not in paired manifest's",
+                    "error")
+
+
+@register("manifest (R2.4): advertising a v1:false witness kind is an error")
+def _manifest_v1_false_witness_kind_errors():
+    manifest = copy.deepcopy(MANIFEST_CVC5)
+    manifest["witness_kinds_produced"] = ["farkas", "sat_assignment"]
+    e, _ = check_manifest(manifest, REGISTRY)
+    assert_contains(e, "'sat_assignment' is v1:false", "error")
+
+
+# --- Repo-level source scans (R2.4) ------------------------------------------
+
+
+@register("scan (R2.4): unregistered trace_format literal in sdk/lib errors")
+def _sdk_trace_format_literal_scan_errors(tmpdir=None):
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "fake_adapter.ml"
+        p.write_text('let payload = { trace_format = "not-a-format"; }\n')
+        e = check_sdk_trace_format_literals(REGISTRY, sdk_lib=d)
+        assert_contains(e, "'not-a-format' is not a registered", "error")
+
+
+@register("scan (R2.4): the shipped sdk/lib literals are all registered")
+def _sdk_trace_format_literal_scan_clean():
+    e = check_sdk_trace_format_literals(REGISTRY)
+    assert not e, e
+
+
+@register("scan (R2.4): a drifted always_unfold pin errors")
+def _always_unfold_pin_drift_errors():
+    import tempfile
+    real = (ROOT / "sdk" / "lib" / "pipeline.ml").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "pipeline.ml"
+        p.write_text(real.replace('"function_identity";', ""))
+        e = check_always_unfold_pin(REGISTRY, pipeline_ml=p)
+        assert_contains(e, "edit both together", "error")
+
+
+@register("scan (R2.4): the shipped pin matches the registry")
+def _always_unfold_pin_clean():
+    e = check_always_unfold_pin(REGISTRY)
+    assert not e, e
+
+
+@register("trace (R2.4 bugfix): a no_op entry that changes the IR errors")
+def _trace_no_op_change_errors():
+    # Regression pin: check_trace used to read entry["status"] (a
+    # field that doesn't exist — the schema calls it "outcome"), so
+    # this invariant never fired.
+    trace = copy.deepcopy(TRACE3)
+    entry = trace["entries"][0]
+    entry["outcome"] = "no_op"
+    # keep chain continuity intact so only the no_op invariant trips
+    assert entry["before_hash"] != entry["after_hash"], "fixture assumption"
+    e, _ = check_trace(trace, REGISTRY)
+    assert_contains(e, "outcome='no_op' must leave the IR unchanged", "error")
+
+
+# --- Pairing-map completeness (C2 round 1) -----------------------------------
+
+
+@register("pairing (C2 R1): an unpaired cert fixture errors, naming all three maps")
+def _unpaired_cert_fixture_errors():
+    e = check_fixture_pairing_completeness(["cert-zz-unpaired.json"])
+    assert_contains(e, "examples/cert-zz-unpaired.json", "error")
+    assert_contains(e, "CERT_MANIFEST_PAIRS", "error")
+    assert_contains(e, "CERT_IR_PAIRS", "error")
+    assert_contains(e, "CERT_TRACE_PAIRS", "error")
+
+
+@register("pairing (C2 R1): an unpaired identity-trace fixture errors")
+def _unpaired_identity_trace_errors():
+    e = check_fixture_pairing_completeness(["rewrite-trace-zz-identity.json"])
+    assert_contains(e, "TRACE_IR_PAIRS", "error")
+
+
+@register("pairing (C2 R1): a non-identity trace needs no IR pairing")
+def _non_identity_trace_exempt():
+    # rewrite-trace-example3.json documents a real rewrite; its hash
+    # slots cannot all equal one IR's hash, so TRACE_IR_PAIRS carries
+    # no entry for it by design. Only chain continuity applies.
+    e = check_fixture_pairing_completeness(["rewrite-trace-example3.json"])
+    assert not e, e
+
+
+@register("discovery (C2 R2): an unrecognized fixture name errors")
+def _unrecognized_fixture_name_errors():
+    e = check_unknown_fixture_names(["probe-cert.json"])
+    assert_contains(e, "examples/probe-cert.json", "error")
+    assert_contains(e, "PREFIX_HANDLER", "error")
+
+
+@register("discovery (C2 R2): every shipped fixture name is recognized")
+def _shipped_fixture_names_recognized():
+    e = check_unknown_fixture_names()
+    assert not e, e
+
+
+@register("pairing (C2 R1): the shipped examples/ set is fully paired")
+def _shipped_examples_fully_paired():
+    e = check_fixture_pairing_completeness()
+    assert not e, e
+
+
 # --- Tier 2 schema checks ----------------------------------------------------
 
 # Synthetic Tier 2 cert template. Values that aren't relevant to the
@@ -513,7 +689,10 @@ def _trace_failed_must_not_mutate():
     bad = copy.deepcopy(TRACE3)
     # Mark a pass 'failed' but keep its (distinct) after_hash: the
     # schema can't express "failed => after == before"; check.py must.
-    bad["entries"][0]["status"] = "failed"
+    # (R2.4 bugfix: this test used to set entry["status"], mirroring
+    # the same wrong field name check_trace read — the pair agreed
+    # while the real schema field, "outcome", went unchecked.)
+    bad["entries"][0]["outcome"] = "failed"
     e, _ = check_trace(bad, REGISTRY)
     assert_contains(e, "must leave the IR", "error")
 

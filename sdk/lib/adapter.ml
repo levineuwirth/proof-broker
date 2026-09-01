@@ -66,11 +66,22 @@ type result =
 
 (** Adapter as a record of name/version metadata + a dispatch
     closure. The [dispatch] closure does the work; the broker only
-    cares about the result. *)
+    cares about the result.
+
+    [rewrite_trace_hash] (R2) is the canonical hash of the rewrite
+    trace that produced the IR being dispatched — the dispatch
+    driver runs the pipeline and hands the hash down so every
+    minted cert stamps the real value (spec §6.1). The argument is
+    required: no adapter can mint a cert without naming the trace
+    its IR came from, so the old all-zeros sentinel is
+    unrepresentable on this path. Callers dispatching outside
+    [Dispatch.run] (tests, the single-adapter FFI method) must run
+    a pipeline — possibly empty — first and pass that trace's
+    hash. *)
 type t = {
   name : string;
   version : string;
-  dispatch : Ir.t -> result;
+  dispatch : rewrite_trace_hash:string -> Ir.t -> result;
 }
 
 (** Hard upper bound on a single solver subprocess's wall time.

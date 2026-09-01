@@ -15,15 +15,16 @@ What it regenerates:
     `CERT_MANIFEST_PAIRS` below codifies the mapping.
 
   * `cert.dispatch_context_hash` — canonical_sha256 of the paired IR
-    fixture. Only certs in `CERT_IR_PAIRS` pair with a shipped IR;
-    the rest (synthesized for in-process tests) keep
-    `_UNPAIRED_DISPATCH_CONTEXT_HASH` as a documented sentinel.
+    fixture (`CERT_IR_PAIRS`; as of R2 every shipped cert has one).
 
-  * `cert.rewrite_trace_hash` — left at the documented no-trace
-    sentinel `_NO_TRACE_HASH` for now. No example cert ships with a
-    paired trace document; the schema-required field needs a value
-    and the all-zeros hash is unambiguously "not a real digest." A
-    future PR that ships trace-paired cert examples wires this up.
+  * the paired identity-trace fixture's hash slots (`TRACE_IR_PAIRS`):
+    every hash field of an identity trace (initial, final, per-entry
+    before/after) is the canonical hash of its paired IR.
+
+  * `cert.rewrite_trace_hash` — canonical_sha256 of the paired trace
+    fixture (`CERT_TRACE_PAIRS`), pinned AFTER the trace itself is
+    re-pinned. The all-zeros sentinel is gone (R2): the OCaml
+    verifier rejects it, and check.py errors on it.
 """
 from __future__ import annotations
 
@@ -40,8 +41,8 @@ from canonical_hash import canonical_sha256  # noqa: E402
 from check import (  # noqa: E402
     CERT_MANIFEST_PAIRS,
     CERT_IR_PAIRS,
-    _UNPAIRED_DISPATCH_CONTEXT_HASH,
-    _NO_TRACE_HASH,
+    CERT_TRACE_PAIRS,
+    TRACE_IR_PAIRS,
 )
 
 
@@ -65,8 +66,35 @@ def _replace_hash(text: str, field: str, value: str) -> tuple[str, bool]:
     return new_text, n > 0
 
 
+def _repin_identity_trace(trace_path: Path, ir_hash: str) -> bool:
+    """Rewrite every hash slot of an identity-trace fixture to
+    `ir_hash`, preserving formatting. Returns True if the file
+    changed."""
+    original = trace_path.read_text()
+    text = original
+    for field in ("initial_ir_hash", "final_ir_hash",
+                  "before_hash", "after_hash"):
+        pat = re.compile(_HASH_PATTERN_TPL.format(field=re.escape(field)))
+        text = pat.sub(lambda m: m.group(1) + json.dumps(ir_hash), text)
+    if text != original:
+        trace_path.write_text(text)
+        return True
+    return False
+
+
 def main() -> int:
     changed = 0
+
+    # Pass 1: identity-trace fixtures track their paired IR's hash.
+    for trace_name in sorted(TRACE_IR_PAIRS):
+        ir = json.loads((EXAMPLES / TRACE_IR_PAIRS[trace_name]).read_text())
+        if _repin_identity_trace(EXAMPLES / trace_name, canonical_sha256(ir)):
+            print(f"updated  {trace_name}")
+            changed += 1
+        else:
+            print(f"unchanged  {trace_name}")
+
+    # Pass 2: certs track manifest + IR + trace.
     for cert_name in sorted(CERT_MANIFEST_PAIRS):
         cert_path = EXAMPLES / cert_name
         original = cert_path.read_text()
@@ -79,18 +107,17 @@ def main() -> int:
         text, did_cfg = _replace_hash(
             text, "config_hash", canonical_sha256(manifest))
 
-        # dispatch_context_hash: paired IR if we have one, sentinel otherwise.
-        ir_name = CERT_IR_PAIRS.get(cert_name)
-        if ir_name is not None:
-            ir = json.loads((EXAMPLES / ir_name).read_text())
-            new_dch = canonical_sha256(ir)
-        else:
-            new_dch = _UNPAIRED_DISPATCH_CONTEXT_HASH
-        text, did_dch = _replace_hash(text, "dispatch_context_hash", new_dch)
+        # dispatch_context_hash: canonical hash of the paired IR.
+        ir = json.loads((EXAMPLES / CERT_IR_PAIRS[cert_name]).read_text())
+        text, did_dch = _replace_hash(
+            text, "dispatch_context_hash", canonical_sha256(ir))
 
-        # rewrite_trace_hash: documented no-trace sentinel.
+        # rewrite_trace_hash: canonical hash of the paired trace
+        # fixture (re-pinned in pass 1 above).
+        trace = json.loads(
+            (EXAMPLES / CERT_TRACE_PAIRS[cert_name]).read_text())
         text, did_rth = _replace_hash(
-            text, "rewrite_trace_hash", _NO_TRACE_HASH)
+            text, "rewrite_trace_hash", canonical_sha256(trace))
 
         if not (did_cfg and did_dch and did_rth):
             print(f"WARN     {cert_name}: missing one of the three hash fields "

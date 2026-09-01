@@ -70,7 +70,9 @@ let with_z3 f =
 let test_dispatch_unsat_mints_farkas_cert () =
   with_z3 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_z3.dispatch ir with
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* z3 has no proof trace consumed here (Phase 2.2 scope); the
        internal Farkas closer runs after z3's [unsat] verdict and
@@ -120,7 +122,9 @@ let test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle () =
     ~hypotheses:[ h1; h2 ]
     (Const { name = "False" })
   in
-  match Adapter_z3.dispatch ir with
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     Alcotest.(check int) "tier=0" 0 cert.tier;
     Alcotest.(check string) "format=oracle" "oracle" cert.format;
@@ -141,7 +145,9 @@ let test_dispatch_sat_returns_failure () =
     ~free_vars:[ { name = "n"; ty = "Int" } ]
     (App { symbol = "LE.le"; type_args = []; args = [ n; ten ] })
   in
-  match Adapter_z3.dispatch ir with
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed Sat_returned -> ()
   | Failed f ->
     Alcotest.fail
@@ -156,7 +162,9 @@ let test_dispatch_unsupported_ir () =
   let ir = make_ir
     (Lambda { binders = [ { var = "x"; ty = "Int" } ]; body = Var { name = "x" } })
   in
-  match Adapter_z3.dispatch ir with
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Failed (Unsupported_ir { kind; _ }) ->
     Alcotest.(check string) "kind = unsupported_node"
       "unsupported_node" kind
@@ -170,7 +178,9 @@ let test_dispatch_unsupported_ir () =
 let test_minted_cert_passes_envelope_verifier () =
   with_z3 @@ fun () ->
   let ir = example1_ir () in
-  match Adapter_z3.dispatch ir with
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     (* With the internal Farkas closer wired in, z3 mints Tier 1 on
        this Farkas-shaped goal. The cert's dispatch_context_hash
@@ -234,7 +244,9 @@ let test_dispatch_lra_two_hyp_uses_native_extraction () =
     library_provenance = [];
     user_directives = None;
   } in
-  match Adapter_z3.dispatch ir with
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
   | Cert cert ->
     Alcotest.(check int) "tier=1" 1 cert.tier;
     Alcotest.(check string) "format=farkas" "farkas" cert.format;

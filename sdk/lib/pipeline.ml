@@ -46,6 +46,51 @@ let default_config : config = {
   timeout_per_pass_ms = None;
 }
 
+(** Concept tags the dispatch path always unfolds (spec §5.4): the
+    dispatch default pipeline hands these to the definition-unfolding
+    pass regardless of user directives, so a goal mentioning a symbol
+    whose definitional metadata carries one of these tags is unfolded
+    before any adapter sees it. Mirrors
+    [registry/patterns-v1.json].always_unfold_for_dispatch — the
+    PIN markers let tools/check.py verify the two lists agree. *)
+(* PIN:always-unfold-for-dispatch *)
+let always_unfold_for_dispatch : string list = [
+  "function_composition";
+  "function_identity";
+  "function_application";
+]
+(* ENDPIN:always-unfold-for-dispatch *)
+
+(** The pipeline [Dispatch.run] / [Dispatch.run_parallel] execute on
+    every dispatch (R2): [default_config]'s two passes, with the
+    definition-unfolding step configured from the registry's
+    [always_unfold_for_dispatch] list rather than from user
+    directives (spec §5.4). User directives still add on top — the
+    pass unions its step config with the IR's
+    [enable_definition_unfolding] list. *)
+let default_dispatch_config : config = {
+  default_config with
+  pipeline = [
+    { pass = "propositional_simplification"; config = None };
+    { pass = "definition_unfolding";
+      config = Some (`Assoc [
+        "concepts",
+        `List (List.map (fun s -> `String s) always_unfold_for_dispatch);
+      ]) };
+  ];
+}
+
+(** The empty pipeline: no passes. Its trace is the identity trace
+    over the input IR (zero entries, initial = final hash). Direct
+    adapter callers that bypass [Dispatch.run] (unit tests) use it
+    to obtain an honest [rewrite_trace_hash] for the exact IR they
+    dispatch. *)
+let empty_config : config = {
+  pipeline = [];
+  stop_on_failure = false;
+  timeout_per_pass_ms = None;
+}
+
 (* --- pass registry ---------------------------------------------------- *)
 
 (** Each pass yields the rewritten IR and the trace entry it produced.
@@ -59,23 +104,48 @@ type pass_result = {
 
 (** Pipeline-recognized pass names. Adding a new pass to the pipeline
     is one line here plus the [Trace.entry]-producing function in the
-    pass module; nothing else in this file needs to change. *)
-let registry : (string, Ir.t -> pass_result) Hashtbl.t = Hashtbl.create 8
+    pass module; nothing else in this file needs to change. Each pass
+    receives its [pass_step.config] (R2: previously carried but
+    ignored); passes without step-level configuration ignore it. *)
+let registry : (string, Yojson.Safe.t option -> Ir.t -> pass_result) Hashtbl.t =
+  Hashtbl.create 8
 
-let register_pass (name : string) (run : Ir.t -> pass_result) : unit =
+let register_pass (name : string)
+    (run : Yojson.Safe.t option -> Ir.t -> pass_result) : unit =
   Hashtbl.replace registry name run
+
+(** Read the ["concepts"] string list out of a definition-unfolding
+    step config. Absent field / non-list shapes decode to []; a
+    non-string element is a config error surfaced as
+    [Codec.Decode_error] (the pipeline driver converts it to a
+    [Failed] entry). *)
+let concepts_of_step_config (c : Yojson.Safe.t option) : string list =
+  match c with
+  | Some (`Assoc pairs) ->
+    (match List.assoc_opt "concepts" pairs with
+     | Some (`List xs) ->
+       List.map (function
+         | `String s -> s
+         | other ->
+           raise (Codec.Decode_error ("expected string in concepts", other)))
+         xs
+     | _ -> [])
+  | _ -> []
 
 let () =
   register_pass "propositional_simplification"
-    (fun ir ->
+    (fun _config ir ->
       let r = Propositional_simplify.run ir in
       { ir = r.ir; entry = r.trace });
   register_pass "definition_unfolding"
-    (fun ir ->
-      let r = Definition_unfolding.run ir in
+    (fun config ir ->
+      let r =
+        Definition_unfolding.run
+          ~concepts:(concepts_of_step_config config) ir
+      in
       { ir = r.ir; entry = r.trace });
   register_pass "quotient_elimination"
-    (fun ir ->
+    (fun _config ir ->
       let r = Quotient_elimination.run ir in
       { ir = r.ir; entry = r.trace })
 
@@ -221,7 +291,7 @@ let run (config : config) (ir : Ir.t) : Ir.t * Trace.t =
           unknown_pass_entry ~pass_name:step.pass ~before_hash, ir
         | Some pass_run ->
           (try
-             let r = pass_run ir in
+             let r = pass_run step.config ir in
              let actual_after = Hash.sha256_of_json (Codec.to_json r.ir) in
              let before_ok = String.equal r.entry.before_hash before_hash in
              let after_ok = String.equal r.entry.after_hash actual_after in
@@ -253,3 +323,13 @@ let run (config : config) (ir : Ir.t) : Ir.t * Trace.t =
     configuration = Some (config_to_json config);
   } in
   final_ir, trace
+
+(** [identity_trace ir]: the [empty_config] pipeline's trace over
+    [ir] — the honest "this IR was dispatched exactly as given"
+    trace for direct-adapter callers. *)
+let identity_trace (ir : Ir.t) : Trace.t = snd (run empty_config ir)
+
+(** Canonical hash of [identity_trace ir] — the [rewrite_trace_hash]
+    a direct-adapter caller passes to [Adapter.dispatch]. *)
+let identity_trace_hash (ir : Ir.t) : string =
+  Hash.canonical_sha256 (Trace.to_json (identity_trace ir))

@@ -1,0 +1,103 @@
+{
+  "ir_version": "1.0",
+  "source_system": {
+    "name": "lean",
+    "version": "4.13.0"
+  },
+  "tier": "structural",
+  "logic_classification": {
+    "order": "first_order",
+    "features_used": [
+      "universal_quantification_over_first_order"
+    ],
+    "first_order_fragment": "FOL",
+    "decidable_theory": null
+  },
+  "goal": {
+    "shell": {
+      "node": "App",
+      "symbol": "q",
+      "type_args": [],
+      "args": [
+        {
+          "node": "Var",
+          "name": "a"
+        }
+      ]
+    }
+  },
+  "context": {
+    "type_vars": [],
+    "free_vars": [
+      {
+        "name": "a",
+        "type": "Int"
+      }
+    ],
+    "hypotheses": [
+      {
+        "name": "h1",
+        "shell": {
+          "node": "App",
+          "symbol": "p",
+          "type_args": [],
+          "args": [
+            {
+              "node": "Var",
+              "name": "a"
+            }
+          ]
+        }
+      },
+      {
+        "name": "h2",
+        "shell": {
+          "node": "Forall",
+          "var": "X0",
+          "type": "Int",
+          "body": {
+            "node": "Implies",
+            "antecedent": {
+              "node": "App",
+              "symbol": "p",
+              "type_args": [],
+              "args": [
+                {
+                  "node": "Var",
+                  "name": "X0"
+                }
+              ]
+            },
+            "consequent": {
+              "node": "App",
+              "symbol": "q",
+              "type_args": [],
+              "args": [
+                {
+                  "node": "Var",
+                  "name": "X0"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "type_metadata": {},
+  "definitional_metadata": {},
+  "library_provenance": {
+    "p": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Test.Fol",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000004"
+    },
+    "q": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Test.Fol",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000005"
+    }
+  }
+}

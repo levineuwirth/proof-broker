@@ -50,9 +50,18 @@ type attempt = {
   outcome : attempt_outcome;
 }
 
+(** Driver result. [final_ir] and [trace] (R2) are the rewrite
+    pipeline's output: the IR every adapter actually saw and the
+    trace that produced it from the caller's input IR. Callers
+    verify the returned cert against [final_ir] (its
+    [dispatch_context_hash] addresses it) with [~trace]; a bridge
+    deciding whether "cert IS the proof" closers may run checks
+    [Trace.is_identity trace]. *)
 type result = {
   cert : Certificate.t option;
   attempts : attempt list;
+  final_ir : Ir.t;
+  trace : Trace.t;
 }
 
 (** Helper: lift a single attempt outcome to its serialized form for
@@ -82,15 +91,34 @@ let attempt_to_json (a : attempt) : Yojson.Safe.t =
     "outcome", `String (outcome_kind a.outcome);
   ] @ outcome_field)
 
+(** Run the rewrite pipeline that fronts every dispatch (R2). No
+    caller path reaches an adapter without this: the pipeline
+    rewrites the input IR under [pipeline_config] (default: the
+    spec §5.4 dispatch pipeline — prop-simp + registry-configured
+    definition unfolding), and the trace's canonical hash is what
+    every minted cert stamps as [rewrite_trace_hash]. *)
+let run_dispatch_pipeline
+      ?(pipeline_config = Pipeline.default_dispatch_config) (ir : Ir.t)
+  : Ir.t * Trace.t * string =
+  let final_ir, trace = Pipeline.run pipeline_config ir in
+  let trace_hash = Hash.canonical_sha256 (Trace.to_json trace) in
+  (final_ir, trace, trace_hash)
+
 (** Run the driver. [manifests] is the ordered candidate list;
     [adapters] binds adapter names to implementations.
     [stop_on_success = true] (default) returns at the first cert
-    minted; [false] exercises every matched adapter. *)
+    minted; [false] exercises every matched adapter.
+    [pipeline_config] (R2) configures the rewrite pipeline that
+    runs before any capability match: adapters dispatch on the
+    rewritten [final_ir], and the trace rides back on the result. *)
 let run
       ?(stop_on_success = true)
+      ?(pipeline_config = Pipeline.default_dispatch_config)
       ~(manifests : Manifest.t list)
       ~(adapters : (string, Adapter.t) Hashtbl.t)
       (ir : Ir.t) : result =
+  let ir, trace, rewrite_trace_hash =
+    run_dispatch_pipeline ~pipeline_config ir in
   let attempts = ref [] in
   let cert = ref None in
   List.iter (fun (m : Manifest.t) ->
@@ -105,7 +133,7 @@ let run
           (match Hashtbl.find_opt adapters m.adapter with
            | None -> No_implementation
            | Some adapter ->
-             (match adapter.dispatch ir with
+             (match adapter.dispatch ~rewrite_trace_hash ir with
               | Cert c ->
                 (* #18d / #24-M1 strict-identity config_hash. The
                    driver knows which manifest matched; the adapter
@@ -133,7 +161,7 @@ let run
       attempts := { adapter = m.adapter; outcome } :: !attempts
     end)
     manifests;
-  { cert = !cert; attempts = List.rev !attempts }
+  { cert = !cert; attempts = List.rev !attempts; final_ir = ir; trace }
 
 (** Concurrent dispatch driver (spec v1.0 §7; roadmap §Phase 3 #5).
 
@@ -190,9 +218,15 @@ let run
     result is reproducible regardless of completion order. *)
 let run_parallel
       ?(grace_window_ms = 2000)
+      ?(pipeline_config = Pipeline.default_dispatch_config)
       ~(manifests : Manifest.t list)
       ~(adapters : (string, Adapter.t) Hashtbl.t)
       (ir : Ir.t) : result =
+  (* R2: rewrite pipeline first (sequential, cheap, no subprocess) —
+     every racing adapter sees the same [final_ir] and stamps the
+     same [rewrite_trace_hash]. See [run] above. *)
+  let ir, trace, rewrite_trace_hash =
+    run_dispatch_pipeline ~pipeline_config ir in
   let names = Array.of_list (List.map (fun (m : Manifest.t) -> m.adapter) manifests) in
   let n = Array.length names in
   let outcomes : attempt_outcome option array = Array.make n None in
@@ -246,7 +280,7 @@ let run_parallel
         outcomes)
     in
     Mutex.unlock mtx;
-    { cert = Option.map snd chosen; attempts }
+    { cert = Option.map snd chosen; attempts; final_ir = ir; trace }
   in
   if total = 0 then snapshot ()
   else begin
@@ -254,7 +288,7 @@ let run_parallel
       List.map (fun (i, (a : Adapter.t), (m : Manifest.t)) ->
         Thread.create (fun () ->
           let o =
-            try (match a.dispatch ir with
+            try (match a.dispatch ~rewrite_trace_hash ir with
                  | Cert c ->
                    (* Strict-identity config_hash; see [run] above. *)
                    let config_hash =
