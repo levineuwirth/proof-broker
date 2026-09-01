@@ -625,10 +625,25 @@ private def elabAssumeLiteral (ctx : WalkerContext) (id : String)
   let stmt ← sexpToExpr ctx literal
   -- Search the local context for a hypothesis whose type is
   -- definitionally equal to the assume's stated literal.
+  --
+  -- The check is budget-capped (R3-M1): a MISMATCHED candidate at a
+  -- ℕ→ℤ-image type can drag `whnf` into unary `Nat.sub` recursion —
+  -- `Int.lt`/`Int.le` unfold to `Int.NonNeg (… - …)`, `Int.sub` on
+  -- two `Int.ofNat` constructors reaches `Nat.sub`, and a
+  -- 2^24-scale literal subtrahend then unfolds one `pred` at a
+  -- time past any recursion budget. A blown budget on a candidate
+  -- is treated as "no match" and the search continues; if nothing
+  -- matches the walker fails honestly (audit H1 preserved — this
+  -- can only turn a would-be success into a failure).
+  let defEqCapped (a b : Expr) : MetaM Bool :=
+    -- maxRecDepth is a RUNTIME exception: a plain try/catch
+    -- deliberately rethrows it, so the cap must go through
+    -- `tryCatchRuntimeEx`.
+    tryCatchRuntimeEx (isDefEq a b) (fun _ => return false)
   let lctx ← getLCtx
   for decl in lctx do
     if decl.isImplementationDetail then continue
-    if ← isDefEq decl.type stmt then
+    if ← defEqCapped decl.type stmt then
       return decl.toExpr
   -- Negation goals: for a user goal `¬P`, `falseOrByContra`
   -- INTROS (leaving a hyp `P`) rather than adding a `¬¬P`
@@ -642,7 +657,7 @@ private def elabAssumeLiteral (ctx : WalkerContext) (id : String)
     let xE ← sexpToExpr ctx x
     for decl in lctx do
       if decl.isImplementationDetail then continue
-      if ← isDefEq decl.type xE then
+      if ← defEqCapped decl.type xE then
         let notX := mkApp (mkConst ``Not) xE
         return ← withLocalDeclD `hn notX fun hn => do
           mkLambdaFVars #[hn] (mkApp hn decl.toExpr)

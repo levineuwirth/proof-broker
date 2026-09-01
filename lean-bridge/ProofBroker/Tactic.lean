@@ -723,7 +723,8 @@ def natTypeMetadata : Json :=
     treated as data: Int-typed ones become `freeVars`, anything else
     is silently ignored (the goal/Prop reifier will trip on them if
     they're actually referenced). -/
-def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
+def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
+  mvarId.withContext do
   -- Instantiate metavariables in the goal type. `apply`-introduced
   -- subgoals may carry deferred unification metavars in their types;
   -- without this, `reifyTerm` sees `?_uniq.N` (pretty-prints as the
@@ -888,7 +889,12 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
           ("kind", "nat_nonlinear_atom"),
           ("lean", Json.str (toString pp))]))
       pure (some (Json.mkObj entries))
-  return {
+  -- The atom table rides on the RETURN VALUE, not the module ref:
+  -- Lean elaborates theorems in parallel, so a ref read at
+  -- closer time can race another invocation's `buildIR` reset
+  -- (observed as an unknown-free-variable failure). The ref is
+  -- only the accumulator WITHIN this reify.
+  return ({
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
     tier,
@@ -902,7 +908,7 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     definitionalMetadata := [],
     libraryProvenance,
     userDirectives := none
-  }
+  }, natAtoms)
 
 end Reify
 
@@ -998,6 +1004,12 @@ structure ExtractionPath where
       cert addresses. Verification runs against this, never the
       reified input. -/
   finalIr : Option Json
+  /-- R3-M1: `payload_id ↦ ℕ subterm` for every atomized nonlinear
+      ℕ product of this extraction (see `Reify.reifyNatAtoms`).
+      Carried here — NOT re-read from the module ref — because
+      parallel theorem elaboration can reset the ref between the
+      reify and the closer. -/
+  natAtoms : Array (String × Expr) := #[]
   verifyOk : Option Bool
   /-- Looser-than-`verifyOk` flag: true when envelope checks passed
       but no tier-specific verifier applied (e.g. Tier 0 oracle).
@@ -1068,7 +1080,7 @@ private def buildExtractionPath
     (preferHigherTier : Bool)
     (tierPreference : Option (List String) := none)
     : TacticM ExtractionPath := do
-  let ir ← Reify.buildIR goal
+  let (ir, natAtoms) ← Reify.buildIR goal
   -- Walker-strict callers pass `tierPreference := some ["3"]`:
   -- the IR's `user_directives.tier_preference` (spec §5.4) tells
   -- the cvc5 adapter to mint the verified Tier-3 alethe trace
@@ -1109,7 +1121,8 @@ private def buildExtractionPath
   return {
     ir, attempts := dispatch.attempts, cert := dispatch.cert,
     trace := dispatch.trace, finalIr := dispatch.finalIr,
-    verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs
+    verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs,
+    natAtoms
   }
 
 /-- Identity-trace guard (R2 soundness rule). The term-mode and
@@ -1126,6 +1139,133 @@ private def identityTraceOk (path : ExtractionPath) : Bool :=
   match path.trace with
   | some d => d.isIdentity
   | none => false
+
+/- ============================================================
+   R3-M1: the ℕ→ℤ lift
+
+   The reifier hands the broker the ℤ image of a ℕ goal; the cert
+   addresses that image. To keep "the cert IS the proof" true, the
+   cert-consuming closers rebuild the ℕ proof from the ℤ one by
+   TERM CONSTRUCTION: apply the `TermMode.natCast*` shims (each a
+   direct use of the recorded embedding-witness lemmas) to every
+   hypothesis the cert consumes, prove the `_pb_nonneg_*` facts by
+   `natCastNonneg`, and run the ordinary Int machinery (Farkas fold
+   / Alethe walker) over those ℤ facts. No decision procedure
+   touches the original goal on these paths; the byContra step is
+   `Decidable.byContradiction` (term mode) or `falseOrByContra`
+   (walker, classical baseline).
+   ============================================================ -/
+
+/-- ℕ mode of an extraction: the reified IR declared a ℕ free var
+    or atomized a ℕ subterm (payloads present). -/
+private def natModeOf (ir : IR) : Bool :=
+  ir.context.freeVars.any (·.ty == "Nat") || ir.goal.payloads.isSome
+
+/-- Fail-closed specialization gate — the R3 analog of R2's
+    identity-trace guard, lifted pass-by-pass as inversions land: a
+    cert-consuming closer runs only when every specialization the
+    cert records is one this bridge inverts. Today that is exactly
+    the ℕ→ℤ type specialization on a ℕ-mode extraction; on any
+    other extraction the list must be empty. In ℕ mode the record
+    must be PRESENT — a cert minted over a ℕ IR with no recorded
+    specialization means refinement did not happen honestly. -/
+private def checkCertSpecializations (cert : Json) (natMode : Bool)
+    : TacticM Unit := do
+  let specs := ((cert.getObjVal? "refinement_record").bind
+    (·.getObjVal? "specializations")).toOption.bind
+    (·.getArr?.toOption) |>.getD #[]
+  let mut sawNatSpec := false
+  for s in specs do
+    let kind := (s.getObjValAs? String "kind").toOption.getD ""
+    let source := (s.getObjValAs? String "source").toOption.getD ""
+    let target := (s.getObjValAs? String "target").toOption.getD ""
+    if natMode && kind == "type_specialization" && source == "Nat"
+        && target == "Int" then
+      sawNatSpec := true
+    else
+      throwError "proof_broker: the cert records a specialization this \
+        bridge cannot invert (kind={kind}, {source} → {target}); the \
+        goal is left OPEN rather than closed from a cert whose \
+        translation has no lift (fail closed)"
+  if natMode && !sawNatSpec then
+    throwError "proof_broker: ℕ goal, but the cert records no \
+      Nat → Int type specialization — refusing to consume it \
+      (fail closed)"
+
+/-- `(atom name ↦ its ℕ-level Expr)` for the extraction: ℕ free
+    vars resolved in the local context by name, atomized subterms
+    from the path's `natAtoms` table. -/
+private def natAtomExprs (ir : IR) (tableAtoms : Array (String × Expr))
+    : TacticM (Array (String × Expr)) := do
+  let lctx ← getLCtx
+  let mut out := #[]
+  for fv in ir.context.freeVars do
+    if fv.ty == "Nat" then
+      match lctx.findFromUserName? (Name.mkSimple fv.name) with
+      | some decl => out := out.push (fv.name, decl.toExpr)
+      | none =>
+        throwError "proof_broker: ℕ free var {fv.name} from the IR is \
+          not in the local context"
+  return out ++ tableAtoms
+
+/-- Shape-dispatch cast: from `h : ty` with `ty` an ℕ comparison /
+    equality (possibly negated), build the ℤ-image fact via the
+    `TermMode.natCast*` shims. `none` for shapes the lift does not
+    cover yet (compound props; the caller decides whether that is
+    an error). -/
+private def castNatHyp? (h : Expr) (ty : Expr) : MetaM (Option Expr) := do
+  -- `falseOrByContra` leaves the negated goal behind an assigned
+  -- metavariable (and possibly metadata); resolve both everywhere
+  -- or `getAppFnArgs` sees no application.
+  let ty := (← Lean.instantiateMVars ty).consumeMData
+  let app1 (n : Name) : MetaM (Option Expr) := do
+    return some (← Lean.Meta.mkAppM n #[h])
+  let matchPos (ty : Expr) : Option Name :=
+    match ty.consumeMData.getAppFnArgs with
+    | (``LE.le, #[α, _, _, _]) =>
+      if α.isConstOf ``Nat then some ``ProofBroker.TermMode.natCastLe else none
+    | (``LT.lt, #[α, _, _, _]) =>
+      if α.isConstOf ``Nat then some ``ProofBroker.TermMode.natCastLt else none
+    | (``GE.ge, #[α, _, _, _]) =>
+      if α.isConstOf ``Nat then some ``ProofBroker.TermMode.natCastGe else none
+    | (``GT.gt, #[α, _, _, _]) =>
+      if α.isConstOf ``Nat then some ``ProofBroker.TermMode.natCastGt else none
+    | (``Eq, #[α, _, _]) =>
+      if α.isConstOf ``Nat then some ``ProofBroker.TermMode.natCastEq else none
+    | _ => none
+  -- Negation arrives as `Not P` or as the unfolded `P → False`
+  -- (`falseOrByContra` introduces the latter); treat both.
+  let notInner? : Option Expr :=
+    match ty.getAppFnArgs with
+    | (``Not, #[inner]) => some inner
+    | _ =>
+      if ty.isArrow && ty.bindingBody!.isConstOf ``False
+      then some ty.bindingDomain! else none
+  match matchPos ty with
+  | some lemma_ => app1 lemma_
+  | none =>
+    match notInner? with
+    | some inner =>
+      (match matchPos inner with
+       | some l =>
+         if l == ``ProofBroker.TermMode.natCastLe then
+           app1 ``ProofBroker.TermMode.natCastNotLe
+         else if l == ``ProofBroker.TermMode.natCastLt then
+           app1 ``ProofBroker.TermMode.natCastNotLt
+         else if l == ``ProofBroker.TermMode.natCastGe then
+           app1 ``ProofBroker.TermMode.natCastNotGe
+         else if l == ``ProofBroker.TermMode.natCastGt then
+           app1 ``ProofBroker.TermMode.natCastNotGt
+         else if l == ``ProofBroker.TermMode.natCastEq then
+           app1 ``ProofBroker.TermMode.natCastNotEq
+         else return none
+       | none => return none)
+    | none =>
+      match ty.getAppFnArgs with
+      | (``Ne, #[α, _, _]) =>
+        if α.isConstOf ``Nat then app1 ``ProofBroker.TermMode.natCastNotEq
+        else return none
+      | _ => return none
 
 /-- Read the fragment label out of a cert's `refinement_record`.
     Returns `""` when the field is missing or the cert is malformed
@@ -1217,11 +1357,95 @@ private def tryAletheWalker (cert : Json) : TacticM Bool := do
     match Alethe.runParseAletheProof traceData with
     | .error _ => return false
     | .ok proof =>
-      try
-        walkProofIntoGoal (← getMainGoal) proof
-        return true
-      catch _ =>
-        return false
+      -- `tryCatchRuntimeEx`: a failing walk may blow the recursion
+      -- budget (runtime exception, not caught by plain try/catch)
+      -- before failing cleanly; the fallback contract must hold
+      -- either way.
+      tryCatchRuntimeEx
+        (do walkProofIntoGoal (← getMainGoal) proof; return true)
+        (fun _ => return false)
+
+/-- R3-M1: walk an Alethe refutation trace into a kernel proof of a
+    ℕ goal — the cast layer in front of `walkProof`. The trace's
+    atoms and assumes live at ℤ (the reified image), so:
+
+    1. `falseOrByContra` normalizes the ℕ goal to `False`, exposing
+       the ℕ counterexample facts;
+    2. every ℕ-shaped Prop local (user hypotheses AND the byContra
+       hypothesis) is cast to its ℤ image via the `natCast*` shims
+       and asserted; the IR's `_pb_nonneg_*` facts are proved by
+       `natCastNonneg` on each atom;
+    3. the walker runs with its atom map overridden so every ℕ var
+       and atomized subterm resolves to `Int.ofNat <term>` — the
+       trace's assumes then match the asserted ℤ facts by defeq
+       (kernel defeq folds the cast through `+`/`*`/literals).
+
+    Throws on failure (caller catches for the fallback paths). -/
+private def walkNatProofIntoGoal (goal : MVarId) (proof : Alethe.Proof)
+    (ir : IR) (tableAtoms : Array (String × Expr)) : TacticM Unit := do
+  let isRefutation := match proof.steps.getLast? with
+    | some last => last.clause.isEmpty
+    | none => false
+  unless isRefutation do
+    throwError "alethe walker (ℕ): only refutation traces are lifted"
+  let falseGoal ← do
+    if (← goal.getType).isConstOf ``False then pure goal
+    else match ← goal.falseOrByContra with
+      | some g => pure g
+      | none => pure goal
+  falseGoal.withContext do
+    let atoms ← natAtomExprs ir tableAtoms
+    -- Cast layer: ℤ images of every castable ℕ-shaped local, plus
+    -- the nonneg facts. Opportunistic — the walker matches what the
+    -- trace needs; an assume with no matching fact fails the walk
+    -- honestly.
+    let mut facts : Array Lean.Meta.Hypothesis := #[]
+    for decl in (← getLCtx) do
+      if decl.isImplementationDetail then continue
+      if ← Lean.Meta.isProp decl.type then
+        if let some proofZ ← castNatHyp? decl.toExpr decl.type then
+          facts := facts.push {
+            userName := Name.mkSimple s!"_pb_z_{decl.userName.toString}",
+            type := ← Lean.Meta.inferType proofZ,
+            value := proofZ }
+    for (id, e) in atoms do
+      let proofZ ← Lean.Meta.mkAppM ``ProofBroker.TermMode.natCastNonneg #[e]
+      facts := facts.push {
+        userName := Name.mkSimple s!"_pb_z_nonneg_{id}",
+        type := ← Lean.Meta.inferType proofZ,
+        value := proofZ }
+    let (_, walkGoal) ← falseGoal.assertHypotheses facts
+    walkGoal.withContext do
+      let ctx ← Alethe.mkContext
+      -- Atom override in `Nat.cast` form — the head omega's frontend
+      -- recognizes (`Int.ofNat` is an opaque atom to it), so the
+      -- walker's la_generic leaf closure connects the cast facts.
+      -- Defeq-equal to the `Int.ofNat` constructor form either way.
+      let mut vars := ctx.vars
+      for (name, e) in atoms do
+        vars := vars.insert (Name.mkSimple name)
+          (← Lean.Meta.mkAppOptM ``Nat.cast
+             #[some (mkConst ``Int), none, some e])
+      let proofTerm ← Alethe.walkProof { vars } proof
+      walkGoal.assign proofTerm
+
+/-- ℕ variant of `tryAletheWalker`: same gate/fallback contract
+    (`false` leaves the goal untouched), cast layer + atom override
+    per `walkNatProofIntoGoal`. -/
+private def tryAletheWalkerNat (cert : Json) (ir : IR)
+    (tableAtoms : Array (String × Expr)) : TacticM Bool := do
+  match certTraceData? cert with
+  | none => return false
+  | some traceData =>
+    match Alethe.runParseAletheProof traceData with
+    | .error _ => return false
+    | .ok proof =>
+      -- Runtime-exception-proof for the same reason as
+      -- `tryAletheWalker`.
+      tryCatchRuntimeEx
+        (do walkNatProofIntoGoal (← getMainGoal) proof ir tableAtoms
+            return true)
+        (fun _ => return false)
 
 /-- Axioms the home kernel already tolerates everywhere else a
     `proof_broker` closer runs (the classical footprint `omega` /
@@ -1466,8 +1690,13 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- Identity-trace guard (R2): the walker elaborates the
         -- cert's trace against the ORIGINAL goal, so it only runs
         -- when the dispatch pipeline provably didn't rewrite it.
+        -- R3-M1: a ℕ extraction routes through the cast-layer
+        -- variant — the trace addresses the reified ℤ image, and
+        -- the lift rebuilds the ℕ proof from it.
         if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
-          tryAletheWalker cert
+          if natModeOf path.ir then
+            tryAletheWalkerNat cert path.ir path.natAtoms
+          else tryAletheWalker cert
         else
           pure false
       unless walkerHandled do
@@ -2083,6 +2312,125 @@ private def closeViaTermMode (goal : MVarId) (goalType : Expr)
                    False ({goalType}); cert/goal mismatch"
     closeViaTermModeComparison goal goalType entries
 
+/- ============================================================
+   R3-M1: term-mode closer for ℕ goals (the lift, Farkas leg)
+   ============================================================ -/
+
+/-- Match a ℕ LIA-comparison goal; the `≥`/`>` swap mirrors
+    `matchLiaGoal?` (the SDK's IR already swapped, and `GE.ge`/
+    `GT.gt` reduce definitionally to the swapped forms). -/
+private def matchNatGoal? (goalType : Expr)
+    : Option (Expr × Expr × GoalKind) :=
+  match goalType.getAppFnArgs with
+  | (``LE.le, #[α, _, b, c]) =>
+    if α.isConstOf ``Nat then some (b, c, .le) else none
+  | (``LT.lt, #[α, _, b, c]) =>
+    if α.isConstOf ``Nat then some (b, c, .lt) else none
+  | (``GE.ge, #[α, _, a, b]) =>
+    if α.isConstOf ``Nat then some (b, a, .le) else none
+  | (``GT.gt, #[α, _, a, b]) =>
+    if α.isConstOf ``Nat then some (b, a, .lt) else none
+  | _ => none
+
+/-- The `_pb_z_`-prefixed name the ℕ cast layer asserts a witness
+    hypothesis under (distinct from the ℕ original — the fold's
+    by-name lookup must not see a shadowed pair). -/
+private def natZName (n : String) : String := s!"_pb_z_{n}"
+
+/-- Assert the ℤ image of every witness-named fact into `goal` (a
+    `False` goal whose context holds the ℕ originals): IR
+    `_pb_nonneg_*` hypotheses are proved by `natCastNonneg` on
+    their atom; every other name must be a local ℕ-shaped
+    hypothesis, cast via the `natCast*` shims. A witness name the
+    layer cannot produce is an ERROR — term mode consumes the
+    witness or fails, it never guesses. -/
+private def assertNatWitnessFacts (goal : MVarId) (ir : IR)
+    (tableAtoms : Array (String × Expr)) (names : List String)
+    : TacticM MVarId := do
+  goal.withContext do
+  let atoms ← natAtomExprs ir tableAtoms
+  let mut facts : Array Lean.Meta.Hypothesis := #[]
+  for name in names.eraseDups do
+    let proofZ ←
+      if name.startsWith "_pb_nonneg_" then
+        let key := (name.drop "_pb_nonneg_".length).toString
+        let atomKey := if key.startsWith "atom_" then "_pb_" ++ key else key
+        match atoms.find? (·.1 == atomKey) with
+        | some (_, e) =>
+          Lean.Meta.mkAppM ``ProofBroker.TermMode.natCastNonneg #[e]
+        | none =>
+          throwError "proof_broker_term: witness names {name} but the \
+            extraction has no atom '{atomKey}'"
+      else
+        match (← getLCtx).findFromUserName? (Name.mkSimple name) with
+        | none =>
+          throwError "proof_broker_term: witness names hypothesis \
+            '{name}' which is not in scope"
+        | some decl =>
+          match ← castNatHyp? decl.toExpr decl.type with
+          | some p => pure p
+          | none =>
+            throwError "proof_broker_term: hypothesis '{name}' has a \
+              shape the ℕ→ℤ lift cannot cast yet ({decl.type})"
+    facts := facts.push {
+      userName := Name.mkSimple (natZName name),
+      type := ← Lean.Meta.inferType proofZ,
+      value := proofZ }
+  let (_, goal') ← goal.assertHypotheses facts
+  return goal'
+
+/-- Term-mode closer for a ℕ goal: the first real lift. Shape
+    mirrors `closeViaTermMode`, with the ℕ wrappers in front:
+
+    * `False` goal: cast every witness-named fact to ℤ
+      (`assertNatWitnessFacts`) and run the Int Farkas fold over
+      the images.
+    * Comparison goal: apply `natLeViaLt` / `natLtViaLe`
+      (`Decidable.byContradiction` at ℕ — axiom-free), intro the
+      positive ℕ counterexample as `neg_goal`, cast it alongside
+      the other witness facts, fold.
+
+    The fold's entries are renamed to the `_pb_z_*` images; the
+    proof term visibly consumes the cert's coefficients AND the
+    cast shims — no tactic call ever touches the original goal. -/
+private def closeNatViaTermMode (goal : MVarId) (goalType : Expr)
+    (cert : Json) (ir : IR) (tableAtoms : Array (String × Expr))
+    : TacticM Unit := do
+  let entries ← parseFarkasCoefficients cert
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
+  let zEntries := entries.map (fun (n, c) => (natZName n, c))
+  let negEntry := entries.find? (fun e => e.1 == "neg_goal")
+  match negEntry with
+  | none =>
+    unless goalType.isConstOf ``False do
+      throwError "proof_broker_term: witness lacks neg_goal but goal is \
+                   not False ({goalType}); cert/goal mismatch"
+    let g ← assertNatWitnessFacts goal ir tableAtoms (entries.map (·.1))
+    closeViaTermModeFalse g zEntries
+  | some _ =>
+    let (b, c, kind) ← match matchNatGoal? goalType with
+      | some t => pure t
+      | none =>
+        throwError "proof_broker_term: non-False ℕ goal must have shape \
+                     (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got \
+                     {goalType}. Equality goals are pre-split via \
+                     Nat.le_antisymm."
+    let (wrapperName, negHead) := match kind with
+      | .le => (``ProofBroker.TermMode.natLeViaLt, ``LT.lt)
+      | .lt => (``ProofBroker.TermMode.natLtViaLe, ``LE.le)
+    let bodyMV ← goal.withContext do
+      let negTy ← Lean.Meta.mkAppM negHead #[c, b]
+      let bodyTy ← mkArrow negTy (mkConst ``False)
+      let bodyMV ← Lean.Meta.mkFreshExprMVar bodyTy
+      let term ← Lean.Meta.mkAppOptM wrapperName
+                   #[some b, some c, some bodyMV]
+      goal.assign term
+      return bodyMV
+    let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
+    let g ← assertNatWitnessFacts newGoal ir tableAtoms (entries.map (·.1))
+    closeViaTermModeFalse g zEntries
+
 /-- Bare form `proof_broker` runs against the default manifest list
     (cvc4, cvc5, z3 if present in the manifest dir) under
     `preferHigherTier := true`, so the highest-tier capable adapter
@@ -2199,12 +2547,30 @@ def evalProofBrokerWalker : Tactic := fun stx => do
       the walker only closes goals its cert directly addresses; use plain \
       `proof_broker`, which falls back to a decision procedure on the \
       original goal."
+  -- R3-M1 specialization gate: every recorded specialization must be
+  -- one this bridge inverts (ℕ→ℤ via the cast layer); otherwise the
+  -- cert is refused, fail closed.
+  let natMode := natModeOf path.ir
+  checkCertSpecializations cert natMode
   -- Walker-strict: require the Alethe walker to close from the live
   -- cert; no `omega` fallback (that is what `proof_broker` adds).
-  unless (← tryAletheWalker cert) do
-    throwError "proof_broker_walker: the Alethe walker did not close the \
-      goal from the live cert (no omega fallback). Cert tier/format may \
-      not be a walkable alethe-2024 trace, or the walk failed."
+  -- A ℕ extraction routes through the cast-layer variant; strict
+  -- mode surfaces the walk's own error rather than swallowing it.
+  if natMode then
+    let traceData ← match certTraceData? cert with
+      | some t => pure t
+      | none => throwError "proof_broker_walker: cert carries no trace \
+          data (tier/format not a walkable alethe-2024 trace)"
+    let proof ← match Alethe.runParseAletheProof traceData with
+      | .ok p => pure p
+      | .error e => throwError "proof_broker_walker: trace parse \
+          failed: {repr e}"
+    walkNatProofIntoGoal (← getMainGoal) proof path.ir path.natAtoms
+  else
+    unless (← tryAletheWalker cert) do
+      throwError "proof_broker_walker: the Alethe walker did not close the \
+        goal from the live cert (no omega fallback). Cert tier/format may \
+        not be a walkable alethe-2024 trace, or the walk failed."
 
 @[tactic proofBrokerQ]
 def evalProofBrokerQ : Tactic := fun stx => do
@@ -2265,6 +2631,19 @@ private def runTermModeOnGoal
     throwError "proof_broker_term: cert was minted but verifier did not \
                  accept it (reason: {r}); term-mode requires a verified \
                  Tier 1 Farkas or Tier 2 case-split cert"
+  -- R3-M1 specialization gate (fail closed; see
+  -- `checkCertSpecializations`) + the ℕ lift: a ℕ extraction's
+  -- Tier-1 Farkas witness is consumed by `closeNatViaTermMode`,
+  -- which casts the witness-named facts to ℤ by term construction
+  -- and runs the Int fold over the images.
+  let natMode := natModeOf path.ir
+  checkCertSpecializations cert natMode
+  if natMode then
+    if certStrategyHint cert == "case_split_farkas" then
+      throwError "proof_broker_term: Tier 2 case-split over a ℕ \
+        extraction is not lifted yet"
+    closeNatViaTermMode goal goalType cert path.ir path.natAtoms
+    return
   if certStrategyHint cert == "case_split_farkas" then
     match ← reifierExt.get with
     | some ext => ext.tier2CaseSplitCloser cert path.ir
@@ -2342,6 +2721,27 @@ def evalProofBrokerTerm : Tactic := fun stx => do
       runTermModeOnGoal sg adapterNames? preferHigherTier
     setGoals []
   | none =>
+  -- R3-M1: ℕ equality goals split via Nat.le_antisymm — each ≤
+  -- direction re-dispatches and lifts like any ℕ comparison.
+  match goalType.getAppFnArgs with
+  | (``Eq, #[α, _, _]) =>
+    if α.isConstOf ``Nat then
+      evalTactic (← `(tactic| apply Nat.le_antisymm))
+      let subgoals ← getGoals
+      for sg in subgoals do
+        setGoals [sg]
+        runTermModeOnGoal sg adapterNames? preferHigherTier
+      setGoals []
+    else
+      evalProofBrokerTermRest goalType goal adapterNames? preferHigherTier
+  | _ =>
+    evalProofBrokerTermRest goalType goal adapterNames? preferHigherTier
+where
+  /-- The pre-R3 tail: extension-claimed equality split, else the
+      plain single-goal pipeline. -/
+  evalProofBrokerTermRest (goalType : Expr) (goal : MVarId)
+      (adapterNames? : Option (List String)) (preferHigherTier : Bool)
+      : TacticM Unit := do
     match ← matchExtensionEqGoal? goalType with
     | some _ =>
       -- Delegate the antisym apply to the extension (Mathlib-side
