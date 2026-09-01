@@ -40,6 +40,9 @@ from check import (  # noqa: E402
     # Cross-fixture hash linkage (#18d / #24-M1): see check.py for
     # the pairing convention and the docs on the unpaired sentinels.
     check_cert_hashes,
+    # R3-M1: specialization witnesses resolve in the paired IR's
+    # library_provenance.
+    check_cert_witness_provenance,
     # Pairing completeness (C2 round 1): the hash-linkage step below is
     # pairing-map-opt-in, so an unpaired cert-*.json would silently
     # skip it; check.py owns the maps and the completeness check.
@@ -197,6 +200,15 @@ def main() -> int:
                                   .relative_to(ROOT)),
             )
             errors = errors + [f"hash: {e}" for e in hash_errors]
+            # R3-M1: specialization soundness_witness tokens must
+            # resolve in the paired IR's library_provenance (same
+            # gate as check.py's, so both drivers fail closed).
+            if paired_ir is not None:
+                errors = errors + [
+                    f"witness: {e}"
+                    for e in check_cert_witness_provenance(
+                        cert, paired_ir, cert_name=str(rel))
+                ]
         else:
             hash_warnings = []
 

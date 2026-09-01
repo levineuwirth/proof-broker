@@ -112,6 +112,7 @@
           ],
           "theory_classification_tags": [
             "embeds_into:Int_for_universal_LIA",
+            "embedding_witness:linear_ordered_comm_ring_lia_embedding",
             "is:linearly_ordered",
             "is:decidable_equality"
           ]
@@ -127,8 +128,10 @@
       "host_class": "HAdd",
       "abstract_role": "addition",
       "specialization_targets": [
-        { "theory": "LIA", "operator": "+" },
-        { "theory": "LRA", "operator": "+" }
+        { "theory": "LIA", "operator": "+",
+          "soundness_witness": "linear_ordered_comm_ring_lia_embedding" },
+        { "theory": "LRA", "operator": "+",
+          "soundness_witness": "linear_ordered_field_lra_embedding" }
       ]
     },
     "LE.le": {
@@ -137,8 +140,10 @@
       "host_class": "LE",
       "abstract_role": "ordering",
       "specialization_targets": [
-        { "theory": "LIA", "operator": "<=" },
-        { "theory": "LRA", "operator": "<=" }
+        { "theory": "LIA", "operator": "<=",
+          "soundness_witness": "linear_ordered_comm_ring_lia_embedding" },
+        { "theory": "LRA", "operator": "<=",
+          "soundness_witness": "linear_ordered_field_lra_embedding" }
       ]
     },
     "OfNat.ofNat": {
@@ -147,8 +152,10 @@
       "host_class": "OfNat",
       "abstract_role": "literal_inclusion",
       "specialization_targets": [
-        { "theory": "LIA", "operator": "literal" },
-        { "theory": "LRA", "operator": "literal" }
+        { "theory": "LIA", "operator": "literal",
+          "soundness_witness": "linear_ordered_comm_ring_lia_embedding" },
+        { "theory": "LRA", "operator": "literal",
+          "soundness_witness": "linear_ordered_field_lra_embedding" }
       ]
     }
   },
@@ -165,6 +172,12 @@
       "version": "4.13.0",
       "module_path": "Mathlib.Algebra.Order.Ring.Lemmas",
       "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+    },
+    "linear_ordered_field_lra_embedding": {
+      "library": "mathlib",
+      "version": "4.13.0",
+      "module_path": "Mathlib.Algebra.Order.Field.Basic",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000003"
     },
     "HAdd.hAdd": {
       "library": "lean-stdlib",

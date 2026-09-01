@@ -1,13 +1,13 @@
 {
   "trace_version": "1.0",
-  "initial_ir_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
-  "final_ir_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
+  "initial_ir_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
+  "final_ir_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
   "entries": [
     {
       "pass": "propositional_simplification",
       "version": "1.0",
-      "before_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
-      "after_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
+      "before_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
+      "after_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
       "outcome": "no_op",
       "inversion_data": {
         "simplifications": []
@@ -16,8 +16,8 @@
     {
       "pass": "definition_unfolding",
       "version": "1.0",
-      "before_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
-      "after_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
+      "before_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
+      "after_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
       "configuration": {
         "concepts": [
           "function_application",

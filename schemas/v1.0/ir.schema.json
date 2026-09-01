@@ -454,7 +454,12 @@
             "required": ["theory", "operator"],
             "properties": {
               "theory": { "type": "string", "minLength": 1 },
-              "operator": { "type": "string", "minLength": 1 }
+              "operator": { "type": "string", "minLength": 1 },
+              "soundness_witness": {
+                "type": "string",
+                "minLength": 1,
+                "description": "library_provenance key of the verified lemma/instance proof justifying this method mapping. Refinement emits a method_specialization record only for targets that carry it (R3-M1 fail-closed rule; the certificate schema requires the witness on method_specialization). Additive optional field, v1.1-bound — see delta.md §5."
+              }
             }
           }
         }

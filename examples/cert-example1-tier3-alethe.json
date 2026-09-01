@@ -13,8 +13,8 @@
     }
   },
 
-  "dispatch_context_hash": "sha256:a28ae93e0d86230d5b78762423ddaf6ecfc53e065e7bb7e7f58627422ff5b142",
-  "rewrite_trace_hash":    "sha256:41f1ea9eeef6f08851e46747170f3b31dcc56a08c900bb133387117a3f5f360f",
+  "dispatch_context_hash": "sha256:585389606e1efcc87e553e5e4ebb311217eec06e5e2d093295b362b7b78e6ea2",
+  "rewrite_trace_hash":    "sha256:8e86e135870d12d70dd92af7246ea1a302173f4c12e40647120ad5f464672af3",
 
   "backend": {
     "name": "cvc5",
