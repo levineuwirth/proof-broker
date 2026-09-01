@@ -2388,6 +2388,19 @@ example : True := by
   fail_if_success trace_guard_test def_unfold_empty
   trivial
 
+/-- Endpoint hashes disagree but the entry list is EMPTY → fail
+    closed (no entry admits the rewrite; admission must mean an
+    inversion ran). -/
+example : True := by
+  fail_if_success trace_guard_test endpoints_no_entries
+  trivial
+
+/-- Endpoint hashes disagree but every entry is identity-shaped
+    (`no_op`, equal per-entry hashes) → fail closed, same rule. -/
+example : True := by
+  fail_if_success trace_guard_test endpoints_all_noop
+  trivial
+
 /-- An applied pass with no inversion (prop-simp) → fail closed. -/
 example : True := by
   fail_if_success trace_guard_test prop_simp_applied

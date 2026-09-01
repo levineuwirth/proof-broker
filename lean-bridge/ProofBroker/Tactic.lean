@@ -1445,6 +1445,7 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
     if d.isIdentity then none
     else Id.run do
       let defNames := path.natDefs.map (·.1)
+      let mut admitted := false
       for e in d.entries do
         let identityShaped :=
           (match e.outcome with
@@ -1476,6 +1477,17 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
               '{sym}', which this extraction did not emit an \
               unfolding equation for — refusing to consume the cert \
               (fail closed)"
+        admitted := true
+      -- The document is not identity, so SOME entry must own the
+      -- rewrite. A trace whose endpoint hashes disagree while every
+      -- entry is identity-shaped (or the entry list is empty) is
+      -- refused: admission must always mean "an inversion ran",
+      -- never a vacuous walk over nothing.
+      unless admitted do
+        return some "proof_broker_term: the trace's endpoint hashes \
+          disagree but no entry admits a rewrite, so the rewritten \
+          IR cannot be tied to this goal — refusing to consume the \
+          cert (fail closed)"
       return none
 
 /-- Apply the def-unfold inversions to `goal`: for every symbol the
@@ -3343,6 +3355,11 @@ def evalSpecGateTest : Tactic := fun stx => do
       named error.
     * `failed_pass` — a Failed definition_unfolding entry → named
       error (only APPLIED unfolds are admitted).
+    * `endpoints_no_entries` — endpoint hashes disagree, EMPTY entry
+      list → named error (no entry admits the rewrite).
+    * `endpoints_all_noop` — endpoint hashes disagree, every entry
+      identity-shaped → named error (same: admission must mean an
+      inversion ran).
     * `no_trace` — no trace on the path → named error. -/
 syntax (name := traceGuardTest) "trace_guard_test" ident : tactic
 
@@ -3365,6 +3382,18 @@ def evalTraceGuardTest : Tactic := fun stx => do
     let nonIdentityDoc (e : Trace.Entry) : Trace.Document := {
       traceVersion := "1.0", initialIrHash := "sha256:aa",
       finalIrHash := "sha256:bb", entries := [e], configuration := none }
+    let endpointsNoEntriesDoc : Trace.Document := {
+      traceVersion := "1.0", initialIrHash := "sha256:aa",
+      finalIrHash := "sha256:bb", entries := [], configuration := none }
+    let noopEntry : Trace.Entry := {
+      pass := "propositional_simplification", version := "1.0",
+      beforeHash := "sha256:aa", afterHash := "sha256:aa",
+      configuration := none, outcome := some .noOp,
+      inversionData := none, diagnostics := none }
+    let endpointsAllNoopDoc : Trace.Document := {
+      traceVersion := "1.0", initialIrHash := "sha256:aa",
+      finalIrHash := "sha256:bb", entries := [noopEntry],
+      configuration := none }
     let ourDef := "ProofBroker.Test.P"
     let trace? : Option Trace.Document ← match kind.getId.toString with
       | "identity" => pure (some identityDoc)
@@ -3383,6 +3412,8 @@ def evalTraceGuardTest : Tactic := fun stx => do
       | "failed_pass" =>
         pure (some (nonIdentityDoc
           (mkEntry "definition_unfolding" .failed [ourDef])))
+      | "endpoints_no_entries" => pure (some endpointsNoEntriesDoc)
+      | "endpoints_all_noop" => pure (some endpointsAllNoopDoc)
       | "no_trace" => pure none
       | k => throwError "trace_guard_test: unknown kind '{k}'"
     let dummyIr : IR := {
