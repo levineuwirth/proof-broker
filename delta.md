@@ -1017,6 +1017,87 @@ redex) closes on both bridges with footprint `[propext, Quot.sound]`
 (Lean) / axiom-free (Rocq) — the decision procedure, not the walker,
 emitted the proof.
 
+### 5.4 Decision record — ℕ→ℤ specialization and the first lifting (2026-09-01, R3-M1)
+
+**Question** (roadmap R3-M1). The architecture's central bet —
+metadata-bearing IR, refinement records with real soundness
+witnesses, and lifting back — had never met a real goal: reifiers
+were `Int`-only, `Refinement.run` fabricated its witness string, and
+no lifting code existed. M1 makes ℕ the first specialized carrier,
+end to end, on both bridges.
+
+**Decision 1 — the reifier emits the ℤ image, documented in the IR.**
+A ℕ goal reifies as what `zify` produces: every ℕ atom occurrence
+sits under the shared IR cast symbol `Int.ofNat` (Lean normalizes
+`Int.ofNat`/`Nat.cast`, Rocq `Z.of_nat`, to it), literals become Int
+numerals (closed `^` constant-folds, so `2^24`-scale literals ride
+as numerals; Rocq additionally folds its `of_num_uint` decimal
+representation), and one `_pb_nonneg_<atom>` hypothesis per ℕ atom
+carries the ℕ-ness into the image. Free vars stay declared at their
+TRUE carrier `"Nat"`; the SDK treats the cast as transparent
+(`Farkas.linearize`, `Tier3_alethe.shell_to_sexp`, `Smtlib.emit`) —
+sound because a Farkas combination over the atoms is valid over all
+of ℤ and the range constraints are explicit hypotheses. A product
+with no literal factor (the R4-D1 `Zmax * zhigh` shape) is atomized
+to a spec-§4.4 `Opaque` node — a fresh Int atom, nonneg like every
+ℕ atom, its origin recorded in `goal.payloads` — the first live
+producer of `Opaque`. Fail-fast scope (the R3 attack surface): ℕ
+subtraction, division, modulo, and nested ℕ quantifiers are named
+reifier errors (a leading `∀ (n : ℕ)` goal binder is introduced by
+the tactic front-end instead); ℕ does not compose with UF/BV/HO/Real
+carriers yet.
+
+**Decision 2 — spec §4.6 kind + real witnesses (fail closed).** The
+metadata entry for ℕ uses the **`primitive` kind** (the
+`type_variable` alternative requires a typeclass-instance object ℕ
+does not have), with `theory_tags` carrying the embed tag plus
+`embedding_witness:<name>` tags naming the lemmas the lift actually
+applies (`Int.ofNat_le/lt/inj`, `Int.natCast_nonneg`; Rocq
+`Nat2Z.inj_le/lt/inj/is_nonneg`), each backed by a
+`library_provenance` entry with a real content hash (statement
+SHA-256, via the new `content_hash` FFI on Lean). `Refinement.run`
+no longer fabricates: `soundness_witness` is the joined witness-tag
+payloads — for the primitive path AND the pre-existing
+`type_variable` path — and **no witness tag means no
+specialization**; likewise a `specialization_targets` entry without
+its (new, v1.1-bound, additive-optional) `soundness_witness` field
+emits no method record. `check.py`/`validate.py` require every
+witness token to resolve in `library_provenance`, on IR fixtures and
+on paired certs.
+
+**Decision 3 — the lift, and the specialization gate.** The
+cert-consuming closers rebuild the ℕ proof from the ℤ certificate by
+term construction: comparison goals enter through decidable-byContra
+wrappers (`natLeViaLt`/`nat_le_via_lt`; equality splits via
+`le_antisymm`), every witness-named hypothesis is cast to its ℤ
+image through per-shape shims applying exactly the recorded witness
+lemmas, `_pb_nonneg_*` facts are proved outright, and the ordinary
+Int machinery (Farkas fold / Alethe walker with a cast-mapped atom
+context) runs over the images. Lean leans on kernel defeq for cast
+distribution (core's `natCast_add/mul` are `rfl`); Coq's `Z.of_nat`
+does not reduce on open terms, so the Rocq push is explicit
+constructive lemma chains (`nat_push_*`) — which is why the **Rocq
+ℕ term-mode footprint is EMPTY** (the M1 Rocq gate) while Lean's is
+`[propext, Quot.sound]` (the fold's omega residual). The R2
+identity-trace guard's discipline extends to refinement: closers
+verify the cert's recorded specializations are exactly those this
+bridge inverts (today: the one `Nat → Int` record, required present
+in ℕ mode) and refuse anything else, fail closed.
+
+**Measured** (2026-09-01, branch `r3/nat-specialization`, full
+harness per RESUME §3): 7 new ℕ corpus goals (2^24 literals, a
+`∀ n : ℕ` instance, the D1 nonlinear-atom shape included) close
+live-strict via `proof_broker_walker` on BOTH bridges — corpus
+live-mintable 24/24; term-mode ℕ theorems close on both bridges
+(Lean `pb_nat_term*` at `[propext, Quot.sound]`, Rocq
+`pb_nat_term*_axiom_free` "Closed under the global context");
+gates "all 135 within ceiling" (lean) / "all 169 within ceiling"
+(rocq). Scoped follow-ups: the static `CorpusReplay.v` walker has
+no cast layer (ℕ goals carry `static_replay_skip`; the live suites
+are their ground truth), and cvc5 mints Tier-1 Farkas only for
+shapes whose proofs contain `la_generic` — corpus goal shapes and
+the term-mode tests were chosen accordingly.
+
 ---
 
 ---
