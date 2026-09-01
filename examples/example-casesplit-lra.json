@@ -1,0 +1,129 @@
+{
+  "ir_version": "1.0",
+  "source_system": {
+    "name": "lean",
+    "version": "4.13.0"
+  },
+  "tier": "structural",
+  "logic_classification": {
+    "order": "first_order",
+    "features_used": [],
+    "first_order_fragment": "LRA",
+    "decidable_theory": null
+  },
+  "goal": {
+    "shell": {
+      "node": "Const",
+      "name": "False"
+    }
+  },
+  "context": {
+    "type_vars": [],
+    "free_vars": [
+      {
+        "name": "x",
+        "type": "Real"
+      }
+    ],
+    "hypotheses": [
+      {
+        "name": "h_disj",
+        "shell": {
+          "node": "Or",
+          "left": {
+            "node": "App",
+            "symbol": "<=",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "x"
+              },
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Real"
+              }
+            ]
+          },
+          "right": {
+            "node": "App",
+            "symbol": ">=",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "x"
+              },
+              {
+                "node": "NumLit",
+                "value": "10",
+                "type": "Real"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "h_low",
+        "shell": {
+          "node": "App",
+          "symbol": ">=",
+          "type_args": [],
+          "args": [
+            {
+              "node": "Var",
+              "name": "x"
+            },
+            {
+              "node": "NumLit",
+              "value": "1",
+              "type": "Real"
+            }
+          ]
+        }
+      },
+      {
+        "name": "h_high",
+        "shell": {
+          "node": "App",
+          "symbol": "<=",
+          "type_args": [],
+          "args": [
+            {
+              "node": "Var",
+              "name": "x"
+            },
+            {
+              "node": "NumLit",
+              "value": "9",
+              "type": "Real"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "type_metadata": {},
+  "definitional_metadata": {},
+  "library_provenance": {
+    "<=": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+    },
+    ">=": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+    },
+    "False": {
+      "library": "lean-stdlib",
+      "version": "4.13.0",
+      "module_path": "Init.Prelude",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000003"
+    }
+  }
+}

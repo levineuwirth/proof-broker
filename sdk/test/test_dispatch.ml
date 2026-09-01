@@ -293,7 +293,7 @@ let mk_cert ~tier : Certificate.t =
     format = (if tier = 3 then "tstp-fof" else "oracle");
     goal = { shell = Ir.Const { name = "True" }; payloads = None };
     dispatch_context_hash = "sha256:" ^ String.make 64 '0';
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash = "sha256:" ^ String.make 64 '1';
     backend = { name = "synthetic"; version = "0";
                 config_hash = "sha256:" ^ String.make 64 '0' };
     resources = { wall_time_ms = 0; memory_peak_kb = 0;

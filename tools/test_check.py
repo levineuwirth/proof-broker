@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check import (  # noqa: E402
     check_cert_hashes,
     check_certificate,
+    check_identity_trace_hashes,
     check_ir,
     check_ir_against_registry,
     check_manifest,
@@ -280,6 +281,40 @@ def _cert_config_hash_tamper_errors():
     cert["backend"]["config_hash"] = "sha256:" + "c" * 64
     e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5)
     assert_contains(e, "backend.config_hash", "error")
+
+
+@register("hash (R2): zero-sentinel rewrite_trace_hash is an error")
+def _cert_zero_trace_hash_errors():
+    cert = copy.deepcopy(CERT1)
+    cert["rewrite_trace_hash"] = "sha256:" + "0" * 64
+    e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5)
+    assert_contains(e, "all-zeros sentinel", "error")
+
+
+@register("hash (R2): rewrite_trace_hash must match the paired trace")
+def _cert_trace_hash_mismatch_errors():
+    cert = copy.deepcopy(CERT1)
+    cert["rewrite_trace_hash"] = "sha256:" + "d" * 64
+    trace = load(ROOT / "examples" / "rewrite-trace-example1-identity.json")
+    e, _ = check_cert_hashes(cert, paired_ir=IR1, paired_manifest=MANIFEST_CVC5,
+                             paired_trace=trace)
+    assert_contains(e, "rewrite_trace_hash: expected", "error")
+
+
+@register("hash (R2): identity trace slot drift from paired IR is an error")
+def _identity_trace_slot_drift_errors():
+    trace = load(ROOT / "examples" / "rewrite-trace-example1-identity.json")
+    trace["final_ir_hash"] = "sha256:" + "e" * 64
+    e = check_identity_trace_hashes(trace, IR1, trace_name="t.json")
+    assert_contains(e, "final_ir_hash", "error")
+
+
+@register("hash (R2): identity trace with an applied entry is an error")
+def _identity_trace_applied_entry_errors():
+    trace = load(ROOT / "examples" / "rewrite-trace-example1-identity.json")
+    trace["entries"][0]["outcome"] = "applied"
+    e = check_identity_trace_hashes(trace, IR1, trace_name="t.json")
+    assert_contains(e, "rewriting outcome", "error")
 
 
 # --- Tier 2 schema checks ----------------------------------------------------

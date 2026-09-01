@@ -193,9 +193,11 @@ let make_cert_for_ir
       ()
   : Certificate.t =
   let ctx_hash = Hash.sha256_of_json (Codec.to_json ir) in
+  (* R2: no cert carries the zero sentinel any more — with no
+     explicit trace, stamp the identity trace's hash (what a direct
+     dispatch of this IR would mint). *)
   let trace_hash = match trace with
-    | None ->
-      "sha256:" ^ String.make 64 '0'
+    | None -> Pipeline.identity_trace_hash ir
     | Some tr -> Hash.sha256_of_json (Trace.to_json tr)
   in
   {
@@ -460,22 +462,32 @@ let test_verify_unsupported_witness_kind () =
     Alcotest.fail (Printf.sprintf "expected Unsupported_witness_kind, got %s"
                      (Verifier.kind_of_reason other))
 
-(** End-to-end on the fixture pair: read the cert + IR, override the
-    cert's placeholder dispatch_context_hash to the IR's actual hash,
-    verify. The fixture cert exists in the repo as a documentation
-    artifact with placeholder hashes, so this test does the
-    reattribution step that a real broker would have done at the
-    moment the cert was minted. *)
+(** End-to-end on the fixture triple: read the cert + IR + paired
+    identity-trace fixture (R2: `tools/regen_cert_hashes.py` pins
+    the cert's dispatch_context_hash / rewrite_trace_hash to the
+    shipped IR / trace), override the cert's dispatch_context_hash
+    to the IR's actual hash as re-serialized by THIS codec (guards
+    the OCaml↔Python canonicalization agreement), and verify with
+    the trace supplied — all four envelope hash checks run. *)
 let test_verify_fixture_pair () =
   let ir_raw = load_json
     (Filename.concat (fixture_dir ()) "example1-lia-typeclass.json") in
   let cert_raw = load_json
     (Filename.concat (fixture_dir ()) "cert-example1-tier1-farkas.json") in
+  let trace_raw = load_json
+    (Filename.concat (fixture_dir ()) "rewrite-trace-example1-identity.json") in
   let ir = Codec.of_json ir_raw in
   let cert = Certificate.of_json cert_raw in
+  let trace = Trace.of_json trace_raw in
   let real_hash = Hash.sha256_of_json (Codec.to_json ir) in
+  Alcotest.(check string)
+    "fixture dispatch_context_hash = canonical hash of fixture IR \
+     (Python regen and OCaml codec agree)"
+    real_hash cert.dispatch_context_hash;
+  Alcotest.(check bool) "paired trace is identity" true
+    (Trace.is_identity trace);
   let cert' = { cert with dispatch_context_hash = real_hash } in
-  match Verifier.verify cert' ir with
+  match Verifier.verify ~trace:(Some trace) cert' ir with
   | Verified_farkas -> ()
   | other ->
     Alcotest.fail (Printf.sprintf

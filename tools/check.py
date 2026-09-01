@@ -381,27 +381,49 @@ CERT_MANIFEST_PAIRS = {
     "cert-example4-tier3-tptp.json":      "manifest-vampire.json",
 }
 
-# cert filename -> IR filename. Only certs whose dispatch IR is shipped
-# as an example fixture appear. cert-example2 (synthetic H2 case-split)
-# and cert-example4 (synthetic Tier-3 TPTP) construct their dispatch IR
-# in-process and do NOT have a paired example IR; their
-# dispatch_context_hash uses the documented unpaired sentinel.
+# cert filename -> IR filename. R2: every shipped cert pairs with a
+# shipped IR fixture — the old "unpaired dispatch IR" sentinel is
+# gone (cert-example2 / cert-example4 gained example-casesplit-lra /
+# example-tstp-fol as their dispatch IRs).
 CERT_IR_PAIRS = {
     "cert-example1-tier1-farkas.json": "example1-lia-typeclass.json",
     "cert-example1-tier3-alethe.json": "example1-lia-typeclass.json",
+    "cert-example2-tier2-casesplit.json": "example-casesplit-lra.json",
+    "cert-example4-tier3-tptp.json": "example-tstp-fol.json",
 }
 
-# Documented "not a real digest" sentinels. Anything appearing in a cert
-# field with one of these values is intentionally not checked for hash
-# equality, just for shape conformance (which the schema's ContentHash
-# pattern already does). Pinning the exact strings here keeps the
-# regen tool and the checker agreed on the convention.
-_UNPAIRED_DISPATCH_CONTEXT_HASH = "sha256:" + "0" * 64
-_NO_TRACE_HASH = "sha256:" + "0" * 64
+# cert filename -> rewrite-trace filename (R2). Every cert's
+# rewrite_trace_hash is the canonical hash of its paired trace
+# fixture; the paired traces here are identity traces of the default
+# dispatch pipeline (both passes no-op) over the cert's paired IR.
+CERT_TRACE_PAIRS = {
+    "cert-example1-tier1-farkas.json": "rewrite-trace-example1-identity.json",
+    "cert-example1-tier3-alethe.json": "rewrite-trace-example1-identity.json",
+    "cert-example2-tier2-casesplit.json": "rewrite-trace-casesplit-identity.json",
+    "cert-example4-tier3-tptp.json": "rewrite-trace-tstp-identity.json",
+}
+
+# rewrite-trace filename -> the IR fixture whose canonical hash every
+# hash field of the (identity) trace must carry. A non-identity trace
+# fixture (rewrite-trace-example3.json) has no entry — only chain
+# continuity applies there.
+TRACE_IR_PAIRS = {
+    "rewrite-trace-example1-identity.json": "example1-lia-typeclass.json",
+    "rewrite-trace-casesplit-identity.json": "example-casesplit-lra.json",
+    "rewrite-trace-tstp-identity.json": "example-tstp-fol.json",
+}
+
+# The all-zeros "no trace" sentinel is REJECTED as of R2: every mint
+# path stamps the real trace hash, and the OCaml verifier
+# (Verifier.check_trace_hash_sentinel) refuses envelope verification
+# on a sentinel-bearing cert. The name survives only so the checker
+# and regen agree on what must never appear.
+_ZERO_SENTINEL_HASH = "sha256:" + "0" * 64
 
 
 def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
-                      cert_name=None, manifest_name=None):
+                      cert_name=None, manifest_name=None,
+                      paired_trace=None):
     """Verify a certificate's strict-identity hash linkage to its
     paired fixtures.
 
@@ -456,7 +478,60 @@ def check_cert_hashes(cert, paired_ir=None, paired_manifest=None,
                 f"`python tools/regen_cert_hashes.py` to re-pin."
             )
 
+    # R2: the zero-sentinel rewrite_trace_hash is rejected everywhere —
+    # the OCaml verifier refuses it, so a fixture carrying it would
+    # document a cert that can never verify.
+    rth = cert.get("rewrite_trace_hash")
+    if rth == _ZERO_SENTINEL_HASH:
+        errors.append(
+            "rewrite_trace_hash is the all-zeros sentinel; R2 deleted it "
+            "from every mint path and the verifier rejects it. Pair the "
+            "cert with a trace fixture and run "
+            "`python tools/regen_cert_hashes.py`."
+        )
+    if paired_trace is not None and rth != _ZERO_SENTINEL_HASH:
+        expected = canonical_sha256(paired_trace)
+        if rth != expected:
+            errors.append(
+                f"rewrite_trace_hash: expected {expected} (canonical hash "
+                f"of paired trace), got {rth}. Run "
+                f"`python tools/regen_cert_hashes.py` to re-pin."
+            )
+
     return errors, warnings
+
+
+def check_identity_trace_hashes(trace, paired_ir, trace_name=None):
+    """R2: an identity trace fixture must carry the canonical hash of
+    its paired IR in EVERY hash slot (initial, final, each entry's
+    before/after) and only non-rewriting outcomes — it documents 'the
+    default dispatch pipeline left this IR untouched'."""
+    from canonical_hash import canonical_sha256
+    errors = []
+    ir_hash = canonical_sha256(paired_ir)
+    name = trace_name or "trace"
+    for field in ("initial_ir_hash", "final_ir_hash"):
+        if trace.get(field) != ir_hash:
+            errors.append(
+                f"{name}: {field} must equal the paired IR's canonical "
+                f"hash {ir_hash}, got {trace.get(field)}. Run "
+                f"`python tools/regen_cert_hashes.py` to re-pin."
+            )
+    for i, entry in enumerate(trace.get("entries", [])):
+        for field in ("before_hash", "after_hash"):
+            if entry.get(field) != ir_hash:
+                errors.append(
+                    f"{name}: entries[{i}].{field} must equal the paired "
+                    f"IR's canonical hash, got {entry.get(field)}"
+                )
+        if entry.get("outcome") not in ("no_op", "skipped_preconditions"):
+            errors.append(
+                f"{name}: entries[{i}].outcome "
+                f"'{entry.get('outcome')}' is a rewriting outcome — an "
+                "identity trace may only carry no_op / "
+                "skipped_preconditions entries"
+            )
+    return errors
 
 
 def emit_warnings(warnings, out=sys.stdout) -> None:
@@ -578,10 +653,16 @@ def main() -> int:
                 if ir_name is not None:
                     with (EXAMPLES / ir_name).open() as f:
                         paired_ir = json.load(f)
+                paired_trace = None
+                trace_name = CERT_TRACE_PAIRS.get(fixture.name)
+                if trace_name is not None:
+                    with (EXAMPLES / trace_name).open() as f:
+                        paired_trace = json.load(f)
                 e, w = check_cert_hashes(
                     doc, paired_ir=paired_ir, paired_manifest=paired_manifest,
                     cert_name=str(fixture.relative_to(ROOT)),
                     manifest_name=str((EXAMPLES / manifest_name).relative_to(ROOT)),
+                    paired_trace=paired_trace,
                 )
                 errors += e
                 hash_warnings += w
@@ -593,6 +674,12 @@ def main() -> int:
             e, w = check_trace(doc, registry)
             errors += e
             warnings += w
+            ir_name = TRACE_IR_PAIRS.get(fixture.name)
+            if ir_name is not None:
+                with (EXAMPLES / ir_name).open() as f:
+                    paired_ir = json.load(f)
+                errors += check_identity_trace_hashes(
+                    doc, paired_ir, trace_name=str(fixture.relative_to(ROOT)))
 
         rel = fixture.relative_to(ROOT)
         if errors:

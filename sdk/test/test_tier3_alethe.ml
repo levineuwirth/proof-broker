@@ -2216,7 +2216,7 @@ let test_end_to_end_tier3_verified () =
     format = "alethe-2024";
     goal = ir.goal;
     dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash = Pipeline.identity_trace_hash ir;
     backend = {
       name = "synthetic"; version = "0.0";
       config_hash = "sha256:" ^ String.make 64 '0';
@@ -2252,7 +2252,7 @@ let test_end_to_end_unsupported_format () =
     format = "lfsc";
     goal = ir.goal;
     dispatch_context_hash = Hash.sha256_of_json (Codec.to_json ir);
-    rewrite_trace_hash = "sha256:" ^ String.make 64 '0';
+    rewrite_trace_hash = Pipeline.identity_trace_hash ir;
     backend = {
       name = "synthetic"; version = "0.0";
       config_hash = "sha256:" ^ String.make 64 '0';

@@ -10,8 +10,8 @@
     }
   },
 
-  "dispatch_context_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-  "rewrite_trace_hash":    "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "dispatch_context_hash": "sha256:0fa5f0a5daa0555a7ebefe4586c270a17d0d4a97341eaccdc6fc4bae3a33556a",
+  "rewrite_trace_hash":    "sha256:ac8be356edad80b4f79269c2c56b661c2cf16ba6ade9f68ef2deee1e86c6a31a",
 
   "backend": {
     "name": "vampire",
