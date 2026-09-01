@@ -2,6 +2,7 @@
   "id": "uf_cong",
   "description": "a = b |- f a = f b (uninterpreted-function congruence)",
   "coq_goal": "forall (f : Z -> Z) (a b : Z), a = b -> f a = f b",
+  "lean_goal": "∀ (f : Int → Int) (a b : Int), a = b → f a = f b",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

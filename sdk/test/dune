@@ -1,5 +1,6 @@
 (tests
- (names test_round_trip test_propositional_simplify test_definition_unfolding
+ (names test_adapter
+        test_round_trip test_propositional_simplify test_definition_unfolding
         test_quotient_elimination test_metadata test_manifest
         test_certificate test_pipeline test_linear_arith test_farkas
         test_smtlib test_adapter_cvc4 test_adapter_cvc5 test_adapter_z3

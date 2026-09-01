@@ -208,6 +208,11 @@ let mint_farkas_cert
 let version = "1.8"
 
 let dispatch (ir : Ir.t) : Adapter.result =
+  (* R1.8: certs stamp the probed binary version (declared constant
+     as fallback). cvc4 mints only Tier 1 / Tier 0 — no
+     version-sensitive trace passthrough to skip. *)
+  let version =
+    Adapter.probed_version ~binary:cvc4_binary ~fallback:version in
   let fragment = Farkas.effective_fragment ir in
   match Refinement.run ~fragment ir with
   | Error err ->

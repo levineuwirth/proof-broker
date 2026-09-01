@@ -1,11 +1,12 @@
 {
   "supported_rule_count": 31,
+  "mintable": 17,
   "summary": {
-    "walkable": 16,
-    "replayed": 16,
+    "walkable": 17,
+    "replayed": 17,
     "shape_gapped": 0,
-    "unsat": 16,
-    "total": 16,
+    "unsat": 17,
+    "total": 17,
     "non_unsat": []
   },
   "backlog": {},
@@ -14,97 +15,120 @@
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_eq_from_bounds": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_false_from_bounds": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_irrefl": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_pigeonhole3": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_strict_trans": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_sum_bound": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "lia_weaken_bound": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "prop_demorgan": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "prop_eq_trans": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "prop_excluded_middle": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "uf_cong": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "uf_exists_witness": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "uf_forall_inst": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     },
     "uf_lia_mix": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
+    },
+    "uf_lia_threshold": {
+      "result": "unsat",
+      "walkable": true,
+      "missing": [],
+      "replay_skip": null,
+      "mintable": true
     },
     "uf_trans": {
       "result": "unsat",
       "walkable": true,
       "missing": [],
-      "replay_skip": null
+      "replay_skip": null,
+      "mintable": true
     }
   }
 }

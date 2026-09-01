@@ -907,6 +907,57 @@ Mathlib-flavored lib should be precompiled at all. Standing rule from
 this record: a Lean bump is a toolchain-refresh task with its own PR,
 and the first thing it re-validates is the dynlib block, not the shim.
 
+### 5.2 Decision record — Tier-3 mint-gate reach for `hole` (2026-08-31, R1.2)
+
+**Question** (roadmap R1.2). cvc5 wraps its theory-rewrite family in
+`hole` / `rare_rewrite` steps; the mint gate's `check_hole` verified
+only a narrow equality-rewrite set, so half the corpus traces could
+never become Tier-3 certs on the live path. Either widen the checker
+to what the walkers actually discharge, or make the gate name-based
+for `hole`/`rare_rewrite` and record in the cert's
+`trace_dialect_features` that leaf re-derivation is home-side.
+
+**Decision: stay check-based; no name-based bypass.** The whole-proof
+verifier (`Tier3_alethe.verify_parsed`) remains the mint gate, and
+every `hole` / `rare_rewrite` equality is still verified independently
+of its trust tag (the `:args ("TRUST_THEORY_REWRITE" …)` annotation is
+never consulted). What widened, each a sound, tag-independent check:
+
+- linearization treats non-arithmetic applications as opaque atoms
+  (the standard UF abstraction), unlocking UFLIA;
+- comparison evaluation generalizes from constant operands to
+  constant operand *differences* (`(< x x) = false`,
+  `(= (f y) (f y)) = true`);
+- classical Prop normalization: deep double-negation collapse plus
+  the exists-duality `(exists B P) = (not (forall B (not P)))`;
+- equality-to-bounds: `(= t c) ↔ (and …)` of the two `Le`
+  half-spaces, modulo LIA tightening;
+- `la_generic` falls back to a standalone Farkas-tautology check when
+  its literals match no known input (the step's validity is
+  context-free per the Alethe spec; common inside subproofs);
+- `resolution` pairs `¬X` with `¬¬X` in either orientation and
+  accepts cvc5's chain-resolution duplicate-literal merging (extra
+  premise copies of a literal the conclusion retains);
+- `subproof` closes accept an empty body clause rendered as the
+  literal `false` (both reify to the bottom Prop).
+
+The name-based alternative was rejected: it would have made the gate
+vacuous for exactly the rule (168 of 1061 corpus steps are holes)
+whose shapes carry the real risk, and nothing forced it — every
+corpus hole proved decidable at mint time.
+
+**Measured** (2026-08-31, branch `r1/walker-live-path`, R1.2 commit,
+command: `dune runtest sdk`, test `corpus-mintability` in
+`test_tier3_alethe`): 16/16 corpus traces verify shape-level against
+their goal IRs. Before R1.1, 8/16 failed the rule-NAME gate alone;
+after R1.1 closed the name gap, 9/16 still failed shape-level (4 on
+unreachable assume validation — UF/quantified hypotheses the
+IR-to-Sexp translation could not render — 4 on hole shapes, 1 on a
+subproof-internal `la_generic`); each class is now closed and pinned
+by unit tests plus the corpus sweep.
+
+---
+
 ---
 
 ## 6. References

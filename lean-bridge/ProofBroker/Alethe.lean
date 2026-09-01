@@ -49,12 +49,15 @@ comparisons, `not`, `True`/`False`, `or`/`and`/`=>`), plus a
 generic UF-application fallback for `(f a₁ … aₙ)` over local
 free vars (so `cong` works for any in-scope UF symbol).
 
-Production integration. `ProofBroker.Tactic.tryAletheWalkerLIA`
-wires the walker into the LIA arm of `closeOrFailPrimary`. The
-shared `walkProofIntoGoal` helper distinguishes refutation
-traces (final clause empty `(cl)`) from direct traces, and uses
+Production integration. `ProofBroker.Tactic.tryAletheWalker`
+wires the walker into the LIA / UF / UFLIA arms of
+`closeOrFailPrimary` (walker-first since R1.3). The shared
+`walkProofIntoGoal` helper distinguishes refutation traces
+(final clause empty `(cl)`) from direct traces, and uses
 `MVarId.falseOrByContra` to expose `¬goal` as a hypothesis for
-non-`False` user goals. Walker failure falls through to omega.
+non-`False` user goals. Walker failure falls through to the
+fragment's re-proving closer (omega / the `subst_eqs`+`simp_all`
+UF chain / the UFLIA fallback chain).
 
 The cluster list above is a summary; the authoritative rule
 inventory is the `PARITY:walker-rules` dispatch block in
@@ -627,8 +630,27 @@ private def elabAssumeLiteral (ctx : WalkerContext) (id : String)
     if decl.isImplementationDetail then continue
     if ← isDefEq decl.type stmt then
       return decl.toExpr
-  throwError m!"alethe walker: assume '{id}' states {stmt}, \
-                 but no local hypothesis matches that type"
+  -- Negation goals: for a user goal `¬P`, `falseOrByContra`
+  -- INTROS (leaving a hyp `P`) rather than adding a `¬¬P`
+  -- by-contradiction hypothesis — but the SMT script asserted
+  -- `(not goal)` = `¬¬P`, so the trace's negated-goal assume
+  -- states the double negation. Bridge the gap constructively:
+  -- when the literal is `(not (not X))` and some hypothesis
+  -- proves `X`, wrap it as `fun hn => hn h : ¬¬X`.
+  match literal with
+  | .list [.atom "not", .list [.atom "not", x]] =>
+    let xE ← sexpToExpr ctx x
+    for decl in lctx do
+      if decl.isImplementationDetail then continue
+      if ← isDefEq decl.type xE then
+        let notX := mkApp (mkConst ``Not) xE
+        return ← withLocalDeclD `hn notX fun hn => do
+          mkLambdaFVars #[hn] (mkApp hn decl.toExpr)
+    throwError m!"alethe walker: assume '{id}' states {stmt}, \
+                   but no local hypothesis matches that type"
+  | _ =>
+    throwError m!"alethe walker: assume '{id}' states {stmt}, \
+                   but no local hypothesis matches that type"
 
 /-- `(cl (not false))` from a `false`-rule step — the standard
     premise for the final empty-cl resolution. The proof of
@@ -887,9 +909,17 @@ private def omegaDischargeClause (ctx : WalkerContext) (s : Step)
         unless ← isDefEq ty (mkSort Level.zero) do throw e
         let mkDir (hTy gTy : Expr) : MetaM Expr :=
           withLocalDeclD `h hTy fun h => do
-            let g ← mkFreshExprSyntheticOpaqueMVar gTy
-            omegaCloseMVar g.mvarId! excluded
-            mkLambdaFVars #[h] (← instantiateMVars g)
+            -- `False → P` needs no arithmetic: omega ignores a
+            -- bare `False` hypothesis (it isn't an arithmetic
+            -- fact), so eliminate it directly. Arises for the
+            -- `(= A false)` rewrite equalities cvc5 emits (e.g.
+            -- `(< x x) = false` on irreflexivity goals).
+            if hTy.isConstOf ``False then
+              mkLambdaFVars #[h] (← mkAppOptM ``False.elim #[some gTy, some h])
+            else
+              let g ← mkFreshExprSyntheticOpaqueMVar gTy
+              omegaCloseMVar g.mvarId! excluded
+              mkLambdaFVars #[h] (← instantiateMVars g)
         let mp ← mkDir a b
         let mpr ← mkDir b a
         mkAppM ``propext #[← mkAppM ``Iff.intro #[mp, mpr]]
@@ -1792,25 +1822,63 @@ private def buildExistsDuality (ctx : WalkerContext) (lhsSexp rhsSexp : Sexp)
     mkLambdaFVars #[hna] (← mkAppM ``Classical.byContradiction #[contra])
   mkAppM ``propext #[← mkAppM ``Iff.intro #[fwd, bwd]]
 
+/-- `(= (not (not P)) P)` (or flipped): classical double-negation
+    elimination as a Prop equality — a rewrite shape cvc5 emits
+    (e.g. while collapsing a doubly-negated goal atom) that omega
+    cannot decide as an `Eq` or as `Iff` directions (it doesn't
+    strip `¬¬` on atoms). Proof: `propext (Iff.intro dne intro₂)`
+    with `dne := Classical.byContradiction` and
+    `intro₂ hp hn := hn hp`. `dnFirst` says whether the `¬¬P`
+    side is the equality's LHS. -/
+private def buildDoubleNegEq (ctx : WalkerContext)
+    (inner : Sexp) (dnFirst : Bool) : WalkerM Expr := do
+  let pE ← sexpToExpr ctx inner
+  let notP := mkApp (mkConst ``Not) pE
+  let nnP := mkApp (mkConst ``Not) notP
+  let dne ← withLocalDeclD `hnn nnP fun hnn => do
+    let e ← mkAppOptM ``Classical.byContradiction #[some pE, some hnn]
+    mkLambdaFVars #[hnn] e
+  let intro2 ← withLocalDeclD `hp pE fun hp => do
+    let innerFn ← withLocalDeclD `hn notP fun hn => do
+      mkLambdaFVars #[hn] (mkApp hn hp)
+    mkLambdaFVars #[hp] innerFn
+  let iff ← if dnFirst then
+      mkAppM ``Iff.intro #[dne, intro2]
+    else
+      mkAppM ``Iff.intro #[intro2, dne]
+  mkAppM ``propext #[iff]
+
 /-- Trust-tagged leaf (`hole` / `rare_rewrite`) with tautology
     fallbacks. Most trust holes are arithmetic rewrites
     (`TRUST_THEORY_REWRITE` over LIA atoms) and re-derive via
     omega; over `Prop` atoms cvc5 emits the *same* tags on
     tautologies omega cannot see. A single-eq clause is therefore
     matched against, in order: the existential-duality rewrite
-    (`∃` Skolem normalization), the `equiv_simplify` structural
-    patterns, then the omega discharge (itself propext-augmented).
-    Every path re-derives from scratch — the Audit-H1
-    never-admit-on-tag contract is unchanged. -/
+    (`∃` Skolem normalization), the double-negation-elimination
+    equality, the `equiv_simplify` structural patterns, then the
+    omega discharge (itself propext-augmented). Every path
+    re-derives from scratch — the Audit-H1 never-admit-on-tag
+    contract is unchanged. -/
 private def elabTrustTaggedLeafOrTautology (ctx : WalkerContext)
     (s : Step) : WalkerM (Expr × List Sexp) := do
   match s.clause with
-  | [.list [.atom "=", _, _]] =>
+  | [.list [.atom "=", le, re]] =>
     match existsForallDuality? s.clause with
     | some (le, re) => return (← buildExistsDuality ctx le re, s.clause)
     | none =>
-      try elabEquivSimplify ctx s
-      catch _ => elabTrustTaggedLeaf ctx s
+      let dn? : Option (Sexp × Bool) :=
+        match le, re with
+        | .list [.atom "not", .list [.atom "not", x]], y =>
+          if x == y then some (y, true) else none
+        | x, .list [.atom "not", .list [.atom "not", y]] =>
+          if x == y then some (x, false) else none
+        | _, _ => none
+      match dn? with
+      | some (inner, dnFirst) =>
+        return (← buildDoubleNegEq ctx inner dnFirst, s.clause)
+      | none =>
+        try elabEquivSimplify ctx s
+        catch _ => elabTrustTaggedLeaf ctx s
   | _ => elabTrustTaggedLeaf ctx s
 
 /-- Strip the last dotted component of a step/assume id to get the
@@ -2005,14 +2073,12 @@ def elabStep (ctx : WalkerContext) (s : Step) : WalkerM Unit := do
     -- PARITY:walker-rules END
     | other =>
       throwError m!"alethe walker: rule '{other}' not yet \
-                     supported (current scope: resolution / or / \
-                     false / la_generic / la_mult_neg / refl / \
-                     symm / trans / cong / hole / rare_rewrite / \
-                     implies / equiv1 / equiv2 / equiv_pos1 / \
-                     equiv_pos2 / not_and / and_neg / \
-                     equiv_simplify, plus seeded assumes — the \
-                     omega fallback in closeOrFail handles any \
-                     residual unsupported rules)."
+                     supported (the authoritative inventory is \
+                     the PARITY:walker-rules dispatch block above, \
+                     kept at three-way parity with the Rocq walker \
+                     and the SDK mint gate — the fragment closer's \
+                     fallback in closeOrFail handles any residual \
+                     unsupported rules)."
   storeStep s.id proof clause
 
 /-- Walk an Alethe proof and return the `Expr` proving the final

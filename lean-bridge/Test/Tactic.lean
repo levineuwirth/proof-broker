@@ -1164,7 +1164,7 @@ theorem alethe_walker_cong_nary_add_axiom_free
    The trace below is the verbatim alethe-2024 output cvc5
    minted for `(n m : Int) (h1 : n + m = 10) (h3 : 0 ≤ m)
    ⊢ n ≤ 10` (the `lia_axiom_free` shape) — captured by adding
-   diagnostic logging to `tryAletheWalkerLIA` in this branch,
+   diagnostic logging to `tryAletheWalker` in this branch,
    then pasted verbatim here. Walking it via `alethe_walker_test`
    exercises the walker independently of cvc5 dispatch: CI
    doesn't need cvc5 to validate this path, and the trace text

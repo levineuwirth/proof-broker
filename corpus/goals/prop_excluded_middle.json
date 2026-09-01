@@ -2,6 +2,7 @@
   "id": "prop_excluded_middle",
   "description": "|- p \\/ ~p (excluded middle; probes tautology/or rules)",
   "coq_goal": "forall p : Prop, p \\/ ~p",
+  "lean_goal": "∀ p : Prop, p ∨ ¬p",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

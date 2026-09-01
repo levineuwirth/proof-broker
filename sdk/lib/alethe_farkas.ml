@@ -56,6 +56,23 @@ let rec lin_arith (s : S.t) : L.t option =
      | None -> None)
   | S.List (S.Atom "*" :: args) ->
     fold_product L.rat_one None args
+  | S.List (S.Atom head :: _)
+    when not (List.mem head
+                [ "not"; "and"; "or"; "=>"; "=";
+                  "<="; "<"; ">="; ">"; "ite";
+                  "forall"; "exists"; "choice"; "lambda" ]) ->
+    (* Opaque-atom fallback (UFLIA): an application with a
+       non-arithmetic, non-logical head — e.g. an uninterpreted
+       function application [(f x)] — is treated as an atomic
+       variable keyed by its serialized form. Standard UF
+       abstraction: structurally identical applications share one
+       variable, distinct ones stay independent, so any Farkas
+       contradiction (or linear-form equality) derived over the
+       abstraction holds under every interpretation of the
+       function symbols. Formula heads (logical connectives,
+       comparisons, binders) are excluded — they are not
+       arithmetic terms. *)
+    Some (L.var (S.to_string s))
   | _ -> None
 
 and fold_sum acc = function

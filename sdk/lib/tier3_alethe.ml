@@ -88,11 +88,15 @@ type env = {
 (** Translate an IR shell to its [Alethe.Sexp.t] form, mirroring
     what cvc5 would emit when given this term as part of an
     SMT-LIB assert. Symbol names are normalized to SMT-LIB
-    primitives ([HAdd.hAdd] → [+], [LE.le] → [<=], etc.) so the
-    output matches cvc5's atom shapes after named-ref expansion.
-    Returns [None] for shapes that have no SMT-LIB atomic form
-    (Forall, Lambda, Opaque), which can't appear as Tier 3
-    assume atoms anyway. *)
+    primitives ([HAdd.hAdd] → [+], [LE.le] → [<=], etc.), a
+    [UF.<name>] application renders as [(name …)] (the
+    [Smtlib.emit_app] convention), and [Forall]/[Exists] shells
+    render as [(forall ((x S)) body)] / [(exists ((x S)) body)]
+    for the primitive sorts [Smtlib] serializes — so the output
+    matches cvc5's atom shapes after named-ref expansion.
+    Returns [None] for shapes that have no SMT-LIB form (Lambda,
+    Opaque, non-primitive quantifier sorts), which then can't be
+    matched as Tier 3 assume atoms — fail closed. *)
 let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
   let arith_sym = function
     | "HAdd.hAdd" | "Int.add" | "Add.add" | "+" -> "+"
@@ -104,6 +108,28 @@ let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
     | "GE.ge" | ">=" -> ">="
     | "GT.gt" | ">"  -> ">"
     | s -> s
+  in
+  let uf_sym s =
+    let prefix = "UF." in
+    let plen = String.length prefix in
+    if String.length s > plen && String.sub s 0 plen = prefix
+    then Some (String.sub s plen (String.length s - plen))
+    else None
+  in
+  let sort_of = function
+    | "Int" -> Some "Int"
+    | "Real" -> Some "Real"
+    | "Bool" -> Some "Bool"
+    | _ -> None
+  in
+  let quant q var ty body =
+    match sort_of ty, shell_to_sexp body with
+    | Some sort, Some sb ->
+      Some (Alethe.Sexp.List
+              [ Atom q;
+                List [ List [ Atom var; Atom sort ] ];
+                sb ])
+    | _ -> None
   in
   let bin op a b =
     match shell_to_sexp a, shell_to_sexp b with
@@ -125,11 +151,16 @@ let rec shell_to_sexp (t : Ir.shell_term) : Alethe.Sexp.t option =
      | Some s -> Some (List [ Atom "not"; s ])
      | None -> None)
   | Eq { left; right; _ } -> bin "=" left right
+  | Forall { var; ty; body } -> quant "forall" var ty body
+  | Exists { var; ty; body } -> quant "exists" var ty body
   | App { symbol; args; _ } ->
     let sargs = List.map shell_to_sexp args in
     if List.for_all Option.is_some sargs then
-      Some (List (Atom (arith_sym symbol)
-                  :: List.map Option.get sargs))
+      let head = match uf_sym symbol with
+        | Some name -> name
+        | None -> arith_sym symbol
+      in
+      Some (List (Atom head :: List.map Option.get sargs))
     else None
   | _ -> None
 
@@ -396,12 +427,105 @@ let verify_witness_with_inputs
         Error ("non-positive residual constant: "
                ^ Linear_arith.rat_to_string c)
 
+(** Standalone-tautology check for a [la_generic] step whose
+    literals do NOT all match known inputs. Per the Alethe spec,
+    [la_generic] concludes a VALID clause with no premises: the
+    conjunction of the literals' negations, each scaled by its
+    [:args] coefficient, sums to an arithmetic contradiction.
+    That validity is context-free, so no input matching is needed
+    — compile each literal's negation ([compile_neg_literal],
+    with LIA tightening under non-LRA fragments), scale, sum, and
+    require the residual to be a contradictory constant.
+
+    Coefficient conventions: inequality conjuncts take the
+    coefficient's absolute value (a Farkas combination needs
+    nonnegative multipliers; cvc5's emitted sign encodes
+    direction bookkeeping we don't reconstruct); equality
+    conjuncts may be scaled with either sign, so we search the
+    sign choices (capped at 8 equalities = 256 combinations, far
+    beyond any observed step; fail closed above that). The search
+    does not weaken soundness: acceptance still requires
+    exhibiting a valid Farkas contradiction. *)
+let check_la_generic_tautology ~fragment (env : env)
+    (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "la_generic"; detail } in
+  let args = Option.value step.args ~default:[] in
+  if List.length args <> List.length step.clause then
+    fail "tautology check: args/literal count mismatch"
+  else
+    let rat_abs r =
+      if Linear_arith.rat_is_neg r then Linear_arith.rat_neg r else r
+    in
+    let parse_coef a =
+      let raw = match a with
+        | Alethe.Sexp.Atom s -> s
+        | s -> Alethe.Sexp.to_string s
+      in
+      Linear_arith.rat_of_string raw
+    in
+    let rec build eqs base has_strict = function
+      | [], [] -> Ok (eqs, base, has_strict)
+      | lit :: lits, arg :: args' ->
+        (match parse_coef arg with
+         | None -> Error "tautology check: unparseable coefficient"
+         | Some k ->
+           (match Alethe_farkas.compile_neg_literal ~fragment lit with
+            | None ->
+              Error ("tautology check: literal not Farkas-amenable: "
+                     ^ Alethe.Sexp.to_string lit)
+            | Some (Farkas.Eq f) ->
+              build ((f, k) :: eqs) base has_strict (lits, args')
+            | Some (Farkas.Le f) ->
+              let k = rat_abs k in
+              build eqs (Linear_arith.add base (Linear_arith.scale k f))
+                has_strict (lits, args')
+            | Some (Farkas.Lt f) ->
+              let k = rat_abs k in
+              let strict' = has_strict || Linear_arith.rat_is_pos k in
+              build eqs (Linear_arith.add base (Linear_arith.scale k f))
+                strict' (lits, args')))
+      | _, _ -> Error "tautology check: impossible desync"
+    in
+    match build [] Linear_arith.zero false (step.clause, args) with
+    | Error msg -> fail msg
+    | Ok (eqs, base, has_strict) ->
+      if List.length eqs > 8 then
+        fail "tautology check: too many equality literals (sign \
+              search capped at 8)"
+      else
+        let contradictory residual =
+          Linear_arith.is_constant residual
+          && (let c = Linear_arith.constant_value residual in
+              if has_strict then Linear_arith.rat_is_nonneg c
+              else Linear_arith.rat_is_pos c)
+        in
+        let rec search acc = function
+          | [] -> contradictory acc
+          | (f, k) :: rest ->
+            search (Linear_arith.add acc (Linear_arith.scale k f)) rest
+            || search
+                 (Linear_arith.add acc
+                    (Linear_arith.scale (Linear_arith.rat_neg k) f))
+                 rest
+        in
+        if search base eqs then begin
+          (* A tautology depends on nothing: no local assumes are
+             consumed. *)
+          env.last_la_generic_consumed <- Some StringSet.empty;
+          Step_verified
+        end else
+          fail "tautology check: no sign choice yields a positive \
+                constant residual"
+
 (** Check a single [la_generic] step. Reuses [Alethe_farkas]
     extraction (clause-vs-input matching by linear-form scaling,
     plus LIA tightening) to produce a Farkas witness, then runs
     [verify_witness_with_inputs] on the precompiled inputs (IR
     hypotheses + any local assumes in scope). Verified iff the
-    residual sum is a positive constant. *)
+    residual sum is a positive constant. When a literal matches
+    no input, falls back to [check_la_generic_tautology] — inside
+    subproofs cvc5 recombines derived atoms into context-free
+    la_generic tautologies. *)
 let check_la_generic (env : env) (step : Alethe.step) : step_result =
   let ir = env.ir in
   let fragment = Farkas.effective_fragment ir in
@@ -420,6 +544,8 @@ let check_la_generic (env : env) (step : Alethe.step) : step_result =
   in
   let inputs = base_inputs @ local_inputs in
   match Alethe_farkas.extract_from_step ~fragment ~inputs step with
+  | Error (Alethe_farkas.Unmatched_literal _) ->
+    check_la_generic_tautology ~fragment env step
   | Error e ->
     Step_failed {
       rule = "la_generic";
@@ -609,31 +735,34 @@ let compiled_equal (a : Farkas.compiled) (b : Farkas.compiled) : bool =
   | Farkas.Eq x, Farkas.Eq y -> x = y
   | _ -> false
 
-(** Evaluate a constant comparison literal like [(<= 0 -2)] or
-    [(< -1 0)] to a boolean, when both operands are numeric
-    constants. Returns [None] if either operand isn't a constant
-    or the operator isn't a recognized arithmetic comparison.
-    Used by the [hole]/[rare_rewrite] equality-rewrite checkers
-    to prove things like [(<= 0 -2) = false]. *)
+(** Evaluate a comparison literal to a boolean when the DIFFERENCE
+    of its linearized operands is a constant — e.g. [(<= 0 -2)]
+    (constants), [(< x x)] (irreflexivity: diff [0]), or
+    [(= (f y) (f y))] (reflexivity over an opaque UF atom). The
+    linearization is exact symbolic arithmetic — a constant
+    difference holds under every valuation of the (possibly
+    opaque-abstracted) atoms, so the evaluation is sound for any
+    interpretation. Returns [None] when the difference has a
+    residual variable part or the operator isn't a recognized
+    comparison. Used by the [hole]/[rare_rewrite] equality-rewrite
+    checkers to prove things like [(<= 0 -2) = false] and
+    [(< x x) = false]. *)
 let evaluate_comparison_to_bool (lhs : Alethe.Sexp.t) : bool option =
-  let const_of e =
-    match Alethe_farkas.lin_arith e with
-    | Some lf when Linear_arith.is_constant lf ->
-      Some (Linear_arith.constant_value lf)
-    | _ -> None
-  in
   match lhs with
   | List [ Atom op; a; b ] ->
-    (match const_of a, const_of b with
-     | Some ra, Some rb ->
-       let d = Linear_arith.rat_sub ra rb in
-       (match op with
-        | "<=" -> Some (not (Linear_arith.rat_is_pos d))
-        | "<"  -> Some (Linear_arith.rat_is_neg d)
-        | ">=" -> Some (Linear_arith.rat_is_nonneg d)
-        | ">"  -> Some (Linear_arith.rat_is_pos d)
-        | "="  -> Some (Linear_arith.rat_is_zero d)
-        | _ -> None)
+    (match Alethe_farkas.lin_arith a, Alethe_farkas.lin_arith b with
+     | Some la, Some lb ->
+       let diff = Linear_arith.sub la lb in
+       if not (Linear_arith.is_constant diff) then None
+       else
+         let d = Linear_arith.constant_value diff in
+         (match op with
+          | "<=" -> Some (not (Linear_arith.rat_is_pos d))
+          | "<"  -> Some (Linear_arith.rat_is_neg d)
+          | ">=" -> Some (Linear_arith.rat_is_nonneg d)
+          | ">"  -> Some (Linear_arith.rat_is_pos d)
+          | "="  -> Some (Linear_arith.rat_is_zero d)
+          | _ -> None)
      | _ -> None)
   | _ -> None
 
@@ -685,13 +814,35 @@ let evaluate_constant_literal (lit : Alethe.Sexp.t) : bool option =
   in
   walk true lit
 
+(** Classical propositional / quantifier normalization for rewrite
+    equalities: bottom-up, collapse double negations everywhere
+    and rewrite [(exists B P)] to [(not (forall B (not P)))].
+    Both rewrites are classically valid Prop equalities (the
+    walkers discharge exactly these hole shapes with [propext] +
+    [Classical.em] / [classic]), and they apply congruently at any
+    depth — so two sides with the same normal form denote the same
+    Prop. *)
+let rec normalize_prop (s : Alethe.Sexp.t) : Alethe.Sexp.t =
+  let negate x =
+    match x with
+    | Alethe.Sexp.List [ Atom "not"; inner ] -> inner
+    | _ -> Alethe.Sexp.List [ Atom "not"; x ]
+  in
+  match s with
+  | Atom _ -> s
+  | List [ Atom "not"; inner ] -> negate (normalize_prop inner)
+  | List [ Atom "exists"; binders; body ] ->
+    let nb = normalize_prop body in
+    List [ Atom "not"; List [ Atom "forall"; binders; negate nb ] ]
+  | List xs -> List (List.map normalize_prop xs)
+
 (** Verify a theory-rewrite equality [(= LHS RHS)]. Strategy, in
     order of generality:
     1. Linear-form arithmetic equality: linearize both sides via
        [Alethe_farkas.lin_arith] and compare canonical forms.
        Handles constant-fold rewrites (e.g. [-1] times [3] equals
        [-3]) and algebraic identities (e.g. [x] plus [-x] equals
-       [0]).
+       [0]); UF applications participate as opaque atoms.
     2. Normalized-literal equality: reduce each side to a canonical
        [Farkas.compiled] form, accounting for [(not)] nesting and
        LIA tightening. Handles direction flips, double negation,
@@ -699,22 +850,48 @@ let evaluate_constant_literal (lit : Alethe.Sexp.t) : bool option =
        atom as [not (n >= 11)]), equation rearrangements (an
        equation reordered or moved to one side), and any
        composition of these.
-    3. Constant-boolean evaluation: if both sides reduce to the
+    3. Classical Prop normalization: deep double-negation collapse
+       plus the exists-duality [(exists B P) = (not (forall B
+       (not P)))]; equal normal forms mean equal Props.
+    4. Equality-to-bounds: [(= EQATOM (and B C))] (either
+       orientation) where [EQATOM] compiles to [Eq f] and the two
+       conjuncts normalize to [Le g], [Le h] with [g + h = 0] and
+       [g = ±f] — [f = 0 ↔ f ≤ 0 ∧ -f ≤ 0], modulo LIA
+       tightening of the conjuncts.
+    5. Constant-boolean evaluation: if both sides reduce to the
        same boolean via [(not)] wrappers around [true]/[false],
        accept. Handles propositional folds like [(not (not true))
        = true].
-    4. Comparison-boolean evaluation: if [RHS] is [true]/[false]
-       and [LHS] is a comparison with constant operands, evaluate
-       the comparison. Handles [(<= 0 -2) = false], [(< -1 0) =
-       true].
+    6. Comparison-boolean evaluation: if [RHS] is [true]/[false]
+       and [LHS] is a comparison whose linearized operand
+       DIFFERENCE is constant, evaluate it. Handles [(<= 0 -2) =
+       false], [(< x x) = false], [(= (f y) (f y)) = true].
     Otherwise reject — there are still classes of cvc5 theory
-    rewrites we don't recognize (uninterpreted-function ground
-    rewrites, bit-vector evaluation, complex propositional
-    simplifications). *)
+    rewrites we don't recognize (bit-vector evaluation, complex
+    propositional simplifications). *)
 let check_theory_rewrite_equality
     ?(fragment = "LIA")
     (lhs : Alethe.Sexp.t) (rhs : Alethe.Sexp.t)
   : (unit, string) result =
+  let eq_and_bounds_matches eq_side and_side =
+    match and_side with
+    | Alethe.Sexp.List [ Atom "and"; b1; b2 ] ->
+      (match Alethe_farkas.compile_atom_pos eq_side with
+       | Some (Farkas.Eq f) ->
+         (match normalize_literal ~fragment b1,
+                normalize_literal ~fragment b2 with
+          | Some (Farkas.Le g), Some (Farkas.Le h) ->
+            Linear_arith.add g h = Linear_arith.zero
+            && (g = f || g = Linear_arith.neg f)
+          | _ -> false)
+       | _ -> false)
+    | _ -> false
+  in
+  let no_path =
+    Error "no rewrite path: not linear-equal, normalized-equal, \
+           prop-normal-equal, eq-to-bounds, constant-bool, or \
+           comparison-eval"
+  in
   match Alethe_farkas.lin_arith lhs, Alethe_farkas.lin_arith rhs with
   | Some la, Some lb when la = lb -> Ok ()
   | _ ->
@@ -722,6 +899,10 @@ let check_theory_rewrite_equality
            normalize_literal ~fragment rhs with
      | Some ca, Some cb when compiled_equal ca cb -> Ok ()
      | _ ->
+       if normalize_prop lhs = normalize_prop rhs then Ok ()
+       else if eq_and_bounds_matches lhs rhs
+            || eq_and_bounds_matches rhs lhs then Ok ()
+       else
        (match evaluate_constant_literal lhs,
               evaluate_constant_literal rhs with
         | Some a, Some b when a = b -> Ok ()
@@ -734,20 +915,14 @@ let check_theory_rewrite_equality
               | Some true -> Ok ()
               | Some false ->
                 Error "comparison evaluates to false but rhs is true"
-              | None ->
-                Error "no rewrite path: not linear-equal, normalized-equal, \
-                       constant-bool, or comparison-eval")
+              | None -> no_path)
            | Atom "false" ->
              (match evaluate_comparison_to_bool lhs with
               | Some false -> Ok ()
               | Some true ->
                 Error "comparison evaluates to true but rhs is false"
-              | None ->
-                Error "no rewrite path: not linear-equal, normalized-equal, \
-                       constant-bool, or comparison-eval")
-           | _ ->
-             Error "no rewrite path: not linear-equal, normalized-equal, \
-                    constant-bool, or comparison-eval")))
+              | None -> no_path)
+           | _ -> no_path)))
 
 (** [hole]: cvc5's escape hatch for theory rewrites it doesn't
     spell out fully. The conclusion is a single equality clause
@@ -1017,13 +1192,36 @@ let check_resolution (env : env) (step : Alethe.step) : step_result =
          let rec pair_up = function
            | [] -> Ok ()
            | lit :: rest ->
-             let comp = complement_literal lit in
-             (match pop_first comp rest with
+             (* Two literals are complementary iff one is
+                syntactically [(not <other>)] — in EITHER
+                direction. [complement_literal] strips a negated
+                literal, which misses the pair (¬X, ¬¬X): there
+                the complement of ¬X present in the residue is
+                the WRAPPED form ¬¬X, not the stripped X. Try
+                the stripped candidate first, then the wrapped
+                one. *)
+             let stripped = complement_literal lit in
+             let wrapped = Alethe.Sexp.List [ Atom "not"; lit ] in
+             (match pop_first stripped rest with
               | Some rest' -> pair_up rest'
               | None ->
-                Error (Printf.sprintf
-                  "unpaired residual literal (no complement): %s"
-                  (Alethe.Sexp.to_string lit)))
+                (match pop_first wrapped rest with
+                 | Some rest' -> pair_up rest'
+                 | None ->
+                   (* cvc5's chain resolution MERGES duplicate
+                      literals: the same literal arriving from two
+                      premises appears once in the conclusion.
+                      Dropping the extra copy is sound — a clause
+                      is a disjunction, so L ∨ L ∨ D and L ∨ D are
+                      the same Prop — but only for literals the
+                      conclusion actually retains; anything else
+                      unpaired stays a failure. *)
+                   if List.exists (sexp_equal lit) conclusion_lits
+                   then pair_up rest
+                   else
+                     Error (Printf.sprintf
+                       "unpaired residual literal (no complement): %s"
+                       (Alethe.Sexp.to_string lit))))
          in
          (match pair_up removed with
           | Ok () -> Step_verified
@@ -1250,6 +1448,268 @@ let check_symm (env : env) (step : Alethe.step) : step_result =
       detail = "expected one premise and (cl (= b a)) conclusion";
     }
 
+(** [not_not]: tautological clause [(cl (not (not (not φ))) φ)] —
+    [¬¬¬φ ∨ φ] holds for any [φ]. Pure shape check, mirroring the
+    walkers' [elabNotNot] / [elab_not_not]: the triple-negated
+    formula must be syntactically identical to the second
+    literal. *)
+let check_not_not (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "not"; List [ Atom "not"; List [ Atom "not"; phi ] ] ];
+      phi' ] when sexp_equal phi phi' -> Step_verified
+  | [ List [ Atom "not"; List [ Atom "not"; List [ Atom "not"; _ ] ] ];
+      _ ] ->
+    Step_failed {
+      rule = "not_not";
+      detail = "inner formula does not match the second literal";
+    }
+  | _ ->
+    Step_failed {
+      rule = "not_not";
+      detail = "expected (cl (not (not (not phi))) phi)";
+    }
+
+(** [not_or]: from premise [(cl (not (or t_0 … t_n)))] and index
+    [:args (i)], conclude [(cl (not t_i))]. Sound: a negated
+    disjunction refutes each disjunct. Mirrors [elabNotOr] /
+    [elab_not_or] (which build [fun hti => h (inject_i hti)]). *)
+let check_not_or (env : env) (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "not_or"; detail } in
+  let premises = Option.value step.premises ~default:[] in
+  let args = Option.value step.args ~default:[] in
+  match premises, args, step.clause with
+  | [ p ], [ Atom idx_str ], [ concl_lit ] ->
+    (match int_of_string_opt idx_str with
+     | None -> fail "args[0] is not an integer index"
+     | Some i ->
+       (match proven_in_scope env step p with
+        | Some [ List [ Atom "not"; List (Atom "or" :: disjuncts) ] ] ->
+          if i < 0 || i >= List.length disjuncts then
+            fail (Printf.sprintf
+              "index %d out of range for a %d-disjunct (or)"
+              i (List.length disjuncts))
+          else
+            let expected =
+              Alethe.Sexp.List [ Atom "not"; List.nth disjuncts i ]
+            in
+            if sexp_equal expected concl_lit then Step_verified
+            else
+              fail "conclusion literal is not (not t_i) for the \
+                    indexed disjunct"
+        | Some _ -> fail ("premise " ^ p ^ " is not (cl (not (or …)))")
+        | None -> fail ("unknown or out-of-scope premise: " ^ p)))
+  | _ ->
+    fail "expected one premise, one index arg, and a single-literal \
+          clause"
+
+(** [or_neg]: tautological clause [(cl (or t_0 … t_n) (not t_i))]
+    with [:args (i)] — [(or …) ∨ ¬t_i] holds for any disjuncts.
+    Mirrors [elabOrNeg] / [elab_or_neg]. *)
+let check_or_neg (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "or_neg"; detail } in
+  let args = Option.value step.args ~default:[] in
+  match args, step.clause with
+  | [ Atom idx_str ],
+    [ List (Atom "or" :: disjuncts); List [ Atom "not"; t_i ] ] ->
+    (match int_of_string_opt idx_str with
+     | None -> fail "args[0] is not an integer index"
+     | Some i ->
+       if i < 0 || i >= List.length disjuncts then
+         fail (Printf.sprintf
+           "index %d out of range for a %d-disjunct (or)"
+           i (List.length disjuncts))
+       else if sexp_equal (List.nth disjuncts i) t_i then Step_verified
+       else fail "negated literal does not match the indexed disjunct")
+  | _ ->
+    fail "expected :args (i) and (cl (or …) (not t_i))"
+
+(** [equiv2]: from premise [(cl (= A B))], conclude [(cl A (not B))]
+    — the backward direction of equivalence elimination ([equiv1]
+    above is the forward [(cl (not A) B)]). *)
+let check_equiv2 (env : env) (step : Alethe.step) : step_result =
+  let premises = Option.value step.premises ~default:[] in
+  match premises, step.clause with
+  | [ p ], [ a_concl; List [ Atom "not"; b_concl ] ] ->
+    (match proven_in_scope env step p with
+     | Some [ List [ Atom "="; a_prem; b_prem ] ]
+       when sexp_equal a_prem a_concl && sexp_equal b_prem b_concl ->
+       Step_verified
+     | Some _ ->
+       Step_failed {
+         rule = "equiv2";
+         detail = "premise not (cl (= A B)) matching conclusion";
+       }
+     | None ->
+       Step_failed { rule = "equiv2"; detail = "unknown premise: " ^ p })
+  | _ ->
+    Step_failed {
+      rule = "equiv2";
+      detail = "expected one premise and (cl A (not B)) conclusion";
+    }
+
+(** [equiv_pos1]: tautological clause [(cl (not (= φ ψ)) φ (not ψ))].
+    Sibling of [equiv_pos2] for the other orientation; sound for
+    any [φ], [ψ]. *)
+let check_equiv_pos1 (step : Alethe.step) : step_result =
+  match step.clause with
+  | [ List [ Atom "not"; List [ Atom "="; phi1; psi1 ] ];
+      phi2;
+      List [ Atom "not"; psi2 ] ]
+    when sexp_equal phi1 phi2 && sexp_equal psi1 psi2 -> Step_verified
+  | _ ->
+    Step_failed {
+      rule = "equiv_pos1";
+      detail = "expected (cl (not (= phi psi)) phi (not psi))";
+    }
+
+(** Simultaneous first-order substitution on an Alethe Sexp,
+    respecting binder shadowing: descending into a [forall] /
+    [exists] / [choice] / [lambda] whose binder list rebinds a
+    substituted name drops that name from the substitution (the
+    inner binder shadows the outer one), so instantiation never
+    rewrites under a rebinding of the same variable. Binder lists
+    (and the sorts inside them) are left untouched. *)
+let rec subst_bound
+    (map : (string * Alethe.Sexp.t) list) (t : Alethe.Sexp.t)
+  : Alethe.Sexp.t =
+  if map = [] then t
+  else
+    match t with
+    | Atom a ->
+      (match List.assoc_opt a map with
+       | Some v -> v
+       | None -> t)
+    | List [ (Atom ("forall" | "exists" | "choice" | "lambda") as q);
+             (List binders as bl); body ] ->
+      let bound =
+        List.filter_map (function
+          | Alethe.Sexp.List (Atom v :: _) -> Some v
+          | _ -> None) binders
+      in
+      let map' =
+        List.filter (fun (n, _) -> not (List.mem n bound)) map
+      in
+      List [ q; bl; subst_bound map' body ]
+    | List xs -> List (List.map (subst_bound map) xs)
+
+(** All atoms occurring in [t] — a deliberate over-approximation of
+    the free variables of an untyped Sexp (operator heads and sorts
+    count). Used only to widen the fail-closed capture guard below,
+    never to accept a step. *)
+let rec atoms_of (t : Alethe.Sexp.t) (acc : string list) : string list =
+  match t with
+  | Atom a -> a :: acc
+  | List xs -> List.fold_left (fun acc x -> atoms_of x acc) acc xs
+
+(** True when applying [map] under [t] would substitute a replacement
+    term inside a binder that binds one of the replacement's atoms —
+    variable capture, which [subst_bound] does not α-rename away.
+    Conservative: every atom of the image counts as potentially free
+    and no occurrence check is made on the substituted name, so a
+    colliding-but-harmless instantiation is rejected (fail closed)
+    rather than risked. The corpus's forall_inst bodies contain no
+    inner binders, so nothing legitimate is lost today. *)
+let rec subst_would_capture
+    (map : (string * Alethe.Sexp.t) list) (t : Alethe.Sexp.t) : bool =
+  if map = [] then false
+  else
+    match t with
+    | Atom _ -> false
+    | List [ Atom ("forall" | "exists" | "choice" | "lambda");
+             List binders; body ] ->
+      let bound =
+        List.filter_map (function
+          | Alethe.Sexp.List (Atom v :: _) -> Some v
+          | _ -> None) binders
+      in
+      let map' =
+        List.filter (fun (n, _) -> not (List.mem n bound)) map
+      in
+      List.exists (fun (_, v) ->
+          List.exists (fun a -> List.mem a bound) (atoms_of v []))
+        map'
+      || subst_would_capture map' body
+    | List xs -> List.exists (subst_would_capture map) xs
+
+(** [forall_inst]: tautological single-literal clause
+    [(cl (or (not (forall ((x_1 S_1) …) F)) F[x_i := t_i]))] with
+    the instantiation terms in [:args]. cvc5 emits the terms bare
+    and positional ([:args (3)], [:args (y)]); the Alethe spec's
+    named form [(:= x t)] / [(:= (x S) t)] is also accepted, and
+    must then cover every binder exactly once. The check
+    substitutes the binders in [F] (shadow-aware, [subst_bound];
+    capture fails closed via [subst_would_capture]) and requires
+    the result to equal the stated instance after
+    numeric normalization. Sorts are not checked — the Sexp layer
+    is untyped; an ill-sorted instantiation term fails at the
+    home-side walker's kernel reconstruction, never silently. *)
+let check_forall_inst (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "forall_inst"; detail } in
+  match step.clause with
+  | [ List [ Atom "or";
+             List [ Atom "not";
+                    List [ Atom "forall"; List binders; body ] ];
+             inst ] ] ->
+    let rec binder_names acc = function
+      | [] -> Ok (List.rev acc)
+      | Alethe.Sexp.List (Atom v :: _) :: rest ->
+        binder_names (v :: acc) rest
+      | b :: _ -> Error ("malformed binder: " ^ Alethe.Sexp.to_string b)
+    in
+    (match binder_names [] binders with
+     | Error msg -> fail msg
+     | Ok names ->
+       let args = Option.value step.args ~default:[] in
+       let named =
+         args <> []
+         && List.for_all (function
+              | Alethe.Sexp.List [ Atom ":="; _; _ ] -> true
+              | _ -> false) args
+       in
+       let map_result =
+         if named then
+           let rec build acc = function
+             | [] -> Ok (List.rev acc)
+             | Alethe.Sexp.List [ Atom ":="; Atom v; t ] :: rest ->
+               build ((v, t) :: acc) rest
+             | Alethe.Sexp.List
+                 [ Atom ":="; List (Atom v :: _); t ] :: rest ->
+               build ((v, t) :: acc) rest
+             | a :: _ ->
+               Error ("malformed := arg: " ^ Alethe.Sexp.to_string a)
+           in
+           (match build [] args with
+            | Error _ as e -> e
+            | Ok m ->
+              if List.sort compare (List.map fst m)
+                 = List.sort compare names
+              then Ok m
+              else Error "named args do not cover the binders exactly")
+         else if List.length args = List.length names then
+           Ok (List.combine names args)
+         else
+           Error (Printf.sprintf
+             "%d instantiation args for %d binders"
+             (List.length args) (List.length names))
+       in
+       (match map_result with
+        | Error msg -> fail msg
+        | Ok map ->
+          if subst_would_capture map body then
+            fail "instantiation term would be captured by an inner \
+                  binder"
+          else
+          let expected = subst_bound map body in
+          if sexp_equal
+               (normalize_numeric_atoms expected)
+               (normalize_numeric_atoms inst)
+          then Step_verified
+          else
+            fail "stated instance is not the binder substitution of \
+                  the body"))
+  | _ ->
+    fail "expected (cl (or (not (forall ((x S) …) F)) inst))"
+
 (** [subproof]: closes an [(anchor :step ID)] block. The body
     derived a clause [C] under local assumptions [A_1 … A_n] (named
     in [:discharge]); the subproof step concludes
@@ -1330,11 +1790,21 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
            detail = "no preceding body conclusion";
          }
        | Some body_concl ->
-         let expected =
+         let negs =
            List.map (fun a -> Alethe.Sexp.List [ Atom "not"; a ]) atoms
-           @ body_concl
          in
-         if not (multiset_equal_clauses expected step.clause) then
+         (* An empty body conclusion [(cl)] reifies to [False], and
+            cvc5 renders it in the close as the literal [false]
+            (mirroring the walkers' [elabSubproof] note: both forms
+            denote the bottom Prop). Accept either rendering. *)
+         let candidates = match body_concl with
+           | [] -> [ negs; negs @ [ Alethe.Sexp.Atom "false" ] ]
+           | lits -> [ negs @ lits ]
+         in
+         if not (List.exists
+                   (fun expected ->
+                     multiset_equal_clauses expected step.clause)
+                   candidates) then
            Step_failed {
              rule = "subproof";
              detail = "conclusion is not (not A_i)… ++ body_clause";
@@ -1371,6 +1841,19 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
                  (StringSet.choose undisclosed);
              }
            else begin
+             (* Record the close's dependency set (body deps minus
+                the discharged assumes) under [step.id] BEFORE
+                stripping the inner scope: the strip below removes
+                the body's own deps entry, and the walk loop in
+                [verify_parsed] reads the recorded one. Without
+                this, a close step's deps were always computed
+                empty (the lookup ran post-strip), so a nested
+                close silently dropped its body's dependencies on
+                OUTER-scope local assumes — a crafted trace could
+                launder an undischarged local assume through a
+                nested subproof and derive [(cl)] from it. *)
+             Hashtbl.replace env.deps step.id
+               (StringSet.diff body_deps discharge_set);
              let inner_prefix = step.id ^ "." in
              let plen = String.length inner_prefix in
              let prefixed k =
@@ -1395,6 +1878,90 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
              Step_verified
            end)
 
+(** [bind]: closes an [(anchor :step T :args ((x S) (:= (x S) x)))]
+    binder subproof. The body's last step proves the pointwise
+    equality [(cl (= A B))] with the binder in scope; the close
+    concludes
+    [(cl (= (forall ((x S) …) A) (forall ((x S) …) B)))].
+
+    Restriction (mirroring the walkers, which only elaborate the
+    identity-renaming form cvc5 emits): the two binder lists must
+    be structurally identical — a genuine α-renaming [(:= x y)]
+    is rejected fail-closed.
+
+    Soundness bookkeeping mirrors [check_subproof]:
+    * the body conclusion must be the immediately preceding step
+      AND a direct child of subproof [T] (no unclosed nested
+      scope can leak its conclusion out);
+    * a [bind] close has no [:discharge], so the body must not
+      depend on ANY local assume inside [T] — a binder anchor
+      introduces variables, never assumptions, and a dotted
+      assume smuggled into the block could otherwise be
+      laundered;
+    * the close's dependency set (= the body's) is recorded under
+      [step.id] before the inner scope is stripped from the env
+      (same pre-strip discipline as [check_subproof]). *)
+let check_bind (env : env) (step : Alethe.step) : step_result =
+  let fail detail = Step_failed { rule = "bind"; detail } in
+  match step.clause with
+  | [ List [ Atom "=";
+             List [ Atom "forall"; List lbinders; lbody ];
+             List [ Atom "forall"; List rbinders; rbody ] ] ] ->
+    if not (sexp_equal (Alethe.Sexp.List lbinders)
+              (Alethe.Sexp.List rbinders)) then
+      fail "binder lists differ (α-renaming binds are not supported)"
+    else
+      let direct_child = match env.last_step_id with
+        | None -> false
+        | Some sid ->
+          (match Alethe.enclosing_subproof_id sid with
+           | Some encl -> String.equal encl step.id
+           | None -> false)
+      in
+      if not direct_child then
+        fail "body conclusion is not a direct child of the bind subproof"
+      else
+        (match env.last_step_clause with
+         | Some [ List [ Atom "="; a; b ] ]
+           when sexp_equal a lbody && sexp_equal b rbody ->
+           let body_id = Option.get env.last_step_id in
+           let body_deps =
+             match Hashtbl.find_opt env.deps body_id with
+             | Some s -> s
+             | None -> StringSet.empty
+           in
+           let inner_prefix = step.id ^ "." in
+           let plen = String.length inner_prefix in
+           let prefixed k =
+             String.length k > plen
+             && String.sub k 0 plen = inner_prefix
+           in
+           let local_leak =
+             StringSet.exists (fun id ->
+               prefixed id && Hashtbl.mem env.assumes id) body_deps
+           in
+           if local_leak then
+             fail "body depends on a local assume inside the bind \
+                   block (bind has no :discharge to seal it)"
+           else begin
+             Hashtbl.replace env.deps step.id body_deps;
+             let drop tbl =
+               let ks = Hashtbl.fold (fun k _ acc ->
+                 if prefixed k then k :: acc else acc) tbl [] in
+               List.iter (Hashtbl.remove tbl) ks
+             in
+             drop env.proven;
+             drop env.assumes;
+             drop env.deps;
+             Step_verified
+           end
+         | Some _ ->
+           fail "body conclusion is not (cl (= A B)) matching the \
+                 forall bodies"
+         | None -> fail "no preceding body conclusion")
+  | _ ->
+    fail "expected (cl (= (forall …) (forall …)))"
+
 (** Top-level rule dispatch. Add a new clause here when wiring an
     OCaml-side checker for another Alethe rule, and add the same
     rule name to [supported_rules] below. The walker treats
@@ -1402,6 +1969,11 @@ let check_subproof (env : env) (step : Alethe.step) : step_result =
     fails when any step uses a rule no checker handles. *)
 let check_step (env : env) (step : Alethe.step) : step_result =
   match step.rule with
+  (* PARITY:walker-rules BEGIN — kept in lockstep with the two
+     bridge walkers (lean-bridge/ProofBroker/Alethe.lean,
+     rocq-bridge/src/alethe_walker.ml);
+     tools/check_walker_parity.py extracts and compares the three
+     rule sets. *)
   | "la_generic" -> check_la_generic env step
   | "refl" -> check_refl step
   | "false" -> check_false step
@@ -1413,6 +1985,8 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "and_neg" -> check_and_neg step
   | "implies" -> check_implies env step
   | "equiv1" -> check_equiv1 env step
+  | "equiv2" -> check_equiv2 env step
+  | "equiv_pos1" -> check_equiv_pos1 step
   | "la_mult_neg" -> check_la_mult_neg step
   | "hole" -> check_hole env step
   | "rare_rewrite" -> check_rare_rewrite env step
@@ -1423,9 +1997,15 @@ let check_step (env : env) (step : Alethe.step) : step_result =
   | "reordering" -> check_reordering env step
   | "contraction" -> check_contraction env step
   | "not_and" -> check_not_and env step
+  | "not_not" -> check_not_not step
+  | "not_or" -> check_not_or env step
   | "or" -> check_or env step
+  | "or_neg" -> check_or_neg step
   | "symm" -> check_symm env step
   | "subproof" -> check_subproof env step
+  | "forall_inst" -> check_forall_inst step
+  | "bind" -> check_bind env step
+  (* PARITY:walker-rules END *)
   | other -> Step_unsupported_rule other
 
 (** Sorted list of every Alethe rule [check_step] has a registered
@@ -1435,10 +2015,12 @@ let check_step (env : env) (step : Alethe.step) : step_result =
     a parsed proof is eligible for Tier 3 minting (the "fail
     closed" gate of direction 3). *)
 let supported_rules : string list = [
-  "and_neg"; "and_pos"; "cong"; "contraction"; "equiv1";
-  "equiv_pos2"; "equiv_simplify"; "false"; "hole"; "implies";
+  "and_neg"; "and_pos"; "bind"; "cong"; "contraction"; "equiv1";
+  "equiv2"; "equiv_pos1"; "equiv_pos2"; "equiv_simplify"; "false";
+  "forall_inst"; "hole"; "implies";
   "implies_neg1"; "implies_neg2"; "implies_simplify";
-  "la_generic"; "la_mult_neg"; "not_and"; "or"; "rare_rewrite";
+  "la_generic"; "la_mult_neg"; "not_and"; "not_not"; "not_or";
+  "or"; "or_neg"; "rare_rewrite";
   "refl"; "reordering"; "resolution"; "subproof"; "symm"; "trans";
 ]
 
@@ -1599,15 +2181,15 @@ let verify_parsed (ir : Ir.t) (p : Alethe.proof) : verify_result =
          in
          let step_deps =
            match step.rule with
-           | "subproof" ->
-             let body_id = Option.value env.last_step_id ~default:"" in
-             let body_deps =
-               match Hashtbl.find_opt env.deps body_id with
-               | Some s -> s | None -> StringSet.empty
-             in
-             let discharge_set = StringSet.of_list
-                                   (Option.value step.discharge ~default:[]) in
-             StringSet.diff body_deps discharge_set
+           | "subproof" | "bind" ->
+             (* [check_subproof] / [check_bind] recorded the
+                close's dependency set (body deps minus any
+                discharge) under [step.id] before stripping the
+                inner scope — the body's own entry is gone by
+                now, so read the recorded one. *)
+             (match Hashtbl.find_opt env.deps step.id with
+              | Some s -> s
+              | None -> StringSet.empty)
            | "la_generic" ->
              let consumed =
                Option.value env.last_la_generic_consumed

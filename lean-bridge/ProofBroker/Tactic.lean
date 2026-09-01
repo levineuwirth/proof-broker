@@ -24,7 +24,7 @@ Soundness footprint:
     Reifying the cert into a term-mode Lean proof — Farkas
     combination from the Tier 1 witness, or the Alethe walker for
     Tier 3 (now wired in for alethe-2024 traces on LIA:
-    `tryAletheWalkerLIA` / `ProofBroker.Alethe`, omega as the
+    `tryAletheWalker` / `ProofBroker.Alethe`, omega as the
     fallback) — is the principled finish; until a fragment has one,
     an uncloseable certified goal is a tactic error, not a theorem.
   * The LLM `lean-tactic-script` Tier-3 cert (an untrusted oracle
@@ -370,6 +370,26 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   | (``Eq, #[α, a, b]) =>
       let tref ← reifyType α
       return .eq tref (← reifyTerm a) (← reifyTerm b)
+  | (``Ne, #[α, a, b]) =>
+      -- `a ≠ b` unfolds to `¬(a = b)`; reify it that way so the
+      -- SMT serializer sees the ordinary (not (= a b)) shape
+      -- instead of an uninterpreted `Ne` symbol.
+      let tref ← reifyType α
+      return .not_ (.eq tref (← reifyTerm a) (← reifyTerm b))
+  | (``Exists, #[α, p]) =>
+      -- `∃ x : T, body` is `Exists fun x => body`. Open the
+      -- lambda binder as a local so bound occurrences reify as
+      -- `.var`, then emit the IR's `Exists` shell (the SDK
+      -- serializer renders `(exists ((x T)) body)`).
+      (match p with
+       | .lam nm _ _ _ => do
+         let tref ← reifyType α
+         withLocalDeclD nm α fun x => do
+           let body := (p.bindingBody!).instantiate1 x
+           return .exists_ nm.toString tref (← reifyTerm body)
+       | _ =>
+         throwError "proof_broker: unsupported ∃ shape (expected a \
+           lambda body): {e}")
   | (``And, #[a, b]) =>
       return .and_ (← reifyTerm a) (← reifyTerm b)
   | (``Or, #[a, b]) =>
@@ -498,6 +518,14 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     else if let some n := matchBitVecType? ty then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := s!"BitVec({n})" }]
       sawBV := true
+    else if ty.isProp then
+      -- A local `p : Prop` is a Boolean ATOM, not a hypothesis
+      -- (`isProp ty` above matched locals whose type IS a
+      -- proposition; here the type is `Prop` itself). Declare it
+      -- as a free var — the SDK serializer maps the `Prop` type
+      -- ref to SMT-LIB `Bool` — so pure-propositional goals
+      -- (`∀ p q : Prop, …`) dispatch with their atoms declared.
+      freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Prop" }]
     else if ty.isArrow then
       -- Function-typed local: this is a UF candidate. Encode the
       -- type as the arrow chain the SDK serializer parses.
@@ -717,8 +745,20 @@ private def buildExtractionPath
     (goal : MVarId)
     (adapterNames? : Option (List String))
     (preferHigherTier : Bool)
+    (tierPreference : Option (List String) := none)
     : TacticM ExtractionPath := do
   let ir ← Reify.buildIR goal
+  -- Walker-strict callers pass `tierPreference := some ["3"]`:
+  -- the IR's `user_directives.tier_preference` (spec §5.4) tells
+  -- the cvc5 adapter to mint the verified Tier-3 alethe trace
+  -- ahead of the term-mode-friendly Tier-2/1 witnesses. The
+  -- default dispatch is unchanged.
+  let ir := match tierPreference with
+    | none => ir
+    | some tp =>
+      { ir with userDirectives := some {
+          preferredBackend := none, tierPreference := some tp,
+          rewriterPreferences := none, budget := none } }
   let manifests ← match adapterNames? with
     | some names => loadManifestsByName names
     | none => loadDefaultManifests
@@ -767,7 +807,7 @@ private def certTraceData? (cert : Json) : Option String :=
     |>.bind (·.getObjValAs? String "trace_data")).toOption
 
 /-- Walk a parsed Alethe proof into a kernel term and assign it
-    to `goal`. Shared between the production `tryAletheWalkerLIA`
+    to `goal`. Shared between the production `tryAletheWalker`
     and the test-only `alethe_walker_test` tactic so both close
     goals through the same logic.
 
@@ -828,7 +868,7 @@ private def walkProofIntoGoal (goal : MVarId) (proof : Alethe.Proof)
     an admitted theorem. The walker builds the proof term purely
     (`mkAppM`, no mvar assignment) until the final assignment,
     so a mid-walk failure can't leave a partial assignment. -/
-private def tryAletheWalkerLIA (cert : Json) : TacticM Bool := do
+private def tryAletheWalker (cert : Json) : TacticM Bool := do
   match certTraceData? cert with
   | none => return false
   | some traceData =>
@@ -1082,7 +1122,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- outside that scope.
       let walkerHandled ← do
         if certTraceFormat cert == "alethe-2024" then
-          tryAletheWalkerLIA cert
+          tryAletheWalker cert
         else
           pure false
       unless walkerHandled do
@@ -1132,15 +1172,50 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- already in the LIA path's footprint), so the chain
       -- doesn't introduce a stronger trust assumption than
       -- omega/decide do elsewhere.
-      try evalTactic (← `(tactic| subst_eqs; rfl))
-      catch _ =>
+      -- Walker-first (R1.3): a UF cert carrying an alethe-2024
+      -- trace goes through the Alethe walker ("cert IS the
+      -- proof") before the re-proving chain; any walker failure
+      -- falls through to it — audit H1 preserved.
+      let walkerHandled ← do
+        if certTraceFormat cert == "alethe-2024" then
+          tryAletheWalker cert
+        else
+          pure false
+      unless walkerHandled do
+        try evalTactic (← `(tactic| subst_eqs; rfl))
+        catch _ =>
+          try evalTactic (← `(tactic| simp_all))
+          catch _ =>
+            throwError "proof_broker: the broker certified this UF goal \
+              but neither the Alethe walker nor the Lean closer chain \
+              (`subst_eqs; rfl`, then `simp_all`) could discharge it. \
+              The goal is left OPEN rather than closed by an \
+              unjustified axiom — this is a tactic failure, not an \
+              admitted theorem."
+    else if fragment == "UFLIA" then
+      -- Quantified UF+LIA (R1.3). `Smtlib.fragment_of_logic` maps
+      -- the quantifier-free UF logics to "UF" but passes a
+      -- quantified UFLIA logic through verbatim — and this arm
+      -- previously did not exist, so such goals had no closer at
+      -- all. Walker-first like LIA/UF, then a `simp_all` /
+      -- `omega` fallback chain (both axiom-free), then an honest
+      -- tactic failure.
+      let walkerHandled ← do
+        if certTraceFormat cert == "alethe-2024" then
+          tryAletheWalker cert
+        else
+          pure false
+      unless walkerHandled do
         try evalTactic (← `(tactic| simp_all))
         catch _ =>
-          throwError "proof_broker: the broker certified this UF goal but \
-            the Lean closer chain (`subst_eqs; rfl`, then `simp_all`) \
-            could not discharge it. The goal is left OPEN rather than \
-            closed by an unjustified axiom — this is a tactic failure, \
-            not an admitted theorem."
+          try evalTactic (← `(tactic| omega))
+          catch _ =>
+            throwError "proof_broker: the broker certified this UFLIA \
+              goal but neither the Alethe walker nor the fallback \
+              chain (`simp_all`, then `omega`) could discharge it. The \
+              goal is left OPEN rather than closed by an unjustified \
+              axiom — this is a tactic failure, not an admitted \
+              theorem."
     else
       -- Non-LIA / non-BV: dispatch through the registered
       -- ReifierExt's closer if present (e.g. ProofBrokerMathlib
@@ -1737,13 +1812,14 @@ def evalProofBrokerWalker : Tactic := fun stx => do
         parseAdapterList none
     | _ => throwError "proof_broker_walker: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
+    (tierPreference := some ["3"])
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_walker: no adapter minted a cert; \
         attempts: {path.attempts.map (·.adapter)}"
   -- Walker-strict: require the Alethe walker to close from the live
   -- cert; no `omega` fallback (that is what `proof_broker` adds).
-  unless (← tryAletheWalkerLIA cert) do
+  unless (← tryAletheWalker cert) do
     throwError "proof_broker_walker: the Alethe walker did not close the \
       goal from the live cert (no omega fallback). Cert tier/format may \
       not be a walkable alethe-2024 trace, or the walk failed."
@@ -1954,7 +2030,7 @@ def evalLlmReconstructTest : Tactic := fun stx => do
     CI-stable pattern as `llm_replay_test`.
 
     Routes through `walkProofIntoGoal`, identical to the
-    production `tryAletheWalkerLIA` path: refutation traces use
+    production `tryAletheWalker` path: refutation traces use
     `falseOrByContra` to expose `¬goal` for non-`False` user
     goals; direct (single-literal) traces assign by defeq. -/
 syntax (name := aletheWalkerTest) "alethe_walker_test" str : tactic

@@ -129,6 +129,16 @@
     "steps": 120,
     "assumes": 10
   },
+  "uf_lia_threshold": {
+    "result": "unsat",
+    "rules": [
+      "and_neg", "cong", "equiv1", "equiv_pos2", "equiv_simplify", "false",
+      "hole", "implies", "la_generic", "la_mult_neg", "rare_rewrite", "refl",
+      "resolution", "symm", "trans"
+    ],
+    "steps": 77,
+    "assumes": 3
+  },
   "uf_trans": {
     "result": "unsat",
     "rules": [

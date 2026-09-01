@@ -2,6 +2,7 @@
   "id": "lia_false_from_bounds",
   "description": "x <= 3, 5 <= x |- False (False-conclusion goal: exercises the (not false) negated-goal assume)",
   "coq_goal": "forall x : Z, x <= 3 -> 5 <= x -> False",
+  "lean_goal": "∀ x : Int, x ≤ 3 → 5 ≤ x → False",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

@@ -2,6 +2,7 @@
   "id": "lia_eq_from_bounds",
   "description": "x <= 5, 5 <= x |- x = 5 (antisymmetry; probes la_disequality/la_totality)",
   "coq_goal": "forall x : Z, x <= 5 -> 5 <= x -> x = 5",
+  "lean_goal": "∀ x : Int, x ≤ 5 → 5 ≤ x → x = 5",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

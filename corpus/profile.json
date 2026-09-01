@@ -135,6 +135,15 @@
       "arith_leaves": 19,
       "resolution": 30
     },
+    "uf_lia_threshold": {
+      "steps": 77,
+      "assumes": 3,
+      "subproofs": 0,
+      "rule_apps": 77,
+      "distinct_rules": 15,
+      "arith_leaves": 23,
+      "resolution": 12
+    },
     "uf_trans": {
       "steps": 13,
       "assumes": 3,
@@ -146,9 +155,9 @@
     }
   },
   "totals": {
-    "goals": 16,
-    "steps": 1061,
-    "arith_leaves": 209,
+    "goals": 17,
+    "steps": 1138,
+    "arith_leaves": 232,
     "max_steps": 636,
     "max_arith_leaves": 118
   }

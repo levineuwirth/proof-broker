@@ -2,6 +2,7 @@
   "id": "lia_sum_bound",
   "description": "n + m = 10, 0 <= m |- n <= 10 (pure LIA; the snapshot shape)",
   "coq_goal": "forall (n m : Z), n + m = 10 -> 0 <= m -> n <= 10",
+  "lean_goal": "∀ n m : Int, n + m = 10 → 0 ≤ m → n ≤ 10",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },

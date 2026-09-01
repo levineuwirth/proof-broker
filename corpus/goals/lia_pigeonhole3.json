@@ -2,6 +2,7 @@
   "id": "lia_pigeonhole3",
   "description": "three values in {1,2} cannot be pairwise distinct (pigeonhole; large LIA+Boolean trace -- the corpus scale point, 636 steps / 118 arithmetic leaves)",
   "coq_goal": "forall a b c : Z, 1 <= a -> a <= 2 -> 1 <= b -> b <= 2 -> 1 <= c -> c <= 2 -> a <> b -> b <> c -> a <> c -> False",
+  "lean_goal": "∀ a b c : Int, 1 ≤ a → a ≤ 2 → 1 ≤ b → b ≤ 2 → 1 ≤ c → c ≤ 2 → a ≠ b → b ≠ c → a ≠ c → False",
   "ir": {
     "ir_version": "1.0",
     "source_system": { "name": "corpus", "version": "0.0" },
