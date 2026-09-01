@@ -99,3 +99,17 @@ Proof. Fail pb_spec_gate_test nat mixed_spec. exact I. Qed.
 
 Print pb_spec_gate_mixed_fails_closed.
 Print Assumptions pb_spec_gate_mixed_fails_closed.
+
+(* Fail fast even under atomization (C3a ROUND 1 finding 5): a
+   nonlinear product HIDING ℕ subtraction is refused with the named
+   error, not silently swallowed as an Opaque atom. *)
+Theorem pb_nat_sub_in_atom_fails_closed :
+  forall a b c : nat, ((a - b) * c <= 3)%nat -> ((a - b) * c <= 4)%nat.
+Proof.
+  intros a b c h.
+  Fail proof_broker.
+  lia.
+Qed.
+
+Print pb_nat_sub_in_atom_fails_closed.
+Print Assumptions pb_nat_sub_in_atom_fails_closed.

@@ -2232,6 +2232,13 @@ example (x : Nat) (f : Int → Int) (hf : f 0 = 0) (h : x ≤ 3) :
   fail_if_success proof_broker
   omega
 
+/-- Fail fast even under atomization (C3a ROUND 1 finding 5): a
+    nonlinear product HIDING ℕ subtraction is refused with the named
+    error, not silently swallowed as an Opaque atom. -/
+example (a b c : Nat) (h : (a - b) * c ≤ 3) : (a - b) * c ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
 /- The R3-M1 specialization gate, pinned fail-closed INDEPENDENT of
    live dispatch (C3a ROUND 1 finding 2): no live path mints a foreign
    specialization or a spec-less ℕ cert, so these drive the real

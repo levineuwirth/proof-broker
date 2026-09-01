@@ -319,12 +319,35 @@ def matchNatLiteralAtNat? (e : Expr) : Option Nat :=
     transparent. -/
 def natCastSymbol : String := "Int.ofNat"
 
+/-- R3-M1 (C3a ROUND 1 finding 5): the documented fail-fast scope —
+    ℕ subtraction/division/modulo are named errors — must hold
+    INSIDE atomized subterms too. Swallowing `(a - b) * c` as an
+    opaque atom would be sound (the atom is uninterpreted and
+    nonneg under truncated semantics as well), but it silently
+    accepts exactly the goals most likely to be wrong about ℕ
+    subtraction, against the stated contract. Structural scan, no
+    reduction. -/
+private partial def natAtomForbiddenOp? (e : Expr) : Option Name :=
+  match e.getAppFnArgs with
+  | (``HSub.hSub, args) | (``HDiv.hDiv, args) | (``HMod.hMod, args) =>
+    -- Inside a ℕ atom every subterm is ℕ-typed, so the head alone
+    -- condemns it; report the innermost occurrence when nested.
+    (match args.foldl (fun acc a => acc <|> natAtomForbiddenOp? a) none with
+     | some inner => some inner
+     | none => e.getAppFn.constName?)
+  | (_, args) => args.foldl (fun acc a => acc <|> natAtomForbiddenOp? a) none
+
 /-- Atomize a nonlinear ℕ subterm: reuse the existing payload id if
     this exact `Expr` was seen before (structural equality — the
     same product mentioned twice is one atom), else mint
     `_pb_atom_<k>` and record it. The shell is the atom under the
-    cast, like any ℕ atom. -/
+    cast, like any ℕ atom. Refuses atoms hiding sub/div/mod (see
+    `natAtomForbiddenOp?`). -/
 def atomizeNatTerm (e : Expr) : MetaM ShellTerm := do
+  if let some op := natAtomForbiddenOp? e then
+    throwError "proof_broker: ℕ {op} inside a nonlinear subterm \
+      ({e}) — the ℕ→ℤ specialization refuses truncated/rounding ℕ \
+      arithmetic even under atomization; restate without it"
   let atoms ← reifyNatAtoms.get
   let id ← match atoms.find? (fun (_, e') => e' == e) with
     | some (id, _) => pure id

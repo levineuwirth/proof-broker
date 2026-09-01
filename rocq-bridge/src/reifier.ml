@@ -89,6 +89,10 @@ let constr_of_qualid_candidates (cands : string list) : EConstr.t option =
 
 let r_nat_pow = lazy (constr_of_qualid_candidates
   [ "Nat.pow"; "Stdlib.Init.Nat.pow"; "Coq.Init.Nat.pow" ])
+let r_nat_div = lazy (constr_of_qualid_candidates
+  [ "Nat.div"; "Stdlib.Init.Nat.div"; "Coq.Init.Nat.div" ])
+let r_nat_mod = lazy (constr_of_qualid_candidates
+  [ "Nat.modulo"; "Stdlib.Init.Nat.modulo"; "Coq.Init.Nat.modulo" ])
 let r_z_of_nat = lazy (constr_of_qualid_candidates
   [ "Z.of_nat"; "Stdlib.ZArith.BinIntDef.Z.of_nat";
     "Coq.ZArith.BinIntDef.Z.of_nat" ])
@@ -332,11 +336,46 @@ let rec reify_nat_term env sigma t : Ir.shell_term =
       | _ ->
         reify_error "unsupported ℕ term: %s" (pp_econstr env sigma t)
 
+(* R3-M1 (C3a ROUND 1 finding 5): the documented fail-fast scope —
+   ℕ subtraction/division/modulo are named errors — must hold INSIDE
+   atomized subterms too. Swallowing [(a - b) * c] as an opaque atom
+   would be sound (uninterpreted, nonneg under truncated semantics),
+   but it silently accepts exactly the goals most likely to be wrong
+   about ℕ subtraction, against the stated contract. Structural
+   scan, no reduction. *)
+and nat_atom_forbidden_op sigma t : string option =
+  match EConstr.kind sigma t with
+  | App (head, args) ->
+    let this =
+      if eq_ref sigma head r_nat_sub then Some "subtraction"
+      else if eq_ref sigma head r_nat_div then Some "division"
+      else if eq_ref sigma head r_nat_mod then Some "modulo"
+      else None
+    in
+    let inner =
+      Array.fold_left (fun acc a ->
+        match acc with
+        | Some _ -> acc
+        | None -> nat_atom_forbidden_op sigma a)
+        None args
+    in
+    (match inner with Some _ -> inner | None -> this)
+  | _ -> None
+
 (* Atomize a nonlinear ℕ subterm: reuse the id if this exact term
    was seen (structural equality — one product, one atom), else
    mint [_pb_atom_<k>]. The shell is the atom under the cast, like
-   any ℕ atom. *)
+   any ℕ atom. Refuses atoms hiding sub/div/mod (see
+   [nat_atom_forbidden_op]). *)
 and atomize_nat env sigma t : Ir.shell_term =
+  (match nat_atom_forbidden_op sigma t with
+   | Some op ->
+     reify_error
+       "ℕ %s inside a nonlinear subterm (%s) — the ℕ→ℤ specialization \
+        refuses truncated/rounding ℕ arithmetic even under \
+        atomization; restate without it"
+       op (pp_econstr env sigma t)
+   | None -> ());
   let _ = env in
   let id =
     match List.find_opt

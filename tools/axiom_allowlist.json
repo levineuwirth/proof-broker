@@ -375,6 +375,8 @@
       [],
     "pb_spec_gate_mixed_fails_closed":
       [],
+    "pb_nat_sub_in_atom_fails_closed":
+      [],
     "nat_push_add":
       [],
     "nat_push_mul":
