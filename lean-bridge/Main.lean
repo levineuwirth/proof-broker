@@ -403,7 +403,10 @@ def buildSyntheticTier1Cert (irHash : String) (goal : Json)
     ("format", .str "farkas"),
     ("goal", goal),
     ("dispatch_context_hash", .str cert_ctx_hash),
-    ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+    -- R2: the zero sentinel is rejected by the verifier; a synthetic
+    -- non-zero digest keeps these envelope-shape tests on their
+    -- intended check (no trace supplied, so no hash comparison runs).
+    ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '1')}"),
     ("backend", Json.mkObj [
       ("name", .str "synthetic"),
       ("version", .str "0.0"),
@@ -524,7 +527,10 @@ def runFarkasVerificationFlow : IO Unit := do
       ("format", .str "farkas"),
       ("goal", goalJson),
       ("dispatch_context_hash", .str irHash),
-      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+      -- R2: the zero sentinel is rejected by the verifier; a synthetic
+      -- non-zero digest keeps these envelope-shape tests on their
+      -- intended check (no trace supplied, so no hash comparison runs).
+      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '1')}"),
       ("backend", Json.mkObj [
         ("name", .str "synthetic"),
         ("version", .str "0.0"),
@@ -618,7 +624,10 @@ def runLraFarkasFlow : IO Unit := do
     ("format", .str "farkas"),
     ("goal", goalJson),
     ("dispatch_context_hash", .str irHash),
-    ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+    -- R2: the zero sentinel is rejected by the verifier; a synthetic
+    -- non-zero digest keeps these envelope-shape tests on their
+    -- intended check (no trace supplied, so no hash comparison runs).
+    ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '1')}"),
     ("backend", Json.mkObj [
       ("name", .str "synthetic"), ("version", .str "0.0"),
       ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
@@ -712,7 +721,10 @@ def runTier2CaseSplitFlow : IO Unit := do
       ("format", .str "case_split_farkas"),
       ("goal", goalJson),
       ("dispatch_context_hash", .str irHash),
-      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+      -- R2: the zero sentinel is rejected by the verifier; a synthetic
+      -- non-zero digest keeps these envelope-shape tests on their
+      -- intended check (no trace supplied, so no hash comparison runs).
+      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '1')}"),
       ("backend", Json.mkObj [
         ("name", .str "synthetic"), ("version", .str "0.0"),
         ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")
@@ -828,7 +840,10 @@ def runTier3AletheFlow (rootDir : System.FilePath) : IO Unit := do
       ("format", .str traceFormat),
       ("goal", goalJson),
       ("dispatch_context_hash", .str irHash),
-      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}"),
+      -- R2: the zero sentinel is rejected by the verifier; a synthetic
+      -- non-zero digest keeps these envelope-shape tests on their
+      -- intended check (no trace supplied, so no hash comparison runs).
+      ("rewrite_trace_hash", .str s!"sha256:{String.ofList (List.replicate 64 '1')}"),
       ("backend", Json.mkObj [
         ("name", .str "synthetic"), ("version", .str "0.0"),
         ("config_hash", .str s!"sha256:{String.ofList (List.replicate 64 '0')}")

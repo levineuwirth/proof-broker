@@ -430,9 +430,37 @@ let logic_for (ir : Ir.t) : Ir.logic_classification =
     else if any_real then "first_order", "LRA"
     else "first_order", "LIA"
   in
+  (* R2 honesty: features_used reports what the reifier actually
+     emitted (registry logical_features ids), mirroring the Lean
+     reifier's shellQuantEqFlags. *)
+  let rec flags (t : Ir.shell_term) ((fa, ex, eq) as acc) =
+    match t with
+    | Ir.Var _ | Ir.Const _ | Ir.Num_lit _ | Ir.Opaque _ -> acc
+    | Ir.Forall { body; _ } -> flags body (true, ex, eq)
+    | Ir.Exists { body; _ } -> flags body (fa, true, eq)
+    | Ir.Lambda { body; _ } | Ir.Not { operand = body } -> flags body acc
+    | Ir.Implies { antecedent = a; consequent = b }
+    | Ir.And { left = a; right = b } | Ir.Or { left = a; right = b } ->
+      flags b (flags a acc)
+    | Ir.Eq { left = a; right = b; _ } -> flags b (flags a (fa, ex, true))
+    | Ir.App { args; _ } -> List.fold_left (fun acc a -> flags a acc) acc args
+  in
+  let shells =
+    ir.goal.shell
+    :: List.map (fun (h : Ir.hypothesis) -> h.shell) ir.context.hypotheses
+  in
+  let fa, ex, eq =
+    List.fold_left (fun acc s -> flags s acc) (false, false, false) shells
+  in
+  let features_used =
+    (if fa then [ "universal_quantification_over_first_order" ] else [])
+    @ (if ex then [ "existential_quantification_over_first_order" ] else [])
+    @ (if eq then [ "equality_at_first_order_type" ] else [])
+    @ (if any_hol then [ "function_quantification" ] else [])
+  in
   {
     order;
-    features_used = [];
+    features_used;
     first_order_fragment = frag;
     decidable_theory = None;
   }
@@ -490,7 +518,9 @@ let build_ir gl : Ir.t =
   let ir : Ir.t = {
     ir_version = "1.0";
     source_system = { name = "rocq"; version = plugin_version };
-    tier = "goal";
+    (* R2 honesty: "structural" whenever typed hypotheses ride
+       along (spec §4.5: "goal" = proposition only). *)
+    tier = (if hypotheses = [] then "goal" else "structural");
     (* Filled in below — needs the goal+hypotheses to be in scope
        so [shell_mentions_uf] / [shell_has_ho_features] can detect
        UF / HOL signals introduced by the reified shells. The

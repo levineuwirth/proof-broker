@@ -481,6 +481,28 @@ partial def shellMentionsUF : ShellTerm → Bool
   | .lambda _ b => shellMentionsUF b
   | .opaque_ _ => false
 
+/-- Node-presence flags for the honest `features_used` label (R2):
+    `(hasForall, hasExists, hasEq)`, walked over one shell. The
+    reifier reports only features it actually emitted, with tags
+    drawn from the registry's `logical_features` ids. -/
+partial def shellQuantEqFlags : ShellTerm → Bool × Bool × Bool
+  | .var _ | .const _ | .numLit _ _ | .opaque_ _ => (false, false, false)
+  | .forall_ _ _ b => let (_, e, q) := shellQuantEqFlags b; (true, e, q)
+  | .exists_ _ _ b => let (f, _, q) := shellQuantEqFlags b; (f, true, q)
+  | .lambda _ b | .not_ b => shellQuantEqFlags b
+  | .eq _ a b =>
+    let (f1, e1, _) := shellQuantEqFlags a
+    let (f2, e2, _) := shellQuantEqFlags b
+    (f1 || f2, e1 || e2, true)
+  | .implies a b | .and_ a b | .or_ a b =>
+    let (f1, e1, q1) := shellQuantEqFlags a
+    let (f2, e2, q2) := shellQuantEqFlags b
+    (f1 || f2, e1 || e2, q1 || q2)
+  | .app _ _ args =>
+    args.foldl (fun (f, e, q) a =>
+      let (f', e', q') := shellQuantEqFlags a
+      (f || f', e || e', q || q')) (false, false, false)
+
 /-- Reify the goal + Prop-typed hypotheses + Int-typed free variables
     of `mvarId` into an IR document tagged for the LIA fragment.
 
@@ -584,12 +606,27 @@ def buildIR (mvarId : MVarId) : MetaM IR := mvarId.withContext do
     else match extOpt with
       | some ext => if sawExtensionType then ext.irFragment else "LIA"
       | none => "LIA"
+  -- R2 honesty: the context tier is "structural" whenever typed
+  -- hypotheses ride along (spec §4.5: "goal" = proposition only),
+  -- and features_used reports what the reifier actually emitted.
+  let tier := if hypotheses.isEmpty then "goal" else "structural"
+  let (hasForall, hasExists, hasEq) :=
+    (goalShell :: hypotheses.map (·.shell)).foldl
+      (fun (f, e, q) s =>
+        let (f', e', q') := shellQuantEqFlags s
+        (f || f', e || e', q || q'))
+      (false, false, false)
+  let featuresUsed :=
+    (if hasForall then ["universal_quantification_over_first_order"] else [])
+    ++ (if hasExists then ["existential_quantification_over_first_order"] else [])
+    ++ (if hasEq then ["equality_at_first_order_type"] else [])
+    ++ (if isHO then ["function_quantification"] else [])
   return {
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
-    tier := "goal",
+    tier,
     logicClassification := {
-      order, featuresUsed := [],
+      order, featuresUsed,
       firstOrderFragment := fragment, decidableTheory := none
     },
     goal := { shell := goalShell, payloads := none },
