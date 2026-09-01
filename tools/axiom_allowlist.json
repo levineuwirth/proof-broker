@@ -40,6 +40,22 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.pb_guard_nonidentity_falls_back_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_plain":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_term":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker_pow":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker_forall":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_walker_d1":
+      ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_term_d1":
+      ["propext", "Quot.sound"],
+    "ProofBroker.Test.pb_nat_term_eq":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_axiom_free":
