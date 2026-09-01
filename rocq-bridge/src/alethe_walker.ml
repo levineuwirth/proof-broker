@@ -2506,13 +2506,23 @@ let is_refutation_trace (p : proof) : bool =
     inside the [Goal.enter] closure and converted to a [tclZEROMSG]
     — a tactic-level failure the caller's [tclORELSE] can catch
     (an OCaml exception escaping the closure could not be). *)
-let walk_against_current_goal (p : proof) : unit Proofview.tactic =
+let walk_against_current_goal
+    ?(var_overrides : (Names.Id.t * EConstr.t) list = [])
+    (p : proof) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
     let env = Proofview.Goal.env gl in
     let goal_ty = Proofview.Goal.concl gl in
     try
       let sigma_ref = ref (Proofview.Goal.sigma gl) in
       let ctx = make_context env sigma_ref in
+      (* R3-M1: the ℕ lift maps trace atoms to their ℤ images —
+         nat vars and atomized products resolve to [Z.of_nat _]
+         instead of the bare variable. *)
+      let ctx =
+        { ctx with vars =
+            List.fold_left (fun m (id, e) -> Names.Id.Map.add id e m)
+              ctx.vars var_overrides }
+      in
       let proof_term = walk_proof env sigma_ref ctx p in
       let final_sigma = !sigma_ref in
       let term_ty = Retyping.get_type_of env final_sigma proof_term in
@@ -2546,7 +2556,10 @@ let walk_against_current_goal (p : proof) : unit Proofview.tactic =
     fallback fires cleanly. The walk is pure (no mvar assignment)
     until the final [Refine.refine], so a mid-walk failure never
     leaves a partial assignment. *)
-let walk_proof_into_goal (p : proof) : unit Proofview.tactic =
+let walk_proof_into_goal
+    ?(var_overrides : (Names.Id.t * EConstr.t) list = [])
+    ?(after_contra : unit Proofview.tactic = Proofview.tclUNIT ())
+    (p : proof) : unit Proofview.tactic =
   Proofview.Goal.enter (fun gl ->
     let env = Proofview.Goal.env gl in
     let sigma = Proofview.Goal.sigma gl in
@@ -2554,11 +2567,17 @@ let walk_proof_into_goal (p : proof) : unit Proofview.tactic =
     let goal_is_false =
       Reductionops.is_conv env sigma goal_ty (force r_False)
     in
+    (* [after_contra] (R3-M1): the ℕ lift's cast layer — runs after
+       the by-contradiction step so the counterexample hypothesis is
+       in scope to cast, and before the walk so the trace's assumes
+       can match the posed ℤ facts. *)
     if is_refutation_trace p && not goal_is_false then
       Proofview.tclTHEN (by_contradiction ())
-        (walk_against_current_goal p)
+        (Proofview.tclTHEN after_contra
+           (walk_against_current_goal ~var_overrides p))
     else
-      walk_against_current_goal p)
+      Proofview.tclTHEN after_contra
+        (walk_against_current_goal ~var_overrides p))
 
 let walker_test (trace_str : string) : unit Proofview.tactic =
   match parse_trace trace_str with

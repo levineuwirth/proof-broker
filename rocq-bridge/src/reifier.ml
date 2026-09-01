@@ -60,6 +60,50 @@ let r_Rge     = lazy (safe_constr_of_ref "reals.R.Rge")
 let r_Rgt     = lazy (safe_constr_of_ref "reals.R.Rgt")
 let r_IZR     = lazy (safe_constr_of_ref "reals.R.IZR")
 
+(* nat (R3-M1 ℕ→ℤ specialization). *)
+let r_nat     = lazy (safe_constr_of_ref "num.nat.type")
+let r_natO    = lazy (safe_constr_of_ref "num.nat.O")
+let r_natS    = lazy (safe_constr_of_ref "num.nat.S")
+let r_nat_add = lazy (safe_constr_of_ref "num.nat.add")
+let r_nat_mul = lazy (safe_constr_of_ref "num.nat.mul")
+let r_nat_sub = lazy (safe_constr_of_ref "num.nat.sub")
+let r_nat_le  = lazy (safe_constr_of_ref "num.nat.le")
+let r_nat_lt  = lazy (safe_constr_of_ref "num.nat.lt")
+let r_nat_ge  = lazy (safe_constr_of_ref "num.nat.ge")
+let r_nat_gt  = lazy (safe_constr_of_ref "num.nat.gt")
+
+(* [Nat.pow] and [Z.of_nat] carry no lib_ref registration; resolve by
+   qualid over rename-robust candidate paths (same pattern as the
+   walker's Nametab lookups). *)
+let constr_of_qualid_candidates (cands : string list) : EConstr.t option =
+  List.fold_left (fun acc s ->
+    match acc with
+    | Some _ -> acc
+    | None ->
+      (try
+         let gr = Nametab.locate (Libnames.qualid_of_string s) in
+         Some (EConstr.of_constr
+                 (UnivGen.constr_of_monomorphic_global (Global.env ()) gr))
+       with _ -> None))
+    None cands
+
+let r_nat_pow = lazy (constr_of_qualid_candidates
+  [ "Nat.pow"; "Stdlib.Init.Nat.pow"; "Coq.Init.Nat.pow" ])
+let r_z_of_nat = lazy (constr_of_qualid_candidates
+  [ "Z.of_nat"; "Stdlib.ZArith.BinIntDef.Z.of_nat";
+    "Coq.ZArith.BinIntDef.Z.of_nat" ])
+
+(* Big nat literals: Rocq's number notation elaborates them as
+   [Nat.of_num_uint (Number.UIntDecimal <Decimal.uint digits>)]
+   instead of an S-chain (the "large numbers in nat" behavior). *)
+let r_nat_of_num_uint = lazy (constr_of_qualid_candidates
+  [ "Nat.of_num_uint"; "Stdlib.Init.Nat.of_num_uint";
+    "Coq.Init.Nat.of_num_uint" ])
+let r_uint_decimal_ctor = lazy (constr_of_qualid_candidates
+  [ "Number.UIntDecimal"; "Stdlib.Init.Number.UIntDecimal";
+    "Coq.Init.Number.UIntDecimal" ])
+let r_uint_ty = lazy (safe_constr_of_ref "num.uint.type")
+
 (* Logic. *)
 let r_eq    = lazy (safe_constr_of_ref "core.eq.type")
 let r_and   = lazy (safe_constr_of_ref "core.and.type")
@@ -165,6 +209,148 @@ let bin sym a b : Ir.shell_term =
 let un sym a : Ir.shell_term =
   App { symbol = sym; type_args = []; args = [ a ] }
 
+(* --- R3-M1: ℕ→ℤ reification ---------------------------------------- *)
+
+(* Nonlinear-ℕ atomization table, [payload_id ↦ the nat subterm].
+   Filled by [reify_nat_term] (a product with no literal factor, or
+   a non-foldable power), consumed by [build_ir] (payloads + nonneg
+   hypotheses) and by the closers' ℕ lift (via [Pb_path.nat_atoms]).
+   Reset by [build_ir] on entry; the plugin's tactic execution is
+   single-threaded (mirrors [reifyNatAtoms] in lean-bridge, minus
+   Lean's parallel-elaboration hazard). *)
+let nat_atoms : (string * EConstr.t) list ref = ref []
+
+(* Structural nat-literal walker: [O] / [S]-chains only. NO
+   [whd_all] — reducing [(2^24)%nat] to its unary numeral is
+   exactly the blowup the pow-folding below avoids. Source-level
+   literals are short S-chains (Rocq itself warns on big unary
+   literals); big values arrive as [Nat.pow] applications. *)
+let nat_literal sigma t : Z.t option =
+  (* Fold a [Decimal.uint] digit chain (most-significant first):
+     constructor index 1 = Nil, 2..11 = D0..D9. Matched by the
+     constructor's inductive against the registered
+     [num.uint.type]. *)
+  let uint_ind =
+    match Lazy.force r_uint_ty with
+    | Some c ->
+      (try
+         let sigma0 = Evd.from_env (Global.env ()) in
+         Some (fst (EConstr.destInd sigma0 c))
+       with _ -> None)
+    | None -> None
+  in
+  let ctor_digit h =
+    match uint_ind, EConstr.kind sigma h with
+    | Some ind, Construct ((ind', idx), _)
+      when Names.Ind.CanOrd.equal ind ind' -> Some idx
+    | _ -> None
+  in
+  let rec decimal_value t acc =
+    match EConstr.kind sigma t with
+    | Construct _ ->
+      (match ctor_digit t with
+       | Some 1 -> Some acc                    (* Nil *)
+       | _ -> None)
+    | App (h, [| rest |]) ->
+      (match ctor_digit h with
+       | Some idx when idx >= 2 && idx <= 11 ->
+         decimal_value rest
+           (Z.add (Z.mul acc (Z.of_int 10)) (Z.of_int (idx - 2)))
+       | _ -> None)
+    | _ -> None
+  in
+  let rec go t acc =
+    if eq_ref sigma t r_natO then Some acc
+    else
+      match EConstr.kind sigma t with
+      | App (h, [| inner |]) when eq_ref sigma h r_natS ->
+        go inner (Z.succ acc)
+      | App (h, [| num |]) when eq_ref sigma h r_nat_of_num_uint
+                            && Z.equal acc Z.zero ->
+        (match EConstr.kind sigma num with
+         | App (ctor, [| d |]) when eq_ref sigma ctor r_uint_decimal_ctor ->
+           decimal_value d Z.zero
+         | _ -> None)
+      | _ -> None
+  in
+  go t Z.zero
+
+let num_lit_z (n : Z.t) : Ir.shell_term =
+  Ir.Num_lit { value = Z.to_string n; ty = "Int" }
+
+(* Reify a nat-typed term into the ℤ image of its value: atoms
+   (variables, atomized products) sit under the IR cast symbol
+   ["Int.ofNat"] (the shared bridge convention — Lean normalizes
+   [Int.ofNat]/[Nat.cast] to it, this side [Z.of_nat]); literals
+   become Int numerals; [+] and [*]-by-literal distribute; closed
+   powers constant-fold. ℕ subtraction fails fast — [a - b] over
+   nat is truncated and a naive cast would be unsound (the R3
+   attack surface); division/modulo fall to the generic
+   unsupported error. *)
+let rec reify_nat_term env sigma t : Ir.shell_term =
+  match nat_literal sigma t with
+  | Some n -> num_lit_z n
+  | None ->
+    if EConstr.isVar sigma t then
+      un "Int.ofNat"
+        (Ir.Var { name = Names.Id.to_string (EConstr.destVar sigma t) })
+    else
+      match EConstr.kind sigma t with
+      | App (head, args) ->
+        let nargs = Array.length args in
+        let rn i = reify_nat_term env sigma args.(i) in
+        let head_is lz = eq_ref sigma head lz in
+        if head_is r_nat_add && nargs = 2 then
+          bin "HAdd.hAdd" (rn 0) (rn 1)
+        else if head_is r_nat_mul && nargs = 2 then begin
+          match nat_literal sigma args.(0), nat_literal sigma args.(1) with
+          | Some k, _ -> bin "HMul.hMul" (num_lit_z k) (rn 1)
+          | _, Some k -> bin "HMul.hMul" (rn 0) (num_lit_z k)
+          | None, None -> atomize_nat env sigma t
+        end
+        else if head_is r_nat_pow && nargs = 2 then begin
+          match nat_literal sigma args.(0), nat_literal sigma args.(1) with
+          | Some base, Some exp ->
+            if Z.compare exp (Z.of_int 256) > 0 then
+              reify_error
+                "ℕ power exponent %s exceeds the constant-folding \
+                 bound (256)" (Z.to_string exp)
+            else num_lit_z (Z.pow base (Z.to_int exp))
+          | _ -> atomize_nat env sigma t
+        end
+        else if head_is r_nat_sub && nargs = 2 then
+          reify_error
+            "ℕ subtraction is truncated ([a - b] is not the ℤ \
+             difference), so the ℕ→ℤ specialization refuses it rather \
+             than cast naively; restate without ℕ subtraction"
+        else
+          reify_error
+            "unsupported ℕ term: %s (ℕ→ℤ scope: +, * with a literal \
+             factor, ^ with literal base and exponent, literals, \
+             variables; nonlinear products atomize)"
+            (pp_econstr env sigma t)
+      | _ ->
+        reify_error "unsupported ℕ term: %s" (pp_econstr env sigma t)
+
+(* Atomize a nonlinear ℕ subterm: reuse the id if this exact term
+   was seen (structural equality — one product, one atom), else
+   mint [_pb_atom_<k>]. The shell is the atom under the cast, like
+   any ℕ atom. *)
+and atomize_nat env sigma t : Ir.shell_term =
+  let _ = env in
+  let id =
+    match List.find_opt
+            (fun (_, e) -> EConstr.eq_constr_nounivs sigma e t)
+            !nat_atoms
+    with
+    | Some (id, _) -> id
+    | None ->
+      let id = Printf.sprintf "_pb_atom_%d" (List.length !nat_atoms) in
+      nat_atoms := !nat_atoms @ [ (id, t) ];
+      id
+  in
+  un "Int.ofNat" (Ir.Opaque { payload_id = id })
+
 let rec reify_term env sigma t : Ir.shell_term =
   (* No top-level reduction: [whd_all] unfolds [Z.ge] / [Z.le] into
      their compare-based definitions (e.g. [x >= 5] becomes
@@ -217,6 +403,17 @@ let rec reify_term env sigma t : Ir.shell_term =
                | Anonymous -> "_x"
              in
              let ty_string =
+               (* R3-M1 scope: a ℕ-sorted quantifier inside a shell
+                  has no ℤ image yet (bounded-∀ transform is future
+                  work); a LEADING [forall n : nat] on the goal is
+                  introduced by the tactic front-end before reifying. *)
+               if eq_ref sigma dom r_nat then
+                 reify_error
+                   "forall over ℕ inside a formula is outside the ℕ→ℤ \
+                    specialization (a leading forall (n : nat) on the \
+                    goal is introduced automatically; nested ℕ \
+                    quantifiers are not yet translated)"
+               else
                match reify_type env sigma dom with
                | Some s -> s
                | None ->
@@ -256,7 +453,26 @@ and reify_app env sigma head args full =
   let nargs = Array.length args in
   let r i = reify_term env sigma args.(i) in
   let head_is c = eq_ref sigma head c in
-  if      head_is r_Zadd && nargs = 2 then bin "HAdd.hAdd" (r 0) (r 1)
+  (* R3-M1: ℕ comparisons reify as their ℤ image (mirror of the Lean
+     reifier's Nat arms); [>=] / [>] swap operands like the Z side. *)
+  if head_is r_nat_le && nargs = 2 then
+    bin "LE.le" (reify_nat_term env sigma args.(0))
+                (reify_nat_term env sigma args.(1))
+  else if head_is r_nat_lt && nargs = 2 then
+    bin "LT.lt" (reify_nat_term env sigma args.(0))
+                (reify_nat_term env sigma args.(1))
+  else if head_is r_nat_ge && nargs = 2 then
+    bin "LE.le" (reify_nat_term env sigma args.(1))
+                (reify_nat_term env sigma args.(0))
+  else if head_is r_nat_gt && nargs = 2 then
+    bin "LT.lt" (reify_nat_term env sigma args.(1))
+                (reify_nat_term env sigma args.(0))
+  (* An explicit [Z.of_nat t] in a Z-typed source term (a hand-cast
+     goal) reifies as the operand's ℤ image — same shell the ℕ
+     reifier produces. *)
+  else if head_is r_z_of_nat && nargs = 1 then
+    reify_nat_term env sigma args.(0)
+  else if head_is r_Zadd && nargs = 2 then bin "HAdd.hAdd" (r 0) (r 1)
   else if head_is r_Zsub && nargs = 2 then bin "HSub.hSub" (r 0) (r 1)
   else if head_is r_Zmul && nargs = 2 then bin "HMul.hMul" (r 0) (r 1)
   else if head_is r_Zopp && nargs = 1 then un  "Neg.neg"  (r 0)
@@ -277,6 +493,13 @@ and reify_app env sigma head args full =
   else if head_is r_Rge    && nargs = 2 then bin "LE.le"    (r 1) (r 0)
   else if head_is r_Rgt    && nargs = 2 then bin "LT.lt"    (r 1) (r 0)
   else if head_is r_eq   && nargs = 3 then begin
+    (* R3-M1: an equality at ℕ images to an Int equality of the
+       cast operands. *)
+    if eq_ref sigma args.(0) r_nat then
+      Ir.Eq { ty = "Int";
+              left = reify_nat_term env sigma args.(1);
+              right = reify_nat_term env sigma args.(2) }
+    else
     (* Defer to [reify_type] for the equality's type argument so
        LIA / LRA / UF arrow-type / HOL function-type equalities all
        go through one path. The Phase-3 HOL test case
@@ -314,6 +537,13 @@ and reify_app env sigma head args full =
         | Anonymous -> "_x"
       in
       let ty_string =
+        (* R3-M1 scope: same rule as forall — no ℕ-sorted binders in
+           shells. *)
+        if eq_ref sigma dom r_nat then
+          reify_error
+            "exists over ℕ is outside the ℕ→ℤ specialization (nested \
+             ℕ quantifiers are not yet translated)"
+        else
         match reify_type env sigma dom with
         | Some s -> s
         | None ->
@@ -465,10 +695,77 @@ let logic_for (ir : Ir.t) : Ir.logic_classification =
     decidable_theory = None;
   }
 
+(* --- R3-M1: ℕ metadata + provenance --------------------------------- *)
+
+(* The embedding-witness lemmas the Rocq ℕ lift applies (all
+   constructive Stdlib): comparison/equality transfer + the nonneg
+   fact behind every [_pb_nonneg_*] hypothesis. Their names flow
+   into the [embedding_witness:] tags → the refinement record's
+   [soundness_witness], with a [library_provenance] entry each. *)
+let nat_embedding_witness_lemmas =
+  [ "Nat2Z.inj_le"; "Nat2Z.inj_lt"; "Nat2Z.inj"; "Nat2Z.is_nonneg" ]
+
+(* Provenance entry for one witness lemma: defining module from the
+   nametab, content hash = SHA-256 of the pretty-printed statement
+   (the SDK's [Hash.sha256_of_string] — the same primitive the Lean
+   reifier reaches through the [content_hash] FFI). *)
+let nat_witness_provenance (name : string) : string * Ir.provenance =
+  let gr =
+    let candidates =
+      [ name; "Stdlib.ZArith.Znat." ^ name; "Coq.ZArith.Znat." ^ name ]
+    in
+    match
+      List.fold_left (fun acc s ->
+        match acc with
+        | Some _ -> acc
+        | None ->
+          (try Some (Nametab.locate (Libnames.qualid_of_string s))
+           with _ -> None))
+        None candidates
+    with
+    | Some gr -> gr
+    | None ->
+      reify_error "embedding-witness lemma %s not found in the nametab"
+        name
+  in
+  let env = Global.env () in
+  let ty, module_path =
+    match gr with
+    | Names.GlobRef.ConstRef c ->
+      let cb = Environ.lookup_constant c env in
+      (cb.Declarations.const_type,
+       Some (Names.ModPath.to_string (Names.Constant.modpath c)))
+    | _ ->
+      reify_error "embedding-witness lemma %s is not a constant" name
+  in
+  let stmt =
+    Pp.string_of_ppcmds
+      (Printer.pr_constr_env env (Evd.from_env env) ty)
+  in
+  ( name,
+    { Ir.library = "rocq-stdlib";
+      version = Coq_config.version;
+      module_path;
+      content_hash = Proof_broker.Hash.sha256_of_string stmt } )
+
+(* The [primitive]-kind type_metadata entry for nat — the same shape
+   the Lean reifier emits (see its [natTypeMetadata] doc for the
+   §4.6 kind decision, recorded in delta.md §5). *)
+let nat_type_metadata : Yojson.Safe.t =
+  `Assoc [
+    ("kind", `String "primitive");
+    ("name", `String "Nat");
+    ("theory_tags",
+     `List (`String "embeds_into:Int_for_universal_LIA"
+            :: List.map (fun n -> `String ("embedding_witness:" ^ n))
+                 nat_embedding_witness_lemmas));
+  ]
+
 let build_ir gl : Ir.t =
   let env = Proofview.Goal.env gl in
   let sigma = Proofview.Goal.sigma gl in
   let goal_type = Proofview.Goal.concl gl in
+  nat_atoms := [];
   let goal_shell = reify_term env sigma goal_type in
   (* Walk locals: Z-typed → free_var (Int), R-typed → free_var (Real),
      Prop-typed → hypothesis; anything else is ignored (the goal/Prop
@@ -486,6 +783,13 @@ let build_ir gl : Ir.t =
        and the head-match in [reify_app] picks it up. *)
     if eq_ref sigma ty r_Z then
       free_vars := { Ir.name = Names.Id.to_string id; ty = "Int" } :: !free_vars
+    else if eq_ref sigma ty r_nat then
+      (* R3-M1: nat locals are arithmetic free vars declared at their
+         TRUE carrier "Nat"; the SDK refinement pass substitutes
+         Nat → Int (recorded with a real witness) before the SMT
+         serializer runs. Shell occurrences sit under the
+         [Int.ofNat] cast (see [reify_nat_term]). *)
+      free_vars := { Ir.name = Names.Id.to_string id; ty = "Nat" } :: !free_vars
     else if eq_ref sigma ty r_R then
       free_vars := { Ir.name = Names.Id.to_string id; ty = "Real" } :: !free_vars
     else if Termops.is_Prop sigma ty then
@@ -515,6 +819,53 @@ let build_ir gl : Ir.t =
   ) (List.rev named);
   let free_vars = List.rev !free_vars in
   let hypotheses = List.rev !hypotheses in
+  (* R3-M1: ℕ mode = a nat free var or an atomized ℕ subterm. Nonneg
+     hypotheses (what [zify] adds) carry the ℕ-ness of every atom
+     into the ℤ image; metadata + provenance document the
+     specialization the refinement pass performs and the lift
+     inverts. *)
+  let atoms = !nat_atoms in
+  let nat_mode =
+    List.exists (fun (fv : Ir.free_var) -> fv.ty = "Nat") free_vars
+    || atoms <> []
+  in
+  let hypotheses =
+    if not nat_mode then hypotheses
+    else
+      hypotheses
+      @ List.filter_map (fun (fv : Ir.free_var) ->
+          if fv.ty = "Nat" then
+            Some { Ir.name = "_pb_nonneg_" ^ fv.name;
+                   shell = bin "LE.le"
+                     (Ir.Num_lit { value = "0"; ty = "Int" })
+                     (un "Int.ofNat" (Ir.Var { name = fv.name })) }
+          else None)
+          free_vars
+      @ List.map (fun (id, _) ->
+          let suffix = String.sub id 4 (String.length id - 4) in
+          { Ir.name = "_pb_nonneg_" ^ suffix;
+            shell = bin "LE.le"
+              (Ir.Num_lit { value = "0"; ty = "Int" })
+              (un "Int.ofNat" (Ir.Opaque { payload_id = id })) })
+          atoms
+  in
+  let type_metadata =
+    if nat_mode then [ ("Nat", nat_type_metadata) ] else []
+  in
+  let library_provenance =
+    if nat_mode then List.map nat_witness_provenance nat_embedding_witness_lemmas
+    else []
+  in
+  let payloads : (string * Yojson.Safe.t) list option =
+    if atoms = [] then None
+    else
+      Some (List.map (fun (id, e) ->
+        (id, `Assoc [
+           ("kind", `String "nat_nonlinear_atom");
+           ("rocq", `String (pp_econstr env sigma e));
+         ]))
+        atoms)
+  in
   let ir : Ir.t = {
     ir_version = "1.0";
     source_system = { name = "rocq"; version = plugin_version };
@@ -533,16 +884,29 @@ let build_ir gl : Ir.t =
       first_order_fragment = "LIA";
       decidable_theory = None;
     };
-    goal = { shell = goal_shell; payloads = None };
+    goal = { shell = goal_shell; payloads };
     context = {
       type_vars = [];
       free_vars;
       hypotheses;
       library_slice = None;
     };
-    type_metadata = [];
+    type_metadata;
     definitional_metadata = [];
-    library_provenance = [];
+    library_provenance;
     user_directives = None;
   } in
-  { ir with logic_classification = logic_for ir }
+  let ir = { ir with logic_classification = logic_for ir } in
+  (* R3-M1 scope: the ℕ→ℤ specialization does not compose with UF /
+     HO / Real carriers yet — mixing is a named failure, not a
+     silent mistranslation. *)
+  if nat_mode
+     && (ir.logic_classification.first_order_fragment <> "LIA"
+         || ir.logic_classification.order <> "first_order"
+         || List.exists (fun (fv : Ir.free_var) -> fv.ty = "Real")
+              ir.context.free_vars)
+  then
+    reify_error
+      "ℕ variables cannot mix with UF / higher-order / Real carriers \
+       yet (R3-M1 scope: pure ℕ linear arithmetic)";
+  ir

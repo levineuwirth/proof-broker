@@ -35,7 +35,7 @@ refreshes it). It is the only place this README states a count.
 | surface | value | source |
 |---|---|---|
 | Trust gate (Lean) | 128 allowlisted theorems; 3 distinct axioms: `Classical.choice`, `Quot.sound`, `propext` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the lean-bridge job) |
-| Trust gate (Rocq) | 134 allowlisted theorems; 4 distinct axioms: `ClassicalDedekindReals.sig_forall_dec`, `FunctionalExtensionality.functional_extensionality_dep`, `classic`, `propositional_extensionality` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the rocq-bridge job) |
+| Trust gate (Rocq) | 162 allowlisted theorems; 4 distinct axioms: `ClassicalDedekindReals.sig_forall_dec`, `FunctionalExtensionality.functional_extensionality_dep`, `classic`, `propositional_extensionality` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the rocq-bridge job) |
 | Alethe walker rules | Lean 31, Rocq 31 (at parity) | dispatch arms between `PARITY:walker-rules` markers (`check_walker_parity.py`) |
 | Walker corpus | 17 goals, 1138 proof steps; statically walkable 17/17; in the generated `CorpusReplay.v` 17/17 (the coqc ground truth is that file compiling in the rocq-bridge job); live-mintable 17/17 | `corpus/index.json`, `corpus/coverage.json` (`check_walker_coverage.py --check`, `gen_corpus_replay.py --check`) |
 | Backends (adapter manifests) | cvc4 1.8 (tiers 0,1); cvc5 1.3.0 (tiers 0,1,2,3; alethe-2024); llm 0 (tiers 3; lean-tactic-script); vampire 5.1.0 (tiers 0,3; tstp-fof,tstp-thf); z3 4.16.0 (tiers 0,1) | `examples/manifest-*.json` |
