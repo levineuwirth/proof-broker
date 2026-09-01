@@ -77,6 +77,23 @@ open Lean Lean.Elab.Tactic Lean.Meta ProofBroker.IR
    is unchanged from before this hook landed.
    ============================================================ -/
 
+/-- R3-M2: what the extension reports for a QUALIFIED polymorphic
+    type variable — a local `α : Type u` whose context carries the
+    ordered-ring instances the α lift family needs. The reifier
+    names the variable canonically `"alpha"` in the IR (spec
+    Example 1's name; also keeps non-ASCII binder names out of the
+    wire format) and documents the specialization in
+    `type_metadata` + `library_provenance`, exactly the M1
+    discipline: the `embedding_witness:` tags name the lemmas the
+    lift actually applies, each backed by a provenance entry with a
+    real content hash. -/
+structure TypeVarInfo where
+  /-- The `type_variable`-kind `type_metadata` entry (keyed by the
+      canonical name `"alpha"` by `buildIR`). -/
+  metadata : Json
+  /-- Provenance entries backing the entry's witness tags. -/
+  provenance : List (String × Provenance)
+
 /-- Pluggable extension to the core reifier and closer. The core
     consults this for every recognition step that might extend
     beyond `Int`/LIA, falling through to its built-in error if
@@ -145,6 +162,20 @@ structure ReifierExt where
       a syntax quotation here would surface as `le_antisymm✝`. -/
   tier1EqSplit : TacticM Unit
   irFragment : String
+  /-- R3-M2: recognize a local fvar (`α : Type u`) as a qualified
+      polymorphic type variable — the extension checks that the
+      instances its α lift family needs are synthesizable — and
+      return the metadata + provenance the IR documents the
+      specialization with. `none` = not qualified; the local is
+      ignored exactly as before M2. -/
+  typeVarInfo? : Expr → MetaM (Option TypeVarInfo)
+  /-- R3-M2: term-mode closer for a Tier-1 Farkas cert over a
+      polymorphic-α extraction. The cert's coefficients are replayed
+      AT α through the extension's class-polymorphic Farkas family —
+      the α→Int specialization was only for the solver, and this
+      replay is what inverts it. Handles False and comparison goal
+      shapes; equality goals are pre-split via `tier1EqSplit`. -/
+  polyFarkasCloser : Lean.Json → IR → TacticM Unit
   /-- Closer for a broker-certified higher-order / FOL goal
       (fragment `"HOL"` / `"FOL"`), i.e. a Vampire Tier-3 TSTP
       (`verifiedTier3Provenance`) or Tier-0 oracle cert. The cert
@@ -681,6 +712,32 @@ partial def shellMentionsUF : ShellTerm → Bool
   | .lambda _ b => shellMentionsUF b
   | .opaque_ _ => false
 
+/-- R3-M2: the canonical IR name for the (single, M2-scope)
+    polymorphic type variable — spec Example 1's `"alpha"`. Chosen
+    over the user's binder name so the wire format never carries a
+    non-ASCII identifier; the substitution the SDK applies is on
+    type TAGS, so the choice is invisible to the user. -/
+def polyTypeVarName : String := "alpha"
+
+/-- True iff any subterm carries `tag` as a type reference — on a
+    `numLit`, an `eq`'s `ty`, or a binder's type. Drives the
+    poly-mode decision (`buildIR` enters α mode only when the type
+    variable is actually USED as a carrier, not merely in scope). -/
+partial def shellMentionsTypeRef (tag : String) : ShellTerm → Bool
+  | .var _ | .const _ | .opaque_ _ => false
+  | .numLit _ ty => ty == tag
+  | .eq ty a b =>
+    ty == tag || shellMentionsTypeRef tag a || shellMentionsTypeRef tag b
+  | .app _ tyArgs args =>
+    tyArgs.any (· == tag) || args.any (shellMentionsTypeRef tag)
+  | .and_ a b | .or_ a b | .implies a b =>
+    shellMentionsTypeRef tag a || shellMentionsTypeRef tag b
+  | .not_ a => shellMentionsTypeRef tag a
+  | .forall_ _ ty b | .exists_ _ ty b =>
+    ty == tag || shellMentionsTypeRef tag b
+  | .lambda binders b =>
+    binders.any (·.ty == tag) || shellMentionsTypeRef tag b
+
 /-- Node-presence flags for the honest `features_used` label (R2):
     `(hasForall, hasExists, hasEq)`, walked over one shell. The
     reifier reports only features it actually emitted, with tags
@@ -715,8 +772,11 @@ def natEmbeddingWitnessLemmas : List Name :=
 /-- Provenance entry for one embedding-witness lemma: the defining
     module from the environment, content hash = SHA-256 (via the
     SDK's `content_hash` FFI) of the lemma's pretty-printed
-    statement. -/
-def natWitnessProvenance (name : Name) : MetaM (String × Provenance) := do
+    statement. `library` labels the owning library (`"lean-core"`
+    for the ℕ witnesses; the M2 extension passes
+    `"proof-broker-bridge"` for its own lift family). -/
+def witnessProvenance (library : String) (name : Name)
+    : MetaM (String × Provenance) := do
   let env ← Lean.getEnv
   let some info := env.find? name
     | throwError "proof_broker: embedding-witness lemma {name} not found"
@@ -728,10 +788,14 @@ def natWitnessProvenance (name : Name) : MetaM (String × Provenance) := do
   let modulePath := env.getModuleIdxFor? name |>.map fun idx =>
     toString env.allImportedModuleNames[idx.toNat]!
   return (name.toString, {
-    library := "lean-core",
+    library,
     version := Lean.versionString,
     modulePath,
     contentHash := hash })
+
+@[inherit_doc witnessProvenance]
+def natWitnessProvenance (name : Name) : MetaM (String × Provenance) :=
+  witnessProvenance "lean-core" name
 
 /-- The `primitive`-kind type_metadata entry for `Nat` (spec §4.6;
     the `type_variable` alternative was rejected — its schema
@@ -779,9 +843,35 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
   let mut sawBV : Bool := false
   let mut sawUF : Bool := false
   let mut sawNat : Bool := false
+  -- R3-M2: the (single) qualified polymorphic type variable of this
+  -- extraction, with the metadata/provenance the extension reported.
+  let mut polyVar : Option (FVarId × TypeVarInfo) := none
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
     let ty := decl.type
+    -- R3-M2: typeclass-instance locals (`inst : CommRing α`,
+    -- `IsStrictOrderedRing α` — the latter is Prop-valued and would
+    -- otherwise land in the hypothesis branch) are class METADATA,
+    -- not reifiable hypotheses/data; the type-variable recognition
+    -- below reads them through instance synthesis instead. Before
+    -- M2 such locals either fell through untouched (Type-valued
+    -- classes) or made the Prop reifier fail fast; skipping is the
+    -- sound direction — dropping an assumption only weakens what
+    -- the solver may use.
+    if (← Lean.Meta.isClass? ty).isSome then continue
+    -- R3-M2: a `Sort`-typed local is a candidate type variable.
+    -- The extension decides qualification (the ordered-ring
+    -- instances its lift family needs must be synthesizable);
+    -- unqualified sort locals stay ignored exactly as before.
+    if ty.isSort && !ty.isProp then
+      if let some ext := extOpt then
+        if let some info ← ext.typeVarInfo? decl.toExpr then
+          if polyVar.isSome then
+            throwError "proof_broker: more than one qualified \
+              polymorphic type variable in scope (R3-M2 scope: a \
+              single α)"
+          polyVar := some (decl.fvarId, info)
+      continue
     if ← isProp ty then
       let shell ← reifyTerm ty
       hypotheses := hypotheses ++ [{ name := decl.userName.toString, shell }]
@@ -798,6 +888,14 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
       -- `Int.ofNat` cast (see `reifyNatTerm`).
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Nat" }]
       sawNat := true
+    else if ty.isFVar && polyVar.any (·.1 == ty.fvarId!) then
+      -- R3-M2: a data local at the qualified type variable is an
+      -- arithmetic free var declared at the CANONICAL tag "alpha";
+      -- the SDK refinement pass substitutes alpha → Int (recorded
+      -- with the extension's real witness) before the SMT
+      -- serializer runs.
+      freeVars := freeVars ++ [{ name := decl.userName.toString,
+                                 ty := polyTypeVarName }]
     else if ty.isProp then
       -- A local `p : Prop` is a Boolean ATOM, not a hypothesis
       -- (`isProp ty` above matched locals whose type IS a
@@ -867,6 +965,19 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
     throwError "proof_broker: ℕ variables cannot mix with UF / BV / \
       higher-order / extension carriers yet (R3-M1 scope: pure ℕ \
       linear arithmetic)"
+  -- R3-M2: α mode = a qualified type variable in scope AND used as a
+  -- carrier (a free var declared at "alpha", or an "alpha"-tagged
+  -- literal/equality in some shell). A type variable merely in scope
+  -- over an Int/ℕ goal does not switch modes.
+  let polyMode := polyVar.isSome && (
+    freeVars.any (·.ty == polyTypeVarName)
+    || shellMentionsTypeRef polyTypeVarName goalShell
+    || hypotheses.any (fun h => shellMentionsTypeRef polyTypeVarName h.shell))
+  if polyMode && (natMode || sawBV || bvInTerms || sawUF || ufInTerms
+                  || isHO || sawExtensionType) then
+    throwError "proof_broker: a polymorphic type variable cannot mix \
+      with ℕ / UF / BV / higher-order / Real carriers yet (R3-M2 \
+      scope: pure α linear arithmetic)"
   if natMode then
     -- Nonneg hypotheses — what `zify` adds: `0 ≤ ↑x` per ℕ free
     -- var, `0 ≤ ↑<subterm>` per atomized ℕ product. These carry the
@@ -890,6 +1001,11 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
     if isHO then "none"
     else if sawBV || bvInTerms then "BV"
     else if sawUF || ufInTerms then "UF"
+    -- R3-M2: a type-variable IR classifies "none" pending refinement
+    -- (the fixture/spec convention; `Farkas.effective_fragment`
+    -- defaults it to LIA and refinement picks the host type from the
+    -- embedding tags — the actual classifier for these IRs).
+    else if polyMode then "none"
     else match extOpt with
       | some ext => if sawExtensionType then ext.irFragment else "LIA"
       | none => "LIA"
@@ -911,10 +1027,22 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
   -- R3-M1: the ℕ→ℤ specialization is documented in the IR itself —
   -- metadata naming the embedding + witnesses, provenance with real
   -- content hashes, and one payload per atomized subterm.
-  let typeMetadata := if natMode then [("Nat", natTypeMetadata)] else []
+  let typeMetadata :=
+    (if natMode then [("Nat", natTypeMetadata)] else [])
+    -- R3-M2: the type-variable entry the extension reported — the
+    -- `embedding_witness:` tags inside it name the α lift family,
+    -- and refinement copies them into the cert's soundness_witness.
+    ++ (match polyVar with
+        | some (_, info) =>
+          if polyMode then [(polyTypeVarName, info.metadata)] else []
+        | none => [])
   let libraryProvenance ←
     if natMode then natEmbeddingWitnessLemmas.mapM natWitnessProvenance
     else pure []
+  let libraryProvenance := libraryProvenance
+    ++ (match polyVar with
+        | some (_, info) => if polyMode then info.provenance else []
+        | none => [])
   let payloads ←
     if natAtoms.isEmpty then pure none
     else do
@@ -938,7 +1066,9 @@ def buildIR (mvarId : MVarId) : MetaM (IR × Array (String × Expr)) :=
       firstOrderFragment := fragment, decidableTheory := none
     },
     goal := { shell := goalShell, payloads },
-    context := { typeVars := [], freeVars, hypotheses, librarySlice := none },
+    context := {
+      typeVars := if polyMode then [polyTypeVarName] else [],
+      freeVars, hypotheses, librarySlice := none },
     typeMetadata,
     definitionalMetadata := [],
     libraryProvenance,
@@ -1196,43 +1326,78 @@ private def identityTraceOk (path : ExtractionPath) : Bool :=
 private def natModeOf (ir : IR) : Bool :=
   ir.context.freeVars.any (·.ty == "Nat") || ir.goal.payloads.isSome
 
+/-- R3-M2: α mode of an extraction — the reified IR declares the
+    canonical type variable. -/
+private def polyModeOf (ir : IR) : Bool :=
+  !ir.context.typeVars.isEmpty
+
+/-- Which specialization set a closer path can invert (R3). The
+    walker paths invert only the ℕ→ℤ cast layer (`.nat` on a ℕ
+    extraction, `.int` otherwise — an α cert is refused there); the
+    term-mode path additionally inverts the α→Int specialization by
+    replaying the Farkas coefficients at α (`.poly`). -/
+private inductive SpecMode
+  | int  -- no specialization consumable
+  | nat  -- exactly the Nat → Int record, required present
+  | poly -- exactly the alpha → Int record, required present
+deriving BEq, Repr
+
 /-- Fail-closed specialization gate — the R3 analog of R2's
     identity-trace guard, lifted pass-by-pass as inversions land: a
     cert-consuming closer runs only when every specialization the
-    cert records is one this bridge inverts. Today that is exactly
-    the ℕ→ℤ type specialization on a ℕ-mode extraction; on any
-    other extraction the list must be empty. In ℕ mode the record
-    must be PRESENT — a cert minted over a ℕ IR with no recorded
-    specialization means refinement did not happen honestly. -/
-private def certSpecializationsError? (cert : Json) (natMode : Bool)
+    cert records is one the CALLING PATH inverts (`SpecMode`). In ℕ
+    and α modes the respective record must be PRESENT — a cert
+    minted over a specialized IR with no recorded specialization
+    means refinement did not happen honestly. -/
+private def certSpecializationsError? (cert : Json) (mode : SpecMode)
     : Option String := Id.run do
   let specs := ((cert.getObjVal? "refinement_record").bind
     (·.getObjVal? "specializations")).toOption.bind
     (·.getArr?.toOption) |>.getD #[]
-  let mut sawNatSpec := false
+  let mut sawRequired := false
   for s in specs do
     let kind := (s.getObjValAs? String "kind").toOption.getD ""
     let source := (s.getObjValAs? String "source").toOption.getD ""
     let target := (s.getObjValAs? String "target").toOption.getD ""
-    if natMode && kind == "type_specialization" && source == "Nat"
+    if mode == .nat && kind == "type_specialization" && source == "Nat"
         && target == "Int" then
-      sawNatSpec := true
+      sawRequired := true
+    else if mode == .poly && kind == "type_specialization"
+        && source == Reify.polyTypeVarName && target == "Int" then
+      sawRequired := true
     else
       return some s!"proof_broker: the cert records a specialization \
-        this bridge cannot invert (kind={kind}, {source} → {target}); \
-        the goal is left OPEN rather than closed from a cert whose \
-        translation has no lift (fail closed)"
-  if natMode && !sawNatSpec then
+        this closer path cannot invert (kind={kind}, {source} → \
+        {target}); the goal is left OPEN rather than closed from a \
+        cert whose translation has no lift here (fail closed)"
+  if mode == .nat && !sawRequired then
     return some "proof_broker: ℕ goal, but the cert records no \
       Nat → Int type specialization — refusing to consume it \
       (fail closed)"
+  if mode == .poly && !sawRequired then
+    return some s!"proof_broker: polymorphic-α goal, but the cert \
+      records no {Reify.polyTypeVarName} → Int type specialization — \
+      refusing to consume it (fail closed)"
   return none
 
-private def checkCertSpecializations (cert : Json) (natMode : Bool)
+private def checkCertSpecializations (cert : Json) (mode : SpecMode)
     : TacticM Unit := do
-  match certSpecializationsError? cert natMode with
+  match certSpecializationsError? cert mode with
   | some msg => throwError msg
   | none => pure ()
+
+/-- The `SpecMode` for the WALKER paths: they invert the ℕ cast
+    layer only — an α-specialized cert is refused (strict) or
+    skipped (plain-path semantics). -/
+private def walkerSpecMode (ir : IR) : SpecMode :=
+  if natModeOf ir then .nat else .int
+
+/-- The `SpecMode` for the TERM-MODE path, which additionally
+    replays α certs at α. -/
+private def termSpecMode (ir : IR) : SpecMode :=
+  if natModeOf ir then .nat
+  else if polyModeOf ir then .poly
+  else .int
 
 /-- `(atom name ↦ its ℕ-level Expr)` for the extraction: ℕ free
     vars resolved in the local context by name, atomized subterms
@@ -1740,14 +1905,30 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- fallback re-proves the original goal itself), where the
         -- strict entry points fail closed with the named error.
         if certTraceFormat cert == "alethe-2024" && identityTraceOk path
-            && (certSpecializationsError? cert (natModeOf path.ir)).isNone then
+            && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
           if natModeOf path.ir then
             tryAletheWalkerNat cert path.ir path.natAtoms
           else tryAletheWalker cert
         else
           pure false
       unless walkerHandled do
-        evalTactic (← `(tactic| omega))
+        -- R3-M2: an α extraction has no decision-procedure closer
+        -- (omega is Int/ℕ-only). If the cert is a Tier-1 Farkas
+        -- witness whose specializations the term-mode path inverts,
+        -- replay it at α through the extension's polymorphic family;
+        -- anything else is an honest tactic failure.
+        if polyModeOf path.ir then
+          checkCertSpecializations cert (termSpecMode path.ir)
+          match ← reifierExt.get with
+          | some ext => ext.polyFarkasCloser cert path.ir
+          | none =>
+            throwError "proof_broker: the broker certified this \
+              polymorphic-α goal but no α closer is registered. \
+              `import ProofBrokerMathlib` to enable the \
+              class-polymorphic Farkas term builder. The goal is left \
+              OPEN rather than closed by an unjustified axiom."
+        else
+          evalTactic (← `(tactic| omega))
     else if fragment == "BV" then
       -- Cert-gated decide: BitVec has DecidableEq + the operator
       -- typeclass instances are decidable, so closed BV goals
@@ -1805,7 +1986,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- LIA arm (ℕ never reaches UF/UFLIA — carrier mixing is a
         -- reifier error — so natMode is false here by construction).
         if certTraceFormat cert == "alethe-2024" && identityTraceOk path
-            && (certSpecializationsError? cert (natModeOf path.ir)).isNone then
+            && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
           tryAletheWalker cert
         else
           pure false
@@ -1836,7 +2017,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- LIA arm (ℕ never reaches UF/UFLIA — carrier mixing is a
         -- reifier error — so natMode is false here by construction).
         if certTraceFormat cert == "alethe-2024" && identityTraceOk path
-            && (certSpecializationsError? cert (natModeOf path.ir)).isNone then
+            && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
           tryAletheWalker cert
         else
           pure false
@@ -2603,10 +2784,11 @@ def evalProofBrokerWalker : Tactic := fun stx => do
       `proof_broker`, which falls back to a decision procedure on the \
       original goal."
   -- R3-M1 specialization gate: every recorded specialization must be
-  -- one this bridge inverts (ℕ→ℤ via the cast layer); otherwise the
+  -- one the WALKER inverts (ℕ→ℤ via the cast layer; an α cert is
+  -- refused here — the α replay is term-mode-only); otherwise the
   -- cert is refused, fail closed.
   let natMode := natModeOf path.ir
-  checkCertSpecializations cert natMode
+  checkCertSpecializations cert (walkerSpecMode path.ir)
   -- Walker-strict: require the Alethe walker to close from the live
   -- cert; no `omega` fallback (that is what `proof_broker` adds).
   -- A ℕ extraction routes through the cast-layer variant; strict
@@ -2686,18 +2868,32 @@ private def runTermModeOnGoal
     throwError "proof_broker_term: cert was minted but verifier did not \
                  accept it (reason: {r}); term-mode requires a verified \
                  Tier 1 Farkas or Tier 2 case-split cert"
-  -- R3-M1 specialization gate (fail closed; see
-  -- `checkCertSpecializations`) + the ℕ lift: a ℕ extraction's
+  -- R3 specialization gate (fail closed; see
+  -- `checkCertSpecializations`) + the lifts: a ℕ extraction's
   -- Tier-1 Farkas witness is consumed by `closeNatViaTermMode`,
   -- which casts the witness-named facts to ℤ by term construction
-  -- and runs the Int fold over the images.
+  -- and runs the Int fold over the images; an α extraction's is
+  -- replayed AT α through the extension's class-polymorphic Farkas
+  -- family (`polyFarkasCloser`) — the α→Int specialization was only
+  -- for the solver (R3-M2).
   let natMode := natModeOf path.ir
-  checkCertSpecializations cert natMode
+  checkCertSpecializations cert (termSpecMode path.ir)
   if natMode then
     if certStrategyHint cert == "case_split_farkas" then
       throwError "proof_broker_term: Tier 2 case-split over a ℕ \
         extraction is not lifted yet"
     closeNatViaTermMode goal goalType cert path.ir path.natAtoms
+    return
+  if polyModeOf path.ir then
+    if certStrategyHint cert == "case_split_farkas" then
+      throwError "proof_broker_term: Tier 2 case-split over a \
+        polymorphic-α extraction is not lifted yet"
+    match ← reifierExt.get with
+    | some ext => ext.polyFarkasCloser cert path.ir
+    | none =>
+      throwError "proof_broker_term: polymorphic-α cert minted but no \
+        extension closer is registered (import `ProofBrokerMathlib` \
+        for the class-polymorphic Farkas term builder)"
     return
   if certStrategyHint cert == "case_split_farkas" then
     match ← reifierExt.get with
@@ -2836,17 +3032,26 @@ where
       specialization this bridge cannot invert (alone, or riding next
       to a valid Nat → Int record) → the "cannot invert" branch
       throws. Deleting either throw branch flips the matching
-      `fail_if_success` tests in `Test/Tactic.lean`. -/
+      `fail_if_success` tests in `Test/Tactic.lean`.
+
+    R3-M2 adds the `poly` mode (the term-mode path's α gate):
+    * `spec_gate_test poly foreign_spec` — the alpha → Int record IS
+      the invertible set in poly mode → passes.
+    * `spec_gate_test poly none` — record missing → throws.
+    * `spec_gate_test poly nat_spec` / `spec_gate_test poly beta_spec`
+      — a record the α replay cannot invert → throws (`beta_spec` is
+      foreign in every mode). -/
 syntax (name := specGateTest) "spec_gate_test" ident ident : tactic
 
 @[tactic specGateTest]
 def evalSpecGateTest : Tactic := fun stx => do
   match stx with
   | `(tactic| spec_gate_test $mode $kind) =>
-    let natMode ← match mode.getId.toString with
-      | "nat" => pure true
-      | "int" => pure false
-      | m => throwError "spec_gate_test: unknown mode '{m}' (nat | int)"
+    let specMode ← match mode.getId.toString with
+      | "nat" => pure SpecMode.nat
+      | "int" => pure SpecMode.int
+      | "poly" => pure SpecMode.poly
+      | m => throwError "spec_gate_test: unknown mode '{m}' (nat | int | poly)"
     let natSpec := Json.mkObj [
       ("kind", "type_specialization"),
       ("source", "Nat"), ("target", "Int"),
@@ -2857,16 +3062,22 @@ def evalSpecGateTest : Tactic := fun stx => do
       ("source", "alpha"), ("target", "Int"),
       ("justification", "embeds_into:Int_for_universal_LIA"),
       ("soundness_witness", "linear_ordered_comm_ring_lia_embedding")]
+    let betaSpec := Json.mkObj [
+      ("kind", "type_specialization"),
+      ("source", "beta"), ("target", "Real"),
+      ("justification", "embeds_into:Real_for_universal_LRA"),
+      ("soundness_witness", "linear_ordered_field_lra_embedding")]
     let specs : Json ← match kind.getId.toString with
       | "none" => pure (Json.arr #[])
       | "nat_spec" => pure (Json.arr #[natSpec])
       | "foreign_spec" => pure (Json.arr #[foreignSpec])
       | "mixed_spec" => pure (Json.arr #[natSpec, foreignSpec])
+      | "beta_spec" => pure (Json.arr #[betaSpec])
       | k => throwError "spec_gate_test: unknown kind '{k}' \
-          (none | nat_spec | foreign_spec | mixed_spec)"
+          (none | nat_spec | foreign_spec | mixed_spec | beta_spec)"
     let cert := Json.mkObj [
       ("refinement_record", Json.mkObj [("specializations", specs)])]
-    checkCertSpecializations cert natMode
+    checkCertSpecializations cert specMode
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
 

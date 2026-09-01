@@ -33,25 +33,134 @@ higher arity is mechanical.
 import Lean
 import Aesop
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import Mathlib.Tactic.NormNum
 import Mathlib.Data.Real.Basic
 import ProofBroker.Tactic
 import ProofBrokerMathlib.TermMode
+import ProofBrokerMathlib.TermModePoly
 
 namespace ProofBrokerMathlib.Tactic
 
 open Lean Lean.Elab.Tactic Lean.Meta ProofBroker.IR
 
-/-- Decode an LRA-eligible type. Today: `Real`. Add `Rat`,
-    `Mathlib`'s `EReal`, etc. here when a use case appears. -/
+/- ============================================================
+   R3-M2: polymorphic type-variable recognition
+
+   A local `α : Type u` qualifies as the extraction's type variable
+   when the three instances the α lift family
+   (`ProofBrokerMathlib.TermModePoly`) is stated over are
+   synthesizable: `CommRing α`, `LinearOrder α`,
+   `IsStrictOrderedRing α` — the modern Mathlib spelling of the
+   removed `LinearOrderedCommRing` (delta.md §5). Qualification is
+   what justifies the `embeds_into:Int_for_universal_LIA` tag: the
+   solver works on the Int image, and the term-mode closer replays
+   the cert's coefficients AT α through that family, which is the
+   inversion of the recorded α→Int specialization.
+   ============================================================ -/
+
+/-- The classes the α lift family requires, in reporting order. -/
+private def polyClasses : List Name :=
+  [``CommRing, ``LinearOrder, ``IsStrictOrderedRing]
+
+/-- The lift-family lemmas named in the `embedding_witness:` tags —
+    the M1 discipline: the witness names exactly what the lift
+    applies, each backed by a `library_provenance` entry with a real
+    content hash. -/
+private def polyLiftWitnessLemmas : List Name :=
+  [``ProofBrokerMathlib.TermModePoly.pLeViaLt,
+   ``ProofBrokerMathlib.TermModePoly.pLtViaLe,
+   ``ProofBrokerMathlib.TermModePoly.pFarkasContradictN,
+   ``ProofBrokerMathlib.TermModePoly.pFarkasContradictNStrict]
+
+/-- Try to synthesize `c α`; `none` on elaboration or synthesis
+    failure (e.g. `IsStrictOrderedRing α`'s own instance-implicit
+    `Semiring`/`PartialOrder` arguments missing). The application is
+    SATURATED to the class's full arity (`mkAppOptM` with `none` for
+    every trailing argument, so mixin classes' own instance args are
+    synthesized too — `mkAppM` would leave them un-applied and hand
+    `synthInstance?` a Pi type). -/
+private def polySynthClass? (c : Name) (α : Expr) : MetaM (Option Expr) := do
+  try
+    let cinfo ← Lean.getConstInfo c
+    let arity ← Lean.Meta.forallTelescopeReducing cinfo.type
+      fun xs _ => pure xs.size
+    if arity == 0 then return none
+    let args := #[some α] ++ Array.replicate (arity - 1) none
+    let clsTy ← Lean.Meta.mkAppOptM c args
+    Lean.Meta.synthInstance? clsTy
+  catch _ => return none
+
+/-- Is `ty` a local type variable qualified for the α lift? -/
+private def polyQualifiedFVar (ty : Expr) : MetaM Bool := do
+  unless ty.isFVar do return false
+  let sortTy ← Lean.Meta.whnf (← Lean.Meta.inferType ty)
+  unless sortTy.isSort && !sortTy.isProp do return false
+  for c in polyClasses do
+    if (← polySynthClass? c ty).isNone then return false
+  return true
+
+/-- Build the `type_variable`-kind metadata + provenance for a
+    qualified `α` (see `ProofBroker.Tactic.TypeVarInfo`). One
+    `Instance` entry per required class, each with a real content
+    hash of the class's type signature; the embed +
+    `embedding_witness:` tags ride on the last (ordered-ring) entry
+    and name the `TermModePoly` lift family. -/
+private def typeVarInfoMathlib (α : Expr)
+    : MetaM (Option ProofBroker.Tactic.TypeVarInfo) := do
+  unless ← polyQualifiedFVar α do return none
+  let env ← Lean.getEnv
+  let classHash (c : Name) : MetaM String := do
+    let some info := env.find? c
+      | throwError "proof_broker: class {c} not found"
+    let stmt ← Lean.Meta.ppExpr info.type
+    match ProofBroker.runContentHash (toString stmt) with
+    | .ok h => pure h
+    | .error e =>
+      throwError "proof_broker: content_hash FFI failed: {repr e}"
+  let tags : Array Json :=
+    #[Json.str "embeds_into:Int_for_universal_LIA"]
+    ++ polyLiftWitnessLemmas.toArray.map
+         (fun n => Json.str s!"embedding_witness:{n}")
+  let mut instances : Array Json := #[]
+  for c in polyClasses do
+    let base := [
+      ("instance_name", Json.str s!"inst_{c.toString}_alpha"),
+      ("class", Json.mkObj [
+        ("name", Json.str c.toString),
+        ("library", Json.str "mathlib"),
+        ("library_version", Json.str Lean.versionString),
+        ("content_hash", Json.str (← classHash c))])]
+    let entry :=
+      if c == polyClasses.getLast! then
+        Json.mkObj (base ++ [("theory_classification_tags", Json.arr tags)])
+      else Json.mkObj base
+    instances := instances.push entry
+  let metadata := Json.mkObj [
+    ("kind", "type_variable"),
+    ("name", Json.str ProofBroker.Tactic.Reify.polyTypeVarName),
+    ("kind_class", "Type"),
+    ("instances", Json.arr instances)]
+  let provenance ← polyLiftWitnessLemmas.mapM
+    (ProofBroker.Tactic.Reify.witnessProvenance "proof-broker-bridge")
+  return some { metadata, provenance }
+
+/-- Decode an LRA-eligible type — `Real` — or (R3-M2) a qualified
+    polymorphic type variable, reified at the canonical tag
+    `"alpha"`. -/
 private def reifyTypeMathlib (ty : Expr) : MetaM (Option ProofBroker.IR.TypeRef) := do
   if ty.isConstOf ``Real then return some "Real"
+  if ← polyQualifiedFVar ty then
+    return some ProofBroker.Tactic.Reify.polyTypeVarName
   return none
 
-/-- Same recognition as `reifyTypeMathlib` but invoked from the
-    `buildIR` LCtx walk, which classifies non-Prop locals as IR
-    `freeVars`. Identical for our scope. -/
+/-- The `buildIR` LCtx-walk recognizer for extension-typed DATA
+    locals. `Real` only: α-typed locals are claimed by core's
+    poly-mode branch (which runs first), so claiming them here too
+    would only mislabel the fragment. -/
 private def freeVarTypeMathlib (ty : Expr) : MetaM (Option ProofBroker.IR.TypeRef) := do
-  reifyTypeMathlib ty
+  if ty.isConstOf ``Real then return some "Real"
+  return none
 
 /-- Extract a Real-typed numeric literal as a value-string + type
     tag. Handles `OfNat.ofNat` over `Real` (e.g. `(5 : ℝ)`) and
@@ -71,6 +180,14 @@ private def matchRealLiteral? (e : Expr) : MetaM (Option (String × ProofBroker.
     if α.isConstOf ``Real then
       match n.rawNatLit? with
       | some k => return some (toString k, "Real")
+      | none => return none
+    -- R3-M2: an `OfNat` literal at a qualified type variable
+    -- (`(10 : α)`) reifies at the canonical "alpha" tag; the SDK
+    -- refinement substitutes it to Int with the rest.
+    else if ← polyQualifiedFVar α then
+      match n.rawNatLit? with
+      | some k =>
+        return some (toString k, ProofBroker.Tactic.Reify.polyTypeVarName)
       | none => return none
     else return none
   | (``OfScientific.ofScientific, #[α, _inst, mantissa, signE, exp]) =>
@@ -704,9 +821,289 @@ private def closeViaTermModeReal (cert : Json) (_ir : IR) : TacticM Unit := do
 /-- Equality-goal antisym split tactic for LRA. Wired into core's
     `evalProofBrokerTerm` via the `tier1EqSplit` slot. Applies
     Mathlib's generic `le_antisymm`, leaving two `≤` subgoals that
-    core dispatches via fresh solver runs. -/
+    core dispatches via fresh solver runs. R3-M2: also serves the
+    polymorphic-α equality split (`le_antisymm` is the `PartialOrder`
+    generic, so it applies at any qualified α). -/
 private def lraEqSplit : TacticM Unit := do
   evalTactic (← `(tactic| apply le_antisymm))
+
+/- ============================================================
+   R3-M2: Tier 1 α term-mode closer — the α lift.
+
+   Mirror of the LRA closer above, over a qualified type variable
+   instead of `Real`. The cert's Farkas coefficients (found by the
+   solver on the Int image of the goal) are replayed AT α through
+   `ProofBrokerMathlib.TermModePoly` — this replay is what makes the
+   cert's recorded α→Int `type_specialization` invertible. Like the
+   Real fold (and unlike the Int one), the α fold is
+   strictness-preserving and never applies the LIA +1 trick: α may
+   be dense, so a witness whose contradiction needs integrality
+   fails the replay's residual check — a tactic failure, never an
+   unsound closure. The residual (`0 < s` / `0 ≤ s` for the
+   literal-coefficient combination `s`, a ring identity when the
+   witness is α-valid) is discharged by `ring_nf` + `norm_num`.
+   ============================================================ -/
+
+/-- Recognize an α comparison shape (α = a qualified type-variable
+    fvar) in a hypothesis type. -/
+private def matchPolyBound? (ty : Expr)
+    : MetaM (Option (HypKindReal × Expr × Expr)) := do
+  match ty.getAppFnArgs with
+  | (``LE.le, #[α, _, a, b]) =>
+    if ← polyQualifiedFVar α then return some (.le, a, b) else return none
+  | (``GE.ge, #[α, _, a, b]) =>
+    if ← polyQualifiedFVar α then return some (.ge, a, b) else return none
+  | (``LT.lt, #[α, _, a, b]) =>
+    if ← polyQualifiedFVar α then return some (.lt, a, b) else return none
+  | (``GT.gt, #[α, _, a, b]) =>
+    if ← polyQualifiedFVar α then return some (.gt, a, b) else return none
+  | _ => return none
+
+/-- Detect an α Eq hypothesis (signed coefficients permitted). -/
+private def matchPolyEqHyp? (ty : Expr) : MetaM (Option (Expr × Expr)) := do
+  match ty.getAppFnArgs with
+  | (``Eq, #[α, a, b]) =>
+    if ← polyQualifiedFVar α then return some (a, b) else return none
+  | _ => return none
+
+/-- Detect an α Not-hypothesis `¬(a <op> b)`. -/
+private def matchPolyNotBound? (ty : Expr)
+    : MetaM (Option (HypKindReal × Expr × Expr)) := do
+  match ty.getAppFnArgs with
+  | (``Not, #[inner]) => matchPolyBound? inner
+  | _ => return none
+
+/-- α-typed `normalizeHypothesis`: strict shapes stay strict (no +1
+    trick — see the section note), Eq flips on negative coefficients.
+    Mirrors `normalizeHypothesisReal` with the `TermModePoly` family. -/
+private def normalizeHypothesisPoly (hypFV : Expr) (hypTy : Expr)
+    (flipped : Bool) : MetaM NormalizedHypReal := do
+  match ← matchPolyEqHyp? hypTy with
+  | some (a, b) =>
+    if flipped then
+      let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+      let proof ← Lean.Meta.mkAppM
+                    ``ProofBrokerMathlib.TermModePoly.pEqToLe0Flipped #[hypFV]
+      return ⟨expr, proof, false⟩
+    else
+      let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+      let proof ← Lean.Meta.mkAppM
+                    ``ProofBrokerMathlib.TermModePoly.pEqToLe0 #[hypFV]
+      return ⟨expr, proof, false⟩
+  | none =>
+  match ← matchPolyNotBound? hypTy with
+  | some (.le, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pNotLeToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | some (.ge, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pNotGeToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | some (.lt, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pNotLtToLe0 #[hypFV]
+    return ⟨expr, proof, false⟩
+  | some (.gt, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pNotGtToLe0 #[hypFV]
+    return ⟨expr, proof, false⟩
+  | none =>
+  match ← matchPolyBound? hypTy with
+  | some (.le, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pLeToLe0 #[hypFV]
+    return ⟨expr, proof, false⟩
+  | some (.ge, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pGeToLe0 #[hypFV]
+    return ⟨expr, proof, false⟩
+  | some (.lt, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[a, b]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pLtToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | some (.gt, a, b) =>
+    let expr ← Lean.Meta.mkAppM ``HSub.hSub #[b, a]
+    let proof ← Lean.Meta.mkAppM
+                  ``ProofBrokerMathlib.TermModePoly.pGtToLt0 #[hypFV]
+    return ⟨expr, proof, true⟩
+  | _ =>
+    throwError "proof_broker_term: hypothesis shape outside α ≤/≥/</>/= \
+                 (got type {hypTy})"
+
+/-- Build an α literal Expr for a nonnegative Int via `OfNat.ofNat`
+    with instance synthesis at the extraction's α. -/
+private def polyLitExpr (αE : Expr) (c : Int) : MetaM Expr := do
+  if c < 0 then
+    throwError "proof_broker_term: negative α coefficient {c}"
+  Lean.Meta.mkAppOptM ``OfNat.ofNat #[some αE, some (mkNatLit c.toNat), none]
+
+/-- Discharge a residual subgoal (`0 ≤ c` / `0 < c` for a literal, or
+    the fold's ring-identity positivity claim) in isolation:
+    `ring_nf` normalizes the literal-coefficient combination, then
+    `norm_num` decides the numeral (in)equality; `done` makes an
+    undischarged residual a hard failure — this is exactly where an
+    Int-only (integrality-dependent) witness fails the α replay. -/
+private def closePolyResidual (mv : MVarId) : TacticM Unit := do
+  let prevGoals ← getGoals
+  setGoals [mv]
+  evalTactic (← `(tactic| ((try ring_nf) <;> norm_num) <;> done))
+  setGoals prevGoals
+
+/-- Proof of `(0 : α) ≤ c` for a literal `c`. -/
+private def buildNonnegProofPoly (αE cExpr : Expr) : TacticM Expr := do
+  let zero ← polyLitExpr αE 0
+  let goalTy ← Lean.Meta.mkAppM ``LE.le #[zero, cExpr]
+  let mv ← Lean.Meta.mkFreshExprMVar goalTy
+  closePolyResidual mv.mvarId!
+  Lean.instantiateMVars mv
+
+/-- Proof of `(0 : α) < c` for a strictly-positive literal `c`. -/
+private def buildPosProofPoly (αE cExpr : Expr) : TacticM Expr := do
+  let zero ← polyLitExpr αE 0
+  let goalTy ← Lean.Meta.mkAppM ``LT.lt #[zero, cExpr]
+  let mv ← Lean.Meta.mkFreshExprMVar goalTy
+  closePolyResidual mv.mvarId!
+  Lean.instantiateMVars mv
+
+/-- α-typed False-goal closer: the strict-aware arity-N fold over
+    the witness entries, mirror of `closeViaTermModeFalseReal` with
+    the `TermModePoly` combinators. -/
+private def closeViaTermModeFalsePoly
+    (goal : MVarId) (entries : List (String × Int)) : TacticM Unit := do
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
+  goal.withContext do
+    let stepped ← entries.mapM fun (name, c) => do
+      if c == 0 then return none
+      let (fv, ty) ← fvarOfName name
+      let isEq := (← matchPolyEqHyp? ty).isSome
+      let flipped : Bool := decide (c < 0)
+      if flipped && !isEq then
+        throwError "proof_broker_term: negative coefficient {c} on \
+                     non-Eq α hypothesis '{name}' — SDK verifier \
+                     should have rejected this cert"
+      let cAbs := if flipped then -c else c
+      return some (name, fv, ty, cAbs, flipped)
+    let processed := stepped.filterMap id
+    if processed.isEmpty then
+      throwError "proof_broker_term: all coefficients are zero — \
+                   need at least one nonzero entry"
+    let normalized ← processed.mapM fun (_name, fv, ty, c, flipped) => do
+      let normHyp ← normalizeHypothesisPoly fv ty flipped
+      return (c, normHyp)
+    -- The carrier: every normalized form is α-typed.
+    let αE ← match normalized with
+      | [] => throwError "proof_broker_term: empty fold (internal)"
+      | (_, h0) :: _ => Lean.Meta.inferType h0.expr
+    let products ← normalized.mapM fun (c, normHyp) => do
+      let cExpr ← polyLitExpr αE c
+      let hc ← if normHyp.strict then buildPosProofPoly αE cExpr
+               else buildNonnegProofPoly αE cExpr
+      let prod ← Lean.Meta.mkAppM ``HMul.hMul #[cExpr, normHyp.expr]
+      let proof ←
+        if normHyp.strict then
+          Lean.Meta.mkAppM
+            ``ProofBrokerMathlib.TermModePoly.pMulPosNeg #[hc, normHyp.proof]
+        else
+          Lean.Meta.mkAppM ``mul_nonpos_of_nonneg_of_nonpos
+            #[hc, normHyp.proof]
+      return (prod, proof, normHyp.strict)
+    let pickAdd (accStrict prodStrict : Bool) : Name :=
+      match accStrict, prodStrict with
+      | false, false => ``add_nonpos
+      | false, true  => ``ProofBrokerMathlib.TermModePoly.pAddLeLt
+      | true,  false => ``ProofBrokerMathlib.TermModePoly.pAddLtLe
+      | true,  true  => ``ProofBrokerMathlib.TermModePoly.pAddNeg
+    let (sum, sumProof, sumStrict) ← match products with
+      | [] => throwError "proof_broker_term: empty fold (internal)"
+      | (p0, h0, s0) :: rest =>
+        rest.foldlM (fun (accE, accH, accS) (p, h, ps) => do
+          let newSum ← Lean.Meta.mkAppM ``HAdd.hAdd #[accE, p]
+          let newProof ← Lean.Meta.mkAppM (pickAdd accS ps) #[accH, h]
+          return (newSum, newProof, accS || ps)) (p0, h0, s0)
+    let zero ← polyLitExpr αE 0
+    let (residualTy, contradictName) :=
+      if sumStrict then
+        (``LE.le,
+         ``ProofBrokerMathlib.TermModePoly.pFarkasContradictNStrict)
+      else
+        (``LT.lt, ``ProofBrokerMathlib.TermModePoly.pFarkasContradictN)
+    let residualGoalTy ← Lean.Meta.mkAppM residualTy #[zero, sum]
+    let residualMV ← Lean.Meta.mkFreshExprMVar residualGoalTy
+    let term ← Lean.Meta.mkAppM contradictName
+                 #[sum, sumProof, residualMV]
+    closePolyResidual residualMV.mvarId!
+    goal.assign term
+
+/-- Match an α comparison goal (`≥`/`>` reduce to swapped `≤`/`<` by
+    instance reduction, as on the Real path). -/
+private def matchPolyGoal? (goalType : Expr)
+    : MetaM (Option (Expr × Expr × RealGoalKind)) := do
+  match goalType.getAppFnArgs with
+  | (``LE.le, #[α, _, b, c]) =>
+    if ← polyQualifiedFVar α then return some (b, c, .le) else return none
+  | (``LT.lt, #[α, _, b, c]) =>
+    if ← polyQualifiedFVar α then return some (b, c, .lt) else return none
+  | (``GE.ge, #[α, _, a, b]) =>
+    if ← polyQualifiedFVar α then return some (b, a, .le) else return none
+  | (``GT.gt, #[α, _, a, b]) =>
+    if ← polyQualifiedFVar α then return some (b, a, .lt) else return none
+  | _ => return none
+
+/-- α comparison-goal closer: `pLeViaLt`/`pLtViaLe` (decidable at α),
+    introduce `neg_goal`, delegate to the strict-aware False-fold. -/
+private def closeViaTermModePolyComparison
+    (goal : MVarId) (goalType : Expr)
+    (entries : List (String × Int)) : TacticM Unit := do
+  let (b, c, kind) ← match ← matchPolyGoal? goalType with
+    | some t => pure t
+    | none =>
+      throwError "proof_broker_term: non-False α goal must have \
+                   shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); \
+                   got {goalType}"
+  let (wrapperName, negHead) := match kind with
+    | .le => (``ProofBrokerMathlib.TermModePoly.pLeViaLt, ``LT.lt)
+    | .lt => (``ProofBrokerMathlib.TermModePoly.pLtViaLe, ``LE.le)
+  let bodyMV ← goal.withContext do
+    let negTy ← Lean.Meta.mkAppM negHead #[c, b]
+    let bodyTy ← mkArrow negTy (mkConst ``False)
+    let bodyMV ← Lean.Meta.mkFreshExprMVar bodyTy
+    let term ← Lean.Meta.mkAppM wrapperName #[bodyMV]
+    goal.assign term
+    return bodyMV
+  let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
+  closeViaTermModeFalsePoly newGoal entries
+
+/-- Tier 1 α closer entry point. Wired into
+    `ProofBroker.Tactic.ReifierExt.polyFarkasCloser`. Dispatches by
+    goal shape; equality goals were pre-split by core via
+    `tier1EqSplit` (`le_antisymm` applies at α). -/
+private def closeViaTermModePoly (cert : Json) (_ir : IR) : TacticM Unit := do
+  let entries ← parseFarkasCoefficientsReal cert
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
+  let negEntry := entries.find? (fun e => e.1 == "neg_goal")
+  let goal ← getMainGoal
+  let goalType ← Lean.instantiateMVars (← goal.getType)
+  match negEntry with
+  | none =>
+    unless goalType.isConstOf ``False do
+      throwError "proof_broker_term: witness lacks neg_goal but goal is \
+                   not False ({goalType}); cert/goal mismatch"
+    closeViaTermModeFalsePoly goal entries
+  | some _ =>
+    if goalType.isConstOf ``False then
+      throwError "proof_broker_term: witness names neg_goal but goal is \
+                   False; cert/goal mismatch"
+    closeViaTermModePolyComparison goal goalType entries
 
 /-- Higher-order / FOL closer for a Vampire-certified goal
     (`verifiedTier3Provenance` Tier-3 TSTP, or Tier-0 oracle). The
@@ -729,6 +1126,44 @@ private def holCloseWithAesop : TacticM Unit := do
     | (simp only [Function.comp]; aesop)
     | simp_all [Function.comp]))
 
+/-- TEST-ONLY tactic pinning the α replay's fail-closed behavior on
+    Int-only witnesses, independent of live solver output (which
+    cannot be committed: a goal whose only witness is
+    integrality-dependent is unprovable at a generic α, so a live
+    negative test could never close its goal honestly). The string
+    is a Farkas `witness_data` JSON; the tactic wraps it as a
+    synthetic Tier-1 cert payload and drives the REAL α closer
+    (`closeViaTermModePoly`) against the current goal. A witness
+    whose strictness-preserving α residual is false makes the closer
+    fail — the M2 soundness contract. -/
+syntax (name := polyReplayTest) "poly_replay_test" str : tactic
+
+@[tactic polyReplayTest]
+def evalPolyReplayTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| poly_replay_test $s:str) =>
+    let witness ← match Json.parse s.getString with
+      | .ok j => pure j
+      | .error e => throwError "poly_replay_test: witness parse error: {e}"
+    let cert := Json.mkObj [
+      ("payload", Json.mkObj [
+        ("witness_kind", "farkas"),
+        ("witness_data", witness)])]
+    let dummyIr : IR := {
+      irVersion := "1.0",
+      sourceSystem := { name := "lean", version := "0.0" },
+      tier := "structural",
+      logicClassification := {
+        order := "first_order", featuresUsed := [],
+        firstOrderFragment := "none", decidableTheory := none },
+      goal := { shell := .const "False", payloads := none },
+      context := { typeVars := [ProofBroker.Tactic.Reify.polyTypeVarName],
+                   freeVars := [], hypotheses := [], librarySlice := none },
+      typeMetadata := [], definitionalMetadata := [],
+      libraryProvenance := [], userDirectives := none }
+    closeViaTermModePoly cert dummyIr
+  | _ => throwError "poly_replay_test: malformed invocation"
+
 initialize do
   ProofBroker.Tactic.reifierExt.set (some {
     reifyType := reifyTypeMathlib,
@@ -739,6 +1174,8 @@ initialize do
     tier1FarkasCloser := closeViaTermModeReal,
     tier1EqSplit := lraEqSplit,
     irFragment := "LRA",
+    typeVarInfo? := typeVarInfoMathlib,
+    polyFarkasCloser := closeViaTermModePoly,
     holCloser := holCloseWithAesop,
   })
 
