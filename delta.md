@@ -1129,6 +1129,144 @@ Real fix, deliberately deferred past M1: prove
 (no stdlib lemma exists) and route big literal leaves through it —
 touches `term_mode.ml` leaf construction, so it takes its own review.
 
+### 5.5 Decision record — polymorphic α and the replay-at-α lift (2026-09-01, R3-M2)
+
+**Question** (roadmap R3-M2). Spec Example 1 *as written* — a goal
+over a type variable `α` with ordered-comm-ring class instances —
+had never been producible live: the reifier rejected every carrier
+but the concrete ones, and the `type_variable` refinement path was
+exercised only by the authored `example1-lia-typeclass.json`
+fixture.
+
+**Decision 1 — the class spelling.** The roadmap names
+`[LinearOrderedCommRing α]`; Mathlib's 2025 ordered-algebra
+refactor removed that bundled class, and it is absent from the
+pinned Mathlib v4.32.0. The implemented qualification is its modern
+spelling — `[CommRing α] [LinearOrder α] [IsStrictOrderedRing α]`,
+exactly the instances the lift family
+(`ProofBrokerMathlib/TermModePoly.lean`) is stated over. A local
+`α : Type u` qualifies iff all three synthesize; class-instance
+locals are metadata, not hypotheses (skipped by the LCtx walk —
+dropping an assumption only weakens the solver, never soundness).
+One type variable per extraction; α does not compose with
+ℕ/UF/BV/HO/Real carriers (named errors). The IR names the variable
+canonically `"alpha"` (spec Example 1's name; keeps non-ASCII
+binder names out of the wire format — the substitution applies to
+type tags, so the choice is invisible to the user).
+
+**Decision 2 — the witness discipline carries over.** The emitted
+`type_variable` metadata carries one `Instance` entry per required
+class (real content hash of the class signature) and, on the
+ordered-ring entry, `embeds_into:Int_for_universal_LIA` plus
+`embedding_witness:` tags naming the lift-family lemmas the closer
+actually applies (`pLeViaLt`, `pLtViaLe`, `pFarkasContradictN`,
+`pFarkasContradictNStrict`), each backed by a `library_provenance`
+entry (`proof-broker-bridge`, real content hashes). The
+pre-existing SDK refinement path (`type_var_witness`, R3-M1's
+fail-closed rule) substitutes alpha → Int FOR THE SOLVER and
+records the specialization with that witness.
+
+**Decision 3 — inversion = replay at α, and the +1-trick
+boundary.** The cert's Farkas coefficients are replayed AT α
+through the class-polymorphic family — the α→Int specialization
+never touches the delivered proof term. The α fold is
+strictness-preserving like the Real one and NEVER applies the LIA
++1 trick: α may be dense, so a witness whose contradiction depends
+on integrality (SDK-valid over the Int image) fails the α replay's
+residual check (`ring_nf` + `norm_num` on the literal-coefficient
+ring identity) — a tactic failure, never an unsound closure. The
+specialization gate becomes mode-keyed: the term-mode path requires
+exactly the alpha → Int record on an α extraction (pinned by
+synthetic-cert tests, `spec_gate_test poly *`); the walker paths
+keep refusing α certs (no walker inversion at α). Plain
+`proof_broker` routes α extractions to the same replay (omega is
+Int/ℕ-only). Tier-2 case-split at α is a named refusal.
+
+**Measured** (2026-09-01, branch `r3/poly-lifting`, full harness per
+RESUME §3): `pb_poly_example1` — Example 1's goal stated with a type
+variable — closes `by proof_broker_term [z3]` at
+`[propext, Classical.choice, Quot.sound]` (the Mathlib classical
+baseline; z3 pinned for native Tier-1 Farkas, the LRA-suite
+convention — cvc5 prefers Tier-3 alethe, which no α closer
+consumes). The Int-only witness `{h:1, neg_goal:1}` for
+`0 < n ⊢ 1 ≤ n` is refused by the replay (`poly_replay_test`
+negative; live probes on z3/cvc4/bare refuse the same shape). An α
+merely in scope over an Int goal stays on the core path at
+`[propext, Quot.sound]`.
+
+**Rocq port: DEFERRED** (per D3's "Lean leads; Rocq ports at phase
+gates" and the R3 gate row "M2/M3 Rocq: deferral entry allowed").
+Reconsideration: when a Rocq consumer needs section-variable
+polymorphic goals, port the recognition (typeclass-instance
+detection differs — Rocq's ordered-ring vocabulary is
+`ring`-theory-based, not Mathlib's mixin classes) and mirror
+`TermModePoly` as constructive lemma chains like the M1 shims. The
+SDK side is shared and already live (the α fixture dispatches in
+`test_adapter_cvc4`).
+
+### 5.6 Decision record — definitional metadata and def-unfold inversion (2026-09-01, R3-M3)
+
+**Question** (roadmap R3-M3, the R4-D2 prerequisite). A goal
+against a named numeral constant (`def P : ℕ :=
+18446744069414584321`) previously dispatched with `P` opaque —
+unprovable — or not at all; the definition-unfolding pass existed
+but nothing on the live path emitted `definitional_metadata`, and
+no inversion existed.
+
+**Decision 1 — reifier scope: numeral-body ℕ definitions.** A
+`defnInfo` constant of type `Nat` whose elaborated body is a
+numeral reifies as an opaque `App` leaf (no cast wrapper — the
+leaf sits at the Int-numeral position of the ℤ image) plus a
+`defined_function` metadata entry whose `definitional_equation` is
+`c = <numeral>` at the image type, `concept_tag:
+numeral_definition`, and a `library_provenance` entry hashing the
+definition body. Theorems, opaques, axioms and non-numeral bodies
+decline into the named unsupported-term error (fail closed). If
+the unfold does NOT fire, the SMT script references an undeclared
+symbol and dispatch fails — never a silent misreading.
+
+**Decision 2 — the pass fires through BOTH spec §5.4 channels.**
+`numeral_definition` joins the registry's
+`always_unfold_for_dispatch` (two-way-pinned to `pipeline.ml` by
+check.py; a nullary-def unfold through the DEFAULT dispatch
+pipeline is unit-pinned) AND the reifier stamps the user directive
+(`enable_definition_unfolding: ["numeral_definition"]`) — which now
+survives the walker-strict `tier_preference` override (merged, not
+replaced).
+
+**Decision 3 — the guard is lifted for exactly this pass, and the
+inversion is `Eq.mpr`.** The R2 identity-trace guard's term-mode
+form becomes `termTraceError?`: a non-identity trace is admitted
+iff every non-identity entry is an APPLIED `definition_unfolding`
+whose `inversion_data.unfolded_symbols` are all constants this
+extraction emitted equations for; failed passes, foreign symbols,
+and any other applied pass (prop-simp) stay named refusals — all
+pinned branch-by-branch on synthetic traces (`trace_guard_test`).
+Before the closer consumes the cert, `invertDefUnfolds` rewrites
+the goal with `c = <numeral>` — proved by `rfl`, checked by the
+kernel via delta reduction, visible in the lifted term as the
+`Eq.mpr` the roadmap asks for — and defeq-swaps the type of every
+hypothesis mentioning the constant. Plain `proof_broker`'s
+cert-gated omega applies the same inversion first (omega cannot
+see through a non-reducible def); the WALKER paths remain
+identity-only (no walker inversion in M3 — walker-strict on a
+def-unfold dispatch is a named failure).
+
+**Measured** (2026-09-01, branch `r3/poly-lifting`, full harness
+per RESUME §3): the D2 gate `Zmax ≤ 2^16 ⊢ Zmax < P` with `def P :=
+18446744069414584321` closes `by proof_broker_term` at
+`[propext, Quot.sound]` — load-bearing evidence the unfold fired
+(with `P` opaque the goal is unprovable, so no cert could exist)
+and was inverted; plain-mode and hypothesis-position variants close
+identically. Lean gate `OK: all 165 allowlisted theorem(s) within
+their axiom ceiling.`
+
+**Rocq port: DEFERRED** (same D3 rule as §5.5). Reconsideration:
+with the M1 push-cast machinery in place the Rocq inversion is a
+`change`/`Tactics.convert` over the unfolding equation; note the
+§5.4 plain-decimal scale limitation applies to any big-literal def
+on Rocq until the decimal-induction lemma lands.
+
 ---
 
 ---
