@@ -302,6 +302,8 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_poly_plain":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.TestMathlib.pb_poly_def_unfold_plain":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_poly_scope_int":
       ["propext", "Quot.sound"],
     "ProofBroker.TestMathlib.pb_lra_term_axiom_free":

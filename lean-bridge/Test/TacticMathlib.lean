@@ -368,6 +368,24 @@ example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
   fail_if_success proof_broker [z3]
   exact h2
 
+/-- Numeral-body ℕ constant for the α+ℕ-def shape below. -/
+def PBPolyDef : Nat := 3
+
+/-- A ℕ-typed hypothesis over a numeral-body constant rides along an
+    α goal: it fills the unfold table WITHOUT tripping ℕ mode, the
+    pipeline's definition_unfolding pass really rewrites the IR, and
+    the plain route admits the trace and inverts it (the same
+    `invertDefUnfolds` as term mode) before the α replay — admission
+    always pairs with inversion on BOTH cert-consuming α entry
+    points. -/
+theorem pb_poly_def_unfold_plain {α : Type} [CommRing α]
+    [LinearOrder α] [IsStrictOrderedRing α]
+    (n m : α) (h1 : n ≤ 5) (h2 : m ≤ 3) (h3 : n + m ≥ 9)
+    (hp : PBPolyDef ≤ 3) : False := by
+  proof_broker [z3]
+
+#print axioms pb_poly_def_unfold_plain
+
 /-- SOUNDNESS (the M2 attack surface): a Farkas witness valid over
     ℤ only — the +1-trick combination `{h: 1, neg_goal: 1}` for
     `0 < n ⊢ 1 ≤ n`, whose Int residual is `1 - n + n = 1 > 0` but

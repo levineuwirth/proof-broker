@@ -1181,11 +1181,14 @@ synthetic-cert tests, `spec_gate_test poly *`); the walker paths
 keep refusing α certs (no walker inversion at α). Plain
 `proof_broker` routes α extractions to the same replay (omega is
 Int/ℕ-only) — and the replay CONSUMES the cert, so the plain route
-carries the R2 trace requirement exactly as term mode does: an α
-extraction emits no unfolding equations, so only an identity trace
-is admitted, and a rewritten trace is a named refusal (pinned by a
-committed prop-simp negative). Tier-2 case-split at α is a named
-refusal.
+carries the R2 trace requirement exactly as term mode does. An α
+extraction CAN emit unfolding equations (a ℕ-typed hypothesis over
+numeral-body constants fills the unfold table without tripping ℕ
+mode), so admission means identity OR extraction-emitted definition
+unfolds — inverted on the plain α route exactly as on the term-mode
+entry (pinned by a committed α+ℕ-def positive) — and any other
+rewritten trace is a named refusal (pinned by a committed prop-simp
+negative). Tier-2 case-split at α is a named refusal.
 
 **Measured** (2026-09-01, branch `r3/poly-lifting`, full harness per
 RESUME §3): `pb_poly_example1` — Example 1's goal stated with a type

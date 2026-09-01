@@ -2133,14 +2133,21 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- replay it at α through the extension's polymorphic family;
         -- anything else is an honest tactic failure. The replay
         -- CONSUMES the cert, so the R2 trace requirement applies
-        -- here exactly as on the term-mode entry: an α extraction
-        -- emits no unfolding equations, so what `termTraceError?`
-        -- admits reduces to the identity trace — and with no
-        -- decision-procedure fallback at α, a rewritten trace is a
+        -- here exactly as on the term-mode entry — and an α
+        -- extraction CAN emit unfolding equations (a ℕ-typed
+        -- hypothesis over numeral-body constants fills `natDefs`
+        -- without tripping ℕ mode), so what `termTraceError?`
+        -- admits is identity OR extraction-emitted definition
+        -- unfolds, which are inverted here exactly as on the
+        -- term-mode entry and the ℕ/Int arm below. With no
+        -- decision-procedure fallback at α, any other trace is a
         -- named failure, never a silent consume.
         if polyModeOf path.ir then
           if let some msg := termTraceError? path then
             throwError msg
+          if !identityTraceOk path then
+            let g ← invertDefUnfolds (← getMainGoal) path
+            replaceMainGoal [g]
           checkCertSpecializations cert (termSpecMode path.ir)
           match ← reifierExt.get with
           | some ext => ext.polyFarkasCloser cert path.ir
