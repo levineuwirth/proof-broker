@@ -683,6 +683,17 @@ structure ExtractionPath where
   ir : IR
   attempts : List Attempt
   cert : Option Json
+  /-- R2: the broker's rewrite trace for this dispatch. Its
+      `isIdentity` is the identity-trace guard's input: the
+      term-mode / walker closers consume the cert against the
+      ORIGINAL goal, so they only run when the trace proves the
+      dispatched IR is that goal (`none` — no trace returned —
+      fails the guard, closed). -/
+  trace : Option Trace.Document
+  /-- R2: raw passthrough of the broker's `final_ir` — the IR the
+      cert addresses. Verification runs against this, never the
+      reified input. -/
+  finalIr : Option Json
   verifyOk : Option Bool
   /-- Looser-than-`verifyOk` flag: true when envelope checks passed
       but no tier-specific verifier applied (e.g. Tier 0 oracle).
@@ -724,10 +735,16 @@ private def renderPath (path : ExtractionPath) : MessageData :=
       let tier := (c.getObjValAs? Int "tier").toOption.getD (-1)
       let fmt := (c.getObjValAs? String "format").toOption.getD "?"
       s!"  cert:     tier={tier}, format={fmt}"
+  let traceLine := match path.trace with
+    | none => "  trace:    none"
+    | some d =>
+      let idty := if d.isIdentity then "identity" else "NON-IDENTITY"
+      s!"  trace:    {idty}, {d.entries.length} pass(es)"
   let verifyLine := match path.verifyOk, path.verifyReason with
     | some ok, some r => s!"  verify:   {path.verifyMs}ms, ok={ok} ({reprStr r})"
     | _, _ => "  verify:   skipped"
-  let lines := ["proof_broker?:", irLine, dispatchLine] ++ attemptLines ++ [certLine, verifyLine]
+  let lines := ["proof_broker?:", irLine, dispatchLine] ++ attemptLines
+    ++ [certLine, traceLine, verifyLine]
   m!"{String.intercalate "\n" lines}"
 
 /- ============================================================
@@ -773,7 +790,12 @@ private def buildExtractionPath
   let mut verifyMs : Nat := 0
   if let some cert := dispatch.cert then
     let t1 ← IO.monoMsNow
-    let verif ← match runVerifyCertificate cert ir with
+    -- R2: the cert addresses the dispatch pipeline's output IR
+    -- (`final_ir`), not the reified input — verify against that,
+    -- with the trace, so a cert/trace/IR triple that doesn't
+    -- cohere is a hash mismatch here rather than a silent pass.
+    let irForVerify := dispatch.finalIr.getD (ProofBroker.IR.IR.toJson ir)
+    let verif ← match runVerifyCertificateJson cert irForVerify dispatch.trace with
       | .ok v => pure v
       | .error e => throwError "proof_broker: verify_certificate failed: {repr e}"
     verifyMs ← msSince t1
@@ -782,6 +804,7 @@ private def buildExtractionPath
     verifyReason := some verif.reason
   return {
     ir, attempts := dispatch.attempts, cert := dispatch.cert,
+    trace := dispatch.trace, finalIr := dispatch.finalIr,
     verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs
   }
 

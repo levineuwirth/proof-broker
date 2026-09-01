@@ -61,9 +61,14 @@ let resolve_manifests (names : Names.Id.t list option)
     Manifest_loading.load_named (List.map Names.Id.to_string ids)
 
 (* Path data captured for both verbose-form rendering and plain-form
-   summaries. Mirrors Lean's [ExtractionPath]. *)
+   summaries. Mirrors Lean's [ExtractionPath]. [final_ir]/[trace]
+   (R2) are the dispatch rewrite pipeline's output: the cert
+   addresses [final_ir], and [Trace.is_identity trace] is the
+   identity-trace guard's input for the cert-consuming closers. *)
 type path = {
   ir : Ir.t;
+  final_ir : Ir.t;
+  trace : Proof_broker.Trace.t;
   attempts : Proof_broker.Dispatch.attempt list;
   cert : Cert.t option;
   verify_reason : Proof_broker.Verifier.reason option;
@@ -100,13 +105,20 @@ let build_path ?(tier_preference = [])
   let adapters = adapter_registry () in
   let result = Proof_broker.Dispatch.run ~manifests ~adapters ir in
   let t2 = now_ms () in
+  (* R2: the cert addresses the dispatch pipeline's output IR
+     ([final_ir]), not the reified input — verify against that,
+     with the trace. *)
   let verify_reason = match result.cert with
     | None -> None
-    | Some cert -> Some (Proof_broker.Verifier.verify ~trace:None cert ir)
+    | Some cert ->
+      Some (Proof_broker.Verifier.verify
+              ~trace:(Some result.trace) cert result.final_ir)
   in
   let t3 = now_ms () in
   {
     ir;
+    final_ir = result.final_ir;
+    trace = result.trace;
     attempts = result.attempts;
     cert = result.cert;
     verify_reason;
@@ -144,6 +156,12 @@ let render_path (p : path) : string =
     | Some c ->
       Printf.sprintf "  cert:     tier=%d, format=%s" c.tier c.format
   in
+  let trace_line =
+    Printf.sprintf "  trace:    %s, %d pass(es)"
+      (if Proof_broker.Trace.is_identity p.trace
+       then "identity" else "NON-IDENTITY")
+      (List.length p.trace.entries)
+  in
   let verify_line = match p.verify_reason with
     | None -> "  verify:   skipped"
     | Some r ->
@@ -158,7 +176,7 @@ let render_path (p : path) : string =
   in
   String.concat "\n"
     ([ "proof_broker:"; ir_line; dispatch_line ]
-     @ attempt_lines @ [ cert_line; verify_line ])
+     @ attempt_lines @ [ cert_line; trace_line; verify_line ])
 
 (* --- closure logic (cert-gated lia / lra) -------------------------- *)
 
