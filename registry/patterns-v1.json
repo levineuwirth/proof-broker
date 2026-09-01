@@ -137,13 +137,15 @@
     { "id": "list_cons", "category": "lists" },
     { "id": "list_nil", "category": "lists" },
     { "id": "list_append", "category": "lists" },
-    { "id": "list_length", "category": "lists" }
+    { "id": "list_length", "category": "lists" },
+    { "id": "numeral_definition", "category": "arithmetic" }
   ],
 
   "always_unfold_for_dispatch": [
     "function_composition",
     "function_identity",
-    "function_application"
+    "function_application",
+    "numeral_definition"
   ],
 
   "construction_kinds": [

@@ -2282,4 +2282,139 @@ example : True := by
   fail_if_success spec_gate_test nat mixed_spec
   trivial
 
+/- R3-M2: the gate's `poly` mode (the term-mode path on an α
+   extraction). The alpha → Int record is the invertible set there —
+   and ONLY there: the walker-path modes above keep refusing it
+   (`spec_gate_test int foreign_spec` stays a negative). -/
+
+/-- Positive control: the alpha → Int record passes in poly mode. -/
+example : True := by spec_gate_test poly foreign_spec
+
+/-- α mode with NO recorded specialization → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test poly none
+  trivial
+
+/-- A Nat → Int record on an α extraction → fail closed (the α
+    replay does not invert the ℕ cast layer). -/
+example : True := by
+  fail_if_success spec_gate_test poly nat_spec
+  trivial
+
+/-- A record foreign in EVERY mode (beta → Real) → fail closed. -/
+example : True := by
+  fail_if_success spec_gate_test poly beta_spec
+  trivial
+
+/- ============================================================
+   R3-M3: definitional metadata + def-unfold inversion.
+
+   A numeral-body constant reifies as an opaque leaf plus a
+   `defined_function` metadata entry; the dispatch pipeline's
+   definition-unfolding pass (the registry's always-unfold
+   `numeral_definition` concept + the reifier's directive) replaces
+   it by the numeral, the trace records the unfold, and the
+   term-mode lift inverts it by `Eq.mpr` over the kernel-defeq
+   unfolding equation before consuming the cert. The closures below
+   are load-bearing evidence the pass genuinely fired: with `P`
+   opaque, `Zmax < P` is not even provable, so no cert exists.
+   ============================================================ -/
+
+/-- The R4-D2 constant: 2^64 − 2^32 + 1 as a plain decimal def. -/
+def P : Nat := 18446744069414584321
+
+/-- THE M3 gate (the D2 shape): closes `by proof_broker_term` with
+    the def-unfold pass in the trace and inverted in the term. -/
+theorem pb_nat_def_unfold (Zmax : Nat) (h : Zmax ≤ 2^16) : Zmax < P := by
+  proof_broker_term
+#print axioms pb_nat_def_unfold
+
+/-- Plain mode: the LIA arm applies the same inversion before its
+    cert-gated omega (omega cannot see through a non-reducible
+    def). -/
+theorem pb_nat_def_unfold_plain (Zmax : Nat) (h : Zmax ≤ 2^16) :
+    Zmax < P := by
+  proof_broker
+#print axioms pb_nat_def_unfold_plain
+
+def Qdef : Nat := 65536
+
+/-- A numeral def in HYPOTHESIS position is unfolded and inverted
+    (defeq type swap on the hypothesis) too. -/
+theorem pb_nat_def_unfold_hyp (Zmax : Nat) (h : Zmax ≤ Qdef) :
+    Zmax < P := by
+  proof_broker_term
+#print axioms pb_nat_def_unfold_hyp
+
+/-- Walker-strict stays IDENTITY-only (M3 lifts the guard for the
+    term-mode path, not the walker): named fail-closed error. -/
+example (Zmax : Nat) (h : Zmax ≤ 2^16) : Zmax < P := by
+  fail_if_success proof_broker_walker
+  show Zmax < 18446744069414584321
+  omega
+
+def Qbad : Nat := 6 * 7
+
+/-- Fail fast: a constant whose body is NOT a numeral is outside
+    the M3 scope — named reifier error, nothing dispatches. -/
+example (x : Nat) (h : x ≤ 3) : x < Qbad := by
+  fail_if_success proof_broker_term
+  fail_if_success proof_broker
+  show x < 42
+  omega
+
+/- The M3 trace guard, pinned branch-by-branch on synthetic traces
+   (`trace_guard_test` drives the real `termTraceError?`; no live
+   path produces a foreign unfold or a non-invertible applied
+   pass... except prop-simp, whose live firing is covered by the R2
+   guard tests above). -/
+
+/-- Positive control: identity trace passes. -/
+example : True := by trace_guard_test identity
+
+/-- Positive control: an applied unfold of a symbol this extraction
+    emitted passes (the M3 admission). -/
+example : True := by trace_guard_test def_unfold_ours
+
+/-- An applied unfold of a FOREIGN symbol → fail closed. -/
+example : True := by
+  fail_if_success trace_guard_test def_unfold_foreign
+  trivial
+
+/-- An applied unfold naming NO symbols (absent/malformed/empty
+    `inversion_data`) → fail closed, not a vacuous pass over zero
+    inversions. -/
+example : True := by
+  fail_if_success trace_guard_test def_unfold_empty
+  trivial
+
+/-- Endpoint hashes disagree but the entry list is EMPTY → fail
+    closed (no entry admits the rewrite; admission must mean an
+    inversion ran). -/
+example : True := by
+  fail_if_success trace_guard_test endpoints_no_entries
+  trivial
+
+/-- Endpoint hashes disagree but every entry is identity-shaped
+    (`no_op`, equal per-entry hashes) → fail closed, same rule. -/
+example : True := by
+  fail_if_success trace_guard_test endpoints_all_noop
+  trivial
+
+/-- An applied pass with no inversion (prop-simp) → fail closed. -/
+example : True := by
+  fail_if_success trace_guard_test prop_simp_applied
+  trivial
+
+/-- A Failed definition_unfolding entry → fail closed (only APPLIED
+    unfolds are admitted). -/
+example : True := by
+  fail_if_success trace_guard_test failed_pass
+  trivial
+
+/-- A missing trace → fail closed. -/
+example : True := by
+  fail_if_success trace_guard_test no_trace
+  trivial
+
 end ProofBroker.Test

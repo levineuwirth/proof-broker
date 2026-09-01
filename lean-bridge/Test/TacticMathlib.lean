@@ -270,6 +270,193 @@ theorem pb_lra_term_not_hyp_axiom_free
 
 #print axioms pb_lra_term_not_hyp_axiom_free
 
+/- ============================================================
+   R3-M2: polymorphic α — spec Example 1 as written.
+
+   A goal over a type variable `α` with the ordered-comm-ring
+   instances (modern Mathlib spelling `[CommRing α] [LinearOrder α]
+   [IsStrictOrderedRing α]`; the roadmap's `LinearOrderedCommRing`
+   was removed by Mathlib's 2025 refactor — delta.md §5) reifies
+   with `type_variable` metadata + real embedding witnesses, the
+   SDK refinement substitutes alpha → Int for the SOLVER only, and
+   the term-mode closer replays the cert's Farkas coefficients AT α
+   through `ProofBrokerMathlib.TermModePoly` — the inversion of the
+   recorded α→Int specialization. Tests pin `[z3]` (native Tier-1
+   Farkas; cvc5 prefers Tier-3 alethe, which no α closer consumes —
+   same convention as the LRA suite above).
+   ============================================================ -/
+
+/-- THE M2 gate: `examples/example1-lia-typeclass.json`'s goal,
+    stated in Lean with a type variable, closes `by
+    proof_broker_term`; the cert carries the alpha → Int
+    `type_specialization` with the class-instance witness (the
+    spec gate requires it — a spec-less cert is refused), and the
+    footprint stays within Mathlib's classical baseline. -/
+theorem pb_poly_example1 {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (n m : α) (h1 : n + m = 10) (h2 : 0 ≤ n) (h3 : 0 ≤ m) : n ≤ 10 := by
+  proof_broker_term [z3]
+
+#print axioms pb_poly_example1
+
+/-- α False-goal, arity-2. -/
+theorem pb_poly_term_false {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (x : α) (h1 : 5 ≤ x) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_poly_term_false
+
+/-- Strict hypothesis on a strict goal: the linear sum is exactly
+    zero and strictness alone carries the contradiction through the
+    strict-aware fold (`pFarkasContradictNStrict`, K = 0). -/
+theorem pb_poly_term_strict {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (x : α) (h : 0 < x) : 0 < x := by
+  proof_broker_term [z3]
+
+#print axioms pb_poly_term_strict
+
+/-- α equality goal: split via the generic `le_antisymm`
+    (`tier1EqSplit` applies at any qualified α), each direction a
+    fresh dispatch + α replay. -/
+theorem pb_poly_term_eq {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (n : α) (h1 : n ≤ 5) (h2 : 5 ≤ n) : n = 5 := by
+  proof_broker_term [z3]
+
+#print axioms pb_poly_term_eq
+
+/-- Eq hypothesis with a signed coefficient in the witness
+    (`pEqToLe0` / `pEqToLe0Flipped`). -/
+theorem pb_poly_term_eq_hyp {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (x : α) (h1 : x = 5) (h2 : x ≤ 3) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_poly_term_eq_hyp
+
+/-- Literal-coefficient multiplication (`2 * x`) rides through the
+    fold; coefficients arrive rational-normalized like on the LRA
+    path. -/
+theorem pb_poly_term_mul {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (x : α) (h1 : 2 * x ≤ 1) (h2 : 1 ≤ x) : False := by
+  proof_broker_term [z3]
+
+#print axioms pb_poly_term_mul
+
+/-- Plain `proof_broker` on an α goal: omega is Int/ℕ-only, so the
+    LIA arm's α branch replays the Tier-1 witness through the same
+    poly closer (cert-consuming even in plain mode). -/
+theorem pb_poly_plain {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α]
+    (n m : α) (h1 : n + m = 10) (h2 : 0 ≤ n) (h3 : 0 ≤ m) : n ≤ 10 := by
+  proof_broker [z3]
+
+#print axioms pb_poly_plain
+
+/-- R2 trace guard on the plain α route: the replay consumes the
+    cert, so a NON-IDENTITY trace is a named refusal exactly as in
+    term mode. The `True ∧ _` hypothesis makes the pipeline's
+    prop-simp pass apply (the trace records a real rewrite), so
+    plain `proof_broker` must refuse rather than replay a cert
+    minted on the rewritten IR; the goal then closes honestly from
+    the hypothesis the pipeline never touched. -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (h : True ∧ n ≤ 7) (h2 : n ≤ 5) : n ≤ 5 := by
+  fail_if_success proof_broker [z3]
+  exact h2
+
+/-- Numeral-body ℕ constant for the α+ℕ-def shape below. -/
+def PBPolyDef : Nat := 3
+
+/-- A ℕ-typed hypothesis over a numeral-body constant rides along an
+    α goal: it fills the unfold table WITHOUT tripping ℕ mode, the
+    pipeline's definition_unfolding pass really rewrites the IR, and
+    the plain route admits the trace and inverts it (the same
+    `invertDefUnfolds` as term mode) before the α replay — admission
+    always pairs with inversion on BOTH cert-consuming α entry
+    points. -/
+theorem pb_poly_def_unfold_plain {α : Type} [CommRing α]
+    [LinearOrder α] [IsStrictOrderedRing α]
+    (n m : α) (h1 : n ≤ 5) (h2 : m ≤ 3) (h3 : n + m ≥ 9)
+    (hp : PBPolyDef ≤ 3) : False := by
+  proof_broker [z3]
+
+#print axioms pb_poly_def_unfold_plain
+
+/-- SOUNDNESS (the M2 attack surface): a Farkas witness valid over
+    ℤ only — the +1-trick combination `{h: 1, neg_goal: 1}` for
+    `0 < n ⊢ 1 ≤ n`, whose Int residual is `1 - n + n = 1 > 0` but
+    whose strictness-preserving α residual is `-n + (n - 1) = -1`
+    (false at a dense α: n = 1/2 over ℝ refutes the implication).
+    `poly_replay_test` drives the REAL α closer with exactly that
+    witness; it must fail, and the goal is then closed honestly from
+    the rescue hypothesis the witness never mentions. (The live
+    routes were probed to refuse the same shape — z3, cvc4, bare —
+    but a live test cannot be committed: without the rescue
+    hypothesis the goal is unprovable at generic α, which is the
+    point.) -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (h : 0 < n) (hextra : 1 ≤ n) : 1 ≤ n := by
+  fail_if_success poly_replay_test
+    "{\"coefficients\": [
+       {\"hypothesis\": \"h\", \"coefficient\": \"1\"},
+       {\"hypothesis\": \"neg_goal\", \"coefficient\": \"1\"}]}"
+  exact hextra
+
+/-- Positive control for `poly_replay_test`: an α-valid witness
+    closes through the same tactic (the negative above is not an
+    always-fail artifact). -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (h : n ≤ 5) : n ≤ 6 := by
+  poly_replay_test
+    "{\"coefficients\": [
+       {\"hypothesis\": \"h\", \"coefficient\": \"1\"},
+       {\"hypothesis\": \"neg_goal\", \"coefficient\": \"1\"}]}"
+
+/-- Walker-strict at α: the α specialization is not
+    walker-invertible, so the spec gate refuses fail-closed. -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (h : n ≤ 3) : n ≤ 5 := by
+  fail_if_success proof_broker_walker
+  exact le_trans h (by norm_num)
+
+/-- Fail fast: α cannot mix with ℕ carriers (R3-M2 scope). -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (k : Nat) (h : k ≤ 3) (h2 : n ≤ 3) : n ≤ 5 := by
+  fail_if_success proof_broker_term [z3]
+  exact le_trans h2 (by norm_num)
+
+/-- Fail fast: α cannot mix with Real carriers. -/
+example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    (n : α) (r : Real) (hr : r ≤ 3) (h2 : n ≤ 3) : n ≤ 5 := by
+  fail_if_success proof_broker_term [z3]
+  exact le_trans h2 (by norm_num)
+
+/-- Fail fast: two qualified type variables (M2 scope: one). -/
+example {α β : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
+    [CommRing β] [LinearOrder β] [IsStrictOrderedRing β]
+    (n : α) (h : n ≤ 3) : n ≤ 5 := by
+  fail_if_success proof_broker_term [z3]
+  exact le_trans h (by norm_num)
+
+/-- An UNQUALIFIED type variable (no ordered-ring instances) is not
+    recognized; the reifier fails fast as before M2. -/
+example {γ : Type} [Preorder γ] (n : γ) (h : n ≤ n) : n ≤ n := by
+  fail_if_success proof_broker_term [z3]
+  exact h
+
+/-- A qualified α merely IN SCOPE over an Int goal does not switch
+    modes: the core Int path runs, tight footprint preserved. -/
+theorem pb_poly_scope_int {α : Type} [CommRing α] [LinearOrder α]
+    [IsStrictOrderedRing α] (x y : Int) (h1 : x + 1 ≤ y) (h2 : y ≤ 5) :
+    x ≤ 4 := by
+  proof_broker_term
+
+#print axioms pb_poly_scope_int
+
 /-- Phase-3 M3 exit criterion (roadmap §Phase 3): the worked
     higher-order goal of `examples/example2-function-composition.json`,
     closed end-to-end through the Vampire path.

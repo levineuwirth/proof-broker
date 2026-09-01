@@ -27,6 +27,11 @@ Sources (all committed, all already gated elsewhere in CI):
                                        CI pin in the note under the table)
   .github/workflows/validate.yml       CI job list + timeout-minutes, and
                                        the solver/toolchain pins (env vars)
+  delta.md                             decision records; a section whose
+                                       body carries the literal marker
+                                       `**Rocq port: DEFERRED**` becomes a
+                                       row entry (R3 gate rule: deferrals
+                                       are recorded in delta AND here)
   lean-bridge/lean-toolchain           Lean toolchain pin
   proof_broker_rocq.opam               dune / rocq-runtime version bounds
   RETROSPECTIVES/*.md                  retrospective list
@@ -60,6 +65,7 @@ ALLOWLIST = ROOT / "tools" / "axiom_allowlist.json"
 INDEX = ROOT / "corpus" / "index.json"
 COVERAGE = ROOT / "corpus" / "coverage.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "validate.yml"
+DELTA = ROOT / "delta.md"
 LEAN_TOOLCHAIN = ROOT / "lean-bridge" / "lean-toolchain"
 ROCQ_OPAM = ROOT / "proof_broker_rocq.opam"
 MANIFESTS = sorted((ROOT / "examples").glob("manifest-*.json"))
@@ -202,6 +208,33 @@ def retros() -> list:
     return sorted(p.name for p in RETROS.glob("*.md"))
 
 
+_DELTA_SECTION = re.compile(
+    r"^### (\d+\.\d+) .*\((\d{4}-\d{2}-\d{2}), (R[\w.\-]+)\)\s*$")
+_DEFERRAL_MARKER = "**Rocq port: DEFERRED**"
+
+
+def rocq_deferrals(delta_text: str) -> list:
+    """(milestone, section) per delta decision record whose body carries
+    the literal `**Rocq port: DEFERRED**` marker. The marker line IS the
+    committed source: lifting a deferral means editing the record, which
+    changes this row and makes a stale README fail `--check`."""
+    out = []
+    current = None  # (section, milestone)
+    deferred = False
+    for line in delta_text.splitlines():
+        if line.startswith("### ") or line.startswith("## "):
+            if current is not None and deferred:
+                out.append((current[1], current[0]))
+            m = _DELTA_SECTION.match(line)
+            current = (m.group(1), m.group(3)) if m else None
+            deferred = False
+        elif current is not None and _DEFERRAL_MARKER in line:
+            deferred = True
+    if current is not None and deferred:
+        out.append((current[1], current[0]))
+    return out
+
+
 # ---------------------------------------------------------------- render
 
 def collect() -> dict:
@@ -217,6 +250,7 @@ def collect() -> dict:
         "bounds": version_bounds(ROCQ_OPAM.read_text(encoding="utf-8")),
         "lean": LEAN_TOOLCHAIN.read_text(encoding="utf-8").strip(),
         "retros": retros(),
+        "deferrals": rocq_deferrals(DELTA.read_text(encoding="utf-8")),
     }
 
 
@@ -259,6 +293,11 @@ def render(d: dict) -> str:
         f"live-mintable {mint}",
         "`corpus/index.json`, `corpus/coverage.json` "
         "(`check_walker_coverage.py --check`, `gen_corpus_replay.py --check`)")
+
+    defs = ("; ".join(f"`{ms}` (delta §{sec})" for ms, sec in d["deferrals"])
+            if d["deferrals"] else "none recorded")
+    row("Rocq lifting deferrals", defs,
+        "`delta.md` decision records carrying `**Rocq port: DEFERRED**`")
 
     be = "; ".join(
         f"{name} {ver} (tiers {','.join(map(str, tiers))}"

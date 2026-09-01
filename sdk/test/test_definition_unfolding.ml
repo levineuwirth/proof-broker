@@ -142,6 +142,52 @@ let test_simple_unfold () =
   Alcotest.(check bool) "goal collapsed to y"
     true (result.ir.goal.shell = v "y")
 
+(* R3-M3: a NULLARY defined function — the Lean reifier's
+   numeral-definition shape (`def P : ℕ := <literal>` emitted as
+   `Eq Int (App P []) (NumLit …)`). Zero params/args must unfold at
+   a leaf position, and the dispatch pipeline's DEFAULT config must
+   fire it with no user directives (the registry's
+   always_unfold_for_dispatch carries "numeral_definition"). *)
+
+let numeral_def_meta =
+  defined_function
+    ~equation:(mk_eq "Int"
+                 (mk_app "P" [])
+                 (Num_lit { value = "18446744069414584321"; ty = "Int" }))
+    ~concept_tag:"numeral_definition"
+
+let test_nullary_numeral_unfold () =
+  let goal =
+    mk_app "LT.lt" [ v "Zmax"; mk_app "P" [] ] in
+  let ir = make_ir ~defn_meta:[ "P", numeral_def_meta ] goal in
+  let result =
+    Definition_unfolding.run ~concepts:[ "numeral_definition" ] ir in
+  Alcotest.(check (list (triple string string string)))
+    "nullary unfold recorded"
+    [ ("P", "definitional_equation", "goal") ]
+    (extract_unfolds result.trace);
+  Alcotest.(check bool) "outcome=applied"
+    true (result.trace.outcome = Some Applied);
+  Alcotest.(check bool) "leaf replaced by the numeral"
+    true (result.ir.goal.shell
+          = mk_app "LT.lt"
+              [ v "Zmax";
+                Num_lit { value = "18446744069414584321"; ty = "Int" } ])
+
+let test_nullary_numeral_unfold_via_default_dispatch_pipeline () =
+  let goal = mk_app "LT.lt" [ v "Zmax"; mk_app "P" [] ] in
+  (* NO user directives: the baked always-unfold list must carry the
+     tag by itself (two-way-pinned to the registry by check.py). *)
+  let ir = make_ir ~defn_meta:[ "P", numeral_def_meta ] goal in
+  let final_ir, trace = Pipeline.run Pipeline.default_dispatch_config ir in
+  Alcotest.(check bool) "trace is NOT identity"
+    false (Trace.is_identity trace);
+  Alcotest.(check bool) "goal leaf unfolded by the default pipeline"
+    true (final_ir.goal.shell
+          = mk_app "LT.lt"
+              [ v "Zmax";
+                Num_lit { value = "18446744069414584321"; ty = "Int" } ])
+
 let test_no_op_when_concept_tag_not_enabled () =
   let ir = make_ir
              ~defn_meta:[ "identity", identity_meta ]
@@ -324,6 +370,10 @@ let () =
     "core", [
       Alcotest.test_case "simple unfold (var arg)" `Quick test_simple_unfold;
       Alcotest.test_case "multi-param unfold" `Quick test_multi_param_unfold;
+      Alcotest.test_case "nullary numeral def (R3-M3)" `Quick
+        test_nullary_numeral_unfold;
+      Alcotest.test_case "nullary def via default dispatch pipeline" `Quick
+        test_nullary_numeral_unfold_via_default_dispatch_pipeline;
       Alcotest.test_case "App-symbol sub with Const" `Quick test_app_symbol_substitution_with_const;
       Alcotest.test_case "skip on higher-order arg" `Quick test_skip_on_higher_order_arg;
       Alcotest.test_case "capture-avoiding alpha rename" `Quick test_capture_avoidance;

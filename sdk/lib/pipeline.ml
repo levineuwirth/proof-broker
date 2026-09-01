@@ -50,7 +50,11 @@ let default_config : config = {
     dispatch default pipeline hands these to the definition-unfolding
     pass regardless of user directives, so a goal mentioning a symbol
     whose definitional metadata carries one of these tags is unfolded
-    before any adapter sees it. Mirrors
+    before any adapter sees it. [numeral_definition] (R3-M3) is the
+    tag the Lean reifier stamps on a numeral-body constant's
+    [defined_function] entry — a numeral def opaque to solvers is
+    always unfolded for dispatch, and the bridge inverts the unfold
+    in the lifted term. Mirrors
     [registry/patterns-v1.json].always_unfold_for_dispatch — the
     PIN markers let tools/check.py verify the two lists agree. *)
 (* PIN:always-unfold-for-dispatch *)
@@ -58,6 +62,7 @@ let always_unfold_for_dispatch : string list = [
   "function_composition";
   "function_identity";
   "function_application";
+  "numeral_definition";
 ]
 (* ENDPIN:always-unfold-for-dispatch *)
 
