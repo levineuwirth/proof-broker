@@ -1079,10 +1079,17 @@ does not reduce on open terms, so the Rocq push is explicit
 constructive lemma chains (`nat_push_*`) — which is why the **Rocq
 ℕ term-mode footprint is EMPTY** (the M1 Rocq gate) while Lean's is
 `[propext, Quot.sound]` (the fold's omega residual). The R2
-identity-trace guard's discipline extends to refinement: closers
-verify the cert's recorded specializations are exactly those this
-bridge inverts (today: the one `Nat → Int` record, required present
-in ℕ mode) and refuse anything else, fail closed.
+identity-trace guard's discipline extends to refinement, with the
+same two-mode semantics: the strict entry points (`proof_broker_term`,
+`proof_broker_walker`, both Tier-1 and Tier-2 arms) verify the cert's
+recorded specializations are exactly those this bridge inverts
+(today: the one `Nat → Int` record, required present in ℕ mode) and
+fail closed with a named error on anything else; plain
+`proof_broker`'s walker attempts SKIP the cert on a non-invertible
+record and fall back to the decision-procedure closer, which
+re-proves the original goal itself. Both branches of the gate are
+pinned by synthetic-cert fail-closed tests on both bridges
+(`spec_gate_test` / `pb_spec_gate_test`).
 
 **Measured** (2026-09-01, branch `r3/nat-specialization`, full
 harness per RESUME §3): 7 new ℕ corpus goals (2^24 literals, a

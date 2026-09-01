@@ -1169,8 +1169,8 @@ private def natModeOf (ir : IR) : Bool :=
     other extraction the list must be empty. In ℕ mode the record
     must be PRESENT — a cert minted over a ℕ IR with no recorded
     specialization means refinement did not happen honestly. -/
-private def checkCertSpecializations (cert : Json) (natMode : Bool)
-    : TacticM Unit := do
+private def certSpecializationsError? (cert : Json) (natMode : Bool)
+    : Option String := Id.run do
   let specs := ((cert.getObjVal? "refinement_record").bind
     (·.getObjVal? "specializations")).toOption.bind
     (·.getArr?.toOption) |>.getD #[]
@@ -1183,14 +1183,21 @@ private def checkCertSpecializations (cert : Json) (natMode : Bool)
         && target == "Int" then
       sawNatSpec := true
     else
-      throwError "proof_broker: the cert records a specialization this \
-        bridge cannot invert (kind={kind}, {source} → {target}); the \
-        goal is left OPEN rather than closed from a cert whose \
+      return some s!"proof_broker: the cert records a specialization \
+        this bridge cannot invert (kind={kind}, {source} → {target}); \
+        the goal is left OPEN rather than closed from a cert whose \
         translation has no lift (fail closed)"
   if natMode && !sawNatSpec then
-    throwError "proof_broker: ℕ goal, but the cert records no \
+    return some "proof_broker: ℕ goal, but the cert records no \
       Nat → Int type specialization — refusing to consume it \
       (fail closed)"
+  return none
+
+private def checkCertSpecializations (cert : Json) (natMode : Bool)
+    : TacticM Unit := do
+  match certSpecializationsError? cert natMode with
+  | some msg => throwError msg
+  | none => pure ()
 
 /-- `(atom name ↦ its ℕ-level Expr)` for the extraction: ℕ free
     vars resolved in the local context by name, atomized subterms
@@ -1692,8 +1699,13 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- when the dispatch pipeline provably didn't rewrite it.
         -- R3-M1: a ℕ extraction routes through the cast-layer
         -- variant — the trace addresses the reified ℤ image, and
-        -- the lift rebuilds the ℕ proof from it.
-        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
+        -- the lift rebuilds the ℕ proof from it. The specialization
+        -- gate applies with the guard's plain-path semantics: a
+        -- non-invertible record SKIPS the walker attempt (the
+        -- fallback re-proves the original goal itself), where the
+        -- strict entry points fail closed with the named error.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path
+            && (certSpecializationsError? cert (natModeOf path.ir)).isNone then
           if natModeOf path.ir then
             tryAletheWalkerNat cert path.ir path.natAtoms
           else tryAletheWalker cert
@@ -1754,7 +1766,11 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- Identity-trace guard (R2): the walker elaborates the
         -- cert's trace against the ORIGINAL goal, so it only runs
         -- when the dispatch pipeline provably didn't rewrite it.
-        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
+        -- R3-M1: same plain-path specialization-gate skip as the
+        -- LIA arm (ℕ never reaches UF/UFLIA — carrier mixing is a
+        -- reifier error — so natMode is false here by construction).
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path
+            && (certSpecializationsError? cert (natModeOf path.ir)).isNone then
           tryAletheWalker cert
         else
           pure false
@@ -1781,7 +1797,11 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- Identity-trace guard (R2): the walker elaborates the
         -- cert's trace against the ORIGINAL goal, so it only runs
         -- when the dispatch pipeline provably didn't rewrite it.
-        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
+        -- R3-M1: same plain-path specialization-gate skip as the
+        -- LIA arm (ℕ never reaches UF/UFLIA — carrier mixing is a
+        -- reifier error — so natMode is false here by construction).
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path
+            && (certSpecializationsError? cert (natModeOf path.ir)).isNone then
           tryAletheWalker cert
         else
           pure false

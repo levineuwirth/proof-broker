@@ -300,25 +300,33 @@ let nat_mode_of (ir : Ir.t) : bool =
    inverts — today exactly the ℕ→ℤ type specialization on a ℕ-mode
    extraction; on any other extraction the list must be empty. In ℕ
    mode the record must be PRESENT. *)
-let check_cert_specializations (cert : Cert.t) (nat_mode : bool) : unit =
+let cert_specializations_error (cert : Cert.t) (nat_mode : bool)
+  : string option =
   let specs = cert.Cert.refinement_record.specializations in
-  let saw_nat_spec = ref false in
-  List.iter (fun (s : Proof_broker.Refinement_record.specialization) ->
-    let kind_ok = s.kind = Proof_broker.Refinement_record.Type_specialization in
-    if nat_mode && kind_ok && s.source = "Nat" && s.target = "Int" then
-      saw_nat_spec := true
-    else
-      CErrors.user_err Pp.(
-        str (Printf.sprintf
-               "proof_broker: the cert records a specialization this \
-                bridge cannot invert (%s -> %s); the goal is left OPEN \
-                (fail closed)"
-               s.source s.target)))
-    specs;
-  if nat_mode && not !saw_nat_spec then
-    CErrors.user_err Pp.(
-      str "proof_broker: ℕ goal, but the cert records no Nat -> Int \
-           type specialization — refusing to consume it (fail closed)")
+  let rec walk saw_nat_spec = function
+    | [] ->
+      if nat_mode && not saw_nat_spec then
+        Some "proof_broker: ℕ goal, but the cert records no Nat -> Int \
+              type specialization — refusing to consume it (fail closed)"
+      else None
+    | (s : Proof_broker.Refinement_record.specialization) :: rest ->
+      let kind_ok =
+        s.kind = Proof_broker.Refinement_record.Type_specialization in
+      if nat_mode && kind_ok && s.source = "Nat" && s.target = "Int" then
+        walk true rest
+      else
+        Some (Printf.sprintf
+                "proof_broker: the cert records a specialization this \
+                 bridge cannot invert (%s -> %s); the goal is left OPEN \
+                 (fail closed)"
+                s.source s.target)
+  in
+  walk false specs
+
+let check_cert_specializations (cert : Cert.t) (nat_mode : bool) : unit =
+  match cert_specializations_error cert nat_mode with
+  | Some msg -> CErrors.user_err Pp.(str msg)
+  | None -> ()
 
 (* R3-M1: ℕ variant of the walker — same contract, with the cast
    layer posed after by-contradiction and the trace atoms overridden
@@ -391,10 +399,16 @@ let try_alethe_walker_nat (cert : Cert.t) (ir : Ir.t)
 let closer_for_fragment_with_walker ~identity ~(nat : (Ir.t * (string * EConstr.t) list) option)
     (cert : Cert.t) (fragment : string) : unit Proofview.tactic =
   match fragment with
-  | ("LIA" | "UF" | "UFLIA") when identity ->
+  | ("LIA" | "UF" | "UFLIA")
+    when identity
+      && cert_specializations_error cert (nat <> None) = None ->
     (* R3-M1: a ℕ extraction routes through the cast-layer walker;
        any failure still falls back to the fragment closer, which
-       re-proves the ORIGINAL ℕ goal itself ([lia] handles nat). *)
+       re-proves the ORIGINAL ℕ goal itself ([lia] handles nat).
+       The specialization gate applies with the guard's plain-path
+       semantics: a non-invertible record SKIPS the walker attempt
+       (this arm's [when] clause), where the strict entry points
+       fail closed with the named error. *)
     let walker = match nat with
       | Some (ir, atoms) -> try_alethe_walker_nat cert ir atoms
       | None -> try_alethe_walker cert
@@ -763,6 +777,14 @@ let run_close_term_single (gl : Proofview.Goal.t)
          str "proof_broker_term: cert payload is not a Tier 1 Farkas \
               witness for a verified_farkas reason"))
   | Some cert, Some Verified_case_split ->
+    (* R3-M1 specialization gate (fail closed) also covers the
+       Tier-2 arm; ℕ Tier-2 case-split is not lifted yet — a named
+       refusal, mirroring lean-bridge (C3a ROUND 1 finding 3). *)
+    check_cert_specializations cert (nat_mode_of path.ir);
+    if nat_mode_of path.ir then
+      CErrors.user_err Pp.(
+        str "proof_broker_term: Tier 2 case-split over a ℕ \
+             extraction is not lifted yet");
     (* Tier 2 case-split: cert payload is a [Tier2_lemma_list] with
        [strategy_hint = "case_split_farkas"]. Closer destructs the
        disjunctive IR hypothesis and applies the matching lemma's
