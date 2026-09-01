@@ -143,7 +143,13 @@ private def typeVarInfoMathlib (α : Expr)
     ("instances", Json.arr instances)]
   let provenance ← polyLiftWitnessLemmas.mapM
     (ProofBroker.Tactic.Reify.witnessProvenance "proof-broker-bridge")
-  return some { metadata, provenance }
+  -- The IR references the three classes by name inside each
+  -- `Instance.class`, so they get `library_provenance` entries too
+  -- (registry rule: every referenced entity is provenance-backed;
+  -- same statement hash as the instance entries carry).
+  let classProvenance ← polyClasses.mapM
+    (ProofBroker.Tactic.Reify.witnessProvenance "mathlib")
+  return some { metadata, provenance := provenance ++ classProvenance }
 
 /-- Decode an LRA-eligible type — `Real` — or (R3-M2) a qualified
     polymorphic type variable, reified at the canonical tag
