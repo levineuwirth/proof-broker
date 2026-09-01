@@ -38,6 +38,8 @@
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.lia_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
+    "ProofBroker.Test.pb_guard_nonidentity_falls_back_axiom_free":
+      ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.Test.tier1_lia_axiom_free":
       ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_term_axiom_free":
@@ -292,6 +294,12 @@
     "pos_is_nonneg":
       [],
     "pb_lia_axiom_free":
+      [],
+    "pb_guard_nonidentity_falls_back_axiom_free":
+      [],
+    "pb_guard_walker_fails_closed":
+      [],
+    "pb_guard_term_fails_closed":
       [],
     "pb_lia_explicit_list":
       [],

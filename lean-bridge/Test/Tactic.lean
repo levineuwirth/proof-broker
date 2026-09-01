@@ -2092,4 +2092,39 @@ theorem alethe_walker_pigeonhole3_axiom_free
     )"
 #print axioms alethe_walker_pigeonhole3_axiom_free
 
+/- ============================================================
+   Identity-trace guard (R2)
+   ============================================================
+
+   The dispatch pipeline (prop-simp + registry def-unfold) now runs
+   inside `Dispatch.run` on every dispatch. A hypothesis of shape
+   `True ∧ P` is a prop-simp redex (And_True_left), so dispatching
+   these goals produces a NON-identity trace: the cert addresses the
+   rewritten IR, not the reified goal. The guard must (a) keep plain
+   `proof_broker` closing via the decision-procedure fallback on the
+   original goal, and (b) make the cert-consuming closers
+   (`proof_broker_walker`, `proof_broker_term`) fail with the named
+   guard error instead of consuming the cert against the wrong
+   goal. -/
+
+/-- (a) Non-identity trace falls back and still closes: the walker
+    is guard-skipped, cert-gated `omega` proves the original goal.
+    The footprint stays axiom-free — omega is the proof emitter. -/
+theorem pb_guard_nonidentity_falls_back_axiom_free
+    (x : Int) (h : True ∧ x ≤ 5) : x ≤ 5 := by
+  proof_broker
+#print axioms pb_guard_nonidentity_falls_back_axiom_free
+
+/-- (b) Walker-strict on a rewritten dispatch fails closed with the
+    guard error; the goal stays open and is then closed honestly. -/
+example (x : Int) (h : True ∧ x ≤ 5) : x ≤ 5 := by
+  fail_if_success proof_broker_walker
+  omega
+
+/-- (b') Term mode on a rewritten dispatch fails closed with the
+    guard error; the goal stays open and is then closed honestly. -/
+example (x : Int) (h : True ∧ x ≤ 5) : x ≤ 5 := by
+  fail_if_success proof_broker_term
+  omega
+
 end ProofBroker.Test

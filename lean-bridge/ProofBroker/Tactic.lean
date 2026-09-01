@@ -845,6 +845,21 @@ private def buildExtractionPath
     verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs
   }
 
+/-- Identity-trace guard (R2 soundness rule). The term-mode and
+    walker closers consume the cert's content against the ORIGINAL
+    goal, but the cert addresses the dispatch pipeline's output IR.
+    Until R3 lands lifting, those closers may only run when the
+    trace proves the two coincide: every pass skipped/no-op and
+    equal endpoint hashes (`Trace.Document.isIdentity`). A missing
+    trace fails the guard — closed. Decision-procedure closers
+    (omega & co.) are exempt: they re-prove the original goal
+    themselves, so the cert is only a gate there. The guard is
+    removed pass-by-pass in R3 as each inversion lands. -/
+private def identityTraceOk (path : ExtractionPath) : Bool :=
+  match path.trace with
+  | some d => d.isIdentity
+  | none => false
+
 /-- Read the fragment label out of a cert's `refinement_record`.
     Returns `""` when the field is missing or the cert is malformed
     in a way the OCaml side wouldn't normally emit; the caller will
@@ -1181,7 +1196,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- `python3 tools/status_table.py`); omega catches anything
       -- outside that scope.
       let walkerHandled ← do
-        if certTraceFormat cert == "alethe-2024" then
+        -- Identity-trace guard (R2): the walker elaborates the
+        -- cert's trace against the ORIGINAL goal, so it only runs
+        -- when the dispatch pipeline provably didn't rewrite it.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
           tryAletheWalker cert
         else
           pure false
@@ -1237,7 +1255,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- proof") before the re-proving chain; any walker failure
       -- falls through to it — audit H1 preserved.
       let walkerHandled ← do
-        if certTraceFormat cert == "alethe-2024" then
+        -- Identity-trace guard (R2): the walker elaborates the
+        -- cert's trace against the ORIGINAL goal, so it only runs
+        -- when the dispatch pipeline provably didn't rewrite it.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
           tryAletheWalker cert
         else
           pure false
@@ -1261,7 +1282,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- `omega` fallback chain (both axiom-free), then an honest
       -- tactic failure.
       let walkerHandled ← do
-        if certTraceFormat cert == "alethe-2024" then
+        -- Identity-trace guard (R2): the walker elaborates the
+        -- cert's trace against the ORIGINAL goal, so it only runs
+        -- when the dispatch pipeline provably didn't rewrite it.
+        if certTraceFormat cert == "alethe-2024" && identityTraceOk path then
           tryAletheWalker cert
         else
           pure false
@@ -1877,6 +1901,15 @@ def evalProofBrokerWalker : Tactic := fun stx => do
     | some c => pure c
     | none => throwError "proof_broker_walker: no adapter minted a cert; \
         attempts: {path.attempts.map (·.adapter)}"
+  -- Identity-trace guard (R2): walker-strict has no fallback, so a
+  -- rewritten (or traceless) dispatch is a named failure here.
+  unless identityTraceOk path do
+    throwError "proof_broker_walker: identity-trace guard — the dispatch \
+      pipeline rewrote the goal (or returned no trace), so the cert \
+      addresses the rewritten IR, not this goal. Until lifting lands (R3) \
+      the walker only closes goals its cert directly addresses; use plain \
+      `proof_broker`, which falls back to a decision procedure on the \
+      original goal."
   -- Walker-strict: require the Alethe walker to close from the live
   -- cert; no `omega` fallback (that is what `proof_broker` adds).
   unless (← tryAletheWalker cert) do
@@ -1927,6 +1960,16 @@ private def runTermModeOnGoal
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_term: no adapter minted a cert"
+  -- Identity-trace guard (R2): the term-mode closers rebuild the
+  -- proof from the cert's witness against the ORIGINAL goal, so a
+  -- rewritten (or traceless) dispatch is a named failure — term
+  -- mode has no decision-procedure fallback by design.
+  unless identityTraceOk path do
+    throwError "proof_broker_term: identity-trace guard — the dispatch \
+      pipeline rewrote the goal (or returned no trace), so the cert's \
+      witness addresses the rewritten IR, not this goal. Until lifting \
+      lands (R3) term mode only consumes certs that directly address the \
+      goal; use plain `proof_broker` for a decision-procedure closure."
   unless path.verifyOk == some true do
     let r := path.verifyReason.map reprStr |>.getD "<unknown>"
     throwError "proof_broker_term: cert was minted but verifier did not \
