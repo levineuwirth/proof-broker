@@ -1314,9 +1314,11 @@ their axiom ceiling.`
 
 **Rocq port: DEFERRED** (same D3 rule as §5.5). Reconsideration:
 with the M1 push-cast machinery in place the Rocq inversion is a
-`change`/`Tactics.convert` over the unfolding equation; note the
-§5.4 plain-decimal scale limitation applies to any big-literal def
-on Rocq until the decimal-induction lemma lands.
+`change`/`Tactics.convert` over the unfolding equation. The §5.4
+plain-decimal scale limitation that once bounded any big-literal
+def on Rocq is RESOLVED (the decimal-induction lemma landed on
+`r3/decimal-leaf` — see §5.4's RESOLVED record), so scale no longer
+blocks this port; only the D3 consumer trigger does.
 
 ---
 
