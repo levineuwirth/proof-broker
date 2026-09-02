@@ -485,6 +485,25 @@ Lemma nat_push_pow (a b : nat) (z : Z)
   Z.of_nat (a ^ b) = z.
 Proof. subst; apply Nat2Z.inj_pow. Qed.
 
+(* Cast-premise variant of [nat_push_pow], in the [nat_push_add]/
+   [nat_push_mul] shape: the plugin applies THIS one, so the base's
+   [Z.of_nat a = za] leaf recurses through the structural
+   big-decimal route ([nat_of_num_uint_dec]) instead of appearing
+   under an [eq_refl] whose kernel check normalizes the unary
+   numeral (the ROUND 1 Med on this branch: a big-decimal BASE under
+   a folded pow — in-contract for any exponent <= 256 — re-opened the
+   §5.4 wall through the bare-[refl] hypothesis of [nat_push_pow]).
+   The exponent's leaf is always cheap: exp <= 256 < the notation
+   threshold, so [b] is a short S-chain. The remaining [eq_refl]
+   discharges [za ^ zb = z] on binary Z literals. [nat_push_pow]
+   stays proven and registered (spec'd simple form) but is no longer
+   applied by the plugin. *)
+Lemma nat_push_pow_cast (a b : nat) (za zb z : Z)
+  (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
+  (H : za ^ zb = z) :
+  Z.of_nat (a ^ b) = z.
+Proof. subst; apply Nat2Z.inj_pow. Qed.
+
 Lemma nat_cast_le (a b : nat) (za zb : Z)
   (Ha : Z.of_nat a = za) (Hb : Z.of_nat b = zb)
   (H : (a <= b)%nat) : za <= zb.
@@ -597,6 +616,7 @@ Proof. exact (of_nat_of_uint d). Qed.
 Register nat_push_add as proof_broker.term_mode.nat_push_add.
 Register nat_push_mul as proof_broker.term_mode.nat_push_mul.
 Register nat_push_pow as proof_broker.term_mode.nat_push_pow.
+Register nat_push_pow_cast as proof_broker.term_mode.nat_push_pow_cast.
 Register nat_cast_le as proof_broker.term_mode.nat_cast_le.
 Register nat_cast_lt as proof_broker.term_mode.nat_cast_lt.
 Register nat_cast_ge as proof_broker.term_mode.nat_cast_ge.
@@ -785,6 +805,9 @@ Print Assumptions nat_le_via_lt.
 
 Print nat_lt_via_le.
 Print Assumptions nat_lt_via_le.
+
+Print nat_push_pow_cast.
+Print Assumptions nat_push_pow_cast.
 
 Print of_lu_agree.
 Print Assumptions of_lu_agree.

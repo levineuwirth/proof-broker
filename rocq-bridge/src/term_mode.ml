@@ -126,7 +126,7 @@ let r_eq_refl = lazy (safe_constr_of_ref "core.eq.refl")
 let r_eq_trans = lazy (safe_constr_of_ref "core.eq.trans")
 let nat_push_add_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_add")
 let nat_push_mul_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_mul")
-let nat_push_pow_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_pow")
+let nat_push_pow_cast_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_pow_cast")
 let nat_cast_le_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_le")
 let nat_cast_lt_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_lt")
 let nat_cast_ge_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_ge")
@@ -612,9 +612,20 @@ let rec push_nat_to_z (u : universe) env sigma (t : EConstr.t)
          else if eq_ref sigma head Reifier.r_nat_pow then begin
            match Reifier.nat_literal sigma a, Reifier.nat_literal sigma b with
            | Some base, Some exp when Z.compare exp (Z.of_int 256) <= 0 ->
+             (* The cast-premise shim, NOT bare [nat_push_pow]: its
+                [Ha : Z.of_nat a = za] premise recurses through the
+                literal leaf, so a big-decimal BASE rides the
+                structural [nat_of_num_uint_dec] route instead of a
+                bare [eq_refl] whose kernel check normalizes the
+                unary numeral (the exponent's leaf is always a cheap
+                S-chain: exp <= 256 < the notation threshold). The
+                remaining [eq_refl] discharges [za ^ zb = z] on
+                binary Z literals. *)
              let z = u.lit (Z.pow base (Z.to_int exp)) in
-             (z, EConstr.mkApp (force nat_push_pow_ref,
-                   [| a; b; z; refl_at z |]))
+             let (za, pa) = push_nat_to_z u env sigma a in
+             let (zb, pb) = push_nat_to_z u env sigma b in
+             (z, EConstr.mkApp (force nat_push_pow_cast_ref,
+                   [| a; b; za; zb; z; pa; pb; refl_at z |]))
            | _ -> atom ()
          end
          else atom ()
