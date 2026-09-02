@@ -86,13 +86,17 @@ Print Assumptions pb_nat_term_big_dec_axiom_free.
 
 (* A big-decimal BASE under a folded pow (in-contract: any exponent
    <= 256): the pow arm's cast-premise shim [nat_push_pow_cast]
-   recurses the base through the structural leaf, so this no longer
-   normalizes the unary numeral (16777216^2-scale measured at
-   6GB/139s through the bare-[refl] hypothesis it replaces). *)
+   recurses the base through the structural leaf. The base is the
+   D2-scale prime (2^64-2^32+1) ON PURPOSE: at this scale unary
+   normalization is UNREACHABLE (~10^19 constructors), so deleting
+   the cast routing turns this theorem red rather than merely slow —
+   the pin is load-bearing (a 2^24-scale base would regress to
+   6GB/139s but still build green under CI's limits). *)
 Theorem pb_nat_term_big_pow_axiom_free :
   forall x y : nat,
-    (x + 1 <= y)%nat -> (y <= 16777216 ^ 2)%nat ->
-    (x <= 281474976710655)%nat.
+    (x + 1 <= y)%nat ->
+    (y <= 18446744069414584321 ^ 2)%nat ->
+    (x <= 340282366762482138490186164457219031040)%nat.
 Proof. intros x y h1 h2. proof_broker_term. Qed.
 
 Print pb_nat_term_big_pow_axiom_free.
