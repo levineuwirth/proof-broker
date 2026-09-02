@@ -123,9 +123,10 @@ let r_nat_gt = lazy (safe_constr_of_ref "num.nat.gt")
 let r_nat_add = lazy (safe_constr_of_ref "num.nat.add")
 let r_nat_mul = lazy (safe_constr_of_ref "num.nat.mul")
 let r_eq_refl = lazy (safe_constr_of_ref "core.eq.refl")
+let r_eq_trans = lazy (safe_constr_of_ref "core.eq.trans")
 let nat_push_add_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_add")
 let nat_push_mul_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_mul")
-let nat_push_pow_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_pow")
+let nat_push_pow_cast_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_pow_cast")
 let nat_cast_le_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_le")
 let nat_cast_lt_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_lt")
 let nat_cast_ge_ref  = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_ge")
@@ -137,6 +138,10 @@ let nat_cast_not_ge_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_c
 let nat_cast_not_gt_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_gt")
 let nat_cast_not_eq_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_eq")
 let nat_cast_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_nonneg")
+let nat_of_num_uint_dec_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.nat_of_num_uint_dec")
+let r_z_of_num_uint =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_of_num_uint")
 
 let force lz =
   match Lazy.force lz with
@@ -553,8 +558,36 @@ let rec push_nat_to_z (u : universe) env sigma (t : EConstr.t)
   let of_nat x = EConstr.mkApp (force Reifier.r_z_of_nat, [| x |]) in
   let refl_at z = EConstr.mkApp (force r_eq_refl, [| u.ty; z |]) in
   let atom () = let z = of_nat t in (z, refl_at z) in
+  (* [Some num] iff [t] is [Nat.of_num_uint (Number.UIntDecimal _)] —
+     the big-literal elaboration. Its [eq_refl] leaf would make the
+     kernel normalize the UNARY numeral (linear in the VALUE: 2^24 =
+     7.4GB/~150s, 2^64 unreachable), so those leaves route through
+     the structural [nat_of_num_uint_dec] lemma and discharge only
+     [Z.of_num_uint num = z] by [eq_refl] — a BINARY digit fold,
+     cheap at any scale. S-chain literals below the notation
+     threshold keep the plain [eq_refl] leaf. *)
+  let num_uint_shape () =
+    match EConstr.kind sigma t with
+    | App (head, [| num |])
+      when eq_ref sigma head Reifier.r_nat_of_num_uint ->
+      (match EConstr.kind sigma num with
+       | App (ctor, [| d |])
+         when eq_ref sigma ctor Reifier.r_uint_decimal_ctor ->
+         Some (num, d)
+       | _ -> None)
+    | _ -> None
+  in
   match Reifier.nat_literal sigma t with
-  | Some n -> let z = u.lit n in (z, refl_at z)
+  | Some n ->
+    let z = u.lit n in
+    (match num_uint_shape () with
+     | Some (num, d) ->
+       let mid = EConstr.mkApp (force r_z_of_num_uint, [| num |]) in
+       (z, EConstr.mkApp (force r_eq_trans,
+             [| u.ty; of_nat t; mid; z;
+                EConstr.mkApp (force nat_of_num_uint_dec_ref, [| d |]);
+                refl_at z |]))
+     | None -> (z, refl_at z))
   | None ->
     if EConstr.isVar sigma t then atom ()
     else
@@ -579,9 +612,20 @@ let rec push_nat_to_z (u : universe) env sigma (t : EConstr.t)
          else if eq_ref sigma head Reifier.r_nat_pow then begin
            match Reifier.nat_literal sigma a, Reifier.nat_literal sigma b with
            | Some base, Some exp when Z.compare exp (Z.of_int 256) <= 0 ->
+             (* The cast-premise shim, NOT bare [nat_push_pow]: its
+                [Ha : Z.of_nat a = za] premise recurses through the
+                literal leaf, so a big-decimal BASE rides the
+                structural [nat_of_num_uint_dec] route instead of a
+                bare [eq_refl] whose kernel check normalizes the
+                unary numeral (the exponent's leaf is always a cheap
+                S-chain: exp <= 256 < the notation threshold). The
+                remaining [eq_refl] discharges [za ^ zb = z] on
+                binary Z literals. *)
              let z = u.lit (Z.pow base (Z.to_int exp)) in
-             (z, EConstr.mkApp (force nat_push_pow_ref,
-                   [| a; b; z; refl_at z |]))
+             let (za, pa) = push_nat_to_z u env sigma a in
+             let (zb, pb) = push_nat_to_z u env sigma b in
+             (z, EConstr.mkApp (force nat_push_pow_cast_ref,
+                   [| a; b; za; zb; z; pa; pb; refl_at z |]))
            | _ -> atom ()
          end
          else atom ()

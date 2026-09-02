@@ -39,7 +39,7 @@ refreshes it). It is the only place this README states a count.
 | surface | value | source |
 |---|---|---|
 | Trust gate (Lean) | 166 allowlisted theorems; 3 distinct axioms: `Classical.choice`, `Quot.sound`, `propext` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the lean-bridge job) |
-| Trust gate (Rocq) | 176 allowlisted theorems; 4 distinct axioms: `ClassicalDedekindReals.sig_forall_dec`, `FunctionalExtensionality.functional_extensionality_dep`, `classic`, `propositional_extensionality` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the rocq-bridge job) |
+| Trust gate (Rocq) | 182 allowlisted theorems; 4 distinct axioms: `ClassicalDedekindReals.sig_forall_dec`, `FunctionalExtensionality.functional_extensionality_dep`, `classic`, `propositional_extensionality` | `tools/axiom_allowlist.json` (gated by `check_axioms.py` in the rocq-bridge job) |
 | Alethe walker rules | Lean 31, Rocq 31 (at parity) | dispatch arms between `PARITY:walker-rules` markers (`check_walker_parity.py`) |
 | Walker corpus | 24 goals, 1541 proof steps; statically walkable 24/24; in the generated `CorpusReplay.v` 17/24 (the coqc ground truth for those is that file compiling in the rocq-bridge job) + 7/24 live-strict only (`CorpusWalkerLive_*` on both bridges — their coqc/kernel ground truth; the static replay has no ℕ→ℤ cast layer); live-mintable 24/24 | `corpus/index.json`, `corpus/coverage.json` (`check_walker_coverage.py --check`, `gen_corpus_replay.py --check`) |
 | Rocq lifting deferrals | `R3-M2` (delta §5.5); `R3-M3` (delta §5.6) | `delta.md` decision records carrying `**Rocq port: DEFERRED**` |

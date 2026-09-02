@@ -56,16 +56,49 @@ Proof. intros x y h1 h2. proof_broker_walker. Qed.
 Print pb_nat_walker_axiom_free.
 Print Assumptions pb_nat_walker_axiom_free.
 
-(* 2^16-scale literals: the reifier constant-folds the closed pow;
+(* 2^24-scale literals: the reifier constant-folds the closed pow;
    the push-cast discharges the Z-side computation by [eq_refl]
-   (binary Z literals). The PLAIN decimal literal in the goal is the
-   scale cap: its [Z.of_nat] leaf is kernel conversion over the unary
-   numeral — linear in the VALUE (2^24 measured at 7.4GB RSS / ~150s
-   per coqc, which OOMs the 16GB CI runner; see delta §5.4). *)
+   (binary Z literals). The PLAIN decimal literal in the goal rides
+   the structural [nat_of_num_uint_dec] leaf (delta §5.4 follow-up)
+   — the kernel computes [Z.of_num_uint] in binary instead of
+   normalizing the unary numeral, so 2^24 scale is cheap again. *)
 Theorem pb_nat_walker_pow_axiom_free :
-  forall x : nat, (x < 2^16)%nat -> (x <= 65535)%nat.
+  forall x : nat, (x < 2^24)%nat -> (x <= 16777215)%nat.
 Proof. intros x h. proof_broker_walker. Qed.
 
 Print pb_nat_walker_pow_axiom_free.
 Print Assumptions pb_nat_walker_pow_axiom_free.
+
+(* D2-scale plain decimal (the 2^64-2^32+1 Goldilocks prime): the
+   structural leaf is value-independent, so a literal that unary
+   normalization could NEVER reach (2^64 ≈ 10^19 constructors)
+   closes in term mode. Pins the leaf route on the term-mode
+   consumer; the walker consumer is pinned by the 2^24 goal above
+   (both routes share [push_nat_to_z]). *)
+Theorem pb_nat_term_big_dec_axiom_free :
+  forall x y : nat,
+    (x + 1 <= y)%nat -> (y <= 18446744069414584321)%nat ->
+    (x <= 18446744069414584320)%nat.
+Proof. intros x y h1 h2. proof_broker_term. Qed.
+
+Print pb_nat_term_big_dec_axiom_free.
+Print Assumptions pb_nat_term_big_dec_axiom_free.
+
+(* A big-decimal BASE under a folded pow (in-contract: any exponent
+   <= 256): the pow arm's cast-premise shim [nat_push_pow_cast]
+   recurses the base through the structural leaf. The base is the
+   D2-scale prime (2^64-2^32+1) ON PURPOSE: at this scale unary
+   normalization is UNREACHABLE (~10^19 constructors), so deleting
+   the cast routing turns this theorem red rather than merely slow —
+   the pin is load-bearing (a 2^24-scale base would regress to
+   6GB/139s but still build green under CI's limits). *)
+Theorem pb_nat_term_big_pow_axiom_free :
+  forall x y : nat,
+    (x + 1 <= y)%nat ->
+    (y <= 18446744069414584321 ^ 2)%nat ->
+    (x <= 340282366762482138490186164457219031040)%nat.
+Proof. intros x y h1 h2. proof_broker_term. Qed.
+
+Print pb_nat_term_big_pow_axiom_free.
+Print Assumptions pb_nat_term_big_pow_axiom_free.
 

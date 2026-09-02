@@ -1129,6 +1129,49 @@ Real fix, deliberately deferred past M1: prove
 (no stdlib lemma exists) and route big literal leaves through it —
 touches `term_mode.ml` leaf construction, so it takes its own review.
 
+**RESOLVED** (2026-09-02, post-R3 side PR, branch `r3/decimal-leaf`;
+scope completed after its ROUND 1 Med): the deferred fix landed.
+`nat_of_num_uint_dec` (via `of_lu_agree` — the `DecimalNat`/
+`DecimalPos` `of_lu` folds are digit-wise identical and `N.of_nat`
+is a semiring hom — and `of_nat_of_uint`; all axiom-free) bridges
+the decimal structurally, and `push_nat_to_z` routes
+`Nat.of_num_uint (UIntDecimal _)` leaves through
+`eq_trans (nat_of_num_uint_dec d) eq_refl`, leaving only the BINARY
+`Z.of_num_uint` computation to the kernel. The pow arm rides the
+same route: ROUND 1 found that `nat_push_pow`'s bare-`refl`
+hypothesis re-opened the wall for a big-decimal BASE under a folded
+pow (in-contract for any exponent ≤ 256; measured 6.0GB/139s at
+16777216^2 scale), so the plugin now applies the cast-premise
+`nat_push_pow_cast`, whose base leaf recurses through the
+structural route (the exponent is always a cheap S-chain, ≤ 256 <
+the notation threshold). Both cert consumers share the leaves (term
+mode and the walker's cast layer).
+
+Scale restored and extended, with pins on every route:
+`nat_pow_bound` + `pb_nat_walker_pow_axiom_free` back at 2^24
+(walker), `pb_nat_term_big_dec_axiom_free` at the D2-scale
+2^64−2^32+1 plain decimal (term; unreachable by unary
+normalization at ~10^19 constructors), and
+`pb_nat_term_big_pow_axiom_free` at `16777216 ^ 2` (term, the
+ROUND 1 probe shape). Decimal only, matching the reifier's literal
+fold (a hexadecimal literal hits the named reifier refusal and
+never reaches the lift); S-chain literals below the notation
+threshold keep the plain `eq_refl` leaf.
+
+Measured (2026-09-02, this branch, 58GB/16-core machine; memory
+figures are qualified because the R3-M1 CI OOM was about TOTALS):
+standalone leaf probe (`coqc` on a scratch file holding the 2^24
+and 2^64 goals as `etransitivity; apply nat_of_num_uint_dec;
+reflexivity`, measured by zsh `time` with `%M`): 0.89s / 0.41GB for
+both together, vs 153s / 7.36GB for the 2^24 one alone by bare
+`reflexivity`. Full tree from `dune clean`, measured by
+`systemd-run --user --scope -p MemoryAccounting=yes` reading the
+scope's `memory.peak` (whole-build TOTAL) alongside zsh `%M` (max
+SINGLE process): at `-j4` (the CI runner's width) total 2.07GB,
+wall 18.4s; at `-j16` total 7.09GB (parallelism × the ~0.5GB
+per-coqc stdlib baseline — no single heavy file), wall 17.7s; max
+single-process RSS 0.54GB at either width.
+
 ### 5.5 Decision record — polymorphic α and the replay-at-α lift (2026-09-01, R3-M2)
 
 **Question** (roadmap R3-M2). Spec Example 1 *as written* — a goal
@@ -1271,9 +1314,11 @@ their axiom ceiling.`
 
 **Rocq port: DEFERRED** (same D3 rule as §5.5). Reconsideration:
 with the M1 push-cast machinery in place the Rocq inversion is a
-`change`/`Tactics.convert` over the unfolding equation; note the
-§5.4 plain-decimal scale limitation applies to any big-literal def
-on Rocq until the decimal-induction lemma lands.
+`change`/`Tactics.convert` over the unfolding equation. The §5.4
+plain-decimal scale limitation that once bounded any big-literal
+def on Rocq is RESOLVED (the decimal-induction lemma landed on
+`r3/decimal-leaf` — see §5.4's RESOLVED record), so scale no longer
+blocks this port; only the D3 consumer trigger does.
 
 ---
 

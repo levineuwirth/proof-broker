@@ -105,8 +105,8 @@ theorem corpus_live_nat_forall_instance : ∀ n : Nat, n + 1 ≥ 1 := by
 
 #print axioms corpus_live_nat_forall_instance
 
-/-- x < 2^16 |- x <= 65535 over ℕ (2^16-scale literal via reifier pow folding; R3-M1 gate shape. Scale is capped at 2^16 on purpose: the Rocq lift discharges plain ℕ decimal-literal leaves by kernel conversion, which normalizes the unary nat (2^24 measured at 7.4GB RSS / ~150s per coqc; see delta §5.4)) -/
-theorem corpus_live_nat_pow_bound : ∀ (x : Nat), x < 2^16 → x ≤ 65535 := by
+/-- x < 2^24 |- x <= 16777215 over ℕ (2^24-scale literal via reifier pow folding; R3-M1 gate shape. Restored to 2^24 by the delta §5.4 follow-up: big-decimal literal leaves route through the structural nat_of_num_uint_dec lemma (binary Z.of_num_uint computation), so the Rocq lift no longer normalizes the unary numeral) -/
+theorem corpus_live_nat_pow_bound : ∀ (x : Nat), x < 2^24 → x ≤ 16777215 := by
   intro x h
   proof_broker_walker
 
