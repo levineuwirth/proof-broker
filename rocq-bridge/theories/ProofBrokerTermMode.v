@@ -26,6 +26,7 @@
     closer recurses into. *)
 
 From Stdlib Require Import ZArith Reals Arith.
+From Stdlib Require Import NArith Decimal DecimalNat DecimalPos.
 
 Open Scope Z_scope.
 
@@ -556,6 +557,43 @@ Proof.
   destruct (le_lt_dec c b) as [Hle | Hgt]; [exfalso; exact (H Hle) | exact Hgt].
 Qed.
 
+(* Big-decimal literal leaves (delta §5.4 follow-up). A plain nat
+   literal above the notation threshold elaborates as
+   [Nat.of_num_uint (Number.UIntDecimal d)], and discharging the
+   push-cast leaf [Z.of_nat <lit> = <lit>%Z] by [eq_refl] makes the
+   kernel normalize the UNARY numeral — linear in the literal's
+   VALUE (2^24 measured at 7.4GB RSS / ~150s; 2^64 unreachable).
+   [nat_of_num_uint_dec] bridges structurally instead: one decimal
+   induction ([of_lu_agree], the two [of_lu] folds are digit-wise
+   identical, [N.of_nat] is a semiring hom), so the leaf becomes
+   [eq_trans (nat_of_num_uint_dec d) eq_refl] where the remaining
+   [eq_refl] computes [Z.of_num_uint] — a digit fold over BINARY
+   [N]/[Z], constant-memory cheap at any scale. Decimal only: the
+   reifier's literal fold recognizes [UIntDecimal] exclusively, so
+   no hexadecimal leaf can reach the lift. *)
+Lemma of_lu_agree (l : Decimal.uint) :
+  N.of_nat (DecimalNat.Unsigned.of_lu l) = DecimalPos.Unsigned.of_lu l.
+Proof.
+  induction l;
+    cbn [DecimalNat.Unsigned.of_lu DecimalPos.Unsigned.of_lu];
+    rewrite ?Nat2N.inj_add, ?Nat2N.inj_mul, ?IHl; reflexivity.
+Qed.
+
+Lemma of_nat_of_uint (d : Decimal.uint) :
+  Z.of_nat (Nat.of_uint d) = Z.of_uint d.
+Proof.
+  unfold Z.of_uint.
+  rewrite DecimalNat.Unsigned.of_uint_alt,
+          DecimalPos.Unsigned.of_uint_alt.
+  rewrite <- of_lu_agree, nat_N_Z.
+  reflexivity.
+Qed.
+
+Lemma nat_of_num_uint_dec (d : Decimal.uint) :
+  Z.of_nat (Nat.of_num_uint (Number.UIntDecimal d))
+  = Z.of_num_uint (Number.UIntDecimal d).
+Proof. exact (of_nat_of_uint d). Qed.
+
 Register nat_push_add as proof_broker.term_mode.nat_push_add.
 Register nat_push_mul as proof_broker.term_mode.nat_push_mul.
 Register nat_push_pow as proof_broker.term_mode.nat_push_pow.
@@ -572,6 +610,10 @@ Register nat_cast_not_eq as proof_broker.term_mode.nat_cast_not_eq.
 Register nat_cast_nonneg as proof_broker.term_mode.nat_cast_nonneg.
 Register nat_le_via_lt as proof_broker.term_mode.nat_le_via_lt.
 Register nat_lt_via_le as proof_broker.term_mode.nat_lt_via_le.
+Register nat_of_num_uint_dec as proof_broker.term_mode.nat_of_num_uint_dec.
+(* The mid-point constant of the [eq_trans] leaf, so the plugin can
+   build [Z.of_num_uint u] without qualid resolution. *)
+Register Z.of_num_uint as proof_broker.term_mode.z_of_num_uint.
 
 Print farkas_le_2.
 Print Assumptions farkas_le_2.
@@ -743,3 +785,12 @@ Print Assumptions nat_le_via_lt.
 
 Print nat_lt_via_le.
 Print Assumptions nat_lt_via_le.
+
+Print of_lu_agree.
+Print Assumptions of_lu_agree.
+
+Print of_nat_of_uint.
+Print Assumptions of_nat_of_uint.
+
+Print nat_of_num_uint_dec.
+Print Assumptions nat_of_num_uint_dec.

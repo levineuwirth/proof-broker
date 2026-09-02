@@ -18,12 +18,22 @@ val nat_atoms : (string * EConstr.t) list ref
     into the extraction path right after reification. *)
 
 val nat_literal : Evd.evar_map -> EConstr.t -> Z.t option
-(** Structural nat-literal walker ([O]/[S]-chains only, no
+(** Structural nat-literal walker ([O]/[S]-chains and
+    [Nat.of_num_uint (Number.UIntDecimal _)] big-literal forms; no
     reduction). Shared with [Term_mode]'s push-cast so the lift's
     literal/atom decisions coincide with the reifier's. *)
 
 val r_nat_pow : EConstr.t option Lazy.t
 (** [Nat.pow], resolved by qualid (no lib_ref registration). *)
+
+val r_nat_of_num_uint : EConstr.t option Lazy.t
+(** [Nat.of_num_uint], resolved by qualid. [Term_mode] matches it to
+    route big-decimal literal leaves through the structural
+    [nat_of_num_uint_dec] lemma instead of unary kernel conversion. *)
+
+val r_uint_decimal_ctor : EConstr.t option Lazy.t
+(** [Number.UIntDecimal], resolved by qualid (scopes the leaf route
+    to the decimal constructor the literal fold understands). *)
 
 val r_z_of_nat : EConstr.t option Lazy.t
 (** [Z.of_nat], resolved by qualid. *)

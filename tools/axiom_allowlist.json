@@ -473,6 +473,14 @@
       [],
     "nat_lt_via_le":
       [],
+    "of_lu_agree":
+      [],
+    "pb_nat_term_big_dec_axiom_free":
+      [],
+    "of_nat_of_uint":
+      [],
+    "nat_of_num_uint_dec":
+      [],
     "pb_guard_walker_fails_closed":
       [],
     "pb_guard_term_fails_closed":

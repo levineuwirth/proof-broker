@@ -123,6 +123,7 @@ let r_nat_gt = lazy (safe_constr_of_ref "num.nat.gt")
 let r_nat_add = lazy (safe_constr_of_ref "num.nat.add")
 let r_nat_mul = lazy (safe_constr_of_ref "num.nat.mul")
 let r_eq_refl = lazy (safe_constr_of_ref "core.eq.refl")
+let r_eq_trans = lazy (safe_constr_of_ref "core.eq.trans")
 let nat_push_add_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_add")
 let nat_push_mul_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_mul")
 let nat_push_pow_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_push_pow")
@@ -137,6 +138,10 @@ let nat_cast_not_ge_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_c
 let nat_cast_not_gt_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_gt")
 let nat_cast_not_eq_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_not_eq")
 let nat_cast_nonneg_ref = lazy (safe_constr_of_ref "proof_broker.term_mode.nat_cast_nonneg")
+let nat_of_num_uint_dec_ref =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.nat_of_num_uint_dec")
+let r_z_of_num_uint =
+  lazy (safe_constr_of_ref "proof_broker.term_mode.z_of_num_uint")
 
 let force lz =
   match Lazy.force lz with
@@ -553,8 +558,36 @@ let rec push_nat_to_z (u : universe) env sigma (t : EConstr.t)
   let of_nat x = EConstr.mkApp (force Reifier.r_z_of_nat, [| x |]) in
   let refl_at z = EConstr.mkApp (force r_eq_refl, [| u.ty; z |]) in
   let atom () = let z = of_nat t in (z, refl_at z) in
+  (* [Some num] iff [t] is [Nat.of_num_uint (Number.UIntDecimal _)] —
+     the big-literal elaboration. Its [eq_refl] leaf would make the
+     kernel normalize the UNARY numeral (linear in the VALUE: 2^24 =
+     7.4GB/~150s, 2^64 unreachable), so those leaves route through
+     the structural [nat_of_num_uint_dec] lemma and discharge only
+     [Z.of_num_uint num = z] by [eq_refl] — a BINARY digit fold,
+     cheap at any scale. S-chain literals below the notation
+     threshold keep the plain [eq_refl] leaf. *)
+  let num_uint_shape () =
+    match EConstr.kind sigma t with
+    | App (head, [| num |])
+      when eq_ref sigma head Reifier.r_nat_of_num_uint ->
+      (match EConstr.kind sigma num with
+       | App (ctor, [| d |])
+         when eq_ref sigma ctor Reifier.r_uint_decimal_ctor ->
+         Some (num, d)
+       | _ -> None)
+    | _ -> None
+  in
   match Reifier.nat_literal sigma t with
-  | Some n -> let z = u.lit n in (z, refl_at z)
+  | Some n ->
+    let z = u.lit n in
+    (match num_uint_shape () with
+     | Some (num, d) ->
+       let mid = EConstr.mkApp (force r_z_of_num_uint, [| num |]) in
+       (z, EConstr.mkApp (force r_eq_trans,
+             [| u.ty; of_nat t; mid; z;
+                EConstr.mkApp (force nat_of_num_uint_dec_ref, [| d |]);
+                refl_at z |]))
+     | None -> (z, refl_at z))
   | None ->
     if EConstr.isVar sigma t then atom ()
     else
