@@ -1129,6 +1129,23 @@ Real fix, deliberately deferred past M1: prove
 (no stdlib lemma exists) and route big literal leaves through it —
 touches `term_mode.ml` leaf construction, so it takes its own review.
 
+**RESOLVED** (2026-09-02, post-R3 side PR, branch `r3/decimal-leaf`):
+the deferred fix landed. `nat_of_num_uint_dec` (via `of_lu_agree` —
+the `DecimalNat`/`DecimalPos` `of_lu` folds are digit-wise identical
+and `N.of_nat` is a semiring hom — and `of_nat_of_uint`; all
+axiom-free) bridges the decimal structurally, and `push_nat_to_z`
+routes `Nat.of_num_uint (UIntDecimal _)` leaves through
+`eq_trans (nat_of_num_uint_dec d) eq_refl`, leaving only the BINARY
+`Z.of_num_uint` computation to the kernel. Both cert consumers share
+the leaf (term mode and the walker's cast layer). Scale restored and
+extended: `nat_pow_bound` and `pb_nat_walker_pow_axiom_free` are back
+at 2^24, and `pb_nat_term_big_dec_axiom_free` pins the D2-scale
+2^64−2^32+1 literal — unreachable by unary normalization (~10^19
+constructors), measured standalone at under a second / ~0.4GB.
+Decimal only, matching the reifier's literal fold (a hexadecimal
+literal never reaches the lift). S-chain literals below the notation
+threshold keep the plain `eq_refl` leaf.
+
 ### 5.5 Decision record — polymorphic α and the replay-at-α lift (2026-09-01, R3-M2)
 
 **Question** (roadmap R3-M2). Spec Example 1 *as written* — a goal
