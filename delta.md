@@ -1435,6 +1435,34 @@ from the default adapter list" was considered and rejected: it
 removes the most reliable trigger while leaving the defect live
 behind cvc5/z3.
 
+**FIXED — reifier accumulator race under parallel elaboration**
+(2026-09-03, C4 ROUND 3 High; fix round of the same day, Levi's
+explicit call to fix rather than defer behind a workaround).
+Symptom: the demo's headline file failed 10/33 elaborations and 1/6
+forced builds with `unsupported_symbol: Bracket.P`. Cause: the
+reifier's four module-level accumulation refs (applied consts, ℕ
+atoms, Int atoms, numeral defs) assumed "single-goal reification is
+sequential" — false under Lean v4.32, which elaborates a module's
+(named) declarations in parallel; concurrent `buildIR` calls
+interleaved resets and pushes. Snapshot-threading alone (the R3-M1
+`natAtoms` patch) is insufficient — the refs were shared DURING
+accumulation — so the fix makes accumulation itself per-call: each
+`buildIR` creates a fresh `ReifyAcc` and the reify family threads
+it explicitly; the module refs are deleted (`reifierExt` remains as
+documented set-once registration). Not a soundness defect (the
+failure is fail-closed), but it sat on R4's gate path. Verified by
+a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
+failures (baselines 10/33, 1/6); ROUND 4 re-derived both and
+confirmed reification semantics byte-identical across the refactor
+on 8 shapes. Pinned DETERMINISTICALLY by
+`reify_acc_isolation_test` (two fresh accumulators must be
+independent — red on every run under any re-sharing, mutation-
+verified); the `Test/TacticStress.lean` herd exercises concurrent
+per-call accumulators under real async elaboration but is NOT a
+reliable catcher (measured pre-fix catch rate 0/30 — dispatch-free
+`buildIR` windows are ~1.5ms; the demo file raced because its
+windows span live solver round trips).
+
 ## 6. References
 
 - **Spec v1.0:** `proof-brokerage-spec-v1.pdf`. The architectural
