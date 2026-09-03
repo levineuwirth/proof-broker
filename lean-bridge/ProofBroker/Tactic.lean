@@ -3912,10 +3912,12 @@ def evalSpecGateTest : Tactic := fun stx => do
 /-- TEST-ONLY tactic: the DETERMINISTIC pin for the per-call
     accumulator fix (C4 ROUND 4 finding 1). Calls `ReifyAcc.fresh`
     twice, pushes a marker entry into the first accumulator, and
-    asserts (a) the second is empty and (b) the first still holds
-    its entry. Under any re-sharing — a singleton `fresh`, or fresh
-    refs replaced by cleared module refs (the exact mutation ROUND 4
-    used) — one of the two assertions fails on every run, no
+    asserts, for EACH of the four fields independently (C4 ROUND 5
+    Med 1: a single-field assertion let a `natDefs`-only re-sharing
+    escape), that the second is empty and the first still holds its
+    entry. Under a re-sharing of ANY field — a singleton `fresh`, or
+    fresh refs replaced by cleared module refs (the mutations
+    ROUNDs 4–5 used) — an assertion fails on every run, no
     parallelism required. The stress herd in `Test/TacticStress.lean`
     is NOT the pin: it exercises concurrent per-call accumulators
     under real async elaboration, and its measured pre-fix catch
@@ -3928,17 +3930,34 @@ syntax (name := reifyAccIsolationTest) "reify_acc_isolation_test" : tactic
 def evalReifyAccIsolationTest : Tactic := fun stx => do
   match stx with
   | `(tactic| reify_acc_isolation_test) =>
+    -- ALL FOUR fields, independently (C4 ROUND 5 Med 1: asserting
+    -- only natAtoms let a natDefs-only re-sharing — the exact table
+    -- whose loss produced the demo's `unsupported_symbol` — escape
+    -- every pin in the tree).
     let a ← ReifyAcc.fresh
-    a.natAtoms.modify (·.push ("_pb_isolation_marker", Lean.mkConst ``Nat))
+    a.consts.modify (·.push ("_pb_iso_c", "Int"))
+    a.natAtoms.modify (·.push ("_pb_iso_na", Lean.mkConst ``Nat))
+    a.intAtoms.modify (·.push ("_pb_iso_ia", Lean.mkConst ``Int))
+    a.natDefs.modify (·.push ("_pb_iso_nd", Lean.mkConst ``Nat, 0))
     let b ← ReifyAcc.fresh
-    unless (← b.natAtoms.get).isEmpty do
-      throwError "reify_acc_isolation_test: a fresh accumulator is \
-        NOT empty ({(← b.natAtoms.get).map (·.1)}) — ReifyAcc.fresh \
-        is sharing state"
-    unless (← a.natAtoms.get).size == 1 do
-      throwError "reify_acc_isolation_test: the first accumulator \
-        lost its entry (size {(← a.natAtoms.get).size}) — a later \
-        fresh cleared shared refs"
+    let checkEmpty (name : String) (n : Nat) : TacticM Unit := do
+      unless n == 0 do
+        throwError "reify_acc_isolation_test: a fresh accumulator's \
+          {name} is NOT empty ({n} entries) — ReifyAcc.fresh is \
+          sharing state"
+    checkEmpty "consts" (← b.consts.get).size
+    checkEmpty "natAtoms" (← b.natAtoms.get).size
+    checkEmpty "intAtoms" (← b.intAtoms.get).size
+    checkEmpty "natDefs" (← b.natDefs.get).size
+    let checkKept (name : String) (n : Nat) : TacticM Unit := do
+      unless n == 1 do
+        throwError "reify_acc_isolation_test: the first accumulator's \
+          {name} lost its entry (size {n}) — a later fresh cleared \
+          shared refs"
+    checkKept "consts" (← a.consts.get).size
+    checkKept "natAtoms" (← a.natAtoms.get).size
+    checkKept "intAtoms" (← a.intAtoms.get).size
+    checkKept "natDefs" (← a.natDefs.get).size
     evalTactic (← `(tactic| trivial))
   | _ => throwError "reify_acc_isolation_test: malformed invocation"
 
@@ -3979,11 +3998,13 @@ def evalTypePosGateTest : Tactic := fun stx => do
     have exactly the expected sizes. HONEST ROLE (C4 ROUND 4
     finding 1): the herd EXERCISES concurrent per-call accumulators
     under v4.32's async elaboration of named theorems; it is NOT a
-    reliable regression catcher — measured pre-fix catch rate 0/30
-    builds, because a dispatch-free `buildIR` window is ~1.5 ms
-    (the demo file raced because its windows span live solver round
-    trips). The deterministic regression pin is
-    `reify_acc_isolation_test` above. -/
+    reliable regression catcher — measured pre-fix catch rate: 0/30
+    builds on the ROUND 4 anonymous-example form, 0/20 and 0/10 on
+    THIS named-theorem form (ROUND 5, same all-shared mutation);
+    a dispatch-free `buildIR` window is ~1.5 ms (the demo file
+    raced because its windows span live solver round trips). The
+    deterministic regression pin is `reify_acc_isolation_test`
+    above. -/
 syntax (name := reifyStressTest) "reify_stress_test" num num : tactic
 
 @[tactic reifyStressTest]

@@ -1459,9 +1459,17 @@ on 8 shapes. Pinned DETERMINISTICALLY by
 independent — red on every run under any re-sharing, mutation-
 verified); the `Test/TacticStress.lean` herd exercises concurrent
 per-call accumulators under real async elaboration but is NOT a
-reliable catcher (measured pre-fix catch rate 0/30 — dispatch-free
-`buildIR` windows are ~1.5ms; the demo file raced because its
-windows span live solver round trips).
+reliable catcher — measured pre-fix catch rate 0/30 builds
+(anonymous-example form, C4 ROUND 4) and 0/20 + 0/10 (shipped
+named-theorem form, ROUND 5), both by restoring the shared refs and
+force-rebuilding `ProofBrokerTest` on this 16-core/58GB machine at
+the then-current `r4/demo` tip; dispatch-free `buildIR` windows are
+~1.5ms; the demo file raced because its windows span live solver
+round trips. The pin's coverage was itself reviewed: a ROUND 5 Med
+found the first version asserted only one of the four fields (a
+`natDefs`-only re-sharing escaped every pin while the demo file
+still failed 4/27); it now asserts all four independently,
+mutation-verified per field.
 
 ## 6. References
 

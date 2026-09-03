@@ -11,12 +11,13 @@ per-call table sizes via `reify_stress_test`, then closing by
 `omega`.
 
 HONEST ROLE: this file EXERCISES concurrent per-call accumulators —
-it is not a reliable regression catcher. Measured at ROUND 4: with
-the pre-fix shared refs restored, 0 red in 30 builds (a
-dispatch-free `buildIR` window is ~1.5 ms; the demo file raced
-because its windows span live solver round trips). The DETERMINISTIC
-regression pin for the fix is `reify_acc_isolation_test` in
-`Test/Tactic.lean`.
+it is not a reliable regression catcher. Measured catch rate with
+the pre-fix shared refs restored: 0/30 builds on the ROUND 4
+anonymous-example form; 0/20 and 0/10 on THIS named-theorem form
+(ROUND 5, same mutation) — a dispatch-free `buildIR` window is
+~1.5 ms; the demo file raced because its windows span live solver
+round trips. The DETERMINISTIC regression pin for the fix is
+`reify_acc_isolation_test` in `Test/Tactic.lean`.
 -/
 
 import ProofBroker
