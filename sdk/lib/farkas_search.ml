@@ -32,6 +32,17 @@
     general LP solver. Cases beyond its reach fall through to the
     oracle as before. *)
 
+(** Hard cap on the coefficient-space size the search will attempt —
+    the module's stated design envelope ("well under 100k
+    candidates"). Beyond it the search is SKIPPED, not attempted:
+    the space grows 4× per additional inequality input (7× per
+    equality), so a ~13-input IR already means 4^13 ≈ 67M
+    candidates, and enumerating them — even streamed — costs a
+    minute of CPU for a fallback rescue path. Callers treat any
+    [Error _] as fall-through to the Tier 0 oracle, so exceeding
+    the cap degrades tier, never availability. *)
+let max_candidates = 100_000
+
 type input = {
   name : string;
   compiled : Farkas.compiled;
@@ -40,16 +51,23 @@ type input = {
 type error =
   | No_compilable_inputs
   | Search_exhausted
+  | Search_space_exceeded of int
 
 let kind_of_error = function
   | No_compilable_inputs -> "no_compilable_inputs"
   | Search_exhausted -> "search_exhausted"
+  | Search_space_exceeded _ -> "search_space_exceeded"
 
 let detail_of_error = function
   | No_compilable_inputs ->
     "no IR hypothesis (or neg_goal) compiled to a Farkas-amenable form"
   | Search_exhausted ->
     "no Farkas witness found within the bounded coefficient search"
+  | Search_space_exceeded n ->
+    Printf.sprintf
+      "coefficient space has at least %d candidates, above the %d cap \
+       — search skipped (fall through to the oracle tier; the size is \
+       a saturating lower bound)" n max_candidates
 
 (** Compile every hypothesis plus [neg_goal] into [Farkas.compiled]
     form. Hypotheses that fail to compile (non-linear, unsupported
@@ -129,15 +147,37 @@ let try_assignment ~(lra : bool) (inputs : input list) (coefs : int list)
           in
           Some (`Assoc [ "coefficients", `List entries ])
 
-(** Cartesian product of [ranges]. Materialized rather than
-    streamed because the search bound caps the total size — at
-    [bound = 3] with up to ~8 inputs we have well under 100k
-    candidates and short-circuit on first hit anyway. *)
-let cartesian (ranges : int list list) : int list list =
-  List.fold_right (fun r acc ->
-    List.concat_map (fun c -> List.map (fun t -> c :: t) acc) r)
-    ranges
-    [ [] ]
+(** Streamed enumeration of the coefficient space: for each
+    assignment in the cartesian product of [ranges] (first range
+    varying slowest — the exact order the materialized product had),
+    call [try_coefs] and short-circuit on the first [Some]. Live
+    memory is O(number of inputs): nothing is materialized. The
+    predecessor of this function built the whole product as a list
+    first ("the search bound caps the total size — well under 100k
+    candidates"), an assumption nothing enforced; at 13 inputs that
+    list was 4^13 ≈ 67M candidates ≈ 4.7GB, and the demo's
+    14–15-input goals OOM'd a 58GB machine (C4 ROUND 1 finding 1).
+    The size assumption is now enforced by [space_size] in
+    [try_close]. *)
+let search_first (ranges : int list list)
+    ~(try_coefs : int list -> Yojson.Safe.t option)
+  : Yojson.Safe.t option =
+  let rec go ranges prefix_rev =
+    match ranges with
+    | [] -> try_coefs (List.rev prefix_rev)
+    | r :: rest ->
+      List.find_map (fun c -> go rest (c :: prefix_rev)) r
+  in
+  go ranges []
+
+(** Saturating size of the coefficient space: the product of range
+    lengths, computed only until it exceeds [max_candidates] (so no
+    overflow at any input count). *)
+let space_size (ranges : int list list) : int =
+  List.fold_left
+    (fun acc r ->
+      if acc > max_candidates then acc else acc * List.length r)
+    1 ranges
 
 (** Per-input integer range under sign discipline: nonneg for
     [Le]/[Lt], two-sided for [Eq]. *)
@@ -156,11 +196,12 @@ let try_close ?(bound = 3) (ir : Ir.t) : (Yojson.Safe.t, error) result =
   else
     let lra = String.equal (Farkas.effective_fragment ir) "LRA" in
     let ranges = List.map (range_for ~bound) inputs in
-    let candidates = cartesian ranges in
-    let result = List.find_map
-      (fun coefs -> try_assignment ~lra inputs coefs)
-      candidates
-    in
-    match result with
-    | Some json -> Ok json
-    | None -> Error Search_exhausted
+    let size = space_size ranges in
+    if size > max_candidates then Error (Search_space_exceeded size)
+    else
+      match
+        search_first ranges
+          ~try_coefs:(fun coefs -> try_assignment ~lra inputs coefs)
+      with
+      | Some json -> Ok json
+      | None -> Error Search_exhausted

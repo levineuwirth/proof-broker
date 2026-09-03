@@ -234,6 +234,64 @@ let test_bound_zero_finds_nothing () =
     Alcotest.fail (Printf.sprintf "expected Search_exhausted, got %s"
                      (Farkas_search.kind_of_error e))
 
+(** [k] mutually satisfiable Le hypotheses [xi <= i] with goal
+    [x0 <= 100] — every input Farkas-compiles, no witness exists, so
+    an uncapped search would enumerate the whole 4^(k+1) space (the
+    C4 ROUND 1 OOM shape: 13 inputs materialized 4.7GB, 15 inputs
+    76GB). *)
+let many_le_ir (k : int) : Ir.t =
+  let hundred : Ir.shell_term = Num_lit { value = "100"; ty = "Int" } in
+  let var i : Ir.shell_term = Var { name = Printf.sprintf "x%d" i } in
+  let hyps = List.init k (fun i -> ({
+    name = Printf.sprintf "h%d" i;
+    shell = App { symbol = "LE.le"; type_args = [];
+                  args = [ var i;
+                           Num_lit { value = string_of_int i; ty = "Int" } ] };
+  } : Ir.hypothesis)) in
+  let fvs = List.init k (fun i ->
+    ({ name = Printf.sprintf "x%d" i; ty = "Int" } : Ir.free_var)) in
+  mk_ir ~free_vars:fvs ~hypotheses:hyps
+    (App { symbol = "LE.le"; type_args = []; args = [ var 0; hundred ] })
+
+(** The C4 ROUND 1 regression: 13 Farkas-compilable inputs must come
+    back immediately with the cap error — never by enumerating (the
+    materialized product was 4.7GB at this size) and never by
+    streaming through 67M candidates either. Wall-clock bounded to
+    catch a regression to enumeration even if its memory is fixed. *)
+let test_large_input_space_is_capped () =
+  let ir = many_le_ir 12 (* + neg_goal = 13 inputs *) in
+  let t0 = Sys.time () in
+  let result = Farkas_search.try_close ir in
+  let dt = Sys.time () -. t0 in
+  (match result with
+   | Error (Search_space_exceeded n) ->
+     Alcotest.(check bool) "reported size exceeds the cap"
+       true (n > 100_000)
+   | Ok _ -> Alcotest.fail "13-input unsatisfiable-shape found a witness"
+   | Error e ->
+     Alcotest.fail (Printf.sprintf "expected search_space_exceeded, got %s"
+                      (Farkas_search.kind_of_error e)));
+  Alcotest.(check bool)
+    (Printf.sprintf "returned in %.3fs CPU (must be << 1s: capped, not enumerated)" dt)
+    true (dt < 1.0)
+
+(** Streaming preserved the materialized product's order (first
+    range slowest), so the witness found on the example1 shape is
+    bit-identical to what the list-based search returned. *)
+let test_streaming_preserves_witness () =
+  let ir = example1_like_ir () in
+  match Farkas_search.try_close ir with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "example1 shape stopped closing: %s"
+                     (Farkas_search.kind_of_error e))
+  | Ok witness ->
+    (match Farkas.verify ir witness with
+     | Verified -> ()
+     | _ -> Alcotest.fail "witness no longer verifies");
+    Alcotest.(check string) "first-hit witness unchanged by streaming"
+      {|{"coefficients":[{"hypothesis":"h1","coefficient":"1"},{"hypothesis":"h3","coefficient":"1"},{"hypothesis":"neg_goal","coefficient":"1"}]}|}
+      (Yojson.Safe.to_string witness)
+
 let () =
   Alcotest.run "farkas_search" [
     "close", [
@@ -249,5 +307,9 @@ let () =
         `Quick test_bound_zero_finds_nothing;
       Alcotest.test_case "Real-typed IR mislabeled LIA: search agrees with verify"
         `Quick test_search_uses_effective_fragment_on_real_typed_lia_label;
+      Alcotest.test_case "13-input space is capped, not enumerated"
+        `Quick test_large_input_space_is_capped;
+      Alcotest.test_case "streaming preserves the first-hit witness"
+        `Quick test_streaming_preserves_witness;
     ];
   ]
