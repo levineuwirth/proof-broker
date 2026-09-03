@@ -44,7 +44,7 @@
     the whole space is swept): 4^10 = 1,048,576 candidates cost
     0.77s CPU / 1.3MB live; the D1/70 demo obligation's space is
     exactly that, and 2,000,000 admits it while keeping worst-case
-    exhaustion under ~1s on this fallback path (which only runs
+    exhaustion at ~1.3s measured on this fallback path (which only runs
     after solver proof extraction has already failed). The next
     step up (4^11 ≈ 4.2M, ~3s) buys no known goal. Anyone changing
     this constant should re-derive the sweep cost, not carry the

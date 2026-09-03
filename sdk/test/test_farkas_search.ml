@@ -291,8 +291,10 @@ let test_large_input_space_is_capped () =
     every prior test green). A 10-input irrefutable IR (4^10 ≈ 1M
     candidates, under the cap) forces a FULL sweep; streamed, the
     live heap stays O(inputs), where the pre-fix materialized
-    product at this size is ~30M words (~240MB) and must move the
-    GC's high-water mark. *)
+    product at this size allocates ~30M words of list cells, of which
+    ~10M words of high-water growth was OBSERVED under the restored
+    mutation (9,871,360 — GC reclaims some mid-build); the 4M-word
+    bound sits between that and streaming's noise floor. *)
 let test_full_sweep_is_streamed () =
   let ir = many_le_ir 9 (* + neg_goal = 10 inputs, 4^10 space *) in
   Gc.compact ();
@@ -310,7 +312,7 @@ let test_full_sweep_is_streamed () =
   let dt = Sys.time () -. t0 in
   let grown = (Gc.quick_stat ()).top_heap_words - before in
   Alcotest.(check bool)
-    (Printf.sprintf "heap high-water grew %d words (materialization needs ~30M)" grown)
+    (Printf.sprintf "heap high-water grew %d words (mutation-observed ~9.9M)" grown)
     true (grown < 4_000_000);
   Alcotest.(check bool)
     (Printf.sprintf "swept 4^10 in %.3fs CPU" dt)

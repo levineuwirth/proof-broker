@@ -1418,15 +1418,22 @@ Disposition (C4 ROUND 1 prescription, both parts landed in the fix
 round): the enumeration now STREAMS in the identical order (O(n)
 live memory, first-hit witness pinned, order equivalence proven
 exhaustively to 4^8), and a saturating size check refuses spaces
-above the module's stated 100k envelope with a named
+above its candidate cap with a named
 `search_space_exceeded` error. The second part is a deliberate,
 recorded behavior change: a goal whose coefficient space exceeds
-the cap (≳9 inequality inputs) no longer gets a Tier-1 rescue when
+the cap no longer gets a Tier-1 rescue when
 solver proof extraction fails — it falls through to the Tier 0
 oracle cert, exactly the pre-existing fallback. Regression-tested
-(13-input IR returns immediately). "Drop cvc4 from the default
-adapter list" was considered and rejected: it removes the most
-reliable trigger while leaving the defect live behind cvc5/z3.
+(13-input IR returns immediately). The cap's VALUE was re-derived at
+C4 ROUND 2/3 (Levi 2026-09-03): the initial 100k was inherited from
+the comment that had justified materialization; the shipped value is
+2,000,000 — a measured time budget (4^10 sweep = 0.77s CPU / 1.3MB
+live; basis recorded in the module comment) — so the refusal
+threshold is ≳11 inequality inputs, and the demo's `D1/70` (4^10)
+is rescued while `D2/62`/`D1/78` (4^14+) stay refused. "Drop cvc4
+from the default adapter list" was considered and rejected: it
+removes the most reliable trigger while leaving the defect live
+behind cvc5/z3.
 
 ## 6. References
 
