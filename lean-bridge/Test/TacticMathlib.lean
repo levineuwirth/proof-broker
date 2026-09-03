@@ -384,8 +384,11 @@ def PBModP : Nat := 18446744069414584321
     arguments of the atomized application — inverting the unfold
     there would make the kernel reduce `ZMod <2^64-scale literal>`.
     Probed bare: fails with the named "mentions it inside a TYPE"
-    error, which this negative pins (the permissive branch is pinned
-    by six existing tests; this was the branch pinned by nothing). -/
+    error. DOCUMENTS the user-facing refusal only — this negative is
+    NOT the gate's pin (it fails under any closer outcome, so it
+    cannot distinguish the gate from the cert path; C4 ROUND 3
+    Med 1). The deterministic two-direction pin is
+    `type_pos_gate_test` in `Test/Tactic.lean`. -/
 example (Zmax : Nat) (zhigh : ZMod PBModP)
     (h : ((Zmax : ZMod PBModP) * zhigh).val < PBModP) :
     ((Zmax : ZMod PBModP) * zhigh).val < PBModP := by

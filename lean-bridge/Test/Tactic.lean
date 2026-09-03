@@ -2387,6 +2387,11 @@ example : True := by trace_guard_test identity
     emitted passes (the M3 admission). -/
 example : True := by trace_guard_test def_unfold_ours
 
+/-- Deterministic two-direction pin for the def-unfold
+    type-position gate (C4 ROUND 3 Med 1); see `type_pos_gate_test`. -/
+def PBGateC : Nat := 41
+example : True := by type_pos_gate_test PBGateC
+
 /-- An applied unfold of a FOREIGN symbol → fail closed. -/
 example : True := by
   fail_if_success trace_guard_test def_unfold_foreign

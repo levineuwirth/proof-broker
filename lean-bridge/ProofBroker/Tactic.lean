@@ -1858,8 +1858,11 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
     any machine. The mechanism is ARGUED from `ZMod`'s definition,
     not measured: no reproducible artifact of this bomb exists (the
     ~57 GB event once cited here belongs to `Farkas_search.cartesian`
-    — C4 ROUND 1/2, delta.md §5.7). The refusing branch is pinned by
-    the `PBModP` negative in `Test/TacticMathlib.lean`.
+    — C4 ROUND 1/2, delta.md §5.7). The refusing branch is pinned
+    DETERMINISTICALLY by `type_pos_gate_test` (a direct verdict
+    check in both directions — the end-to-end `PBModP` negative in
+    `Test/TacticMathlib.lean` documents the user-facing refusal but
+    fails under any closer outcome, so it cannot pin the gate).
 
     `hbound : Zmax * zhigh.val < P` passes: its `P`s are ℕ values,
     including the `@ZMod.val P zhigh` index, which unifies with the
@@ -3904,6 +3907,37 @@ def evalSpecGateTest : Tactic := fun stx => do
     checkCertSpecializations cert specMode
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
+
+/-- TEST-ONLY tactic pinning `constOnlyInValuePositions` in BOTH
+    directions, deterministically (C4 ROUND 3 Med 1: the end-to-end
+    `PBModP` negative proved vacuous — it fails under any closer
+    outcome, so `gate ≡ true` left every build green). For the named
+    constant `c`, builds the two canonical shapes and asserts the
+    gate's verdicts directly:
+    * value position, `c + 1` — must be ALLOWED (true);
+    * type position, `@id (Fin c)` — the constant inside an argument
+      whose own type is a Sort — must be REFUSED (false).
+    Mutating the gate in either direction turns exactly this red. -/
+syntax (name := typePosGateTest) "type_pos_gate_test" ident : tactic
+
+@[tactic typePosGateTest]
+def evalTypePosGateTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| type_pos_gate_test $c) =>
+    let cName ← Lean.resolveGlobalConstNoOverload c
+    let cE := Lean.mkConst cName
+    let valuePos ← Lean.Meta.mkAppM ``HAdd.hAdd #[cE, Lean.mkNatLit 1]
+    let typePos :=
+      Lean.mkApp (Lean.mkConst ``id [Lean.levelOne])
+        (Lean.mkApp (Lean.mkConst ``Fin) cE)
+    unless ← constOnlyInValuePositions cName valuePos do
+      throwError "type_pos_gate_test: the gate REFUSED a pure value \
+        position ({valuePos}) — the permissive branch broke"
+    if ← constOnlyInValuePositions cName typePos then
+      throwError "type_pos_gate_test: the gate ALLOWED a type \
+        position ({typePos}) — the refusing branch broke"
+    evalTactic (← `(tactic| trivial))
+  | _ => throwError "type_pos_gate_test: malformed invocation"
 
 /-- TEST-ONLY tactic pinning the per-call reify accumulator
     (C4 ROUND 3 finding 1): runs the REAL `Reify.buildIR` on the
