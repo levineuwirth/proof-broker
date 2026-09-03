@@ -2392,9 +2392,12 @@ example : True := by trace_guard_test def_unfold_ours
 def PBGateC : Nat := 41
 example : True := by type_pos_gate_test PBGateC
 
-/-- Deterministic pin for the per-call reify accumulators (C4
-    ROUND 4 finding 1): red on every run under any re-sharing of
-    `ReifyAcc.fresh`, no parallelism required. -/
+/-- Deterministic RUNTIME pin for the per-call reify accumulators
+    (C4 ROUND 4 finding 1; all four fields since ROUND 5): red on
+    every run under any re-sharing inside `ReifyAcc.fresh`. The
+    call-site/module-state half of the discipline is pinned by
+    `check_lean_reify_isolation` in `tools/check.py` (ROUND 6
+    Med 1). -/
 example : True := by reify_acc_isolation_test
 
 /-- An applied unfold of a FOREIGN symbol → fail closed. -/

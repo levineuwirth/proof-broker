@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check import (  # noqa: E402
     check_always_unfold_pin,
+    check_lean_reify_isolation,
     check_cert_hashes,
     check_cert_manifest_consistency,
     check_cert_witness_provenance,
@@ -444,6 +445,40 @@ def _always_unfold_pin_drift_errors():
 @register("scan (R2.4): the shipped pin matches the registry")
 def _always_unfold_pin_clean():
     e = check_always_unfold_pin(REGISTRY)
+    assert not e, e
+
+
+@register("scan (C4): a second module-level IO.Ref initializer errors")
+def _reify_isolation_extra_ref_errors():
+    real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    mut = real.replace(
+        "initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none",
+        "initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none\n"
+        "initialize sharedNatDefs : IO.Ref (Array Nat) ← IO.mkRef #[]")
+    e = check_lean_reify_isolation(tactic_text=mut)
+    assert_contains(e, "never", "error")
+
+
+@register("scan (C4): an extra ReifyAcc.fresh call site errors")
+def _reify_isolation_extra_call_errors():
+    real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    mut = real.replace("    let b ← ReifyAcc.fresh",
+                       "    let b ← ReifyAcc.fresh\n    let c ← ReifyAcc.fresh")
+    e = check_lean_reify_isolation(tactic_text=mut)
+    assert_contains(e, "deliberately", "error")
+
+
+@register("scan (C4): buildIR without its fresh accumulator errors")
+def _reify_isolation_missing_build_call_errors():
+    real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    mut = real.replace("  let acc ← ReifyAcc.fresh", "  -- gone")
+    e = check_lean_reify_isolation(tactic_text=mut)
+    assert e, "missing buildIR fresh call not caught"
+
+
+@register("scan (C4): the shipped lean reify isolation is clean")
+def _reify_isolation_clean():
+    e = check_lean_reify_isolation()
     assert not e, e
 
 

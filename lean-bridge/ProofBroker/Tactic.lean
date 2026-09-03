@@ -3909,21 +3909,23 @@ def evalSpecGateTest : Tactic := fun stx => do
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
 
-/-- TEST-ONLY tactic: the DETERMINISTIC pin for the per-call
-    accumulator fix (C4 ROUND 4 finding 1). Calls `ReifyAcc.fresh`
-    twice, pushes a marker entry into the first accumulator, and
-    asserts, for EACH of the four fields independently (C4 ROUND 5
-    Med 1: a single-field assertion let a `natDefs`-only re-sharing
-    escape), that the second is empty and the first still holds its
-    entry. Under a re-sharing of ANY field — a singleton `fresh`, or
-    fresh refs replaced by cleared module refs (the mutations
-    ROUNDs 4–5 used) — an assertion fails on every run, no
-    parallelism required. The stress herd in `Test/TacticStress.lean`
-    is NOT the pin: it exercises concurrent per-call accumulators
-    under real async elaboration, and its measured pre-fix catch
-    rate was 0/30 builds (its `buildIR` windows are ~1.5 ms; the
-    demo file's raced because each window spans a live solver round
-    trip). -/
+/-- TEST-ONLY tactic: the runtime half of the per-call accumulator
+    fix's pin (C4 ROUND 4 finding 1; field coverage widened at
+    ROUND 5 Med 1; SCOPE stated honestly at ROUND 6 Med 1). Calls
+    `ReifyAcc.fresh` twice, pushes a marker into EACH of the first
+    accumulator's four fields, and asserts per field that the second
+    is empty and the first kept its entry. This pins the
+    CONSTRUCTOR: any re-sharing inside `ReifyAcc.fresh` is red on
+    every run, no parallelism required. It does NOT see a mutation
+    that leaves `fresh` intact and moves accumulation back to
+    module refs cleared at the `buildIR` call site — that direction
+    is pinned by `tools/check.py`'s `check_lean_reify_isolation`
+    source gate (exactly one module-level `IO.Ref`, `reifierExt`;
+    exactly one `fresh` call inside `buildIR` plus this test's two).
+    The stress herd exercises concurrency but is not a catcher —
+    measured pre-fix rates 0/30 (anonymous form, ROUND 4), 0/20
+    (all-four-shared mutation) and 0/10 (natDefs-only mutation),
+    both on the named-theorem form at ROUND 5. -/
 syntax (name := reifyAccIsolationTest) "reify_acc_isolation_test" : tactic
 
 @[tactic reifyAccIsolationTest]
@@ -3998,9 +4000,10 @@ def evalTypePosGateTest : Tactic := fun stx => do
     have exactly the expected sizes. HONEST ROLE (C4 ROUND 4
     finding 1): the herd EXERCISES concurrent per-call accumulators
     under v4.32's async elaboration of named theorems; it is NOT a
-    reliable regression catcher — measured pre-fix catch rate: 0/30
-    builds on the ROUND 4 anonymous-example form, 0/20 and 0/10 on
-    THIS named-theorem form (ROUND 5, same all-shared mutation);
+    reliable regression catcher — measured pre-fix catch rates: 0/30
+    builds on the ROUND 4 anonymous-example form; on THIS
+    named-theorem form (ROUND 5) 0/20 under the all-four-shared
+    mutation and 0/10 under the natDefs-only one;
     a dispatch-free `buildIR` window is ~1.5 ms (the demo file
     raced because its windows span live solver round trips). The
     deterministic regression pin is `reify_acc_isolation_test`

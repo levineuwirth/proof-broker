@@ -504,6 +504,77 @@ def check_always_unfold_pin(registry, pipeline_ml=None):
     return []
 
 
+LEAN_BRIDGE = ROOT / "lean-bridge"
+
+_INIT_IOREF_RE = re.compile(r"^initialize\s+(\w+)[^\n]*:\s*IO\.Ref", re.M)
+_FRESH_CALL_RE = re.compile(r"←\s*ReifyAcc\.fresh")
+
+
+def check_lean_reify_isolation(tactic_text=None, mathlib_text=None):
+    """SOURCE gate for the C4 reifier-race fix (ROUND 6 Med 1): the
+    runtime isolation pin covers `ReifyAcc.fresh` itself, but
+    re-introducing module-level accumulation refs cleared at the
+    `buildIR` call site leaves every runtime pin green while
+    parallel declaration elaboration races again. Two textual
+    invariants over the Lean bridge:
+
+    (1) exactly ONE module-level `IO.Ref` initializer exists across
+        `ProofBroker/Tactic.lean` and `ProofBrokerMathlib/Tactic.lean`,
+        and it is `reifierExt` (set-once registration; per-goal
+        accumulation must never live in module state);
+    (2) `ReifyAcc.fresh` is CALLED exactly three times: once inside
+        `buildIR` (each reification gets its own accumulator) and
+        twice inside the isolation-test tactic — no other call site
+        may appear, and the `buildIR` one must.
+
+    A legitimate refactor edits this check together with the code;
+    silent drift is the error."""
+    if tactic_text is None:
+        tactic_text = (LEAN_BRIDGE / "ProofBroker" / "Tactic.lean").read_text()
+    if mathlib_text is None:
+        mathlib_text = (LEAN_BRIDGE / "ProofBrokerMathlib" / "Tactic.lean").read_text()
+    errors = []
+
+    inits = (_INIT_IOREF_RE.findall(tactic_text)
+             + _INIT_IOREF_RE.findall(mathlib_text))
+    if inits != ["reifierExt"]:
+        errors.append(
+            "lean-bridge module-level IO.Ref initializers are "
+            f"{inits}, expected exactly ['reifierExt'] — per-goal "
+            "reify accumulation must stay per-call (ReifyAcc), never "
+            "module state (C4 ROUND 3 High / ROUND 6 Med 1)")
+
+    lines = tactic_text.splitlines()
+    call_lines = [(i, l.strip()) for i, l in enumerate(lines)
+                  if _FRESH_CALL_RE.search(l)]
+    build_start = next((i for i, l in enumerate(lines)
+                        if l.startswith("def buildIR")), None)
+    if build_start is None:
+        errors.append("ProofBroker/Tactic.lean: `def buildIR` not found")
+    else:
+        build_end = next(
+            (i for i in range(build_start + 1, len(lines))
+             if re.match(r"^(def |partial def |syntax |initialize |end )",
+                         lines[i])),
+            len(lines))
+        in_build = [l for i, l in call_lines if build_start < i < build_end]
+        outside = [(i + 1, l) for i, l in call_lines
+                   if not (build_start < i < build_end)]
+        if len(in_build) != 1:
+            errors.append(
+                f"`← ReifyAcc.fresh` inside buildIR: {in_build or 'MISSING'} "
+                "— expected exactly one (each reification gets a fresh "
+                "accumulator)")
+        expected_outside = ["let a ← ReifyAcc.fresh", "let b ← ReifyAcc.fresh"]
+        if sorted(l for _, l in outside) != sorted(expected_outside):
+            errors.append(
+                f"`← ReifyAcc.fresh` call sites outside buildIR are "
+                f"{outside}, expected exactly the isolation test's "
+                f"{expected_outside} — a new call site (or a moved one) "
+                "needs this gate edited deliberately")
+    return errors
+
+
 # --- Cross-fixture hash linkage (#18d / #24-M1) ---------------------------
 #
 # The strict-identity hash invariants for example certificates:
@@ -882,8 +953,8 @@ def main() -> int:
             print(f"  ERROR  {msg}")
         failed += 1
     else:
-        print("OK   sdk/lib source-scan checks (trace_format literals, "
-              "always_unfold pin)")
+        print("OK   source-scan checks (trace_format literals, "
+              "always_unfold pin, lean reify isolation)")
 
     # Pairing completeness (C2 round 1): the per-fixture R2 gates below
     # only fire for fixtures the pairing maps know about, so an unpaired
