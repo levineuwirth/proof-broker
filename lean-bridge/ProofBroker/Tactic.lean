@@ -1808,6 +1808,57 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
           cert (fail closed)"
       return none
 
+/-- Does `c` occur in `e` only at VALUE positions — never inside a
+    subterm that is itself a type?
+
+    R4.2, and the reason this check exists at all: unfolding a
+    numeral definition is a `kabstract` over *every* occurrence, and
+    an occurrence sitting inside a TYPE turns a cheap swap into a
+    kernel bomb. verinf's `lift_cell` reifies
+    `hmul : ((Zmax : ZMod P) * zhigh).val = Zmax * zhigh.val`, where
+    `P` appears in the `ZMod P` type arguments of `HMul.hMul`.
+    Rewriting those gives a term at `ZMod 18446744069414584321`
+    while its neighbours are still at `ZMod P`, and the next defeq
+    check has to whnf `ZMod <literal>` — `ZMod` recurses on ℕ, so
+    that is `Nat.rec` at 2^64 scale: unary normalization, ~57 GB
+    resident, OOM-killed (measured 2026-09-03, the Lean-side sibling
+    of delta.md §5.4).
+
+    `hbound : Zmax * zhigh.val < P` passes: its `P`s are ℕ values,
+    including the `@ZMod.val P zhigh` index, which unifies with the
+    numeral by delta in one step. `hmul` and `hZval` are rejected —
+    and nothing is lost, since the arithmetic the certificate reads
+    from them never mentions `P`. -/
+private partial def constOnlyInValuePositions (c : Name) (e : Expr) : MetaM Bool := do
+  let mentions (x : Expr) : Bool := (x.find? (·.isConstOf c)).isSome
+  if !mentions e then return true
+  match e with
+  | .app .. =>
+    let fn := e.getAppFn
+    if mentions fn && !fn.isConstOf c then return false
+    for a in e.getAppArgs do
+      if mentions a then
+        -- An argument that IS a type (its own type is a sort) must
+        -- not mention the constant at all; anything else recurses.
+        if (← Lean.Meta.inferType a).isSort then return false
+        unless ← constOnlyInValuePositions c a do return false
+    return true
+  | .lam _ d b _ | .forallE _ d b _ =>
+    if mentions d then
+      if (← Lean.Meta.inferType d).isSort then return false
+      unless ← constOnlyInValuePositions c d do return false
+    -- The body may have loose bvars; only the constant matters here,
+    -- and `find?` does not care about binder depth.
+    constOnlyInValuePositions c b
+  | .mdata _ b => constOnlyInValuePositions c b
+  | .proj _ _ b => constOnlyInValuePositions c b
+  | .letE _ t v b _ =>
+    if mentions t then return false
+    unless ← constOnlyInValuePositions c v do return false
+    constOnlyInValuePositions c b
+  | .const n _ => return n == c
+  | _ => return true
+
 /-- Apply the def-unfold inversions to `goal`: for every symbol the
     trace unfolded, rewrite the goal with `c = <numeral>` (proved by
     `rfl` — the constant's body IS the numeral, so the kernel checks
@@ -1853,14 +1904,46 @@ private def invertDefUnfolds (goal : MVarId) (path : ExtractionPath)
       let mut g' := g
       let tgt ← g'.getType
       if tgt.getUsedConstantsAsSet.contains cName then
+        unless ← g'.withContext (constOnlyInValuePositions cName tgt) do
+          throwError "proof_broker_term: the extraction unfolds \
+            '{cName}', but the goal mentions it inside a TYPE \
+            ({tgt}); inverting the unfold there would force the \
+            kernel to reduce that type at the definition's value. \
+            Fail closed rather than build a term the kernel cannot \
+            check cheaply."
         let tgtNew ← g'.withContext do
           let abst ← Lean.Meta.kabstract tgt constE
           pure (abst.instantiate1 litE)
         g' ← g'.change tgtNew
-      -- Hypotheses: the rewritten type is defeq, so swap in place.
+      -- Hypotheses: the rewritten type is defeq, so swap in place —
+      -- but ONLY in hypotheses this extraction actually reified.
+      --
+      -- R4.2: rewriting every local that merely MENTIONS the constant
+      -- is a memory bomb. In verinf's `lift_cell` the context holds
+      -- `hrec : c = x + z + ↑Zmax * zhigh` at type `ZMod P`, which the
+      -- reifier drops (it is outside the fragment) — but `kabstract`
+      -- happily turned `ZMod P` into `ZMod 18446744069414584321`, and
+      -- `ZMod` is defined by recursion on ℕ, so the next defeq check
+      -- on that type reduces `Nat.rec` at a 2^64-scale literal: unary
+      -- normalization, ~57 GB resident, OOM-killed (measured
+      -- 2026-09-03; the Lean-side sibling of delta.md §5.4).
+      --
+      -- The extraction's own hypothesis list is the right scope: it is
+      -- exactly the set the certificate reads, every member reified
+      -- inside the arithmetic fragment (so the constant occurs at an
+      -- arithmetic position, never as a type index), and it is what
+      -- the fallback decision procedure needs unfolded. Anything the
+      -- reifier declined is left alone.
+      let irHypNames := path.ir.context.hypotheses.map (·.name)
       let mut swaps : Array (FVarId × Expr) := #[]
       for decl in (← g'.withContext getLCtx) do
         if decl.isImplementationDetail then continue
+        unless irHypNames.contains decl.userName.toString do continue
+        -- Skip, don't fail: a hypothesis is optional context for the
+        -- fallback, so leaving one un-unfolded costs completeness at
+        -- worst. The goal above is not optional, hence the error.
+        unless ← g'.withContext (constOnlyInValuePositions cName decl.type) do
+          continue
         if decl.type.getUsedConstantsAsSet.contains cName then
           if ← g'.withContext (Lean.Meta.isProp decl.type) then
             let newTy ← g'.withContext do
