@@ -2484,6 +2484,25 @@ example (h : (2:Nat)^300 < 2^301) : (2:Nat)^300 < 2^301 := by
   fail_if_success proof_broker
   exact h
 
+/-- The over-bounds power nested in a BASE position: the `HPow`
+    guard's first conjunct fails (the base is closed-but-declined),
+    so control used to fall through to silent atomization — now the
+    same named bounds refusal (`natClosedShape`). -/
+example (h : ((2:Nat)^5000)^2 ≤ ((2:Nat)^5000)^2) :
+    ((2:Nat)^5000)^2 ≤ ((2:Nat)^5000)^2 := by
+  fail_if_success proof_broker
+  exact h
+
+/-- A closed PRODUCT of two over-bounds powers: exponent 300 > 256
+    means neither factor folds, so the `HMul` arm saw two non-closed
+    operands and used to atomize the product silently — falsifying
+    its own "both operands closed is already folded" comment. Named
+    refusal now. -/
+example (h : (2:Nat)^300 * (2:Nat)^300 ≤ (2:Nat)^300 * (2:Nat)^300) :
+    (2:Nat)^300 * (2:Nat)^300 ≤ (2:Nat)^300 * (2:Nat)^300 := by
+  fail_if_success proof_broker
+  exact h
+
 /-- R4.2: an applied ℕ-valued function (`ZMod.val` in the demo,
     `List.length` here — a constant application, not a UF free var)
     is an opaque atom carrying only `0 ≤ ↑atom`, and the same

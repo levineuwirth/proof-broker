@@ -475,6 +475,35 @@ partial def natClosedNumeral? (e : Expr) : Option Nat :=
       | _, _ => none
     | _ => none
 
+/-- Structurally closed ℕ arithmetic — literals under `+`, `*`, and
+    `^` with a literal exponent — decided WITHOUT computing the
+    value. Where this holds but `natClosedNumeral?` declined, the
+    term is closed yet exceeds the folding bounds: that is a scope
+    error to raise by name, never a silent atom (an atomized
+    numeral generalizes the goal into one that mysteriously fails
+    to close — the failure mode the named error exists to prevent).
+    Deciding closedness must not compute: folding `2^5000` merely
+    to diagnose it would re-create the resource hazard the bounds
+    exist to avoid. -/
+partial def natClosedShape (e : Expr) : Bool :=
+  (matchNatLiteralAtNat? e).isSome ||
+  match e.getAppFnArgs with
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+    α.isConstOf ``Nat && natClosedShape a && natClosedShape b
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    α.isConstOf ``Nat && natClosedShape a && natClosedShape b
+  | (``HPow.hPow, #[_, _, _, _, a, b]) =>
+    natClosedShape a && (matchNatLiteralAtNat? b).isSome
+  | _ => false
+
+/-- The named bounds refusal for a closed-shaped term the fold
+    declined (see `natClosedShape`). -/
+def throwNatFoldBounds (e : Expr) : MetaM α :=
+  throwError "proof_broker: closed ℕ arithmetic {e} exceeds the \
+    constant-folding bounds (exponent ≤ {natFoldMaxExp}, value < \
+    2^{natFoldMaxBits}) — a numeral the reifier declines to build \
+    is a scope error, not an uninterpreted atom"
+
 /-- Atomize a nonlinear ℕ subterm: reuse the existing payload id if
     this exact `Expr` was seen before (structural equality — the
     same product mentioned twice is one atom), else mint
@@ -538,12 +567,18 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
     -- Linear iff a factor is a closed numeral (R4.2: `Zmax * 2^16`
     -- counts, `2^16` being closed but not an `OfNat` literal);
     -- otherwise the product is a nonlinear atom (the D1
-    -- `Zmax * zhigh` shape). Both operands closed is already gone,
-    -- folded at the head of `reifyNatTerm`.
+    -- `Zmax * zhigh` shape). Both operands closed WITHIN BOUNDS is
+    -- already gone, folded at the head of `reifyNatTerm` — but a
+    -- closed product the fold declined for its SIZE (e.g.
+    -- `2^300 * 2^300`) reaches here with both `natClosedNumeral?`
+    -- calls returning none, and must be the named bounds refusal,
+    -- not a silent atom (C4 ROUND 1 finding 5).
     if let some k := natClosedNumeral? a then
       return .app "HMul.hMul" [] [.numLit (toString k) "Int", ← reifyNatTerm b]
     else if let some k := natClosedNumeral? b then
       return .app "HMul.hMul" [] [← reifyNatTerm a, .numLit (toString k) "Int"]
+    else if natClosedShape e then
+      throwNatFoldBounds e
     else
       atomizeNatTerm e
   | (``HPow.hPow, #[_, _, _, _, a, b]) =>
@@ -559,7 +594,13 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
        throwError "proof_broker: closed ℕ power {base}^{exp} exceeds the \
          constant-folding bounds (exponent ≤ {natFoldMaxExp}, value < \
          2^{natFoldMaxBits})"
-     | _, _ => atomizeNatTerm e)
+     | _, _ =>
+       -- The base can itself be closed-but-over-bounds (e.g.
+       -- `(2^5000)^2`): the first conjunct above then fails without
+       -- the term being any less closed. Same named refusal, never
+       -- a silent atom (C4 ROUND 1 finding 5).
+       if natClosedShape e then throwNatFoldBounds e
+       else atomizeNatTerm e)
   | (``HSub.hSub, #[_, _, _, _, _, _]) =>
     throwError "proof_broker: ℕ subtraction is truncated (`a - b` is \
       not the ℤ difference), so the ℕ→ℤ specialization refuses it \
