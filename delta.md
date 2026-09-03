@@ -1396,15 +1396,37 @@ Trigger to revisit: any Rocq-side consumer of the ℕ→ℤ path meeting
 a closed-numeral product, an applied-function atom, or a primed
 identifier.
 
-**OPEN — unbounded allocation on the cvc4 path.** Seven ℕ hypotheses
-of the spike's shape dispatched to cvc4 drive the in-process SDK to
-unbounded allocation (57 GB observed; OOM-killed). Not the literal
-size, not the definition, not Mathlib, not the closer: `cvc5` and
-`z3` close the same goal instantly and the `cvc4` process is never
-spawned. Every six-hypothesis subset is fine. cvc4 is in the default
-adapter list, so this is reachable from any user goal of this shape.
-Reproduction in `proof-broker-demo/reference/h/m_full.lean`.
-Unresolved at the R4 checkpoint; see `R4-REVIEW.local.md`.
+**FIXED — exponential materialization in the internal Farkas search
+(originally recorded here, wrongly, as "unbounded allocation on the
+cvc4 path").** C4 ROUND 1 falsified this record's first
+characterization in every material respect, and the corrected
+mechanism is: `Farkas_search.try_close` materialized the entire
+coefficient space (`cartesian`, 4 candidates per inequality input, 7
+per equality) before searching — 4^13 ≈ 67M candidates ≈ 4.7GB at
+the 13 inputs `m_full.lean` sends (7 user hypotheses + 5 synthetic
+ℕ-nonnegativity facts + neg_goal), 4^15 ≈ 76GB at the demo's
+15-input goals (`D1_78`/`D2_62`), which is the observed 57GB OOM.
+Post-dispatch, not pre- (cvc4 IS spawned and answers unsat in
+7.6ms); bounded-but-exponential per input count, not unbounded; and
+NOT cvc4-specific — the search is the internal Tier-1 fallback for
+all three SMT adapters and reproduces identically via cvc5 whenever
+its proof extraction fails. Pre-existing SDK code (untouched by R4);
+R4's atomization added +2 inputs on exactly the demo's goal shape,
+which is what made it reachable at machine-killing scale.
+
+Disposition (C4 ROUND 1 prescription, both parts landed in the fix
+round): the enumeration now STREAMS in the identical order (O(n)
+live memory, first-hit witness pinned, order equivalence proven
+exhaustively to 4^8), and a saturating size check refuses spaces
+above the module's stated 100k envelope with a named
+`search_space_exceeded` error. The second part is a deliberate,
+recorded behavior change: a goal whose coefficient space exceeds
+the cap (≳9 inequality inputs) no longer gets a Tier-1 rescue when
+solver proof extraction fails — it falls through to the Tier 0
+oracle cert, exactly the pre-existing fallback. Regression-tested
+(13-input IR returns immediately). "Drop cvc4 from the default
+adapter list" was considered and rejected: it removes the most
+reliable trigger while leaving the defect live behind cvc5/z3.
 
 ## 6. References
 
