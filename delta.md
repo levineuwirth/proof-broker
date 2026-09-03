@@ -1454,16 +1454,26 @@ failure is fail-closed), but it sat on R4's gate path. Verified by
 a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
 failures (baselines 10/33, 1/6); ROUND 4 re-derived both and
 confirmed reification semantics byte-identical across the refactor
-on 8 shapes. Pinned DETERMINISTICALLY by
-`reify_acc_isolation_test` (two fresh accumulators must be
-independent — red on every run under any re-sharing, mutation-
-verified); the `Test/TacticStress.lean` herd exercises concurrent
-per-call accumulators under real async elaboration but is NOT a
-reliable catcher — measured pre-fix catch rate 0/30 builds
-(anonymous-example form, C4 ROUND 4) and 0/20 + 0/10 (shipped
-named-theorem form, ROUND 5), both by restoring the shared refs and
-force-rebuilding `ProofBrokerTest` on this 16-core/58GB machine at
-the then-current `r4/demo` tip; dispatch-free `buildIR` windows are
+on 8 shapes. Pinned in TWO parts (the split
+found at C4 ROUND 6 Med 1): `reify_acc_isolation_test` pins the
+constructor at runtime (all four fields independently since
+ROUND 5; red on every run under any re-sharing inside
+`ReifyAcc.fresh`, mutation-verified per field), and
+`check_lean_reify_isolation` in `tools/check.py` pins the source
+discipline the runtime test cannot see (a mutation keeping `fresh`
+intact while moving accumulation back to module refs cleared at
+the `buildIR` call site built fully green at ROUND 6 while the demo
+file failed 9/27 — the gate now refuses any module-level `IO.Ref`
+beyond `reifierExt` and any `fresh` call site beyond buildIR's +
+the test's two, with negative controls in `test_check.py`); the
+`Test/TacticStress.lean` herd exercises concurrent per-call
+accumulators under real async elaboration but is NOT a reliable
+catcher — measured pre-fix catch rates 0/30 builds
+(anonymous-example form, C4 ROUND 4), then on the shipped
+named-theorem form at ROUND 5: 0/20 under the all-four-shared
+mutation and 0/10 under the natDefs-only one, each by restoring
+shared refs and force-rebuilding `ProofBrokerTest` on this
+16-core/58GB machine at the then-current `r4/demo` tip; dispatch-free `buildIR` windows are
 ~1.5ms; the demo file raced because its windows span live solver
 round trips. The pin's coverage was itself reviewed: a ROUND 5 Med
 found the first version asserted only one of the four fields (a
