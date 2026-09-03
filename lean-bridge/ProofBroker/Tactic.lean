@@ -1165,17 +1165,82 @@ end Reify
 
    Manifests sit alongside the test fixtures in `examples/`. The
    tactic finds them by:
-     1. honoring `PROOF_BROKER_EXAMPLES_DIR` if set,
-     2. otherwise falling back to `<cwd>/../examples`.
+     1. honoring `PROOF_BROKER_EXAMPLES_DIR` if set (verbatim, no
+        probe — an explicit override that is wrong must fail loudly,
+        not fall through to some other directory),
+     2. otherwise `<cwd>/../examples`, the in-repo convention
+        Main.lean also uses,
+     3. otherwise a *package-anchored* directory derived from where
+        this module's own `.olean` was loaded from (R4.1).
 
-   The cwd-relative fallback matches Main.lean's convention so the
-   tactic-driven test library shares the same setup.
+   Step 3 is what makes the tactic usable from a downstream Lake
+   project. Steps 1–2 are cwd-relative, and a consumer's cwd is its
+   own project root, not the bridge's — so before R4.1 every
+   downstream call died with "no manifests found in
+   <consumer>/../examples" unless the user exported the env var by
+   hand. `findBridgeExamplesDir?` resolves `ProofBroker.Tactic`
+   against LEAN_PATH, which Lake populates with the bridge's build
+   directory in both dependency flavors (a `from git` require
+   materialized under `.lake/packages/`, and a `from "…"` path
+   require built in place).
    ============================================================ -/
+
+/-- The four manifest file names the tactic ever loads. Shared by
+    the directory probe and `loadDefaultManifests` so "this directory
+    is the manifest directory" and "these are the manifests" can
+    never drift apart. Vampire last: `capability_match` skips it for
+    first-order LIA/LRA/BV goals, so the order is for determinism,
+    not precedence. -/
+private def manifestFileNames : List String :=
+  ["manifest-cvc4.json", "manifest-cvc5.json",
+   "manifest-z3.json", "manifest-vampire.json"]
+
+/-- True iff `dir` holds at least one of `manifestFileNames` — the
+    same predicate as "`loadDefaultManifests` would find something
+    here", so probing a candidate never rejects a directory the
+    loader would have accepted. -/
+private def dirHasManifest (dir : System.FilePath) : IO Bool :=
+  manifestFileNames.anyM (fun n => (dir / System.FilePath.mk n).pathExists)
+
+/-- The `examples/` directory that ships next to the loaded bridge,
+    or `none` if the layout does not match (an installed/relocated
+    olean, a vendored build). Never throws: a failed lookup just
+    means the caller falls back to the cwd-relative candidate and
+    reports both in its error.
+
+    `Lean.findOLean` returns
+    `<bridge>/.lake/build/lib/lean/ProofBroker/Tactic.olean`; six
+    `parent` steps reach `<bridge>` (the `lean-bridge` package
+    directory) and the manifests live one level above it, in the
+    proof-broker repo root. -/
+private def findBridgeExamplesDir? : IO (Option System.FilePath) := do
+  -- Module name, not a declaration name, so a single backtick: it is
+  -- resolved against LEAN_PATH at run time, and a miss (renamed
+  -- module, no olean on the path when running from source) returns
+  -- `none` rather than throwing.
+  let .ok olean ← (Lean.findOLean `ProofBroker.Tactic).toBaseIO
+    | return none
+  unless ← olean.pathExists do return none
+  -- Tactic.olean → ProofBroker → lean → lib → build → .lake → <bridge>
+  let mut dir := olean
+  for _ in [0:6] do
+    let some p := dir.parent | return none
+    dir := p
+  let cand := dir / ".." / "examples"
+  if ← dirHasManifest cand then return some cand else return none
 
 private def defaultManifestDir : IO System.FilePath := do
   match (← IO.getEnv "PROOF_BROKER_EXAMPLES_DIR") with
   | some s => return s
-  | none => return (← IO.currentDir) / ".." / "examples"
+  | none =>
+    -- The cwd candidate keeps priority and is only stepped over when
+    -- it holds no manifest at all — i.e. exactly in the cases where
+    -- the pre-R4.1 behavior was to raise "no manifests found".
+    let cwdCand := (← IO.currentDir) / ".." / "examples"
+    if ← dirHasManifest cwdCand then return cwdCand
+    match ← findBridgeExamplesDir? with
+    | some d => return d
+    | none => return cwdCand
 
 private def loadManifestIfPresent (path : System.FilePath) : TacticM (Option Json) := do
   unless ← path.pathExists do return none
@@ -1191,16 +1256,16 @@ private def loadDefaultManifests : TacticM (List Json) := do
   -- fragments), and the higher-order goals it does serve have the
   -- SMT adapters skipped via the order check — so ordering is for
   -- determinism, not precedence.
-  let names := ["manifest-cvc4.json", "manifest-cvc5.json",
-                "manifest-z3.json", "manifest-vampire.json"]
   let mut result : List Json := []
-  for n in names do
+  for n in manifestFileNames do
     if let some j ← loadManifestIfPresent (dir / n) then
       result := result ++ [j]
   if result.isEmpty then
     throwError "proof_broker: no manifests found in {dir}; \
-                set PROOF_BROKER_EXAMPLES_DIR or run from a directory \
-                whose parent has examples/manifest-*.json"
+                set PROOF_BROKER_EXAMPLES_DIR, run from a directory \
+                whose parent has examples/manifest-*.json, or build \
+                against a bridge whose package directory has \
+                ../examples (the downstream-consumer layout)"
   return result
 
 /-- Load manifests for a user-supplied list of adapter names, in the
