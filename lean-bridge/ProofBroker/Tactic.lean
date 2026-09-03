@@ -1127,10 +1127,10 @@ def buildIR (mvarId : MVarId)
   -- subgoals may carry deferred unification metavars in their types;
   -- without this, `reifyTerm` sees `?_uniq.N` (pretty-prints as the
   -- user-facing name) and the FVar branch falls through.
-  -- Reset the applied-constant accumulator; `reifyTerm` (on the
-  -- goal and each hypothesis below) pushes any non-connective
-  -- global constant it treats as uninterpreted (e.g.
-  -- `Function.comp`) so it can be declared as a `freeVar`.
+  -- Create THIS call's accumulator (per-call, never module state:
+  -- C4 ROUND 3 High — `reifyTerm` on the goal and each hypothesis
+  -- below pushes applied non-connective constants, atoms and
+  -- numeral defs into it, and `buildIR` folds them on exit).
   let acc ← ReifyAcc.fresh
   let goalType ← Lean.instantiateMVars (← mvarId.getType)
   let goalShell ← reifyTerm acc goalType
@@ -1595,10 +1595,11 @@ structure ExtractionPath where
       reified input. -/
   finalIr : Option Json
   /-- R3-M1: `payload_id ↦ ℕ subterm` for every atomized nonlinear
-      ℕ product of this extraction (see `Reify.reifyNatAtoms`).
-      Carried here — NOT re-read from the module ref — because
-      parallel theorem elaboration can reset the ref between the
-      reify and the closer. -/
+      ℕ product of this extraction — the snapshot of this call's
+      per-call accumulator (`Reify.ReifyAcc.natAtoms`; the module
+      ref this once cited was deleted at C4 ROUND 3 — accumulation
+      itself is per-call now, so nothing can reset it between the
+      reify and the closer). -/
   natAtoms : Array (String × Expr) := #[]
   /-- R3-M3: `constant name ↦ (const Expr, ℕ value)` for every
       numeral-body definition this extraction documented in
@@ -3908,6 +3909,39 @@ def evalSpecGateTest : Tactic := fun stx => do
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
 
+/-- TEST-ONLY tactic: the DETERMINISTIC pin for the per-call
+    accumulator fix (C4 ROUND 4 finding 1). Calls `ReifyAcc.fresh`
+    twice, pushes a marker entry into the first accumulator, and
+    asserts (a) the second is empty and (b) the first still holds
+    its entry. Under any re-sharing — a singleton `fresh`, or fresh
+    refs replaced by cleared module refs (the exact mutation ROUND 4
+    used) — one of the two assertions fails on every run, no
+    parallelism required. The stress herd in `Test/TacticStress.lean`
+    is NOT the pin: it exercises concurrent per-call accumulators
+    under real async elaboration, and its measured pre-fix catch
+    rate was 0/30 builds (its `buildIR` windows are ~1.5 ms; the
+    demo file's raced because each window spans a live solver round
+    trip). -/
+syntax (name := reifyAccIsolationTest) "reify_acc_isolation_test" : tactic
+
+@[tactic reifyAccIsolationTest]
+def evalReifyAccIsolationTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_acc_isolation_test) =>
+    let a ← ReifyAcc.fresh
+    a.natAtoms.modify (·.push ("_pb_isolation_marker", Lean.mkConst ``Nat))
+    let b ← ReifyAcc.fresh
+    unless (← b.natAtoms.get).isEmpty do
+      throwError "reify_acc_isolation_test: a fresh accumulator is \
+        NOT empty ({(← b.natAtoms.get).map (·.1)}) — ReifyAcc.fresh \
+        is sharing state"
+    unless (← a.natAtoms.get).size == 1 do
+      throwError "reify_acc_isolation_test: the first accumulator \
+        lost its entry (size {(← a.natAtoms.get).size}) — a later \
+        fresh cleared shared refs"
+    evalTactic (← `(tactic| trivial))
+  | _ => throwError "reify_acc_isolation_test: malformed invocation"
+
 /-- TEST-ONLY tactic pinning `constOnlyInValuePositions` in BOTH
     directions, deterministically (C4 ROUND 3 Med 1: the end-to-end
     `PBModP` negative proved vacuous — it fails under any closer
@@ -3939,26 +3973,24 @@ def evalTypePosGateTest : Tactic := fun stx => do
     evalTactic (← `(tactic| trivial))
   | _ => throwError "type_pos_gate_test: malformed invocation"
 
-/-- TEST-ONLY tactic pinning the per-call reify accumulator
-    (C4 ROUND 3 finding 1): runs the REAL `Reify.buildIR` on the
-    goal — no dispatch, no solver — and asserts the returned atom
-    and numeral-def tables have exactly the expected sizes. Under
-    the pre-fix module-level refs, concurrent declaration
-    elaboration (v4.32 default) interleaved resets and pushes
-    across goals, so a file of many such declarations trips the
-    assertion (or `buildIR` itself dies with `unsupported_symbol`)
-    with high probability per build; with a fresh `ReifyAcc` per
-    call the sizes are deterministic. This is a PROBABILISTIC
-    tripwire by nature — one build catches a regression with high
-    likelihood, not certainty (`Test/TacticStress.lean` is the
-    herd). The goal is then left for the caller's closing tactic. -/
+/-- TEST-ONLY tactic used by the `Test/TacticStress.lean` herd:
+    runs the REAL `Reify.buildIR` on the goal — no dispatch, no
+    solver — and asserts the returned atom and numeral-def tables
+    have exactly the expected sizes. HONEST ROLE (C4 ROUND 4
+    finding 1): the herd EXERCISES concurrent per-call accumulators
+    under v4.32's async elaboration of named theorems; it is NOT a
+    reliable regression catcher — measured pre-fix catch rate 0/30
+    builds, because a dispatch-free `buildIR` window is ~1.5 ms
+    (the demo file raced because its windows span live solver round
+    trips). The deterministic regression pin is
+    `reify_acc_isolation_test` above. -/
 syntax (name := reifyStressTest) "reify_stress_test" num num : tactic
 
 @[tactic reifyStressTest]
 def evalReifyStressTest : Tactic := fun stx => do
   match stx with
   | `(tactic| reify_stress_test $nAtoms $nDefs) =>
-    let (_ir, atoms, defs, _intAtoms) ← Reify.buildIR (← getMainGoal)
+    let (_ir, atoms, defs, _skippedLocals) ← Reify.buildIR (← getMainGoal)
     unless atoms.size == nAtoms.getNat do
       throwError "reify_stress_test: expected {nAtoms.getNat} ℕ \
         atom(s), got {atoms.size} ({atoms.map (·.1)}) — cross-goal \

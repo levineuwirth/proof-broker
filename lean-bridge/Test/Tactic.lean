@@ -2392,6 +2392,11 @@ example : True := by trace_guard_test def_unfold_ours
 def PBGateC : Nat := 41
 example : True := by type_pos_gate_test PBGateC
 
+/-- Deterministic pin for the per-call reify accumulators (C4
+    ROUND 4 finding 1): red on every run under any re-sharing of
+    `ReifyAcc.fresh`, no parallelism required. -/
+example : True := by reify_acc_isolation_test
+
 /-- An applied unfold of a FOREIGN symbol → fail closed. -/
 example : True := by
   fail_if_success trace_guard_test def_unfold_foreign
