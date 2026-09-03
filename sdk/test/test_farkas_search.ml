@@ -234,13 +234,17 @@ let test_bound_zero_finds_nothing () =
     Alcotest.fail (Printf.sprintf "expected Search_exhausted, got %s"
                      (Farkas_search.kind_of_error e))
 
-(** [k] mutually satisfiable Le hypotheses [xi <= i] with goal
-    [x0 <= 100] — every input Farkas-compiles, no witness exists, so
-    an uncapped search would enumerate the whole 4^(k+1) space (the
-    C4 ROUND 1 OOM shape: 13 inputs materialized 4.7GB, 15 inputs
-    76GB). *)
+(** [k] Le hypotheses [xi <= i] with goal [y <= 100] over a FRESH
+    [y] no hypothesis mentions — every input Farkas-compiles and no
+    witness exists (nothing cancels [y] in [neg_goal], so no
+    combination is a constant), so a search that runs must sweep the
+    whole 4^(k+1) space. The first version of this helper bounded
+    [x0] instead, which made the IR REFUTABLE (h0 + neg_goal, both
+    coefficient 1) and the cap test's stated rationale false — C4
+    ROUND 2 finding 4(b). *)
 let many_le_ir (k : int) : Ir.t =
   let hundred : Ir.shell_term = Num_lit { value = "100"; ty = "Int" } in
+  let y : Ir.shell_term = Var { name = "y" } in
   let var i : Ir.shell_term = Var { name = Printf.sprintf "x%d" i } in
   let hyps = List.init k (fun i -> ({
     name = Printf.sprintf "h%d" i;
@@ -248,32 +252,100 @@ let many_le_ir (k : int) : Ir.t =
                   args = [ var i;
                            Num_lit { value = string_of_int i; ty = "Int" } ] };
   } : Ir.hypothesis)) in
-  let fvs = List.init k (fun i ->
-    ({ name = Printf.sprintf "x%d" i; ty = "Int" } : Ir.free_var)) in
+  let fvs =
+    ({ name = "y"; ty = "Int" } : Ir.free_var)
+    :: List.init k (fun i ->
+        ({ name = Printf.sprintf "x%d" i; ty = "Int" } : Ir.free_var)) in
   mk_ir ~free_vars:fvs ~hypotheses:hyps
-    (App { symbol = "LE.le"; type_args = []; args = [ var 0; hundred ] })
+    (App { symbol = "LE.le"; type_args = []; args = [ y; hundred ] })
 
-(** The C4 ROUND 1 regression: 13 Farkas-compilable inputs must come
-    back immediately with the cap error — never by enumerating (the
-    materialized product was 4.7GB at this size) and never by
-    streaming through 67M candidates either. Wall-clock bounded to
-    catch a regression to enumeration even if its memory is fixed. *)
+(** The C4 ROUND 1 regression: 13 Farkas-compilable inputs (4^13 ≈
+    67M candidates, above the cap) must come back immediately with
+    the cap error — never by enumerating. The IR is irrefutable
+    (fresh-variable goal), so an uncapped search would genuinely
+    sweep the space; CPU-bounded to catch a regression to
+    enumeration even if its memory stays fixed. *)
 let test_large_input_space_is_capped () =
   let ir = many_le_ir 12 (* + neg_goal = 13 inputs *) in
   let t0 = Sys.time () in
   let result = Farkas_search.try_close ir in
   let dt = Sys.time () -. t0 in
   (match result with
-   | Error (Search_space_exceeded n) ->
-     Alcotest.(check bool) "reported size exceeds the cap"
-       true (n > 100_000)
-   | Ok _ -> Alcotest.fail "13-input unsatisfiable-shape found a witness"
+   | Error (Search_space_exceeded { saturated; range_lengths }) ->
+     Alcotest.(check bool) "saturating size exceeds the cap"
+       true (saturated > Farkas_search.max_candidates);
+     Alcotest.(check int) "one range length per input"
+       13 (List.length range_lengths)
+   | Ok w -> Alcotest.fail (Printf.sprintf
+       "irrefutable 13-input shape found a witness: %s"
+       (Yojson.Safe.to_string w))
    | Error e ->
      Alcotest.fail (Printf.sprintf "expected search_space_exceeded, got %s"
                       (Farkas_search.kind_of_error e)));
   Alcotest.(check bool)
     (Printf.sprintf "returned in %.3fs CPU (must be << 1s: capped, not enumerated)" dt)
     true (dt < 1.0)
+
+(** The STREAMING half of the C4 fix, pinned by memory (C4 ROUND 2
+    finding 4(a): restoring materialization with the cap kept left
+    every prior test green). A 10-input irrefutable IR (4^10 ≈ 1M
+    candidates, under the cap) forces a FULL sweep; streamed, the
+    live heap stays O(inputs), where the pre-fix materialized
+    product at this size is ~30M words (~240MB) and must move the
+    GC's high-water mark. *)
+let test_full_sweep_is_streamed () =
+  let ir = many_le_ir 9 (* + neg_goal = 10 inputs, 4^10 space *) in
+  Gc.compact ();
+  let before = (Gc.quick_stat ()).top_heap_words in
+  let t0 = Sys.time () in
+  (match Farkas_search.try_close ir with
+   | Error Search_exhausted -> ()
+   | Ok w -> Alcotest.fail (Printf.sprintf
+       "irrefutable 10-input shape found a witness: %s"
+       (Yojson.Safe.to_string w))
+   | Error e ->
+     Alcotest.fail (Printf.sprintf
+       "expected a full-sweep Search_exhausted, got %s"
+       (Farkas_search.kind_of_error e)));
+  let dt = Sys.time () -. t0 in
+  let grown = (Gc.quick_stat ()).top_heap_words - before in
+  Alcotest.(check bool)
+    (Printf.sprintf "heap high-water grew %d words (materialization needs ~30M)" grown)
+    true (grown < 4_000_000);
+  Alcotest.(check bool)
+    (Printf.sprintf "swept 4^10 in %.3fs CPU" dt)
+    true (dt < 10.0)
+
+(** Reference oracle for the enumeration ORDER (C4 ROUND 2 finding
+    4(c): the order-equivalence claim had no in-repo artifact). This
+    is the pre-fix [cartesian], verbatim; the streamed search must
+    try assignments in exactly this sequence, so the first-hit
+    witness can never change. *)
+let cartesian_oracle (ranges : int list list) : int list list =
+  List.fold_right (fun r acc ->
+    List.concat_map (fun c -> List.map (fun t -> c :: t) acc) r)
+    ranges
+    [ [] ]
+
+let test_streaming_order_matches_cartesian () =
+  let collect ranges =
+    let acc = ref [] in
+    ignore (Farkas_search.search_first ranges
+              ~try_coefs:(fun coefs -> acc := coefs :: !acc; None));
+    List.rev !acc
+  in
+  let cases = [
+    [];
+    [ [ 0; 1; 2; 3 ] ];
+    [ [ -3; -2; -1; 0; 1; 2; 3 ]; [ 0; 1; 2; 3 ]; [ 0; 1; 2; 3 ] ];
+    List.init 8 (fun _ -> [ 0; 1; 2; 3 ]);  (* 4^8 = 65536, exhaustive *)
+  ] in
+  List.iter (fun ranges ->
+    let a = cartesian_oracle ranges and b = collect ranges in
+    Alcotest.(check bool)
+      (Printf.sprintf "order identical over %d candidates" (List.length a))
+      true (a = b))
+    cases
 
 (** Streaming preserved the materialized product's order (first
     range slowest), so the witness found on the example1 shape is
@@ -309,6 +381,10 @@ let () =
         `Quick test_search_uses_effective_fragment_on_real_typed_lia_label;
       Alcotest.test_case "13-input space is capped, not enumerated"
         `Quick test_large_input_space_is_capped;
+      Alcotest.test_case "full sweep under the cap is streamed (memory pin)"
+        `Quick test_full_sweep_is_streamed;
+      Alcotest.test_case "streaming order == cartesian oracle (exhaustive to 4^8)"
+        `Quick test_streaming_order_matches_cartesian;
       Alcotest.test_case "streaming preserves the first-hit witness"
         `Quick test_streaming_preserves_witness;
     ];

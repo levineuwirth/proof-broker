@@ -32,16 +32,24 @@
     general LP solver. Cases beyond its reach fall through to the
     oracle as before. *)
 
-(** Hard cap on the coefficient-space size the search will attempt —
-    the module's stated design envelope ("well under 100k
-    candidates"). Beyond it the search is SKIPPED, not attempted:
-    the space grows 4× per additional inequality input (7× per
-    equality), so a ~13-input IR already means 4^13 ≈ 67M
-    candidates, and enumerating them — even streamed — costs a
-    minute of CPU for a fallback rescue path. Callers treat any
-    [Error _] as fall-through to the Tier 0 oracle, so exceeding
-    the cap degrades tier, never availability. *)
-let max_candidates = 100_000
+(** Hard cap on the coefficient-space size the search will attempt.
+    Beyond it the search is SKIPPED, not attempted; callers treat
+    any [Error _] as fall-through to the Tier 0 oracle, so exceeding
+    the cap degrades tier, never availability.
+
+    Since the enumeration STREAMS (see [search_first]), this is a
+    TIME budget, not a memory one — live memory is O(inputs) at any
+    size. The value is measured, not inherited (C4 ROUND 2 (a),
+    2026-09-03, 16-core/58GB machine, witness-free k-input IRs so
+    the whole space is swept): 4^10 = 1,048,576 candidates cost
+    0.77s CPU / 1.3MB live; the D1/70 demo obligation's space is
+    exactly that, and 2,000,000 admits it while keeping worst-case
+    exhaustion under ~1s on this fallback path (which only runs
+    after solver proof extraction has already failed). The next
+    step up (4^11 ≈ 4.2M, ~3s) buys no known goal. Anyone changing
+    this constant should re-derive the sweep cost, not carry the
+    number forward. *)
+let max_candidates = 2_000_000
 
 type input = {
   name : string;
@@ -51,7 +59,7 @@ type input = {
 type error =
   | No_compilable_inputs
   | Search_exhausted
-  | Search_space_exceeded of int
+  | Search_space_exceeded of { saturated : int; range_lengths : int list }
 
 let kind_of_error = function
   | No_compilable_inputs -> "no_compilable_inputs"
@@ -63,11 +71,18 @@ let detail_of_error = function
     "no IR hypothesis (or neg_goal) compiled to a Farkas-amenable form"
   | Search_exhausted ->
     "no Farkas witness found within the bounded coefficient search"
-  | Search_space_exceeded n ->
+  | Search_space_exceeded { saturated = _; range_lengths } ->
+    (* Exact size in float for the MESSAGE only (the saturating int
+       cannot tell "just over" from "astronomically over" — C4
+       ROUND 2 finding 5; float is exact up to 2^53 and the order of
+       magnitude is what the reader needs beyond that). *)
+    let exact =
+      List.fold_left (fun acc l -> acc *. float_of_int l) 1. range_lengths
+    in
     Printf.sprintf
-      "coefficient space has at least %d candidates, above the %d cap \
-       — search skipped (fall through to the oracle tier; the size is \
-       a saturating lower bound)" n max_candidates
+      "coefficient space is %.4g candidates over %d inputs, above \
+       the %d cap — search skipped (fall through to the oracle tier)"
+      exact (List.length range_lengths) max_candidates
 
 (** Compile every hypothesis plus [neg_goal] into [Farkas.compiled]
     form. Hypotheses that fail to compile (non-linear, unsupported
@@ -197,7 +212,10 @@ let try_close ?(bound = 3) (ir : Ir.t) : (Yojson.Safe.t, error) result =
     let lra = String.equal (Farkas.effective_fragment ir) "LRA" in
     let ranges = List.map (range_for ~bound) inputs in
     let size = space_size ranges in
-    if size > max_candidates then Error (Search_space_exceeded size)
+    if size > max_candidates then
+      Error (Search_space_exceeded
+               { saturated = size;
+                 range_lengths = List.map List.length ranges })
     else
       match
         search_first ranges
