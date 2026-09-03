@@ -1324,6 +1324,88 @@ blocks this port; only the D3 consumer trigger does.
 
 ---
 
+### 5.7 Decision record — downstream consumability and the verinf obligation shapes (2026-09-03, R4)
+
+**Context.** R4's target is verinf's bracket spike
+(`lean/BracketSpike/BracketSpike/Bracket.lean`, branch
+`lean-bracket-spike`), consumed from a separate Lake project.
+
+**Decisions.**
+
+1. **Manifest discovery is package-anchored.** `defaultManifestDir`
+   keeps `$PROOF_BROKER_EXAMPLES_DIR` (verbatim, no probe) and
+   `<cwd>/../examples`, then falls back to a directory derived from
+   where `ProofBroker.Tactic.olean` was loaded from. The cwd
+   candidate is stepped over only when it holds none of the four
+   manifest names — i.e. exactly where the previous code raised "no
+   manifests found". Without this, every downstream call died unless
+   the user exported the variable by hand.
+
+2. **`--load-dynlib` paths are absolute**, computed from Lake's
+   `__dir__`, behind a named `proofBrokerLeanArgs`. The previous
+   cwd-relative spelling only resolved when the build ran from
+   `lean-bridge/`. A downstream project cannot import a lakefile
+   definition, so `lean-bridge/CONSUMERS.md` carries the
+   copy-pasteable block; the two are kept in step by hand.
+
+3. **Closed ℕ arithmetic folds to one numeral** (`natClosedNumeral?`,
+   bounds `natFoldMaxExp = 256`, `natFoldMaxBits = 4096`).
+   Recognizing only `OfNat` literals made `2^16 * 2^16` atomize into
+   an unbounded `Opaque` atom, and made `Zmax * 2^16` a fake-opaque
+   atom although it is linear — the "Opaque atom that is not
+   actually opaque" the R4 attack surface names. A closed power that
+   leaves the bounds is a named error, not an atom.
+
+4. **Atomization extends to applied functions and to Int.** An
+   applied ℕ-valued function (`x.val`) and an Int term with no
+   fragment reading (a projection at an undeclarable argument type,
+   a nonlinear product) become `Opaque` atoms. Sound for any meaning
+   of the term — replacing a subterm by a fresh constant generalizes
+   the goal — at a cost in completeness. The R3-M1 ℕ-truncation
+   contract is preserved inside atoms on both sides
+   (`natAtomForbiddenOp?`, and its type-aware Int sibling
+   `natOpInsideIntAtom?`).
+
+5. **Locals are alpha-renamed to SMT-safe names before reification.**
+   Primed names are idiomatic Lean and pervasive in the target
+   (`c'`, `h1'`); the serializer refuses them. Renaming on the GOAL
+   rather than mapping names inside the IR keeps one name for one
+   thing across reifier, certificate, `fvarOfName` and walker
+   context, so no inverse map has to be trusted at lift time.
+
+6. **A hypothesis outside the fragment is dropped, not fatal**, and
+   recorded in `skippedLocals` (reported by `proof_broker?`).
+   Dropping only weakens the assumption set. The GOAL is never
+   dropped, so the ℕ-truncation fail-fast still applies to
+   everything the certificate reads. This CHANGED shipped behaviour:
+   a nested-ℕ-∀ hypothesis used to abort the tactic.
+
+7. **Def-unfold inversion is a defeq `change`, restricted to value
+   positions.** `rewrite` needs a motive, which does not typecheck
+   when the constant also indexes a type in the goal
+   (`x.val + z.val < P` with `x : ZMod P`). And rewriting occurrences
+   inside a type is a kernel bomb: `ZMod P` → `ZMod <2^64-scale
+   numeral>` makes the next defeq check reduce `Nat.rec` at that
+   literal. `constOnlyInValuePositions` gates both the goal (named
+   error) and the hypothesis swaps (skip).
+
+**DEFERRED — Rocq port.** None of items 3–7 has a Rocq counterpart.
+R4's ROADMAP row says "Rocq port: none" because D3 is Lean-only, but
+the two reifiers have now diverged further than that row anticipated.
+Trigger to revisit: any Rocq-side consumer of the ℕ→ℤ path meeting
+a closed-numeral product, an applied-function atom, or a primed
+identifier.
+
+**OPEN — unbounded allocation on the cvc4 path.** Seven ℕ hypotheses
+of the spike's shape dispatched to cvc4 drive the in-process SDK to
+unbounded allocation (57 GB observed; OOM-killed). Not the literal
+size, not the definition, not Mathlib, not the closer: `cvc5` and
+`z3` close the same goal instantly and the `cvc4` process is never
+spawned. Every six-hypothesis subset is fine. cvc4 is in the default
+adapter list, so this is reachable from any user goal of this shape.
+Reproduction in `proof-broker-demo/reference/h/m_full.lean`.
+Unresolved at the R4 checkpoint; see `R4-REVIEW.local.md`.
+
 ## 6. References
 
 - **Spec v1.0:** `proof-brokerage-spec-v1.pdf`. The architectural
