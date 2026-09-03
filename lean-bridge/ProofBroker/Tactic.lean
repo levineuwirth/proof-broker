@@ -191,49 +191,45 @@ structure ReifierExt where
 
 initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
 
-/-- Applied global constants encountered during reification that
-    are not connectives/quantifiers (e.g. `Function.comp`) — the
-    higher-order/FOL path treats them as uninterpreted symbols and
-    must declare them as IR `freeVars` so the TPTP serializer has a
-    monomorphic type. Threaded as a module ref because `reifyTerm`
-    is a standalone `def`; `buildIR` clears it on entry, folds the
-    collected `(name, typeRef)` pairs into `freeVars` on exit, and
-    nothing else touches it (single-goal reification is
-    sequential). -/
-initialize reifyConsts : IO.Ref (Array (String × TypeRef)) ← IO.mkRef #[]
+/-- Per-reification accumulator state (C4 ROUND 3 finding 1). One
+    FRESH instance is created by each `buildIR` call and passed down
+    the reify family explicitly, so concurrent declaration
+    elaborations (Lean v4.32 elaborates a module's declarations in
+    parallel by default) cannot interleave their tables. This
+    replaces four module-level `IO.Ref`s whose stated invariant —
+    "buildIR clears it on entry, single-goal reification is
+    sequential" — parallel elaboration falsified: the demo's
+    headline file failed 10/33 runs with `unsupported_symbol` when
+    two declarations' reifications raced the shared tables. A
+    module-level ref remains correct ONLY for set-once registration
+    (`reifierExt` above: written at module initialization, read-only
+    during elaboration).
 
-/-- R3-M1: nonlinear-ℕ atomization table, `payload_id ↦ the ℕ
-    subterm it stands for` (e.g. `Zmax * zhigh`). Filled by
-    `Reify.reifyNatTerm` when a product with no literal factor (or a
-    non-foldable power) is atomized to an IR `Opaque` node; consumed
-    by `buildIR` (payloads + nonneg hypotheses) and by the ℕ→ℤ lift
-    (the walker context maps the id back to `↑<subterm>`). Same
-    threading discipline as `reifyConsts`: `buildIR` clears it on
-    entry, single-goal reification is sequential. -/
-initialize reifyNatAtoms : IO.Ref (Array (String × Expr)) ← IO.mkRef #[]
+    Fields:
+    * `consts` — applied global constants that are not
+      connectives/quantifiers (e.g. `Function.comp`); the HO/FOL
+      path declares them as IR `freeVars` so the TPTP serializer
+      has a monomorphic type.
+    * `natAtoms` — R3-M1 nonlinear-ℕ atomization table,
+      `payload_id ↦ ℕ subterm` (e.g. `Zmax * zhigh`); consumed for
+      payloads + nonneg hypotheses and by the ℕ→ℤ lift's walker
+      context.
+    * `intAtoms` — R4.2 Int-side atomization table; like `natAtoms`
+      but no nonneg hypothesis (an Int atom is just an
+      uninterpreted Int constant).
+    * `natDefs` — R3-M3 numeral-definition table,
+      `constant name ↦ (const Expr, ℕ value)`; drives the
+      definition-unfolding pass and its `Eq.mpr` inversion. -/
+structure ReifyAcc where
+  consts : IO.Ref (Array (String × TypeRef))
+  natAtoms : IO.Ref (Array (String × Expr))
+  intAtoms : IO.Ref (Array (String × Expr))
+  natDefs : IO.Ref (Array (String × Expr × Nat))
 
-/-- R4.2: Int-side atomization table, `payload_id ↦ the Int
-    subterm it stands for` (e.g. `R.x i`, `cert.TA z`, a nonlinear
-    `↑Zmax * zhigh`). The ℤ analogue of `reifyNatAtoms`: filled by
-    `Reify.reifyTerm` when a term has no reading inside the LIA/UF
-    fragment but is Int-valued, consumed by `buildIR` (payloads).
-    Unlike a ℕ atom it carries NO nonneg hypothesis — an Int atom is
-    just an uninterpreted Int constant. Same threading discipline:
-    `buildIR` clears it on entry, single-goal reification is
-    sequential. -/
-initialize reifyIntAtoms : IO.Ref (Array (String × Expr)) ← IO.mkRef #[]
-
-/-- R3-M3: numeral-definition table, `constant name ↦ (its const
-    Expr, its ℕ value)`. Filled by `Reify.reifyNatTerm` when a
-    non-recursive constant with a numeral body is reified as an
-    opaque IR leaf plus a `defined_function` metadata entry; the
-    dispatch pipeline's definition-unfolding pass replaces the leaf
-    by the numeral (trace entry recorded), and the term-mode lift
-    inverts the unfold by `Eq.mpr` over the (kernel-defeq)
-    unfolding equation. Same threading discipline as
-    `reifyNatAtoms`: `buildIR` clears it on entry and returns the
-    table on the extraction path. -/
-initialize reifyNatDefs : IO.Ref (Array (String × Expr × Nat)) ← IO.mkRef #[]
+/-- A fresh, empty accumulator — one per `buildIR` call. -/
+def ReifyAcc.fresh : BaseIO ReifyAcc := do
+  return { consts := ← IO.mkRef #[], natAtoms := ← IO.mkRef #[],
+           intAtoms := ← IO.mkRef #[], natDefs := ← IO.mkRef #[] }
 
 /- ============================================================
    Reifier: Lean Expr → ProofBroker IR ShellTerm
@@ -510,17 +506,17 @@ def throwNatFoldBounds (e : Expr) : MetaM α :=
     `_pb_atom_<k>` and record it. The shell is the atom under the
     cast, like any ℕ atom. Refuses atoms hiding sub/div/mod (see
     `natAtomForbiddenOp?`). -/
-def atomizeNatTerm (e : Expr) : MetaM ShellTerm := do
+def atomizeNatTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
   if let some op := natAtomForbiddenOp? e then
     throwError "proof_broker: ℕ {op} inside a nonlinear subterm \
       ({e}) — the ℕ→ℤ specialization refuses truncated/rounding ℕ \
       arithmetic even under atomization; restate without it"
-  let atoms ← reifyNatAtoms.get
+  let atoms ← acc.natAtoms.get
   let id ← match atoms.find? (fun (_, e') => e' == e) with
     | some (id, _) => pure id
     | none =>
       let id := s!"_pb_atom_{atoms.size}"
-      reifyNatAtoms.modify (·.push (id, e))
+      acc.natAtoms.modify (·.push (id, e))
       pure id
   return .app natCastSymbol [] [.opaque_ id]
 
@@ -544,7 +540,7 @@ def matchNatNumeralDef? (e : Expr) : MetaM (Option (Name × Nat)) := do
     pass replaces, documented in `definitional_metadata`). ℕ
     subtraction / division / modulo fail fast — never cast
     naively. -/
-partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
+partial def reifyNatTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
   -- Closed ℕ arithmetic collapses to one Int numeral before any
   -- structural walk: `2^16 * 2^16` is the numeral 4294967296 in the
   -- image, not a product of two atoms (`natClosedNumeral?`).
@@ -560,7 +556,7 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
     unless α.isConstOf ``Nat do
       throwError "proof_broker: ℕ reifier reached + at {α}"
-    return .app "HAdd.hAdd" [] [← reifyNatTerm a, ← reifyNatTerm b]
+    return .app "HAdd.hAdd" [] [← reifyNatTerm acc a, ← reifyNatTerm acc b]
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
     unless α.isConstOf ``Nat do
       throwError "proof_broker: ℕ reifier reached * at {α}"
@@ -574,13 +570,13 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
     -- calls returning none, and must be the named bounds refusal,
     -- not a silent atom (C4 ROUND 1 finding 5).
     if let some k := natClosedNumeral? a then
-      return .app "HMul.hMul" [] [.numLit (toString k) "Int", ← reifyNatTerm b]
+      return .app "HMul.hMul" [] [.numLit (toString k) "Int", ← reifyNatTerm acc b]
     else if let some k := natClosedNumeral? b then
-      return .app "HMul.hMul" [] [← reifyNatTerm a, .numLit (toString k) "Int"]
+      return .app "HMul.hMul" [] [← reifyNatTerm acc a, .numLit (toString k) "Int"]
     else if natClosedShape e then
       throwNatFoldBounds e
     else
-      atomizeNatTerm e
+      atomizeNatTerm acc e
   | (``HPow.hPow, #[_, _, _, _, a, b]) =>
     -- A closed power is already folded at the head of
     -- `reifyNatTerm`; reaching here with a closed base and a
@@ -600,7 +596,7 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
        -- the term being any less closed. Same named refusal, never
        -- a silent atom (C4 ROUND 1 finding 5).
        if natClosedShape e then throwNatFoldBounds e
-       else atomizeNatTerm e)
+       else atomizeNatTerm acc e)
   | (``HSub.hSub, #[_, _, _, _, _, _]) =>
     throwError "proof_broker: ℕ subtraction is truncated (`a - b` is \
       not the ℤ difference), so the ℕ→ℤ specialization refuses it \
@@ -618,9 +614,9 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
     -- symbol and dispatch fails — never a silent misreading.
     if let some (c, n) ← matchNatNumeralDef? e then
       let name := c.toString
-      let defs ← reifyNatDefs.get
+      let defs ← acc.natDefs.get
       unless defs.any (·.1 == name) do
-        reifyNatDefs.modify (·.push (name, e, n))
+        acc.natDefs.modify (·.push (name, e, n))
       return .app name [] []
     -- R4.2: an APPLIED ℕ-valued function the fragment has no
     -- arithmetic reading for — `x.val` (`ZMod.val`), `f i`,
@@ -645,7 +641,7 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
     -- `ZMod.val`'s own specification will simply not close.
     let fn := e.getAppFn
     if (fn.isConst || fn.isFVar) && e.getAppNumArgs > 0 then
-      return ← atomizeNatTerm e
+      return ← atomizeNatTerm acc e
     throwError "proof_broker: unsupported ℕ term {e} (ℕ→ℤ scope: +, \
       * with a closed-numeral factor, ^ with a closed base and a \
       literal exponent, closed arithmetic, variables, numeral-body \
@@ -709,21 +705,21 @@ private partial def natOpInsideIntAtom? (e : Expr) : Option Name :=
     atomizing them would be sound but would silently accept exactly
     the goals most likely to be wrong about ℕ truncation, against
     the R3-M1 contract (C3a ROUND 1 finding 5). -/
-def atomizeIntTerm (e : Expr) : MetaM ShellTerm := do
+def atomizeIntTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
   if let some op := natOpInsideIntAtom? e then
     throwError "proof_broker: ℕ {op} inside an atomized Int subterm \
       ({e}) — the specialization refuses truncated/rounding ℕ \
       arithmetic even under atomization; restate without it"
-  let atoms ← reifyIntAtoms.get
+  let atoms ← acc.intAtoms.get
   let id ← match atoms.find? (fun (_, e') => e' == e) with
     | some (id, _) => pure id
     | none =>
       let id := s!"_pb_iatom_{atoms.size}"
-      reifyIntAtoms.modify (·.push (id, e))
+      acc.intAtoms.modify (·.push (id, e))
       pure id
   return .opaque_ id
 
-partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
+partial def reifyTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
   if e.isFVar then
     let lctx ← getLCtx
     let decl := lctx.get! e.fvarId!
@@ -754,14 +750,14 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   -- ignoring the unused proof term — the LIA path never produced
   -- these so behavior there is unchanged.
   if e.isArrow then
-    return .implies (← reifyTerm e.bindingDomain!) (← reifyTerm e.bindingBody!)
+    return .implies (← reifyTerm acc e.bindingDomain!) (← reifyTerm acc e.bindingBody!)
   if e.isForall then
     return ← forallBoundedTelescope e (some 1) fun xs body => do
       let x := xs[0]!
       let decl := (← getLCtx).get! x.fvarId!
       let dom := decl.type
       if ← isProp dom then
-        return .implies (← reifyTerm dom) (← reifyTerm body)
+        return .implies (← reifyTerm acc dom) (← reifyTerm acc body)
       else
         -- R3-M1 scope: a ℕ-sorted quantifier inside a shell has no
         -- ℤ image yet (it would need the bounded-∀ transform); a
@@ -773,7 +769,7 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
             the goal is introduced automatically; nested ℕ \
             quantifiers are not yet translated)"
         let tref ← reifyType dom
-        return .forall_ decl.userName.toString tref (← reifyTerm body)
+        return .forall_ decl.userName.toString tref (← reifyTerm acc body)
   match e.getAppFnArgs with
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
       -- BV vs arithmetic disambiguation: SMT-LIB uses bvadd /
@@ -781,7 +777,7 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       -- the IR carries them under different App symbols. Picked
       -- at reify time from the operand type.
       let sym := if (matchBitVecType? α).isSome then "BV.add" else "HAdd.hAdd"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``HSub.hSub, #[α, _, _, _, a, b]) =>
       -- R3-M1 attack surface: ℕ subtraction is truncated — never
       -- cast naively, never reify as ordinary subtraction.
@@ -790,10 +786,10 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
           is not the ℤ difference); the ℕ→ℤ specialization refuses it \
           — restate without ℕ subtraction"
       let sym := if (matchBitVecType? α).isSome then "BV.sub" else "HSub.hSub"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
       if (matchBitVecType? α).isSome then
-        return .app "BV.mul" [] [← reifyTerm a, ← reifyTerm b]
+        return .app "BV.mul" [] [← reifyTerm acc a, ← reifyTerm acc b]
       -- R4.2: a product with no numeral factor is NONLINEAR. Emitting
       -- it verbatim made cvc5 reject the whole script ("A non-linear
       -- fact was asserted to arithmetic in a linear logic"), so the
@@ -805,69 +801,69 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       -- recognized by the extension, not by `matchIntLiteral?`); the
       -- atom table is rewound first so the discarded sub-reification
       -- leaves no orphan payload entries.
-      let before ← reifyIntAtoms.get
-      let ra ← reifyTerm a
-      let rb ← reifyTerm b
+      let before ← acc.intAtoms.get
+      let ra ← reifyTerm acc a
+      let rb ← reifyTerm acc b
       match ra, rb with
       | .numLit _ _, _ | _, .numLit _ _ =>
         return .app "HMul.hMul" [] [ra, rb]
       | _, _ =>
-        reifyIntAtoms.set before
-        atomizeIntTerm e
+        acc.intAtoms.set before
+        atomizeIntTerm acc e
   | (``Neg.neg, #[_, _, a]) =>
-      return .app "Neg.neg" [] [← reifyTerm a]
+      return .app "Neg.neg" [] [← reifyTerm acc a]
   | (``LE.le, #[α, _, a, b]) =>
       -- R3-M1: ℕ comparisons reify as their ℤ image.
       if α.isConstOf ``Nat then
-        return .app "LE.le" [] [← reifyNatTerm a, ← reifyNatTerm b]
+        return .app "LE.le" [] [← reifyNatTerm acc a, ← reifyNatTerm acc b]
       expectArithCarrier α
       -- Lean's [<=] over BitVec resolves to BitVec.ule (unsigned).
       -- Signed comparisons need [BitVec.sle] written explicitly.
       let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``LT.lt, #[α, _, a, b]) =>
       if α.isConstOf ``Nat then
-        return .app "LT.lt" [] [← reifyNatTerm a, ← reifyNatTerm b]
+        return .app "LT.lt" [] [← reifyNatTerm acc a, ← reifyNatTerm acc b]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``GE.ge, #[α, _, a, b]) =>
       if α.isConstOf ``Nat then
-        return .app "LE.le" [] [← reifyNatTerm b, ← reifyNatTerm a]
+        return .app "LE.le" [] [← reifyNatTerm acc b, ← reifyNatTerm acc a]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
-      return .app sym [] [← reifyTerm b, ← reifyTerm a]
+      return .app sym [] [← reifyTerm acc b, ← reifyTerm acc a]
   | (``GT.gt, #[α, _, a, b]) =>
       if α.isConstOf ``Nat then
-        return .app "LT.lt" [] [← reifyNatTerm b, ← reifyNatTerm a]
+        return .app "LT.lt" [] [← reifyNatTerm acc b, ← reifyNatTerm acc a]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
-      return .app sym [] [← reifyTerm b, ← reifyTerm a]
+      return .app sym [] [← reifyTerm acc b, ← reifyTerm acc a]
   | (``Eq, #[α, a, b]) =>
       -- R3-M1: an equality at ℕ images to an Int equality of the
       -- cast operands.
       if α.isConstOf ``Nat then
-        return .eq "Int" (← reifyNatTerm a) (← reifyNatTerm b)
+        return .eq "Int" (← reifyNatTerm acc a) (← reifyNatTerm acc b)
       let tref ← reifyType α
-      return .eq tref (← reifyTerm a) (← reifyTerm b)
+      return .eq tref (← reifyTerm acc a) (← reifyTerm acc b)
   | (``Ne, #[α, a, b]) =>
       -- `a ≠ b` unfolds to `¬(a = b)`; reify it that way so the
       -- SMT serializer sees the ordinary (not (= a b)) shape
       -- instead of an uninterpreted `Ne` symbol.
       if α.isConstOf ``Nat then
-        return .not_ (.eq "Int" (← reifyNatTerm a) (← reifyNatTerm b))
+        return .not_ (.eq "Int" (← reifyNatTerm acc a) (← reifyNatTerm acc b))
       let tref ← reifyType α
-      return .not_ (.eq tref (← reifyTerm a) (← reifyTerm b))
+      return .not_ (.eq tref (← reifyTerm acc a) (← reifyTerm acc b))
   | (``Nat.cast, #[α, _, a]) | (``NatCast.natCast, #[α, _, a]) =>
       -- R3-M1: an explicit ℕ→ℤ cast in the source (a hand-zify'd
       -- goal) reifies as the operand's ℤ image — same shell the ℕ
       -- reifier produces, so mixed `↑x`-style Int goals join the
       -- specialization path.
-      if α.isConstOf ``Int then reifyNatTerm a
+      if α.isConstOf ``Int then reifyNatTerm acc a
       else throwError "proof_broker: ℕ cast into {α} unsupported \
              (only ↑(ℕ) : ℤ)"
   | (``Int.ofNat, #[a]) =>
-      reifyNatTerm a
+      reifyNatTerm acc a
   | (``Exists, #[α, p]) =>
       -- `∃ x : T, body` is `Exists fun x => body`. Open the
       -- lambda binder as a local so bound occurrences reify as
@@ -884,16 +880,16 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
          let tref ← reifyType α
          withLocalDeclD nm α fun x => do
            let body := (p.bindingBody!).instantiate1 x
-           return .exists_ nm.toString tref (← reifyTerm body)
+           return .exists_ nm.toString tref (← reifyTerm acc body)
        | _ =>
          throwError "proof_broker: unsupported ∃ shape (expected a \
            lambda body): {e}")
   | (``And, #[a, b]) =>
-      return .and_ (← reifyTerm a) (← reifyTerm b)
+      return .and_ (← reifyTerm acc a) (← reifyTerm acc b)
   | (``Or, #[a, b]) =>
-      return .or_ (← reifyTerm a) (← reifyTerm b)
+      return .or_ (← reifyTerm acc a) (← reifyTerm acc b)
   | (``Not, #[a]) =>
-      return .not_ (← reifyTerm a)
+      return .not_ (← reifyTerm acc a)
   | _ =>
       -- UF fallback: the head is a free variable applied to
       -- arguments, with an arrow-typed declaration in scope.
@@ -919,7 +915,7 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
           let argList := e.getAppArgs.toList
           if ← argTypesDeclarable argList then
             let fname := decl.userName.toString
-            let reifiedArgs ← argList.mapM reifyTerm
+            let reifiedArgs ← argList.mapM (reifyTerm acc)
             return .app s!"UF.{fname}" [] reifiedArgs
       -- Higher-order / FOL: an applied (or nullary) global
       -- constant that isn't a connective — e.g. `Function.comp`.
@@ -946,8 +942,8 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
             return parenIfArrow ta (← reifyType ta))
           let resTy ← inferType e
           let tref := String.intercalate "->" (argTyParts ++ [← reifyType resTy])
-          reifyConsts.modify (·.push (cname, tref))
-          let reifiedArgs ← explicit.toList.mapM reifyTerm
+          acc.consts.modify (·.push (cname, tref))
+          let reifiedArgs ← explicit.toList.mapM (reifyTerm acc)
           return .app cname [] reifiedArgs
       -- R4.2: last resort — an Int-VALUED term with a constant or
       -- free-variable head becomes an uninterpreted Int atom. The
@@ -956,7 +952,7 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       -- the fragment still reports the fragment error rather than
       -- silently degrading.
       if (fn.isConst || fn.isFVar) && (← inferType e).isConstOf ``Int then
-        return ← atomizeIntTerm e
+        return ← atomizeIntTerm acc e
       throwError "proof_broker: unsupported expression: {e}"
 
 /-- True iff any subterm carries a `BitVec(N)` type tag, on a
@@ -1135,12 +1131,9 @@ def buildIR (mvarId : MVarId)
   -- goal and each hypothesis below) pushes any non-connective
   -- global constant it treats as uninterpreted (e.g.
   -- `Function.comp`) so it can be declared as a `freeVar`.
-  reifyConsts.set #[]
-  reifyNatAtoms.set #[]
-  reifyIntAtoms.set #[]
-  reifyNatDefs.set #[]
+  let acc ← ReifyAcc.fresh
   let goalType ← Lean.instantiateMVars (← mvarId.getType)
-  let goalShell ← reifyTerm goalType
+  let goalShell ← reifyTerm acc goalType
   let mut freeVars : List FreeVar := []
   let mut hypotheses : List IR.Hypothesis := []
   -- (local name, why it was not reified) — see the docstring.
@@ -1180,7 +1173,7 @@ def buildIR (mvarId : MVarId)
           polyVar := some (decl.fvarId, info)
       continue
     if ← isProp ty then
-      match ← observing? (reifyTerm ty) with
+      match ← observing? (reifyTerm acc ty) with
       | some shell =>
         hypotheses := hypotheses ++ [{ name := decl.userName.toString, shell }]
       | none =>
@@ -1256,7 +1249,7 @@ def buildIR (mvarId : MVarId)
   -- for every applied symbol. Skip names already contributed by
   -- the LCtx walk (a constant shadowing a local is not expected,
   -- but dedup keeps the declaration set well-formed).
-  for (cname, ctref) in (← reifyConsts.get) do
+  for (cname, ctref) in (← acc.consts.get) do
     if !(freeVars.any (fun fv => fv.name == cname)) then
       freeVars := freeVars ++ [{ name := cname, ty := ctref }]
   let bvInTerms :=
@@ -1279,8 +1272,8 @@ def buildIR (mvarId : MVarId)
   -- M1 scope: the ℕ→ℤ specialization does not compose with UF / BV /
   -- HO / extension carriers yet — mixing is a named failure, not a
   -- silent mistranslation.
-  let natAtoms ← reifyNatAtoms.get
-  let natDefs ← reifyNatDefs.get
+  let natAtoms ← acc.natAtoms.get
+  let natDefs ← acc.natDefs.get
   let natMode := sawNat || !natAtoms.isEmpty
   if natMode && (sawBV || bvInTerms || sawUF || ufInTerms || isHO
                  || sawExtensionType) then
@@ -1407,7 +1400,7 @@ def buildIR (mvarId : MVarId)
         enableDefinitionUnfolding := some ["numeral_definition"],
         disablePasses := none },
       budget := none }
-  let intAtoms ← reifyIntAtoms.get
+  let intAtoms ← acc.intAtoms.get
   let payloads ←
     if natAtoms.isEmpty && intAtoms.isEmpty then pure none
     else do
@@ -3911,6 +3904,36 @@ def evalSpecGateTest : Tactic := fun stx => do
     checkCertSpecializations cert specMode
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
+
+/-- TEST-ONLY tactic pinning the per-call reify accumulator
+    (C4 ROUND 3 finding 1): runs the REAL `Reify.buildIR` on the
+    goal — no dispatch, no solver — and asserts the returned atom
+    and numeral-def tables have exactly the expected sizes. Under
+    the pre-fix module-level refs, concurrent declaration
+    elaboration (v4.32 default) interleaved resets and pushes
+    across goals, so a file of many such declarations trips the
+    assertion (or `buildIR` itself dies with `unsupported_symbol`)
+    with high probability per build; with a fresh `ReifyAcc` per
+    call the sizes are deterministic. This is a PROBABILISTIC
+    tripwire by nature — one build catches a regression with high
+    likelihood, not certainty (`Test/TacticStress.lean` is the
+    herd). The goal is then left for the caller's closing tactic. -/
+syntax (name := reifyStressTest) "reify_stress_test" num num : tactic
+
+@[tactic reifyStressTest]
+def evalReifyStressTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_stress_test $nAtoms $nDefs) =>
+    let (_ir, atoms, defs, _intAtoms) ← Reify.buildIR (← getMainGoal)
+    unless atoms.size == nAtoms.getNat do
+      throwError "reify_stress_test: expected {nAtoms.getNat} ℕ \
+        atom(s), got {atoms.size} ({atoms.map (·.1)}) — cross-goal \
+        table contamination"
+    unless defs.size == nDefs.getNat do
+      throwError "reify_stress_test: expected {nDefs.getNat} numeral \
+        def(s), got {defs.size} ({defs.map (·.1)}) — cross-goal \
+        table contamination"
+  | _ => throwError "reify_stress_test: malformed invocation"
 
 /-- TEST-ONLY tactic pinning the R3-M3 term-mode trace guard
     (`termTraceError?`) branch by branch, independent of live

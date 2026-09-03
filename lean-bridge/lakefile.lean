@@ -175,7 +175,7 @@ lean_exe roundtripTest where
     first. -/
 @[default_target]
 lean_lib ProofBrokerTest where
-  roots := #[`Test.Tactic]
+  roots := #[`Test.Tactic, `Test.TacticStress]
   precompileModules := false
   moreLeanArgs := proofBrokerLeanArgs
 
