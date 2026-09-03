@@ -1861,9 +1861,12 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
     Rewriting those gives a term at `ZMod 18446744069414584321`
     while its neighbours are still at `ZMod P`, and the next defeq
     check has to whnf `ZMod <literal>` — `ZMod` recurses on ℕ, so
-    that is `Nat.rec` at 2^64 scale: unary normalization, ~57 GB
-    resident, OOM-killed (measured 2026-09-03, the Lean-side sibling
-    of delta.md §5.4).
+    that is `Nat.rec` at 2^64 scale, unary and astronomically beyond
+    any machine. The mechanism is ARGUED from `ZMod`'s definition,
+    not measured: no reproducible artifact of this bomb exists (the
+    ~57 GB event once cited here belongs to `Farkas_search.cartesian`
+    — C4 ROUND 1/2, delta.md §5.7). The refusing branch is pinned by
+    the `PBModP` negative in `Test/TacticMathlib.lean`.
 
     `hbound : Zmax * zhigh.val < P` passes: its `P`s are ℕ values,
     including the `@ZMod.val P zhigh` index, which unifies with the
@@ -1965,9 +1968,10 @@ private def invertDefUnfolds (goal : MVarId) (path : ExtractionPath)
       -- reifier drops (it is outside the fragment) — but `kabstract`
       -- happily turned `ZMod P` into `ZMod 18446744069414584321`, and
       -- `ZMod` is defined by recursion on ℕ, so the next defeq check
-      -- on that type reduces `Nat.rec` at a 2^64-scale literal: unary
-      -- normalization, ~57 GB resident, OOM-killed (measured
-      -- 2026-09-03; the Lean-side sibling of delta.md §5.4).
+      -- on that type would reduce `Nat.rec` at a 2^64-scale literal —
+      -- unary, beyond any machine. Argued from the definitions, not
+      -- measured (the ~57 GB figure once cited here was the
+      -- Farkas-search materialization — delta.md §5.7).
       --
       -- The extraction's own hypothesis list is the right scope: it is
       -- exactly the set the certificate reads, every member reified

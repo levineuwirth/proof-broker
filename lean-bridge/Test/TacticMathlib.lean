@@ -375,6 +375,23 @@ example {α : Type} [CommRing α] [LinearOrder α] [IsStrictOrderedRing α]
 /-- Numeral-body ℕ constant for the α+ℕ-def shape below. -/
 def PBPolyDef : Nat := 3
 
+/-- D2-scale numeral def for the type-position gate negative. -/
+def PBModP : Nat := 18446744069414584321
+
+/-- The REFUSING branch of the def-unfold type-position gate
+    (`constOnlyInValuePositions`): `PBModP` occurs as a VALUE (so
+    the pipeline unfolds it) and inside the `ZMod PBModP` type
+    arguments of the atomized application — inverting the unfold
+    there would make the kernel reduce `ZMod <2^64-scale literal>`.
+    Probed bare: fails with the named "mentions it inside a TYPE"
+    error, which this negative pins (the permissive branch is pinned
+    by six existing tests; this was the branch pinned by nothing). -/
+example (Zmax : Nat) (zhigh : ZMod PBModP)
+    (h : ((Zmax : ZMod PBModP) * zhigh).val < PBModP) :
+    ((Zmax : ZMod PBModP) * zhigh).val < PBModP := by
+  fail_if_success proof_broker_term
+  exact h
+
 /-- A ℕ-typed hypothesis over a numeral-body constant rides along an
     α goal: it fills the unfold table WITHOUT tripping ℕ mode, the
     pipeline's definition_unfolding pass really rewrites the IR, and
