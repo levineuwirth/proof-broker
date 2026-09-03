@@ -2220,10 +2220,21 @@ example (a : Nat) (h : a / 2 ≤ 3) : a / 2 ≤ 4 := by
   fail_if_success proof_broker
   omega
 
-/-- Fail fast: a ℕ quantifier INSIDE the formula (hypothesis
-    position) has no ℤ image yet. -/
-example (x : Nat) (h : ∀ n : Nat, x ≤ x + n) : x ≤ x + 1 := by
+/-- Fail fast: a ℕ quantifier INSIDE the GOAL has no ℤ image yet.
+    The goal is never dropped, so this aborts before dispatch. -/
+example (x : Nat) : True → ∀ n : Nat, x ≤ x + n := by
   fail_if_success proof_broker
+  intro _ n
+  omega
+
+/-- R4.2 counterpart: the same shape in HYPOTHESIS position is
+    DROPPED, not misread — `buildIR` records it in `skippedLocals`
+    and reifies the rest. The goal here is unprovable without `h`,
+    so the tactic still fails (no certificate); what it must never
+    do is close the goal by reading `h` wrongly. -/
+example (x : Nat) (h : ∀ n : Nat, x + n ≤ 3) : x ≤ 3 := by
+  fail_if_success proof_broker
+  have := h 0
   omega
 
 /-- Fail fast: ℕ arithmetic cannot mix with UF carriers in M1. -/
@@ -2416,5 +2427,134 @@ example : True := by
 example : True := by
   fail_if_success trace_guard_test no_trace
   trivial
+
+
+/- ============================================================
+   R4.2 — the verinf bracket-spike obligation shapes
+
+   These are the fragment features the demo project needs, pinned
+   here so a regression shows up in this repo's own CI and not only
+   in `proof-broker-demo`. Each mirrors a numbered obligation of
+   `lean/BracketSpike/BracketSpike/Bracket.lean` on verinf's
+   `lean-bracket-spike` branch; the Mathlib-flavored shapes
+   (`ZMod.val`, `Fin n`) live in `Test/TacticMathlib.lean`.
+   ============================================================ -/
+
+/-- The demo's Goldilocks modulus, as a numeral-body definition —
+    the R3-M3 `defined_function` shape. -/
+private def pbP : Nat := 18446744069414584321
+
+/-- D2 / `Bracket.lean:56`. Closed power against a definition. -/
+theorem pb_r4_d2_pow_lt_def : (2:Nat)^16 < pbP := by proof_broker
+#print axioms pb_r4_d2_pow_lt_def
+
+/-- D2 / `Bracket.lean:62`. R4.2: `2^16 * 2^16` has no literal
+    factor, so before closed-numeral folding it atomized into an
+    unbounded `Opaque` atom and NO adapter could mint a cert. -/
+theorem pb_r4_d2_pow_mul_lt_def : (2:Nat)^16 * 2^16 < pbP := by proof_broker
+#print axioms pb_r4_d2_pow_mul_lt_def
+
+/-- D2 / `Bracket.lean:66`. -/
+theorem pb_r4_d2_sum_le_def : (2:Nat)^24 + 2 * 2^16 ≤ pbP := by proof_broker
+#print axioms pb_r4_d2_sum_le_def
+
+/-- D2 / `Bracket.lean:34` (the `NeZero` instance body). -/
+theorem pb_r4_d2_ne_zero : pbP ≠ 0 := by proof_broker
+#print axioms pb_r4_d2_ne_zero
+
+/-- D1 / `Bracket.lean:70`. `2 * Zmax` stays linear, `pbP` unfolds,
+    and the bound on `Zmax` is what closes it. -/
+theorem pb_r4_d1_hle (Zmax : Nat) (hZ : Zmax ≤ 2^16) :
+    (2:Nat)^24 + 2 * Zmax ≤ pbP := by proof_broker_term
+#print axioms pb_r4_d1_hle
+
+/-- D1 / `Bracket.lean:78`. Two products: `Zmax * zhigh` is the
+    genuine nonlinear atom, `Zmax * 2^16` is LINEAR and must not be
+    atomized — the ROADMAP's named attack surface ("an `Opaque` atom
+    that is not actually opaque"). -/
+theorem pb_r4_d1_hlt (xv zv Zmax zhv : Nat) (hx : xv < 2^24)
+    (hz : zv < 2 * Zmax) (hprod_le : Zmax * zhv ≤ Zmax * 2^16) :
+    xv + zv + Zmax * zhv < 2^24 + 2 * Zmax + Zmax * 2^16 := by
+  proof_broker_term
+#print axioms pb_r4_d1_hlt
+
+/-- R4.2 scope pin: a closed power outside the folding bounds is a
+    NAMED error, never a silent `Opaque` atom. -/
+example (h : (2:Nat)^300 < 2^301) : (2:Nat)^300 < 2^301 := by
+  fail_if_success proof_broker
+  exact h
+
+/-- R4.2: an applied ℕ-valued function (`ZMod.val` in the demo,
+    `List.length` here — a constant application, not a UF free var)
+    is an opaque atom carrying only `0 ≤ ↑atom`, and the same
+    application in hypothesis and goal is ONE atom. -/
+theorem pb_r4_nat_app_atom (l k : List Nat) (Zmax : Nat)
+    (hx : l.length < 2^24) (hz : k.length < 2 * Zmax) :
+    l.length + k.length < 2^24 + 2 * Zmax := by proof_broker_term
+#print axioms pb_r4_nat_app_atom
+
+/-- R4.2 fail-closed: ℕ subtraction hidden inside an atomized
+    APPLICATION is refused, exactly as inside an atomized product. -/
+private def pbSucc (k : Nat) : Nat := k + 1
+example (n m : Nat) (h : (pbSucc (n - m)).succ ≤ 3) :
+    (pbSucc (n - m)).succ ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- R4.2: an unapplied ℕ constant with a non-numeral body is still a
+    scope error — atomizing it would hide the R3-M3 definition
+    pass failing. -/
+private def pbQ : Nat := Nat.succ 41
+example : pbQ ≤ 42 := by
+  fail_if_success proof_broker
+  decide
+
+/-- D3 / `Bracket.lean:175`. A nonlinear Int product is an `Opaque`
+    Int atom: emitted verbatim, cvc5 rejected the whole script with
+    "A non-linear fact was asserted to arithmetic in a linear
+    logic" and no certificate was minted. -/
+theorem pb_r4_d3_int_nonlinear_atom (Zmax v z zhigh : Int)
+    (hrec : v = z + Zmax * zhigh) (hz0 : 0 ≤ z)
+    (hmul : Zmax ≤ Zmax * zhigh) : Zmax ≤ v := by proof_broker
+#print axioms pb_r4_d3_int_nonlinear_atom
+
+/-- R4.2: a nonlinear product of two atomized applications is ONE
+    Int atom, and the identical application in hypothesis and goal
+    maps to the same atom. INT subtraction inside an atom is fine —
+    nothing is truncated. `f`'s domain is not a declarable type, so
+    its applications atomize rather than becoming UF symbols. -/
+theorem pb_r4_d3_app_product_atom (f : List Nat → Int) (u v : List Nat)
+    (a b : Int) (h : f u * f v ≤ a - b) : f u * f v ≤ a - b + 1 := by
+  proof_broker
+#print axioms pb_r4_d3_app_product_atom
+
+/-- R4.2 fail-closed: ℕ subtraction inside an atomized INT term is
+    refused. `f`'s domain is not a type the IR can declare, so the
+    application atomizes instead of becoming a UF symbol — and the
+    Int-atom scan (`natOpInsideIntAtom?`, the ℕ-scan's type-aware
+    sibling) still catches the `n - m`. -/
+example (n m : Nat) (f : List Nat → Int)
+    (h : f (List.replicate (n - m) 0) ≤ 3) :
+    f (List.replicate (n - m) 0) ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- D3 / `threshold_unique`. R4.2: `c'` is not an SMT-LIB simple
+    symbol, so before the pre-reification alpha-rename EVERY adapter
+    failed with `bad_identifier: c'`. -/
+theorem pb_r4_d3_primed_names {f : Int → Int}
+    (hf : ∀ a b, a ≤ b → f b ≤ f a) {c c' T : Int}
+    (h1 : f c ≤ T) (h2 : T < f (c - 1)) (h1' : f c' ≤ T)
+    (h2' : T < f (c' - 1)) (hle : c ≤ c' - 1)
+    (hmono : f (c' - 1) ≤ f c) : False := by proof_broker
+#print axioms pb_r4_d3_primed_names
+
+/-- R4.2: a hypothesis outside the reifiable fragment is DROPPED,
+    the rest of the context is reified, and the goal closes on what
+    is left. Here `hbig` is a nested-ℕ-quantifier proposition and
+    `hx` alone settles the goal. -/
+theorem pb_r4_hyp_dropped (x : Int) (hbig : ∀ n : Nat, x ≤ x + n)
+    (hx : x ≤ 3) : x ≤ 4 := by proof_broker
+#print axioms pb_r4_hyp_dropped
 
 end ProofBroker.Test

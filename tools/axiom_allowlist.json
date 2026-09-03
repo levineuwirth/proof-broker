@@ -333,7 +333,38 @@
     "ProofBroker.TestMathlib.pb_lra_term_gt_goal_strict_a1_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
     "ProofBroker.TestMathlib.hol_function_composition_axiom_free":
-      ["propext", "Classical.choice", "Quot.sound"]
+      ["propext", "Classical.choice", "Quot.sound"],
+
+    "ProofBroker.Test.pb_r4_d1_hle":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d1_hlt":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d2_ne_zero":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d2_pow_lt_def":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d2_pow_mul_lt_def":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d2_sum_le_def":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d3_app_product_atom":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d3_int_nonlinear_atom":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_d3_primed_names":
+      ["Classical.choice", "Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_hyp_dropped":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_nat_app_atom":
+      ["Quot.sound", "propext"],
+    "ProofBroker.TestMathlib.pb_r4_bracket_hlt":
+      ["Quot.sound", "propext"],
+    "ProofBroker.TestMathlib.pb_r4_bracket_hxz":
+      ["Quot.sound", "propext"],
+    "ProofBroker.TestMathlib.pb_r4_bracket_hzsum":
+      ["Quot.sound", "propext"],
+    "ProofBroker.TestMathlib.pb_r4_bracket_s1_noninc":
+      ["Quot.sound", "propext"]
   },
 
   "rocq": {

@@ -16,6 +16,10 @@ populated the FFI .so.
 -/
 
 import ProofBrokerMathlib
+-- R4.2: the verinf bracket-spike shapes at the end of this file
+-- need ZMod; `ProofBrokerMathlib` itself pulls in only the Real
+-- / order-instance corner of Mathlib it needs.
+import Mathlib.Data.ZMod.Basic
 
 set_option linter.unusedVariables false
 
@@ -480,5 +484,59 @@ theorem hol_function_composition_axiom_free
   proof_broker
 
 #print axioms hol_function_composition_axiom_free
+
+
+/- ============================================================
+   R4.2 — the verinf bracket-spike obligations, Mathlib shapes
+
+   The Mathlib-flavored half of the R4 pins (the Mathlib-free half
+   is the `pb_r4_*` block at the end of `Test/Tactic.lean`): the
+   `ZMod.val` and `Fin n` shapes that only exist once Mathlib is
+   imported. Line numbers refer to
+   `lean/BracketSpike/BracketSpike/Bracket.lean` on verinf's
+   `lean-bracket-spike` branch.
+   ============================================================ -/
+
+/-- Goldilocks, as in the spike. -/
+private def pbBracketP : ℕ := 18446744069414584321
+
+/-- D1 / `Bracket.lean:69`. `x.val` is `ZMod.val`, an applied
+    ℕ-valued function: an opaque atom carrying `0 ≤ ↑atom` and
+    nothing else. Before R4.2 this was
+    `unsupported ℕ term x.val` and the tactic never dispatched. -/
+theorem pb_r4_bracket_hzsum (x z : ZMod pbBracketP) (Zmax : ℕ)
+    (hx : x.val < 2^24) (hz : z.val < 2 * Zmax) :
+    x.val + z.val < 2^24 + 2 * Zmax := by proof_broker_term
+#print axioms pb_r4_bracket_hzsum
+
+/-- D1 / `Bracket.lean:71`. The definition `pbBracketP` occurs both
+    at an arithmetic position (the goal's right-hand side) and
+    inside a TYPE (`ZMod pbBracketP`, the type of `x` and `z`).
+    R4.2: the def-unfold inversion is a defeq `change`, not a
+    `rewrite` — `rewrite`'s motive `fun _a => @ZMod.val _a x < _a`
+    does not typecheck. -/
+theorem pb_r4_bracket_hxz (x z : ZMod pbBracketP) (Zmax : ℕ)
+    (hzsum : x.val + z.val < 2^24 + 2 * Zmax)
+    (hle : (2:ℕ)^24 + 2 * Zmax ≤ pbBracketP) :
+    x.val + z.val < pbBracketP := by proof_broker_term
+#print axioms pb_r4_bracket_hxz
+
+/-- D1 / `Bracket.lean:78`. The nonlinear atom `Zmax * zhigh.val`
+    (a product of a ℕ variable and an atomized application) next to
+    the LINEAR `Zmax * 2^16`. -/
+theorem pb_r4_bracket_hlt (x z zhigh : ZMod pbBracketP) (Zmax : ℕ)
+    (hx : x.val < 2^24) (hz : z.val < 2 * Zmax)
+    (hprod_le : Zmax * zhigh.val ≤ Zmax * 2^16) :
+    x.val + z.val + Zmax * zhigh.val < 2^24 + 2 * Zmax + Zmax * 2^16 := by
+  proof_broker_term
+#print axioms pb_r4_bracket_hlt
+
+/-- D3 / `Bracket.lean:204`. `R.x i` is a projection applied at
+    `Fin n`, a type the IR cannot declare: `R` is left out of the
+    free vars (recorded in `skippedLocals`) and the application is
+    an Int atom. -/
+theorem pb_r4_bracket_s1_noninc {n : ℕ} (R : Fin n → ℤ) (i : Fin n)
+    (a b : ℤ) (hab : a ≤ b) : a - R i ≤ b - R i := by proof_broker
+#print axioms pb_r4_bracket_s1_noninc
 
 end ProofBroker.TestMathlib
