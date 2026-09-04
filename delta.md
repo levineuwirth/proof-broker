@@ -1452,22 +1452,32 @@ it explicitly; the module refs are deleted (`reifierExt` remains as
 documented set-once registration). Not a soundness defect (the
 failure is fail-closed), but it sat on R4's gate path. Verified by
 a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
-failures at `259ada9` (the fix commit; baselines 10/33 at `52dbff1`
-pre-fix-replay and 1/6 at `ece0614`, both re-derived by ROUND 4,
+failures at `259ada9` (the fix commit; baselines: 10/33 first
+measured by ROUND 3 at `c6805c0` pre-fix, re-derived as 9/33 by
+ROUND 4's re-share replay at `52dbff1`, and 1/6 at `ece0614`,
 which also confirmed reification semantics byte-identical across
 the refactor on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at
-`6618587`). Pinned in TWO parts (the split
-found at C4 ROUND 6 Med 1): `reify_acc_isolation_test` pins the
+`6618587`). Pinned in THREE parts (the split
+found at C4 ROUND 6 Med 1; the load-bearing third added at ROUND 8
+Med 1 after the textual gate lost a spelling per round):
+`reify_callsite_isolation_test` is the LOAD-BEARING pin — it runs
+the real `buildIRWithAcc` twice and observes ALIASING between the
+accumulators the reifications actually used (run 1's atom table
+must survive run 2; a marker in run 2's must not appear in run 1's)
+— red under ANY spelling of a module-state regression,
+mutation-verified against accumulation moved to `initialize`-backed
+refs with `fresh` left intact; `reify_acc_isolation_test` pins the
 constructor at runtime (all four fields independently since
 ROUND 5; red on every run under any re-sharing inside
 `ReifyAcc.fresh`, mutation-verified per field), and
-`check_lean_reify_isolation` in `tools/check.py` pins the source
-discipline the runtime test cannot see (a mutation keeping `fresh`
-intact while moving accumulation back to module refs cleared at
-the `buildIR` call site built fully green at ROUND 6 while the demo
-file failed 9/27 — the gate now refuses any module-level `IO.Ref`
-beyond `reifierExt` and any `fresh` call site beyond buildIR's +
-the test's two, with negative controls in `test_check.py`); the
+`check_lean_reify_isolation` in `tools/check.py` is DEFENSE IN
+DEPTH — a comment-stripped scan of every .lean file under
+lean-bridge/ for module-level `IO.Ref` initializers (`initialize`,
+`builtin_initialize`, `@[init]`, any indentation) beyond
+`reifierExt`, unrecognized initializers, and stray
+`ReifyAcc.fresh` sites; it fails LOUD with a named location at
+review time, and a spelling it cannot see is caught by the
+call-site pin instead (negative controls in `test_check.py`, 73); the
 `Test/TacticStress.lean` herd exercises concurrent per-call
 accumulators under real async elaboration but is NOT a reliable
 catcher — measured pre-fix catch rates 0/30 builds
