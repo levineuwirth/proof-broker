@@ -506,72 +506,133 @@ def check_always_unfold_pin(registry, pipeline_ml=None):
 
 LEAN_BRIDGE = ROOT / "lean-bridge"
 
-_INIT_IOREF_RE = re.compile(r"^initialize\s+(\w+)[^\n]*:\s*IO\.Ref", re.M)
-_FRESH_CALL_RE = re.compile(r"←\s*ReifyAcc\.fresh")
+# `initialize` / `builtin_initialize`, with or without `do`, ref name
+# next token; multi-line signatures are joined before matching.
+_INIT_IOREF_RE = re.compile(
+    r"^(?:builtin_)?initialize\s+(\w+)\s*:[^\n]*IO\.Ref", re.M)
+_INIT_ANY_RE = re.compile(r"^(?:builtin_)?initialize\b", re.M)
+_FRESH_CALL_RE = re.compile(r"ReifyAcc\.fresh")
 
 
-def check_lean_reify_isolation(tactic_text=None, mathlib_text=None):
-    """SOURCE gate for the C4 reifier-race fix (ROUND 6 Med 1): the
-    runtime isolation pin covers `ReifyAcc.fresh` itself, but
-    re-introducing module-level accumulation refs cleared at the
-    `buildIR` call site leaves every runtime pin green while
-    parallel declaration elaboration races again. Two textual
-    invariants over the Lean bridge:
+def _bridge_lean_files():
+    """Every Lean SOURCE file in the bridge (both libraries and the
+    lakefile) — hardcoding a subset is how ROUND 7 Med 2's escape
+    (refs appended to Alethe.lean) got past the first version."""
+    return sorted(
+        list((LEAN_BRIDGE / "ProofBroker").rglob("*.lean"))
+        + list((LEAN_BRIDGE / "ProofBrokerMathlib").rglob("*.lean"))
+        + [LEAN_BRIDGE / "lakefile.lean"])
 
-    (1) exactly ONE module-level `IO.Ref` initializer exists across
-        `ProofBroker/Tactic.lean` and `ProofBrokerMathlib/Tactic.lean`,
-        and it is `reifierExt` (set-once registration; per-goal
-        accumulation must never live in module state);
-    (2) `ReifyAcc.fresh` is CALLED exactly three times: once inside
-        `buildIR` (each reification gets its own accumulator) and
-        twice inside the isolation-test tactic — no other call site
-        may appear, and the `buildIR` one must.
+
+def check_lean_reify_isolation(files=None):
+    """SOURCE gate for the C4 reifier-race fix (ROUND 6 Med 1;
+    widened at ROUND 7 Med 2): the runtime isolation pin covers
+    `ReifyAcc.fresh` itself, but re-introducing module-level
+    accumulation refs — in ANY bridge file, under `initialize` or
+    `builtin_initialize` — cleared at the `buildIR` call site leaves
+    every runtime pin green while parallel declaration elaboration
+    races again. Invariants, over EVERY bridge Lean source file:
+
+    (1) exactly one module-level `IO.Ref` initializer exists and it
+        is `reifierExt` (set-once registration); any other
+        `IO.Ref`-typed initializer, in any file, is an error;
+    (2) every OTHER `initialize`/`builtin_initialize` is one of the
+        known non-ref initializers (allowlisted below by file) — an
+        unknown one is an error, so a ref hidden behind a type alias
+        or a split signature at least surfaces for a human look;
+    (3) `ReifyAcc.fresh` is mentioned in exactly one file,
+        ProofBroker/Tactic.lean, with exactly one call inside
+        `buildIR` and two inside the isolation-test tactic.
 
     A legitimate refactor edits this check together with the code;
     silent drift is the error."""
-    if tactic_text is None:
-        tactic_text = (LEAN_BRIDGE / "ProofBroker" / "Tactic.lean").read_text()
-    if mathlib_text is None:
-        mathlib_text = (LEAN_BRIDGE / "ProofBrokerMathlib" / "Tactic.lean").read_text()
+    if files is None:
+        files = _bridge_lean_files()
     errors = []
 
-    inits = (_INIT_IOREF_RE.findall(tactic_text)
-             + _INIT_IOREF_RE.findall(mathlib_text))
-    if inits != ["reifierExt"]:
-        errors.append(
-            "lean-bridge module-level IO.Ref initializers are "
-            f"{inits}, expected exactly ['reifierExt'] — per-goal "
-            "reify accumulation must stay per-call (ReifyAcc), never "
-            "module state (C4 ROUND 3 High / ROUND 6 Med 1)")
+    ioref_inits = []          # (file, name)
+    other_init_lines = []     # (file, lineno, line)
+    fresh_files = {}          # path -> [(lineno, stripped line)]
+    for path in files:
+        text = path.read_text()
+        # join continuation lines so a signature split across lines
+        # still matches the IO.Ref pattern
+        joined = re.sub(r"\n\s{4,}", " ", text)
+        for name in _INIT_IOREF_RE.findall(joined):
+            ioref_inits.append((path.name, name))
+        for m in _INIT_ANY_RE.finditer(joined):
+            line = joined[m.start():].split("\n", 1)[0]
+            if not re.search(r":[^\n]*IO\.Ref", line):
+                other_init_lines.append((path.name, line.strip()))
+        calls = [(i + 1, l.strip())
+                 for i, l in enumerate(text.splitlines())
+                 if _FRESH_CALL_RE.search(l)]
+        if calls:
+            fresh_files[path] = calls
 
-    lines = tactic_text.splitlines()
+    if ioref_inits != [("Tactic.lean", "reifierExt")]:
+        errors.append(
+            f"lean-bridge module-level IO.Ref initializers are "
+            f"{ioref_inits}, expected exactly "
+            "[('Tactic.lean', 'reifierExt')] — per-goal reify "
+            "accumulation must stay per-call (ReifyAcc), never module "
+            "state (C4 ROUND 3 High / ROUND 6-7)")
+
+    known_other = {
+        ("Tactic.lean", "initialize do"),  # ProofBrokerMathlib registration
+    }
+    for fname, line in other_init_lines:
+        key = (fname, line.split("←")[0].split(":=")[0].strip())
+        if key not in known_other:
+            errors.append(
+                f"{fname}: unrecognized module initializer `{line[:80]}` "
+                "— if it holds mutable per-goal state this is the C4 "
+                "race pattern; if it is legitimate, allowlist it in "
+                "check_lean_reify_isolation together with the code")
+
+    # the tactic file is identified by CONTENT (it defines buildIR),
+    # so the gate works identically on the real tree and on the
+    # negative-control temp trees in test_check.py
+    tactic_files = [pth for pth in files
+                    if "def buildIR" in pth.read_text()]
+    if len(tactic_files) != 1:
+        errors.append(
+            f"expected exactly one bridge file defining buildIR, found "
+            f"{[pth.name for pth in tactic_files]}")
+        return errors
+    tactic = tactic_files[0]
+    for pth, calls in fresh_files.items():
+        if pth != tactic:
+            errors.append(
+                f"{pth.name}: ReifyAcc.fresh referenced outside the "
+                f"buildIR file ({calls[:2]}) — new call sites need this "
+                "gate edited deliberately")
+
+    lines = tactic.read_text().splitlines()
     call_lines = [(i, l.strip()) for i, l in enumerate(lines)
-                  if _FRESH_CALL_RE.search(l)]
+                  if "← ReifyAcc.fresh" in l]
     build_start = next((i for i, l in enumerate(lines)
                         if l.startswith("def buildIR")), None)
-    if build_start is None:
-        errors.append("ProofBroker/Tactic.lean: `def buildIR` not found")
-    else:
-        build_end = next(
-            (i for i in range(build_start + 1, len(lines))
-             if re.match(r"^(def |partial def |syntax |initialize |end )",
-                         lines[i])),
-            len(lines))
-        in_build = [l for i, l in call_lines if build_start < i < build_end]
-        outside = [(i + 1, l) for i, l in call_lines
-                   if not (build_start < i < build_end)]
-        if len(in_build) != 1:
-            errors.append(
-                f"`← ReifyAcc.fresh` inside buildIR: {in_build or 'MISSING'} "
-                "— expected exactly one (each reification gets a fresh "
-                "accumulator)")
-        expected_outside = ["let a ← ReifyAcc.fresh", "let b ← ReifyAcc.fresh"]
-        if sorted(l for _, l in outside) != sorted(expected_outside):
-            errors.append(
-                f"`← ReifyAcc.fresh` call sites outside buildIR are "
-                f"{outside}, expected exactly the isolation test's "
-                f"{expected_outside} — a new call site (or a moved one) "
-                "needs this gate edited deliberately")
+    build_end = next(
+        (i for i in range(build_start + 1, len(lines))
+         if re.match(r"^(def |partial def |syntax |initialize |end )",
+                     lines[i])),
+        len(lines))
+    in_build = [l for i, l in call_lines if build_start < i < build_end]
+    outside = [(i + 1, l) for i, l in call_lines
+               if not (build_start < i < build_end)]
+    if len(in_build) != 1:
+        errors.append(
+            f"`← ReifyAcc.fresh` inside buildIR: {in_build or 'MISSING'} "
+            "— expected exactly one (each reification gets a fresh "
+            "accumulator)")
+    expected_outside = ["let a ← ReifyAcc.fresh", "let b ← ReifyAcc.fresh"]
+    if sorted(l for _, l in outside) != sorted(expected_outside):
+        errors.append(
+            f"`← ReifyAcc.fresh` call sites outside buildIR are "
+            f"{outside}, expected exactly the isolation test's "
+            f"{expected_outside} — a new call site (or a moved one) "
+            "needs this gate edited deliberately")
     return errors
 
 
@@ -946,7 +1007,8 @@ def main() -> int:
     # sdk/lib registered; the SDK's baked-in always-unfold list in
     # sync with the registry.
     repo_errors = (check_sdk_trace_format_literals(registry)
-                   + check_always_unfold_pin(registry))
+                   + check_always_unfold_pin(registry)
+                   + check_lean_reify_isolation())
     if repo_errors:
         print("FAIL sdk/lib source-scan checks")
         for msg in repo_errors:

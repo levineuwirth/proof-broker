@@ -4006,8 +4006,9 @@ def evalTypePosGateTest : Tactic := fun stx => do
     mutation and 0/10 under the natDefs-only one;
     a dispatch-free `buildIR` window is ~1.5 ms (the demo file
     raced because its windows span live solver round trips). The
-    deterministic regression pin is `reify_acc_isolation_test`
-    above. -/
+    fix's pin is two-part: `reify_acc_isolation_test` above
+    (runtime, the constructor) and `check_lean_reify_isolation` in
+    `tools/check.py` (source — module state and call sites). -/
 syntax (name := reifyStressTest) "reify_stress_test" num num : tactic
 
 @[tactic reifyStressTest]

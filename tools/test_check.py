@@ -448,32 +448,72 @@ def _always_unfold_pin_clean():
     assert not e, e
 
 
-@register("scan (C4): a second module-level IO.Ref initializer errors")
+@register("scan (C4): a second module-level IO.Ref initializer errors, any file")
 def _reify_isolation_extra_ref_errors():
-    real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
-    mut = real.replace(
-        "initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none",
-        "initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none\n"
-        "initialize sharedNatDefs : IO.Ref (Array Nat) ← IO.mkRef #[]")
-    e = check_lean_reify_isolation(tactic_text=mut)
-    assert_contains(e, "never", "error")
+    import tempfile, shutil
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        for sub in ("ProofBroker", "ProofBrokerMathlib"):
+            (root / sub).mkdir()
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        (root / "ProofBroker" / "Tactic.lean").write_text(real)
+        # ROUND 7's escape: plain refs appended to a DIFFERENT file
+        (root / "ProofBroker" / "Alethe.lean").write_text(
+            "initialize sharedNA : IO.Ref (Array String) ← IO.mkRef #[]\n")
+        files = [root / "ProofBroker" / "Tactic.lean",
+                 root / "ProofBroker" / "Alethe.lean"]
+        e = check_lean_reify_isolation(files=files)
+        assert_contains(e, "never module", "error")
 
 
-@register("scan (C4): an extra ReifyAcc.fresh call site errors")
-def _reify_isolation_extra_call_errors():
-    real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
-    mut = real.replace("    let b ← ReifyAcc.fresh",
-                       "    let b ← ReifyAcc.fresh\n    let c ← ReifyAcc.fresh")
-    e = check_lean_reify_isolation(tactic_text=mut)
-    assert_contains(e, "deliberately", "error")
+@register("scan (C4): a builtin_initialize IO.Ref errors")
+def _reify_isolation_builtin_spelling_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real +
+            "\nbuiltin_initialize sharedX : IO.Ref (Array String) ← IO.mkRef #[]\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): a ReifyAcc.fresh call outside Tactic.lean errors")
+def _reify_isolation_stray_call_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        (root / "Tactic.lean").write_text(real)
+        p2 = root / "Other.lean"
+        p2.write_text("def x := do let _a ← ProofBroker.Tactic.ReifyAcc.fresh\n")
+        e = check_lean_reify_isolation(files=[root / "Tactic.lean", p2])
+        assert_contains(e, "referenced outside", "error")
+
+
+@register("scan (C4): an unrecognized module initializer errors")
+def _reify_isolation_unknown_init_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real + "\ninitialize mysteryState ← mkMystery ()\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "unrecognized module initializer", "error")
 
 
 @register("scan (C4): buildIR without its fresh accumulator errors")
 def _reify_isolation_missing_build_call_errors():
-    real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
-    mut = real.replace("  let acc ← ReifyAcc.fresh", "  -- gone")
-    e = check_lean_reify_isolation(tactic_text=mut)
-    assert e, "missing buildIR fresh call not caught"
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real.replace("  let acc ← ReifyAcc.fresh", "  -- gone"))
+        e = check_lean_reify_isolation(files=[p1])
+        assert e, "missing buildIR fresh call not caught"
 
 
 @register("scan (C4): the shipped lean reify isolation is clean")
