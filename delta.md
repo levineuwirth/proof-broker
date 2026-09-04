@@ -1452,12 +1452,15 @@ it explicitly; the module refs are deleted (`reifierExt` remains as
 documented set-once registration). Not a soundness defect (the
 failure is fail-closed), but it sat on R4's gate path. Verified by
 a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
-failures at `259ada9` (the fix commit; baselines, trees from the
-ROUND records: 10/33 probes and 1/6 forced builds both measured by
-ROUND 3 at bridge `c6805c0` / demo `858485c`; the re-share replay
-re-derived 9/33 at ROUND 4's tree `960ca26`, where ROUND 4 also
-confirmed reification semantics byte-identical across the refactor
-on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at `6618587`).
+failures at bridge `259ada9` (the fix commit; the fix-round
+protocol's demo tree was not recorded at the time — later rounds
+re-verified at recorded pairs. Baselines, both repos' trees from
+the ROUND records: 10/33 probes and 1/6 forced builds both measured
+by ROUND 3 at bridge `c6805c0` / demo `858485c`; the re-share
+replay re-derived 9/33 at ROUND 4's pair `960ca26`/`c2dc119`, where
+ROUND 4 also confirmed reification semantics byte-identical across
+the refactor on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at
+`6618587`/`1f51610`).
 Pinned in THREE parts (the split
 found at C4 ROUND 6 Med 1; the load-bearing third added at ROUND 8
 Med 1 after the textual gate lost a spelling per round):
