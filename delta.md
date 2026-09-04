@@ -1452,21 +1452,27 @@ it explicitly; the module refs are deleted (`reifierExt` remains as
 documented set-once registration). Not a soundness defect (the
 failure is fail-closed), but it sat on R4's gate path. Verified by
 a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
-failures at `259ada9` (the fix commit; baselines: 10/33 first
-measured by ROUND 3 at `c6805c0` pre-fix, re-derived as 9/33 by
-ROUND 4's re-share replay at `52dbff1`, and 1/6 at `ece0614`,
-which also confirmed reification semantics byte-identical across
-the refactor on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at
-`6618587`). Pinned in THREE parts (the split
+failures at `259ada9` (the fix commit; baselines, trees from the
+ROUND records: 10/33 probes and 1/6 forced builds both measured by
+ROUND 3 at bridge `c6805c0` / demo `858485c`; the re-share replay
+re-derived 9/33 at ROUND 4's tree `960ca26`, where ROUND 4 also
+confirmed reification semantics byte-identical across the refactor
+on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at `6618587`).
+Pinned in THREE parts (the split
 found at C4 ROUND 6 Med 1; the load-bearing third added at ROUND 8
 Med 1 after the textual gate lost a spelling per round):
 `reify_callsite_isolation_test` is the LOAD-BEARING pin — it runs
 the real `buildIRWithAcc` twice and observes ALIASING between the
 accumulators the reifications actually used (run 1's atom table
 must survive run 2; a marker in run 2's must not appear in run 1's)
-— red under ANY spelling of a module-state regression,
-mutation-verified against accumulation moved to `initialize`-backed
-refs with `fresh` left intact; `reify_acc_isolation_test` pins the
+— red under any spelling that leaves `buildIRWithAcc` returning
+the accumulator it accumulated into, which every single-accumulator
+mutation does (mutation-verified: `initialize`-backed shared
+accumulation with `fresh` intact, per-field). KNOWN RESIDUAL
+(ROUND 9): a decoy mutant — accumulate in shared state, return a
+COPIED accumulator — evades any return-value pin by construction;
+that direction is covered only by the source gate and review;
+`reify_acc_isolation_test` pins the
 constructor at runtime (all four fields independently since
 ROUND 5; red on every run under any re-sharing inside
 `ReifyAcc.fresh`, mutation-verified per field), and
@@ -1485,12 +1491,16 @@ catcher — measured pre-fix catch rates 0/30 builds
 named-theorem form at ROUND 5: 0/20 under the all-four-shared
 mutation and 0/10 under the natDefs-only one, each by restoring
 shared refs and force-rebuilding `ProofBrokerTest` on this
-16-core/58GB machine at the then-current `r4/demo` tip; dispatch-free `buildIR` windows are
-~1.5ms; the demo file raced because its windows span live solver
-round trips. The pin's coverage was itself reviewed: a ROUND 5 Med
-found the first version asserted only one of the four fields (a
-`natDefs`-only re-sharing escaped every pin while the demo file
-still failed 4/27); it now asserts all four independently,
+16-core/58GB machine at the then-current `r4/demo` tip;
+dispatch-free `buildIR` windows are ~1.5ms (ROUND 4's
+`stress_window` probe at `960ca26`); the demo file raced because
+its windows span live solver round trips. The constructor pin's
+coverage was itself reviewed twice: ROUND 5 found it asserting one
+field of four (a `natDefs`-only re-share escaped every pin while
+the demo file failed 4/27 at `52dbff1`), and ROUND 9 found the
+call-site pin repeating the same one-field mistake (its
+`natDefs`-only call-site re-share put the demo at 9/27 at
+`37fda79`); both pins now assert all four fields independently,
 mutation-verified per field.
 
 ## 6. References
