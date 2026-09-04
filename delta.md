@@ -1452,9 +1452,11 @@ it explicitly; the module refs are deleted (`reifierExt` remains as
 documented set-once registration). Not a soundness defect (the
 failure is fail-closed), but it sat on R4's gate path. Verified by
 a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
-failures (baselines 10/33, 1/6); ROUND 4 re-derived both and
-confirmed reification semantics byte-identical across the refactor
-on 8 shapes. Pinned in TWO parts (the split
+failures at `259ada9` (the fix commit; baselines 10/33 at `52dbff1`
+pre-fix-replay and 1/6 at `ece0614`, both re-derived by ROUND 4,
+which also confirmed reification semantics byte-identical across
+the refactor on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at
+`6618587`). Pinned in TWO parts (the split
 found at C4 ROUND 6 Med 1): `reify_acc_isolation_test` pins the
 constructor at runtime (all four fields independently since
 ROUND 5; red on every run under any re-sharing inside
