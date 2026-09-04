@@ -506,32 +506,68 @@ def check_always_unfold_pin(registry, pipeline_ml=None):
 
 LEAN_BRIDGE = ROOT / "lean-bridge"
 
-# `initialize` / `builtin_initialize`, with or without `do`, ref name
-# next token; multi-line signatures are joined before matching.
+# `initialize` / `builtin_initialize` at ANY indentation, plus the
+# `@[init …]` attribute form `initialize` desugars to (ROUND 8 Med 1
+# named both as blind spots of the ^-anchored keyword-literal
+# version); multi-line signatures are joined before matching.
 _INIT_IOREF_RE = re.compile(
-    r"^(?:builtin_)?initialize\s+(\w+)\s*:[^\n]*IO\.Ref", re.M)
-_INIT_ANY_RE = re.compile(r"^(?:builtin_)?initialize\b", re.M)
+    r"^[ \t]*(?:builtin_)?initialize\s+(\w+)\s*:[^\n]*IO\.Ref"
+    r"|^[ \t]*@\[(?:builtin_)?init[\s\]][^\n]*?(?:opaque|def)\s+(\w+)\s*:[^\n]*IO\.Ref",
+    re.M)
+_INIT_ANY_RE = re.compile(
+    r"^[ \t]*(?:builtin_)?initialize\b|^[ \t]*@\[(?:builtin_)?init[\s\]]", re.M)
 _FRESH_CALL_RE = re.compile(r"ReifyAcc\.fresh")
 
 
+def _strip_lean_comments(text):
+    """Remove `--` line comments and (nested) `/- … -/` block
+    comments so the initializer/call scans see only CODE — the
+    ROUND 8 widening to all files immediately false-positived on
+    docstrings that QUOTE the patterns being scanned for."""
+    out = []
+    i, n, depth = 0, len(text), 0
+    while i < n:
+        two = text[i:i + 2]
+        if depth == 0 and two == "--":
+            j = text.find("\n", i)
+            i = n if j == -1 else j
+            continue
+        if two == "/-":
+            depth += 1
+            i += 2
+            continue
+        if depth > 0 and two == "-/":
+            depth -= 1
+            i += 2
+            continue
+        if depth == 0:
+            out.append(text[i])
+        elif text[i] == "\n":
+            out.append("\n")   # keep line numbers stable
+        i += 1
+    return "".join(out)
+
+
 def _bridge_lean_files():
-    """Every Lean SOURCE file in the bridge (both libraries and the
-    lakefile) — hardcoding a subset is how ROUND 7 Med 2's escape
-    (refs appended to Alethe.lean) got past the first version."""
-    return sorted(
-        list((LEAN_BRIDGE / "ProofBroker").rglob("*.lean"))
-        + list((LEAN_BRIDGE / "ProofBrokerMathlib").rglob("*.lean"))
-        + [LEAN_BRIDGE / "lakefile.lean"])
+    """EVERY .lean file under lean-bridge/ except the toolchain's own
+    .lake tree — hardcoding subsets is how two escapes got past
+    earlier versions (ROUND 7: refs in Alethe.lean vs a 2-file list;
+    ROUND 8: a 10-of-17 sweep that skipped Test/)."""
+    return sorted(pth for pth in LEAN_BRIDGE.rglob("*.lean")
+                  if ".lake" not in pth.parts)
 
 
 def check_lean_reify_isolation(files=None):
-    """SOURCE gate for the C4 reifier-race fix (ROUND 6 Med 1;
-    widened at ROUND 7 Med 2): the runtime isolation pin covers
-    `ReifyAcc.fresh` itself, but re-introducing module-level
-    accumulation refs — in ANY bridge file, under `initialize` or
-    `builtin_initialize` — cleared at the `buildIR` call site leaves
-    every runtime pin green while parallel declaration elaboration
-    races again. Invariants, over EVERY bridge Lean source file:
+    """SOURCE gate for the C4 reifier-race fix — DEFENSE IN DEPTH,
+    not the load-bearing pin (re-scoped at ROUND 8 Med 1: a textual
+    scan pins spellings and lost one per round — hardcoded files,
+    `builtin_initialize`, `@[init]`, indentation. The load-bearing
+    pin is BEHAVIORAL: `reify_callsite_isolation_test` observes
+    aliasing between the accumulators two real `buildIRWithAcc` runs
+    used, red under any spelling). This gate's value is failing LOUD
+    at review time with a named location; a spelling it cannot see
+    is caught by the runtime pin instead. Invariants, over EVERY
+    .lean file under lean-bridge/ (minus .lake):
 
     (1) exactly one module-level `IO.Ref` initializer exists and it
         is `reifierExt` (set-once registration); any other
@@ -554,16 +590,17 @@ def check_lean_reify_isolation(files=None):
     other_init_lines = []     # (file, lineno, line)
     fresh_files = {}          # path -> [(lineno, stripped line)]
     for path in files:
-        text = path.read_text()
+        text = _strip_lean_comments(path.read_text())
         # join continuation lines so a signature split across lines
         # still matches the IO.Ref pattern
         joined = re.sub(r"\n\s{4,}", " ", text)
-        for name in _INIT_IOREF_RE.findall(joined):
-            ioref_inits.append((path.name, name))
+        for g1, g2 in _INIT_IOREF_RE.findall(joined):
+            ioref_inits.append((path.name, g1 or g2))
+        rel = "/".join(path.parts[-2:])
         for m in _INIT_ANY_RE.finditer(joined):
             line = joined[m.start():].split("\n", 1)[0]
             if not re.search(r":[^\n]*IO\.Ref", line):
-                other_init_lines.append((path.name, line.strip()))
+                other_init_lines.append((rel, line.strip()))
         calls = [(i + 1, l.strip())
                  for i, l in enumerate(text.splitlines())
                  if _FRESH_CALL_RE.search(l)]
@@ -579,7 +616,7 @@ def check_lean_reify_isolation(files=None):
             "state (C4 ROUND 3 High / ROUND 6-7)")
 
     known_other = {
-        ("Tactic.lean", "initialize do"),  # ProofBrokerMathlib registration
+        ("ProofBrokerMathlib/Tactic.lean", "initialize do"),
     }
     for fname, line in other_init_lines:
         key = (fname, line.split("←")[0].split(":=")[0].strip())

@@ -2400,6 +2400,14 @@ example : True := by type_pos_gate_test PBGateC
     Med 1). -/
 example : True := by reify_acc_isolation_test
 
+/-- CALL-SITE isolation pin (C4 ROUND 8 Med 1): the accumulators two
+    real `buildIRWithAcc` runs actually used must be distinct state
+    — red under ANY spelling of a module-state regression, because
+    it observes aliasing rather than source text. The goal carries a
+    nonlinear ℕ product so run 1 mints an atom to watch. -/
+example (x y : Nat) (h : x * y ≤ 5) : x * y ≤ 6 := by
+  reify_callsite_isolation_test
+
 /-- An applied unfold of a FOREIGN symbol → fail closed. -/
 example : True := by
   fail_if_success trace_guard_test def_unfold_foreign

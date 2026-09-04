@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check import (  # noqa: E402
     check_always_unfold_pin,
     check_lean_reify_isolation,
+    _bridge_lean_files,
     check_cert_hashes,
     check_cert_manifest_consistency,
     check_cert_witness_provenance,
@@ -514,6 +515,43 @@ def _reify_isolation_missing_build_call_errors():
         p1.write_text(real.replace("  let acc ← ReifyAcc.fresh", "  -- gone"))
         e = check_lean_reify_isolation(files=[p1])
         assert e, "missing buildIR fresh call not caught"
+
+
+@register("scan (C4): the @[init] opaque spelling errors")
+def _reify_isolation_at_init_spelling_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real +
+            "\n@[init mkS] opaque pbS : IO.Ref (Array String)\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): an indented initialize IO.Ref errors")
+def _reify_isolation_indented_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real +
+            "\n  initialize pbS2 : IO.Ref (Array String) ← IO.mkRef #[]\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): the bridge file sweep includes Test/ and the lakefile")
+def _reify_isolation_sweep_inventory():
+    files = {("/".join(p.parts[-2:])) for p in _bridge_lean_files()}
+    for must in ("Test/TacticStress.lean", "Test/Tactic.lean",
+                 "lean-bridge/lakefile.lean", "ProofBroker/Alethe.lean",
+                 "ProofBrokerMathlib/TermMode.lean"):
+        assert any(f.endswith(must.split("/")[-1]) and
+                   must.split("/")[-2] in ("lean-bridge",) + tuple(f.split("/"))
+                   for f in files), f"{must} missing from sweep: {sorted(files)}"
 
 
 @register("scan (C4): the shipped lean reify isolation is clean")

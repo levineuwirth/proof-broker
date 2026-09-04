@@ -17,9 +17,11 @@ form; on THIS named-theorem form (ROUND 5), 0/20 under the
 all-four-shared mutation and 0/10 under the natDefs-only one — a
 dispatch-free `buildIR` window is ~1.5 ms; the demo file raced
 because its windows span live solver round trips. The fix's pin is
-two-part: `reify_acc_isolation_test` (runtime, the constructor) and
-`tools/check.py`'s `check_lean_reify_isolation` (source, the module
-state + call-site discipline).
+three-part: `reify_callsite_isolation_test` (load-bearing —
+aliasing between the accumulators two real reifications used, red
+under any spelling), `reify_acc_isolation_test` (the constructor),
+and `tools/check.py`'s `check_lean_reify_isolation` (source-level
+defense in depth).
 -/
 
 import ProofBroker

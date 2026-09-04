@@ -1119,9 +1119,9 @@ def natTypeMetadata : Json :=
     Every drop is recorded with its reason and reported by
     `proof_broker?`, so "the solver ignored my hypothesis" is a
     visible fact rather than a guess. -/
-def buildIR (mvarId : MVarId)
-    : MetaM (IR × Array (String × Expr) × Array (String × Expr × Nat)
-             × Array (String × String)) :=
+def buildIRWithAcc (mvarId : MVarId)
+    : MetaM ((IR × Array (String × Expr) × Array (String × Expr × Nat)
+              × Array (String × String)) × ReifyAcc) :=
   mvarId.withContext do
   -- Instantiate metavariables in the goal type. `apply`-introduced
   -- subgoals may carry deferred unification metavars in their types;
@@ -1417,7 +1417,7 @@ def buildIR (mvarId : MVarId)
   -- closer time can race another invocation's `buildIR` reset
   -- (observed as an unknown-free-variable failure). The ref is
   -- only the accumulator WITHIN this reify.
-  return ({
+  return (({
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
     tier,
@@ -1433,7 +1433,22 @@ def buildIR (mvarId : MVarId)
     definitionalMetadata,
     libraryProvenance,
     userDirectives
-  }, natAtoms, natDefs, skipped)
+  }, natAtoms, natDefs, skipped), acc)
+
+/-- The public reification entry point. `buildIRWithAcc` additionally
+    returns the `ReifyAcc` the reification ACTUALLY accumulated into
+    — consumed only by the call-site isolation pin
+    (`reify_callsite_isolation_test`), which is what makes the
+    per-call discipline testable independent of how a regression is
+    SPELLED (C4 ROUND 8 Med 1: the textual source gate lost an
+    arms race per round — `@[init]`, indentation, hardcoded file
+    lists — because it pinned spellings; the returned accumulator
+    pins the behavior). -/
+def buildIR (mvarId : MVarId)
+    : MetaM (IR × Array (String × Expr) × Array (String × Expr × Nat)
+             × Array (String × String)) := do
+  let (r, _) ← buildIRWithAcc mvarId
+  return r
 
 end Reify
 
@@ -3909,6 +3924,48 @@ def evalSpecGateTest : Tactic := fun stx => do
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
 
+/-- TEST-ONLY tactic: the CALL-SITE isolation pin (C4 ROUND 8
+    Med 1 — the class fix). Runs the REAL `Reify.buildIRWithAcc`
+    twice on the goal (which must reify at least one ℕ atom) and
+    checks the two returned accumulators — the ones the
+    reifications ACTUALLY used — behave as distinct state:
+    * run 1's atom table is non-empty and SURVIVES run 2 (the race
+      bug's exact mechanism was a later reification's reset wiping
+      an earlier one's table through shared state);
+    * a marker pushed into run 2's table does not appear in run 1's.
+    Red deterministically under ANY spelling that moves accumulation
+    back to shared module state — `initialize`, `builtin_initialize`,
+    `@[init]`, a shadowed `acc`, a file the source gate forgot —
+    because it observes aliasing, not source text. No parallelism
+    required. -/
+syntax (name := reifyCallsiteIsolationTest)
+  "reify_callsite_isolation_test" : tactic
+
+@[tactic reifyCallsiteIsolationTest]
+def evalReifyCallsiteIsolationTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_callsite_isolation_test) =>
+    let g ← getMainGoal
+    let (_, acc1) ← Reify.buildIRWithAcc g
+    let n1 := (← acc1.natAtoms.get).size
+    unless n1 > 0 do
+      throwError "reify_callsite_isolation_test: the goal reified no \
+        ℕ atom — use a goal with a nonlinear ℕ product so aliasing \
+        is observable"
+    let (_, acc2) ← Reify.buildIRWithAcc g
+    unless (← acc1.natAtoms.get).size == n1 do
+      throwError "reify_callsite_isolation_test: run 2 WIPED run 1's \
+        atom table (size {(← acc1.natAtoms.get).size}, was {n1}) — \
+        buildIR is accumulating in shared state (the C4 ROUND 3 race \
+        mechanism)"
+    acc2.natAtoms.modify (·.push ("_pb_callsite_marker", Lean.mkConst ``Nat))
+    if (← acc1.natAtoms.get).any (·.1 == "_pb_callsite_marker") then
+      throwError "reify_callsite_isolation_test: a marker pushed into \
+        run 2's table appeared in run 1's — the two reifications \
+        share an accumulator"
+    evalTactic (← `(tactic| omega))
+  | _ => throwError "reify_callsite_isolation_test: malformed invocation"
+
 /-- TEST-ONLY tactic: the runtime half of the per-call accumulator
     fix's pin (C4 ROUND 4 finding 1; field coverage widened at
     ROUND 5 Med 1; SCOPE stated honestly at ROUND 6 Med 1). Calls
@@ -3919,9 +3976,10 @@ def evalSpecGateTest : Tactic := fun stx => do
     every run, no parallelism required. It does NOT see a mutation
     that leaves `fresh` intact and moves accumulation back to
     module refs cleared at the `buildIR` call site — that direction
-    is pinned by `tools/check.py`'s `check_lean_reify_isolation`
-    source gate (exactly one module-level `IO.Ref`, `reifierExt`;
-    exactly one `fresh` call inside `buildIR` plus this test's two).
+    is pinned by `reify_callsite_isolation_test` (aliasing-based,
+    spelling-independent — the load-bearing pin since ROUND 8) with
+    `tools/check.py`'s `check_lean_reify_isolation` source gate as
+    defense in depth.
     The stress herd exercises concurrency but is not a catcher —
     measured pre-fix rates 0/30 (anonymous form, ROUND 4), 0/20
     (all-four-shared mutation) and 0/10 (natDefs-only mutation),
@@ -4006,9 +4064,11 @@ def evalTypePosGateTest : Tactic := fun stx => do
     mutation and 0/10 under the natDefs-only one;
     a dispatch-free `buildIR` window is ~1.5 ms (the demo file
     raced because its windows span live solver round trips). The
-    fix's pin is two-part: `reify_acc_isolation_test` above
-    (runtime, the constructor) and `check_lean_reify_isolation` in
-    `tools/check.py` (source — module state and call sites). -/
+    fix's pin is three-part: `reify_callsite_isolation_test`
+    (load-bearing, aliasing-based, spelling-independent),
+    `reify_acc_isolation_test` (the constructor), and
+    `check_lean_reify_isolation` in `tools/check.py` (source-level
+    defense in depth). -/
 syntax (name := reifyStressTest) "reify_stress_test" num num : tactic
 
 @[tactic reifyStressTest]
