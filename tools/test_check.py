@@ -543,15 +543,58 @@ def _reify_isolation_indented_errors():
         assert_contains(e, "never module", "error")
 
 
-@register("scan (C4): the bridge file sweep includes Test/ and the lakefile")
+@register("scan (C4): the bridge file sweep IS the on-disk inventory")
 def _reify_isolation_sweep_inventory():
-    files = {("/".join(p.parts[-2:])) for p in _bridge_lean_files()}
-    for must in ("Test/TacticStress.lean", "Test/Tactic.lean",
-                 "lean-bridge/lakefile.lean", "ProofBroker/Alethe.lean",
-                 "ProofBrokerMathlib/TermMode.lean"):
-        assert any(f.endswith(must.split("/")[-1]) and
-                   must.split("/")[-2] in ("lean-bridge",) + tuple(f.split("/"))
-                   for f in files), f"{must} missing from sweep: {sorted(files)}"
+    # Set EQUALITY against an independent walk (ROUND 9 Low 5: five
+    # representative names let the root modules drop out silently,
+    # and the lakefile row was satisfiable by any lakefile anywhere).
+    import os
+    expected = set()
+    for dirpath, dirnames, filenames in os.walk(ROOT / "lean-bridge"):
+        dirnames[:] = [d for d in dirnames if d != ".lake"]
+        for f in filenames:
+            if f.endswith(".lean"):
+                expected.add(Path(dirpath) / f)
+    swept = set(_bridge_lean_files())
+    assert swept == expected, (
+        f"sweep != on-disk inventory; "
+        f"missing={sorted(str(x) for x in expected - swept)} "
+        f"extra={sorted(str(x) for x in swept - expected)}")
+    assert len(swept) >= 17, f"inventory shrank to {len(swept)}"
+
+
+@register("scan (C4): reifierExt moved to another file errors")
+def _reify_isolation_moved_ref_errors():
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    line = ("initialize reifierExt : IO.Ref (Option ReifierExt) "
+            "\u2190 IO.mkRef none")
+    line = line.replace("\\u2190", "\u2190")
+    assert line in tac, "reifierExt initializer line drifted"
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        (r / "ProofBrokerMathlib").mkdir()
+        (r / "ProofBroker" / "Tactic.lean").write_text(tac.replace(line, ""))
+        (r / "ProofBrokerMathlib" / "Tactic.lean").write_text(line + "\n")
+        e = check_lean_reify_isolation(
+            files=[r / "ProofBroker" / "Tactic.lean",
+                   r / "ProofBrokerMathlib" / "Tactic.lean"])
+        assert_contains(e, "initializers are", "error")
+
+
+@register("scan (C4): an unbalanced /- inside a string fails CLOSED")
+def _reify_isolation_string_truncation_errors():
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        p1 = r / "Tactic.lean"
+        p1.write_text(tac +
+            '\ndef pbHint : String := "unterminated /- here"\n'
+            "initialize pbBlind : IO.Ref Nat \u2190 IO.mkRef 0\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "TRUNCATED", "error")
 
 
 @register("scan (C4): the shipped lean reify isolation is clean")

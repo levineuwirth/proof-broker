@@ -3925,19 +3925,24 @@ def evalSpecGateTest : Tactic := fun stx => do
   | _ => throwError "spec_gate_test: malformed invocation"
 
 /-- TEST-ONLY tactic: the CALL-SITE isolation pin (C4 ROUND 8
-    Med 1 — the class fix). Runs the REAL `Reify.buildIRWithAcc`
-    twice on the goal (which must reify at least one ℕ atom) and
-    checks the two returned accumulators — the ones the
-    reifications ACTUALLY used — behave as distinct state:
+    Med 1; widened to all four fields at ROUND 9 Med 1 — the
+    one-field version repeated the constructor pin's ROUND 5
+    mistake, three lines below the comment warning about it). Runs
+    the REAL `Reify.buildIRWithAcc` twice on the goal (which must
+    reify at least one ℕ atom) and checks the two returned
+    accumulators behave as distinct state:
     * run 1's atom table is non-empty and SURVIVES run 2 (the race
-      bug's exact mechanism was a later reification's reset wiping
-      an earlier one's table through shared state);
-    * a marker pushed into run 2's table does not appear in run 1's.
-    Red deterministically under ANY spelling that moves accumulation
-    back to shared module state — `initialize`, `builtin_initialize`,
-    `@[init]`, a shadowed `acc`, a file the source gate forgot —
-    because it observes aliasing, not source text. No parallelism
-    required. -/
+      bug's mechanism was a later reification's reset wiping an
+      earlier one's table through shared state);
+    * a marker pushed into EACH of run 2's four fields does not
+      appear in run 1's corresponding field.
+    HONEST SCOPE (ROUND 9): red under any spelling that leaves
+    `buildIRWithAcc` returning the accumulator it accumulated into
+    — which every single-accumulator mutation does. A DECOY mutant
+    (accumulate in shared state, return a copied accumulator) evades
+    any return-value pin by construction; that residual is covered
+    only by the source gate and review, and is stated in delta §5.7
+    rather than papered over. -/
 syntax (name := reifyCallsiteIsolationTest)
   "reify_callsite_isolation_test" : tactic
 
@@ -3958,11 +3963,24 @@ def evalReifyCallsiteIsolationTest : Tactic := fun stx => do
         atom table (size {(← acc1.natAtoms.get).size}, was {n1}) — \
         buildIR is accumulating in shared state (the C4 ROUND 3 race \
         mechanism)"
-    acc2.natAtoms.modify (·.push ("_pb_callsite_marker", Lean.mkConst ``Nat))
-    if (← acc1.natAtoms.get).any (·.1 == "_pb_callsite_marker") then
-      throwError "reify_callsite_isolation_test: a marker pushed into \
-        run 2's table appeared in run 1's — the two reifications \
-        share an accumulator"
+    -- per-field aliasing markers (ROUND 9 Med 1: natDefs-only
+    -- re-sharing was green under a natAtoms-only marker)
+    acc2.consts.modify (·.push ("_pb_cs_marker", "Int"))
+    acc2.natAtoms.modify (·.push ("_pb_cs_marker", Lean.mkConst ``Nat))
+    acc2.intAtoms.modify (·.push ("_pb_cs_marker", Lean.mkConst ``Int))
+    acc2.natDefs.modify (·.push ("_pb_cs_marker", Lean.mkConst ``Nat, 0))
+    if (← acc1.consts.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: consts ALIASED \
+        across the two reifications"
+    if (← acc1.natAtoms.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: natAtoms ALIASED \
+        across the two reifications"
+    if (← acc1.intAtoms.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: intAtoms ALIASED \
+        across the two reifications"
+    if (← acc1.natDefs.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: natDefs ALIASED \
+        across the two reifications"
     evalTactic (← `(tactic| omega))
   | _ => throwError "reify_callsite_isolation_test: malformed invocation"
 

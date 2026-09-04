@@ -590,12 +590,33 @@ def check_lean_reify_isolation(files=None):
     other_init_lines = []     # (file, lineno, line)
     fresh_files = {}          # path -> [(lineno, stripped line)]
     for path in files:
-        text = _strip_lean_comments(path.read_text())
+        raw = path.read_text()
+        text = _strip_lean_comments(raw)
+        # Fail CLOSED on a runaway comment (ROUND 9 Med 2: an
+        # unbalanced `/-` inside a string literal opens a comment the
+        # stripper never closes, silently blinding every invariant
+        # for the rest of the file). The stripper has no
+        # string-literal state; instead, the file's final non-blank
+        # line must survive stripping — a truncation is an ERROR,
+        # never a silence.
+        raw_tail = next((l for l in reversed(raw.splitlines())
+                         if l.strip()), "")
+        stripped_tail = next((l for l in reversed(text.splitlines())
+                              if l.strip()), "")
+        if raw_tail.split("--")[0].strip() and \
+                stripped_tail.strip() != raw_tail.split("--")[0].strip():
+            errors.append(
+                f"{'/'.join(path.parts[-2:])}: comment stripping "
+                "TRUNCATED the file (its final code line did not "
+                "survive) — likely an unbalanced `/-` inside a string "
+                "literal; the reify-isolation scan cannot see past it, "
+                "so this fails closed")
+            continue
         # join continuation lines so a signature split across lines
         # still matches the IO.Ref pattern
         joined = re.sub(r"\n\s{4,}", " ", text)
         for g1, g2 in _INIT_IOREF_RE.findall(joined):
-            ioref_inits.append((path.name, g1 or g2))
+            ioref_inits.append(("/".join(path.parts[-2:]), g1 or g2))
         rel = "/".join(path.parts[-2:])
         for m in _INIT_ANY_RE.finditer(joined):
             line = joined[m.start():].split("\n", 1)[0]
@@ -607,11 +628,11 @@ def check_lean_reify_isolation(files=None):
         if calls:
             fresh_files[path] = calls
 
-    if ioref_inits != [("Tactic.lean", "reifierExt")]:
+    if ioref_inits != [("ProofBroker/Tactic.lean", "reifierExt")]:
         errors.append(
             f"lean-bridge module-level IO.Ref initializers are "
             f"{ioref_inits}, expected exactly "
-            "[('Tactic.lean', 'reifierExt')] — per-goal reify "
+            "[('ProofBroker/Tactic.lean', 'reifierExt')] — per-goal reify "
             "accumulation must stay per-call (ReifyAcc), never module "
             "state (C4 ROUND 3 High / ROUND 6-7)")
 
@@ -1040,14 +1061,16 @@ def main() -> int:
     failed = 0
     total_warnings = 0
 
-    # Repo-level source-scan checks (R2.4): trace_format literals in
-    # sdk/lib registered; the SDK's baked-in always-unfold list in
-    # sync with the registry.
+    # Repo-level source-scan checks: trace_format literals in sdk/lib
+    # registered; the SDK's baked-in always-unfold list in sync with
+    # the registry (both R2.4); the lean-bridge reify-isolation
+    # discipline (C4 — module-level IO.Refs, ReifyAcc.fresh call
+    # sites, comment-strip truncation fail-closed).
     repo_errors = (check_sdk_trace_format_literals(registry)
                    + check_always_unfold_pin(registry)
                    + check_lean_reify_isolation())
     if repo_errors:
-        print("FAIL sdk/lib source-scan checks")
+        print("FAIL source-scan checks (sdk/lib + lean-bridge)")
         for msg in repo_errors:
             print(f"  ERROR  {msg}")
         failed += 1
