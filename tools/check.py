@@ -521,13 +521,40 @@ _FRESH_CALL_RE = re.compile(r"ReifyAcc\.fresh")
 
 def _strip_lean_comments(text):
     """Remove `--` line comments and (nested) `/- … -/` block
-    comments so the initializer/call scans see only CODE — the
-    ROUND 8 widening to all files immediately false-positived on
-    docstrings that QUOTE the patterns being scanned for."""
+    comments, with STRING-LITERAL state (ROUND 10 Med 1: the
+    string-blind version let `"/-"` inside a literal open a comment
+    that erased an arbitrary region — the cheap tail post-condition
+    only caught runaway-to-EOF). Rules, matching Lean's lexer where
+    it matters here: at comment depth 0, a double-quoted string
+    (backslash escapes honored) is opaque — `/-` and `--` inside it
+    are text; inside a comment, quotes are text (docstrings quote
+    freely). Returns (stripped, error) where error is a diagnostic
+    string for an unbalanced state at EOF — an unclosed block
+    comment or string literal fails CLOSED rather than silently
+    blinding the scans."""
     out = []
     i, n, depth = 0, len(text), 0
+    in_str = False
     while i < n:
+        c = text[i]
         two = text[i:i + 2]
+        if in_str:
+            if c == "\\":
+                i += 2
+                continue
+            if c == '"':
+                in_str = False
+            if c == "\n":
+                out.append(c)   # tolerate the invalid-Lean newline
+            else:
+                out.append(c)
+            i += 1
+            continue
+        if depth == 0 and c == '"':
+            in_str = True
+            out.append(c)
+            i += 1
+            continue
         if depth == 0 and two == "--":
             j = text.find("\n", i)
             i = n if j == -1 else j
@@ -541,11 +568,19 @@ def _strip_lean_comments(text):
             i += 2
             continue
         if depth == 0:
-            out.append(text[i])
-        elif text[i] == "\n":
+            out.append(c)
+        elif c == "\n":
             out.append("\n")   # keep line numbers stable
         i += 1
-    return "".join(out)
+    err = None
+    if depth != 0:
+        err = (f"unclosed block comment at EOF (depth {depth}) — the "
+               "reify-isolation scan cannot see the commented-out "
+               "region; fails closed")
+    elif in_str:
+        err = ("unclosed string literal at EOF — the scan cannot "
+               "trust its own lexing past it; fails closed")
+    return "".join(out), err
 
 
 def _bridge_lean_files():
@@ -564,9 +599,13 @@ def check_lean_reify_isolation(files=None):
     `builtin_initialize`, `@[init]`, indentation. The load-bearing
     pin is BEHAVIORAL: `reify_callsite_isolation_test` observes
     aliasing between the accumulators two real `buildIRWithAcc` runs
-    used, red under any spelling). This gate's value is failing LOUD
-    at review time with a named location; a spelling it cannot see
-    is caught by the runtime pin instead. Invariants, over EVERY
+    used — red whenever the reification returns the accumulator it
+    accumulated into, which every single-accumulator mutation does).
+    This gate's value is failing LOUD at review time with a named
+    location. NEITHER layer sees a DECOY mutant (accumulate in
+    shared state, return a copy) composed with a spelling this scan
+    cannot lex; that residual is covered by review only, and is
+    recorded in delta §5.7 — not compensated away. Invariants, over EVERY
     .lean file under lean-bridge/ (minus .lake):
 
     (1) exactly one module-level `IO.Ref` initializer exists and it
@@ -590,34 +629,20 @@ def check_lean_reify_isolation(files=None):
     other_init_lines = []     # (file, lineno, line)
     fresh_files = {}          # path -> [(lineno, stripped line)]
     for path in files:
-        raw = path.read_text()
-        text = _strip_lean_comments(raw)
-        # Fail CLOSED on a runaway comment (ROUND 9 Med 2: an
-        # unbalanced `/-` inside a string literal opens a comment the
-        # stripper never closes, silently blinding every invariant
-        # for the rest of the file). The stripper has no
-        # string-literal state; instead, the file's final non-blank
-        # line must survive stripping — a truncation is an ERROR,
-        # never a silence.
-        raw_tail = next((l for l in reversed(raw.splitlines())
-                         if l.strip()), "")
-        stripped_tail = next((l for l in reversed(text.splitlines())
-                              if l.strip()), "")
-        if raw_tail.split("--")[0].strip() and \
-                stripped_tail.strip() != raw_tail.split("--")[0].strip():
-            errors.append(
-                f"{'/'.join(path.parts[-2:])}: comment stripping "
-                "TRUNCATED the file (its final code line did not "
-                "survive) — likely an unbalanced `/-` inside a string "
-                "literal; the reify-isolation scan cannot see past it, "
-                "so this fails closed")
+        try:
+            relkey = str(path.relative_to(LEAN_BRIDGE))
+        except ValueError:
+            relkey = "/".join(path.parts[-2:])  # test temp trees
+        text, strip_err = _strip_lean_comments(path.read_text())
+        if strip_err is not None:
+            errors.append(f"{relkey}: {strip_err}")
             continue
         # join continuation lines so a signature split across lines
         # still matches the IO.Ref pattern
         joined = re.sub(r"\n\s{4,}", " ", text)
         for g1, g2 in _INIT_IOREF_RE.findall(joined):
-            ioref_inits.append(("/".join(path.parts[-2:]), g1 or g2))
-        rel = "/".join(path.parts[-2:])
+            ioref_inits.append((relkey, g1 or g2))
+        rel = relkey
         for m in _INIT_ANY_RE.finditer(joined):
             line = joined[m.start():].split("\n", 1)[0]
             if not re.search(r":[^\n]*IO\.Ref", line):

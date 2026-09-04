@@ -583,18 +583,51 @@ def _reify_isolation_moved_ref_errors():
         assert_contains(e, "initializers are", "error")
 
 
-@register("scan (C4): an unbalanced /- inside a string fails CLOSED")
-def _reify_isolation_string_truncation_errors():
+@register("scan (C4): a ref behind a /- inside a string IS SEEN (string-aware stripper)")
+def _reify_isolation_string_aware_sees_ref():
+    # ROUND 10 Med 1: the string-blind stripper let "/-" in a literal
+    # erase the rest of the file; the string-aware one lexes past it,
+    # so the hidden IO.Ref is CAUGHT by the ordinary invariant.
     import tempfile
     tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
     with tempfile.TemporaryDirectory() as d:
         r = Path(d)
-        p1 = r / "Tactic.lean"
+        (r / "ProofBroker").mkdir()
+        p1 = r / "ProofBroker" / "Tactic.lean"
         p1.write_text(tac +
             '\ndef pbHint : String := "unterminated /- here"\n'
             "initialize pbBlind : IO.Ref Nat \u2190 IO.mkRef 0\n")
         e = check_lean_reify_isolation(files=[p1])
-        assert_contains(e, "TRUNCATED", "error")
+        assert_contains(e, "initializers are", "error")
+        assert not any("unclosed" in m for m in e), e
+
+
+@register("scan (C4): a runaway /- in CODE fails CLOSED")
+def _reify_isolation_runaway_comment_errors():
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        p1 = r / "ProofBroker" / "Tactic.lean"
+        p1.write_text(tac + "\n/- runaway\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "unclosed block comment", "error")
+
+
+@register("scan (C4): a file ending in a closed block comment is clean")
+def _reify_isolation_trailing_comment_clean():
+    # ROUND 10 Low 4: the tail post-condition hard-false-positived on
+    # this legitimate shape; the depth-based check does not.
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        p1 = r / "ProofBroker" / "Tactic.lean"
+        p1.write_text(tac + "\n/- trailing note -/\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert not e, e
 
 
 @register("scan (C4): the shipped lean reify isolation is clean")

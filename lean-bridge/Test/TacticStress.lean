@@ -18,8 +18,10 @@ all-four-shared mutation and 0/10 under the natDefs-only one — a
 dispatch-free `buildIR` window is ~1.5 ms; the demo file raced
 because its windows span live solver round trips. The fix's pin is
 three-part: `reify_callsite_isolation_test` (load-bearing —
-aliasing between the accumulators two real reifications used, red
-under any spelling), `reify_acc_isolation_test` (the constructor),
+aliasing between the accumulators two real reifications used; red
+whenever `buildIRWithAcc` returns the accumulator it accumulated
+into — the decoy direction is a documented residual, delta §5.7),
+`reify_acc_isolation_test` (the constructor),
 and `tools/check.py`'s `check_lean_reify_isolation` (source-level
 defense in depth).
 -/

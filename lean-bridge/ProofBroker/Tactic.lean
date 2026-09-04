@@ -3994,8 +3994,9 @@ def evalReifyCallsiteIsolationTest : Tactic := fun stx => do
     every run, no parallelism required. It does NOT see a mutation
     that leaves `fresh` intact and moves accumulation back to
     module refs cleared at the `buildIR` call site — that direction
-    is pinned by `reify_callsite_isolation_test` (aliasing-based,
-    spelling-independent — the load-bearing pin since ROUND 8) with
+    is pinned by `reify_callsite_isolation_test` (aliasing-based;
+    red whenever the reification returns the accumulator it
+    accumulated into — the load-bearing pin since ROUND 8) with
     `tools/check.py`'s `check_lean_reify_isolation` source gate as
     defense in depth.
     The stress herd exercises concurrency but is not a catcher —
@@ -4083,7 +4084,7 @@ def evalTypePosGateTest : Tactic := fun stx => do
     a dispatch-free `buildIR` window is ~1.5 ms (the demo file
     raced because its windows span live solver round trips). The
     fix's pin is three-part: `reify_callsite_isolation_test`
-    (load-bearing, aliasing-based, spelling-independent),
+    (load-bearing, aliasing-based; scope and residual in delta §5.7),
     `reify_acc_isolation_test` (the constructor), and
     `check_lean_reify_isolation` in `tools/check.py` (source-level
     defense in depth). -/

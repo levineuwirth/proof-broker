@@ -1469,9 +1469,15 @@ must survive run 2; a marker in run 2's must not appear in run 1's)
 the accumulator it accumulated into, which every single-accumulator
 mutation does (mutation-verified: `initialize`-backed shared
 accumulation with `fresh` intact, per-field). KNOWN RESIDUAL
-(ROUND 9): a decoy mutant — accumulate in shared state, return a
-COPIED accumulator — evades any return-value pin by construction;
-that direction is covered only by the source gate and review;
+(ROUND 9, sharpened at ROUND 10): a decoy mutant — accumulate in
+shared state, return a COPIED accumulator — evades any return-value
+pin by construction. A decoy whose store is a gate-VISIBLE
+module ref is red at the source gate; ROUND 10's M′ composition
+(decoy + a string-literal blinding of the gate) was closed by the
+string-aware stripper, which lexes past literals and fails closed
+on unbalanced state — so the surviving residual is a decoy whose
+store the gate cannot LEX AS an `IO.Ref` (e.g. hidden behind a type
+synonym), and that is covered by review only;
 `reify_acc_isolation_test` pins the
 constructor at runtime (all four fields independently since
 ROUND 5; red on every run under any re-sharing inside

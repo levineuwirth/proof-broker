@@ -2402,8 +2402,10 @@ example : True := by reify_acc_isolation_test
 
 /-- CALL-SITE isolation pin (C4 ROUND 8 Med 1): the accumulators two
     real `buildIRWithAcc` runs actually used must be distinct state
-    — red under ANY spelling of a module-state regression, because
-    it observes aliasing rather than source text. The goal carries a
+    — red whenever `buildIRWithAcc` returns the accumulator it
+    accumulated into (every single-accumulator mutation), because it
+    observes aliasing rather than source text; the decoy direction
+    is a documented residual (delta §5.7). The goal carries a
     nonlinear ℕ product so run 1 mints an atom to watch. -/
 example (x y : Nat) (h : x * y ≤ 5) : x * y ≤ 6 := by
   reify_callsite_isolation_test
