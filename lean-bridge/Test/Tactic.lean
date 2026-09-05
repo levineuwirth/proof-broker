@@ -146,13 +146,12 @@ theorem bv_compare_axiom_free : (3 : BitVec 8) < 5 := by
 /-- Term-mode Tier 1 Farkas: `5 ≤ x ∧ x ≤ 3 ⊢ False`. Pinned through
     `[z3]` for a Tier 1 cert (cvc5 mints Tier 3 alethe-2024 which
     the term builder doesn't yet consume, cvc4 mints Tier 0 oracle).
-    HONEST DEPENDENCE (CONTINUATION ROUND 2 Low 3): on five of this
-    file's `[z3]` term shapes — this one and the next four — the
-    Tier 1 witness comes from the SDK's INTERNAL closer's dense
-    search, not from z3's native extraction (measured: disabling
-    `Farkas_search.try_close` reds them with the tier-0 refusal). So
-    these five pin the z3-adapter + internal-closer path end to end;
-    z3's own extraction is pinned by the shapes it does match.
+    WITNESS SOURCE (corrected at CONTINUATION ROUND 3 finding 1 —
+    the first version of this note claimed the wrong five tests):
+    THIS shape stays GREEN with the internal closer disabled — z3's
+    own extraction handles it. The five shapes that DO ride the
+    SDK's internal closer each say so on their own docstring
+    (goal/ge/lt-hyp/eq/not-hyp; measured by mutation, ROUND 3 M2).
     The closer reads the witness's coefficients and applies
     `farkasContradict` from `ProofBroker.TermMode`; only the
     strictly-positive linear-combination subgoal goes through
@@ -184,8 +183,11 @@ theorem pb_term_arity3_axiom_free
     has one real-hypothesis entry plus a `neg_goal` slot the closer
     discharges via the unified `intLeViaLt` wrapper (which wraps
     `Decidable.byContradiction` over `Int.decLe`, axiom-free) then
-    folds into the arity-N False-fold. The cert minted by z3 carries
-    coefficients on both `h` and `neg_goal`; the closer builds the
+    folds into the arity-N False-fold. WITNESS SOURCE: on this shape
+    z3's proof yields no native Farkas extraction — the Tier 1 cert's
+    coefficients on `h` and `neg_goal` come from the SDK's internal
+    closer's dense search (red with it disabled, ROUND 3 M2); the
+    closer builds the
     proof term explicitly, omega-discharging only the strict-
     positivity polynomial identity. The `[propext, Quot.sound]`
     footprint matches the omega-closure path — no `Classical.choice`. -/
@@ -207,7 +209,9 @@ theorem pb_term_lt_axiom_free
 /-- Term-mode with `≥` goal: `GE.ge n 4` reduces by instance to
     `LE.le 4 n`, so the closer routes through `intLeViaLt` with arg
     swap and the resulting `4 ≤ n` proof term unifies with the
-    `n ≥ 4` goal definitionally. -/
+    `n ≥ 4` goal definitionally. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_ge_axiom_free
     (n : Int) (h : 5 ≤ n) : n ≥ 4 := by
   proof_broker_term [z3]
@@ -229,7 +233,9 @@ theorem pb_term_gt_axiom_free
     residual `K = 2`. Mirror of Rocq's `pb_term_lt_hyp_axiom_free`.
     `Int.add_one_le_of_lt` + `Int.sub_nonpos_of_le` (the building
     blocks of `ltToLe0`) are axiom-free, so closure stays at
-    `[propext, Quot.sound]`. -/
+    `[propext, Quot.sound]`. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_lt_hyp_axiom_free
     (x : Int) (h1 : 5 < x) (h2 : x < 5) : False := by
   proof_broker_term [z3]
@@ -254,7 +260,9 @@ theorem pb_term_lt_mixed_axiom_free
     term-mode on each direction. Two solver dispatches, two
     `intLeViaLt`-routed applications, one `Int.le_antisymm`. The
     axiom footprint stays `[propext, Quot.sound]` — splitting adds
-    no new trust delta over the single-direction case. -/
+    no new trust delta over the single-direction case. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_eq_axiom_free
     (n : Int) (h1 : n ≤ 5) (h2 : 5 ≤ n) : n = 5 := by
   proof_broker_term [z3]
@@ -309,7 +317,9 @@ theorem pb_term_eq_hyp_axiom_free
     `x - 3 ≤ 0` to produce a strictly-positive sum `6 - x + x - 3 = 3
     > 0`. Trust footprint: `[propext, Quot.sound]` from omega-closed
     polynomial-identity subgoals; the Not helpers themselves are
-    axiom-free via omega. -/
+    axiom-free via omega. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_not_hyp_axiom_free
     (x : Int) (h1 : ¬(x ≤ 5)) (h2 : x ≤ 3) : False := by
   proof_broker_term [z3]

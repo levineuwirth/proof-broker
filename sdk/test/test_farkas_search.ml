@@ -405,7 +405,22 @@ let test_d1_70_fixture_closes_via_sparse_rescue () =
   | Ok witness ->
     check_verifies ir witness;
     Alcotest.(check (list string)) "support is hZ + neg_goal"
-      [ "hZ"; "neg_goal" ] (List.sort compare (support_of witness))
+      [ "hZ"; "neg_goal" ] (List.sort compare (support_of witness));
+    (* Pin the COEFFICIENTS, not just the support — WRITEUP.md's
+       worked example states "hZ:2, neg_goal:1" and its preamble
+       promises every number a committed artifact (CONTINUATION
+       ROUND 3 finding 4b). *)
+    let coef name =
+      Yojson.Safe.Util.(
+        witness |> member "coefficients" |> to_list
+        |> List.find_map (fun e ->
+             if member "hypothesis" e |> to_string = name
+             then Some (member "coefficient" e |> to_string)
+             else None))
+    in
+    Alcotest.(check (option string)) "hZ coefficient" (Some "2") (coef "hZ");
+    Alcotest.(check (option string)) "neg_goal coefficient"
+      (Some "1") (coef "neg_goal")
 
 (** The STREAMING half of the C4 fix, pinned by memory (C4 ROUND 2
     finding 4(a): restoring materialization with the cap kept left
