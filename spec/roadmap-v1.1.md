@@ -70,9 +70,9 @@ row has a gate so it can be picked up cold.
 
 | item | gate when picked up | notes |
 |---|---|---|
-| LRA walker (`Real`, `p/q` literals, `la_mult_pos`, an LRA arm) | several LRA corpus goals replay live on both bridges | the walker is LIA/UF/UFLIA today |
+| LRA walker (`Real`, `p/q` literals, `la_mult_pos`, an LRA arm) | ≥ 4 LRA corpus goals replay live on both bridges | the walker is LIA/UF/UFLIA today |
 | Faithful arithmetic leaves | the corpus's `la_*` leaves close in term mode from the `:args` coefficients, no `omega`/`lia` at the leaves; `profile.json` gains a `leaves_term_mode` figure | makes the walker fully "cert IS the proof" (`delta.md §7.7`) |
-| Corpus growth + in-build timings | more goal shapes (ite, nested ∀∃), a larger scale point, and a tolerance-gated timing artifact produced by the build | needs `ite` in the IR and `Smtlib.emit`; this is where the v1.0 performance budgets go (§5) |
+| Corpus growth + in-build timings | ≥ 30 goals (adding ite and nested ∀∃ shapes), a ≥ 3000-step scale point, and a tolerance-gated timing artifact produced by the build | needs `ite` in the IR and `Smtlib.emit`; this is where the v1.0 performance budgets go (§5) |
 | Property tests (`qcheck`) for round-trip invariants | serialize→deserialize, rewrite→invert and dispatch→lift properties under shrinking, on both codecs | v1.0 cross-phase item; `tools/fuzz_resolution.py` covers the resolution algebra today |
 | Default tier order in parallel dispatch | either the spec text adopts the driver's rule (`tier_preference` first, then highest numeric tier) or the driver adopts the spec's `1 > 3 > 2 > 0` with a behaviour-change record and tests | `delta.md §7.6`; not decided at R5 |
 | Example 3 (quotient) live | a Lean or Rocq reifier emits a quotient goal, the `quotient_elimination` pass fires in the trace, and the lifted term inverts it | fixture-only since Phase 1 |
