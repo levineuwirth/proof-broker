@@ -146,6 +146,17 @@ in your own CI with `tools/check_axioms.py` — see
 `tools/AXIOM_GUARD.md` in the proof-broker repo, which documents the
 allowlist format for external projects.
 
+
+**Seeing what a call did.** `proof_broker?` prints the extraction
+path (IR shape, dispatch attempts, cert tier, verify outcome, locals
+the reifier dropped). For numbers across many calls, set
+`PROOF_BROKER_REPORT=1` in the environment of the `lean` process:
+every successful broker call then logs one line —
+`proof_broker report: tactic=… closer=… backend=… tier=… format=…
+cert_bytes=… fragment=… hyps=… dispatch_ms=… verify_ms=… wall_ms=…`
+— which a script can read out of the build log. Unset, nothing is
+logged and nothing changes.
+
 ## 7. Troubleshooting
 
 | symptom | cause |

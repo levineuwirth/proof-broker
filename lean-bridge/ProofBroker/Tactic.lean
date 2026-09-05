@@ -1700,6 +1700,42 @@ private def renderPath (path : ExtractionPath) : MessageData :=
     ++ [certLine, traceLine, verifyLine]
   m!"{String.intercalate "\n" lines}"
 
+/-- R4.4: one machine-readable line per SUCCESSFUL broker call,
+    emitted only when `PROOF_BROKER_REPORT` is set in the process
+    environment (the demo's `tools/probe.sh` sets it; a normal build
+    does not). Reports what the extraction path already knows — the
+    dispatch and verify wall times the path carries, the winning
+    cert's backend / tier / format / compact-JSON byte size, the
+    IR's fragment and hypothesis count — plus the tactic's own wall
+    (entry to closed goal) and WHICH closer actually closed (the
+    label `closeOrFail` / `runTermModeOnGoal` return). The demo's
+    `obligation_table.py` reads these lines from the probe logs, so
+    the per-obligation numbers in its README are generated, never
+    typed. Reporting happens after the goal is closed and changes
+    nothing on the proof path; unset, the branch is one `getEnv`. -/
+private def reportIfRequested (tactic : String) (t0 : Nat)
+    (path : ExtractionPath) (closer : String) : TacticM Unit := do
+  if (← IO.getEnv "PROOF_BROKER_REPORT").isSome then
+    let wall ← msSince t0
+    let backend : String := match path.cert with
+      | none => "none"
+      | some c =>
+        ((c.getObjVal? "backend").bind (·.getObjValAs? String "name")).toOption.getD "?"
+    let tier : Int := match path.cert with
+      | none => -1
+      | some c => (c.getObjValAs? Int "tier").toOption.getD (-1)
+    let fmt : String := match path.cert with
+      | none => "none"
+      | some c => (c.getObjValAs? String "format").toOption.getD "?"
+    let bytes : Nat := match path.cert with
+      | none => 0
+      | some c => c.compress.utf8ByteSize
+    let fragment := path.ir.logicClassification.firstOrderFragment
+    logInfo m!"proof_broker report: tactic={tactic} closer={closer} \
+      backend={backend} tier={tier} format={fmt} cert_bytes={bytes} \
+      fragment={fragment} hyps={path.ir.context.hypotheses.length} \
+      dispatch_ms={path.dispatchMs} verify_ms={path.verifyMs} wall_ms={wall}"
+
 /- ============================================================
    Tactic
    ============================================================ -/
@@ -2591,7 +2627,7 @@ private def tryLlmReconstruct? (goal : MVarId) (ir : IR)
     threads it through; the LLM-replay/reconstruction paths in
     the wrapper do use it. -/
 private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
-    : TacticM Unit := do
+    : TacticM String := do
   -- Accept either strict verifyOk (Tier 1/2/3 with a real
   -- soundness check) OR envelopeOk + tierCheckDeferred (Tier 0
   -- oracle path, currently the only route for fragments without
@@ -2663,7 +2699,9 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
           pure ok
         else
           pure false
-      unless walkerHandled do
+      if walkerHandled then
+        pure (if natModeOf path.ir then "alethe_walker_nat" else "alethe_walker")
+      else
         -- R3-M2: an α extraction has no decision-procedure closer
         -- (omega is Int/ℕ-only). If the cert is a Tier-1 Farkas
         -- witness whose specializations the term-mode path inverts,
@@ -2687,7 +2725,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
             replaceMainGoal [g]
           checkCertSpecializations cert (termSpecMode path.ir)
           match ← reifierExt.get with
-          | some ext => ext.polyFarkasCloser cert path.ir
+          | some ext => ext.polyFarkasCloser cert path.ir; pure "poly_farkas_replay"
           | none =>
             throwError "proof_broker: the broker certified this \
               polymorphic-α goal but no α closer is registered. \
@@ -2705,6 +2743,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
             let g ← invertDefUnfolds (← getMainGoal) path
             replaceMainGoal [g]
           evalTactic (← `(tactic| omega))
+          pure "gated_omega"
     else if fragment == "BV" then
       -- Cert-gated decide: BitVec has DecidableEq + the operator
       -- typeclass instances are decidable, so closed BV goals
@@ -2716,7 +2755,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- depend on any axiom. Big-width / quantifier-heavy BV goals
       -- where `decide` doesn't terminate in elaboration time are
       -- reported as a tactic failure (no axiom fallback — audit H1).
-      try evalTactic (← `(tactic| decide))
+      try evalTactic (← `(tactic| decide)); pure "gated_decide"
       catch _ =>
         throwError "proof_broker: the broker certified this BV goal but \
           Lean's `decide` could not discharge it (typically too wide or \
@@ -2766,10 +2805,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
           tryAletheWalker cert
         else
           pure false
-      unless walkerHandled do
-        try evalTactic (← `(tactic| subst_eqs; rfl))
+      if walkerHandled then pure "alethe_walker" else
+        try evalTactic (← `(tactic| subst_eqs; rfl)); pure "gated_subst_eqs_rfl"
         catch _ =>
-          try evalTactic (← `(tactic| simp_all))
+          try evalTactic (← `(tactic| simp_all)); pure "gated_simp_all"
           catch _ =>
             throwError "proof_broker: the broker certified this UF goal \
               but neither the Alethe walker nor the Lean closer chain \
@@ -2797,10 +2836,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
           tryAletheWalker cert
         else
           pure false
-      unless walkerHandled do
-        try evalTactic (← `(tactic| simp_all))
+      if walkerHandled then pure "alethe_walker" else
+        try evalTactic (← `(tactic| simp_all)); pure "gated_simp_all"
         catch _ =>
-          try evalTactic (← `(tactic| omega))
+          try evalTactic (← `(tactic| omega)); pure "gated_omega"
           catch _ =>
             throwError "proof_broker: the broker certified this UFLIA \
               goal but neither the Alethe walker nor the fallback \
@@ -2816,7 +2855,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- call either way, so the closer can trust solvability.
       if fragment == "LRA" then
         match ← reifierExt.get with
-        | some ext => ext.lraCloser
+        | some ext => ext.lraCloser; pure "gated_ext_lra"
         | none =>
           throwError "proof_broker: the broker certified this LRA goal \
             but no LRA closer is registered. `import ProofBrokerMathlib` \
@@ -2831,7 +2870,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- the cert never enters the trust footprint (audit H1).
         -- No extension ⇒ tactic failure, never an admitted axiom.
         match ← reifierExt.get with
-        | some ext => ext.holCloser
+        | some ext => ext.holCloser; pure "gated_ext_hol"
         | none =>
           throwError "proof_broker: the broker certified this \
             {fragment} goal but no higher-order closer is registered. \
@@ -2892,7 +2931,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
     shared closer signature but unused; `goal` is used only by
     the LLM-replay paths. -/
 private def closeOrFail (goal : MVarId) (_goalType : Expr)
-    (path : ExtractionPath) : TacticM Unit := do
+    (path : ExtractionPath) : TacticM String := do
   -- (1) LLM-as-backend primary path — its untrusted-oracle cert
   -- bypasses the fragment chain entirely.
   if let some cert := path.cert then
@@ -2902,14 +2941,14 @@ private def closeOrFail (goal : MVarId) (_goalType : Expr)
             | some (.tier3ReplayDeferred _) => true
             | _ => false) then
       replayLlmScriptOrFail goal cert
-      return
+      return "llm_replay"
   -- (2) Primary closer chain; on failure, (3) try LLM-assisted
   -- reconstruction before surfacing the error.
   try
     closeOrFailPrimary goal path
   catch primary =>
     if (← tryLlmReconstruct? goal path.ir path.cert) then
-      return
+      return "llm_reconstruct"
     else
       throw primary
 
@@ -3642,6 +3681,7 @@ private def renameLocalsForSmt (goal : MVarId) : TacticM MVarId := do
 
 @[tactic proofBroker]
 def evalProofBroker : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
   let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
@@ -3654,10 +3694,12 @@ def evalProofBroker : Tactic := fun stx => do
         parseAdapterList none
     | _ => throwError "proof_broker: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
-  closeOrFail goal goalType path
+  let closer ← closeOrFail goal goalType path
+  reportIfRequested "proof_broker" t0 path closer
 
 @[tactic proofBrokerWalker]
 def evalProofBrokerWalker : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
   let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
@@ -3703,14 +3745,17 @@ def evalProofBrokerWalker : Tactic := fun stx => do
       | .error e => throwError "proof_broker_walker: trace parse \
           failed: {repr e}"
     walkNatProofIntoGoal (← getMainGoal) proof path.ir path.natAtoms
+    reportIfRequested "proof_broker_walker" t0 path "alethe_walker_nat"
   else
     unless (← tryAletheWalker cert) do
       throwError "proof_broker_walker: the Alethe walker did not close the \
         goal from the live cert (no omega fallback). Cert tier/format may \
         not be a walkable alethe-2024 trace, or the walk failed."
+    reportIfRequested "proof_broker_walker" t0 path "alethe_walker"
 
 @[tactic proofBrokerQ]
 def evalProofBrokerQ : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
   let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
@@ -3724,7 +3769,8 @@ def evalProofBrokerQ : Tactic := fun stx => do
     | _ => throwError "proof_broker?: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
   logInfo (renderPath path)
-  closeOrFail goal goalType path
+  let closer ← closeOrFail goal goalType path
+  reportIfRequested "proof_broker?" t0 path closer
 
 /-- Read the cert's payload strategy_hint, returning `""` if absent. -/
 private def certStrategyHint (cert : Json) : String :=
@@ -3749,7 +3795,7 @@ private def certStrategyHint (cert : Json) : String :=
     * Tier 1 Farkas, anything else → core `closeViaTermMode` (Int). -/
 private def runTermModeOnGoal
     (goal : MVarId) (adapterNames? : Option (List String))
-    (preferHigherTier : Bool) : TacticM Unit := do
+    (preferHigherTier : Bool) : TacticM (ExtractionPath × String) := do
   -- R4 continuation: term mode consumes a Tier 1 Farkas or Tier 2
   -- case-split witness and nothing else, so it SAYS so
   -- (`user_directives.tier_preference`, the walker's `["3"]` in the
@@ -3797,7 +3843,7 @@ private def runTermModeOnGoal
       throwError "proof_broker_term: Tier 2 case-split over a ℕ \
         extraction is not lifted yet"
     closeNatViaTermMode goal goalType cert path.ir path.natAtoms
-    return
+    return (path, "term_mode_nat")
   if polyModeOf path.ir then
     if certStrategyHint cert == "case_split_farkas" then
       throwError "proof_broker_term: Tier 2 case-split over a \
@@ -3808,10 +3854,10 @@ private def runTermModeOnGoal
       throwError "proof_broker_term: polymorphic-α cert minted but no \
         extension closer is registered (import `ProofBrokerMathlib` \
         for the class-polymorphic Farkas term builder)"
-    return
+    return (path, "term_mode_poly")
   if certStrategyHint cert == "case_split_farkas" then
     match ← reifierExt.get with
-    | some ext => ext.tier2CaseSplitCloser cert path.ir
+    | some ext => ext.tier2CaseSplitCloser cert path.ir; pure (path, "term_mode_case_split")
     | none =>
       throwError "proof_broker_term: Tier 2 case_split_farkas cert \
                    minted but no extension closer registered (import \
@@ -3825,11 +3871,11 @@ private def runTermModeOnGoal
     match extOpt with
     | some ext =>
       if fragment == ext.irFragment then
-        ext.tier1FarkasCloser cert path.ir
+        ext.tier1FarkasCloser cert path.ir; pure (path, "term_mode_ext")
       else
-        closeViaTermMode goal goalType cert
+        closeViaTermMode goal goalType cert; pure (path, "term_mode_int")
     | none =>
-      closeViaTermMode goal goalType cert
+      closeViaTermMode goal goalType cert; pure (path, "term_mode_int")
 
 /-- Match an Int equality goal `Eq Int a b`. Returns `(a, b)` if so;
     `none` otherwise. The closer pre-splits equality goals via
@@ -3861,6 +3907,7 @@ private def matchExtensionEqGoal? (goalType : Expr) : MetaM (Option Expr) := do
 
 @[tactic proofBrokerTerm]
 def evalProofBrokerTerm : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
   let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
@@ -3885,7 +3932,8 @@ def evalProofBrokerTerm : Tactic := fun stx => do
     let subgoals ← getGoals
     for sg in subgoals do
       setGoals [sg]
-      runTermModeOnGoal sg adapterNames? preferHigherTier
+      let (path, closer) ← runTermModeOnGoal sg adapterNames? preferHigherTier
+      reportIfRequested "proof_broker_term" t0 path closer
     setGoals []
   | none =>
   -- R3-M1: ℕ equality goals split via Nat.le_antisymm — each ≤
@@ -3897,16 +3945,17 @@ def evalProofBrokerTerm : Tactic := fun stx => do
       let subgoals ← getGoals
       for sg in subgoals do
         setGoals [sg]
-        runTermModeOnGoal sg adapterNames? preferHigherTier
+        let (path, closer) ← runTermModeOnGoal sg adapterNames? preferHigherTier
+        reportIfRequested "proof_broker_term" t0 path closer
       setGoals []
     else
-      evalProofBrokerTermRest goalType goal adapterNames? preferHigherTier
+      evalProofBrokerTermRest t0 goalType goal adapterNames? preferHigherTier
   | _ =>
-    evalProofBrokerTermRest goalType goal adapterNames? preferHigherTier
+    evalProofBrokerTermRest t0 goalType goal adapterNames? preferHigherTier
 where
   /-- The pre-R3 tail: extension-claimed equality split, else the
       plain single-goal pipeline. -/
-  evalProofBrokerTermRest (goalType : Expr) (goal : MVarId)
+  evalProofBrokerTermRest (t0 : Nat) (goalType : Expr) (goal : MVarId)
       (adapterNames? : Option (List String)) (preferHigherTier : Bool)
       : TacticM Unit := do
     match ← matchExtensionEqGoal? goalType with
@@ -3919,12 +3968,15 @@ where
         let subgoals ← getGoals
         for sg in subgoals do
           setGoals [sg]
-          runTermModeOnGoal sg adapterNames? preferHigherTier
+          let (path, closer) ← runTermModeOnGoal sg adapterNames? preferHigherTier
+          reportIfRequested "proof_broker_term" t0 path closer
         setGoals []
       | none =>
-        runTermModeOnGoal goal adapterNames? preferHigherTier
+        let (path, closer) ← runTermModeOnGoal goal adapterNames? preferHigherTier
+        reportIfRequested "proof_broker_term" t0 path closer
     | none =>
-      runTermModeOnGoal goal adapterNames? preferHigherTier
+      let (path, closer) ← runTermModeOnGoal goal adapterNames? preferHigherTier
+      reportIfRequested "proof_broker_term" t0 path closer
 
 /- ============================================================
    Test-only entry point for the LLM-replay closer
