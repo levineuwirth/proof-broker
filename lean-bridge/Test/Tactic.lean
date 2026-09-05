@@ -144,14 +144,21 @@ theorem bv_compare_axiom_free : (3 : BitVec 8) < 5 := by
 #print axioms bv_compare_axiom_free
 
 /-- Term-mode Tier 1 Farkas: `5 ≤ x ∧ x ≤ 3 ⊢ False`. Pinned through
-    `[z3]` because z3 mints native Tier 1 Farkas certs (cvc5 mints
-    Tier 3 alethe-2024 which the term builder doesn't yet consume,
-    cvc4 mints Tier 0 oracle). The closer reads the witness's
-    coefficients and applies `farkasContradict` from
-    `ProofBroker.TermMode`; only the strictly-positive
-    linear-combination subgoal goes through `omega` (a narrower
-    role than the LIA closer's full goal-discharge omega call).
-    Mirror of Rocq's `pb_term_axiom_free`. -/
+    `[z3]` for a Tier 1 cert (cvc5 mints Tier 3 alethe-2024 which
+    the term builder doesn't yet consume, cvc4 mints Tier 0 oracle).
+    HONEST DEPENDENCE (CONTINUATION ROUND 2 Low 3): on five of this
+    file's `[z3]` term shapes — this one and the next four — the
+    Tier 1 witness comes from the SDK's INTERNAL closer's dense
+    search, not from z3's native extraction (measured: disabling
+    `Farkas_search.try_close` reds them with the tier-0 refusal). So
+    these five pin the z3-adapter + internal-closer path end to end;
+    z3's own extraction is pinned by the shapes it does match.
+    The closer reads the witness's coefficients and applies
+    `farkasContradict` from `ProofBroker.TermMode`; only the
+    strictly-positive linear-combination subgoal goes through
+    `omega` (a narrower role than the LIA closer's full
+    goal-discharge omega call). Mirror of Rocq's
+    `pb_term_axiom_free`. -/
 theorem pb_term_axiom_free
     (x : Int) (h1 : 5 ≤ x) (h2 : x ≤ 3) : False := by
   proof_broker_term [z3]

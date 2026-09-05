@@ -352,7 +352,7 @@ let support_of (witness : Yojson.Safe.t) : string list =
       if c = "0" then None
       else Some (e |> member "hypothesis" |> to_string))
 
-(** The rescue on a synthetic 17-input IR (dense 4^16-scale space,
+(** The rescue on a synthetic 17-input IR (dense space 4^17-scale,
     refused by the dense pass) — the support-2 witness is found,
     verifies, and is exactly [hx; neg_goal]: the first hit is the
     MINIMAL support, by construction of the order. (The live-fixture

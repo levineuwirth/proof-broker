@@ -168,8 +168,20 @@ let detail_of_reason = function
   | Cert_version_mismatch { got } ->
     Printf.sprintf "expected cert_version=1.0, got %s" got
   | Farkas_unknown_hypothesis { hypothesis } ->
-    Printf.sprintf "hypothesis %s not found in IR (and not the reserved \
-                    name neg_goal)" hypothesis
+    (* The DUPLICATE: marker rides this reason over the FFI (the
+       reason type is a protocol surface); without the branch the
+       user read "hypothesis DUPLICATE:x not found in IR" — the
+       opposite of the fact (CONTINUATION ROUND 2 Low 2). *)
+    (match String.length hypothesis >= 10
+           && String.sub hypothesis 0 10 = "DUPLICATE:" with
+     | true ->
+       Printf.sprintf "hypothesis name %s appears MORE THAN ONCE in \
+                       the IR — by-name witness resolution is \
+                       ambiguous, refusing"
+         (String.sub hypothesis 10 (String.length hypothesis - 10))
+     | false ->
+       Printf.sprintf "hypothesis %s not found in IR (and not the \
+                       reserved name neg_goal)" hypothesis)
   | Farkas_nonlinear { hypothesis; detail } ->
     Printf.sprintf "%s: %s" hypothesis detail
   | Farkas_bad_coefficient { hypothesis; raw } ->
