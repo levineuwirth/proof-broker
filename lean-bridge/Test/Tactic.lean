@@ -2708,6 +2708,24 @@ theorem pb_r4_ctx_hyp_mvar_coe (v0 : Nat) (v : Int) (h : (v0 : Int) ≤ v) :
   proof_broker
 #print axioms pb_r4_ctx_hyp_mvar_coe
 
+/-- The mechanism the context fix EXPOSED (verinf `D1/70`): once the
+    tactic sees its whole context, the solvers' native Farkas
+    extraction does not match their proofs and the internal rescue
+    search's dense space (4^17 here) is above its 2M cap, so every
+    adapter fell to a Tier 0 oracle cert that term mode refuses. The
+    SDK's sparse-support rescue (`Farkas_search`, support ≤ 4 under
+    the same budget) finds `hZ + neg_goal` among the 15 irrelevant
+    bounds; term mode consumes it. Red before that rescue with
+    "cert was minted but verifier did not accept it (tier-0 …)". -/
+theorem pb_r4_ctx_irrelevant_context_term (Zmax a1 a2 a3 a4 a5 a6 a7 a8
+    a9 a10 a11 a12 a13 a14 a15 : Nat) (hZ : Zmax ≤ 2^16)
+    (h1 : a1 ≤ 1) (h2 : a2 ≤ 2) (h3 : a3 ≤ 3) (h4 : a4 ≤ 4) (h5 : a5 ≤ 5)
+    (h6 : a6 ≤ 6) (h7 : a7 ≤ 7) (h8 : a8 ≤ 8) (h9 : a9 ≤ 9) (h10 : a10 ≤ 10)
+    (h11 : a11 ≤ 11) (h12 : a12 ≤ 12) (h13 : a13 ≤ 13) (h14 : a14 ≤ 14)
+    (h15 : a15 ≤ 15) :
+    (2:Nat)^24 + 2 * Zmax ≤ pbP := by proof_broker_term
+#print axioms pb_r4_ctx_irrelevant_context_term
+
 /-- The precondition tactic itself fails closed: on a clean goal
     (declaration header, no `have`) every shape is ABSENT and each
     assertion is a named error — so a test that names a shape is

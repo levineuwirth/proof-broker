@@ -97,6 +97,98 @@ let test_dispatch_unsat_mints_tier3_cert () =
          (Adapter.kind_of_failure f)
          (Adapter.detail_of_failure f))
 
+(* --- R4 continuation: the verinf D1 obligations under their FULL
+   context (fixtures written by the bridge's reifier, 2026-09-05,
+   post-normalization). Both run through the dispatch pipeline first
+   (the numeral-definition unfold of `P`), exactly as the driver does. *)
+
+let fixture_ir (name : string) : Ir.t =
+  let path =
+    Filename.concat (Sys.getcwd ()) ("../../../../sdk/test/fixtures/" ^ name)
+  in
+  Codec.of_json (Yojson.Safe.from_file path)
+
+let with_tier_pref (prefs : string list) (ir : Ir.t) : Ir.t =
+  let ud = match ir.user_directives with
+    | Some ud -> ud
+    | None -> { preferred_backend = None; tier_preference = None;
+                rewriter_preferences = None; budget = None }
+  in
+  { ir with user_directives = Some { ud with tier_preference = Some prefs } }
+
+let cert_or_fail = function
+  | Adapter.Cert c -> c
+  | Adapter.Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f) (Adapter.detail_of_failure f))
+
+(** D1/69 (`x.val + z.val < 2^24 + 2·Zmax`, 17 hypotheses): cvc5's
+    proof is not a single la_generic and the Tier 3 checker verifies
+    it, so the DEFAULT ladder mints Tier 3 — measured through the
+    bridge on 2026-09-05, and the reason `proof_broker_term` failed
+    with "cert is not a Farkas witness". *)
+let test_d1_69_default_ladder_mints_tier3 () =
+  with_cvc5 @@ fun () ->
+  let ir, _, h = Dispatch.run_dispatch_pipeline (fixture_ir "ir-verinf-d1-69.json") in
+  let c = cert_or_fail (Adapter_cvc5.dispatch ~rewrite_trace_hash:h ir) in
+  Alcotest.(check int) "tier=3" 3 c.tier;
+  Alcotest.(check string) "format=alethe-2024" "alethe-2024" c.format
+
+(** The same IR with the term-mode preference ["1"; "2"]: the internal
+    closer runs before Tier 3 and its (sparse-rescue) witness is
+    minted as Tier 1. *)
+let test_d1_69_prefer_farkas_mints_tier1 () =
+  with_cvc5 @@ fun () ->
+  let ir = with_tier_pref [ "1"; "2" ] (fixture_ir "ir-verinf-d1-69.json") in
+  let ir, _, h = Dispatch.run_dispatch_pipeline ir in
+  let c = cert_or_fail (Adapter_cvc5.dispatch ~rewrite_trace_hash:h ir) in
+  Alcotest.(check int) "tier=1" 1 c.tier;
+  Alcotest.(check string) "format=farkas" "farkas" c.format
+
+(** D1/70 (`2^24 + 2·Zmax ≤ P`, 19 hypotheses): no structural
+    extractor matches and the Tier 3 checker rejects the proof, so the
+    internal closer is the only witness source; its dense space is
+    above the cap and the sparse rescue finds [hZ + neg_goal]. Before
+    the rescue this minted Tier 0 (measured 2026-09-05). Default
+    ladder, no preference needed. *)
+let test_d1_70_sparse_rescue_mints_tier1 () =
+  with_cvc5 @@ fun () ->
+  let ir, _, h = Dispatch.run_dispatch_pipeline (fixture_ir "ir-verinf-d1-70.json") in
+  let c = cert_or_fail (Adapter_cvc5.dispatch ~rewrite_trace_hash:h ir) in
+  Alcotest.(check int) "tier=1" 1 c.tier;
+  Alcotest.(check string) "format=farkas" "farkas" c.format
+
+(** End to end through the parallel driver with the real cvc5 + z3
+    adapters and their shipped manifests: without a preference cvc5's
+    Tier 3 wins ("highest tier"); with the term-mode preference the
+    winner is a Tier 1 Farkas witness. Skipped unless both solvers
+    are on PATH. *)
+let test_d1_69_parallel_prefers_consumable_witness () =
+  with_cvc5 @@ fun () ->
+  if Sys.command "which z3 > /dev/null 2>&1" <> 0 then
+    Printf.printf "[skip] z3 not on PATH\n"
+  else begin
+    let examples = Filename.concat (Sys.getcwd ()) "../../../../examples" in
+    let manifest name =
+      Manifest.of_json
+        (Yojson.Safe.from_file (Filename.concat examples ("manifest-" ^ name ^ ".json")))
+    in
+    let adapters = Hashtbl.create 4 in
+    Hashtbl.replace adapters "cvc5" Adapter_cvc5.adapter;
+    Hashtbl.replace adapters "z3" Adapter_z3.adapter;
+    let run ir =
+      Dispatch.run_parallel ~grace_window_ms:2000
+        ~manifests:[ manifest "cvc5"; manifest "z3" ] ~adapters ir
+    in
+    let tier_of (r : Dispatch.result) =
+      match r.cert with Some c -> c.Certificate.tier | None -> -1 in
+    let base = fixture_ir "ir-verinf-d1-69.json" in
+    Alcotest.(check int) "no preference: cvc5's Tier 3 wins" 3 (tier_of (run base));
+    Alcotest.(check int) "[1;2]: a Tier 1 witness wins"
+      1 (tier_of (run (with_tier_pref [ "1"; "2" ] base)))
+  end
+
 let test_dispatch_sat_returns_failure () =
   with_cvc5 @@ fun () ->
   let n = Ir.Var { name = "n" } in
@@ -442,6 +534,14 @@ let () =
     "dispatch", [
       Alcotest.test_case "unsat on Farkas-shape mints Tier 3 alethe cert"
         `Quick test_dispatch_unsat_mints_tier3_cert;
+      Alcotest.test_case "verinf D1/69: default ladder mints Tier 3" `Quick
+        test_d1_69_default_ladder_mints_tier3;
+      Alcotest.test_case "verinf D1/69: term-mode preference mints Tier 1" `Quick
+        test_d1_69_prefer_farkas_mints_tier1;
+      Alcotest.test_case "verinf D1/70: sparse rescue mints Tier 1" `Quick
+        test_d1_70_sparse_rescue_mints_tier1;
+      Alcotest.test_case "verinf D1/69: parallel driver prefers the consumable witness" `Quick
+        test_d1_69_parallel_prefers_consumable_witness;
       Alcotest.test_case "sat returns Sat_returned"
         `Quick test_dispatch_sat_returns_failure;
       Alcotest.test_case "unsupported IR shape"

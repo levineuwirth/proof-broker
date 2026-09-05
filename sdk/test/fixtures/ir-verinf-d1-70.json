@@ -1,0 +1,836 @@
+{
+ "context": {
+  "free_vars": [
+   {
+    "name": "Zmax",
+    "type": "Nat"
+   }
+  ],
+  "hypotheses": [
+   {
+    "name": "hx",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_0"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      },
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "16777216"
+      }
+     ],
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hz",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_1"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      },
+      {
+       "args": [
+        {
+         "node": "NumLit",
+         "type": "Int",
+         "value": "2"
+        },
+        {
+         "args": [
+          {
+           "name": "Zmax",
+           "node": "Var"
+          }
+         ],
+         "node": "App",
+         "symbol": "Int.ofNat",
+         "type_args": []
+        }
+       ],
+       "node": "App",
+       "symbol": "HMul.hMul",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hzh",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_2"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      },
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "65536"
+      }
+     ],
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hZ",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "name": "Zmax",
+         "node": "Var"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      },
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "65536"
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hwidth",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "args": [
+          {
+           "node": "NumLit",
+           "type": "Int",
+           "value": "16777216"
+          },
+          {
+           "args": [
+            {
+             "node": "NumLit",
+             "type": "Int",
+             "value": "2"
+            },
+            {
+             "args": [
+              {
+               "name": "Zmax",
+               "node": "Var"
+              }
+             ],
+             "node": "App",
+             "symbol": "Int.ofNat",
+             "type_args": []
+            }
+           ],
+           "node": "App",
+           "symbol": "HMul.hMul",
+           "type_args": []
+          }
+         ],
+         "node": "App",
+         "symbol": "HAdd.hAdd",
+         "type_args": []
+        },
+        {
+         "args": [
+          {
+           "args": [
+            {
+             "name": "Zmax",
+             "node": "Var"
+            }
+           ],
+           "node": "App",
+           "symbol": "Int.ofNat",
+           "type_args": []
+          },
+          {
+           "node": "NumLit",
+           "type": "Int",
+           "value": "65536"
+          }
+         ],
+         "node": "App",
+         "symbol": "HMul.hMul",
+         "type_args": []
+        }
+       ],
+       "node": "App",
+       "symbol": "HAdd.hAdd",
+       "type_args": []
+      },
+      {
+       "args": [],
+       "node": "App",
+       "symbol": "Bracket.P",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hZval",
+    "shell": {
+     "left": {
+      "args": [
+       {
+        "node": "Opaque",
+        "payload_id": "_pb_atom_3"
+       }
+      ],
+      "node": "App",
+      "symbol": "Int.ofNat",
+      "type_args": []
+     },
+     "node": "Eq",
+     "right": {
+      "args": [
+       {
+        "name": "Zmax",
+        "node": "Var"
+       }
+      ],
+      "node": "App",
+      "symbol": "Int.ofNat",
+      "type_args": []
+     },
+     "type": "Int"
+    }
+   },
+   {
+    "name": "hprod_le",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_4"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      },
+      {
+       "args": [
+        {
+         "args": [
+          {
+           "name": "Zmax",
+           "node": "Var"
+          }
+         ],
+         "node": "App",
+         "symbol": "Int.ofNat",
+         "type_args": []
+        },
+        {
+         "node": "NumLit",
+         "type": "Int",
+         "value": "65536"
+        }
+       ],
+       "node": "App",
+       "symbol": "HMul.hMul",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hbound",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_4"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      },
+      {
+       "args": [],
+       "node": "App",
+       "symbol": "Bracket.P",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hmul",
+    "shell": {
+     "left": {
+      "args": [
+       {
+        "node": "Opaque",
+        "payload_id": "_pb_atom_5"
+       }
+      ],
+      "node": "App",
+      "symbol": "Int.ofNat",
+      "type_args": []
+     },
+     "node": "Eq",
+     "right": {
+      "args": [
+       {
+        "node": "Opaque",
+        "payload_id": "_pb_atom_4"
+       }
+      ],
+      "node": "App",
+      "symbol": "Int.ofNat",
+      "type_args": []
+     },
+     "type": "Int"
+    }
+   },
+   {
+    "name": "hnum",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "16908288"
+      },
+      {
+       "args": [],
+       "node": "App",
+       "symbol": "Bracket.P",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hzsum",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "args": [
+          {
+           "node": "Opaque",
+           "payload_id": "_pb_atom_0"
+          }
+         ],
+         "node": "App",
+         "symbol": "Int.ofNat",
+         "type_args": []
+        },
+        {
+         "args": [
+          {
+           "node": "Opaque",
+           "payload_id": "_pb_atom_1"
+          }
+         ],
+         "node": "App",
+         "symbol": "Int.ofNat",
+         "type_args": []
+        }
+       ],
+       "node": "App",
+       "symbol": "HAdd.hAdd",
+       "type_args": []
+      },
+      {
+       "args": [
+        {
+         "node": "NumLit",
+         "type": "Int",
+         "value": "16777216"
+        },
+        {
+         "args": [
+          {
+           "node": "NumLit",
+           "type": "Int",
+           "value": "2"
+          },
+          {
+           "args": [
+            {
+             "name": "Zmax",
+             "node": "Var"
+            }
+           ],
+           "node": "App",
+           "symbol": "Int.ofNat",
+           "type_args": []
+          }
+         ],
+         "node": "App",
+         "symbol": "HMul.hMul",
+         "type_args": []
+        }
+       ],
+       "node": "App",
+       "symbol": "HAdd.hAdd",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": []
+    }
+   },
+   {
+    "name": "hle",
+    "shell": {
+     "args": [
+      {
+       "args": [
+        {
+         "node": "NumLit",
+         "type": "Int",
+         "value": "16777216"
+        },
+        {
+         "args": [
+          {
+           "node": "NumLit",
+           "type": "Int",
+           "value": "2"
+          },
+          {
+           "args": [
+            {
+             "name": "Zmax",
+             "node": "Var"
+            }
+           ],
+           "node": "App",
+           "symbol": "Int.ofNat",
+           "type_args": []
+          }
+         ],
+         "node": "App",
+         "symbol": "HMul.hMul",
+         "type_args": []
+        }
+       ],
+       "node": "App",
+       "symbol": "HAdd.hAdd",
+       "type_args": []
+      },
+      {
+       "args": [],
+       "node": "App",
+       "symbol": "Bracket.P",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_Zmax",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "name": "Zmax",
+         "node": "Var"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_atom_0",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_0"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_atom_1",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_1"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_atom_2",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_2"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_atom_3",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_3"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_atom_4",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_4"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   },
+   {
+    "name": "_pb_nonneg_atom_5",
+    "shell": {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "0"
+      },
+      {
+       "args": [
+        {
+         "node": "Opaque",
+         "payload_id": "_pb_atom_5"
+        }
+       ],
+       "node": "App",
+       "symbol": "Int.ofNat",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": []
+    }
+   }
+  ],
+  "type_vars": []
+ },
+ "definitional_metadata": {
+  "Bracket.P": {
+   "abstract_signature": "Int",
+   "concept_tag": "numeral_definition",
+   "definitional_equation": {
+    "left": {
+     "args": [],
+     "node": "App",
+     "symbol": "Bracket.P",
+     "type_args": []
+    },
+    "node": "Eq",
+    "right": {
+     "node": "NumLit",
+     "type": "Int",
+     "value": "18446744069414584321"
+    },
+    "type": "Int"
+   },
+   "kind": "defined_function"
+  }
+ },
+ "goal": {
+  "payloads": {
+   "_pb_atom_0": {
+    "kind": "nat_nonlinear_atom",
+    "lean": "x.val"
+   },
+   "_pb_atom_1": {
+    "kind": "nat_nonlinear_atom",
+    "lean": "z.val"
+   },
+   "_pb_atom_2": {
+    "kind": "nat_nonlinear_atom",
+    "lean": "zhigh.val"
+   },
+   "_pb_atom_3": {
+    "kind": "nat_nonlinear_atom",
+    "lean": "(↑Zmax).val"
+   },
+   "_pb_atom_4": {
+    "kind": "nat_nonlinear_atom",
+    "lean": "Zmax * zhigh.val"
+   },
+   "_pb_atom_5": {
+    "kind": "nat_nonlinear_atom",
+    "lean": "(↑Zmax * zhigh).val"
+   }
+  },
+  "shell": {
+   "args": [
+    {
+     "args": [
+      {
+       "node": "NumLit",
+       "type": "Int",
+       "value": "16777216"
+      },
+      {
+       "args": [
+        {
+         "node": "NumLit",
+         "type": "Int",
+         "value": "2"
+        },
+        {
+         "args": [
+          {
+           "name": "Zmax",
+           "node": "Var"
+          }
+         ],
+         "node": "App",
+         "symbol": "Int.ofNat",
+         "type_args": []
+        }
+       ],
+       "node": "App",
+       "symbol": "HMul.hMul",
+       "type_args": []
+      }
+     ],
+     "node": "App",
+     "symbol": "HAdd.hAdd",
+     "type_args": []
+    },
+    {
+     "args": [],
+     "node": "App",
+     "symbol": "Bracket.P",
+     "type_args": []
+    }
+   ],
+   "node": "App",
+   "symbol": "LE.le",
+   "type_args": []
+  }
+ },
+ "ir_version": "1.0",
+ "library_provenance": {
+  "Bracket.P": {
+   "content_hash": "sha256:125f3d53b5c5ae4f7332c4ffda2f71ec618b58a159d7279149f39aaade6f9912",
+   "library": "user",
+   "version": "4.32.0"
+  },
+  "Int.natCast_nonneg": {
+   "content_hash": "sha256:74e3e6efa91cd98b13e1a0e560694a16aebf20c9b692b3e372b4a8bb9fe4edbd",
+   "library": "lean-core",
+   "module_path": "Init.Data.Int.Order",
+   "version": "4.32.0"
+  },
+  "Int.ofNat_inj": {
+   "content_hash": "sha256:f7480039da059eed1b3a2f89105fc91d0b0b9ab9c3ae4b0775e56337426865e5",
+   "library": "lean-core",
+   "module_path": "Init.Data.Int.Lemmas",
+   "version": "4.32.0"
+  },
+  "Int.ofNat_le": {
+   "content_hash": "sha256:95d406cb64c71fd2f63e26173b1e8605f2e84a7c9085d0b4545e46156f84cbd2",
+   "library": "lean-core",
+   "module_path": "Init.Data.Int.Order",
+   "version": "4.32.0"
+  },
+  "Int.ofNat_lt": {
+   "content_hash": "sha256:0afe9efc53c5f88048e0589b01439319ec80236b3a35e6f7718bb15707117155",
+   "library": "lean-core",
+   "module_path": "Init.Data.Int.Order",
+   "version": "4.32.0"
+  }
+ },
+ "logic_classification": {
+  "decidable_theory": null,
+  "features_used": [
+   "equality_at_first_order_type"
+  ],
+  "first_order_fragment": "LIA",
+  "order": "first_order"
+ },
+ "source_system": {
+  "name": "lean",
+  "version": "0.0"
+ },
+ "tier": "structural",
+ "type_metadata": {
+  "Nat": {
+   "kind": "primitive",
+   "name": "Nat",
+   "theory_tags": [
+    "embeds_into:Int_for_universal_LIA",
+    "embedding_witness:Int.ofNat_le",
+    "embedding_witness:Int.ofNat_lt",
+    "embedding_witness:Int.ofNat_inj",
+    "embedding_witness:Int.natCast_nonneg"
+   ]
+  }
+ },
+ "user_directives": {
+  "rewriter_preferences": {
+   "enable_definition_unfolding": [
+    "numeral_definition"
+   ]
+  }
+ }
+}

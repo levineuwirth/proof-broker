@@ -3750,7 +3750,17 @@ private def certStrategyHint (cert : Json) : String :=
 private def runTermModeOnGoal
     (goal : MVarId) (adapterNames? : Option (List String))
     (preferHigherTier : Bool) : TacticM Unit := do
+  -- R4 continuation: term mode consumes a Tier 1 Farkas or Tier 2
+  -- case-split witness and nothing else, so it SAYS so
+  -- (`user_directives.tier_preference`, the walker's `["3"]` in the
+  -- other direction). The SDK's parallel driver ranks those tiers
+  -- first when picking the winner, and cvc5's ladder runs the
+  -- internal Farkas closer before minting a Tier 3 trace. Without
+  -- it, the verinf `D1/69` obligation under its full context got
+  -- cvc5's verified Tier 3 trace as "the highest tier" while z3's
+  -- Tier 1 witness — the one this closer needs — lost the race.
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
+    (tierPreference := some ["1", "2"])
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_term: no adapter minted a cert"

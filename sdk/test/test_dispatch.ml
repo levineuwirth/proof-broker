@@ -333,6 +333,38 @@ let test_par_single_success () =
   Alcotest.(check bool) "attempt succeeded" true
     (succeeded (List.hd r.attempts))
 
+(** R4 continuation: [user_directives.tier_preference] ranks the
+    tiers the caller can consume ahead of the rest in the winner
+    selection. Two zero-delay synthetic adapters, Tier 3 and Tier 1:
+    without a preference the old rule (highest tier) holds; with
+    ["1"] (or ["1"; "2"]) the Tier 1 cert wins over the Tier 3 one;
+    ["3"] is the old rule; a preference naming only a tier nobody
+    minted falls back to the old rule. *)
+let with_pref (prefs : string list) (ir : Ir.t) : Ir.t =
+  { ir with user_directives = Some {
+      preferred_backend = None; tier_preference = Some prefs;
+      rewriter_preferences = None; budget = None } }
+
+let test_par_preference_ranks_consumable_tier () =
+  let a3 = mk_adapter "t3" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:3)) in
+  let a1 = mk_adapter "t1" ~delay_ms:0 ~result:(Cert (mk_cert ~tier:1)) in
+  let run ir =
+    Dispatch.run_parallel ~grace_window_ms:2000
+      ~manifests:[ synthetic_manifest "t3"; synthetic_manifest "t1" ]
+      ~adapters:(registry_of [ a3; a1 ]) ir
+  in
+  let tier_of (r : Dispatch.result) =
+    match r.cert with Some c -> c.Certificate.tier | None -> -1 in
+  let ir = provable_lia_ir () in
+  Alcotest.(check int) "no preference: highest tier" 3 (tier_of (run ir));
+  Alcotest.(check int) "[1]: the consumable tier beats the higher one"
+    1 (tier_of (run (with_pref [ "1" ] ir)));
+  Alcotest.(check int) "[1;2] with no tier-2 cert: tier 1"
+    1 (tier_of (run (with_pref [ "1"; "2" ] ir)));
+  Alcotest.(check int) "[3]: unchanged" 3 (tier_of (run (with_pref [ "3" ] ir)));
+  Alcotest.(check int) "[2] only, nobody minted tier 2: old rule"
+    3 (tier_of (run (with_pref [ "2" ] ir)))
+
 let test_par_grace_prefers_higher_tier () =
   (* Fast Tier-0 + slightly slower Tier-3, both finish well within
      a 2 s grace window ⇒ the Tier-3 cert is selected. *)
@@ -553,6 +585,8 @@ let () =
     ];
     "concurrent", [
       Alcotest.test_case "single success" `Quick test_par_single_success;
+      Alcotest.test_case "tier_preference ranks the consumable tier" `Quick
+        test_par_preference_ranks_consumable_tier;
       Alcotest.test_case "grace prefers higher tier" `Quick
         test_par_grace_prefers_higher_tier;
       Alcotest.test_case "grace is bounded" `Quick

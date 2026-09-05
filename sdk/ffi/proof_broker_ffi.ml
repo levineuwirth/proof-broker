@@ -574,9 +574,10 @@ let dispatch_broker (input : string) : string =
     in
     (* Concurrent dispatch (roadmap §Phase 3 #5). No pre-sort: the
        parallel driver races all eligible adapters and selects the
-       highest [cert.tier] received within the grace window, so
-       tier preference is a selection policy rather than an
-       iteration order. [prefer_higher_tier] (default true) maps to
+       highest [cert.tier] received within the grace window (the
+       IR's [user_directives.tier_preference], when present, ranks
+       the caller's consumable tiers first), so tier preference is
+       a selection policy rather than an iteration order. [prefer_higher_tier] (default true) maps to
        a 2 s grace window — the roadmap's stated default — during
        which a higher-tier cert can still overtake a Tier-0 one;
        [false] is latency-first (grace 0: the first cert wins).

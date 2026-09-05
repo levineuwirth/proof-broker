@@ -260,13 +260,40 @@ let many_le_ir (k : int) : Ir.t =
     (App { symbol = "LE.le"; type_args = []; args = [ y; hundred ] })
 
 (** The C4 ROUND 1 regression: 13 Farkas-compilable inputs (4^13 ≈
-    67M candidates, above the cap) must come back immediately with
-    the cap error — never by enumerating. The IR is irrefutable
-    (fresh-variable goal), so an uncapped search would genuinely
-    sweep the space; CPU-bounded to catch a regression to
-    enumeration even if its memory stays fixed. *)
+    67M candidates, above the cap) must never be enumerated densely.
+    Since the R4-continuation sparse rescue, an over-cap dense space
+    is followed by the SPARSE sweep (support ≤ 4: here exactly
+    39 + 702 + 7,722 + 57,915 = 66,378 candidates, pinned below), so
+    the irrefutable IR now returns the named
+    [Sparse_search_exhausted] — still far under a second of CPU,
+    which is what catches a regression to dense enumeration. The
+    hard refusal (both spaces above the cap) is pinned separately by
+    [test_sparse_space_is_capped]. *)
 let test_large_input_space_is_capped () =
   let ir = many_le_ir 12 (* + neg_goal = 13 inputs *) in
+  let t0 = Sys.time () in
+  let result = Farkas_search.try_close ir in
+  let dt = Sys.time () -. t0 in
+  (match result with
+   | Error (Sparse_search_exhausted { max_support; candidates }) ->
+     Alcotest.(check int) "support bound" Farkas_search.max_support max_support;
+     Alcotest.(check int) "sparse candidate count for 13 inputs at bound 3"
+       66378 candidates
+   | Ok w -> Alcotest.fail (Printf.sprintf
+       "irrefutable 13-input shape found a witness: %s"
+       (Yojson.Safe.to_string w))
+   | Error e ->
+     Alcotest.fail (Printf.sprintf "expected sparse_search_exhausted, got %s"
+                      (Farkas_search.kind_of_error e)));
+  Alcotest.(check bool)
+    (Printf.sprintf "returned in %.3fs CPU (must be << 1s: capped, not enumerated)" dt)
+    true (dt < 1.0)
+
+(** Both spaces above the cap: 61 inputs give a sparse space of
+    C(61,4)·81 ≈ 42M > 2M, so the search is refused outright with the
+    named cap error, immediately. *)
+let test_sparse_space_is_capped () =
+  let ir = many_le_ir 60 (* + neg_goal = 61 inputs *) in
   let t0 = Sys.time () in
   let result = Farkas_search.try_close ir in
   let dt = Sys.time () -. t0 in
@@ -275,16 +302,105 @@ let test_large_input_space_is_capped () =
      Alcotest.(check bool) "saturating size exceeds the cap"
        true (saturated > Farkas_search.max_candidates);
      Alcotest.(check int) "one range length per input"
-       13 (List.length range_lengths)
+       61 (List.length range_lengths)
    | Ok w -> Alcotest.fail (Printf.sprintf
-       "irrefutable 13-input shape found a witness: %s"
+       "irrefutable 61-input shape found a witness: %s"
        (Yojson.Safe.to_string w))
    | Error e ->
      Alcotest.fail (Printf.sprintf "expected search_space_exceeded, got %s"
                       (Farkas_search.kind_of_error e)));
   Alcotest.(check bool)
-    (Printf.sprintf "returned in %.3fs CPU (must be << 1s: capped, not enumerated)" dt)
+    (Printf.sprintf "returned in %.3fs CPU (refused, not enumerated)" dt)
     true (dt < 1.0)
+
+(** [many_le_ir k] plus ONE relevant hypothesis [hx : x <= 5] under
+    the goal [x <= 10]: the witness is [hx + neg_goal] (support 2)
+    buried in k irrelevant bounds. *)
+let sparse_rescue_ir (k : int) : Ir.t =
+  let base = many_le_ir k in
+  let x : Ir.shell_term = Var { name = "x" } in
+  let five : Ir.shell_term = Num_lit { value = "5"; ty = "Int" } in
+  let ten : Ir.shell_term = Num_lit { value = "10"; ty = "Int" } in
+  let hx : Ir.hypothesis = {
+    name = "hx";
+    shell = App { symbol = "LE.le"; type_args = []; args = [ x; five ] };
+  } in
+  { base with
+    goal = { shell = App { symbol = "LE.le"; type_args = []; args = [ x; ten ] };
+             payloads = None };
+    context = { base.context with
+                free_vars = ({ name = "x"; ty = "Int" } : Ir.free_var)
+                            :: base.context.free_vars;
+                hypotheses = base.context.hypotheses @ [ hx ] } }
+
+let check_verifies (ir : Ir.t) (witness : Yojson.Safe.t) =
+  match Farkas.verify ir witness with
+  | Verified -> ()
+  | _ ->
+    Alcotest.fail
+      (Printf.sprintf "Farkas.verify rejected the discovered witness: %s"
+         (Yojson.Safe.to_string witness))
+
+(** Names carrying a nonzero coefficient in a search witness. *)
+let support_of (witness : Yojson.Safe.t) : string list =
+  let open Yojson.Safe.Util in
+  witness |> member "coefficients" |> to_list
+  |> List.filter_map (fun e ->
+      let c = e |> member "coefficient" |> to_string in
+      if c = "0" then None
+      else Some (e |> member "hypothesis" |> to_string))
+
+(** The rescue: 17 inputs (dense 4^17, refused) — the support-2
+    witness is found, verifies, and is exactly [hx; neg_goal]: the
+    first hit is the MINIMAL support, by construction of the order. *)
+let test_sparse_rescue_finds_witness () =
+  let ir = sparse_rescue_ir 15 (* 15 irrelevant + hx + neg_goal = 17 *) in
+  let inputs = Farkas_search.compile_inputs ir in
+  Alcotest.(check int) "17 compiled inputs" 17 (List.length inputs);
+  Alcotest.(check bool) "dense space is above the cap (the rescue path)"
+    true (Farkas_search.space_size
+            (List.map (Farkas_search.range_for ~bound:3) inputs)
+          > Farkas_search.max_candidates);
+  match Farkas_search.try_close ir with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected Ok witness, got %s — %s"
+                     (Farkas_search.kind_of_error e)
+                     (Farkas_search.detail_of_error e))
+  | Ok witness ->
+    check_verifies ir witness;
+    Alcotest.(check (list string)) "support is exactly hx + neg_goal"
+      [ "hx"; "neg_goal" ] (List.sort compare (support_of witness))
+
+(** Real verinf context (fixture written by the bridge's own reifier
+    on 2026-09-05 from the spike's `lift_cell`, post-normalization):
+    the `D1/70` obligation `2^24 + 2·Zmax ≤ P` under all 19
+    hypotheses the tactic actually sees. Run through the dispatch
+    pipeline (the numeral-definition unfold of `P`), its dense space
+    is above the cap and the rescue finds the [hZ + neg_goal] witness
+    — before the rescue, every adapter fell to Tier 0 here. *)
+let fixture_ir (name : string) : Ir.t =
+  let path =
+    Filename.concat (Sys.getcwd ()) ("../../../../sdk/test/fixtures/" ^ name)
+  in
+  Codec.of_json (Yojson.Safe.from_file path)
+
+let test_d1_70_fixture_closes_via_sparse_rescue () =
+  let ir, _trace, _hash =
+    Dispatch.run_dispatch_pipeline (fixture_ir "ir-verinf-d1-70.json") in
+  let inputs = Farkas_search.compile_inputs ir in
+  Alcotest.(check bool) "dense space is above the cap"
+    true (Farkas_search.space_size
+            (List.map (Farkas_search.range_for ~bound:3) inputs)
+          > Farkas_search.max_candidates);
+  match Farkas_search.try_close ir with
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "expected Ok witness, got %s — %s"
+                     (Farkas_search.kind_of_error e)
+                     (Farkas_search.detail_of_error e))
+  | Ok witness ->
+    check_verifies ir witness;
+    Alcotest.(check (list string)) "support is hZ + neg_goal"
+      [ "hZ"; "neg_goal" ] (List.sort compare (support_of witness))
 
 (** The STREAMING half of the C4 fix, pinned by memory (C4 ROUND 2
     finding 4(a): restoring materialization with the cap kept left
@@ -381,6 +497,12 @@ let () =
         `Quick test_bound_zero_finds_nothing;
       Alcotest.test_case "Real-typed IR mislabeled LIA: search agrees with verify"
         `Quick test_search_uses_effective_fragment_on_real_typed_lia_label;
+      Alcotest.test_case "sparse rescue finds the buried witness (17 inputs)"
+        `Quick test_sparse_rescue_finds_witness;
+      Alcotest.test_case "both spaces above the cap: refused (61 inputs)"
+        `Quick test_sparse_space_is_capped;
+      Alcotest.test_case "verinf D1/70 fixture closes via the sparse rescue"
+        `Quick test_d1_70_fixture_closes_via_sparse_rescue;
       Alcotest.test_case "13-input space is capped, not enumerated"
         `Quick test_large_input_space_is_capped;
       Alcotest.test_case "full sweep under the cap is streamed (memory pin)"
