@@ -274,6 +274,12 @@ for HTTP client operations respectively. With `lwt` as the runtime
 ecosystem (`cohttp-lwt-unix` or similar) is mature enough for v1
 needs.
 
+*(As of 2026-09-05, R5: this paragraph is the v1.0 plan as written.
+Neither `lwt` nor `cohttp` ever became a dependency — the two
+recorded reconsiderations in §2.1 chose `Thread` for dispatch and a
+`curl` subprocess for HTTP, and the lock is retired in §7.4. Kept
+unaltered as the record of what was planned.)*
+
 No risk-register changes for Phase 3.
 
 #### 2.4.1 Phase 3 progress (post-completion notes)
@@ -618,7 +624,9 @@ core probe and weren't in the original §2.5 envelope:
   `proof_broker_term` builds an explicit Rocq proof term from a
   Tier 1 Farkas witness's coefficients via a `farkas_le_2` helper
   + `ring`. The cert IS the proof — no `lia` along this path. The
-  Lean side has the same play queued but not yet wired.
+  Lean side has the same play queued but not yet wired. *(Since
+  done: Lean term-mode Tier 1 Farkas landed in `cd6fb3e`, Phase 5;
+  see `RETROSPECTIVES/phase-5.md`.)*
 * **AxiomCheck CI gate** (`tools/check_axioms.py`): parses build
   output for Lean's `#print axioms` and Rocq's `Print Assumptions`
   blocks, fails CI if any allowlisted theorem grows beyond
@@ -646,6 +654,13 @@ slack-spending shifted (CI / trust-footprint gating absorbed it
 instead of cross-platform packaging), but the total isn't different.
 
 ### 2.6 Phase 5 (Polish)
+
+*(As of 2026-09-05, R5: "Phase 6" in this section means the
+cross-platform distribution work — one of two things the label came
+to mean in this repository; `RETROSPECTIVES/phase-6-scale.md` uses
+it for the walker scale profile. The double meaning is resolved in
+`spec/roadmap-v1.1.md` §2, which freezes both usages as history and
+maps them onto the R-series. This section is unchanged below.)*
 
 **Update (post-completion): Phase 5 scope shifted to term-mode parity.**
 The Phase 4 retrospective carried forward term-mode reconstruction —
@@ -799,6 +814,10 @@ behavior, or soundness invariants). They should be incorporated into a
 spec v1.1 release alongside any other findings from Phase 0 and
 Phase 1. They do not require an immediate respin of the spec
 document.
+
+*(Consolidated 2026-09-05, R5: §7 below is that v1.1 delta — §§4.1–4.3
+are carried into it as items 7.2.1–7.2.3, with everything R0–R4
+decided on top.)*
 
 ---
 
@@ -1396,6 +1415,14 @@ Trigger to revisit: any Rocq-side consumer of the ℕ→ℤ path meeting
 a closed-numeral product, an applied-function atom, or a primed
 identifier.
 
+**Rocq port: DEFERRED** *(marker line added 2026-09-05 at R5 so the
+generated README status-table row carries this deferral like §5.5 and
+§5.6; the paragraph above is the record and is unchanged. The
+deferral also covers the R4-continuation items below — the goal
+normalization, the duplicate-hypothesis-name dedupe, and the
+`PROOF_BROKER_REPORT` line — none of which has a Rocq counterpart
+either.)*
+
 **FIXED — exponential materialization in the internal Farkas search
 (originally recorded here, wrongly, as "unbounded allocation on the
 cvc4 path").** C4 ROUND 1 falsified this record's first
@@ -1625,6 +1652,156 @@ consequence: the demo's generated table.
    reads the lines from the probe logs, so every per-obligation
    number in its README is generated.
 
+### 5.8 Consolidation record — R1–R4 decisions recorded until now only in review handoffs (2026-09-05, R5)
+
+The R5 gate asks for a delta entry for every R1–R4 decision.
+§§5.2–5.7 carry the phase-defining ones; the items below were decided
+inside a phase, landed on `main` through the phase's squash-merge, and
+were recorded only in the untracked review handoffs and commit bodies.
+Each is stated once here so this file is the complete record. Nothing
+below is a new decision; the dates are the phases', the tests named
+are the pins that hold each decision in place.
+
+**R1 — walker production path (merged 2026-09-01 as #89, `e07a009`).**
+
+1. **The SDK mint gate equals the walkers' rule set.**
+   `Tier3_alethe.check_step` gained sound, tag-independent checkers for
+   `not_not`, `not_or`, `or_neg`, `equiv2`, `equiv_pos1`, `forall_inst`
+   and `bind`, and `supported_rules` is pinned to both walkers'
+   dispatch tables by `tools/check_walker_parity.py` over three
+   consumers (Lean walker, Rocq walker, SDK gate — the marker blocks).
+   A pre-existing gap was closed on the way: `check_subproof` recorded
+   a close step's dependency set after stripping the inner scope, so a
+   nested subproof close could launder a dependency on an undischarged
+   outer-scope local assume; pinned by
+   `test_verify_nested_subproof_dep_laundering`. Stated limit:
+   `forall_inst` does not sort-check the instantiation term (the Sexp
+   layer is untyped); the walkers' kernel reconstruction is the
+   enforcer, and SDK verification only gates minting. C1 ROUND 1 found
+   the checker accepting a variable-capturing instantiation; the fix
+   round added the fail-closed capture guard (`subst_would_capture`,
+   "instantiation term would be captured by an inner binder").
+   Consequence: every corpus trace is mintable on the live path (the
+   README status table's `live-mintable` figure is the generated
+   count).
+
+2. **UF and UFLIA route walker-first on both bridges.** When the
+   cert's `trace_format` is `alethe-2024`, fragments `UF`/`UFLIA` try
+   the walker before the re-proving chain; quantified UFLIA, which had
+   NO closer at all, gets walker → decision-procedure fallback
+   (`simp_all`/`omega` on Lean; `congruence`/`subst`/`auto`/`lia` on
+   Rocq) → an honest tactic failure. Trust consequence, stated because
+   it is a per-theorem delta: the UF test theorems' footprints moved
+   from `[]` to the walker's classical baseline (their allowlist
+   ceilings were raised accordingly; within the ceiling every other
+   walker closure already uses). If UF should stay axiom-free-first,
+   the arm order is a one-line revert.
+
+3. **Live-strict suites are the kernel ground truth of the coverage
+   numbers.** `tools/gen_corpus_replay.py` generates
+   `lean-bridge/Test/CorpusWalkerLive.lean` and one
+   `rocq-bridge/theories/CorpusWalkerLive_<id>.v` per goal from
+   `corpus/goals/*.json` (hand-authored `lean_goal`/`coq_goal`
+   statements), each theorem closing ONLY via `proof_broker_walker`
+   — live dispatch → SDK mint gate → walker → kernel, no fallback.
+   `corpus/coverage.json` gains `mintable`; the README row is derived
+   from it. One theorem per `.v` file on Rocq because dune truncates
+   per-action output and would evict `Print Assumptions` blocks from
+   the trust-gate log (the STATUS §7.2 / RUNBOOK trap).
+
+4. **Adapters stamp the PROBED solver version.** `Adapter.probe_version`
+   runs `<binary> --version` once (memoized) and `probed_version` falls
+   back to the declared constant; a major.minor mismatch against the
+   declared version prints one diagnostic and SKIPS the
+   version-sensitive tier only (cvc5's Tier-3 Alethe passthrough,
+   Vampire's Tier-3 TSTP provenance — its own 5.0→5.1 CLI drift is the
+   precedent); a failed probe is not a mismatch. cvc5's declared
+   version was relabeled from `1.3.3` to the CI pin `1.3.0`, so the
+   generated note under the README table reads "every backend with a
+   CI pin declares the pinned version"; `corpus/README.md` carries the
+   cvc5 bump playbook (a bump regenerates every trace under the
+   blocking live-drift gate, so it is always its own PR).
+
+5. **The R4 shape is an in-repo regression.** Corpus goal
+   `uf_lia_threshold` (`f c ≤ T → T < f (c − 1) → f c < f (c − 1)`,
+   QF_UFLIA with UF applied to a difference — the core of verinf's
+   `threshold_unique`) replays live on both bridges through item 3.
+
+**R2 — certificate load-bearing (merged 2026-09-01 as #90, `21f07be`).**
+Beside §5.3's three decisions:
+
+6. **Manifests and registry say what is built.** `manifest-vampire.json`
+   lists Tier 3 with `tstp-fof`/`tstp-thf` (it minted them while
+   advertising `[0]`); `manifest-cvc5.json` drops `ARRAY`, the `sat_*`
+   witness kinds and `skolemization`; the registry registers
+   `rocq-tactic-script` and demotes `sat_assignment`/`sat_unsat_core`
+   (with `polynomial_positivstellensatz`) to `v1: false`. `tools/check.py`
+   gates it: `tier ∈ tiers_produced`, tier-3 `trace_format` and tier-1
+   `witness_kind` in the manifest's produced lists, no manifest may
+   advertise a `v1: false` witness kind, every `trace_format` literal in
+   `sdk/lib/*.ml` is registered (a source-scan tripwire, not a parser),
+   and the `pipeline.ml` always-unfold pin equals the registry's list.
+   Measured consequence recorded at the time: vampire's maximum tier
+   becomes 3, which moves it ahead of cvc4/z3 in the default manifest
+   sort; ties at tier 3 break by input order, so cvc5 still wins UF
+   races. C2 ROUND 2 added the unknown-fixture-name tripwire
+   (`check_unknown_fixture_names`) so a fixture outside the pairing
+   maps cannot skip the hash gates silently.
+
+**R3 — specialization and lifting (merged 2026-09-01/02 as #91
+`854d606`, #92 `ee125cd`, #93 `8a64163`).** Recorded in full in
+§§5.4–5.6 and the §5.4 RESOLVED record. Two C3 ROUND 2 corrections
+are already folded into §5.5's text and are named here so the
+history is visible: the "identity-only at α" invariant was false (an
+α extraction can emit numeral-body unfolding equations, so admission
+means identity OR extraction-emitted definition unfolds, inverted on
+both α entry points — pinned by `pb_poly_def_unfold_plain`), and
+`termTraceError?` now refuses a non-identity document in which no
+entry admits a rewrite (pinned by the `endpoints_no_entries` /
+`endpoints_all_noop` guard negatives).
+
+**R4 — the verinf demo (merged 2026-09-05 as #94, `c3bcf23`).** Beside
+§5.7's eight decisions and four FIXED records:
+
+7. **The R4.2 footprint gate was reworded, not passed vacuously**
+   (Levi, 2026-09-03, on C4 ROUND 1 finding 2). As first written the
+   gate required the swapped theorems' footprints to be "unchanged"
+   AND within `[propext, Classical.choice, Quot.sound]`, which is
+   unsatisfiable together: the untouched spike's `threshold_unique` is
+   `[propext, Quot.sound]`, and the only closer that reaches its UFLIA
+   shape is the walker, whose baseline is the classical triple. The
+   gate now reads: every swapped theorem within the ceiling, and any
+   theorem wider than the untouched baseline is LISTED with the closer
+   that widened it and why term mode was unavailable. The measured
+   outcome is in the demo's generated tables and its write-up
+   (`lift_cell` narrower than baseline; `threshold_unique` wider, by
+   the walker; two the same).
+
+8. **Duplicate hypothesis names are renamed at the front end and
+   refused in the SDK** (R4 CONTINUATION ROUND 1 Med 3). Two anonymous
+   `this` locals reified to the same IR hypothesis name; the internal
+   Farkas search found a positional witness that `Farkas.verify`
+   (first-name lookup) rejected, so both tactics failed with a false
+   "not contradictory". The Lean front end now disambiguates clashing
+   local names before reification (`getUnusedName`, the R4 alpha-rename
+   path), and the verifier refuses an IR whose hypothesis names are not
+   unique with a named reason ("appears MORE THAN ONCE in the IR —
+   by-name witness resolution is ambiguous, refusing"). Pinned by
+   `pb_r4_ctx_duplicate_this` (`lean-bridge/Test/Tactic.lean`) and
+   `test_duplicate_hypothesis_names_refused` (`sdk/test/test_farkas.ml`).
+   The front-end half is Lean-only; the Rocq reifier has no counterpart
+   (covered by §5.7's deferral marker), the SDK refusal guards both.
+
+9. **Two precision notes on the term-mode trust story** (R4
+   CONTINUATION ROUND 4, recorded as NOT CONFIRMED against R4 and
+   queued for this delta) are carried in §7.5.
+
+10. **One divergence noted at R4 and NOT decided**: the spec's default
+    tier order in parallel dispatch (`1 > 3 > 2 > 0`) versus the
+    driver's numeric "highest tier wins" when no `tier_preference`
+    directive is present. R4 made the driver honour the directive; the
+    default is untouched. Carried as an open item in §7.6.
+
 ## 6. References
 
 - **Spec v1.0:** `proof-brokerage-spec-v1.pdf`. The architectural
@@ -1634,6 +1811,327 @@ consequence: the demo's generated table.
 - **Reference card v1.0:** `proof-brokerage-refcard.pdf`. Unaffected by
   this delta; language choice does not surface in the reference
   vocabulary.
+
+*(As of 2026-09-05, R5: the PDFs are not committed — the sources are
+`spec/proof-brokerage-{spec-v1,roadmap,refcard}.tex`, and the R-series
+roadmap that supersedes the v1.0 plan is `spec/roadmap-v1.1.md`.
+"Amends only superficially" was true of §4 at the time of writing; §7
+is where the v1.0 spec is amended in substance.)*
+
+## 7. Spec v1.1 delta — consolidated (2026-09-05, R5)
+
+The roadmap's Phase-1 checkpoint asked for a spec review "based on
+implementation findings", updating the spec to v1.1 if warranted, and
+§4.4 above deferred it. This section is that v1.1 delta. It amends
+spec v1.0 **by reference**: the TeX source in `spec/` is not respun;
+each item names the spec section and states the contract as built,
+which is what v1.1 means until a respin. Read it with §§4–5 — the
+decision records there are the evidence, this section is the index
+and the dispositions. Companion: `spec/roadmap-v1.1.md` (the R-series
+plan that supersedes the v1.0 roadmap's phase sequence).
+
+**Versioning.** No major bump. The two v1.1-bound schema changes are
+additive-optional inside `schemas/v1.0/` — `resources.memory_peak_kb`
+became optional (§5.3: absence is the honest encoding, never a
+fabricated `0`) and the `typeclass_method` metadata kind's
+`specialization_targets[]` gained an optional `soundness_witness`
+(§5.4: no witness, no method record). Fixtures still carry `ir_version`/`cert_version` `"1.0"` and
+the registry stays `registry_version` `"1.0"`: additions only
+(`rocq-tactic-script`), demotions by flag (`v1: false`), no removals or
+renames — the roadmap's own versioning policy (§Cross-phase) says that
+is non-breaking.
+
+### 7.1 Where the R-series left the spec
+
+| spec section | v1.0 says | as built (v1.1) | record |
+|---|---|---|---|
+| §3.1 Components; §9 integration | "shared library callable from any component" | OCaml library; the Rocq plugin links it directly; the Lean plugin calls a C-FFI shim marshaling JSON strings (`sdk/FFI_CONVENTIONS.md`) | §4.1, §4.2, 7.4(e) |
+| §4.5 tier label | `goal` tier carries no hypotheses | both reifiers emit `"structural"` whenever typed hypotheses ride along, `"goal"` only for a bare goal | R2 (`Tactic.lean`, `reifier.ml` "R2 honesty") |
+| §4.4 `Opaque` | allowed, never produced | live: a product with no literal factor, an applied ℕ function, an Int term with no fragment reading — fresh atom, origin in `goal.payloads`, ℕ-truncation contract preserved inside atoms | §5.4, §5.7 items 3–4 |
+| §4.6 type metadata | `type_variable` and `primitive` kinds, witnesses unspecified | ℕ uses `primitive` with the embed tag plus `embedding_witness:<lemma>` tags; α uses `type_variable` with one `Instance` per class and witness tags; every witness token resolves in `library_provenance` (gated by `check.py`) | §5.4, §5.5 |
+| §4.7 definitional metadata | `defined_function` with a definitional equation | numeral-body ℕ definitions emit `defined_function` + `concept_tag: numeral_definition` + provenance hash; theorems/opaques/non-numeral bodies fail closed | §5.6 |
+| §4.9 directives | `preferred_backend`, `tier_preference`, `disable_passes`, budgets… | consumed: `budget.wall_time_ms`, `enable_definition_unfolding` (reifier-stamped), `tier_preference` (winner selection, R4); decoded but not acted on: `preferred_backend`, `disable_passes`, `memory_mb`. The bridge's `proof_broker [ids]` list is the routing override in practice | §5.6, §5.7 |
+| §5.1 passes | six passes | three exist: `propositional_simplification`, `definition_unfolding`, `quotient_elimination` (Eq-at-quotient); `equality_saturation`, `quantifier_prenexing`, `skolemization` are registered `default_on: false` and no manifest requests them | R2.4 (§5.8 item 6) |
+| §5.4 default pipeline | registry `always_unfold_for_dispatch` | exactly that, as a baked-in constant two-way-pinned to the registry JSON by `check.py`; the registry is not loaded at runtime | §5.3 |
+| §5.5–5.7 pipeline placement | unspecified | inside the SDK dispatch driver, so no bridge or FFI path reaches an adapter without a trace; per-pass timeout is parsed, not enforced (decide-list) | §5.3 |
+| §6.1 envelope | hashes over the post-rewrite IR; `rewrite_trace_hash` | `dispatch_context_hash` over `final_ir`; `rewrite_trace_hash` = canonical hash of the dispatch trace; the all-zero sentinel is rejected unconditionally; `verify ~trace` requires `trace.final_ir_hash` = the verified IR's hash; `resources.wall_time_ms` is measured, memory optional; `config_hash` = canonical hash of the manifest (the spec left it undefined) | §5.3 |
+| §6.2 refinement records | witness present | real witnesses only, fail closed: `soundness_witness` is the joined witness-tag payloads; no tag, no specialization; the strict entry points verify the cert's recorded specializations are exactly the ones this bridge inverts | §5.4, §5.5 |
+| §6.4 Tier 1 `farkas` | nonnegative coefficients on hypotheses | as built: coefficients keyed by hypothesis name plus `neg_goal`; signed coefficients on `Eq` hypotheses; rationals as `n/d` (cleared by LCD); the `+1` trick on strict Int hypotheses; arithmetic mode from term types (`Farkas.effective_fragment`), the cast symbol transparent (§5.4); the internal rescue search streams in a pinned order under a measured 2M-candidate budget with a sparse-support rescue above it, and refuses with `search_space_exceeded` past that; `checking_recipe` is a constant label. Term-mode consumers: `farkasContradictN` (Lean, `omega` on the positivity residual) and `farkas_le_2`/`ring` (Rocq) | §5.7 FIXED records, 7.5 |
+| §6.5 Tier 2 | lemma list + `aesop`-class reconstruction | `case_split_farkas` only — see 7.4(b) | 7.4(b) |
+| §6.6 Tier 3 | strategy stack: native checker, cross-system replay, LLM, lemma extraction | `alethe-2024`: per-step SDK mint gate + the Lean/Rocq Alethe walkers (7.7); `tstp-fof`/`tstp-thf`: provenance filter + home automation — see 7.4(c); `lean-tactic-script`/`rocq-tactic-script`: kernel replay with the axiom-footprint subset check (audit H1), the LLM never widening the trust base; `lfsc` deferred; no lemma-extraction fallback (Tier 2 lemma lists do not exist) | §2.4.1, 7.4 |
+| §7.2 tactic API | `by dispatch (timeout := …) (using := …)` style arguments | `proof_broker [ids]`, `proof_broker?`, `proof_broker_term`, `proof_broker_walker` on Lean; the same family plus `proof_broker_verbose` on Rocq; strict entry points fail closed instead of falling back; `PROOF_BROKER_REPORT=1` prints one machine-readable line per successful call | §5.7 item 8 |
+| §7.3 routing; §7.5 parallel dispatch | rule-based routing; first-valid-wins with a grace window and tier preference | Lean races every capability-eligible adapter (`run_parallel`, grace 2 s when `prefer_higher_tier`, else 0); Rocq dispatches sequentially through `Dispatch.run`; winner = `tier_preference` rank first, then highest numeric tier, then input order; cancellation is stop-waiting (orphans bounded by the per-call solver timeout); the spec's default order `1 > 3 > 2 > 0` is NOT what the driver does without a directive — open, 7.6 | §2.4.1, §5.7 |
+| §7.4 capability matching | manifests | honest manifests, gated by `check.py` (tier/format/witness-kind membership, no `v1: false` kinds advertised) | §5.8 item 6 |
+| §7.6 failure handling | `unknown` / `error` certificate envelopes | not minted; a failed adapter is a `Failed` attempt in the dispatch result, surfaced by `proof_broker?`; a hypothesis outside the fragment is dropped and reported, never fatal (§5.7 item 6) | decide-list |
+| §8.1–8.2 verifier | returns a verified term; pre-tier checks incl. backend allow/blocklist and provenance hashes | returns a reason taxonomy (`verified_farkas`, `verified_case_split`, `verified_tier3`, `verified_tier3_provenance`, `tier3_replay_deferred`, `tier_check_deferred`, the `farkas_*`/`case_split_*`/`tier3_*` failures, `hash_mismatch`, `trace_hash_sentinel`); at the FFI `ok` is split into envelope-ok and soundness-ok; backend allow/blocklists do not exist (the adapter list passed by the tactic is the policy); provenance hashes are checked for witness tokens, not for arbitrary library slices | §5.3, §5.4 |
+| §8.4 lifting | inversion of every refinement and pass | ℕ→ℤ on both bridges; α replay-at-α (Lean); def-unfold `Eq.mpr`/defeq `change` in value positions (Lean); everything else guarded: a non-identity trace or a non-invertible record is a fallback to a decision-procedure closer on the original goal, or a named refusal on the strict entry points | §5.3–5.7 |
+| §9.4 trust visibility | `Proof.byDispatch`-style term annotation | no term annotation; the normative trust gate is `tools/check_axioms.py` against `tools/axiom_allowlist.json` in CI (audit H1), with `HARD_DENY` on `sorryAx`/`lcProof`/`ofReduceBool`; the Rocq LLM-replay closer's own allowlist (`llm_replay.ml`) admits the two standard `Reals` axioms for ANY replayed script — the documented Rocq LRA ceiling, so a `Z` goal replayed from an LLM script may carry them (noted by the 2026-08-30 review; inside the ceiling, not a new axiom) | AUDIT.md, R0 |
+| §10.4 LLM configuration | project configuration | environment variables `PROOF_BROKER_LLM_{ENDPOINT,API_KEY,MODEL}`; `curl` transport with the key on stdin; fixed temperature; mock-only in CI ("no LLM in CI") | §2.1, §2.4.1 |
+| §11 ITP backends | Tier 0 / Tier 2 ITP-to-ITP | none — 7.4(a), 7.4(b) | — |
+| §12 worked examples | Examples 1–3 end to end | Example 1 closes live as written (α, Lean, §5.5); Example 2 closes through Vampire + the HOL closer (§2.4.1); Example 3 (quotient) is fixture-only — the quotient pass exists, no live reifier emits a quotient goal, no lifting (open, 7.6) | §5.5, §2.4.1 |
+| Appendix A registry | loaded by the SDK | not loaded at runtime; the SDK carries pinned constants and `check.py` keeps them equal to the JSON; the registry is the documentation-of-record for vocabularies and the gate's source | §5.3 |
+| Appendix B binary format | CBOR recommended for production | JSON only — 7.4(e) | §4.3 reversed |
+
+### 7.2 The §4 items, disposed
+
+- **7.2.1 (§4.1 Components).** Adopted as written in §4.1.
+- **7.2.2 (§4.2 Integration mechanism).** Adopted, minus the CBOR
+  sentence: "JSON marshaling is acceptable for v1 development; CBOR is
+  recommended for production performance" becomes "JSON is the wire
+  format; a binary format is a profiling-gated refactor" (7.4(e)).
+- **7.2.3 (§4.3 Appendix B).** REVERSED. §4.3 asked to promote CBOR to
+  a Phase 0/1 deliverable. It never happened, the measured marshaling
+  cost did not justify it, and there is no codec seam to toggle
+  (`sdk/FFI_CONVENTIONS.md` §Wire format; `RETROSPECTIVES/phase-0.md`
+  correction). v1.1 text: JSON is canonical and the only implemented
+  format.
+
+### 7.3 Spec debt absorbed (the STATUS §3 list)
+
+The 2026-08-30 review enumerated what a v1.1 had to say. Each item's
+disposition, in one line, with the section above that carries it:
+
+- OCaml substrate + FFI envelope — 7.1 (§3.1/§9); §4.1–4.2.
+- Canonical hashing contract (`config_hash`, the sentinel,
+  `dispatch_context_hash` over the rewritten IR) — 7.1 (§6.1); §5.3.
+- Tier 3 stack as built (mint gate = walkers; TSTP provenance-only;
+  decision-procedure fallback; LLM kernel-replay gate) — 7.1 (§6.6),
+  7.4(c), 7.7.
+- `rocq-tactic-script` and the `trace_dialect_features` vocabulary
+  (`provenance_verified_only`, `unverified_until_kernel_replay`,
+  `rule:<r>`) — 7.1 (§6.6); §5.8 item 6.
+- Tier 1 Farkas contract — 7.1 (§6.4); 7.5.
+- Tier 2 = `case_split_farkas`, lemma list demoted — 7.4(b).
+- Tier 0 redefined — 7.4(a).
+- Verifier reason taxonomy — 7.1 (§8.1–8.2).
+- Dispatch as built; adapters cvc4/z3/cvc5/Vampire/LLM with their
+  ladders; hardening (no-shell spawn, bounded parsers) — 7.1
+  (§7.3/§7.5); AUDIT.md passes 3–4.
+- LLM env configuration — 7.1 (§10.4).
+- IR as emitted (metadata live since R3) — 7.1 (§4.4–4.7).
+- Registry fixes — §5.8 item 6.
+- Trust gate as normative — 7.1 (§9.4).
+- Walker corpus tooling as the Phase-2 replayer-coverage artifact — 7.7.
+- Platform matrix — 7.4(f).
+- Explicitly out of v1 (deferred or deleted): ITP-to-ITP dispatch, the
+  dashboard, the certificate cache and shared cache, the build path,
+  `unknown`/`error` certificate envelopes, rule-based routing, Tier 4,
+  runtime theory-tag validation beyond the registry gate, and lifting
+  beyond the three inversions above. Each is a decide-list row in
+  `spec/roadmap-v1.1.md` with a gate, or a stated deletion there.
+
+### 7.4 D6 demotions, each with its reconsideration condition
+
+Planning decision D6 (2026-08-30) fixed this content: three v1.0
+commitments are demoted in v1.1 rather than built, and three plan-level
+locks are retired. Nothing in R1–R4 built toward them. The audit's H1
+rule is normative throughout: no closure path admits a goal on a
+backend's word.
+
+**(a) Tier 0 — an envelope-verified, closer-gated hint; no trust
+expansion.** Spec §Tier 0 asks for a per-project trust list, a trust
+policy, and an `external_oracle_certificate` mechanism that records
+the expansion of the trusted base in the proof term. None of that
+exists, by decision: the verifier returns `tier_check_deferred` for a
+Tier 0 payload (envelope checked, no soundness verdict), the FFI reports
+envelope-ok without soundness-ok, and both bridges accept that verdict
+ONLY to gate a fragment-keyed decision-procedure closer that produces
+the kernel proof itself (`closeOrFailPrimary`'s "envelope-only
+acceptance"; the mirrored `Tier_check_deferred` arm in
+`pb_rocq_main.ml`). The certificate's role is "the solver says the goal
+is provable"; if the closer cannot prove it, the tactic fails. There is
+no Tier 0 trust list, no policy object, no trust expansion — the
+footprint of a Tier-0-gated closure is the closer's, never the
+backend's. Evidence in the demo: `D3/158` closes on cvc4's bare verdict
+through gated `omega` (its footprint is `omega`'s). Consequence for
+spec §2.2/§11: ITP backends and ITP-to-ITP dispatch are out of v1.
+*Reconsideration:* a consumer who wants to accept a foreign kernel's
+verdict as such (cross-ITP dispatch where no proof artifact exists).
+That is a NEW closure path and falls under the RESUME §2 rule — it
+ships with a negative test showing it fails closed, a strict-mode
+entry point, and a term-level trust annotation the axiom gate can see,
+since a Tier 0 acceptance is exactly what `check_axioms.py` exists to
+refuse today.
+
+**(b) Tier 2 lemma list — dropped; `case_split_farkas` IS Tier 2.**
+Spec §Tier 2 defines a lemma-list payload reconstructed by
+`aesop`/`simp_arith`-class automation, labeled "reconstructed
+(probabilistic)", with dashboard success-rate tracking and a demotion
+clause keyed to the `sledgehammer` baseline. As built, the only Tier 2
+payload is `case_split_farkas`: a kernel-checked, per-branch Farkas
+certificate over a disjunctive hypothesis, extracted by cvc5's adapter
+from its own subproofs, verified by `verify_case_split` (the named
+hypothesis must be syntactically `Or`, audit H2 pass 2), and consumed
+by term mode on both bridges — deterministic, not probabilistic, and
+strictly "cert IS the proof". The lemma-list form, its UX labels and
+its rate tracking are demoted from v1. The spec's own demotion clause
+is invoked, on different grounds than it names: not a measured
+reconstruction rate, but the fact that no v1 backend produces lemma
+lists — SMT solvers produce witnesses or traces, Vampire produces
+derivations, the LLM produces scripts. *Reconsideration:* a backend
+that emits lemma lists (an ITP adapter, or the Tier 3 lemma-extraction
+fallback the spec's §6.6 stack names) plus a corpus on which a
+reconstruction rate can be measured against a baseline. Until then the
+schema's `lemmas_used` library-lemma shape stays valid and unused, and
+the registry's Tier 2 vocabulary is `case_split_farkas`.
+
+**(c) TSTP — provenance plus automation, tagged `provenance_verified_only`.**
+Spec §6.6 lists `tstp-fof`/`tstp-thf` with "symbolic replay
+implemented partially". As built (§2.4.1 M2), `Tier3_tptp` is a
+provenance and DAG-structure filter: every leaf reachable from `$false`
+is one of our input formulas by name, the conjecture is consumed only
+through a negation inference, the parent graph is well-formed, every
+rule is in a reviewed allowlist — and no inference step is re-derived
+(Vampire emits superposition/resolution steps without the unifier;
+re-deriving them is the proof-search problem). The verifier reports
+the distinct `verified_tier3_provenance`, the cert always carries the
+`provenance_verified_only` dialect tag and a prose annotation stating
+the boundary, and the kernel check is the home closer (`aesop` under
+`ProofBrokerMathlib`, `hauto` under `ProofBrokerHammer`) — so ATP
+heterogeneity rests on home automation gated by provenance, not on
+trace replay. v1.1 states it that way and drops "partial symbolic
+replay". *Reconsideration:* a consumer who needs "cert IS the proof" for
+ATP output. Gate: a corpus FOL goal closed axiom-free from its TSTP
+derivation ALONE (no `aesop`/`hauto`), which requires either a per-step
+checker with unification or a Vampire output that carries the
+substitutions — a decide-list item, not a v1 promise.
+
+**(d) The `lwt` lock is retired.** §2.1 locked `lwt` as the async
+runtime at Phase 0 "absent a critical ecosystem failure". It never
+became a dependency: no `lwt` appears in `dune-project`, the `.opam`
+files or any `dune` stanza; concurrent dispatch is stdlib `Thread`
+(§2.1's first recorded reconsideration) and the LLM transport is a
+`curl` subprocess (its second). §2.1's residual sentence — `lwt`
+"remains the designated runtime for any genuinely-async work that later
+needs it" — is what is retired here: nothing is designated. §5
+condition 3 (the chosen async runtime failing a requirement) is
+thereby moot. *Reconsideration:* a genuinely asynchronous I/O need (a
+shared cache server, a streaming LLM endpoint); choose then, with the
+`Thread`/`curl` precedent as the default to beat.
+
+**(e) CBOR stays a profiling-gated refactor.** Spec §4 (top-level
+structure) and Appendix B recommend CBOR for production; §4.3 above
+asked to promote it. As built: JSON is the only wire format, the C
+shim marshals JSON strings, and there is no `Codec.to_wire` seam (the
+audit's most material doc/reality gap, since corrected in
+`sdk/FFI_CONVENTIONS.md` and the Phase-0 retro). The Phase-0 spike
+measured about 54 µs per marshaled call on x86-64 Linux (2026-04-29,
+`sdk/FFI_CONVENTIONS.md` §Phase-0 spike outcome), which did not move
+any estimate. Disposition: JSON is canonical and implemented; a binary
+format is a real refactor (wire seam in `codec.ml`, the shim, `glue.c`,
+the Lean decoders) that is done only if profiling says so.
+*Reconsideration:* a measured share of dispatch wall-clock attributable
+to marshaling that a consumer finds unacceptable — the 2026-08-30 docs
+review proposed one tenth as the threshold; the R4 report line
+(`PROOF_BROKER_REPORT`) already separates dispatch and verify wall from
+tactic wall, so the measurement exists before the refactor does.
+
+**(f) The platform list is the CI matrix.** §2.1 declared macOS x86,
+macOS ARM, Linux x86, Linux ARM for v1 and deferred Windows. v1.1
+defines support as "what `validate.yml` builds and tests": Linux x86-64
+(the `sdk`, `lean-bridge`, `rocq-bridge` jobs), Linux aarch64 and macOS
+aarch64 (`sdk-cross-platform`, SDK + FFI smoke + install layout only —
+no bridge builds there). macOS x86 has had no runner since `39ffd0f`
+and is no longer claimed; Windows stays out. The README status table's
+CI-jobs row is generated from the workflow, so the list changes when
+the matrix does and nowhere else. The prebuilt per-platform bundle
+(OCaml runtime + `.so`) and notarization remain the decide-list
+"distribution bundle" item. *Reconsideration:* a consumer on Intel
+macOS (re-add `macos-13` if the runner pool attaches) or on Windows (a
+packaging project, §2.6's original estimate applies).
+
+### 7.5 The term-mode trust story — two precision notes
+
+Recorded from R4 CONTINUATION ROUND 4 (2026-09-05, NOT CONFIRMED
+against R4, queued for this delta). They pin what the Tier 1 term-mode
+closer's soundness statement does and does not say.
+
+1. **What the term contains besides the fold.** The Lean closer
+   (`closeViaTermMode`) builds `farkasContradictN` over the witness
+   coefficients; for every literal coefficient `c` it also builds a
+   proof of `0 ≤ c` by `mkDecideProof` — kernel evaluation of
+   `Int.decLe` on closed literals (`buildNonnegProof`). These side
+   proofs are part of the delivered proof term, close no goal, use no
+   axiom, and read no hypothesis. A sentence of the form "one `omega`
+   call discharges the residual and nothing else" is exact as a
+   statement about GOALS CLOSED; read as "nothing else runs" it omits
+   these decide-built side conditions. v1.1 states the term's content
+   as: the fold, the decide-built nonnegativity side proofs, and one
+   `omega`-closed positivity residual.
+
+2. **What the residual `omega` sees.** The positivity subgoal
+   `0 < Σ cᵢ·aᵢ` is created under `goal.withContext`, so the single
+   `omega` call that closes it sees the FULL local context, not only
+   the fold's sum. This is the R2-era design of `closeViaTermMode`;
+   `TermMode.lean`'s header ("a single `omega` invocation on the
+   strictly-positive linear combination subgoal") is accurate about the
+   subgoal, and the SDK verifier has already accepted the witness
+   before any term is built, so the closure is kernel-checked and
+   verifier-gated as claimed. The precision point is that the sentence
+   is not context-free: `omega` may, in principle, use any hypothesis in
+   scope to close a subgoal that the coefficients alone already make a
+   literal arithmetic fact. Narrowing the residual call's context to the
+   sum's atoms would make the statement context-free; it is a
+   behaviour-neutral refactor with a pin, scoped for a later phase and
+   NOT done in R5 (docs only). The Rocq closer discharges its
+   polynomial identity by `ring`, with no decision-procedure call.
+
+### 7.6 Open items carried to the decide-list
+
+Recorded here so the v1.1 delta names what it does not decide; the
+gates live in `spec/roadmap-v1.1.md` §4.
+
+- **Default tier order in parallel dispatch.** Spec §7.5: prefer
+  `1 > 3 > 2 > 0` within the grace window. Driver: with a
+  `tier_preference` directive, its order (R4); without one, the highest
+  numeric tier, ties by input order. Either the spec text adopts the
+  as-built rule or the driver adopts the spec's — the latter is a
+  behaviour change with its own record and tests. Not decided in R5.
+- **Example 3 (quotient) live.** The pass exists; no reifier emits a
+  quotient goal; no inversion exists.
+- **Cross-bridge IR round-trip test** (roadmap Phase 4 exit criterion
+  4.4; `RETROSPECTIVES/phase-3-rocq-parity.md` carried forward).
+- **Rocq counterparts** of §5.5, §5.6 and §5.7 (the generated README
+  row lists them from the deferral marker lines in those records).
+- **Per-pass timeout** (parsed, not enforced), **cancellation token**,
+  **Rocq concurrent dispatch**.
+- **ITP-to-ITP dispatch, dashboard, cache and build path, Tier 4,
+  `unknown`/`error` envelopes, rule-based routing** — out of v1 (7.3).
+- **Faithful arithmetic leaves** in the walker (the four leaf rules
+  are re-decided by `omega`/`lia`; the Farkas coefficients in `:args`
+  are consumed at mint time only), **LRA walker**, **corpus growth and
+  in-build timings**, **cvc5-ff uniqueness adapter**, **distribution
+  bundle**, **property tests (`qcheck`)** and **performance budgets** —
+  disposed in `spec/roadmap-v1.1.md`.
+
+### 7.7 The walker arc, for the record
+
+Between the Phase-5 term-mode push and the 2026-06-19 hiatus, the
+largest block of work in the repository built the Alethe walker — the
+spec §6.6 "native symbolic checker" for `alethe-2024` and the roadmap's
+Phase 2.6 replayer, delivered well beyond its scope — and this file
+never mentioned it. In May 2026 the walker was built rule by rule on
+Lean (clausal layer, arithmetic leaves, equality cluster, trust-tagged
+leaves, boolean cleanup, `equiv_simplify`, `equiv_pos*`, operator
+congruence, a snapshot test on a real cvc5 trace) and mirrored on Rocq
+in a numbered R-1…R-12 series of the same shape, then wired into both
+closer chains. June 2026 added the tooling that turned it into a gated
+artifact: the Lean⇄Rocq rule-parity check, the replay corpus with its
+static coverage gate and the generated kernel-checked replay theory,
+subproof/anchor and quantifier rules (`forall_inst`, `bind`,
+exists-duality), the blocking live-drift gate against pinned cvc5, the
+scale profile with a deliberate ~600-step point that exposed three
+latent bugs, and a property-based fuzzer for the resolution algebra
+(`RETROSPECTIVES/phase-6-scale.md`, `corpus/README.md`). What it left
+open — the SDK mint gate narrower than the walkers, the walker invoked
+only for `LIA`, the corpus replay hand-fed rather than live — is what
+R1 closed (§5.2, §5.8 items 1–3). Its trust shape is a hybrid and is
+stated as such: the skeleton is kernel-constructed step by step, the
+four arithmetic leaf rules are re-decided by `omega`/`lia`, so the
+walker is less faithful at the leaves than Tier 1 term mode, where the
+coefficients flow into the term (7.6, faithful leaves). The current
+rule and corpus counts are the README status table's, generated from
+the marker blocks and `corpus/`.
 
 ---
 
