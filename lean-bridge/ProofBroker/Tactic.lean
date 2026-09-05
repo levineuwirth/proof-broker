@@ -23,10 +23,11 @@ Soundness footprint:
     leaves the goal open — it never closes via an admitted axiom.
     Reifying the cert into a term-mode Lean proof — Farkas
     combination from the Tier 1 witness, or the Alethe walker for
-    Tier 3 (now wired in for alethe-2024 traces on LIA:
-    `tryAletheWalker` / `ProofBroker.Alethe`, omega as the
-    fallback) — is the principled finish; until a fragment has one,
-    an uncloseable certified goal is a tactic error, not a theorem.
+    Tier 3 (wired in for alethe-2024 traces on LIA, UF and UFLIA
+    since R1: `tryAletheWalker` / `ProofBroker.Alethe`, the
+    decision-procedure closers as the fallback) — is the principled
+    finish; until a fragment has one, an uncloseable certified goal is
+    a tactic error, not a theorem.
   * The LLM `lean-tactic-script` Tier-3 cert (an untrusted oracle
     the OCaml verifier deliberately leaves soundness-unchecked,
     `tier3ReplayDeferred`) takes a distinct path:
