@@ -1728,7 +1728,12 @@ are the pins that hold each decision in place.
    `threshold_unique`) replays live on both bridges through item 3.
 
 **R2 — certificate load-bearing (merged 2026-09-01 as #90, `21f07be`).**
-Beside §5.3's three decisions:
+Beside §5.3's three decisions, one more that until now lived only in
+code comments: R2 commit 5 (`63588ca`, "reifiers honest") makes both
+reifiers emit `tier = "structural"` whenever typed hypotheses ride
+along and `"goal"` only for a bare goal — tightening spec §4.5's tier
+label to what the IR actually carries (the §7.1 row for §4.5 now
+points here). And:
 
 6. **Manifests and registry say what is built.** `manifest-vampire.json`
    lists Tier 3 with `tstp-fof`/`tstp-thf` (it minted them while
@@ -1846,7 +1851,7 @@ is non-breaking.
 | spec section | v1.0 says | as built (v1.1) | record |
 |---|---|---|---|
 | §3.1 Components; §9 integration | "shared library callable from any component" | OCaml library; the Rocq plugin links it directly; the Lean plugin calls a C-FFI shim marshaling JSON strings (`sdk/FFI_CONVENTIONS.md`) | §4.1, §4.2, 7.4(e) |
-| §4.5 tier label | `goal` tier carries no hypotheses | both reifiers emit `"structural"` whenever typed hypotheses ride along, `"goal"` only for a bare goal | R2 (`Tactic.lean`, `reifier.ml` "R2 honesty") |
+| §4.5 tier label | `goal` tier carries no hypotheses | both reifiers emit `"structural"` whenever typed hypotheses ride along, `"goal"` only for a bare goal | §5.8 (R2 lead-in; code: `Tactic.lean`, `reifier.ml` "R2 honesty") |
 | §4.4 `Opaque` | allowed, never produced | live: a product with no literal factor, an applied ℕ function, an Int term with no fragment reading — fresh atom, origin in `goal.payloads`, ℕ-truncation contract preserved inside atoms | §5.4, §5.7 items 3–4 |
 | §4.6 type metadata | `type_variable` and `primitive` kinds, witnesses unspecified | ℕ uses `primitive` with the embed tag plus `embedding_witness:<lemma>` tags; α uses `type_variable` with one `Instance` per class and witness tags; every witness token resolves in `library_provenance` (gated by `check.py`) | §5.4, §5.5 |
 | §4.7 definitional metadata | `defined_function` with a definitional equation | numeral-body ℕ definitions emit `defined_function` + `concept_tag: numeral_definition` + provenance hash; theorems/opaques/non-numeral bodies fail closed | §5.6 |
