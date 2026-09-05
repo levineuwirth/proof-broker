@@ -23,10 +23,11 @@ Soundness footprint:
     leaves the goal open — it never closes via an admitted axiom.
     Reifying the cert into a term-mode Lean proof — Farkas
     combination from the Tier 1 witness, or the Alethe walker for
-    Tier 3 (now wired in for alethe-2024 traces on LIA:
-    `tryAletheWalker` / `ProofBroker.Alethe`, omega as the
-    fallback) — is the principled finish; until a fragment has one,
-    an uncloseable certified goal is a tactic error, not a theorem.
+    Tier 3 (wired in for alethe-2024 traces on LIA, UF and UFLIA
+    since R1: `tryAletheWalker` / `ProofBroker.Alethe`, the
+    decision-procedure closers as the fallback) — is the principled
+    finish; until a fragment has one, an uncloseable certified goal is
+    a tactic error, not a theorem.
   * The LLM `lean-tactic-script` Tier-3 cert (an untrusted oracle
     the OCaml verifier deliberately leaves soundness-unchecked,
     `tier3ReplayDeferred`) takes a distinct path:
@@ -2771,8 +2772,8 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- then `subst_eqs` (substitutes equation hypotheses
       -- everywhere) followed by `rfl`/`omega` for the common
       -- congruence-style goal `f x = f y` with `x = y` in
-      -- scope. Falls through to the trust axiom on shapes the
-      -- chain can't close (deeper UF reasoning, theory
+      -- scope. Fails closed (tactic error, goal left open) on
+      -- shapes the chain can't close (deeper UF reasoning, theory
       -- combinations the SAT-style solver handled but Lean's
       -- propositional toolkit doesn't). `subst_eqs` and friends
       -- are themselves axiom-free, so closures inside the chain
@@ -2783,8 +2784,9 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       --   simp_all        — heavier rewriting, picks up rewrites
       --                     under conjunctions / nested structure
       --                     subst_eqs misses.
-      -- If both fail, the cert verdict still holds and we route
-      -- through the trust axiom. `subst_eqs` and `simp_all` are
+      -- If both fail, the cert verdict still holds but the
+      -- tactic fails closed with an error — the goal is left
+      -- open. `subst_eqs` and `simp_all` are
       -- themselves axiom-free (the `propext` they may pull in is
       -- already in the LIA path's footprint), so the chain
       -- doesn't introduce a stronger trust assumption than
@@ -2850,9 +2852,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
     else
       -- Non-LIA / non-BV: dispatch through the registered
       -- ReifierExt's closer if present (e.g. ProofBrokerMathlib
-      -- registers a linarith closer for "LRA"); otherwise fall
-      -- back to the trust axiom. The cert verification gates the
-      -- call either way, so the closer can trust solvability.
+      -- registers a linarith closer for "LRA"); otherwise fail
+      -- closed (`throwError`, goal left open). The cert
+      -- verification gates the call either way, so the closer
+      -- can trust solvability.
       if fragment == "LRA" then
         match ← reifierExt.get with
         | some ext => ext.lraCloser; pure "gated_ext_lra"
