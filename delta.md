@@ -1729,11 +1729,11 @@ are the pins that hold each decision in place.
 
 **R2 — certificate load-bearing (merged 2026-09-01 as #90, `21f07be`).**
 Beside §5.3's three decisions, one more that until now lived only in
-code comments: R2 commit 5 (`63588ca`, "reifiers honest") makes both
-reifiers emit `tier = "structural"` whenever typed hypotheses ride
-along and `"goal"` only for a bare goal — tightening spec §4.5's tier
-label to what the IR actually carries (the §7.1 row for §4.5 now
-points here). And:
+code comments: the "reifiers honest" change (R2's fifth branch
+commit, folded into #90's squash `21f07be`) corrects both reifiers
+to spec §4.5's tier-label definition — `tier = "structural"`
+whenever typed hypotheses ride along, `"goal"` only for a bare goal
+(the §7.1 row for §4.5 now points here). And:
 
 6. **Manifests and registry say what is built.** `manifest-vampire.json`
    lists Tier 3 with `tstp-fof`/`tstp-thf` (it minted them while
