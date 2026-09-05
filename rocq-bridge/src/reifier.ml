@@ -221,8 +221,10 @@ let un sym a : Ir.shell_term =
    a non-foldable power), consumed by [build_ir] (payloads + nonneg
    hypotheses) and by the closers' ℕ lift (via [Pb_path.nat_atoms]).
    Reset by [build_ir] on entry; the plugin's tactic execution is
-   single-threaded (mirrors [reifyNatAtoms] in lean-bridge, minus
-   Lean's parallel-elaboration hazard). *)
+   single-threaded, so a module ref is safe HERE — the lean-bridge
+   analogue it once mirrored was deleted at C4 ROUND 3 (v4.32
+   elaborates declarations in parallel; that side now uses a
+   per-call [ReifyAcc]). *)
 let nat_atoms : (string * EConstr.t) list ref = ref []
 
 (* Structural nat-literal walker: [O] / [S]-chains only. NO

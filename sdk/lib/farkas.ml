@@ -52,6 +52,7 @@
 type verdict =
   | Verified
   | Unknown_hypothesis of { hypothesis : string }
+  | Duplicate_hypothesis of { hypothesis : string }
   | Nonlinear of { hypothesis : string; detail : string }
   | Bad_coefficient of { hypothesis : string; raw : string }
   | Negative_coefficient of { hypothesis : string; value : string }
@@ -351,6 +352,24 @@ let parse_coefficients (witness : Yojson.Safe.t)
     derived, not the [logic_classification] label) and selects
     strict-witness behavior — see [compile_hypothesis]. *)
 let verify (ir : Ir.t) (witness : Yojson.Safe.t) : verdict =
+  (* Duplicate hypothesis names make by-name resolution ambiguous:
+     [lookup_hypothesis] would silently pick the FIRST match while a
+     search over the same IR is positional, so a valid witness can be
+     rejected as not-contradictory (C4 CONTINUATION ROUND 1 Med 3 —
+     two Lean `have := e` both named `this`). Refuse loudly instead;
+     the Lean front-end now renames shadowed duplicates before
+     reification, so reaching this is a front-end bug or a hand-built
+     IR. *)
+  let seen = Hashtbl.create 8 in
+  let dup =
+    List.find_opt (fun (h : Ir.hypothesis) ->
+      if Hashtbl.mem seen h.name then true
+      else (Hashtbl.add seen h.name (); false))
+      ir.context.hypotheses
+  in
+  match dup with
+  | Some h -> Duplicate_hypothesis { hypothesis = h.name }
+  | None ->
   let fragment = effective_fragment ir in
   match parse_coefficients witness with
   | None ->

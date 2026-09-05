@@ -504,6 +504,231 @@ def check_always_unfold_pin(registry, pipeline_ml=None):
     return []
 
 
+LEAN_BRIDGE = ROOT / "lean-bridge"
+
+# `initialize` / `builtin_initialize` at ANY indentation, plus the
+# `@[init …]` attribute form `initialize` desugars to (ROUND 8 Med 1
+# named both as blind spots of the ^-anchored keyword-literal
+# version); multi-line signatures are joined before matching.
+_INIT_IOREF_RE = re.compile(
+    r"^[ \t]*(?:builtin_)?initialize\s+(\w+)\s*:[^\n]*IO\.Ref"
+    r"|^[ \t]*@\[(?:builtin_)?init[\s\]][^\n]*?(?:opaque|def)\s+(\w+)\s*:[^\n]*IO\.Ref",
+    re.M)
+_INIT_ANY_RE = re.compile(
+    r"^[ \t]*(?:builtin_)?initialize\b|^[ \t]*@\[(?:builtin_)?init[\s\]]", re.M)
+_FRESH_CALL_RE = re.compile(r"ReifyAcc\.fresh")
+
+
+def _strip_lean_comments(text):
+    """Remove `--` line comments and (nested) `/- … -/` block
+    comments, with STRING-LITERAL state (ROUND 10 Med 1: the
+    string-blind version let `"/-"` inside a literal open a comment
+    that erased an arbitrary region — the cheap tail post-condition
+    only caught runaway-to-EOF). Rules, matching Lean's lexer where
+    it matters here: at comment depth 0, a double-quoted string
+    (backslash escapes honored) is opaque — `/-` and `--` inside it
+    are text; inside a comment, quotes are text (docstrings quote
+    freely). Returns (stripped, error) where error is a diagnostic
+    string for an unbalanced state at EOF — an unclosed block
+    comment or string literal fails CLOSED rather than silently
+    blinding the scans."""
+    out = []
+    i, n, depth = 0, len(text), 0
+    in_str = False
+    while i < n:
+        c = text[i]
+        two = text[i:i + 2]
+        if in_str:
+            if c == "\\":
+                i += 2
+                continue
+            if c == '"':
+                in_str = False
+            if c == "\n":
+                out.append(c)   # tolerate the invalid-Lean newline
+            else:
+                out.append(c)
+            i += 1
+            continue
+        if depth == 0 and c == '"':
+            in_str = True
+            out.append(c)
+            i += 1
+            continue
+        if depth == 0 and two == "--":
+            j = text.find("\n", i)
+            i = n if j == -1 else j
+            continue
+        if two == "/-":
+            depth += 1
+            i += 2
+            continue
+        if depth > 0 and two == "-/":
+            depth -= 1
+            i += 2
+            continue
+        if depth == 0:
+            out.append(c)
+        elif c == "\n":
+            out.append("\n")   # keep line numbers stable
+        i += 1
+    err = None
+    if depth != 0:
+        err = (f"unclosed block comment at EOF (depth {depth}) — the "
+               "reify-isolation scan cannot see the commented-out "
+               "region; fails closed")
+    elif in_str:
+        err = ("unclosed string literal at EOF — the scan cannot "
+               "trust its own lexing past it; fails closed")
+    return "".join(out), err
+
+
+def _bridge_lean_files():
+    """EVERY .lean file under lean-bridge/ except the toolchain's own
+    .lake tree — hardcoding subsets is how two escapes got past
+    earlier versions (ROUND 7: refs in Alethe.lean vs a 2-file list;
+    ROUND 8: a 10-of-17 sweep that skipped Test/)."""
+    return sorted(pth for pth in LEAN_BRIDGE.rglob("*.lean")
+                  if ".lake" not in pth.parts)
+
+
+def check_lean_reify_isolation(files=None):
+    """SOURCE gate for the C4 reifier-race fix — DEFENSE IN DEPTH,
+    not the load-bearing pin (re-scoped at ROUND 8 Med 1: a textual
+    scan pins spellings and lost one per round — hardcoded files,
+    `builtin_initialize`, `@[init]`, indentation. The load-bearing
+    pin is BEHAVIORAL: `reify_callsite_isolation_test` observes
+    aliasing between the accumulators two real `buildIRWithAcc` runs
+    used — red whenever the reification returns the accumulator it
+    accumulated into, which every single-accumulator mutation does).
+    This gate's value is failing LOUD at review time with a named
+    location. Its lexer is APPROXIMATE by design (string literals
+    handled; Char literals, raw strings and interpolation nesting
+    are not — an erasure composition through an unhandled edge
+    remains possible, ROUND 11's M″): the surviving residual is a DECOY mutant (accumulate in shared
+    state, return a copied accumulator — invisible to any return-value
+    pin by construction) composed with any store or spelling the gate's
+    best-effort lexer mishandles: ROUND 10's M′ used a string-literal
+    blinding (closed by the string-aware stripper), ROUND 11's M″ used a
+    Char-literal parity flip (a known unhandled lexing edge — the gate's
+    lexer is approximate by design and further edges exist: raw strings,
+    interpolation nesting). A synonym-hidden store, by contrast, IS
+    caught (invariant (2) errors on unrecognized initializers — ROUND 9
+    NOT CONFIRMED #5). The residual is covered by REVIEW only,
+    stated identically in delta §5.7 — not compensated away. Invariants, over EVERY
+    .lean file under lean-bridge/ (minus .lake):
+
+    (1) exactly one module-level `IO.Ref` initializer exists and it
+        is `reifierExt` (set-once registration); any other
+        `IO.Ref`-typed initializer, in any file, is an error;
+    (2) every OTHER `initialize`/`builtin_initialize` is one of the
+        known non-ref initializers (allowlisted below by file) — an
+        unknown one is an error, so a ref hidden behind a type alias
+        or a split signature at least surfaces for a human look;
+    (3) `ReifyAcc.fresh` is mentioned in exactly one file,
+        ProofBroker/Tactic.lean, with exactly one call inside
+        `buildIR` and two inside the isolation-test tactic.
+
+    A legitimate refactor edits this check together with the code;
+    silent drift is the error."""
+    if files is None:
+        files = _bridge_lean_files()
+    errors = []
+
+    ioref_inits = []          # (file, name)
+    other_init_lines = []     # (file, lineno, line)
+    fresh_files = {}          # path -> [(lineno, stripped line)]
+    for path in files:
+        try:
+            relkey = str(path.relative_to(LEAN_BRIDGE))
+        except ValueError:
+            relkey = "/".join(path.parts[-2:])  # test temp trees
+        text, strip_err = _strip_lean_comments(path.read_text())
+        if strip_err is not None:
+            errors.append(f"{relkey}: {strip_err}")
+            continue
+        # join continuation lines so a signature split across lines
+        # still matches the IO.Ref pattern
+        joined = re.sub(r"\n\s{4,}", " ", text)
+        for g1, g2 in _INIT_IOREF_RE.findall(joined):
+            ioref_inits.append((relkey, g1 or g2))
+        rel = relkey
+        for m in _INIT_ANY_RE.finditer(joined):
+            line = joined[m.start():].split("\n", 1)[0]
+            if not re.search(r":[^\n]*IO\.Ref", line):
+                other_init_lines.append((rel, line.strip()))
+        calls = [(i + 1, l.strip())
+                 for i, l in enumerate(text.splitlines())
+                 if _FRESH_CALL_RE.search(l)]
+        if calls:
+            fresh_files[path] = calls
+
+    if ioref_inits != [("ProofBroker/Tactic.lean", "reifierExt")]:
+        errors.append(
+            f"lean-bridge module-level IO.Ref initializers are "
+            f"{ioref_inits}, expected exactly "
+            "[('ProofBroker/Tactic.lean', 'reifierExt')] — per-goal reify "
+            "accumulation must stay per-call (ReifyAcc), never module "
+            "state (C4 ROUND 3 High / ROUND 6-7)")
+
+    known_other = {
+        ("ProofBrokerMathlib/Tactic.lean", "initialize do"),
+    }
+    for fname, line in other_init_lines:
+        key = (fname, line.split("←")[0].split(":=")[0].strip())
+        if key not in known_other:
+            errors.append(
+                f"{fname}: unrecognized module initializer `{line[:80]}` "
+                "— if it holds mutable per-goal state this is the C4 "
+                "race pattern; if it is legitimate, allowlist it in "
+                "check_lean_reify_isolation together with the code")
+
+    # the tactic file is identified by CONTENT (it defines buildIR),
+    # so the gate works identically on the real tree and on the
+    # negative-control temp trees in test_check.py
+    tactic_files = [pth for pth in files
+                    if "def buildIR" in pth.read_text()]
+    if len(tactic_files) != 1:
+        errors.append(
+            f"expected exactly one bridge file defining buildIR, found "
+            f"{[pth.name for pth in tactic_files]}")
+        return errors
+    tactic = tactic_files[0]
+    for pth, calls in fresh_files.items():
+        if pth != tactic:
+            errors.append(
+                f"{pth.name}: ReifyAcc.fresh referenced outside the "
+                f"buildIR file ({calls[:2]}) — new call sites need this "
+                "gate edited deliberately")
+
+    lines = tactic.read_text().splitlines()
+    call_lines = [(i, l.strip()) for i, l in enumerate(lines)
+                  if "← ReifyAcc.fresh" in l]
+    build_start = next((i for i, l in enumerate(lines)
+                        if l.startswith("def buildIR")), None)
+    build_end = next(
+        (i for i in range(build_start + 1, len(lines))
+         if re.match(r"^(def |partial def |syntax |initialize |end )",
+                     lines[i])),
+        len(lines))
+    in_build = [l for i, l in call_lines if build_start < i < build_end]
+    outside = [(i + 1, l) for i, l in call_lines
+               if not (build_start < i < build_end)]
+    if len(in_build) != 1:
+        errors.append(
+            f"`← ReifyAcc.fresh` inside buildIR: {in_build or 'MISSING'} "
+            "— expected exactly one (each reification gets a fresh "
+            "accumulator)")
+    expected_outside = ["let a ← ReifyAcc.fresh", "let b ← ReifyAcc.fresh"]
+    if sorted(l for _, l in outside) != sorted(expected_outside):
+        errors.append(
+            f"`← ReifyAcc.fresh` call sites outside buildIR are "
+            f"{outside}, expected exactly the isolation test's "
+            f"{expected_outside} — a new call site (or a moved one) "
+            "needs this gate edited deliberately")
+    return errors
+
+
 # --- Cross-fixture hash linkage (#18d / #24-M1) ---------------------------
 #
 # The strict-identity hash invariants for example certificates:
@@ -871,19 +1096,22 @@ def main() -> int:
     failed = 0
     total_warnings = 0
 
-    # Repo-level source-scan checks (R2.4): trace_format literals in
-    # sdk/lib registered; the SDK's baked-in always-unfold list in
-    # sync with the registry.
+    # Repo-level source-scan checks: trace_format literals in sdk/lib
+    # registered; the SDK's baked-in always-unfold list in sync with
+    # the registry (both R2.4); the lean-bridge reify-isolation
+    # discipline (C4 — module-level IO.Refs, ReifyAcc.fresh call
+    # sites, comment-strip truncation fail-closed).
     repo_errors = (check_sdk_trace_format_literals(registry)
-                   + check_always_unfold_pin(registry))
+                   + check_always_unfold_pin(registry)
+                   + check_lean_reify_isolation())
     if repo_errors:
-        print("FAIL sdk/lib source-scan checks")
+        print("FAIL source-scan checks (sdk/lib + lean-bridge)")
         for msg in repo_errors:
             print(f"  ERROR  {msg}")
         failed += 1
     else:
-        print("OK   sdk/lib source-scan checks (trace_format literals, "
-              "always_unfold pin)")
+        print("OK   source-scan checks (trace_format literals, "
+              "always_unfold pin, lean reify isolation)")
 
     # Pairing completeness (C2 round 1): the per-fixture R2 gates below
     # only fire for fixtures the pairing maps know about, so an unpaired

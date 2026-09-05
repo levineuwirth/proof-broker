@@ -1324,6 +1324,307 @@ blocks this port; only the D3 consumer trigger does.
 
 ---
 
+### 5.7 Decision record — downstream consumability and the verinf obligation shapes (2026-09-03, R4)
+
+**Context.** R4's target is verinf's bracket spike
+(`lean/BracketSpike/BracketSpike/Bracket.lean`, branch
+`lean-bracket-spike`), consumed from a separate Lake project.
+
+**Decisions.**
+
+1. **Manifest discovery is package-anchored.** `defaultManifestDir`
+   keeps `$PROOF_BROKER_EXAMPLES_DIR` (verbatim, no probe) and
+   `<cwd>/../examples`, then falls back to a directory derived from
+   where `ProofBroker.Tactic.olean` was loaded from. The cwd
+   candidate is stepped over only when it holds none of the four
+   manifest names — i.e. exactly where the previous code raised "no
+   manifests found". Without this, every downstream call died unless
+   the user exported the variable by hand.
+
+2. **`--load-dynlib` paths are absolute**, computed from Lake's
+   `__dir__`, behind a named `proofBrokerLeanArgs`. The previous
+   cwd-relative spelling only resolved when the build ran from
+   `lean-bridge/`. A downstream project cannot import a lakefile
+   definition, so `lean-bridge/CONSUMERS.md` carries the
+   copy-pasteable block; the two are kept in step by hand.
+
+3. **Closed ℕ arithmetic folds to one numeral** (`natClosedNumeral?`,
+   bounds `natFoldMaxExp = 256`, `natFoldMaxBits = 4096`).
+   Recognizing only `OfNat` literals made `2^16 * 2^16` atomize into
+   an unbounded `Opaque` atom, and made `Zmax * 2^16` a fake-opaque
+   atom although it is linear — the "Opaque atom that is not
+   actually opaque" the R4 attack surface names. A closed power that
+   leaves the bounds is a named error, not an atom.
+
+4. **Atomization extends to applied functions and to Int.** An
+   applied ℕ-valued function (`x.val`) and an Int term with no
+   fragment reading (a projection at an undeclarable argument type,
+   a nonlinear product) become `Opaque` atoms. Sound for any meaning
+   of the term — replacing a subterm by a fresh constant generalizes
+   the goal — at a cost in completeness. The R3-M1 ℕ-truncation
+   contract is preserved inside atoms on both sides
+   (`natAtomForbiddenOp?`, and its type-aware Int sibling
+   `natOpInsideIntAtom?`).
+
+5. **Locals are alpha-renamed to SMT-safe names before reification.**
+   Primed names are idiomatic Lean and pervasive in the target
+   (`c'`, `h1'`); the serializer refuses them. Renaming on the GOAL
+   rather than mapping names inside the IR keeps one name for one
+   thing across reifier, certificate, `fvarOfName` and walker
+   context, so no inverse map has to be trusted at lift time.
+
+6. **A hypothesis outside the fragment is dropped, not fatal**, and
+   recorded in `skippedLocals` (reported by `proof_broker?`).
+   Dropping only weakens the assumption set. The GOAL is never
+   dropped, so the ℕ-truncation fail-fast still applies to
+   everything the certificate reads. This CHANGED shipped behaviour:
+   a nested-ℕ-∀ hypothesis used to abort the tactic.
+
+7. **Def-unfold inversion is a defeq `change`, restricted to value
+   positions.** `rewrite` needs a motive, which does not typecheck
+   when the constant also indexes a type in the goal
+   (`x.val + z.val < P` with `x : ZMod P`). And rewriting occurrences
+   inside a type is a kernel bomb: `ZMod P` → `ZMod <2^64-scale
+   numeral>` makes the next defeq check reduce `Nat.rec` at that
+   literal. `constOnlyInValuePositions` gates both the goal (named
+   error) and the hypothesis swaps (skip).
+
+**DEFERRED — Rocq port.** None of items 3–7 has a Rocq counterpart.
+R4's ROADMAP row says "Rocq port: none" because D3 is Lean-only, but
+the two reifiers have now diverged further than that row anticipated.
+Trigger to revisit: any Rocq-side consumer of the ℕ→ℤ path meeting
+a closed-numeral product, an applied-function atom, or a primed
+identifier.
+
+**FIXED — exponential materialization in the internal Farkas search
+(originally recorded here, wrongly, as "unbounded allocation on the
+cvc4 path").** C4 ROUND 1 falsified this record's first
+characterization in every material respect, and the corrected
+mechanism is: `Farkas_search.try_close` materialized the entire
+coefficient space (`cartesian`, 4 candidates per inequality input, 7
+per equality) before searching — 4^13 ≈ 67M candidates ≈ 4.7GB at
+the 13 inputs `m_full.lean` sends (7 user hypotheses + 5 synthetic
+ℕ-nonnegativity facts + neg_goal), 4^15 ≈ 76GB at the demo's
+15-input goals (`D1_78`/`D2_62`), which is the observed 57GB OOM.
+Post-dispatch, not pre- (cvc4 IS spawned and answers unsat in
+7.6ms); bounded-but-exponential per input count, not unbounded; and
+NOT cvc4-specific — the search is the internal Tier-1 fallback for
+all three SMT adapters and reproduces identically via cvc5 whenever
+its proof extraction fails. Pre-existing SDK code (untouched by R4);
+R4's atomization added +2 inputs on exactly the demo's goal shape,
+which is what made it reachable at machine-killing scale.
+
+Disposition (C4 ROUND 1 prescription, both parts landed in the fix
+round): the enumeration now STREAMS in the identical order (O(n)
+live memory, first-hit witness pinned, order equivalence proven
+exhaustively to 4^8), and a saturating size check refuses spaces
+above its candidate cap with a named
+`search_space_exceeded` error. The second part is a deliberate,
+recorded behavior change: a goal whose coefficient space exceeds
+the cap no longer gets a Tier-1 rescue when
+solver proof extraction fails — it falls through to the Tier 0
+oracle cert, exactly the pre-existing fallback. Regression-tested
+(13-input IR returns immediately). The cap's VALUE was re-derived at
+C4 ROUND 2/3 (Levi 2026-09-03): the initial 100k was inherited from
+the comment that had justified materialization; the shipped value is
+2,000,000 — a measured time budget (4^10 sweep = 0.77s CPU / 1.3MB
+live; basis recorded in the module comment) — so the refusal
+threshold is ≳11 inequality inputs, and the demo's `D1/70` (4^10)
+is rescued while `D2/62`/`D1/78` (4^14+) stay refused. *(SUPERSEDED
+for `D1/70` on 2026-09-05: that 4^10 was the space of a context the
+tactic could not see — see the R4-continuation records below.)* "Drop cvc4
+from the default adapter list" was considered and rejected: it
+removes the most reliable trigger while leaving the defect live
+behind cvc5/z3.
+
+**FIXED — reifier accumulator race under parallel elaboration**
+(2026-09-03, C4 ROUND 3 High; fix round of the same day, Levi's
+explicit call to fix rather than defer behind a workaround).
+Symptom: the demo's headline file failed 10/33 elaborations and 1/6
+forced builds with `unsupported_symbol: Bracket.P`. Cause: the
+reifier's four module-level accumulation refs (applied consts, ℕ
+atoms, Int atoms, numeral defs) assumed "single-goal reification is
+sequential" — false under Lean v4.32, which elaborates a module's
+(named) declarations in parallel; concurrent `buildIR` calls
+interleaved resets and pushes. Snapshot-threading alone (the R3-M1
+`natAtoms` patch) is insufficient — the refs were shared DURING
+accumulation — so the fix makes accumulation itself per-call: each
+`buildIR` creates a fresh `ReifyAcc` and the reify family threads
+it explicitly; the module refs are deleted (`reifierExt` remains as
+documented set-once registration). Not a soundness defect (the
+failure is fail-closed), but it sat on R4's gate path. Verified by
+a 33-elaboration + 6-forced-build protocol on a quiesced tree: 0
+failures at bridge `259ada9` (the fix commit; the fix-round
+protocol's demo tree was not recorded at the time — later rounds
+re-verified at recorded pairs. Baselines, both repos' trees from
+the ROUND records: 10/33 probes and 1/6 forced builds both measured
+by ROUND 3 at bridge `c6805c0` / demo `858485c`; the re-share
+replay re-derived 9/33 at ROUND 4's pair `960ca26`/`c2dc119`, where
+ROUND 4 also confirmed reification semantics byte-identical across
+the refactor on 8 shapes; ROUND 6 re-ran 3/3 forced builds green at
+`6618587`/`1f51610`).
+Pinned in THREE parts (the split
+found at C4 ROUND 6 Med 1; the load-bearing third added at ROUND 8
+Med 1 after the textual gate lost a spelling per round):
+`reify_callsite_isolation_test` is the LOAD-BEARING pin — it runs
+the real `buildIRWithAcc` twice and observes ALIASING between the
+accumulators the reifications actually used (run 1's atom table
+must survive run 2; a marker in run 2's must not appear in run 1's)
+— red under any spelling that leaves `buildIRWithAcc` returning
+the accumulator it accumulated into, which every single-accumulator
+mutation does (mutation-verified: `initialize`-backed shared
+accumulation with `fresh` intact, per-field). KNOWN RESIDUAL
+(ROUND 9; corrected at ROUND 11 — the ROUND 10 form was inverted
+on both halves): the surviving residual is a DECOY mutant
+(accumulate in shared state, return a copied accumulator —
+invisible to any return-value pin by construction) composed with
+any store or spelling that the gate's
+best-effort lexer mishandles: ROUND 10's M′ used a string-literal
+blinding (closed by the string-aware stripper), ROUND 11's M″ used a
+Char-literal parity flip (a known unhandled lexing edge — the gate's
+lexer is approximate by design and further edges exist: raw strings,
+interpolation nesting). A synonym-hidden store, by contrast, IS
+caught (invariant (2) errors on unrecognized initializers — ROUND 9
+NOT CONFIRMED #5). The residual is covered by REVIEW only;
+`reify_acc_isolation_test` pins the
+constructor at runtime (all four fields independently since
+ROUND 5; red on every run under any re-sharing inside
+`ReifyAcc.fresh`, mutation-verified per field), and
+`check_lean_reify_isolation` in `tools/check.py` is DEFENSE IN
+DEPTH — a comment-stripped scan of every .lean file under
+lean-bridge/ for module-level `IO.Ref` initializers (`initialize`,
+`builtin_initialize`, `@[init]`, any indentation) beyond
+`reifierExt`, unrecognized initializers, and stray
+`ReifyAcc.fresh` sites; it fails LOUD with a named location at
+review time, and a spelling it cannot see is caught by the
+call-site pin instead (negative controls in `test_check.py`, 73); the
+`Test/TacticStress.lean` herd exercises concurrent per-call
+accumulators under real async elaboration but is NOT a reliable
+catcher — measured pre-fix catch rates 0/30 builds
+(anonymous-example form, C4 ROUND 4), then on the shipped
+named-theorem form at ROUND 5: 0/20 under the all-four-shared
+mutation and 0/10 under the natDefs-only one, each by restoring
+shared refs and force-rebuilding `ProofBrokerTest` on this
+16-core/58GB machine at the then-current `r4/demo` tip;
+dispatch-free `buildIR` windows are ~1.5ms (ROUND 4's
+`stress_window` probe at `960ca26`); the demo file raced because
+its windows span live solver round trips. The constructor pin's
+coverage was itself reviewed twice: ROUND 5 found it asserting one
+field of four (a `natDefs`-only re-share escaped every pin while
+the demo file failed 4/27 at `52dbff1`/`ac32ee1`), and ROUND 9
+found the
+call-site pin repeating the same one-field mistake (its
+`natDefs`-only call-site re-share put the demo at 9/27 at
+`37fda79`/`b449733`); both pins now assert all four fields independently,
+mutation-verified per field.
+
+**FIXED — context sensitivity: a tactic-internal goal is not
+header-shaped (2026-09-05, R4 continuation).** The C4 handoff
+recorded that several obligations "close in isolation with the
+identical goal and context and fail in the real file — not
+understood". Measured on the spike with a dump tactic (demo
+`reference/ctx/dump.log`): the `have` tactic leaves its continuation
+goal wrapped in `noImplicitLambda` metadata, and `have := e`,
+`by_cases`, and any `have h : T := …` whose `T` needed a coercion or
+a default instance leave hypothesis (and target) types as
+assigned-but-uninstantiated metavariables. Every structural match
+in the bridge (`getAppFnArgs`, `isConstOf`, the closers' shape
+matchers) saw `mdata`/`?m` and fell through: the reifier threw
+"unsupported expression: <goal>" (`D1/71`, `D3/98`, `D3/101`,
+`D3/175`, `D3/178`); a hypothesis that failed to reify was DROPPED
+as "outside the fragment" and the solver answered sat (`D3/170`,
+`D3/180`); the ℕ term-mode closer refused a goal the reifier had
+just read (`D1/69`). A probe whose goal is a declaration signature
+never exhibits any of it — hence "closes in isolation". Fix:
+`normalizeGoalForBroker` at the four tactic entry points
+(`instantiateMVarDeclMVars` — Lean's own operation, target + local
+context, same metavariable, no proof-term change — plus
+`consumeMData` on the target) and the symmetric per-hypothesis
+instantiation inside `buildIRWithAcc`. Scope, stated: metavariables
+anywhere; the annotation at the TOP of the target only (no nested or
+hypothesis-level `mdata` was observed; the named error still reports
+such a term). Pinned by seven `pb_r4_ctx_*` theorems in
+`Test/Tactic.lean`, each asserting the RAW shape first
+(`raw_shape_test`, so a toolchain that stops producing the shape
+turns the pin red rather than moot) and one running `buildIR`
+without the front-end (`reify_hyp_count_test`, red when the
+reifier's own instantiation is reverted while the front-end still
+rescues `proof_broker`). Measured consequence on the demo, one probe
+per obligation: 11/19 → 17/19 at the fix (the same seven core-only
+shapes: `reference/ctx/controls.before.log` 7/7 red,
+`reference/ctx/controls.log` exit 0), and the two D1 obligations
+still red for the reason the next record names.
+
+**FIXED — under the full context the Farkas-witness sources give out
+(2026-09-05, R4 continuation; exposed by the record above).** With
+all 17–19 hypotheses visible, `D1/69` and `D1/70` failed in term
+mode for two different reasons, both measured per adapter
+(`reference/ctx/D1_6{9,70}_{cvc4,cvc5,z3}.log`): for `D1/69` cvc5's
+proof is no longer a single `la_generic`, the Tier 3 checker verifies
+it, and the parallel driver's "highest tier wins" picked that trace
+over z3's Tier 1 Farkas witness — so term mode failed with "cert is
+not a Farkas witness" WITH a witness in hand; for `D1/70` no
+structural extractor matches any adapter's proof and the internal
+rescue search's dense space (4^17 and up) is above its 2M cap, so
+every adapter minted Tier 0 and term mode refused. CORRECTION of the
+cap record above: "the demo's `D1/70` (4^10) is rescued" was true of
+a context in which five hypotheses were invisible; under the context
+the tactic actually sees, its dense space is far above the cap. Both
+close once the irrelevant hypotheses are `clear`ed
+(`reference/ctx/d1_{69,70}_clear.log`), which locates the problem
+in the SDK, not the reifier. Fix, three SDK parts, each with the
+default behaviour untouched: (a) `Dispatch.run_parallel` ranks the
+tiers in the IR's `user_directives.tier_preference` first when
+picking the winner (no preference = the old rule, bit for bit), and
+term mode now SENDS `["1", "2"]` — the walker's `["3"]` in the other
+direction; (b) under that preference cvc5's ladder runs the internal
+Farkas closer before minting a Tier 3 trace; (c) `Farkas_search`
+gains a sparse-support rescue: when the dense coefficient space
+exceeds the cap, enumerate by support (≤ 4 inputs with nonzero
+coefficients) under the SAME 2M budget, deterministic order, refusal
+above it — the dense path and its pinned first-hit order are
+unchanged, the rescue runs only where the old code refused.
+BEHAVIOUR CHANGE, stated: an IR that already carries
+`user_directives.tier_preference` now gets its listed tier where the
+driver used to ignore the list. The spec's own example fixtures are
+such IRs (`example1-lia-typeclass` and `example3-quotient-zmod`:
+`["1", "3", "2"]`; `example2`: `["3", "2", "0"]`), and the bridge's
+roundtrip case that dispatched `example1` expecting "the highest tier
+regardless" now asserts that contract on the fixture with its
+directive cleared, and separately that the directive as shipped
+selects a Tier 1 witness in both adapter orders. Spec §Dispatch
+says it in so many words: "User override. The user can specify
+tier_preference in directives to force a different ordering" — the
+driver now does what the sentence says. (The spec's own DEFAULT
+order there is 1 > 3 > 2 > 0, not the numeric "highest tier" the
+driver implements without a directive; that pre-existing difference
+is untouched here and noted for R5.) Reach, measured: the verinf contexts (18–20 inputs, ~0.4M–0.7M sparse
+candidates) close; about two dozen inequality inputs is where the
+budget runs out at support 4. Tests: SDK — the rescue on a 17-input
+IR (support pinned to exactly the two relevant inputs), the hard
+refusal at 61 inputs, the 13-input CPU pin re-derived (66,378 sparse
+candidates), the selection rule on synthetic Tier 3/Tier 1 adapters
+under every preference shape, and the REAL `D1/69`/`D1/70` IRs
+(fixtures written by the bridge's reifier) through cvc5's ladder and
+the parallel driver; bridge — `pb_r4_ctx_irrelevant_context_term`
+(15 irrelevant bounds around the `D1/70` shape). Measured
+consequence: the demo's generated table.
+
+8. **Per-call report line under `PROOF_BROKER_REPORT` (R4.4).** A
+   successful broker call logs one machine-readable line — tactic,
+   the closer that actually closed (the closer stack now returns
+   its label; control flow unchanged), the winning cert's backend /
+   tier / format / compact-JSON size, reified hypothesis count,
+   dispatch and verify wall, tactic wall — only when that variable
+   is set in the environment (the demo's `probe.sh` sets it; a
+   normal build does not). An environment variable rather than a
+   Lean option or trace class because those register through an
+   `initialize`, which the C4 source gate refuses by design, and the
+   bridge already discovers its FFI and manifests through
+   `PROOF_BROKER_*` variables. The demo's `obligation_table.py`
+   reads the lines from the probe logs, so every per-obligation
+   number in its README is generated.
+
 ## 6. References
 
 - **Spec v1.0:** `proof-brokerage-spec-v1.pdf`. The architectural

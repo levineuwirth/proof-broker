@@ -191,38 +191,45 @@ structure ReifierExt where
 
 initialize reifierExt : IO.Ref (Option ReifierExt) ← IO.mkRef none
 
-/-- Applied global constants encountered during reification that
-    are not connectives/quantifiers (e.g. `Function.comp`) — the
-    higher-order/FOL path treats them as uninterpreted symbols and
-    must declare them as IR `freeVars` so the TPTP serializer has a
-    monomorphic type. Threaded as a module ref because `reifyTerm`
-    is a standalone `def`; `buildIR` clears it on entry, folds the
-    collected `(name, typeRef)` pairs into `freeVars` on exit, and
-    nothing else touches it (single-goal reification is
-    sequential). -/
-initialize reifyConsts : IO.Ref (Array (String × TypeRef)) ← IO.mkRef #[]
+/-- Per-reification accumulator state (C4 ROUND 3 finding 1). One
+    FRESH instance is created by each `buildIR` call and passed down
+    the reify family explicitly, so concurrent declaration
+    elaborations (Lean v4.32 elaborates a module's declarations in
+    parallel by default) cannot interleave their tables. This
+    replaces four module-level `IO.Ref`s whose stated invariant —
+    "buildIR clears it on entry, single-goal reification is
+    sequential" — parallel elaboration falsified: the demo's
+    headline file failed 10/33 runs with `unsupported_symbol` when
+    two declarations' reifications raced the shared tables. A
+    module-level ref remains correct ONLY for set-once registration
+    (`reifierExt` above: written at module initialization, read-only
+    during elaboration).
 
-/-- R3-M1: nonlinear-ℕ atomization table, `payload_id ↦ the ℕ
-    subterm it stands for` (e.g. `Zmax * zhigh`). Filled by
-    `Reify.reifyNatTerm` when a product with no literal factor (or a
-    non-foldable power) is atomized to an IR `Opaque` node; consumed
-    by `buildIR` (payloads + nonneg hypotheses) and by the ℕ→ℤ lift
-    (the walker context maps the id back to `↑<subterm>`). Same
-    threading discipline as `reifyConsts`: `buildIR` clears it on
-    entry, single-goal reification is sequential. -/
-initialize reifyNatAtoms : IO.Ref (Array (String × Expr)) ← IO.mkRef #[]
+    Fields:
+    * `consts` — applied global constants that are not
+      connectives/quantifiers (e.g. `Function.comp`); the HO/FOL
+      path declares them as IR `freeVars` so the TPTP serializer
+      has a monomorphic type.
+    * `natAtoms` — R3-M1 nonlinear-ℕ atomization table,
+      `payload_id ↦ ℕ subterm` (e.g. `Zmax * zhigh`); consumed for
+      payloads + nonneg hypotheses and by the ℕ→ℤ lift's walker
+      context.
+    * `intAtoms` — R4.2 Int-side atomization table; like `natAtoms`
+      but no nonneg hypothesis (an Int atom is just an
+      uninterpreted Int constant).
+    * `natDefs` — R3-M3 numeral-definition table,
+      `constant name ↦ (const Expr, ℕ value)`; drives the
+      definition-unfolding pass and its `Eq.mpr` inversion. -/
+structure ReifyAcc where
+  consts : IO.Ref (Array (String × TypeRef))
+  natAtoms : IO.Ref (Array (String × Expr))
+  intAtoms : IO.Ref (Array (String × Expr))
+  natDefs : IO.Ref (Array (String × Expr × Nat))
 
-/-- R3-M3: numeral-definition table, `constant name ↦ (its const
-    Expr, its ℕ value)`. Filled by `Reify.reifyNatTerm` when a
-    non-recursive constant with a numeral body is reified as an
-    opaque IR leaf plus a `defined_function` metadata entry; the
-    dispatch pipeline's definition-unfolding pass replaces the leaf
-    by the numeral (trace entry recorded), and the term-mode lift
-    inverts the unfold by `Eq.mpr` over the (kernel-defeq)
-    unfolding equation. Same threading discipline as
-    `reifyNatAtoms`: `buildIR` clears it on entry and returns the
-    table on the extraction path. -/
-initialize reifyNatDefs : IO.Ref (Array (String × Expr × Nat)) ← IO.mkRef #[]
+/-- A fresh, empty accumulator — one per `buildIR` call. -/
+def ReifyAcc.fresh : BaseIO ReifyAcc := do
+  return { consts := ← IO.mkRef #[], natAtoms := ← IO.mkRef #[],
+           intAtoms := ← IO.mkRef #[], natDefs := ← IO.mkRef #[] }
 
 /- ============================================================
    Reifier: Lean Expr → ProofBroker IR ShellTerm
@@ -261,11 +268,11 @@ def matchBitVecType? (ty : Expr) : Option Nat :=
     arrow chains for predicate-valued UF (`P : Int → Prop`); it is
     not accepted as a free-var carrier on its own (the LCtx walk
     classifies Prop-typed locals as hypotheses, not free vars). -/
-partial def reifyType (ty : Expr) : MetaM TypeRef := do
-  if ty.isConstOf ``Int then return "Int"
-  if ty.isProp then return "Prop"
+partial def reifyType? (ty : Expr) : MetaM (Option TypeRef) := do
+  if ty.isConstOf ``Int then return some "Int"
+  if ty.isProp then return some "Prop"
   if let some n := matchBitVecType? ty then
-    return s!"BitVec({n})"
+    return some s!"BitVec({n})"
   if ty.isArrow then
     -- Walk every arrow in the chain. A domain that is *itself* an
     -- arrow (a higher-order argument, e.g. the `(Nat→Nat)` in
@@ -278,26 +285,42 @@ partial def reifyType (ty : Expr) : MetaM TypeRef := do
     let mut parts : Array TypeRef := #[]
     while t.isArrow do
       let dom := t.bindingDomain!
-      let d ← reifyType dom
+      let some d ← reifyType? dom | return none
       parts := parts.push (if dom.isArrow then "(" ++ d ++ ")" else d)
       t := t.bindingBody!
-    parts := parts.push (← reifyType t)
-    return String.intercalate "->" parts.toList
+    let some r ← reifyType? t | return none
+    parts := parts.push r
+    return some (String.intercalate "->" parts.toList)
   match ← reifierExt.get with
   | some ext =>
     match ← ext.reifyType ty with
-    | some t => return t
+    | some t => return some t
     | none =>
       -- A bare type constant the extension declined (e.g. `Nat`,
       -- `String`, a user inductive) is an uninterpreted base sort
       -- for the FOL/HOL (Vampire) path: the TPTP serializer
       -- declares it as a `$tType`. Not reachable on the LIA/LRA
       -- paths (Int/Real handled above / by the ext).
-      if ty.isConst then return toString ty.constName!
-      throwError "proof_broker: unsupported type {ty}"
+      if ty.isConst then return some (toString ty.constName!)
+      return none
   | none =>
-    if ty.isConst then return toString ty.constName!
-    throwError "proof_broker: unsupported type {ty}; LIA scope is Int only"
+    if ty.isConst then return some (toString ty.constName!)
+    return none
+
+/-- Decode a type `Expr` as an IR `TypeRef`, or fail with the
+    fragment error. `reifyType?` is the same walk without the
+    throw — R4.2 added it so a caller can ASK whether a type is in
+    the fragment (the UF/uninterpreted-constant arms of `reifyTerm`
+    do, before committing to a shape whose arguments they may not be
+    able to declare) instead of finding out by catching an
+    exception. -/
+def reifyType (ty : Expr) : MetaM TypeRef := do
+  match ← reifyType? ty with
+  | some t => return t
+  | none =>
+    match ← reifierExt.get with
+    | some _ => throwError "proof_broker: unsupported type {ty}"
+    | none => throwError "proof_broker: unsupported type {ty}; LIA scope is Int only"
 
 /-- Recognize an `OfNat.ofNat` / `Int.ofNat` literal at type `Int`
     and read out its raw `Nat` value. Returns `none` if the
@@ -392,23 +415,108 @@ private partial def natAtomForbiddenOp? (e : Expr) : Option Name :=
      | none => e.getAppFn.constName?)
   | (_, args) => args.foldl (fun acc a => acc <|> natAtomForbiddenOp? a) none
 
+/-- R4.2: the constant-folding bounds for closed ℕ arithmetic.
+    `natFoldMaxExp` is R3-M1's exponent ceiling, kept verbatim;
+    `natFoldMaxBits` additionally caps the *value* so a nest of
+    closed powers (`(2^200)^200`) cannot build a megabyte-long
+    numeral inside the reifier. 4096 bits is ~30× the widest
+    literal any R4 obligation mentions (Goldilocks, 2^64) and ~16×
+    the D2 2^128-scale corpus pins. -/
+def natFoldMaxExp : Nat := 256
+def natFoldMaxBits : Nat := 4096
+
+/-- Read a **closed** ℕ term's value: literals, `+`, `*` and `^`
+    over closed operands, folded structurally with no reduction and
+    no side effects. `none` for anything with a variable, an
+    application, a definition, ℕ subtraction/division/modulo, or a
+    fold that leaves the bounds above.
+
+    Why this rather than "is it a literal": the source spells
+    bit-widths, so the interesting closed terms are `2^24`,
+    `2^16 * 2^16` and `2^24 + 2 * 2^16`, none of which is an
+    `OfNat` literal. Recognizing only literals made
+    `2^16 * 2^16 < P` (verinf `Bracket.lean:62`) atomize into an
+    uninterpreted `_pb_atom_k`, which no solver can then bound —
+    and made `Zmax * 2^16` (line 78) a fake-opaque atom although it
+    is linear. Folding is sound because the ℕ value and its ℤ image
+    agree on `+`, `*`, `^`; there is no truncation anywhere in this
+    fragment (`-`, `/`, `%` are refused, here as everywhere else).
+
+    Purely structural: it never registers an atom or a definition,
+    so a caller may probe with it and then decide to do something
+    else with the same subterm. -/
+partial def natClosedNumeral? (e : Expr) : Option Nat :=
+  let bounded (n : Nat) : Option Nat :=
+    if n < 2 ^ natFoldMaxBits then some n else none
+  match matchNatLiteralAtNat? e with
+  | some n => bounded n
+  | none =>
+    match e.getAppFnArgs with
+    | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+      if α.isConstOf ``Nat then
+        match natClosedNumeral? a, natClosedNumeral? b with
+        | some x, some y => bounded (x + y)
+        | _, _ => none
+      else none
+    | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+      if α.isConstOf ``Nat then
+        match natClosedNumeral? a, natClosedNumeral? b with
+        | some x, some y => bounded (x * y)
+        | _, _ => none
+      else none
+    | (``HPow.hPow, #[_, _, _, _, a, b]) =>
+      match natClosedNumeral? a, matchNatLiteralAtNat? b with
+      | some base, some exp =>
+        if exp > natFoldMaxExp then none else bounded (base ^ exp)
+      | _, _ => none
+    | _ => none
+
+/-- Structurally closed ℕ arithmetic — literals under `+`, `*`, and
+    `^` with a literal exponent — decided WITHOUT computing the
+    value. Where this holds but `natClosedNumeral?` declined, the
+    term is closed yet exceeds the folding bounds: that is a scope
+    error to raise by name, never a silent atom (an atomized
+    numeral generalizes the goal into one that mysteriously fails
+    to close — the failure mode the named error exists to prevent).
+    Deciding closedness must not compute: folding `2^5000` merely
+    to diagnose it would re-create the resource hazard the bounds
+    exist to avoid. -/
+partial def natClosedShape (e : Expr) : Bool :=
+  (matchNatLiteralAtNat? e).isSome ||
+  match e.getAppFnArgs with
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+    α.isConstOf ``Nat && natClosedShape a && natClosedShape b
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    α.isConstOf ``Nat && natClosedShape a && natClosedShape b
+  | (``HPow.hPow, #[_, _, _, _, a, b]) =>
+    natClosedShape a && (matchNatLiteralAtNat? b).isSome
+  | _ => false
+
+/-- The named bounds refusal for a closed-shaped term the fold
+    declined (see `natClosedShape`). -/
+def throwNatFoldBounds (e : Expr) : MetaM α :=
+  throwError "proof_broker: closed ℕ arithmetic {e} exceeds the \
+    constant-folding bounds (exponent ≤ {natFoldMaxExp}, value < \
+    2^{natFoldMaxBits}) — a numeral the reifier declines to build \
+    is a scope error, not an uninterpreted atom"
+
 /-- Atomize a nonlinear ℕ subterm: reuse the existing payload id if
     this exact `Expr` was seen before (structural equality — the
     same product mentioned twice is one atom), else mint
     `_pb_atom_<k>` and record it. The shell is the atom under the
     cast, like any ℕ atom. Refuses atoms hiding sub/div/mod (see
     `natAtomForbiddenOp?`). -/
-def atomizeNatTerm (e : Expr) : MetaM ShellTerm := do
+def atomizeNatTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
   if let some op := natAtomForbiddenOp? e then
     throwError "proof_broker: ℕ {op} inside a nonlinear subterm \
       ({e}) — the ℕ→ℤ specialization refuses truncated/rounding ℕ \
       arithmetic even under atomization; restate without it"
-  let atoms ← reifyNatAtoms.get
+  let atoms ← acc.natAtoms.get
   let id ← match atoms.find? (fun (_, e') => e' == e) with
     | some (id, _) => pure id
     | none =>
       let id := s!"_pb_atom_{atoms.size}"
-      reifyNatAtoms.modify (·.push (id, e))
+      acc.natAtoms.modify (·.push (id, e))
       pure id
   return .app natCastSymbol [] [.opaque_ id]
 
@@ -424,15 +532,19 @@ def matchNatNumeralDef? (e : Expr) : MetaM (Option (Name × Nat)) := do
   return (matchNatLiteralAtNat? d.value).map (c, ·)
 
 /-- Reify a ℕ-typed `Expr` into the ℤ image of its value (casts
-    pushed to atoms). Scope: variables, literals, `+`, `*` (with a
-    literal factor — otherwise atomized), `^` with literal base and
-    exponent (constant-folded; otherwise atomized), numeral-body
+    pushed to atoms). Scope: variables, closed arithmetic (folded to
+    one numeral by `natClosedNumeral?`), `+`, `*` (with a
+    closed-numeral factor — otherwise atomized), `^` with a
+    non-closed base (atomized), numeral-body
     constants (R3-M3 — emitted as an opaque leaf the def-unfold
     pass replaces, documented in `definitional_metadata`). ℕ
     subtraction / division / modulo fail fast — never cast
     naively. -/
-partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
-  if let some n := matchNatLiteralAtNat? e then
+partial def reifyNatTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
+  -- Closed ℕ arithmetic collapses to one Int numeral before any
+  -- structural walk: `2^16 * 2^16` is the numeral 4294967296 in the
+  -- image, not a product of two atoms (`natClosedNumeral?`).
+  if let some n := natClosedNumeral? e then
     return .numLit (toString n) "Int"
   if e.isFVar then
     let decl := (← getLCtx).get! e.fvarId!
@@ -444,32 +556,47 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
     unless α.isConstOf ``Nat do
       throwError "proof_broker: ℕ reifier reached + at {α}"
-    return .app "HAdd.hAdd" [] [← reifyNatTerm a, ← reifyNatTerm b]
+    return .app "HAdd.hAdd" [] [← reifyNatTerm acc a, ← reifyNatTerm acc b]
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
     unless α.isConstOf ``Nat do
       throwError "proof_broker: ℕ reifier reached * at {α}"
-    -- Linear iff a factor is a literal; otherwise the product is a
-    -- nonlinear atom (the D1 `Zmax * zhigh` shape).
-    if let some k := matchNatLiteralAtNat? a then
-      return .app "HMul.hMul" [] [.numLit (toString k) "Int", ← reifyNatTerm b]
-    else if let some k := matchNatLiteralAtNat? b then
-      return .app "HMul.hMul" [] [← reifyNatTerm a, .numLit (toString k) "Int"]
+    -- Linear iff a factor is a closed numeral (R4.2: `Zmax * 2^16`
+    -- counts, `2^16` being closed but not an `OfNat` literal);
+    -- otherwise the product is a nonlinear atom (the D1
+    -- `Zmax * zhigh` shape). Both operands closed WITHIN BOUNDS is
+    -- already gone, folded at the head of `reifyNatTerm` — but a
+    -- closed product the fold declined for its SIZE (e.g.
+    -- `2^300 * 2^300`) reaches here with both `natClosedNumeral?`
+    -- calls returning none, and must be the named bounds refusal,
+    -- not a silent atom (C4 ROUND 1 finding 5).
+    if let some k := natClosedNumeral? a then
+      return .app "HMul.hMul" [] [.numLit (toString k) "Int", ← reifyNatTerm acc b]
+    else if let some k := natClosedNumeral? b then
+      return .app "HMul.hMul" [] [← reifyNatTerm acc a, .numLit (toString k) "Int"]
+    else if natClosedShape e then
+      throwNatFoldBounds e
     else
-      atomizeNatTerm e
+      atomizeNatTerm acc e
   | (``HPow.hPow, #[_, _, _, _, a, b]) =>
-    (match matchNatLiteralAtNat? a, matchNatLiteralAtNat? b with
+    -- A closed power is already folded at the head of
+    -- `reifyNatTerm`; reaching here with a closed base and a
+    -- literal exponent means the fold left `natFoldMaxExp` /
+    -- `natFoldMaxBits`. Say so instead of atomizing: a numeral the
+    -- reifier declines to build is a scope error, not an
+    -- uninterpreted atom the solver might be expected to reason
+    -- about.
+    (match natClosedNumeral? a, matchNatLiteralAtNat? b with
      | some base, some exp =>
-       -- Constant-fold closed powers (`2^24` is the numeral
-       -- 16777216 in the image; the lift re-folds by kernel defeq).
-       -- The bound keeps a pathological exponent from building a
-       -- gigantic numeral at reify time; 2^64-scale literals (R4
-       -- D2) stay comfortably inside.
-       if exp > 256 then
-         throwError "proof_broker: ℕ power exponent {exp} exceeds the \
-           constant-folding bound (256)"
-       else
-         return .numLit (toString (base ^ exp)) "Int"
-     | _, _ => atomizeNatTerm e)
+       throwError "proof_broker: closed ℕ power {base}^{exp} exceeds the \
+         constant-folding bounds (exponent ≤ {natFoldMaxExp}, value < \
+         2^{natFoldMaxBits})"
+     | _, _ =>
+       -- The base can itself be closed-but-over-bounds (e.g.
+       -- `(2^5000)^2`): the first conjunct above then fails without
+       -- the term being any less closed. Same named refusal, never
+       -- a silent atom (C4 ROUND 1 finding 5).
+       if natClosedShape e then throwNatFoldBounds e
+       else atomizeNatTerm acc e)
   | (``HSub.hSub, #[_, _, _, _, _, _]) =>
     throwError "proof_broker: ℕ subtraction is truncated (`a - b` is \
       not the ℤ difference), so the ℕ→ℤ specialization refuses it \
@@ -487,14 +614,38 @@ partial def reifyNatTerm (e : Expr) : MetaM ShellTerm := do
     -- symbol and dispatch fails — never a silent misreading.
     if let some (c, n) ← matchNatNumeralDef? e then
       let name := c.toString
-      let defs ← reifyNatDefs.get
+      let defs ← acc.natDefs.get
       unless defs.any (·.1 == name) do
-        reifyNatDefs.modify (·.push (name, e, n))
+        acc.natDefs.modify (·.push (name, e, n))
       return .app name [] []
+    -- R4.2: an APPLIED ℕ-valued function the fragment has no
+    -- arithmetic reading for — `x.val` (`ZMod.val`), `f i`,
+    -- `Finset.card s` — is an opaque atom, exactly like a nonlinear
+    -- product: a fresh Int variable carrying `0 ≤ ↑atom` and
+    -- nothing else. This is what makes the verinf D1 obligations
+    -- reifiable at all; their whole content is linear arithmetic
+    -- over `x.val`, `z.val` and `Zmax`.
+    --
+    -- Scope is deliberately narrower than "anything unrecognized":
+    --   * an application only (`getAppNumArgs > 0`) with a constant
+    --     or free-variable head. A bare ℕ CONSTANT still errors —
+    --     R3-M3 reads a numeral-body definition as a `defined_function`
+    --     the pipeline unfolds, and silently atomizing the ones it
+    --     declines would hide that path failing.
+    --   * `natAtomForbiddenOp?` (inside `atomizeNatTerm`) still
+    --     refuses an atom with ℕ `-`/`/`/`%` anywhere inside it, so
+    --     the truncation contract is unchanged.
+    -- Atomization is sound whatever the function means: the atom is
+    -- uninterpreted, and every ℕ atom is nonneg. What it costs is
+    -- completeness — a goal that needs `x.val < P` to follow from
+    -- `ZMod.val`'s own specification will simply not close.
+    let fn := e.getAppFn
+    if (fn.isConst || fn.isFVar) && e.getAppNumArgs > 0 then
+      return ← atomizeNatTerm acc e
     throwError "proof_broker: unsupported ℕ term {e} (ℕ→ℤ scope: +, \
-      * with a literal factor, ^ with literal base and exponent, \
-      literals, variables, numeral-body constants; nonlinear \
-      products atomize)"
+      * with a closed-numeral factor, ^ with a closed base and a \
+      literal exponent, closed arithmetic, variables, numeral-body \
+      constants; nonlinear products and applied functions atomize)"
 
 /-- Confirm that a comparison/equality at type `α` is over a
     fragment we can reify — `Int` always; anything else only if
@@ -514,7 +665,61 @@ def expectArithCarrier (α : Expr) : MetaM Unit := do
   | none =>
     throwError "proof_broker: comparison/equality over {α} not in LIA scope (Int only)"
 
-partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
+/-- R4.2: the ℕ-truncation scan for an **Int**-typed atom. Unlike
+    `natAtomForbiddenOp?` (where every subterm is ℕ-typed and the
+    head alone condemns), an Int atom may legitimately contain Int
+    `-` / `/`; only a ℕ-typed one is refused. Matches both the
+    notation heads at carrier `Nat` and the directly-spelled core
+    names, exactly as the ℕ scan does. -/
+private partial def natOpInsideIntAtom? (e : Expr) : Option Name :=
+  let hit : Option Name :=
+    match e.getAppFnArgs with
+    | (``HSub.hSub, args) | (``HDiv.hDiv, args) | (``HMod.hMod, args) =>
+      match args[0]? with
+      | some α => if α.isConstOf ``Nat then e.getAppFn.constName? else none
+      | none => none
+    | (``Nat.sub, _) | (``Nat.div, _) | (``Nat.mod, _) | (``Nat.pred, _) =>
+      e.getAppFn.constName?
+    | _ => none
+  match e.getAppFnArgs.2.foldl (fun acc a => acc <|> natOpInsideIntAtom? a) none with
+  | some inner => some inner
+  | none => hit
+
+/-- Atomize an Int-valued subterm the fragment has no reading for:
+    a projection application (`R.x i`, `cert.TA z`), a nonlinear
+    product, anything whose arguments live in a type the IR cannot
+    declare (`Fin n`). Structural reuse like `atomizeNatTerm` — the
+    same `Expr` is one atom — but the shell is a bare `Opaque` node
+    (the SDK declares it `(declare-const _pb_iatom_k Int)`) with no
+    nonneg hypothesis.
+
+    Sound for any meaning of the atomized term: replacing a subterm
+    by a fresh constant generalizes the goal, so a certificate for
+    the abstraction certifies the original. The cost is
+    completeness, and the atom is recorded in `goal.payloads` with
+    its Lean pretty-print so the abstraction is visible in the IR
+    rather than implied by it (`tools/check.py` requires every
+    `Opaque` id to have a payload entry).
+
+    ℕ subtraction/division/modulo anywhere inside still fails fast:
+    atomizing them would be sound but would silently accept exactly
+    the goals most likely to be wrong about ℕ truncation, against
+    the R3-M1 contract (C3a ROUND 1 finding 5). -/
+def atomizeIntTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
+  if let some op := natOpInsideIntAtom? e then
+    throwError "proof_broker: ℕ {op} inside an atomized Int subterm \
+      ({e}) — the specialization refuses truncated/rounding ℕ \
+      arithmetic even under atomization; restate without it"
+  let atoms ← acc.intAtoms.get
+  let id ← match atoms.find? (fun (_, e') => e' == e) with
+    | some (id, _) => pure id
+    | none =>
+      let id := s!"_pb_iatom_{atoms.size}"
+      acc.intAtoms.modify (·.push (id, e))
+      pure id
+  return .opaque_ id
+
+partial def reifyTerm (acc : ReifyAcc) (e : Expr) : MetaM ShellTerm := do
   if e.isFVar then
     let lctx ← getLCtx
     let decl := lctx.get! e.fvarId!
@@ -545,14 +750,14 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
   -- ignoring the unused proof term — the LIA path never produced
   -- these so behavior there is unchanged.
   if e.isArrow then
-    return .implies (← reifyTerm e.bindingDomain!) (← reifyTerm e.bindingBody!)
+    return .implies (← reifyTerm acc e.bindingDomain!) (← reifyTerm acc e.bindingBody!)
   if e.isForall then
     return ← forallBoundedTelescope e (some 1) fun xs body => do
       let x := xs[0]!
       let decl := (← getLCtx).get! x.fvarId!
       let dom := decl.type
       if ← isProp dom then
-        return .implies (← reifyTerm dom) (← reifyTerm body)
+        return .implies (← reifyTerm acc dom) (← reifyTerm acc body)
       else
         -- R3-M1 scope: a ℕ-sorted quantifier inside a shell has no
         -- ℤ image yet (it would need the bounded-∀ transform); a
@@ -564,7 +769,7 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
             the goal is introduced automatically; nested ℕ \
             quantifiers are not yet translated)"
         let tref ← reifyType dom
-        return .forall_ decl.userName.toString tref (← reifyTerm body)
+        return .forall_ decl.userName.toString tref (← reifyTerm acc body)
   match e.getAppFnArgs with
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
       -- BV vs arithmetic disambiguation: SMT-LIB uses bvadd /
@@ -572,7 +777,7 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       -- the IR carries them under different App symbols. Picked
       -- at reify time from the operand type.
       let sym := if (matchBitVecType? α).isSome then "BV.add" else "HAdd.hAdd"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``HSub.hSub, #[α, _, _, _, a, b]) =>
       -- R3-M1 attack surface: ℕ subtraction is truncated — never
       -- cast naively, never reify as ordinary subtraction.
@@ -581,64 +786,84 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
           is not the ℤ difference); the ℕ→ℤ specialization refuses it \
           — restate without ℕ subtraction"
       let sym := if (matchBitVecType? α).isSome then "BV.sub" else "HSub.hSub"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
-      let sym := if (matchBitVecType? α).isSome then "BV.mul" else "HMul.hMul"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      if (matchBitVecType? α).isSome then
+        return .app "BV.mul" [] [← reifyTerm acc a, ← reifyTerm acc b]
+      -- R4.2: a product with no numeral factor is NONLINEAR. Emitting
+      -- it verbatim made cvc5 reject the whole script ("A non-linear
+      -- fact was asserted to arithmetic in a linear logic"), so the
+      -- goal never got a certificate; as an `Opaque` atom the linear
+      -- content around it (`hrec`, `hz0`, the bound on the product)
+      -- is still exactly what closes the verinf `cell_value_neutral`
+      -- obligation. Decided AFTER reifying both operands, because
+      -- "is a numeral" is carrier-dependent (an α or Real literal is
+      -- recognized by the extension, not by `matchIntLiteral?`); the
+      -- atom table is rewound first so the discarded sub-reification
+      -- leaves no orphan payload entries.
+      let before ← acc.intAtoms.get
+      let ra ← reifyTerm acc a
+      let rb ← reifyTerm acc b
+      match ra, rb with
+      | .numLit _ _, _ | _, .numLit _ _ =>
+        return .app "HMul.hMul" [] [ra, rb]
+      | _, _ =>
+        acc.intAtoms.set before
+        atomizeIntTerm acc e
   | (``Neg.neg, #[_, _, a]) =>
-      return .app "Neg.neg" [] [← reifyTerm a]
+      return .app "Neg.neg" [] [← reifyTerm acc a]
   | (``LE.le, #[α, _, a, b]) =>
       -- R3-M1: ℕ comparisons reify as their ℤ image.
       if α.isConstOf ``Nat then
-        return .app "LE.le" [] [← reifyNatTerm a, ← reifyNatTerm b]
+        return .app "LE.le" [] [← reifyNatTerm acc a, ← reifyNatTerm acc b]
       expectArithCarrier α
       -- Lean's [<=] over BitVec resolves to BitVec.ule (unsigned).
       -- Signed comparisons need [BitVec.sle] written explicitly.
       let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``LT.lt, #[α, _, a, b]) =>
       if α.isConstOf ``Nat then
-        return .app "LT.lt" [] [← reifyNatTerm a, ← reifyNatTerm b]
+        return .app "LT.lt" [] [← reifyNatTerm acc a, ← reifyNatTerm acc b]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
-      return .app sym [] [← reifyTerm a, ← reifyTerm b]
+      return .app sym [] [← reifyTerm acc a, ← reifyTerm acc b]
   | (``GE.ge, #[α, _, a, b]) =>
       if α.isConstOf ``Nat then
-        return .app "LE.le" [] [← reifyNatTerm b, ← reifyNatTerm a]
+        return .app "LE.le" [] [← reifyNatTerm acc b, ← reifyNatTerm acc a]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ule" else "LE.le"
-      return .app sym [] [← reifyTerm b, ← reifyTerm a]
+      return .app sym [] [← reifyTerm acc b, ← reifyTerm acc a]
   | (``GT.gt, #[α, _, a, b]) =>
       if α.isConstOf ``Nat then
-        return .app "LT.lt" [] [← reifyNatTerm b, ← reifyNatTerm a]
+        return .app "LT.lt" [] [← reifyNatTerm acc b, ← reifyNatTerm acc a]
       expectArithCarrier α
       let sym := if (matchBitVecType? α).isSome then "BV.ult" else "LT.lt"
-      return .app sym [] [← reifyTerm b, ← reifyTerm a]
+      return .app sym [] [← reifyTerm acc b, ← reifyTerm acc a]
   | (``Eq, #[α, a, b]) =>
       -- R3-M1: an equality at ℕ images to an Int equality of the
       -- cast operands.
       if α.isConstOf ``Nat then
-        return .eq "Int" (← reifyNatTerm a) (← reifyNatTerm b)
+        return .eq "Int" (← reifyNatTerm acc a) (← reifyNatTerm acc b)
       let tref ← reifyType α
-      return .eq tref (← reifyTerm a) (← reifyTerm b)
+      return .eq tref (← reifyTerm acc a) (← reifyTerm acc b)
   | (``Ne, #[α, a, b]) =>
       -- `a ≠ b` unfolds to `¬(a = b)`; reify it that way so the
       -- SMT serializer sees the ordinary (not (= a b)) shape
       -- instead of an uninterpreted `Ne` symbol.
       if α.isConstOf ``Nat then
-        return .not_ (.eq "Int" (← reifyNatTerm a) (← reifyNatTerm b))
+        return .not_ (.eq "Int" (← reifyNatTerm acc a) (← reifyNatTerm acc b))
       let tref ← reifyType α
-      return .not_ (.eq tref (← reifyTerm a) (← reifyTerm b))
+      return .not_ (.eq tref (← reifyTerm acc a) (← reifyTerm acc b))
   | (``Nat.cast, #[α, _, a]) | (``NatCast.natCast, #[α, _, a]) =>
       -- R3-M1: an explicit ℕ→ℤ cast in the source (a hand-zify'd
       -- goal) reifies as the operand's ℤ image — same shell the ℕ
       -- reifier produces, so mixed `↑x`-style Int goals join the
       -- specialization path.
-      if α.isConstOf ``Int then reifyNatTerm a
+      if α.isConstOf ``Int then reifyNatTerm acc a
       else throwError "proof_broker: ℕ cast into {α} unsupported \
              (only ↑(ℕ) : ℤ)"
   | (``Int.ofNat, #[a]) =>
-      reifyNatTerm a
+      reifyNatTerm acc a
   | (``Exists, #[α, p]) =>
       -- `∃ x : T, body` is `Exists fun x => body`. Open the
       -- lambda binder as a local so bound occurrences reify as
@@ -655,16 +880,16 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
          let tref ← reifyType α
          withLocalDeclD nm α fun x => do
            let body := (p.bindingBody!).instantiate1 x
-           return .exists_ nm.toString tref (← reifyTerm body)
+           return .exists_ nm.toString tref (← reifyTerm acc body)
        | _ =>
          throwError "proof_broker: unsupported ∃ shape (expected a \
            lambda body): {e}")
   | (``And, #[a, b]) =>
-      return .and_ (← reifyTerm a) (← reifyTerm b)
+      return .and_ (← reifyTerm acc a) (← reifyTerm acc b)
   | (``Or, #[a, b]) =>
-      return .or_ (← reifyTerm a) (← reifyTerm b)
+      return .or_ (← reifyTerm acc a) (← reifyTerm acc b)
   | (``Not, #[a]) =>
-      return .not_ (← reifyTerm a)
+      return .not_ (← reifyTerm acc a)
   | _ =>
       -- UF fallback: the head is a free variable applied to
       -- arguments, with an arrow-typed declaration in scope.
@@ -672,15 +897,26 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
       -- serializer takes care of the [declare-fun] /
       -- application emission. Anything else is genuinely
       -- unsupported.
+      --
+      -- R4.2: both symbol arms are now GUARDED on every argument
+      -- type being declarable (`reifyType?`). Declaring `R.x` over
+      -- `Fin n` is not something the IR can express, and the old
+      -- code found that out by throwing from inside `reifyType`,
+      -- which killed the whole reification; now the term falls
+      -- through to the Int-atom arm at the bottom, which is what
+      -- the R4 D3 obligations need ("`TableCert` fields as atoms").
       let fn := e.getAppFn
+      let argTypesDeclarable (args : List Expr) : MetaM Bool :=
+        args.allM (fun a => do return (← reifyType? (← inferType a)).isSome)
       if fn.isFVar && e.getAppNumArgs > 0 then
         let lctx ← getLCtx
         let decl := lctx.get! fn.fvarId!
         if decl.type.isArrow then
-          let fname := decl.userName.toString
           let argList := e.getAppArgs.toList
-          let reifiedArgs ← argList.mapM reifyTerm
-          return .app s!"UF.{fname}" [] reifiedArgs
+          if ← argTypesDeclarable argList then
+            let fname := decl.userName.toString
+            let reifiedArgs ← argList.mapM (reifyTerm acc)
+            return .app s!"UF.{fname}" [] reifiedArgs
       -- Higher-order / FOL: an applied (or nullary) global
       -- constant that isn't a connective — e.g. `Function.comp`.
       -- Treat it as an uninterpreted symbol: keep only the
@@ -697,16 +933,26 @@ partial def reifyTerm (e : Expr) : MetaM ShellTerm := do
           let isType := ta.isSort
           let isInst := (← Lean.Meta.isClass? ta).isSome
           if !isType && !isInst then explicit := explicit.push a
-        let parenIfArrow (ex : Expr) (s : String) : String :=
-          if ex.isArrow then "(" ++ s ++ ")" else s
-        let argTyParts ← explicit.toList.mapM (fun a => do
-          let ta ← inferType a
-          return parenIfArrow ta (← reifyType ta))
-        let resTy ← inferType e
-        let tref := String.intercalate "->" (argTyParts ++ [← reifyType resTy])
-        reifyConsts.modify (·.push (cname, tref))
-        let reifiedArgs ← explicit.toList.mapM reifyTerm
-        return .app cname [] reifiedArgs
+        let resTyOk := (← reifyType? (← inferType e)).isSome
+        if resTyOk && (← argTypesDeclarable explicit.toList) then
+          let parenIfArrow (ex : Expr) (s : String) : String :=
+            if ex.isArrow then "(" ++ s ++ ")" else s
+          let argTyParts ← explicit.toList.mapM (fun a => do
+            let ta ← inferType a
+            return parenIfArrow ta (← reifyType ta))
+          let resTy ← inferType e
+          let tref := String.intercalate "->" (argTyParts ++ [← reifyType resTy])
+          acc.consts.modify (·.push (cname, tref))
+          let reifiedArgs ← explicit.toList.mapM (reifyTerm acc)
+          return .app cname [] reifiedArgs
+      -- R4.2: last resort — an Int-VALUED term with a constant or
+      -- free-variable head becomes an uninterpreted Int atom. The
+      -- type restriction is the point: only Int (the fragment's own
+      -- carrier) gets this treatment, so a Real/BV/α term outside
+      -- the fragment still reports the fragment error rather than
+      -- silently degrading.
+      if (fn.isConst || fn.isFVar) && (← inferType e).isConstOf ``Int then
+        return ← atomizeIntTerm acc e
       throwError "proof_broker: unsupported expression: {e}"
 
 /-- True iff any subterm carries a `BitVec(N)` type tag, on a
@@ -858,26 +1104,43 @@ def natTypeMetadata : Json :=
     Skips implementation-detail locals (compiler-introduced auxiliary
     decls, e.g. recursors). Hypotheses whose type isn't a Prop are
     treated as data: Int-typed ones become `freeVars`, anything else
-    is silently ignored (the goal/Prop reifier will trip on them if
-    they're actually referenced). -/
-def buildIR (mvarId : MVarId)
-    : MetaM (IR × Array (String × Expr) × Array (String × Expr × Nat)) :=
+    is ignored.
+
+    R4.2: a **Prop hypothesis whose type does not reify is dropped**,
+    not fatal. A real proof's context is full of propositions outside
+    the fragment — in the verinf obligations, `hrec : c = x + z + …`
+    over `ZMod P` sits in scope at every D1 goal — and aborting on
+    them made the tactic unusable on anything but a hand-built
+    context. Dropping only ever WEAKENS the assumption set, so a
+    certificate for the reduced context certifies the original goal a
+    fortiori; the goal itself is never dropped (it is reified outside
+    this loop and its errors propagate, so the R3-M1 ℕ-truncation
+    fail-fast still applies to everything the cert actually reads).
+    Every drop is recorded with its reason and reported by
+    `proof_broker?`, so "the solver ignored my hypothesis" is a
+    visible fact rather than a guess. -/
+def buildIRWithAcc (mvarId : MVarId)
+    : MetaM ((IR × Array (String × Expr) × Array (String × Expr × Nat)
+              × Array (String × String)) × ReifyAcc) :=
   mvarId.withContext do
-  -- Instantiate metavariables in the goal type. `apply`-introduced
-  -- subgoals may carry deferred unification metavars in their types;
-  -- without this, `reifyTerm` sees `?_uniq.N` (pretty-prints as the
-  -- user-facing name) and the FVar branch falls through.
-  -- Reset the applied-constant accumulator; `reifyTerm` (on the
-  -- goal and each hypothesis below) pushes any non-connective
-  -- global constant it treats as uninterpreted (e.g.
-  -- `Function.comp`) so it can be declared as a `freeVar`.
-  reifyConsts.set #[]
-  reifyNatAtoms.set #[]
-  reifyNatDefs.set #[]
-  let goalType ← Lean.instantiateMVars (← mvarId.getType)
-  let goalShell ← reifyTerm goalType
+  -- Instantiate metavariables in the goal type and drop its
+  -- top-level annotation. `apply`-introduced subgoals may carry
+  -- deferred unification metavars in their types, and the `have`
+  -- tactic wraps its continuation goal in `noImplicitLambda`
+  -- metadata; without this, `reifyTerm` sees `?_uniq.N` / `mdata`
+  -- (both pretty-print as the user-facing term) and every
+  -- structural match falls through to "unsupported expression".
+  -- Create THIS call's accumulator (per-call, never module state:
+  -- C4 ROUND 3 High — `reifyTerm` on the goal and each hypothesis
+  -- below pushes applied non-connective constants, atoms and
+  -- numeral defs into it, and `buildIR` folds them on exit).
+  let acc ← ReifyAcc.fresh
+  let goalType := (← Lean.instantiateMVars (← mvarId.getType)).consumeMData
+  let goalShell ← reifyTerm acc goalType
   let mut freeVars : List FreeVar := []
   let mut hypotheses : List IR.Hypothesis := []
+  -- (local name, why it was not reified) — see the docstring.
+  let mut skipped : Array (String × String) := #[]
   let extOpt ← reifierExt.get
   let mut sawExtensionType : Bool := false
   let mut sawBV : Bool := false
@@ -888,7 +1151,19 @@ def buildIR (mvarId : MVarId)
   let mut polyVar : Option (FVarId × TypeVarInfo) := none
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
-    let ty := decl.type
+    -- Symmetric with the target above (R4 continuation): a
+    -- `have := e` or `by_cases` hypothesis is an assigned-but-
+    -- uninstantiated metavariable, and a `have h : T := …` whose `T`
+    -- needed a coercion or a default instance keeps assigned
+    -- metavariables inside `T`. Read raw, `reifyTerm` fell through
+    -- every structural match and `observing?` below DROPPED the
+    -- hypothesis as "outside the fragment" — measured as the solver
+    -- answering sat on the verinf `D3/170` / `D3/180` obligations
+    -- (demo `reference/ctx/dump.log`). The tactic front-ends
+    -- normalize the whole goal first (`normalizeGoalForBroker`);
+    -- this keeps `buildIR` itself correct for callers that do not
+    -- go through them (pinned by `reify_hyp_count_test`).
+    let ty := (← Lean.instantiateMVars decl.type).consumeMData
     -- R3-M2: typeclass-instance locals (`inst : CommRing α`,
     -- `IsStrictOrderedRing α` — the latter is Prop-valued and would
     -- otherwise land in the hypothesis branch) are class METADATA,
@@ -913,8 +1188,12 @@ def buildIR (mvarId : MVarId)
           polyVar := some (decl.fvarId, info)
       continue
     if ← isProp ty then
-      let shell ← reifyTerm ty
-      hypotheses := hypotheses ++ [{ name := decl.userName.toString, shell }]
+      match ← observing? (reifyTerm acc ty) with
+      | some shell =>
+        hypotheses := hypotheses ++ [{ name := decl.userName.toString, shell }]
+      | none =>
+        skipped := skipped.push (decl.userName.toString,
+          s!"proposition outside the reifiable fragment ({← Lean.Meta.ppExpr ty})")
     else if ty.isConstOf ``Int then
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Int" }]
     else if let some n := matchBitVecType? ty then
@@ -945,11 +1224,17 @@ def buildIR (mvarId : MVarId)
       -- (`∀ p q : Prop, …`) dispatch with their atoms declared.
       freeVars := freeVars ++ [{ name := decl.userName.toString, ty := "Prop" }]
     else if ty.isArrow then
-      -- Function-typed local: this is a UF candidate. Encode the
-      -- type as the arrow chain the SDK serializer parses.
-      let tref ← reifyType ty
-      freeVars := freeVars ++ [{ name := decl.userName.toString, ty := tref }]
-      sawUF := true
+      -- Function-typed local: a UF candidate, IF every link of the
+      -- arrow chain is a type the IR can declare. `R.x : Fin n → ℤ`
+      -- is not (R4.2) — it is left undeclared and its applications
+      -- atomize.
+      match ← reifyType? ty with
+      | some tref =>
+        freeVars := freeVars ++ [{ name := decl.userName.toString, ty := tref }]
+        sawUF := true
+      | none =>
+        skipped := skipped.push (decl.userName.toString,
+          s!"function type outside the IR's type language ({← Lean.Meta.ppExpr ty})")
     else
       match extOpt with
       | some ext =>
@@ -957,8 +1242,12 @@ def buildIR (mvarId : MVarId)
         | some tref =>
           freeVars := freeVars ++ [{ name := decl.userName.toString, ty := tref }]
           sawExtensionType := true
-        | none => pure ()
-      | none => pure ()
+        | none =>
+          skipped := skipped.push (decl.userName.toString,
+            s!"data local at an undeclarable type ({← Lean.Meta.ppExpr ty})")
+      | none =>
+        skipped := skipped.push (decl.userName.toString,
+          s!"data local at an undeclarable type ({← Lean.Meta.ppExpr ty})")
   -- Pick fragment label. Precedence:
   --   BV  wins if any free var is BitVec-typed OR any subterm
   --       mentions a BV type tag (capability_match keys on this
@@ -975,7 +1264,7 @@ def buildIR (mvarId : MVarId)
   -- for every applied symbol. Skip names already contributed by
   -- the LCtx walk (a constant shadowing a local is not expected,
   -- but dedup keeps the declaration set well-formed).
-  for (cname, ctref) in (← reifyConsts.get) do
+  for (cname, ctref) in (← acc.consts.get) do
     if !(freeVars.any (fun fv => fv.name == cname)) then
       freeVars := freeVars ++ [{ name := cname, ty := ctref }]
   let bvInTerms :=
@@ -998,8 +1287,8 @@ def buildIR (mvarId : MVarId)
   -- M1 scope: the ℕ→ℤ specialization does not compose with UF / BV /
   -- HO / extension carriers yet — mixing is a named failure, not a
   -- silent mistranslation.
-  let natAtoms ← reifyNatAtoms.get
-  let natDefs ← reifyNatDefs.get
+  let natAtoms ← acc.natAtoms.get
+  let natDefs ← acc.natDefs.get
   let natMode := sawNat || !natAtoms.isEmpty
   if natMode && (sawBV || bvInTerms || sawUF || ufInTerms || isHO
                  || sawExtensionType) then
@@ -1126,21 +1415,24 @@ def buildIR (mvarId : MVarId)
         enableDefinitionUnfolding := some ["numeral_definition"],
         disablePasses := none },
       budget := none }
+  let intAtoms ← acc.intAtoms.get
   let payloads ←
-    if natAtoms.isEmpty then pure none
+    if natAtoms.isEmpty && intAtoms.isEmpty then pure none
     else do
-      let entries ← natAtoms.toList.mapM (fun (id, e) => do
+      let mk (kind : String) (id : String) (e : Expr) : MetaM (String × Json) := do
         let pp ← Lean.Meta.ppExpr e
         return (id, Json.mkObj [
-          ("kind", "nat_nonlinear_atom"),
-          ("lean", Json.str (toString pp))]))
-      pure (some (Json.mkObj entries))
+          ("kind", Json.str kind),
+          ("lean", Json.str (toString pp))])
+      let natEntries ← natAtoms.toList.mapM (fun (id, e) => mk "nat_nonlinear_atom" id e)
+      let intEntries ← intAtoms.toList.mapM (fun (id, e) => mk "int_opaque_atom" id e)
+      pure (some (Json.mkObj (natEntries ++ intEntries)))
   -- The atom table rides on the RETURN VALUE, not the module ref:
   -- Lean elaborates theorems in parallel, so a ref read at
   -- closer time can race another invocation's `buildIR` reset
   -- (observed as an unknown-free-variable failure). The ref is
   -- only the accumulator WITHIN this reify.
-  return ({
+  return (({
     irVersion := "1.0",
     sourceSystem := { name := "lean", version := "0.0" },
     tier,
@@ -1156,7 +1448,22 @@ def buildIR (mvarId : MVarId)
     definitionalMetadata,
     libraryProvenance,
     userDirectives
-  }, natAtoms, natDefs)
+  }, natAtoms, natDefs, skipped), acc)
+
+/-- The public reification entry point. `buildIRWithAcc` additionally
+    returns the `ReifyAcc` the reification ACTUALLY accumulated into
+    — consumed only by the call-site isolation pin
+    (`reify_callsite_isolation_test`), which is what makes the
+    per-call discipline testable independent of how a regression is
+    SPELLED (C4 ROUND 8 Med 1: the textual source gate lost an
+    arms race per round — `@[init]`, indentation, hardcoded file
+    lists — because it pinned spellings; the returned accumulator
+    pins the behavior). -/
+def buildIR (mvarId : MVarId)
+    : MetaM (IR × Array (String × Expr) × Array (String × Expr × Nat)
+             × Array (String × String)) := do
+  let (r, _) ← buildIRWithAcc mvarId
+  return r
 
 end Reify
 
@@ -1165,17 +1472,82 @@ end Reify
 
    Manifests sit alongside the test fixtures in `examples/`. The
    tactic finds them by:
-     1. honoring `PROOF_BROKER_EXAMPLES_DIR` if set,
-     2. otherwise falling back to `<cwd>/../examples`.
+     1. honoring `PROOF_BROKER_EXAMPLES_DIR` if set (verbatim, no
+        probe — an explicit override that is wrong must fail loudly,
+        not fall through to some other directory),
+     2. otherwise `<cwd>/../examples`, the in-repo convention
+        Main.lean also uses,
+     3. otherwise a *package-anchored* directory derived from where
+        this module's own `.olean` was loaded from (R4.1).
 
-   The cwd-relative fallback matches Main.lean's convention so the
-   tactic-driven test library shares the same setup.
+   Step 3 is what makes the tactic usable from a downstream Lake
+   project. Steps 1–2 are cwd-relative, and a consumer's cwd is its
+   own project root, not the bridge's — so before R4.1 every
+   downstream call died with "no manifests found in
+   <consumer>/../examples" unless the user exported the env var by
+   hand. `findBridgeExamplesDir?` resolves `ProofBroker.Tactic`
+   against LEAN_PATH, which Lake populates with the bridge's build
+   directory in both dependency flavors (a `from git` require
+   materialized under `.lake/packages/`, and a `from "…"` path
+   require built in place).
    ============================================================ -/
+
+/-- The four manifest file names the tactic ever loads. Shared by
+    the directory probe and `loadDefaultManifests` so "this directory
+    is the manifest directory" and "these are the manifests" can
+    never drift apart. Vampire last: `capability_match` skips it for
+    first-order LIA/LRA/BV goals, so the order is for determinism,
+    not precedence. -/
+private def manifestFileNames : List String :=
+  ["manifest-cvc4.json", "manifest-cvc5.json",
+   "manifest-z3.json", "manifest-vampire.json"]
+
+/-- True iff `dir` holds at least one of `manifestFileNames` — the
+    same predicate as "`loadDefaultManifests` would find something
+    here", so probing a candidate never rejects a directory the
+    loader would have accepted. -/
+private def dirHasManifest (dir : System.FilePath) : IO Bool :=
+  manifestFileNames.anyM (fun n => (dir / System.FilePath.mk n).pathExists)
+
+/-- The `examples/` directory that ships next to the loaded bridge,
+    or `none` if the layout does not match (an installed/relocated
+    olean, a vendored build). Never throws: a failed lookup just
+    means the caller falls back to the cwd-relative candidate and
+    reports both in its error.
+
+    `Lean.findOLean` returns
+    `<bridge>/.lake/build/lib/lean/ProofBroker/Tactic.olean`; six
+    `parent` steps reach `<bridge>` (the `lean-bridge` package
+    directory) and the manifests live one level above it, in the
+    proof-broker repo root. -/
+private def findBridgeExamplesDir? : IO (Option System.FilePath) := do
+  -- Module name, not a declaration name, so a single backtick: it is
+  -- resolved against LEAN_PATH at run time, and a miss (renamed
+  -- module, no olean on the path when running from source) returns
+  -- `none` rather than throwing.
+  let .ok olean ← (Lean.findOLean `ProofBroker.Tactic).toBaseIO
+    | return none
+  unless ← olean.pathExists do return none
+  -- Tactic.olean → ProofBroker → lean → lib → build → .lake → <bridge>
+  let mut dir := olean
+  for _ in [0:6] do
+    let some p := dir.parent | return none
+    dir := p
+  let cand := dir / ".." / "examples"
+  if ← dirHasManifest cand then return some cand else return none
 
 private def defaultManifestDir : IO System.FilePath := do
   match (← IO.getEnv "PROOF_BROKER_EXAMPLES_DIR") with
   | some s => return s
-  | none => return (← IO.currentDir) / ".." / "examples"
+  | none =>
+    -- The cwd candidate keeps priority and is only stepped over when
+    -- it holds no manifest at all — i.e. exactly in the cases where
+    -- the pre-R4.1 behavior was to raise "no manifests found".
+    let cwdCand := (← IO.currentDir) / ".." / "examples"
+    if ← dirHasManifest cwdCand then return cwdCand
+    match ← findBridgeExamplesDir? with
+    | some d => return d
+    | none => return cwdCand
 
 private def loadManifestIfPresent (path : System.FilePath) : TacticM (Option Json) := do
   unless ← path.pathExists do return none
@@ -1191,16 +1563,16 @@ private def loadDefaultManifests : TacticM (List Json) := do
   -- fragments), and the higher-order goals it does serve have the
   -- SMT adapters skipped via the order check — so ordering is for
   -- determinism, not precedence.
-  let names := ["manifest-cvc4.json", "manifest-cvc5.json",
-                "manifest-z3.json", "manifest-vampire.json"]
   let mut result : List Json := []
-  for n in names do
+  for n in manifestFileNames do
     if let some j ← loadManifestIfPresent (dir / n) then
       result := result ++ [j]
   if result.isEmpty then
     throwError "proof_broker: no manifests found in {dir}; \
-                set PROOF_BROKER_EXAMPLES_DIR or run from a directory \
-                whose parent has examples/manifest-*.json"
+                set PROOF_BROKER_EXAMPLES_DIR, run from a directory \
+                whose parent has examples/manifest-*.json, or build \
+                against a bridge whose package directory has \
+                ../examples (the downstream-consumer layout)"
   return result
 
 /-- Load manifests for a user-supplied list of adapter names, in the
@@ -1253,10 +1625,11 @@ structure ExtractionPath where
       reified input. -/
   finalIr : Option Json
   /-- R3-M1: `payload_id ↦ ℕ subterm` for every atomized nonlinear
-      ℕ product of this extraction (see `Reify.reifyNatAtoms`).
-      Carried here — NOT re-read from the module ref — because
-      parallel theorem elaboration can reset the ref between the
-      reify and the closer. -/
+      ℕ product of this extraction — the snapshot of this call's
+      per-call accumulator (`Reify.ReifyAcc.natAtoms`; the module
+      ref this once cited was deleted at C4 ROUND 3 — accumulation
+      itself is per-call now, so nothing can reset it between the
+      reify and the closer). -/
   natAtoms : Array (String × Expr) := #[]
   /-- R3-M3: `constant name ↦ (const Expr, ℕ value)` for every
       numeral-body definition this extraction documented in
@@ -1264,6 +1637,12 @@ structure ExtractionPath where
       lift can invert. Carried on the path for the same
       parallel-elaboration reason as `natAtoms`. -/
   natDefs : Array (String × Expr × Nat) := #[]
+  /-- R4.2: locals `buildIR` did not put in the IR, with the reason
+      — a proposition outside the fragment, a function type the IR
+      cannot declare, a data local at an undeclarable type. Dropping
+      only weakens the assumption set, but a reader has to be able
+      to SEE what was dropped; `proof_broker?` prints this. -/
+  skippedLocals : Array (String × String) := #[]
   verifyOk : Option Bool
   /-- Looser-than-`verifyOk` flag: true when envelope checks passed
       but no tier-specific verifier applied (e.g. Tier 0 oracle).
@@ -1313,9 +1692,49 @@ private def renderPath (path : ExtractionPath) : MessageData :=
   let verifyLine := match path.verifyOk, path.verifyReason with
     | some ok, some r => s!"  verify:   {path.verifyMs}ms, ok={ok} ({reprStr r})"
     | _, _ => "  verify:   skipped"
-  let lines := ["proof_broker?:", irLine, dispatchLine] ++ attemptLines
+  let skipLines :=
+    if path.skippedLocals.isEmpty then []
+    else "  skipped:  locals not in the IR (assumptions dropped, goal unaffected)"
+      :: path.skippedLocals.toList.map (fun (n, why) => s!"              {n} — {why}")
+  let lines := ["proof_broker?:", irLine] ++ skipLines ++ [dispatchLine] ++ attemptLines
     ++ [certLine, traceLine, verifyLine]
   m!"{String.intercalate "\n" lines}"
+
+/-- R4.4: one machine-readable line per SUCCESSFUL broker call,
+    emitted only when `PROOF_BROKER_REPORT` is set in the process
+    environment (the demo's `tools/probe.sh` sets it; a normal build
+    does not). Reports what the extraction path already knows — the
+    dispatch and verify wall times the path carries, the winning
+    cert's backend / tier / format / compact-JSON byte size, the
+    IR's fragment and hypothesis count — plus the tactic's own wall
+    (entry to closed goal) and WHICH closer actually closed (the
+    label `closeOrFail` / `runTermModeOnGoal` return). The demo's
+    `obligation_table.py` reads these lines from the probe logs, so
+    the per-obligation numbers in its README are generated, never
+    typed. Reporting happens after the goal is closed and changes
+    nothing on the proof path; unset, the branch is one `getEnv`. -/
+private def reportIfRequested (tactic : String) (t0 : Nat)
+    (path : ExtractionPath) (closer : String) : TacticM Unit := do
+  if (← IO.getEnv "PROOF_BROKER_REPORT").isSome then
+    let wall ← msSince t0
+    let backend : String := match path.cert with
+      | none => "none"
+      | some c =>
+        ((c.getObjVal? "backend").bind (·.getObjValAs? String "name")).toOption.getD "?"
+    let tier : Int := match path.cert with
+      | none => -1
+      | some c => (c.getObjValAs? Int "tier").toOption.getD (-1)
+    let fmt : String := match path.cert with
+      | none => "none"
+      | some c => (c.getObjValAs? String "format").toOption.getD "?"
+    let bytes : Nat := match path.cert with
+      | none => 0
+      | some c => c.compress.utf8ByteSize
+    let fragment := path.ir.logicClassification.firstOrderFragment
+    logInfo m!"proof_broker report: tactic={tactic} closer={closer} \
+      backend={backend} tier={tier} format={fmt} cert_bytes={bytes} \
+      fragment={fragment} hyps={path.ir.context.hypotheses.length} \
+      dispatch_ms={path.dispatchMs} verify_ms={path.verifyMs} wall_ms={wall}"
 
 /- ============================================================
    Tactic
@@ -1334,7 +1753,7 @@ private def buildExtractionPath
     (preferHigherTier : Bool)
     (tierPreference : Option (List String) := none)
     : TacticM ExtractionPath := do
-  let (ir, natAtoms, natDefs) ← Reify.buildIR goal
+  let (ir, natAtoms, natDefs, skippedLocals) ← Reify.buildIR goal
   -- Walker-strict callers pass `tierPreference := some ["3"]`:
   -- the IR's `user_directives.tier_preference` (spec §5.4) tells
   -- the cvc5 adapter to mint the verified Tier-3 alethe trace
@@ -1379,7 +1798,7 @@ private def buildExtractionPath
     ir, attempts := dispatch.attempts, cert := dispatch.cert,
     trace := dispatch.trace, finalIr := dispatch.finalIr,
     verifyOk, verifyEnvelopeOk, verifyReason, dispatchMs, verifyMs,
-    natAtoms, natDefs
+    natAtoms, natDefs, skippedLocals
   }
 
 /-- Identity-trace guard (R2 soundness rule). The term-mode and
@@ -1490,6 +1909,63 @@ private def termTraceError? (path : ExtractionPath) : Option String :=
           cert (fail closed)"
       return none
 
+/-- Does `c` occur in `e` only at VALUE positions — never inside a
+    subterm that is itself a type?
+
+    R4.2, and the reason this check exists at all: unfolding a
+    numeral definition is a `kabstract` over *every* occurrence, and
+    an occurrence sitting inside a TYPE turns a cheap swap into a
+    kernel bomb. verinf's `lift_cell` reifies
+    `hmul : ((Zmax : ZMod P) * zhigh).val = Zmax * zhigh.val`, where
+    `P` appears in the `ZMod P` type arguments of `HMul.hMul`.
+    Rewriting those gives a term at `ZMod 18446744069414584321`
+    while its neighbours are still at `ZMod P`, and the next defeq
+    check has to whnf `ZMod <literal>` — `ZMod` recurses on ℕ, so
+    that is `Nat.rec` at 2^64 scale, unary and astronomically beyond
+    any machine. The mechanism is ARGUED from `ZMod`'s definition,
+    not measured: no reproducible artifact of this bomb exists (the
+    ~57 GB event once cited here belongs to `Farkas_search.cartesian`
+    — C4 ROUND 1/2, delta.md §5.7). The refusing branch is pinned
+    DETERMINISTICALLY by `type_pos_gate_test` (a direct verdict
+    check in both directions — the end-to-end `PBModP` negative in
+    `Test/TacticMathlib.lean` documents the user-facing refusal but
+    fails under any closer outcome, so it cannot pin the gate).
+
+    `hbound : Zmax * zhigh.val < P` passes: its `P`s are ℕ values,
+    including the `@ZMod.val P zhigh` index, which unifies with the
+    numeral by delta in one step. `hmul` and `hZval` are rejected —
+    and nothing is lost, since the arithmetic the certificate reads
+    from them never mentions `P`. -/
+private partial def constOnlyInValuePositions (c : Name) (e : Expr) : MetaM Bool := do
+  let mentions (x : Expr) : Bool := (x.find? (·.isConstOf c)).isSome
+  if !mentions e then return true
+  match e with
+  | .app .. =>
+    let fn := e.getAppFn
+    if mentions fn && !fn.isConstOf c then return false
+    for a in e.getAppArgs do
+      if mentions a then
+        -- An argument that IS a type (its own type is a sort) must
+        -- not mention the constant at all; anything else recurses.
+        if (← Lean.Meta.inferType a).isSort then return false
+        unless ← constOnlyInValuePositions c a do return false
+    return true
+  | .lam _ d b _ | .forallE _ d b _ =>
+    if mentions d then
+      if (← Lean.Meta.inferType d).isSort then return false
+      unless ← constOnlyInValuePositions c d do return false
+    -- The body may have loose bvars; only the constant matters here,
+    -- and `find?` does not care about binder depth.
+    constOnlyInValuePositions c b
+  | .mdata _ b => constOnlyInValuePositions c b
+  | .proj _ _ b => constOnlyInValuePositions c b
+  | .letE _ t v b _ =>
+    if mentions t then return false
+    unless ← constOnlyInValuePositions c v do return false
+    constOnlyInValuePositions c b
+  | .const n _ => return n == c
+  | _ => return true
+
 /-- Apply the def-unfold inversions to `goal`: for every symbol the
     trace unfolded, rewrite the goal with `c = <numeral>` (proved by
     `rfl` — the constant's body IS the numeral, so the kernel checks
@@ -1508,19 +1984,74 @@ private def invertDefUnfolds (goal : MVarId) (path : ExtractionPath)
     let cName := constE.constName!
     g ← g.withContext do
       let litE := Lean.mkNatLit val
-      let eqTy ← Lean.Meta.mkEq constE litE
-      let eqPrf ← Lean.Meta.mkExpectedTypeHint
-        (← Lean.Meta.mkEqRefl constE) eqTy
-      -- Goal: Eq.mpr over the unfolding equation.
+      -- Fail closed on a recorded value that is not the definition's
+      -- body: everything below is a defeq swap of `c` for `litE`, so
+      -- check that defeq ONCE, here, with a named error — rather than
+      -- letting a bad extraction surface as a kernel type error at
+      -- `Theorem`-add time (it would still be caught, but not
+      -- attributably).
+      unless ← Lean.Meta.isDefEq constE litE do
+        throwError "proof_broker_term: the extraction records \
+          '{cName} = {val}' but {cName} is not definitionally that \
+          numeral (fail closed)"
+      -- Goal: swap the constant for its numeral, justified by the
+      -- same kernel defeq the unfolding equation records.
+      --
+      -- NOT `rewrite`/`Eq.mpr` (R4.2): `rewrite` has to build a
+      -- motive `fun _a => …`, and the constant being unfolded may
+      -- occur in a TYPE inside the goal as well as at an arithmetic
+      -- position. The verinf D1 obligation `x.val + z.val < P` with
+      -- `x z : ZMod P` is exactly that shape, and the motive
+      -- `fun _a => (@ZMod.val _a x) + _ < _a` does not typecheck
+      -- ("motive is not type correct"). `change` needs no motive:
+      -- it checks the two targets defeq — which they are, by delta
+      -- on `P` — and the cast it inserts is re-checked by the
+      -- kernel when the theorem is added, so a bad swap is a build
+      -- error, never a silent one.
       let mut g' := g
       let tgt ← g'.getType
       if tgt.getUsedConstantsAsSet.contains cName then
-        let r ← g'.rewrite tgt eqPrf
-        g' ← g'.replaceTargetEq r.eNew r.eqProof
-      -- Hypotheses: the rewritten type is defeq, so swap in place.
+        unless ← g'.withContext (constOnlyInValuePositions cName tgt) do
+          throwError "proof_broker_term: the extraction unfolds \
+            '{cName}', but the goal mentions it inside a TYPE \
+            ({tgt}); inverting the unfold there would force the \
+            kernel to reduce that type at the definition's value. \
+            Fail closed rather than build a term the kernel cannot \
+            check cheaply."
+        let tgtNew ← g'.withContext do
+          let abst ← Lean.Meta.kabstract tgt constE
+          pure (abst.instantiate1 litE)
+        g' ← g'.change tgtNew
+      -- Hypotheses: the rewritten type is defeq, so swap in place —
+      -- but ONLY in hypotheses this extraction actually reified.
+      --
+      -- R4.2: rewriting every local that merely MENTIONS the constant
+      -- is a memory bomb. In verinf's `lift_cell` the context holds
+      -- `hrec : c = x + z + ↑Zmax * zhigh` at type `ZMod P`, which the
+      -- reifier drops (it is outside the fragment) — but `kabstract`
+      -- happily turned `ZMod P` into `ZMod 18446744069414584321`, and
+      -- `ZMod` is defined by recursion on ℕ, so the next defeq check
+      -- on that type would reduce `Nat.rec` at a 2^64-scale literal —
+      -- unary, beyond any machine. Argued from the definitions, not
+      -- measured (the ~57 GB figure once cited here was the
+      -- Farkas-search materialization — delta.md §5.7).
+      --
+      -- The extraction's own hypothesis list is the right scope: it is
+      -- exactly the set the certificate reads, every member reified
+      -- inside the arithmetic fragment (so the constant occurs at an
+      -- arithmetic position, never as a type index), and it is what
+      -- the fallback decision procedure needs unfolded. Anything the
+      -- reifier declined is left alone.
+      let irHypNames := path.ir.context.hypotheses.map (·.name)
       let mut swaps : Array (FVarId × Expr) := #[]
       for decl in (← g'.withContext getLCtx) do
         if decl.isImplementationDetail then continue
+        unless irHypNames.contains decl.userName.toString do continue
+        -- Skip, don't fail: a hypothesis is optional context for the
+        -- fallback, so leaving one un-unfolded costs completeness at
+        -- worst. The goal above is not optional, hence the error.
+        unless ← g'.withContext (constOnlyInValuePositions cName decl.type) do
+          continue
         if decl.type.getUsedConstantsAsSet.contains cName then
           if ← g'.withContext (Lean.Meta.isProp decl.type) then
             let newTy ← g'.withContext do
@@ -1548,10 +2079,27 @@ private def invertDefUnfolds (goal : MVarId) (path : ExtractionPath)
    (walker, classical baseline).
    ============================================================ -/
 
+/-- R4.2: does `goal.payloads` carry a ℕ atomization entry? Since
+    Int atomization writes into the same object (`kind` =
+    `int_opaque_atom`), "payloads present" is no longer the same
+    question as "ℕ mode" — reading the kind is. Getting this wrong
+    fails CLOSED (an Int goal misread as ℕ mode demands a `Nat`
+    specialization record the cert does not have, and `specGate`
+    refuses), but it would refuse every atomized ℤ goal. -/
+private def hasNatAtomPayload (ir : IR) : Bool :=
+  match ir.goal.payloads with
+  | none => false
+  | some (.obj kvs) =>
+    kvs.any (fun _ v =>
+      match v.getObjValAs? String "kind" with
+      | .ok k => k == "nat_nonlinear_atom"
+      | .error _ => false)
+  | some _ => false
+
 /-- ℕ mode of an extraction: the reified IR declared a ℕ free var
-    or atomized a ℕ subterm (payloads present). -/
+    or atomized a ℕ subterm (`nat_nonlinear_atom` payloads). -/
 private def natModeOf (ir : IR) : Bool :=
-  ir.context.freeVars.any (·.ty == "Nat") || ir.goal.payloads.isSome
+  ir.context.freeVars.any (·.ty == "Nat") || hasNatAtomPayload ir
 
 /-- R3-M2: α mode of an extraction — the reified IR declares the
     canonical type variable. -/
@@ -2079,7 +2627,7 @@ private def tryLlmReconstruct? (goal : MVarId) (ir : IR)
     threads it through; the LLM-replay/reconstruction paths in
     the wrapper do use it. -/
 private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
-    : TacticM Unit := do
+    : TacticM String := do
   -- Accept either strict verifyOk (Tier 1/2/3 with a real
   -- soundness check) OR envelopeOk + tierCheckDeferred (Tier 0
   -- oracle path, currently the only route for fragments without
@@ -2133,12 +2681,27 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- strict entry points fail closed with the named error.
         if certTraceFormat cert == "alethe-2024" && identityTraceOk path
             && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
-          if natModeOf path.ir then
-            tryAletheWalkerNat cert path.ir path.natAtoms
-          else tryAletheWalker cert
+          -- R4.2: checkpoint the TACTIC state around the attempt.
+          -- Both walkers reach `falseOrByContra`, which ASSIGNS the
+          -- main goal, before they can know whether the walk will
+          -- succeed; a later failure returned `false` with the goal
+          -- already assigned, and the omega fallback below then died
+          -- with "No goals to be solved" instead of closing the
+          -- goal. The `false` contract ("leaves the goal untouched")
+          -- is what the fallback rests on, so restore it here rather
+          -- than trust each walker to unwind itself.
+          let st ← saveState
+          let ok ←
+            if natModeOf path.ir then
+              tryAletheWalkerNat cert path.ir path.natAtoms
+            else tryAletheWalker cert
+          unless ok do st.restore
+          pure ok
         else
           pure false
-      unless walkerHandled do
+      if walkerHandled then
+        pure (if natModeOf path.ir then "alethe_walker_nat" else "alethe_walker")
+      else
         -- R3-M2: an α extraction has no decision-procedure closer
         -- (omega is Int/ℕ-only). If the cert is a Tier-1 Farkas
         -- witness whose specializations the term-mode path inverts,
@@ -2162,7 +2725,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
             replaceMainGoal [g]
           checkCertSpecializations cert (termSpecMode path.ir)
           match ← reifierExt.get with
-          | some ext => ext.polyFarkasCloser cert path.ir
+          | some ext => ext.polyFarkasCloser cert path.ir; pure "poly_farkas_replay"
           | none =>
             throwError "proof_broker: the broker certified this \
               polymorphic-α goal but no α closer is registered. \
@@ -2180,6 +2743,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
             let g ← invertDefUnfolds (← getMainGoal) path
             replaceMainGoal [g]
           evalTactic (← `(tactic| omega))
+          pure "gated_omega"
     else if fragment == "BV" then
       -- Cert-gated decide: BitVec has DecidableEq + the operator
       -- typeclass instances are decidable, so closed BV goals
@@ -2191,7 +2755,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- depend on any axiom. Big-width / quantifier-heavy BV goals
       -- where `decide` doesn't terminate in elaboration time are
       -- reported as a tactic failure (no axiom fallback — audit H1).
-      try evalTactic (← `(tactic| decide))
+      try evalTactic (← `(tactic| decide)); pure "gated_decide"
       catch _ =>
         throwError "proof_broker: the broker certified this BV goal but \
           Lean's `decide` could not discharge it (typically too wide or \
@@ -2241,10 +2805,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
           tryAletheWalker cert
         else
           pure false
-      unless walkerHandled do
-        try evalTactic (← `(tactic| subst_eqs; rfl))
+      if walkerHandled then pure "alethe_walker" else
+        try evalTactic (← `(tactic| subst_eqs; rfl)); pure "gated_subst_eqs_rfl"
         catch _ =>
-          try evalTactic (← `(tactic| simp_all))
+          try evalTactic (← `(tactic| simp_all)); pure "gated_simp_all"
           catch _ =>
             throwError "proof_broker: the broker certified this UF goal \
               but neither the Alethe walker nor the Lean closer chain \
@@ -2272,10 +2836,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
           tryAletheWalker cert
         else
           pure false
-      unless walkerHandled do
-        try evalTactic (← `(tactic| simp_all))
+      if walkerHandled then pure "alethe_walker" else
+        try evalTactic (← `(tactic| simp_all)); pure "gated_simp_all"
         catch _ =>
-          try evalTactic (← `(tactic| omega))
+          try evalTactic (← `(tactic| omega)); pure "gated_omega"
           catch _ =>
             throwError "proof_broker: the broker certified this UFLIA \
               goal but neither the Alethe walker nor the fallback \
@@ -2291,7 +2855,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- call either way, so the closer can trust solvability.
       if fragment == "LRA" then
         match ← reifierExt.get with
-        | some ext => ext.lraCloser
+        | some ext => ext.lraCloser; pure "gated_ext_lra"
         | none =>
           throwError "proof_broker: the broker certified this LRA goal \
             but no LRA closer is registered. `import ProofBrokerMathlib` \
@@ -2306,7 +2870,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
         -- the cert never enters the trust footprint (audit H1).
         -- No extension ⇒ tactic failure, never an admitted axiom.
         match ← reifierExt.get with
-        | some ext => ext.holCloser
+        | some ext => ext.holCloser; pure "gated_ext_hol"
         | none =>
           throwError "proof_broker: the broker certified this \
             {fragment} goal but no higher-order closer is registered. \
@@ -2367,7 +2931,7 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
     shared closer signature but unused; `goal` is used only by
     the LLM-replay paths. -/
 private def closeOrFail (goal : MVarId) (_goalType : Expr)
-    (path : ExtractionPath) : TacticM Unit := do
+    (path : ExtractionPath) : TacticM String := do
   -- (1) LLM-as-backend primary path — its untrusted-oracle cert
   -- bypasses the fragment chain entirely.
   if let some cert := path.cert then
@@ -2377,14 +2941,14 @@ private def closeOrFail (goal : MVarId) (_goalType : Expr)
             | some (.tier3ReplayDeferred _) => true
             | _ => false) then
       replayLlmScriptOrFail goal cert
-      return
+      return "llm_replay"
   -- (2) Primary closer chain; on failure, (3) try LLM-assisted
   -- reconstruction before surfacing the error.
   try
     closeOrFailPrimary goal path
   catch primary =>
     if (← tryLlmReconstruct? goal path.ir path.cert) then
-      return
+      return "llm_reconstruct"
     else
       throw primary
 
@@ -2547,6 +3111,12 @@ private def matchIntNotBound? (ty : Expr) : Option (HypKind × Expr × Expr) :=
     never pass `true`; the closer enforces this upstream). -/
 private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     (flipped : Bool) : MetaM (Expr × Expr) := do
+  -- An `mdata`-wrapped hypothesis type reifies fine (the reifier
+  -- strips annotations) but used to defeat this matcher with a
+  -- message whose pretty-printed type LOOKED in-shape
+  -- (CONTINUATION ROUND 1 Low 9); strip here and name the ctor in
+  -- the refusal so the next such gap is visible.
+  let hypTy := hypTy.consumeMData
   match matchIntEqHyp? hypTy with
   | some (a, b) =>
     if flipped then
@@ -2607,7 +3177,7 @@ private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     return (normExpr, proof)
   | none =>
     throwError "proof_broker_term: hypothesis shape outside Int ≤/≥/</>/= \
-                 (got type {hypTy})"
+                 (got type {hypTy}; head ctor {hypTy.ctorName})"
 
 /-- Build an `Int` literal `Expr` for `c`. Uses `Lean.toExpr` so the
     resulting `Expr` is the elaborated `@OfNat.ofNat Int n instOfNat`
@@ -2975,6 +3545,50 @@ private def parseAdapterList (lst : Option (Array Ident))
       throwError "proof_broker: empty adapter list; omit the brackets to use defaults"
     pure (some xs, false)
 
+/-- R4 continuation: bring the goal into the form a declaration
+    header gives an `example` — every assigned metavariable in the
+    target and the local context instantiated, and the target's
+    top-level `Expr.mdata` annotation removed.
+
+    Measured on the verinf spike (demo `reference/ctx/dump.log`,
+    2026-09-05): a tactic-internal goal is NOT in that form. The
+    `have` tactic leaves its continuation goal wrapped in the
+    `noImplicitLambda` annotation; `have := e`, `by_cases`, and any
+    `have h : T := …` whose `T` needed a coercion or a default
+    instance leave hypothesis (and target) types as assigned-but-
+    uninstantiated metavariables. Every structural match downstream
+    — `getAppFnArgs`, `isConstOf`, `matchNatGoal?`, `matchLiaGoal?`,
+    `fvarOfName` + `normalizeHypothesis` — then sees `?m` or `mdata`
+    and falls through: the reifier threw "unsupported expression:
+    <goal>" (obligations `D1/71`, `D3/98`, `D3/101`, `D3/175`,
+    `D3/178`), or silently DROPPED the un-reifiable hypothesis so the
+    solver answered sat (`D3/170`, `D3/180`), or the ℕ term-mode
+    closer refused a goal the reifier had just read (`D1/69`). None
+    of it is reachable from a probe whose goal is a declaration
+    signature — which is exactly the "closes in isolation, fails in
+    the file" context sensitivity the C4 handoff recorded as not
+    understood.
+
+    Mechanism, not workaround: `instantiateMVarDeclMVars` is Lean's
+    own operation for exactly this (target + local context, in
+    place, no proof-term change), and `consumeMData` removes only
+    `Expr.mdata`, which carries no logical content — the goal is
+    the SAME goal and `MVarId.setType` keeps the same metavariable,
+    so an already-clean goal (every pre-existing test) is untouched
+    byte for byte. SCOPE: metavariables anywhere in the target and
+    context; the annotation at the TOP of the target only. A nested
+    `mdata` inside a term, or one on a hypothesis type, is not
+    stripped (none observed on the spike; the reifier's named error
+    still reports the term). Pinned by the `pb_r4_ctx_*` tests in
+    `Test/Tactic.lean`, each of which first asserts the raw shape is
+    present (`raw_shape_test`) so the pin cannot pass vacuously. -/
+private def normalizeGoalForBroker (goal : MVarId) : TacticM MVarId := do
+  Lean.instantiateMVarDeclMVars goal
+  let ty ← goal.getType
+  let ty' := ty.consumeMData
+  unless ty' == ty do goal.setType ty'
+  return goal
+
 /-- R3-M1: introduce every LEADING `∀ (n : ℕ)` binder of the goal
     before reification. ℕ universals have no shell translation yet
     (the bounded-∀ transform is future work), but a leading goal
@@ -2995,10 +3609,107 @@ private partial def introLeadingNatForalls (goal : MVarId) : TacticM MVarId := d
     else return goal
   | _ => return goal
 
+/-- SMT-LIB §3.1 simple-symbol alphabet, mirrored from the SDK's
+    `Smtlib.is_simple_symbol_tail_char`. ASCII only — Lean's
+    `Char.isAlphanum` is ASCII, which is what we want here. -/
+private def smtSymbolTailChar (c : Char) : Bool :=
+  c.isAlphanum || "~!@$%^&*_-+=<>.?/".any (· == c)
+
+/-- Reserved words the SDK refuses in identifier position
+    (`Smtlib.smtlib_reserved`). -/
+private def smtReservedWords : List String :=
+  ["let", "forall", "exists", "match", "as", "par", "_",
+   "Bool", "Int", "Real"]
+
+/-- Does this name serialize as an SMT-LIB simple symbol? The SDK
+    raises `bad_identifier` for anything else — quoted symbols are
+    refused because they do not survive the proof-trace round trip. -/
+private def smtSafeIdent (s : String) : Bool :=
+  !s.isEmpty
+  && smtSymbolTailChar s.front && !s.front.isDigit
+  && s.all smtSymbolTailChar
+  && !(smtReservedWords.contains s)
+
+/-- Best-effort SMT-safe rewriting of a Lean name: every character
+    outside the simple-symbol alphabet becomes `_`, a leading digit
+    gets an `x` in front, and an empty/reserved result becomes
+    `_pb_v`. Not required to be injective — the caller resolves
+    collisions through the local context. -/
+private def smtSanitizeIdent (s : String) : String :=
+  let mapped := String.ofList (s.toList.map (fun c => if smtSymbolTailChar c then c else '_'))
+  let mapped := if mapped.isEmpty then "_pb_v"
+                else if mapped.front.isDigit then "x" ++ mapped
+                else mapped
+  if smtReservedWords.contains mapped then mapped ++ "_" else mapped
+
+/-- R4.2: alpha-rename local hypotheses and variables whose names
+    are not SMT-LIB simple symbols, BEFORE reification.
+
+    Primed names are idiomatic Lean and pervasive in the verinf
+    obligations (`threshold_unique`'s `c'`, `h1'`, `h2'`); the SDK
+    serializer refuses them with
+    `bad_identifier: c' … is not a SMT-LIB simple symbol; rename or
+    alpha-convert before serialization`, so every such goal failed
+    dispatch outright. Renaming on the GOAL rather than mapping
+    names inside the IR is what keeps the rest of the pipeline
+    honest: the reifier, the certificate, `fvarOfName` and the
+    walker context all keep using one name for one thing, and no
+    inverse map has to be trusted at lift time.
+
+    Only the user-facing name changes — same fvar, same type, same
+    proof term. Names already SMT-safe (which is nearly all of
+    them) are untouched, so an unaffected goal reifies byte-for-byte
+    as before. -/
+private def renameLocalsForSmt (goal : MVarId) : TacticM MVarId := do
+  let renames ← goal.withContext do
+    let mut acc : Array (FVarId × String) := #[]
+    -- Duplicate user names (`have := e` twice ⇒ two `this`) give the
+    -- IR duplicate hypothesis names: the SDK's Farkas search then
+    -- finds a positional witness the by-name verifier rejects — a
+    -- false "not contradictory" on a provable goal (CONTINUATION
+    -- ROUND 1 Med 3, the D3/178 shape). Rename every occurrence but
+    -- the LAST (the one unqualified references resolve to), exactly
+    -- as unsafe identifiers are renamed below.
+    let mut lastOf : Std.HashMap String FVarId := {}
+    let mut order : Array (String × FVarId) := #[]
+    for decl in ← getLCtx do
+      if decl.isImplementationDetail then continue
+      let n := decl.userName.toString
+      order := order.push (n, decl.fvarId)
+      lastOf := lastOf.insert n decl.fvarId
+    for (n, fid) in order do
+      if lastOf[n]? != some fid then
+        acc := acc.push (fid, smtSanitizeIdent n)
+    for decl in ← getLCtx do
+      if decl.isImplementationDetail then continue
+      if acc.any (·.1 == decl.fvarId) then continue
+      unless smtSafeIdent decl.userName.toString do
+        acc := acc.push (decl.fvarId, smtSanitizeIdent decl.userName.toString)
+    pure acc
+  if renames.isEmpty then return goal
+  let mut g := goal
+  for (fvarId, base) in renames do
+    let fresh ← g.withContext do
+      let cand := (← getLCtx).getUnusedName (Name.mkSimple base)
+      -- `getUnusedName` disambiguates by appending an index; guard
+      -- the result anyway rather than assume the shape of the
+      -- suffix, and fall back to a synthetic name that cannot
+      -- collide with a source identifier.
+      if smtSafeIdent cand.toString then
+        pure cand
+      else
+        pure ((← getLCtx).getUnusedName (Name.mkSimple "_pb_v"))
+    g ← g.rename fvarId fresh
+  replaceMainGoal [g]
+  return g
+
 @[tactic proofBroker]
 def evalProofBroker : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
+  let goal ← renameLocalsForSmt goal
   let goalType ← goal.getType
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker [$names,*]) =>
@@ -3007,12 +3718,16 @@ def evalProofBroker : Tactic := fun stx => do
         parseAdapterList none
     | _ => throwError "proof_broker: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
-  closeOrFail goal goalType path
+  let closer ← closeOrFail goal goalType path
+  reportIfRequested "proof_broker" t0 path closer
 
 @[tactic proofBrokerWalker]
 def evalProofBrokerWalker : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
+  let goal ← renameLocalsForSmt goal
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker_walker [$names,*]) =>
         parseAdapterList (some names.getElems)
@@ -3054,16 +3769,21 @@ def evalProofBrokerWalker : Tactic := fun stx => do
       | .error e => throwError "proof_broker_walker: trace parse \
           failed: {repr e}"
     walkNatProofIntoGoal (← getMainGoal) proof path.ir path.natAtoms
+    reportIfRequested "proof_broker_walker" t0 path "alethe_walker_nat"
   else
     unless (← tryAletheWalker cert) do
       throwError "proof_broker_walker: the Alethe walker did not close the \
         goal from the live cert (no omega fallback). Cert tier/format may \
         not be a walkable alethe-2024 trace, or the walk failed."
+    reportIfRequested "proof_broker_walker" t0 path "alethe_walker"
 
 @[tactic proofBrokerQ]
 def evalProofBrokerQ : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
+  let goal ← renameLocalsForSmt goal
   let goalType ← goal.getType
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker? [$names,*]) =>
@@ -3073,7 +3793,8 @@ def evalProofBrokerQ : Tactic := fun stx => do
     | _ => throwError "proof_broker?: malformed invocation"
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
   logInfo (renderPath path)
-  closeOrFail goal goalType path
+  let closer ← closeOrFail goal goalType path
+  reportIfRequested "proof_broker?" t0 path closer
 
 /-- Read the cert's payload strategy_hint, returning `""` if absent. -/
 private def certStrategyHint (cert : Json) : String :=
@@ -3098,8 +3819,18 @@ private def certStrategyHint (cert : Json) : String :=
     * Tier 1 Farkas, anything else → core `closeViaTermMode` (Int). -/
 private def runTermModeOnGoal
     (goal : MVarId) (adapterNames? : Option (List String))
-    (preferHigherTier : Bool) : TacticM Unit := do
+    (preferHigherTier : Bool) : TacticM (ExtractionPath × String) := do
+  -- R4 continuation: term mode consumes a Tier 1 Farkas or Tier 2
+  -- case-split witness and nothing else, so it SAYS so
+  -- (`user_directives.tier_preference`, the walker's `["3"]` in the
+  -- other direction). The SDK's parallel driver ranks those tiers
+  -- first when picking the winner, and cvc5's ladder runs the
+  -- internal Farkas closer before minting a Tier 3 trace. Without
+  -- it, the verinf `D1/69` obligation under its full context got
+  -- cvc5's verified Tier 3 trace as "the highest tier" while z3's
+  -- Tier 1 witness — the one this closer needs — lost the race.
   let path ← buildExtractionPath goal adapterNames? preferHigherTier
+    (tierPreference := some ["1", "2"])
   let cert ← match path.cert with
     | some c => pure c
     | none => throwError "proof_broker_term: no adapter minted a cert"
@@ -3136,7 +3867,7 @@ private def runTermModeOnGoal
       throwError "proof_broker_term: Tier 2 case-split over a ℕ \
         extraction is not lifted yet"
     closeNatViaTermMode goal goalType cert path.ir path.natAtoms
-    return
+    return (path, "term_mode_nat")
   if polyModeOf path.ir then
     if certStrategyHint cert == "case_split_farkas" then
       throwError "proof_broker_term: Tier 2 case-split over a \
@@ -3147,10 +3878,10 @@ private def runTermModeOnGoal
       throwError "proof_broker_term: polymorphic-α cert minted but no \
         extension closer is registered (import `ProofBrokerMathlib` \
         for the class-polymorphic Farkas term builder)"
-    return
+    return (path, "term_mode_poly")
   if certStrategyHint cert == "case_split_farkas" then
     match ← reifierExt.get with
-    | some ext => ext.tier2CaseSplitCloser cert path.ir
+    | some ext => ext.tier2CaseSplitCloser cert path.ir; pure (path, "term_mode_case_split")
     | none =>
       throwError "proof_broker_term: Tier 2 case_split_farkas cert \
                    minted but no extension closer registered (import \
@@ -3164,11 +3895,11 @@ private def runTermModeOnGoal
     match extOpt with
     | some ext =>
       if fragment == ext.irFragment then
-        ext.tier1FarkasCloser cert path.ir
+        ext.tier1FarkasCloser cert path.ir; pure (path, "term_mode_ext")
       else
-        closeViaTermMode goal goalType cert
+        closeViaTermMode goal goalType cert; pure (path, "term_mode_int")
     | none =>
-      closeViaTermMode goal goalType cert
+      closeViaTermMode goal goalType cert; pure (path, "term_mode_int")
 
 /-- Match an Int equality goal `Eq Int a b`. Returns `(a, b)` if so;
     `none` otherwise. The closer pre-splits equality goals via
@@ -3200,8 +3931,11 @@ private def matchExtensionEqGoal? (goalType : Expr) : MetaM (Option Expr) := do
 
 @[tactic proofBrokerTerm]
 def evalProofBrokerTerm : Tactic := fun stx => do
+  let t0 ← IO.monoMsNow
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
+  let goal ← renameLocalsForSmt goal
   let goalType ← goal.getType
   let (adapterNames?, preferHigherTier) ← match stx with
     | `(tactic| proof_broker_term [$names,*]) =>
@@ -3222,7 +3956,8 @@ def evalProofBrokerTerm : Tactic := fun stx => do
     let subgoals ← getGoals
     for sg in subgoals do
       setGoals [sg]
-      runTermModeOnGoal sg adapterNames? preferHigherTier
+      let (path, closer) ← runTermModeOnGoal sg adapterNames? preferHigherTier
+      reportIfRequested "proof_broker_term" t0 path closer
     setGoals []
   | none =>
   -- R3-M1: ℕ equality goals split via Nat.le_antisymm — each ≤
@@ -3234,16 +3969,17 @@ def evalProofBrokerTerm : Tactic := fun stx => do
       let subgoals ← getGoals
       for sg in subgoals do
         setGoals [sg]
-        runTermModeOnGoal sg adapterNames? preferHigherTier
+        let (path, closer) ← runTermModeOnGoal sg adapterNames? preferHigherTier
+        reportIfRequested "proof_broker_term" t0 path closer
       setGoals []
     else
-      evalProofBrokerTermRest goalType goal adapterNames? preferHigherTier
+      evalProofBrokerTermRest t0 goalType goal adapterNames? preferHigherTier
   | _ =>
-    evalProofBrokerTermRest goalType goal adapterNames? preferHigherTier
+    evalProofBrokerTermRest t0 goalType goal adapterNames? preferHigherTier
 where
   /-- The pre-R3 tail: extension-claimed equality split, else the
       plain single-goal pipeline. -/
-  evalProofBrokerTermRest (goalType : Expr) (goal : MVarId)
+  evalProofBrokerTermRest (t0 : Nat) (goalType : Expr) (goal : MVarId)
       (adapterNames? : Option (List String)) (preferHigherTier : Bool)
       : TacticM Unit := do
     match ← matchExtensionEqGoal? goalType with
@@ -3256,12 +3992,15 @@ where
         let subgoals ← getGoals
         for sg in subgoals do
           setGoals [sg]
-          runTermModeOnGoal sg adapterNames? preferHigherTier
+          let (path, closer) ← runTermModeOnGoal sg adapterNames? preferHigherTier
+          reportIfRequested "proof_broker_term" t0 path closer
         setGoals []
       | none =>
-        runTermModeOnGoal goal adapterNames? preferHigherTier
+        let (path, closer) ← runTermModeOnGoal goal adapterNames? preferHigherTier
+        reportIfRequested "proof_broker_term" t0 path closer
     | none =>
-      runTermModeOnGoal goal adapterNames? preferHigherTier
+      let (path, closer) ← runTermModeOnGoal goal adapterNames? preferHigherTier
+      reportIfRequested "proof_broker_term" t0 path closer
 
 /- ============================================================
    Test-only entry point for the LLM-replay closer
@@ -3333,6 +4072,263 @@ def evalSpecGateTest : Tactic := fun stx => do
     checkCertSpecializations cert specMode
     evalTactic (← `(tactic| trivial))
   | _ => throwError "spec_gate_test: malformed invocation"
+
+/-- TEST-ONLY tactic: the CALL-SITE isolation pin (C4 ROUND 8
+    Med 1; widened to all four fields at ROUND 9 Med 1 — the
+    one-field version repeated the constructor pin's ROUND 5
+    mistake, three lines below the comment warning about it). Runs
+    the REAL `Reify.buildIRWithAcc` twice on the goal (which must
+    reify at least one ℕ atom) and checks the two returned
+    accumulators behave as distinct state:
+    * run 1's atom table is non-empty and SURVIVES run 2 (the race
+      bug's mechanism was a later reification's reset wiping an
+      earlier one's table through shared state);
+    * a marker pushed into EACH of run 2's four fields does not
+      appear in run 1's corresponding field.
+    HONEST SCOPE (ROUND 9): red under any spelling that leaves
+    `buildIRWithAcc` returning the accumulator it accumulated into
+    — which every single-accumulator mutation does. A DECOY mutant
+    (accumulate in shared state, return a copied accumulator) evades
+    any return-value pin by construction; that residual is covered
+    only by the source gate and review, and is stated in delta §5.7
+    rather than papered over. -/
+syntax (name := reifyCallsiteIsolationTest)
+  "reify_callsite_isolation_test" : tactic
+
+@[tactic reifyCallsiteIsolationTest]
+def evalReifyCallsiteIsolationTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_callsite_isolation_test) =>
+    let g ← getMainGoal
+    let (_, acc1) ← Reify.buildIRWithAcc g
+    let n1 := (← acc1.natAtoms.get).size
+    unless n1 > 0 do
+      throwError "reify_callsite_isolation_test: the goal reified no \
+        ℕ atom — use a goal with a nonlinear ℕ product so aliasing \
+        is observable"
+    let (_, acc2) ← Reify.buildIRWithAcc g
+    unless (← acc1.natAtoms.get).size == n1 do
+      throwError "reify_callsite_isolation_test: run 2 WIPED run 1's \
+        atom table (size {(← acc1.natAtoms.get).size}, was {n1}) — \
+        buildIR is accumulating in shared state (the C4 ROUND 3 race \
+        mechanism)"
+    -- per-field aliasing markers (ROUND 9 Med 1: natDefs-only
+    -- re-sharing was green under a natAtoms-only marker)
+    acc2.consts.modify (·.push ("_pb_cs_marker", "Int"))
+    acc2.natAtoms.modify (·.push ("_pb_cs_marker", Lean.mkConst ``Nat))
+    acc2.intAtoms.modify (·.push ("_pb_cs_marker", Lean.mkConst ``Int))
+    acc2.natDefs.modify (·.push ("_pb_cs_marker", Lean.mkConst ``Nat, 0))
+    if (← acc1.consts.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: consts ALIASED \
+        across the two reifications"
+    if (← acc1.natAtoms.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: natAtoms ALIASED \
+        across the two reifications"
+    if (← acc1.intAtoms.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: intAtoms ALIASED \
+        across the two reifications"
+    if (← acc1.natDefs.get).any (·.1 == "_pb_cs_marker") then
+      throwError "reify_callsite_isolation_test: natDefs ALIASED \
+        across the two reifications"
+    evalTactic (← `(tactic| omega))
+  | _ => throwError "reify_callsite_isolation_test: malformed invocation"
+
+/-- TEST-ONLY tactic: the runtime half of the per-call accumulator
+    fix's pin (C4 ROUND 4 finding 1; field coverage widened at
+    ROUND 5 Med 1; SCOPE stated honestly at ROUND 6 Med 1). Calls
+    `ReifyAcc.fresh` twice, pushes a marker into EACH of the first
+    accumulator's four fields, and asserts per field that the second
+    is empty and the first kept its entry. This pins the
+    CONSTRUCTOR: any re-sharing inside `ReifyAcc.fresh` is red on
+    every run, no parallelism required. It does NOT see a mutation
+    that leaves `fresh` intact and moves accumulation back to
+    module refs cleared at the `buildIR` call site — that direction
+    is pinned by `reify_callsite_isolation_test` (aliasing-based;
+    red whenever the reification returns the accumulator it
+    accumulated into — the load-bearing pin since ROUND 8) with
+    `tools/check.py`'s `check_lean_reify_isolation` source gate as
+    defense in depth.
+    The stress herd exercises concurrency but is not a catcher —
+    measured pre-fix rates 0/30 (anonymous form, ROUND 4), 0/20
+    (all-four-shared mutation) and 0/10 (natDefs-only mutation),
+    both on the named-theorem form at ROUND 5. -/
+syntax (name := reifyAccIsolationTest) "reify_acc_isolation_test" : tactic
+
+@[tactic reifyAccIsolationTest]
+def evalReifyAccIsolationTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_acc_isolation_test) =>
+    -- ALL FOUR fields, independently (C4 ROUND 5 Med 1: asserting
+    -- only natAtoms let a natDefs-only re-sharing — the exact table
+    -- whose loss produced the demo's `unsupported_symbol` — escape
+    -- every pin in the tree).
+    let a ← ReifyAcc.fresh
+    a.consts.modify (·.push ("_pb_iso_c", "Int"))
+    a.natAtoms.modify (·.push ("_pb_iso_na", Lean.mkConst ``Nat))
+    a.intAtoms.modify (·.push ("_pb_iso_ia", Lean.mkConst ``Int))
+    a.natDefs.modify (·.push ("_pb_iso_nd", Lean.mkConst ``Nat, 0))
+    let b ← ReifyAcc.fresh
+    let checkEmpty (name : String) (n : Nat) : TacticM Unit := do
+      unless n == 0 do
+        throwError "reify_acc_isolation_test: a fresh accumulator's \
+          {name} is NOT empty ({n} entries) — ReifyAcc.fresh is \
+          sharing state"
+    checkEmpty "consts" (← b.consts.get).size
+    checkEmpty "natAtoms" (← b.natAtoms.get).size
+    checkEmpty "intAtoms" (← b.intAtoms.get).size
+    checkEmpty "natDefs" (← b.natDefs.get).size
+    let checkKept (name : String) (n : Nat) : TacticM Unit := do
+      unless n == 1 do
+        throwError "reify_acc_isolation_test: the first accumulator's \
+          {name} lost its entry (size {n}) — a later fresh cleared \
+          shared refs"
+    checkKept "consts" (← a.consts.get).size
+    checkKept "natAtoms" (← a.natAtoms.get).size
+    checkKept "intAtoms" (← a.intAtoms.get).size
+    checkKept "natDefs" (← a.natDefs.get).size
+    evalTactic (← `(tactic| trivial))
+  | _ => throwError "reify_acc_isolation_test: malformed invocation"
+
+/-- TEST-ONLY tactic pinning `constOnlyInValuePositions` in BOTH
+    directions, deterministically (C4 ROUND 3 Med 1: the end-to-end
+    `PBModP` negative proved vacuous — it fails under any closer
+    outcome, so `gate ≡ true` left every build green). For the named
+    constant `c`, builds the two canonical shapes and asserts the
+    gate's verdicts directly:
+    * value position, `c + 1` — must be ALLOWED (true);
+    * type position, `@id (Fin c)` — the constant inside an argument
+      whose own type is a Sort — must be REFUSED (false).
+    Mutating the gate in either direction turns exactly this red. -/
+syntax (name := typePosGateTest) "type_pos_gate_test" ident : tactic
+
+@[tactic typePosGateTest]
+def evalTypePosGateTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| type_pos_gate_test $c) =>
+    let cName ← Lean.resolveGlobalConstNoOverload c
+    let cE := Lean.mkConst cName
+    let valuePos ← Lean.Meta.mkAppM ``HAdd.hAdd #[cE, Lean.mkNatLit 1]
+    let typePos :=
+      Lean.mkApp (Lean.mkConst ``id [Lean.levelOne])
+        (Lean.mkApp (Lean.mkConst ``Fin) cE)
+    unless ← constOnlyInValuePositions cName valuePos do
+      throwError "type_pos_gate_test: the gate REFUSED a pure value \
+        position ({valuePos}) — the permissive branch broke"
+    if ← constOnlyInValuePositions cName typePos then
+      throwError "type_pos_gate_test: the gate ALLOWED a type \
+        position ({typePos}) — the refusing branch broke"
+    evalTactic (← `(tactic| trivial))
+  | _ => throwError "type_pos_gate_test: malformed invocation"
+
+/-- TEST-ONLY tactic: assert the RAW shape of the main goal or of a
+    named hypothesis — the shape `normalizeGoalForBroker` exists to
+    remove — so the `pb_r4_ctx_*` tests are not vacuous: a test that
+    merely closes a goal would also pass on a toolchain that no
+    longer produces the shape, and would then pin nothing.
+    * `raw_shape_test goal_mdata` — the target, read WITHOUT
+      instantiation, is an `Expr.mdata` node (the `have` tactic's
+      `noImplicitLambda` annotation on its continuation goal).
+    * `raw_shape_test goal_mvar` — the raw target contains an
+      assigned expression metavariable.
+    * `raw_shape_test hyp_mvar h` — the raw type of local `h`
+      contains an assigned expression metavariable (`have := e`,
+      `by_cases`, a coercion-bearing `have` type).
+    Fails with a named message when the shape is ABSENT, which is
+    the signal that a toolchain change made the pin moot. Leaves the
+    goal untouched. -/
+syntax (name := rawShapeTest) "raw_shape_test" ident (colGt ident)? : tactic
+
+@[tactic rawShapeTest]
+def evalRawShapeTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| raw_shape_test $kind $[$hyp?]?) =>
+    let goal ← getMainGoal
+    goal.withContext do
+      let raw ← goal.getType
+      match kind.getId.toString, hyp? with
+      | "goal_mdata", none =>
+        unless raw.isMData do
+          throwError "raw_shape_test: the raw target is not an mdata \
+            node (ctor {raw.ctorName}) — the shape this test pins is \
+            absent; re-derive the pin against this toolchain"
+      | "goal_mvar", none =>
+        unless raw.hasExprMVar do
+          throwError "raw_shape_test: the raw target has no expression \
+            metavariable — the shape this test pins is absent; \
+            re-derive the pin against this toolchain"
+      | "hyp_mvar", some h =>
+        let some decl := (← getLCtx).findFromUserName? h.getId
+          | throwError "raw_shape_test: no local named {h.getId}"
+        unless decl.type.hasExprMVar do
+          throwError "raw_shape_test: the raw type of {h.getId} has no \
+            expression metavariable (ctor {decl.type.ctorName}) — the \
+            shape this test pins is absent; re-derive the pin against \
+            this toolchain"
+      | k, _ =>
+        throwError "raw_shape_test: unknown shape '{k}' (goal_mdata | \
+          goal_mvar | hyp_mvar <h>)"
+  | _ => throwError "raw_shape_test: malformed invocation"
+
+/-- TEST-ONLY tactic: run the REAL `Reify.buildIR` on the main goal
+    — NOT through a tactic front-end, so `normalizeGoalForBroker`
+    has not run — and assert that exactly `n` hypotheses were
+    reified and NONE was skipped. This pins the reifier's own
+    per-hypothesis instantiation (`buildIRWithAcc`) independently of
+    the front-end normalization: with it reverted, a `have := e` or
+    `by_cases` hypothesis reifies as `?m`, is dropped into
+    `skippedLocals`, and the count is one short. Leaves the goal
+    untouched. -/
+syntax (name := reifyHypCountTest) "reify_hyp_count_test" num : tactic
+
+@[tactic reifyHypCountTest]
+def evalReifyHypCountTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_hyp_count_test $n) =>
+    let (ir, _atoms, _defs, skipped) ← Reify.buildIR (← getMainGoal)
+    unless skipped.isEmpty do
+      throwError "reify_hyp_count_test: buildIR SKIPPED {skipped.size} \
+        local(s): {skipped.map (fun (nm, why) => s!"{nm}: {why}")} — a \
+        hypothesis that closes this goal was dropped as outside the \
+        fragment"
+    let got := ir.context.hypotheses.length
+    unless got == n.getNat do
+      throwError "reify_hyp_count_test: expected {n.getNat} reified \
+        hypothesis(es), got {got} ({ir.context.hypotheses.map (·.name)})"
+  | _ => throwError "reify_hyp_count_test: malformed invocation"
+
+/-- TEST-ONLY tactic used by the `Test/TacticStress.lean` herd:
+    runs the REAL `Reify.buildIR` on the goal — no dispatch, no
+    solver — and asserts the returned atom and numeral-def tables
+    have exactly the expected sizes. HONEST ROLE (C4 ROUND 4
+    finding 1): the herd EXERCISES concurrent per-call accumulators
+    under v4.32's async elaboration of named theorems; it is NOT a
+    reliable regression catcher — measured pre-fix catch rates: 0/30
+    builds on the ROUND 4 anonymous-example form; on THIS
+    named-theorem form (ROUND 5) 0/20 under the all-four-shared
+    mutation and 0/10 under the natDefs-only one;
+    a dispatch-free `buildIR` window is ~1.5 ms (the demo file
+    raced because its windows span live solver round trips). The
+    fix's pin is three-part: `reify_callsite_isolation_test`
+    (load-bearing, aliasing-based; scope and residual in delta §5.7),
+    `reify_acc_isolation_test` (the constructor), and
+    `check_lean_reify_isolation` in `tools/check.py` (source-level
+    defense in depth). -/
+syntax (name := reifyStressTest) "reify_stress_test" num num : tactic
+
+@[tactic reifyStressTest]
+def evalReifyStressTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_stress_test $nAtoms $nDefs) =>
+    let (_ir, atoms, defs, _skippedLocals) ← Reify.buildIR (← getMainGoal)
+    unless atoms.size == nAtoms.getNat do
+      throwError "reify_stress_test: expected {nAtoms.getNat} ℕ \
+        atom(s), got {atoms.size} ({atoms.map (·.1)}) — cross-goal \
+        table contamination"
+    unless defs.size == nDefs.getNat do
+      throwError "reify_stress_test: expected {nDefs.getNat} numeral \
+        def(s), got {defs.size} ({defs.map (·.1)}) — cross-goal \
+        table contamination"
+  | _ => throwError "reify_stress_test: malformed invocation"
 
 /-- TEST-ONLY tactic pinning the R3-M3 term-mode trace guard
     (`termTraceError?`) branch by branch, independent of live

@@ -450,6 +450,20 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
               | Some { tier_preference = Some ("3" :: _); _ } -> true
               | _ -> false
             in
+            (* R4 continuation (2026-09-05), the symmetric directive: a
+               caller that can only consume Farkas witnesses (the
+               bridge's term mode sends ["1"; "2"]) gets the internal
+               closer BEFORE the Tier 3 trace when neither structural
+               extractor matched the proof — otherwise a verified
+               Tier 3 cert is minted and the witness the internal
+               closer would have found is never looked for (the verinf
+               `D1/69` obligation under its full context). The default
+               ladder is unchanged. *)
+            let prefer_farkas =
+              match ir.user_directives with
+              | Some { tier_preference = Some (("1" | "2") :: _); _ } -> true
+              | _ -> false
+            in
             let cert =
               match extract_proof_body stdout with
               | None -> try_internal_closer ()
@@ -471,6 +485,13 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                  | Error _ ->
                    (match Alethe_farkas.extract ir proof_str with
                     | Ok witness -> mk_farkas witness
+                    | Error _ when prefer_farkas ->
+                      (match Farkas_search.try_close ir with
+                       | Ok witness -> mk_farkas witness
+                       | Error _ ->
+                         (match try_tier3 proof_str with
+                          | Some t3 -> t3
+                          | None -> mk_oracle ()))
                     | Error _ ->
                       (match try_tier3 proof_str with
                        | Some t3 -> t3

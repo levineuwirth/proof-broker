@@ -168,8 +168,20 @@ let detail_of_reason = function
   | Cert_version_mismatch { got } ->
     Printf.sprintf "expected cert_version=1.0, got %s" got
   | Farkas_unknown_hypothesis { hypothesis } ->
-    Printf.sprintf "hypothesis %s not found in IR (and not the reserved \
-                    name neg_goal)" hypothesis
+    (* The DUPLICATE: marker rides this reason over the FFI (the
+       reason type is a protocol surface); without the branch the
+       user read "hypothesis DUPLICATE:x not found in IR" — the
+       opposite of the fact (CONTINUATION ROUND 2 Low 2). *)
+    (match String.length hypothesis >= 10
+           && String.sub hypothesis 0 10 = "DUPLICATE:" with
+     | true ->
+       Printf.sprintf "hypothesis name %s appears MORE THAN ONCE in \
+                       the IR — by-name witness resolution is \
+                       ambiguous, refusing"
+         (String.sub hypothesis 10 (String.length hypothesis - 10))
+     | false ->
+       Printf.sprintf "hypothesis %s not found in IR (and not the \
+                       reserved name neg_goal)" hypothesis)
   | Farkas_nonlinear { hypothesis; detail } ->
     Printf.sprintf "%s: %s" hypothesis detail
   | Farkas_bad_coefficient { hypothesis; raw } ->
@@ -315,6 +327,12 @@ let reason_of_farkas (v : Farkas.verdict) : reason =
   | Verified -> Verified_farkas
   | Unknown_hypothesis { hypothesis } ->
     Farkas_unknown_hypothesis { hypothesis }
+  | Duplicate_hypothesis { hypothesis } ->
+    (* mapped onto the unknown-hypothesis reason with a marked name:
+       the reason type crosses the FFI, so a new constructor is a
+       protocol change — the marker keeps the message honest *)
+    Farkas_unknown_hypothesis
+      { hypothesis = "DUPLICATE:" ^ hypothesis }
   | Nonlinear { hypothesis; detail } ->
     Farkas_nonlinear { hypothesis; detail }
   | Bad_coefficient { hypothesis; raw } ->
@@ -496,6 +514,7 @@ let verify_case_split
                         (match other with
                          | Verified -> "verified"
                          | Unknown_hypothesis _ -> "unknown_hypothesis"
+                         | Duplicate_hypothesis _ -> "duplicate_hypothesis"
                          | Nonlinear _ -> "nonlinear"
                          | Bad_coefficient _ -> "bad_coefficient"
                          | Negative_coefficient _ -> "negative_coefficient"

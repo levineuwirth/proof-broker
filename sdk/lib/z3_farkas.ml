@@ -205,6 +205,8 @@ let verdict_detail = function
   | Farkas.Verified -> "verified"
   | Unknown_hypothesis { hypothesis } ->
     "unknown hypothesis: " ^ hypothesis
+  | Duplicate_hypothesis { hypothesis } ->
+    "duplicate hypothesis name: " ^ hypothesis
   | Nonlinear { hypothesis; detail } ->
     Printf.sprintf "nonlinear hypothesis %s: %s" hypothesis detail
   | Bad_coefficient { hypothesis; raw } ->

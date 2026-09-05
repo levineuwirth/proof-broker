@@ -1195,9 +1195,18 @@ def runDispatchBrokerTwoBackendsFlow (rootDir : System.FilePath) : IO Unit := do
     | .error e => fail s!"could not parse cvc5 manifest: {e}"
   let path := rootDir / "examples" / "example1-lia-typeclass.json"
   let raw ← IO.FS.readFile path
-  let ir ← match IR.fromJsonString raw with
+  let irFixture ← match IR.fromJsonString raw with
     | .ok ir => pure ir
     | .error e => fail s!"could not parse example1: {e}"
+  -- The spec's example fixture carries `user_directives.tier_preference
+  -- = ["1", "3", "2"]`. Since the R4 continuation the parallel driver
+  -- HONOURS that directive when picking the winner (listed tiers
+  -- first, then the highest tier), so the "highest tier regardless of
+  -- order" contract below is asserted on the fixture with its
+  -- directive cleared, and the directive itself is asserted after.
+  let ir := { irFixture with
+    userDirectives := irFixture.userDirectives.map
+      (fun ud => { ud with tierPreference := none }) }
   -- Concurrent-dispatch contract (the FFI broker now races every
   -- eligible adapter via Dispatch.run_parallel — there is no
   -- stop-on-success early-out): `attempts` has one entry per
@@ -1228,6 +1237,25 @@ def runDispatchBrokerTwoBackendsFlow (rootDir : System.FilePath) : IO Unit := do
     unless adapterSucceeded r "cvc5" do
       fail s!"[{order}] expected cvc5's attempt to have succeeded"
   IO.println "OK dispatch_broker: prefer_higher_tier=true selects the higher-tier cvc5 cert regardless of input order (all adapters raced)"
+  -- The directive, as the fixture ships it: "1" first. What this
+  -- END-TO-END case exercises is the cvc5 LADDER under a
+  -- Farkas-first preference (its internal closer runs before Tier 3,
+  -- so every raced cert is Tier 1 and the outcome is Tier 1 in both
+  -- orders); it does NOT discriminate the winner-selection rule
+  -- itself, because no Tier 3 cert survives to be selected against
+  -- (CONTINUATION ROUND 1 Low 5 — reverting the selection rule
+  -- leaves this green). The selection rule's pin is the SDK's
+  -- test_dispatch case "tier_preference ranks the consumable tier",
+  -- which goes red under exactly that reversion.
+  for (order, ms) in [("cvc4,cvc5", [cvc4Manifest, cvc5Manifest]),
+                      ("cvc5,cvc4", [cvc5Manifest, cvc4Manifest])] do
+    let r ← match runDispatchBroker irFixture ms with
+      | .ok r => pure r
+      | .error e => fail s!"runDispatchBroker (directive, [{order}]) error: {repr e}"
+    unless certTier r == some 1 do
+      fail s!"[{order}] the fixture's tier_preference [\"1\", \"3\", \"2\"] \
+              should select a Tier-1 cert, got tier {repr (certTier r)}"
+  IO.println "OK dispatch_broker: tier_preference end-to-end — the cvc5 ladder mints Tier 1 under a Farkas-first preference, both orders (the winner-selection rule itself is pinned SDK-side in test_dispatch)"
   -- Opt-out: preferHigherTier=false is latency-first (grace 0) —
   -- the FIRST cert to arrive wins, which is timing-dependent, so
   -- we don't assert which adapter won. The invariant that still

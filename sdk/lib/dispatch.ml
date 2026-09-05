@@ -186,8 +186,11 @@ let run
     arrived and the grace window has elapsed since the first cert.
     Among the certs in hand at the decision point it picks the
     highest [cert.tier] (ties broken by input order — lowest
-    manifest index — for determinism). [grace_window_ms <= 0] means
-    latency-first: decide as soon as any cert arrives.
+    manifest index — for determinism); when the IR carries
+    [user_directives.tier_preference], the listed tiers rank ahead
+    of the rest first, then the same rule (see [best_cert]).
+    [grace_window_ms <= 0] means latency-first: decide as soon as
+    any cert arrives.
 
     No escaping threads (why this matters). The driver runs inside
     the OCaml runtime embedded in the home-system process via the
@@ -250,7 +253,32 @@ let run_parallel
   let mtx = Mutex.create () in
   let finished = ref 0 in
   let now_ms () = int_of_float (Unix.gettimeofday () *. 1000.) in
-  (* Best cert by (max tier, min index). Caller holds [mtx]. *)
+  (* Best cert by (preferred tier first, then max tier, then min
+     index). Caller holds [mtx].
+
+     R4 continuation (2026-09-05): the IR's
+     [user_directives.tier_preference] ranks the tiers the CALLER
+     can consume ahead of the rest — a term-mode closer consumes
+     Tier 1 / Tier 2 witnesses and nothing else, and under the plain
+     "highest tier wins" rule cvc5's verified Tier 3 trace beat z3's
+     Tier 1 Farkas witness on the verinf `D1/69` obligation, so the
+     goal failed with a witness in hand. A tier not in the list ranks
+     after every listed one; among equal ranks the old rule applies
+     unchanged, and with no preference this IS the old rule. *)
+  let pref_rank (tier : int) : int =
+    match ir.user_directives with
+    | Some { tier_preference = Some prefs; _ } ->
+      let rec find i = function
+        | [] -> List.length prefs
+        | p :: rest -> if p = string_of_int tier then i else find (i + 1) rest
+      in
+      find 0 prefs
+    | _ -> 0
+  in
+  let better (c : Certificate.t) (c' : Certificate.t) : bool =
+    let r, r' = pref_rank c.tier, pref_rank c'.tier in
+    r < r' || (r = r' && c.tier > c'.tier)
+  in
   let best_cert () =
     let b = ref None in
     Array.iteri (fun i o ->
@@ -258,8 +286,7 @@ let run_parallel
       | Some (Succeeded c) ->
         (match !b with
          | None -> b := Some (i, c)
-         | Some (_, c') -> if c.Certificate.tier > c'.Certificate.tier
-                           then b := Some (i, c))
+         | Some (_, c') -> if better c c' then b := Some (i, c))
       | _ -> ())
       outcomes;
     !b

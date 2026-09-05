@@ -270,6 +270,8 @@ let test_verify_example1 () =
         Printf.sprintf "Not_contradictory(%s)" residual
       | Unknown_hypothesis { hypothesis } ->
         Printf.sprintf "Unknown(%s)" hypothesis
+      | Duplicate_hypothesis { hypothesis } ->
+        Printf.sprintf "Duplicate(%s)" hypothesis
       | Nonlinear { hypothesis; detail } ->
         Printf.sprintf "Nonlinear(%s: %s)" hypothesis detail
       | Bad_coefficient { hypothesis; raw } ->
@@ -765,6 +767,34 @@ let test_verify_with_rational_coefs () =
   Alcotest.(check bool) "fractional cert verifies" true
     (Farkas.verify (example1_ir ()) half = Verified)
 
+(** Duplicate hypothesis names are refused LOUDLY at verify entry
+    (C4 CONTINUATION ROUND 1 Med 3): by-name lookup would silently
+    take the first match while a search over the same IR is
+    positional, so a valid witness could be rejected as
+    not-contradictory. The Lean front-end renames shadowed
+    duplicates; this pin guards the SDK against a drifted front-end
+    or a hand-built IR. *)
+let test_duplicate_hypothesis_names_refused () =
+  let x : Ir.shell_term = Var { name = "x" } in
+  let three : Ir.shell_term = Num_lit { value = "3"; ty = "Int" } in
+  let h : Ir.hypothesis =
+    { name = "this";
+      shell = App { symbol = "LE.le"; type_args = []; args = [ x; three ] } }
+  in
+  let ir = make_ir ~hypotheses:[ h; h ]
+      (App { symbol = "LE.le"; type_args = []; args = [ x; three ] }) in
+  let witness = `Assoc [ "coefficients", `List [
+    `Assoc [ "hypothesis", `String "this"; "coefficient", `String "1" ];
+    `Assoc [ "hypothesis", `String "neg_goal"; "coefficient", `String "1" ];
+  ] ] in
+  match Farkas.verify ir witness with
+  | Duplicate_hypothesis { hypothesis } ->
+    Alcotest.(check string) "names the duplicate" "this" hypothesis
+  | other ->
+    Alcotest.fail (match other with
+      | Verified -> "duplicate-name IR verified"
+      | _ -> "expected Duplicate_hypothesis, got another rejection")
+
 let () =
   Alcotest.run "farkas" [
     "linearize", [
@@ -816,6 +846,8 @@ let () =
         `Quick test_verify_real_typed_ir_mislabeled_lia_rejects_plus_one_trick;
       Alcotest.test_case "loose-only LRA cert verifies"
         `Quick test_verify_lra_loose_only_matches_lia;
+      Alcotest.test_case "duplicate hypothesis names refused loudly"
+        `Quick test_duplicate_hypothesis_names_refused;
       Alcotest.test_case "negative coef on Lt rejected"
         `Quick test_verify_lra_strict_negative_coef_rejected;
     ];

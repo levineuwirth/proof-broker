@@ -23,6 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check import (  # noqa: E402
     check_always_unfold_pin,
+    check_lean_reify_isolation,
+    _bridge_lean_files,
     check_cert_hashes,
     check_cert_manifest_consistency,
     check_cert_witness_provenance,
@@ -444,6 +446,193 @@ def _always_unfold_pin_drift_errors():
 @register("scan (R2.4): the shipped pin matches the registry")
 def _always_unfold_pin_clean():
     e = check_always_unfold_pin(REGISTRY)
+    assert not e, e
+
+
+@register("scan (C4): a second module-level IO.Ref initializer errors, any file")
+def _reify_isolation_extra_ref_errors():
+    import tempfile, shutil
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        for sub in ("ProofBroker", "ProofBrokerMathlib"):
+            (root / sub).mkdir()
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        (root / "ProofBroker" / "Tactic.lean").write_text(real)
+        # ROUND 7's escape: plain refs appended to a DIFFERENT file
+        (root / "ProofBroker" / "Alethe.lean").write_text(
+            "initialize sharedNA : IO.Ref (Array String) ← IO.mkRef #[]\n")
+        files = [root / "ProofBroker" / "Tactic.lean",
+                 root / "ProofBroker" / "Alethe.lean"]
+        e = check_lean_reify_isolation(files=files)
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): a builtin_initialize IO.Ref errors")
+def _reify_isolation_builtin_spelling_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real +
+            "\nbuiltin_initialize sharedX : IO.Ref (Array String) ← IO.mkRef #[]\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): a ReifyAcc.fresh call outside Tactic.lean errors")
+def _reify_isolation_stray_call_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        (root / "Tactic.lean").write_text(real)
+        p2 = root / "Other.lean"
+        p2.write_text("def x := do let _a ← ProofBroker.Tactic.ReifyAcc.fresh\n")
+        e = check_lean_reify_isolation(files=[root / "Tactic.lean", p2])
+        assert_contains(e, "referenced outside", "error")
+
+
+@register("scan (C4): an unrecognized module initializer errors")
+def _reify_isolation_unknown_init_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real + "\ninitialize mysteryState ← mkMystery ()\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "unrecognized module initializer", "error")
+
+
+@register("scan (C4): buildIR without its fresh accumulator errors")
+def _reify_isolation_missing_build_call_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real.replace("  let acc ← ReifyAcc.fresh", "  -- gone"))
+        e = check_lean_reify_isolation(files=[p1])
+        assert e, "missing buildIR fresh call not caught"
+
+
+@register("scan (C4): the @[init] opaque spelling errors")
+def _reify_isolation_at_init_spelling_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real +
+            "\n@[init mkS] opaque pbS : IO.Ref (Array String)\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): an indented initialize IO.Ref errors")
+def _reify_isolation_indented_errors():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        real = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+        p1 = root / "Tactic.lean"
+        p1.write_text(real +
+            "\n  initialize pbS2 : IO.Ref (Array String) ← IO.mkRef #[]\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "never module", "error")
+
+
+@register("scan (C4): the bridge file sweep IS the on-disk inventory")
+def _reify_isolation_sweep_inventory():
+    # Set EQUALITY against an independent walk (ROUND 9 Low 5: five
+    # representative names let the root modules drop out silently,
+    # and the lakefile row was satisfiable by any lakefile anywhere).
+    import os
+    expected = set()
+    for dirpath, dirnames, filenames in os.walk(ROOT / "lean-bridge"):
+        dirnames[:] = [d for d in dirnames if d != ".lake"]
+        for f in filenames:
+            if f.endswith(".lean"):
+                expected.add(Path(dirpath) / f)
+    swept = set(_bridge_lean_files())
+    assert swept == expected, (
+        f"sweep != on-disk inventory; "
+        f"missing={sorted(str(x) for x in expected - swept)} "
+        f"extra={sorted(str(x) for x in swept - expected)}")
+    assert len(swept) >= 17, f"inventory shrank to {len(swept)}"
+
+
+@register("scan (C4): reifierExt moved to another file errors")
+def _reify_isolation_moved_ref_errors():
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    line = ("initialize reifierExt : IO.Ref (Option ReifierExt) "
+            "\u2190 IO.mkRef none")
+    line = line.replace("\\u2190", "\u2190")
+    assert line in tac, "reifierExt initializer line drifted"
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        (r / "ProofBrokerMathlib").mkdir()
+        (r / "ProofBroker" / "Tactic.lean").write_text(tac.replace(line, ""))
+        (r / "ProofBrokerMathlib" / "Tactic.lean").write_text(line + "\n")
+        e = check_lean_reify_isolation(
+            files=[r / "ProofBroker" / "Tactic.lean",
+                   r / "ProofBrokerMathlib" / "Tactic.lean"])
+        assert_contains(e, "initializers are", "error")
+
+
+@register("scan (C4): a ref behind a /- inside a string IS SEEN (string-aware stripper)")
+def _reify_isolation_string_aware_sees_ref():
+    # ROUND 10 Med 1: the string-blind stripper let "/-" in a literal
+    # erase the rest of the file; the string-aware one lexes past it,
+    # so the hidden IO.Ref is CAUGHT by the ordinary invariant.
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        p1 = r / "ProofBroker" / "Tactic.lean"
+        p1.write_text(tac +
+            '\ndef pbHint : String := "unterminated /- here"\n'
+            "initialize pbBlind : IO.Ref Nat \u2190 IO.mkRef 0\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "initializers are", "error")
+        assert not any("unclosed" in m for m in e), e
+
+
+@register("scan (C4): a runaway /- in CODE fails CLOSED")
+def _reify_isolation_runaway_comment_errors():
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        p1 = r / "ProofBroker" / "Tactic.lean"
+        p1.write_text(tac + "\n/- runaway\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert_contains(e, "unclosed block comment", "error")
+
+
+@register("scan (C4): a file ending in a closed block comment is clean")
+def _reify_isolation_trailing_comment_clean():
+    # ROUND 10 Low 4: the tail post-condition hard-false-positived on
+    # this legitimate shape; the depth-based check does not.
+    import tempfile
+    tac = (ROOT / "lean-bridge" / "ProofBroker" / "Tactic.lean").read_text()
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d)
+        (r / "ProofBroker").mkdir()
+        p1 = r / "ProofBroker" / "Tactic.lean"
+        p1.write_text(tac + "\n/- trailing note -/\n")
+        e = check_lean_reify_isolation(files=[p1])
+        assert not e, e
+
+
+@register("scan (C4): the shipped lean reify isolation is clean")
+def _reify_isolation_clean():
+    e = check_lean_reify_isolation()
     assert not e, e
 
 

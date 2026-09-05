@@ -144,14 +144,20 @@ theorem bv_compare_axiom_free : (3 : BitVec 8) < 5 := by
 #print axioms bv_compare_axiom_free
 
 /-- Term-mode Tier 1 Farkas: `5 ≤ x ∧ x ≤ 3 ⊢ False`. Pinned through
-    `[z3]` because z3 mints native Tier 1 Farkas certs (cvc5 mints
-    Tier 3 alethe-2024 which the term builder doesn't yet consume,
-    cvc4 mints Tier 0 oracle). The closer reads the witness's
-    coefficients and applies `farkasContradict` from
-    `ProofBroker.TermMode`; only the strictly-positive
-    linear-combination subgoal goes through `omega` (a narrower
-    role than the LIA closer's full goal-discharge omega call).
-    Mirror of Rocq's `pb_term_axiom_free`. -/
+    `[z3]` for a Tier 1 cert (cvc5 mints Tier 3 alethe-2024 which
+    the term builder doesn't yet consume, cvc4 mints Tier 0 oracle).
+    WITNESS SOURCE (corrected at CONTINUATION ROUND 3 finding 1 —
+    the first version of this note claimed the wrong five tests):
+    THIS shape stays GREEN with the internal closer disabled — z3's
+    own extraction handles it. The five shapes that DO ride the
+    SDK's internal closer each say so on their own docstring
+    (goal/ge/lt-hyp/eq/not-hyp; measured by mutation, ROUND 3 M2).
+    The closer reads the witness's coefficients and applies
+    `farkasContradict` from `ProofBroker.TermMode`; only the
+    strictly-positive linear-combination subgoal goes through
+    `omega` (a narrower role than the LIA closer's full
+    goal-discharge omega call). Mirror of Rocq's
+    `pb_term_axiom_free`. -/
 theorem pb_term_axiom_free
     (x : Int) (h1 : 5 ≤ x) (h2 : x ≤ 3) : False := by
   proof_broker_term [z3]
@@ -177,8 +183,11 @@ theorem pb_term_arity3_axiom_free
     has one real-hypothesis entry plus a `neg_goal` slot the closer
     discharges via the unified `intLeViaLt` wrapper (which wraps
     `Decidable.byContradiction` over `Int.decLe`, axiom-free) then
-    folds into the arity-N False-fold. The cert minted by z3 carries
-    coefficients on both `h` and `neg_goal`; the closer builds the
+    folds into the arity-N False-fold. WITNESS SOURCE: on this shape
+    z3's proof yields no native Farkas extraction — the Tier 1 cert's
+    coefficients on `h` and `neg_goal` come from the SDK's internal
+    closer's dense search (red with it disabled, ROUND 3 M2); the
+    closer builds the
     proof term explicitly, omega-discharging only the strict-
     positivity polynomial identity. The `[propext, Quot.sound]`
     footprint matches the omega-closure path — no `Classical.choice`. -/
@@ -200,7 +209,9 @@ theorem pb_term_lt_axiom_free
 /-- Term-mode with `≥` goal: `GE.ge n 4` reduces by instance to
     `LE.le 4 n`, so the closer routes through `intLeViaLt` with arg
     swap and the resulting `4 ≤ n` proof term unifies with the
-    `n ≥ 4` goal definitionally. -/
+    `n ≥ 4` goal definitionally. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_ge_axiom_free
     (n : Int) (h : 5 ≤ n) : n ≥ 4 := by
   proof_broker_term [z3]
@@ -222,7 +233,9 @@ theorem pb_term_gt_axiom_free
     residual `K = 2`. Mirror of Rocq's `pb_term_lt_hyp_axiom_free`.
     `Int.add_one_le_of_lt` + `Int.sub_nonpos_of_le` (the building
     blocks of `ltToLe0`) are axiom-free, so closure stays at
-    `[propext, Quot.sound]`. -/
+    `[propext, Quot.sound]`. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_lt_hyp_axiom_free
     (x : Int) (h1 : 5 < x) (h2 : x < 5) : False := by
   proof_broker_term [z3]
@@ -247,7 +260,9 @@ theorem pb_term_lt_mixed_axiom_free
     term-mode on each direction. Two solver dispatches, two
     `intLeViaLt`-routed applications, one `Int.le_antisymm`. The
     axiom footprint stays `[propext, Quot.sound]` — splitting adds
-    no new trust delta over the single-direction case. -/
+    no new trust delta over the single-direction case. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_eq_axiom_free
     (n : Int) (h1 : n ≤ 5) (h2 : 5 ≤ n) : n = 5 := by
   proof_broker_term [z3]
@@ -302,7 +317,9 @@ theorem pb_term_eq_hyp_axiom_free
     `x - 3 ≤ 0` to produce a strictly-positive sum `6 - x + x - 3 = 3
     > 0`. Trust footprint: `[propext, Quot.sound]` from omega-closed
     polynomial-identity subgoals; the Not helpers themselves are
-    axiom-free via omega. -/
+    axiom-free via omega. WITNESS SOURCE: the Tier 1 coefficients come from the
+    SDK's internal closer's dense search, not z3's native
+    extraction (red with it disabled — ROUND 3 M2). -/
 theorem pb_term_not_hyp_axiom_free
     (x : Int) (h1 : ¬(x ≤ 5)) (h2 : x ≤ 3) : False := by
   proof_broker_term [z3]
@@ -2220,10 +2237,21 @@ example (a : Nat) (h : a / 2 ≤ 3) : a / 2 ≤ 4 := by
   fail_if_success proof_broker
   omega
 
-/-- Fail fast: a ℕ quantifier INSIDE the formula (hypothesis
-    position) has no ℤ image yet. -/
-example (x : Nat) (h : ∀ n : Nat, x ≤ x + n) : x ≤ x + 1 := by
+/-- Fail fast: a ℕ quantifier INSIDE the GOAL has no ℤ image yet.
+    The goal is never dropped, so this aborts before dispatch. -/
+example (x : Nat) : True → ∀ n : Nat, x ≤ x + n := by
   fail_if_success proof_broker
+  intro _ n
+  omega
+
+/-- R4.2 counterpart: the same shape in HYPOTHESIS position is
+    DROPPED, not misread — `buildIR` records it in `skippedLocals`
+    and reifies the rest. The goal here is unprovable without `h`,
+    so the tactic still fails (no certificate); what it must never
+    do is close the goal by reading `h` wrongly. -/
+example (x : Nat) (h : ∀ n : Nat, x + n ≤ 3) : x ≤ 3 := by
+  fail_if_success proof_broker
+  have := h 0
   omega
 
 /-- Fail fast: ℕ arithmetic cannot mix with UF carriers in M1. -/
@@ -2376,6 +2404,29 @@ example : True := by trace_guard_test identity
     emitted passes (the M3 admission). -/
 example : True := by trace_guard_test def_unfold_ours
 
+/-- Deterministic two-direction pin for the def-unfold
+    type-position gate (C4 ROUND 3 Med 1); see `type_pos_gate_test`. -/
+def PBGateC : Nat := 41
+example : True := by type_pos_gate_test PBGateC
+
+/-- Deterministic RUNTIME pin for the per-call reify accumulators
+    (C4 ROUND 4 finding 1; all four fields since ROUND 5): red on
+    every run under any re-sharing inside `ReifyAcc.fresh`. The
+    call-site/module-state half of the discipline is pinned by
+    `check_lean_reify_isolation` in `tools/check.py` (ROUND 6
+    Med 1). -/
+example : True := by reify_acc_isolation_test
+
+/-- CALL-SITE isolation pin (C4 ROUND 8 Med 1): the accumulators two
+    real `buildIRWithAcc` runs actually used must be distinct state
+    — red whenever `buildIRWithAcc` returns the accumulator it
+    accumulated into (every single-accumulator mutation), because it
+    observes aliasing rather than source text; the decoy direction
+    is a documented residual (delta §5.7). The goal carries a
+    nonlinear ℕ product so run 1 mints an atom to watch. -/
+example (x y : Nat) (h : x * y ≤ 5) : x * y ≤ 6 := by
+  reify_callsite_isolation_test
+
 /-- An applied unfold of a FOREIGN symbol → fail closed. -/
 example : True := by
   fail_if_success trace_guard_test def_unfold_foreign
@@ -2416,5 +2467,308 @@ example : True := by
 example : True := by
   fail_if_success trace_guard_test no_trace
   trivial
+
+
+/- ============================================================
+   R4.2 — the verinf bracket-spike obligation shapes
+
+   These are the fragment features the demo project needs, pinned
+   here so a regression shows up in this repo's own CI and not only
+   in `proof-broker-demo`. Each mirrors a numbered obligation of
+   `lean/BracketSpike/BracketSpike/Bracket.lean` on verinf's
+   `lean-bracket-spike` branch; the Mathlib-flavored shapes
+   (`ZMod.val`, `Fin n`) live in `Test/TacticMathlib.lean`.
+   ============================================================ -/
+
+/-- The demo's Goldilocks modulus, as a numeral-body definition —
+    the R3-M3 `defined_function` shape. -/
+private def pbP : Nat := 18446744069414584321
+
+/-- D2 / `Bracket.lean:56`. Closed power against a definition. -/
+theorem pb_r4_d2_pow_lt_def : (2:Nat)^16 < pbP := by proof_broker
+#print axioms pb_r4_d2_pow_lt_def
+
+/-- D2 / `Bracket.lean:62`. R4.2: `2^16 * 2^16` has no literal
+    factor, so before closed-numeral folding it atomized into an
+    unbounded `Opaque` atom and NO adapter could mint a cert. -/
+theorem pb_r4_d2_pow_mul_lt_def : (2:Nat)^16 * 2^16 < pbP := by proof_broker
+#print axioms pb_r4_d2_pow_mul_lt_def
+
+/-- D2 / `Bracket.lean:66`. -/
+theorem pb_r4_d2_sum_le_def : (2:Nat)^24 + 2 * 2^16 ≤ pbP := by proof_broker
+#print axioms pb_r4_d2_sum_le_def
+
+/-- D2 / `Bracket.lean:34` (the `NeZero` instance body). -/
+theorem pb_r4_d2_ne_zero : pbP ≠ 0 := by proof_broker
+#print axioms pb_r4_d2_ne_zero
+
+/-- D1 / `Bracket.lean:70`. `2 * Zmax` stays linear, `pbP` unfolds,
+    and the bound on `Zmax` is what closes it. -/
+theorem pb_r4_d1_hle (Zmax : Nat) (hZ : Zmax ≤ 2^16) :
+    (2:Nat)^24 + 2 * Zmax ≤ pbP := by proof_broker_term
+#print axioms pb_r4_d1_hle
+
+/-- D1 / `Bracket.lean:78`. Two products: `Zmax * zhigh` is the
+    genuine nonlinear atom, `Zmax * 2^16` is LINEAR and must not be
+    atomized — the ROADMAP's named attack surface ("an `Opaque` atom
+    that is not actually opaque"). -/
+theorem pb_r4_d1_hlt (xv zv Zmax zhv : Nat) (hx : xv < 2^24)
+    (hz : zv < 2 * Zmax) (hprod_le : Zmax * zhv ≤ Zmax * 2^16) :
+    xv + zv + Zmax * zhv < 2^24 + 2 * Zmax + Zmax * 2^16 := by
+  proof_broker_term
+#print axioms pb_r4_d1_hlt
+
+/-- R4.2 scope pin: a closed power outside the folding bounds is a
+    NAMED error, never a silent `Opaque` atom. -/
+example (h : (2:Nat)^300 < 2^301) : (2:Nat)^300 < 2^301 := by
+  fail_if_success proof_broker
+  exact h
+
+/-- The over-bounds power nested in a BASE position: the `HPow`
+    guard's first conjunct fails (the base is closed-but-declined),
+    so control used to fall through to silent atomization — now the
+    same named bounds refusal (`natClosedShape`). -/
+example (h : ((2:Nat)^5000)^2 ≤ ((2:Nat)^5000)^2) :
+    ((2:Nat)^5000)^2 ≤ ((2:Nat)^5000)^2 := by
+  fail_if_success proof_broker
+  exact h
+
+/-- A closed PRODUCT of two over-bounds powers: exponent 300 > 256
+    means neither factor folds, so the `HMul` arm saw two non-closed
+    operands and used to atomize the product silently — falsifying
+    its own "both operands closed is already folded" comment. Named
+    refusal now. -/
+example (h : (2:Nat)^300 * (2:Nat)^300 ≤ (2:Nat)^300 * (2:Nat)^300) :
+    (2:Nat)^300 * (2:Nat)^300 ≤ (2:Nat)^300 * (2:Nat)^300 := by
+  fail_if_success proof_broker
+  exact h
+
+/-- R4.2: an applied ℕ-valued function (`ZMod.val` in the demo,
+    `List.length` here — a constant application, not a UF free var)
+    is an opaque atom carrying only `0 ≤ ↑atom`, and the same
+    application in hypothesis and goal is ONE atom. -/
+theorem pb_r4_nat_app_atom (l k : List Nat) (Zmax : Nat)
+    (hx : l.length < 2^24) (hz : k.length < 2 * Zmax) :
+    l.length + k.length < 2^24 + 2 * Zmax := by proof_broker_term
+#print axioms pb_r4_nat_app_atom
+
+/-- R4.2 fail-closed: ℕ subtraction hidden inside an atomized
+    APPLICATION is refused, exactly as inside an atomized product. -/
+private def pbSucc (k : Nat) : Nat := k + 1
+example (n m : Nat) (h : (pbSucc (n - m)).succ ≤ 3) :
+    (pbSucc (n - m)).succ ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- R4.2: an unapplied ℕ constant with a non-numeral body is still a
+    scope error — atomizing it would hide the R3-M3 definition
+    pass failing. -/
+private def pbQ : Nat := Nat.succ 41
+example : pbQ ≤ 42 := by
+  fail_if_success proof_broker
+  decide
+
+/-- D3 / `Bracket.lean:175`. A nonlinear Int product is an `Opaque`
+    Int atom: emitted verbatim, cvc5 rejected the whole script with
+    "A non-linear fact was asserted to arithmetic in a linear
+    logic" and no certificate was minted. -/
+theorem pb_r4_d3_int_nonlinear_atom (Zmax v z zhigh : Int)
+    (hrec : v = z + Zmax * zhigh) (hz0 : 0 ≤ z)
+    (hmul : Zmax ≤ Zmax * zhigh) : Zmax ≤ v := by proof_broker
+#print axioms pb_r4_d3_int_nonlinear_atom
+
+/-- R4.2: a nonlinear product of two atomized applications is ONE
+    Int atom, and the identical application in hypothesis and goal
+    maps to the same atom. INT subtraction inside an atom is fine —
+    nothing is truncated. `f`'s domain is not a declarable type, so
+    its applications atomize rather than becoming UF symbols. -/
+theorem pb_r4_d3_app_product_atom (f : List Nat → Int) (u v : List Nat)
+    (a b : Int) (h : f u * f v ≤ a - b) : f u * f v ≤ a - b + 1 := by
+  proof_broker
+#print axioms pb_r4_d3_app_product_atom
+
+/-- R4.2 fail-closed: ℕ subtraction inside an atomized INT term is
+    refused. `f`'s domain is not a type the IR can declare, so the
+    application atomizes instead of becoming a UF symbol — and the
+    Int-atom scan (`natOpInsideIntAtom?`, the ℕ-scan's type-aware
+    sibling) still catches the `n - m`. -/
+example (n m : Nat) (f : List Nat → Int)
+    (h : f (List.replicate (n - m) 0) ≤ 3) :
+    f (List.replicate (n - m) 0) ≤ 4 := by
+  fail_if_success proof_broker
+  omega
+
+/-- D3 / `threshold_unique`. R4.2: `c'` is not an SMT-LIB simple
+    symbol, so before the pre-reification alpha-rename EVERY adapter
+    failed with `bad_identifier: c'`. -/
+theorem pb_r4_d3_primed_names {f : Int → Int}
+    (hf : ∀ a b, a ≤ b → f b ≤ f a) {c c' T : Int}
+    (h1 : f c ≤ T) (h2 : T < f (c - 1)) (h1' : f c' ≤ T)
+    (h2' : T < f (c' - 1)) (hle : c ≤ c' - 1)
+    (hmono : f (c' - 1) ≤ f c) : False := by proof_broker
+#print axioms pb_r4_d3_primed_names
+
+/-- R4.2: a hypothesis outside the reifiable fragment is DROPPED,
+    the rest of the context is reified, and the goal closes on what
+    is left. Here `hbig` is a nested-ℕ-quantifier proposition and
+    `hx` alone settles the goal. -/
+theorem pb_r4_hyp_dropped (x : Int) (hbig : ∀ n : Nat, x ≤ x + n)
+    (hx : x ≤ 3) : x ≤ 4 := by proof_broker
+#print axioms pb_r4_hyp_dropped
+
+/-! ### R4 continuation — context sensitivity (the "closes in isolation, fails in the file" mechanism)
+
+C4's handoff recorded that several verinf obligations closed in an
+isolated probe with the identical goal and hypotheses and failed in
+the real file, mechanism unknown. Measured on the spike (demo
+`reference/ctx/dump.log`): a tactic-internal goal is not in the form
+a declaration header gives an `example`. The `have` tactic wraps its
+continuation goal in `noImplicitLambda` metadata; `have := e`,
+`by_cases`, and a `have h : T := …` whose `T` needed a coercion or a
+default instance leave hypothesis and target types as assigned-but-
+uninstantiated metavariables. The reifier and the closers matched
+on the raw shape and fell through — a thrown "unsupported
+expression: <goal>", a silently DROPPED hypothesis (solver sat), or
+a refused term-mode goal. `normalizeGoalForBroker` (front-ends) and
+the reifier's per-hypothesis instantiation are the fix; each test
+below first asserts the RAW shape is present (`raw_shape_test`) so it
+cannot pass vacuously on a toolchain that stopped producing it. The
+same seven shapes, un-pinned, are the demo's
+`reference/ctx/controls.lean` (7/7 red before the fix). -/
+
+private theorem pbLtOfSumLt {a b : Nat} (h : a + b < 10) : a < 10 :=
+  Nat.lt_of_le_of_lt (Nat.le_add_right a b) h
+
+/-- `D3/175` / `D3/178` shape: the main goal after a `have` is an
+    `mdata` node, and the `have`'s own type keeps assigned mvars. -/
+theorem pb_r4_ctx_goal_mdata_int (x y : Int) (h1 : x ≤ y) (h2 : y ≤ 3) :
+    x ≤ 3 := by
+  have hk : x ≤ y := h1
+  clear h1
+  raw_shape_test goal_mdata
+  raw_shape_test hyp_mvar hk
+  proof_broker
+#print axioms pb_r4_ctx_goal_mdata_int
+
+/-- `D1/71` shape: an `apply`-produced goal followed by a `have`,
+    closed in ℕ term mode (the closer's `matchNatGoal?` reads the
+    target — a raw `mdata` there was the refusal). -/
+theorem pb_r4_ctx_goal_mdata_term_nat (a b : Nat) (h1 : a < 3) (h2 : b < 3) :
+    a < 10 := by
+  apply pbLtOfSumLt (b := b)
+  have hh : a + b < 6 := by proof_broker_term
+  raw_shape_test goal_mdata
+  raw_shape_test hyp_mvar hh
+  proof_broker_term
+#print axioms pb_r4_ctx_goal_mdata_term_nat
+
+/-- `D1/69` shape: the inner `by` of a `have` whose type left assigned
+    metavariables (`2^4`'s default instance) — the reifier instantiated
+    and minted a cert, then `closeNatViaTermMode` matched the RAW
+    target and refused it ("non-False ℕ goal must have shape …"). -/
+theorem pb_r4_ctx_goal_mvar_term_nat (x y z : Nat) (hx : x < 2^4)
+    (hy : y < 2 * z) : x + y < 2^4 + 2 * z := by
+  have hzsum : x + y < 2^4 + 2 * z := by
+    raw_shape_test goal_mvar
+    proof_broker_term
+  exact hzsum
+#print axioms pb_r4_ctx_goal_mvar_term_nat
+
+/-- `D3/98` / `D3/101` shape: `have := e` leaves `this : ?m`. The
+    count pin runs `buildIR` directly (no front-end), so it is red
+    when the REIFIER's own instantiation is reverted even though the
+    front-end normalization would still rescue `proof_broker`. -/
+theorem pb_r4_ctx_hyp_mvar_have (x y z : Int) (h1 : x ≤ y) (h2 : y ≤ z)
+    (h3 : z ≤ 3) : x ≤ 3 := by
+  have := Int.le_trans h1 h2
+  clear h1 h2
+  raw_shape_test hyp_mvar this
+  reify_hyp_count_test 2
+  proof_broker
+#print axioms pb_r4_ctx_hyp_mvar_have
+
+/-- The same shape in term mode: the Farkas closer reads the
+    hypothesis type through `fvarOfName` + `normalizeHypothesis`, so
+    this is red when the FRONT-END normalization is reverted even
+    though the reifier alone would still see `this`. -/
+theorem pb_r4_ctx_hyp_mvar_term (x y z : Int) (h1 : x ≤ y) (h2 : y ≤ z)
+    (h3 : z ≤ 3) : x ≤ 3 := by
+  have := Int.le_trans h1 h2
+  clear h1 h2
+  raw_shape_test hyp_mvar this
+  proof_broker_term
+#print axioms pb_r4_ctx_hyp_mvar_term
+
+/-- `D3/170` shape: `by_cases` leaves `h : ?m` (and `right` leaves the
+    target itself an assigned mvar). Dropping `h` made the solver
+    answer sat on `1 ≤ zhigh` from `0 ≤ zhigh` alone. -/
+theorem pb_r4_ctx_hyp_mvar_by_cases (z : Int) (h0 : 0 ≤ z) :
+    z = 0 ∨ 1 ≤ z := by
+  by_cases h : z = 0
+  · exact Or.inl h
+  · right
+    raw_shape_test goal_mvar
+    raw_shape_test hyp_mvar h
+    reify_hyp_count_test 2
+    proof_broker
+#print axioms pb_r4_ctx_hyp_mvar_by_cases
+
+/-- `D3/180` shape: a coercion-bearing `have` type keeps assigned
+    metavariables (the postponed `↑v0`), and the continuation goal is
+    an `mdata` node; the mixed ℕ/ℤ context rides the ℕ→ℤ cast path. -/
+theorem pb_r4_ctx_hyp_mvar_coe (v0 : Nat) (v : Int) (h : (v0 : Int) ≤ v) :
+    ¬ v < (v0 : Int) := by
+  have hge : (v0 : Int) ≤ v := h
+  clear h
+  raw_shape_test goal_mdata
+  raw_shape_test hyp_mvar hge
+  proof_broker
+#print axioms pb_r4_ctx_hyp_mvar_coe
+
+/-- The mechanism the context fix EXPOSED (verinf `D1/70`): with the
+    whole context visible, a dense coefficient space exceeds the 2M
+    cap and the SDK's SPARSE-support rescue (`Farkas_search`,
+    support ≤ 4 under the same budget) is what finds `hZ + neg_goal`
+    among the irrelevant bounds. THIS pin actually exercises it
+    (CONTINUATION ROUND 1 Med 2 — the first version had 33 compiled
+    inputs, above even the sparse cap, and closed through cvc5's
+    structural extractor instead): 8 irrelevant ℕ bounds give
+    9 + 9 nonneg + neg_goal = 19 compiled inputs, whose sparse space
+    is under the cap, and the adapter is pinned to `[cvc4]` — no
+    proof production, so the internal closer is the ONLY witness
+    source. Red with "tier-0 soundness check not implemented" when
+    the rescue is disabled. -/
+theorem pb_r4_ctx_irrelevant_context_term (Zmax a1 a2 a3 a4 a5 a6 a7
+    a8 : Nat) (hZ : Zmax ≤ 2^16)
+    (h1 : a1 ≤ 1) (h2 : a2 ≤ 2) (h3 : a3 ≤ 3) (h4 : a4 ≤ 4) (h5 : a5 ≤ 5)
+    (h6 : a6 ≤ 6) (h7 : a7 ≤ 7) (h8 : a8 ≤ 8) :
+    (2:Nat)^24 + 2 * Zmax ≤ pbP := by proof_broker_term [cvc4]
+#print axioms pb_r4_ctx_irrelevant_context_term
+
+/-- Two `have := e` steps both named `this` (CONTINUATION ROUND 1
+    Med 3, the verinf `D3/178` shape): duplicate hypothesis names
+    made the SDK's positional search witness fail the by-name
+    verifier — a false "not contradictory" on a provable goal. The
+    front-end now renames shadowed duplicates in
+    `renameLocalsForSmt`, so this closes in term mode; the SDK
+    independently refuses duplicate-name IRs loudly
+    (`Duplicate_hypothesis`, pinned in `test_farkas.ml`). -/
+theorem pb_r4_ctx_duplicate_this (x y z : Int) (h1 : x ≤ y)
+    (h2 : y ≤ z) (h3 : z ≤ 3) : x ≤ 3 := by
+  have := Int.le_trans h1 h2
+  have := h3
+  clear h1 h2 h3
+  proof_broker_term
+#print axioms pb_r4_ctx_duplicate_this
+
+/-- The precondition tactic itself fails closed: on a clean goal
+    (declaration header, no `have`) every shape is ABSENT and each
+    assertion is a named error — so a test that names a shape is
+    pinning something real. -/
+example (x : Int) (h : x ≤ 3) : x ≤ 3 := by
+  fail_if_success raw_shape_test goal_mdata
+  fail_if_success raw_shape_test goal_mvar
+  fail_if_success raw_shape_test hyp_mvar h
+  exact h
 
 end ProofBroker.Test
