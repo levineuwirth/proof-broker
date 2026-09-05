@@ -596,4 +596,48 @@ Beyond these explicit decision points, ongoing assessment of risk
 items in the risk register may trigger re-planning at any point.
 The roadmap is a plan, not a contract.
 
+
+\newpage
+\section*{Appendix (v1.1, 2026-09-05): the R-series and the ``Phase 6'' double meaning}
+\addcontentsline{toc}{section}{Appendix (v1.1): the R-series}
+
+This roadmap is the v1.0 plan and is kept unchanged above. Work after
+the return from hiatus is sequenced as an \emph{R-series} of gated
+phases, each ending at a checkpoint adjudicated by an adversarial
+review until convergence. The R-series roadmap is
+\texttt{spec/roadmap-v1.1.md}; the spec v1.1 delta it accompanies is
+\texttt{delta.md~\S7}, and the per-phase decision records are
+\texttt{delta.md~\S5}. The mapping from the phases above to the
+R-series:
+
+\begin{tabularx}{\textwidth}{@{}l>{\hsize=1.25\hsize}X>{\hsize=0.75\hsize}X@{}}
+\toprule
+\textbf{R-phase} & \textbf{Goal} & \textbf{Absorbs} \\
+\midrule
+R0 & re-green CI, local parity, repository hygiene, script-derived status & --- \\
+R1 & close the Alethe walker's production path (mint gate $=$ walker rule set; UF/UFLIA routed to the walker; live-strict corpus suites) & Phase 2.6 replayer; ``Phase 6'' (walker scale) \\
+R2 & make the certificate load-bearing: rewriter on the live path, real \texttt{rewrite\_trace\_hash}, honest envelope, identity-trace guard & Phase 2.4/2.5 \\
+R3 & specialization and lifting: $\mathbb{N}\to\mathbb{Z}$, polymorphic $\alpha$, definitional unfolding inverted in the lifted term & Phase 2.1--2.3, 2.7 \\
+R4 & external demo: \texttt{by proof\_broker} on a downstream Lake project's obligations & Phase 3 exit criterion, applied externally \\
+R5 & spec v1.1 delta, roadmap v1.1, documentation consolidation & the Phase 1 spec-revision checkpoint; the Phase 5 exit gates (Section~\ref{sec:phase5}), disposed below \\
+\bottomrule
+\end{tabularx}
+
+\paragraph{``Phase 6''.} This document defines Phases 0--5. Two later
+bodies of work were both called ``Phase 6'' in the repository: the
+cross-platform distribution work moved out of Phase 5 (the CI matrix,
+the install layout, the macOS signing scaffold --- ``Phase 6-D''), and
+the walker scale profile (``Phase 6-W'', absorbed by R1). A single
+``Phase 7'' remark in a retrospective was a hypothetical, never a
+phase. The v1.0 numbering is frozen as history; new work is
+R-numbered. Details, gates, and the decide-list that follows R5:
+\texttt{spec/roadmap-v1.1.md}.
+
+\paragraph{Phase 5 exit, as it turned out.} Tier~2's lemma-list form
+is formally demoted with documentation (\texttt{delta.md~\S7.4(b)});
+the dashboard and the build-path CI integration were not built and
+are decide-list items; there is no single ``v1.0 complete''
+declaration --- the R-series gates are the release criteria, phase by
+phase.
+
 \end{document}
