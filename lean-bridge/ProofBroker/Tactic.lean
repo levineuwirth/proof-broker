@@ -1123,16 +1123,19 @@ def buildIRWithAcc (mvarId : MVarId)
     : MetaM ((IR × Array (String × Expr) × Array (String × Expr × Nat)
               × Array (String × String)) × ReifyAcc) :=
   mvarId.withContext do
-  -- Instantiate metavariables in the goal type. `apply`-introduced
-  -- subgoals may carry deferred unification metavars in their types;
-  -- without this, `reifyTerm` sees `?_uniq.N` (pretty-prints as the
-  -- user-facing name) and the FVar branch falls through.
+  -- Instantiate metavariables in the goal type and drop its
+  -- top-level annotation. `apply`-introduced subgoals may carry
+  -- deferred unification metavars in their types, and the `have`
+  -- tactic wraps its continuation goal in `noImplicitLambda`
+  -- metadata; without this, `reifyTerm` sees `?_uniq.N` / `mdata`
+  -- (both pretty-print as the user-facing term) and every
+  -- structural match falls through to "unsupported expression".
   -- Create THIS call's accumulator (per-call, never module state:
   -- C4 ROUND 3 High — `reifyTerm` on the goal and each hypothesis
   -- below pushes applied non-connective constants, atoms and
   -- numeral defs into it, and `buildIR` folds them on exit).
   let acc ← ReifyAcc.fresh
-  let goalType ← Lean.instantiateMVars (← mvarId.getType)
+  let goalType := (← Lean.instantiateMVars (← mvarId.getType)).consumeMData
   let goalShell ← reifyTerm acc goalType
   let mut freeVars : List FreeVar := []
   let mut hypotheses : List IR.Hypothesis := []
@@ -1148,7 +1151,19 @@ def buildIRWithAcc (mvarId : MVarId)
   let mut polyVar : Option (FVarId × TypeVarInfo) := none
   for decl in (← getLCtx) do
     if decl.isImplementationDetail then continue
-    let ty := decl.type
+    -- Symmetric with the target above (R4 continuation): a
+    -- `have := e` or `by_cases` hypothesis is an assigned-but-
+    -- uninstantiated metavariable, and a `have h : T := …` whose `T`
+    -- needed a coercion or a default instance keeps assigned
+    -- metavariables inside `T`. Read raw, `reifyTerm` fell through
+    -- every structural match and `observing?` below DROPPED the
+    -- hypothesis as "outside the fragment" — measured as the solver
+    -- answering sat on the verinf `D3/170` / `D3/180` obligations
+    -- (demo `reference/ctx/dump.log`). The tactic front-ends
+    -- normalize the whole goal first (`normalizeGoalForBroker`);
+    -- this keeps `buildIR` itself correct for callers that do not
+    -- go through them (pinned by `reify_hyp_count_test`).
+    let ty := (← Lean.instantiateMVars decl.type).consumeMData
     -- R3-M2: typeclass-instance locals (`inst : CommRing α`,
     -- `IsStrictOrderedRing α` — the latter is Prop-valued and would
     -- otherwise land in the hypothesis branch) are class METADATA,
@@ -3485,6 +3500,50 @@ private def parseAdapterList (lst : Option (Array Ident))
       throwError "proof_broker: empty adapter list; omit the brackets to use defaults"
     pure (some xs, false)
 
+/-- R4 continuation: bring the goal into the form a declaration
+    header gives an `example` — every assigned metavariable in the
+    target and the local context instantiated, and the target's
+    top-level `Expr.mdata` annotation removed.
+
+    Measured on the verinf spike (demo `reference/ctx/dump.log`,
+    2026-09-05): a tactic-internal goal is NOT in that form. The
+    `have` tactic leaves its continuation goal wrapped in the
+    `noImplicitLambda` annotation; `have := e`, `by_cases`, and any
+    `have h : T := …` whose `T` needed a coercion or a default
+    instance leave hypothesis (and target) types as assigned-but-
+    uninstantiated metavariables. Every structural match downstream
+    — `getAppFnArgs`, `isConstOf`, `matchNatGoal?`, `matchLiaGoal?`,
+    `fvarOfName` + `normalizeHypothesis` — then sees `?m` or `mdata`
+    and falls through: the reifier threw "unsupported expression:
+    <goal>" (obligations `D1/71`, `D3/98`, `D3/101`, `D3/175`,
+    `D3/178`), or silently DROPPED the un-reifiable hypothesis so the
+    solver answered sat (`D3/170`, `D3/180`), or the ℕ term-mode
+    closer refused a goal the reifier had just read (`D1/69`). None
+    of it is reachable from a probe whose goal is a declaration
+    signature — which is exactly the "closes in isolation, fails in
+    the file" context sensitivity the C4 handoff recorded as not
+    understood.
+
+    Mechanism, not workaround: `instantiateMVarDeclMVars` is Lean's
+    own operation for exactly this (target + local context, in
+    place, no proof-term change), and `consumeMData` removes only
+    `Expr.mdata`, which carries no logical content — the goal is
+    the SAME goal and `MVarId.setType` keeps the same metavariable,
+    so an already-clean goal (every pre-existing test) is untouched
+    byte for byte. SCOPE: metavariables anywhere in the target and
+    context; the annotation at the TOP of the target only. A nested
+    `mdata` inside a term, or one on a hypothesis type, is not
+    stripped (none observed on the spike; the reifier's named error
+    still reports the term). Pinned by the `pb_r4_ctx_*` tests in
+    `Test/Tactic.lean`, each of which first asserts the raw shape is
+    present (`raw_shape_test`) so the pin cannot pass vacuously. -/
+private def normalizeGoalForBroker (goal : MVarId) : TacticM MVarId := do
+  Lean.instantiateMVarDeclMVars goal
+  let ty ← goal.getType
+  let ty' := ty.consumeMData
+  unless ty' == ty do goal.setType ty'
+  return goal
+
 /-- R3-M1: introduce every LEADING `∀ (n : ℕ)` binder of the goal
     before reification. ℕ universals have no shell translation yet
     (the bounded-∀ transform is future work), but a leading goal
@@ -3584,6 +3643,7 @@ private def renameLocalsForSmt (goal : MVarId) : TacticM MVarId := do
 @[tactic proofBroker]
 def evalProofBroker : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
   let goal ← renameLocalsForSmt goal
   let goalType ← goal.getType
@@ -3599,6 +3659,7 @@ def evalProofBroker : Tactic := fun stx => do
 @[tactic proofBrokerWalker]
 def evalProofBrokerWalker : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
   let goal ← renameLocalsForSmt goal
   let (adapterNames?, preferHigherTier) ← match stx with
@@ -3651,6 +3712,7 @@ def evalProofBrokerWalker : Tactic := fun stx => do
 @[tactic proofBrokerQ]
 def evalProofBrokerQ : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
   let goal ← renameLocalsForSmt goal
   let goalType ← goal.getType
@@ -3790,6 +3852,7 @@ private def matchExtensionEqGoal? (goalType : Expr) : MetaM (Option Expr) := do
 @[tactic proofBrokerTerm]
 def evalProofBrokerTerm : Tactic := fun stx => do
   let goal ← getMainGoal
+  let goal ← normalizeGoalForBroker goal
   let goal ← introLeadingNatForalls goal
   let goal ← renameLocalsForSmt goal
   let goalType ← goal.getType
@@ -4070,6 +4133,82 @@ def evalTypePosGateTest : Tactic := fun stx => do
         position ({typePos}) — the refusing branch broke"
     evalTactic (← `(tactic| trivial))
   | _ => throwError "type_pos_gate_test: malformed invocation"
+
+/-- TEST-ONLY tactic: assert the RAW shape of the main goal or of a
+    named hypothesis — the shape `normalizeGoalForBroker` exists to
+    remove — so the `pb_r4_ctx_*` tests are not vacuous: a test that
+    merely closes a goal would also pass on a toolchain that no
+    longer produces the shape, and would then pin nothing.
+    * `raw_shape_test goal_mdata` — the target, read WITHOUT
+      instantiation, is an `Expr.mdata` node (the `have` tactic's
+      `noImplicitLambda` annotation on its continuation goal).
+    * `raw_shape_test goal_mvar` — the raw target contains an
+      assigned expression metavariable.
+    * `raw_shape_test hyp_mvar h` — the raw type of local `h`
+      contains an assigned expression metavariable (`have := e`,
+      `by_cases`, a coercion-bearing `have` type).
+    Fails with a named message when the shape is ABSENT, which is
+    the signal that a toolchain change made the pin moot. Leaves the
+    goal untouched. -/
+syntax (name := rawShapeTest) "raw_shape_test" ident (colGt ident)? : tactic
+
+@[tactic rawShapeTest]
+def evalRawShapeTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| raw_shape_test $kind $[$hyp?]?) =>
+    let goal ← getMainGoal
+    goal.withContext do
+      let raw ← goal.getType
+      match kind.getId.toString, hyp? with
+      | "goal_mdata", none =>
+        unless raw.isMData do
+          throwError "raw_shape_test: the raw target is not an mdata \
+            node (ctor {raw.ctorName}) — the shape this test pins is \
+            absent; re-derive the pin against this toolchain"
+      | "goal_mvar", none =>
+        unless raw.hasExprMVar do
+          throwError "raw_shape_test: the raw target has no expression \
+            metavariable — the shape this test pins is absent; \
+            re-derive the pin against this toolchain"
+      | "hyp_mvar", some h =>
+        let some decl := (← getLCtx).findFromUserName? h.getId
+          | throwError "raw_shape_test: no local named {h.getId}"
+        unless decl.type.hasExprMVar do
+          throwError "raw_shape_test: the raw type of {h.getId} has no \
+            expression metavariable (ctor {decl.type.ctorName}) — the \
+            shape this test pins is absent; re-derive the pin against \
+            this toolchain"
+      | k, _ =>
+        throwError "raw_shape_test: unknown shape '{k}' (goal_mdata | \
+          goal_mvar | hyp_mvar <h>)"
+  | _ => throwError "raw_shape_test: malformed invocation"
+
+/-- TEST-ONLY tactic: run the REAL `Reify.buildIR` on the main goal
+    — NOT through a tactic front-end, so `normalizeGoalForBroker`
+    has not run — and assert that exactly `n` hypotheses were
+    reified and NONE was skipped. This pins the reifier's own
+    per-hypothesis instantiation (`buildIRWithAcc`) independently of
+    the front-end normalization: with it reverted, a `have := e` or
+    `by_cases` hypothesis reifies as `?m`, is dropped into
+    `skippedLocals`, and the count is one short. Leaves the goal
+    untouched. -/
+syntax (name := reifyHypCountTest) "reify_hyp_count_test" num : tactic
+
+@[tactic reifyHypCountTest]
+def evalReifyHypCountTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| reify_hyp_count_test $n) =>
+    let (ir, _atoms, _defs, skipped) ← Reify.buildIR (← getMainGoal)
+    unless skipped.isEmpty do
+      throwError "reify_hyp_count_test: buildIR SKIPPED {skipped.size} \
+        local(s): {skipped.map (fun (nm, why) => s!"{nm}: {why}")} — a \
+        hypothesis that closes this goal was dropped as outside the \
+        fragment"
+    let got := ir.context.hypotheses.length
+    unless got == n.getNat do
+      throwError "reify_hyp_count_test: expected {n.getNat} reified \
+        hypothesis(es), got {got} ({ir.context.hypotheses.map (·.name)})"
+  | _ => throwError "reify_hyp_count_test: malformed invocation"
 
 /-- TEST-ONLY tactic used by the `Test/TacticStress.lean` herd:
     runs the REAL `Reify.buildIR` on the goal — no dispatch, no

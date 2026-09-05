@@ -2599,4 +2599,123 @@ theorem pb_r4_hyp_dropped (x : Int) (hbig : ∀ n : Nat, x ≤ x + n)
     (hx : x ≤ 3) : x ≤ 4 := by proof_broker
 #print axioms pb_r4_hyp_dropped
 
+/-! ### R4 continuation — context sensitivity (the "closes in isolation, fails in the file" mechanism)
+
+C4's handoff recorded that several verinf obligations closed in an
+isolated probe with the identical goal and hypotheses and failed in
+the real file, mechanism unknown. Measured on the spike (demo
+`reference/ctx/dump.log`): a tactic-internal goal is not in the form
+a declaration header gives an `example`. The `have` tactic wraps its
+continuation goal in `noImplicitLambda` metadata; `have := e`,
+`by_cases`, and a `have h : T := …` whose `T` needed a coercion or a
+default instance leave hypothesis and target types as assigned-but-
+uninstantiated metavariables. The reifier and the closers matched
+on the raw shape and fell through — a thrown "unsupported
+expression: <goal>", a silently DROPPED hypothesis (solver sat), or
+a refused term-mode goal. `normalizeGoalForBroker` (front-ends) and
+the reifier's per-hypothesis instantiation are the fix; each test
+below first asserts the RAW shape is present (`raw_shape_test`) so it
+cannot pass vacuously on a toolchain that stopped producing it. The
+same seven shapes, un-pinned, are the demo's
+`reference/ctx/controls.lean` (7/7 red before the fix). -/
+
+private theorem pbLtOfSumLt {a b : Nat} (h : a + b < 10) : a < 10 :=
+  Nat.lt_of_le_of_lt (Nat.le_add_right a b) h
+
+/-- `D3/175` / `D3/178` shape: the main goal after a `have` is an
+    `mdata` node, and the `have`'s own type keeps assigned mvars. -/
+theorem pb_r4_ctx_goal_mdata_int (x y : Int) (h1 : x ≤ y) (h2 : y ≤ 3) :
+    x ≤ 3 := by
+  have hk : x ≤ y := h1
+  clear h1
+  raw_shape_test goal_mdata
+  raw_shape_test hyp_mvar hk
+  proof_broker
+#print axioms pb_r4_ctx_goal_mdata_int
+
+/-- `D1/71` shape: an `apply`-produced goal followed by a `have`,
+    closed in ℕ term mode (the closer's `matchNatGoal?` reads the
+    target — a raw `mdata` there was the refusal). -/
+theorem pb_r4_ctx_goal_mdata_term_nat (a b : Nat) (h1 : a < 3) (h2 : b < 3) :
+    a < 10 := by
+  apply pbLtOfSumLt (b := b)
+  have hh : a + b < 6 := by proof_broker_term
+  raw_shape_test goal_mdata
+  raw_shape_test hyp_mvar hh
+  proof_broker_term
+#print axioms pb_r4_ctx_goal_mdata_term_nat
+
+/-- `D1/69` shape: the inner `by` of a `have` whose type left assigned
+    metavariables (`2^4`'s default instance) — the reifier instantiated
+    and minted a cert, then `closeNatViaTermMode` matched the RAW
+    target and refused it ("non-False ℕ goal must have shape …"). -/
+theorem pb_r4_ctx_goal_mvar_term_nat (x y z : Nat) (hx : x < 2^4)
+    (hy : y < 2 * z) : x + y < 2^4 + 2 * z := by
+  have hzsum : x + y < 2^4 + 2 * z := by
+    raw_shape_test goal_mvar
+    proof_broker_term
+  exact hzsum
+#print axioms pb_r4_ctx_goal_mvar_term_nat
+
+/-- `D3/98` / `D3/101` shape: `have := e` leaves `this : ?m`. The
+    count pin runs `buildIR` directly (no front-end), so it is red
+    when the REIFIER's own instantiation is reverted even though the
+    front-end normalization would still rescue `proof_broker`. -/
+theorem pb_r4_ctx_hyp_mvar_have (x y z : Int) (h1 : x ≤ y) (h2 : y ≤ z)
+    (h3 : z ≤ 3) : x ≤ 3 := by
+  have := Int.le_trans h1 h2
+  clear h1 h2
+  raw_shape_test hyp_mvar this
+  reify_hyp_count_test 2
+  proof_broker
+#print axioms pb_r4_ctx_hyp_mvar_have
+
+/-- The same shape in term mode: the Farkas closer reads the
+    hypothesis type through `fvarOfName` + `normalizeHypothesis`, so
+    this is red when the FRONT-END normalization is reverted even
+    though the reifier alone would still see `this`. -/
+theorem pb_r4_ctx_hyp_mvar_term (x y z : Int) (h1 : x ≤ y) (h2 : y ≤ z)
+    (h3 : z ≤ 3) : x ≤ 3 := by
+  have := Int.le_trans h1 h2
+  clear h1 h2
+  raw_shape_test hyp_mvar this
+  proof_broker_term
+#print axioms pb_r4_ctx_hyp_mvar_term
+
+/-- `D3/170` shape: `by_cases` leaves `h : ?m` (and `right` leaves the
+    target itself an assigned mvar). Dropping `h` made the solver
+    answer sat on `1 ≤ zhigh` from `0 ≤ zhigh` alone. -/
+theorem pb_r4_ctx_hyp_mvar_by_cases (z : Int) (h0 : 0 ≤ z) :
+    z = 0 ∨ 1 ≤ z := by
+  by_cases h : z = 0
+  · exact Or.inl h
+  · right
+    raw_shape_test goal_mvar
+    raw_shape_test hyp_mvar h
+    reify_hyp_count_test 2
+    proof_broker
+#print axioms pb_r4_ctx_hyp_mvar_by_cases
+
+/-- `D3/180` shape: a coercion-bearing `have` type keeps assigned
+    metavariables (the postponed `↑v0`), and the continuation goal is
+    an `mdata` node; the mixed ℕ/ℤ context rides the ℕ→ℤ cast path. -/
+theorem pb_r4_ctx_hyp_mvar_coe (v0 : Nat) (v : Int) (h : (v0 : Int) ≤ v) :
+    ¬ v < (v0 : Int) := by
+  have hge : (v0 : Int) ≤ v := h
+  clear h
+  raw_shape_test goal_mdata
+  raw_shape_test hyp_mvar hge
+  proof_broker
+#print axioms pb_r4_ctx_hyp_mvar_coe
+
+/-- The precondition tactic itself fails closed: on a clean goal
+    (declaration header, no `have`) every shape is ABSENT and each
+    assertion is a named error — so a test that names a shape is
+    pinning something real. -/
+example (x : Int) (h : x ≤ 3) : x ≤ 3 := by
+  fail_if_success raw_shape_test goal_mdata
+  fail_if_success raw_shape_test goal_mvar
+  fail_if_success raw_shape_test hyp_mvar h
+  exact h
+
 end ProofBroker.Test

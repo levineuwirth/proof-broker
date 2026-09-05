@@ -335,6 +335,20 @@
     "ProofBroker.TestMathlib.hol_function_composition_axiom_free":
       ["propext", "Classical.choice", "Quot.sound"],
 
+    "ProofBroker.Test.pb_r4_ctx_goal_mdata_int":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_goal_mdata_term_nat":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_goal_mvar_term_nat":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_hyp_mvar_by_cases":
+      ["Classical.choice", "Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_hyp_mvar_coe":
+      ["Classical.choice", "Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_hyp_mvar_have":
+      ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_hyp_mvar_term":
+      ["Quot.sound", "propext"],
     "ProofBroker.Test.pb_r4_d1_hle":
       ["Quot.sound", "propext"],
     "ProofBroker.Test.pb_r4_d1_hlt":
