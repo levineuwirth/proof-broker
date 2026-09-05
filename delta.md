@@ -1509,10 +1509,11 @@ dispatch-free `buildIR` windows are ~1.5ms (ROUND 4's
 its windows span live solver round trips. The constructor pin's
 coverage was itself reviewed twice: ROUND 5 found it asserting one
 field of four (a `natDefs`-only re-share escaped every pin while
-the demo file failed 4/27 at `52dbff1`), and ROUND 9 found the
+the demo file failed 4/27 at `52dbff1`/`ac32ee1`), and ROUND 9
+found the
 call-site pin repeating the same one-field mistake (its
 `natDefs`-only call-site re-share put the demo at 9/27 at
-`37fda79`); both pins now assert all four fields independently,
+`37fda79`/`b449733`); both pins now assert all four fields independently,
 mutation-verified per field.
 
 ## 6. References
