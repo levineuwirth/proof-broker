@@ -1,4 +1,5 @@
-(** Reify a Rocq goal-state into a [Proof_broker.Ir.t] tagged for LIA.
+(** Reify a Rocq goal-state into a [Proof_broker.Ir.t] (fragment
+    "LIA", "LRA" or "UF", decided from the reified atoms).
 
     The cross-system test the Phase 4 probe is built around: the IR
     produced here must be byte-identical (modulo source_system fields)
@@ -45,10 +46,14 @@ val reify_z_literal :
 
 val reify_term :
   Environ.env -> Evd.evar_map -> EConstr.t -> Proof_broker.Ir.shell_term
-(** Reify a single [Z]-typed expression or [Prop]-typed formula in
-    the LIA fragment. Raises [Reify_error] on anything outside it. *)
+(** Reify a single supported expression ([Z]- or [R]-typed, applied
+    atoms included) or [Prop]-typed formula. Raises [Reify_error] on
+    anything outside the supported shapes. *)
 
 val build_ir : Proofview.Goal.t -> Proof_broker.Ir.t
 (** Reify the current goal + named [Prop] hypotheses + [Z]-typed locals
-    into an [Ir.t] with [logic_classification.first_order_fragment =
-    "LIA"], [tier = "goal"], [source_system = {name = "rocq"; version}]. *)
+    into an [Ir.t] with [logic_classification.first_order_fragment]
+    decided from the reified atoms ("LIA", "LRA" or "UF"), [tier =
+    "structural"] whenever typed hypotheses ride along and ["goal"]
+    only for a bare goal (R2 honesty), [source_system = {name =
+    "rocq"; version}]. *)
