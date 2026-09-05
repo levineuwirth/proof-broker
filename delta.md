@@ -1430,7 +1430,9 @@ the comment that had justified materialization; the shipped value is
 2,000,000 — a measured time budget (4^10 sweep = 0.77s CPU / 1.3MB
 live; basis recorded in the module comment) — so the refusal
 threshold is ≳11 inequality inputs, and the demo's `D1/70` (4^10)
-is rescued while `D2/62`/`D1/78` (4^14+) stay refused. "Drop cvc4
+is rescued while `D2/62`/`D1/78` (4^14+) stay refused. *(SUPERSEDED
+for `D1/70` on 2026-09-05: that 4^10 was the space of a context the
+tactic could not see — see the R4-continuation records below.)* "Drop cvc4
 from the default adapter list" was considered and rejected: it
 removes the most reliable trigger while leaving the defect live
 behind cvc5/z3.
@@ -1515,6 +1517,113 @@ call-site pin repeating the same one-field mistake (its
 `natDefs`-only call-site re-share put the demo at 9/27 at
 `37fda79`/`b449733`); both pins now assert all four fields independently,
 mutation-verified per field.
+
+**FIXED — context sensitivity: a tactic-internal goal is not
+header-shaped (2026-09-05, R4 continuation).** The C4 handoff
+recorded that several obligations "close in isolation with the
+identical goal and context and fail in the real file — not
+understood". Measured on the spike with a dump tactic (demo
+`reference/ctx/dump.log`): the `have` tactic leaves its continuation
+goal wrapped in `noImplicitLambda` metadata, and `have := e`,
+`by_cases`, and any `have h : T := …` whose `T` needed a coercion or
+a default instance leave hypothesis (and target) types as
+assigned-but-uninstantiated metavariables. Every structural match
+in the bridge (`getAppFnArgs`, `isConstOf`, the closers' shape
+matchers) saw `mdata`/`?m` and fell through: the reifier threw
+"unsupported expression: <goal>" (`D1/71`, `D3/98`, `D3/101`,
+`D3/175`, `D3/178`); a hypothesis that failed to reify was DROPPED
+as "outside the fragment" and the solver answered sat (`D3/170`,
+`D3/180`); the ℕ term-mode closer refused a goal the reifier had
+just read (`D1/69`). A probe whose goal is a declaration signature
+never exhibits any of it — hence "closes in isolation". Fix:
+`normalizeGoalForBroker` at the four tactic entry points
+(`instantiateMVarDeclMVars` — Lean's own operation, target + local
+context, same metavariable, no proof-term change — plus
+`consumeMData` on the target) and the symmetric per-hypothesis
+instantiation inside `buildIRWithAcc`. Scope, stated: metavariables
+anywhere; the annotation at the TOP of the target only (no nested or
+hypothesis-level `mdata` was observed; the named error still reports
+such a term). Pinned by seven `pb_r4_ctx_*` theorems in
+`Test/Tactic.lean`, each asserting the RAW shape first
+(`raw_shape_test`, so a toolchain that stops producing the shape
+turns the pin red rather than moot) and one running `buildIR`
+without the front-end (`reify_hyp_count_test`, red when the
+reifier's own instantiation is reverted while the front-end still
+rescues `proof_broker`). Measured consequence on the demo, one probe
+per obligation: 11/19 → 17/19 at the fix (the same seven core-only
+shapes: `reference/ctx/controls.before.log` 7/7 red,
+`reference/ctx/controls.log` exit 0), and the two D1 obligations
+still red for the reason the next record names.
+
+**FIXED — under the full context the Farkas-witness sources give out
+(2026-09-05, R4 continuation; exposed by the record above).** With
+all 17–19 hypotheses visible, `D1/69` and `D1/70` failed in term
+mode for two different reasons, both measured per adapter
+(`reference/ctx/D1_6{9,70}_{cvc4,cvc5,z3}.log`): for `D1/69` cvc5's
+proof is no longer a single `la_generic`, the Tier 3 checker verifies
+it, and the parallel driver's "highest tier wins" picked that trace
+over z3's Tier 1 Farkas witness — so term mode failed with "cert is
+not a Farkas witness" WITH a witness in hand; for `D1/70` no
+structural extractor matches any adapter's proof and the internal
+rescue search's dense space (4^17 and up) is above its 2M cap, so
+every adapter minted Tier 0 and term mode refused. CORRECTION of the
+cap record above: "the demo's `D1/70` (4^10) is rescued" was true of
+a context in which five hypotheses were invisible; under the context
+the tactic actually sees, its dense space is far above the cap. Both
+close once the irrelevant hypotheses are `clear`ed
+(`reference/ctx/d1_{69,70}_clear.log`), which locates the problem
+in the SDK, not the reifier. Fix, three SDK parts, each with the
+default behaviour untouched: (a) `Dispatch.run_parallel` ranks the
+tiers in the IR's `user_directives.tier_preference` first when
+picking the winner (no preference = the old rule, bit for bit), and
+term mode now SENDS `["1", "2"]` — the walker's `["3"]` in the other
+direction; (b) under that preference cvc5's ladder runs the internal
+Farkas closer before minting a Tier 3 trace; (c) `Farkas_search`
+gains a sparse-support rescue: when the dense coefficient space
+exceeds the cap, enumerate by support (≤ 4 inputs with nonzero
+coefficients) under the SAME 2M budget, deterministic order, refusal
+above it — the dense path and its pinned first-hit order are
+unchanged, the rescue runs only where the old code refused.
+BEHAVIOUR CHANGE, stated: an IR that already carries
+`user_directives.tier_preference` now gets its listed tier where the
+driver used to ignore the list. The spec's own example fixtures are
+such IRs (`example1-lia-typeclass` and `example3-quotient-zmod`:
+`["1", "3", "2"]`; `example2`: `["3", "2", "0"]`), and the bridge's
+roundtrip case that dispatched `example1` expecting "the highest tier
+regardless" now asserts that contract on the fixture with its
+directive cleared, and separately that the directive as shipped
+selects a Tier 1 witness in both adapter orders. Spec §Dispatch
+says it in so many words: "User override. The user can specify
+tier_preference in directives to force a different ordering" — the
+driver now does what the sentence says. (The spec's own DEFAULT
+order there is 1 > 3 > 2 > 0, not the numeric "highest tier" the
+driver implements without a directive; that pre-existing difference
+is untouched here and noted for R5.) Reach, measured: the verinf contexts (18–20 inputs, ~0.4M–0.7M sparse
+candidates) close; about two dozen inequality inputs is where the
+budget runs out at support 4. Tests: SDK — the rescue on a 17-input
+IR (support pinned to exactly the two relevant inputs), the hard
+refusal at 61 inputs, the 13-input CPU pin re-derived (66,378 sparse
+candidates), the selection rule on synthetic Tier 3/Tier 1 adapters
+under every preference shape, and the REAL `D1/69`/`D1/70` IRs
+(fixtures written by the bridge's reifier) through cvc5's ladder and
+the parallel driver; bridge — `pb_r4_ctx_irrelevant_context_term`
+(15 irrelevant bounds around the `D1/70` shape). Measured
+consequence: the demo's generated table.
+
+8. **Per-call report line under `PROOF_BROKER_REPORT` (R4.4).** A
+   successful broker call logs one machine-readable line — tactic,
+   the closer that actually closed (the closer stack now returns
+   its label; control flow unchanged), the winning cert's backend /
+   tier / format / compact-JSON size, reified hypothesis count,
+   dispatch and verify wall, tactic wall — only when that variable
+   is set in the environment (the demo's `probe.sh` sets it; a
+   normal build does not). An environment variable rather than a
+   Lean option or trace class because those register through an
+   `initialize`, which the C4 source gate refuses by design, and the
+   bridge already discovers its FFI and manifests through
+   `PROOF_BROKER_*` variables. The demo's `obligation_table.py`
+   reads the lines from the probe logs, so every per-obligation
+   number in its README is generated.
 
 ## 6. References
 
