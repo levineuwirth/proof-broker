@@ -602,10 +602,20 @@ def check_lean_reify_isolation(files=None):
     used — red whenever the reification returns the accumulator it
     accumulated into, which every single-accumulator mutation does).
     This gate's value is failing LOUD at review time with a named
-    location. NEITHER layer sees a DECOY mutant (accumulate in
-    shared state, return a copy) composed with a spelling this scan
-    cannot lex; that residual is covered by review only, and is
-    recorded in delta §5.7 — not compensated away. Invariants, over EVERY
+    location. Its lexer is APPROXIMATE by design (string literals
+    handled; Char literals, raw strings and interpolation nesting
+    are not — an erasure composition through an unhandled edge
+    remains possible, ROUND 11's M″): the surviving residual is a DECOY mutant (accumulate in shared
+    state, return a copied accumulator — invisible to any return-value
+    pin by construction) composed with any store or spelling the gate's
+    best-effort lexer mishandles: ROUND 10's M′ used a string-literal
+    blinding (closed by the string-aware stripper), ROUND 11's M″ used a
+    Char-literal parity flip (a known unhandled lexing edge — the gate's
+    lexer is approximate by design and further edges exist: raw strings,
+    interpolation nesting). A synonym-hidden store, by contrast, IS
+    caught (invariant (2) errors on unrecognized initializers — ROUND 9
+    NOT CONFIRMED #5). The residual is covered by REVIEW only,
+    stated identically in delta §5.7 — not compensated away. Invariants, over EVERY
     .lean file under lean-bridge/ (minus .lake):
 
     (1) exactly one module-level `IO.Ref` initializer exists and it
