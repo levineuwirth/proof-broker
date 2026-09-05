@@ -3111,6 +3111,12 @@ private def matchIntNotBound? (ty : Expr) : Option (HypKind × Expr × Expr) :=
     never pass `true`; the closer enforces this upstream). -/
 private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     (flipped : Bool) : MetaM (Expr × Expr) := do
+  -- An `mdata`-wrapped hypothesis type reifies fine (the reifier
+  -- strips annotations) but used to defeat this matcher with a
+  -- message whose pretty-printed type LOOKED in-shape
+  -- (CONTINUATION ROUND 1 Low 9); strip here and name the ctor in
+  -- the refusal so the next such gap is visible.
+  let hypTy := hypTy.consumeMData
   match matchIntEqHyp? hypTy with
   | some (a, b) =>
     if flipped then
@@ -3171,7 +3177,7 @@ private def normalizeHypothesis (hypFV : Expr) (hypTy : Expr)
     return (normExpr, proof)
   | none =>
     throwError "proof_broker_term: hypothesis shape outside Int ≤/≥/</>/= \
-                 (got type {hypTy})"
+                 (got type {hypTy}; head ctor {hypTy.ctorName})"
 
 /-- Build an `Int` literal `Expr` for `c`. Uses `Lean.toExpr` so the
     resulting `Expr` is the elaborated `@OfNat.ofNat Int n instOfNat`
@@ -3657,8 +3663,26 @@ private def smtSanitizeIdent (s : String) : String :=
 private def renameLocalsForSmt (goal : MVarId) : TacticM MVarId := do
   let renames ← goal.withContext do
     let mut acc : Array (FVarId × String) := #[]
+    -- Duplicate user names (`have := e` twice ⇒ two `this`) give the
+    -- IR duplicate hypothesis names: the SDK's Farkas search then
+    -- finds a positional witness the by-name verifier rejects — a
+    -- false "not contradictory" on a provable goal (CONTINUATION
+    -- ROUND 1 Med 3, the D3/178 shape). Rename every occurrence but
+    -- the LAST (the one unqualified references resolve to), exactly
+    -- as unsafe identifiers are renamed below.
+    let mut lastOf : Std.HashMap String FVarId := {}
+    let mut order : Array (String × FVarId) := #[]
     for decl in ← getLCtx do
       if decl.isImplementationDetail then continue
+      let n := decl.userName.toString
+      order := order.push (n, decl.fvarId)
+      lastOf := lastOf.insert n decl.fvarId
+    for (n, fid) in order do
+      if lastOf[n]? != some fid then
+        acc := acc.push (fid, smtSanitizeIdent n)
+    for decl in ← getLCtx do
+      if decl.isImplementationDetail then continue
+      if acc.any (·.1 == decl.fvarId) then continue
       unless smtSafeIdent decl.userName.toString do
         acc := acc.push (decl.fvarId, smtSanitizeIdent decl.userName.toString)
     pure acc

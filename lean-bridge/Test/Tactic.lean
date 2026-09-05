@@ -2708,23 +2708,41 @@ theorem pb_r4_ctx_hyp_mvar_coe (v0 : Nat) (v : Int) (h : (v0 : Int) ≤ v) :
   proof_broker
 #print axioms pb_r4_ctx_hyp_mvar_coe
 
-/-- The mechanism the context fix EXPOSED (verinf `D1/70`): once the
-    tactic sees its whole context, the solvers' native Farkas
-    extraction does not match their proofs and the internal rescue
-    search's dense space (4^17 here) is above its 2M cap, so every
-    adapter fell to a Tier 0 oracle cert that term mode refuses. The
-    SDK's sparse-support rescue (`Farkas_search`, support ≤ 4 under
-    the same budget) finds `hZ + neg_goal` among the 15 irrelevant
-    bounds; term mode consumes it. Red before that rescue with
-    "cert was minted but verifier did not accept it (tier-0 …)". -/
-theorem pb_r4_ctx_irrelevant_context_term (Zmax a1 a2 a3 a4 a5 a6 a7 a8
-    a9 a10 a11 a12 a13 a14 a15 : Nat) (hZ : Zmax ≤ 2^16)
+/-- The mechanism the context fix EXPOSED (verinf `D1/70`): with the
+    whole context visible, a dense coefficient space exceeds the 2M
+    cap and the SDK's SPARSE-support rescue (`Farkas_search`,
+    support ≤ 4 under the same budget) is what finds `hZ + neg_goal`
+    among the irrelevant bounds. THIS pin actually exercises it
+    (CONTINUATION ROUND 1 Med 2 — the first version had 33 compiled
+    inputs, above even the sparse cap, and closed through cvc5's
+    structural extractor instead): 8 irrelevant ℕ bounds give
+    9 + 9 nonneg + neg_goal = 19 compiled inputs, whose sparse space
+    is under the cap, and the adapter is pinned to `[cvc4]` — no
+    proof production, so the internal closer is the ONLY witness
+    source. Red with "tier-0 soundness check not implemented" when
+    the rescue is disabled. -/
+theorem pb_r4_ctx_irrelevant_context_term (Zmax a1 a2 a3 a4 a5 a6 a7
+    a8 : Nat) (hZ : Zmax ≤ 2^16)
     (h1 : a1 ≤ 1) (h2 : a2 ≤ 2) (h3 : a3 ≤ 3) (h4 : a4 ≤ 4) (h5 : a5 ≤ 5)
-    (h6 : a6 ≤ 6) (h7 : a7 ≤ 7) (h8 : a8 ≤ 8) (h9 : a9 ≤ 9) (h10 : a10 ≤ 10)
-    (h11 : a11 ≤ 11) (h12 : a12 ≤ 12) (h13 : a13 ≤ 13) (h14 : a14 ≤ 14)
-    (h15 : a15 ≤ 15) :
-    (2:Nat)^24 + 2 * Zmax ≤ pbP := by proof_broker_term
+    (h6 : a6 ≤ 6) (h7 : a7 ≤ 7) (h8 : a8 ≤ 8) :
+    (2:Nat)^24 + 2 * Zmax ≤ pbP := by proof_broker_term [cvc4]
 #print axioms pb_r4_ctx_irrelevant_context_term
+
+/-- Two `have := e` steps both named `this` (CONTINUATION ROUND 1
+    Med 3, the verinf `D3/178` shape): duplicate hypothesis names
+    made the SDK's positional search witness fail the by-name
+    verifier — a false "not contradictory" on a provable goal. The
+    front-end now renames shadowed duplicates in
+    `renameLocalsForSmt`, so this closes in term mode; the SDK
+    independently refuses duplicate-name IRs loudly
+    (`Duplicate_hypothesis`, pinned in `test_farkas.ml`). -/
+theorem pb_r4_ctx_duplicate_this (x y z : Int) (h1 : x ≤ y)
+    (h2 : y ≤ z) (h3 : z ≤ 3) : x ≤ 3 := by
+  have := Int.le_trans h1 h2
+  have := h3
+  clear h1 h2 h3
+  proof_broker_term
+#print axioms pb_r4_ctx_duplicate_this
 
 /-- The precondition tactic itself fails closed: on a clean goal
     (declaration header, no `have`) every shape is ABSENT and each

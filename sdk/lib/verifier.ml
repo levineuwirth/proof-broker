@@ -315,6 +315,12 @@ let reason_of_farkas (v : Farkas.verdict) : reason =
   | Verified -> Verified_farkas
   | Unknown_hypothesis { hypothesis } ->
     Farkas_unknown_hypothesis { hypothesis }
+  | Duplicate_hypothesis { hypothesis } ->
+    (* mapped onto the unknown-hypothesis reason with a marked name:
+       the reason type crosses the FFI, so a new constructor is a
+       protocol change — the marker keeps the message honest *)
+    Farkas_unknown_hypothesis
+      { hypothesis = "DUPLICATE:" ^ hypothesis }
   | Nonlinear { hypothesis; detail } ->
     Farkas_nonlinear { hypothesis; detail }
   | Bad_coefficient { hypothesis; raw } ->
@@ -496,6 +502,7 @@ let verify_case_split
                         (match other with
                          | Verified -> "verified"
                          | Unknown_hypothesis _ -> "unknown_hypothesis"
+                         | Duplicate_hypothesis _ -> "duplicate_hypothesis"
                          | Nonlinear _ -> "nonlinear"
                          | Bad_coefficient _ -> "bad_coefficient"
                          | Negative_coefficient _ -> "negative_coefficient"

@@ -114,6 +114,7 @@ let test_close_example1_like () =
        let kind = match other with
          | Verified -> "Verified"
          | Unknown_hypothesis _ -> "Unknown_hypothesis"
+            | Duplicate_hypothesis _ -> "Duplicate_hypothesis"
          | Nonlinear _ -> "Nonlinear"
          | Bad_coefficient _ -> "Bad_coefficient"
          | Negative_coefficient _ -> "Negative_coefficient"
@@ -219,6 +220,7 @@ let test_search_uses_effective_fragment_on_real_typed_lia_label () =
          | Bad_coefficient _ -> "bad_coefficient"
          | Negative_coefficient _ -> "negative_coefficient"
          | Unknown_hypothesis _ -> "unknown_hypothesis"
+            | Duplicate_hypothesis _ -> "duplicate_hypothesis"
          | Nonlinear _ -> "nonlinear"
          | Malformed_witness _ -> "malformed_witness")))
   | Error e ->
@@ -350,9 +352,12 @@ let support_of (witness : Yojson.Safe.t) : string list =
       if c = "0" then None
       else Some (e |> member "hypothesis" |> to_string))
 
-(** The rescue: 17 inputs (dense 4^17, refused) — the support-2
-    witness is found, verifies, and is exactly [hx; neg_goal]: the
-    first hit is the MINIMAL support, by construction of the order. *)
+(** The rescue on a synthetic 17-input IR (dense 4^16-scale space,
+    refused by the dense pass) — the support-2 witness is found,
+    verifies, and is exactly [hx; neg_goal]: the first hit is the
+    MINIMAL support, by construction of the order. (The live-fixture
+    numbers live on the fixture tests below; this one's inputs are
+    its own.) *)
 let test_sparse_rescue_finds_witness () =
   let ir = sparse_rescue_ir 15 (* 15 irrelevant + hx + neg_goal = 17 *) in
   let inputs = Farkas_search.compile_inputs ir in

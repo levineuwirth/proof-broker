@@ -207,8 +207,10 @@ let space_size (ranges : int list list) : int =
     The dense enumeration above is exponential in the NUMBER OF
     INPUTS, but a Farkas witness for a real goal is supported on very
     few of them: the verinf `D1/70` obligation needs `hZ` and
-    `neg_goal` (support 2) out of 18 compiled inputs, and its dense
-    space (4^17) is far above the cap. Before the R4-continuation
+    `neg_goal` (support 2) out of 19 compiled inputs (the corrected
+    fixture — CONTINUATION ROUND 1 Low 4 — has 18 hypotheses +
+    neg_goal; its sparse space is 493,983, its dense space far above
+    the cap). Before the R4-continuation
     context fix the reifier silently DROPPED five of those inputs
     (assigned-but-uninstantiated metavariable types, see the bridge's
     `normalizeGoalForBroker`), which is the only reason the dense

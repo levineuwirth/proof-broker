@@ -435,57 +435,6 @@
     }
    },
    {
-    "name": "hle",
-    "shell": {
-     "args": [
-      {
-       "args": [
-        {
-         "node": "NumLit",
-         "type": "Int",
-         "value": "16777216"
-        },
-        {
-         "args": [
-          {
-           "node": "NumLit",
-           "type": "Int",
-           "value": "2"
-          },
-          {
-           "args": [
-            {
-             "name": "Zmax",
-             "node": "Var"
-            }
-           ],
-           "node": "App",
-           "symbol": "Int.ofNat",
-           "type_args": []
-          }
-         ],
-         "node": "App",
-         "symbol": "HMul.hMul",
-         "type_args": []
-        }
-       ],
-       "node": "App",
-       "symbol": "HAdd.hAdd",
-       "type_args": []
-      },
-      {
-       "args": [],
-       "node": "App",
-       "symbol": "Bracket.P",
-       "type_args": []
-      }
-     ],
-     "node": "App",
-     "symbol": "LE.le",
-     "type_args": []
-    }
-   },
-   {
     "name": "_pb_nonneg_Zmax",
     "shell": {
      "args": [
@@ -708,7 +657,7 @@
    },
    "_pb_atom_3": {
     "kind": "nat_nonlinear_atom",
-    "lean": "(↑Zmax).val"
+    "lean": "(\u2191Zmax).val"
    },
    "_pb_atom_4": {
     "kind": "nat_nonlinear_atom",
@@ -716,7 +665,7 @@
    },
    "_pb_atom_5": {
     "kind": "nat_nonlinear_atom",
-    "lean": "(↑Zmax * zhigh).val"
+    "lean": "(\u2191Zmax * zhigh).val"
    }
   },
   "shell": {

@@ -351,6 +351,8 @@
       ["Quot.sound", "propext"],
     "ProofBroker.Test.pb_r4_ctx_irrelevant_context_term":
       ["Quot.sound", "propext"],
+    "ProofBroker.Test.pb_r4_ctx_duplicate_this":
+      ["propext", "Quot.sound"],
     "ProofBroker.Test.pb_r4_d1_hle":
       ["Quot.sound", "propext"],
     "ProofBroker.Test.pb_r4_d1_hlt":

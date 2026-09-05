@@ -319,6 +319,7 @@ let test_dispatch_lra_mints_farkas_cert () =
           let kind = match other with
             | Verified -> "Verified"
             | Unknown_hypothesis _ -> "Unknown_hypothesis"
+            | Duplicate_hypothesis _ -> "Duplicate_hypothesis"
             | Nonlinear _ -> "Nonlinear"
             | Bad_coefficient _ -> "Bad_coefficient"
             | Negative_coefficient _ -> "Negative_coefficient"
@@ -386,6 +387,7 @@ let test_dispatch_lia_mints_farkas_cert () =
           let kind = match other with
             | Verified -> "Verified"
             | Unknown_hypothesis _ -> "Unknown_hypothesis"
+            | Duplicate_hypothesis _ -> "Duplicate_hypothesis"
             | Nonlinear _ -> "Nonlinear"
             | Bad_coefficient _ -> "Bad_coefficient"
             | Negative_coefficient _ -> "Negative_coefficient"
