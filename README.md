@@ -12,6 +12,16 @@ v1.0 phase sequence; `delta.md` records post-spec engineering
 decisions (notably the OCaml language flip) and the per-phase
 decision records.
 
+> **R4 demo — 19/19 on VerInf.** In a real downstream consumer —
+> [VerInf](https://github.com/JamesPetrie/VerInf)'s softmax-bracket
+> spike, statements untouched — 19 of 19 targeted Lean obligations
+> close through the broker: external search (cvc4 / cvc5 / z3), every
+> certificate checked before Lean accepts the result, everything
+> within the sanctioned axiom ceiling. Evidence and generated tables:
+> [proof-broker-demo](https://github.com/levineuwirth/proof-broker-demo);
+> signed release:
+> [`r4`](https://github.com/levineuwirth/proof-broker/releases/tag/r4).
+
 ## Status
 
 What ships is a sound, gated, multi-backend **certificate-gated
@@ -35,7 +45,10 @@ reifier shapes are recorded deferrals — the generated row below lists
 them). `delta.md` records every decision that diverges from the spec;
 `delta.md §7` is the consolidated v1.1 delta, including what v1.0
 promised and v1.1 demotes (Tier 0 as a trust expansion, the Tier 2
-lemma list, TSTP replay) and why.
+lemma list, TSTP replay) and why. The trust structure of this
+paragraph — untrusted search, unprivileged broker machinery,
+kernel-checked closure — is drawn as a single figure in the demo's
+[where trust lives](https://github.com/levineuwirth/proof-broker-demo#where-trust-lives).
 
 The Alethe walker is the spec's native symbolic checker for cvc5's
 `alethe-2024` traces and the largest single body of work in the tree:
