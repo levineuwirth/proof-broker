@@ -236,7 +236,7 @@ def main() -> int:
     if failed:
         print(f"{failed} file(s) failed validation.")
         return 1
-    print("All Phase 0 artifacts valid.")
+    print("All artifacts valid.")
     return 0
 
 

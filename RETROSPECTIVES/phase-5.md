@@ -16,6 +16,8 @@ literal-coefficient sum that decides trivially).
 
 The phase consumed what `delta.md §2.6` had budgeted for polish and
 cross-platform distribution; that work is carried forward to Phase 6.
+*("Phase 6" here and below is the distribution meaning of the label —
+Phase 6-D in `spec/roadmap-v1.1.md` §2, as of 2026-09-05.)*
 
 ## Easier than expected
 
@@ -232,14 +234,16 @@ has shifted that scope to Phase 6:
   SDK fixture (synthetic alethe proof string with three subproofs each
   closing one disjunct) would exercise the closer's arity-N path end-
   to-end; the bridge-level regression today covers only arity-2
-  through the existing case-split test.
+  through the existing case-split test. *(Since done: the synthetic
+  arity-3 SDK fixture landed in `d273741`.)*
 - **Dead-code cleanup.** The arity-2-specific comparison-goal helpers
   (`farkasGoalLe2`, `farkasGoalLt2` on Lean Int; `rFarkasGoalLe2`,
   `rFarkasGoalLt2`, `rFarkasGoalLt2StrictA1` on Lean Mathlib; the
   matching Rocq Z + R variants) are unreachable after the wrapper-then-
   False unification in `d9bc6e6` / `16db0b5`. Removing them shrinks
   the trust footprint (allowlist drops ~10 entries) and reduces
-  confusion about which helpers are load-bearing.
+  confusion about which helpers are load-bearing. *(Since done:
+  `6ca2c5a`.)*
 - **Multi-variable rational-coefficient tests.** The rational widening's
   bridge-level tests (`pb_lra_term_rational_axiom_free` on both
   bridges) trigger the LCD = 1 short-circuit — solvers in practice
@@ -248,7 +252,8 @@ has shifted that scope to Phase 6:
   a Farkas combination that demonstrably routes through
   `Linear_arith.clear_denominators_list`'s scaling path would validate
   the new path more directly. The current bridge-level coverage is
-  regression-only.
+  regression-only. *(Since done: `032a407`, the multi-variable
+  rational Farkas test through `clear_denominators_list`.)*
 - **Reifier widening for unsupported solver-emitted shapes.** Audit
   completed in the post-Phase-5 cleanup arc: the speculatively-named
   gaps (division literal as `App` node, conditional expressions,
@@ -267,7 +272,9 @@ has shifted that scope to Phase 6:
   bigger design question — whether the universe-polymorphic record
   idiom generalizes beyond LIA + LRA, or whether QF_BV / QF_UF need
   their own closers — remains open and is the right anchor for
-  Phase 7 if non-arithmetic theories enter scope.
+  Phase 7 if non-arithmetic theories enter scope. *(As of 2026-09-05:
+  "Phase 7" was never a phase — the question is carried as an open
+  question in `spec/roadmap-v1.1.md` §5.)*
 - **Lean dynamic-syntax idiom for variable-length sepBy1.** Resolved
   in the post-Phase-5 cleanup arc. The string + `runParserCategory`
   round-trip in `closeViaCaseSplitReal` (LRA case-split closer) is

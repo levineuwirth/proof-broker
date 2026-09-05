@@ -1,5 +1,14 @@
 # Phase 6 — walker scale profile
 
+*(As of 2026-09-05: this retrospective is the close-of-work snapshot
+of the walker scale profile (PR #78, 2026-06-16); the rule and corpus
+counts in it are that snapshot's, and the current ones are the README
+status table's. "Phase 6" here is the walker-scale usage of the label
+— `spec/roadmap-v1.1.md` §2 resolves it against the distribution usage.
+The walker's production path (the SDK mint gate equal to the walkers'
+rule set, UF/UFLIA routed to it, live-strict suites on both bridges)
+was closed in R1, `delta.md §5.2` and `§5.8`.)*
+
 The walker's per-rule vocabulary is complete (31 rules, Lean ⇄ Rocq at
 parity) and the corpus replays 15/15 on the quantifier-free + quantifier
 fragment. The open question this phase answers is *cost*: how does

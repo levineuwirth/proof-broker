@@ -2097,8 +2097,9 @@ gates live in `spec/roadmap-v1.1.md` §4.
   **Rocq concurrent dispatch**.
 - **ITP-to-ITP dispatch, dashboard, cache and build path, Tier 4,
   `unknown`/`error` envelopes, rule-based routing** — out of v1 (7.3).
-- **Faithful arithmetic leaves** in the walker (the four leaf rules
-  are re-decided by `omega`/`lia`; the Farkas coefficients in `:args`
+- **Faithful arithmetic leaves** in the walker (the leaf rules
+  `la_generic`/`la_mult_neg`/`hole`/`rare_rewrite` are re-decided by
+  `omega`/`lia`; the Farkas coefficients in `:args`
   are consumed at mint time only), **LRA walker**, **corpus growth and
   in-build timings**, **cvc5-ff uniqueness adapter**, **distribution
   bundle**, **property tests (`qcheck`)** and **performance budgets** —
@@ -2127,7 +2128,8 @@ open — the SDK mint gate narrower than the walkers, the walker invoked
 only for `LIA`, the corpus replay hand-fed rather than live — is what
 R1 closed (§5.2, §5.8 items 1–3). Its trust shape is a hybrid and is
 stated as such: the skeleton is kernel-constructed step by step, the
-four arithmetic leaf rules are re-decided by `omega`/`lia`, so the
+arithmetic leaf rules (`la_generic`, `la_mult_neg`, `hole`,
+`rare_rewrite`) are re-decided by `omega`/`lia`, so the
 walker is less faithful at the leaves than Tier 1 term mode, where the
 coefficients flow into the term (7.6, faithful leaves). The current
 rule and corpus counts are the README status table's, generated from

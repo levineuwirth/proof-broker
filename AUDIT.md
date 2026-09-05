@@ -21,6 +21,21 @@ The highest-severity findings were re-verified by hand against source
 > `dune-project` because 9.2.0 changed the `Assumptions.assumptions`
 > API used by `rocq-bridge/src/llm_replay.ml`) and is built in CI by
 > the dedicated `rocq-bridge` job in `validate.yml`.
+>
+> **Status note (2026-09-05, R5).** Passes 2–10 landed on
+> 2026-05-18, one commit per pass, and closed every finding in
+> §§3–5: pass 2 (`c25324f`) H1 (#4) and H2 (#5, **regraded** — see
+> the note at H2); pass 3 (`32711eb`) H3 (#6) and H4 (#7); pass 4
+> (`a6f92a7`, `d301fdd`) H5 (#8); pass 5 (`24e63c2`) M1–M3
+> (#9–#11); pass 6 (`b3f274c`) M5–M6 (#13–#14); pass 7 (`479fbf4`)
+> M4 (#12); pass 8 (`dbacd97`) M8 (#16); pass 9 (`3a84183`) M7
+> (#15); pass 10 (`4214041`) the LOW batch (#18) and the local Rocq
+> build doc (#17). The umbrella #19 — `main` unprotected, the
+> audit's one residual — was closed at R0 (2026-08-31: branch
+> protection requiring `ci-status`, stale branches deleted). The
+> pass-1 paragraph below and the per-finding markers are kept as
+> they were written; the R-series review rounds that followed
+> (`delta.md §5`) are the audit cadence since.
 
 The project is in genuinely good shape. 4 of 5 CI surfaces pass
 end-to-end from a clean environment; the shipped trust footprint is
@@ -78,6 +93,9 @@ Two snags, **both environmental — not repo defects**:
    ordering. CI avoids this only because `ocaml/setup-ocaml` uses
    opam's *own* compiler. A dedicated opam-compiler switch would
    resolve it; the Rocq bridge was statically audited instead.
+   *(Since built: on an opam-built `5.5.0` switch with the rocq 9.1.1
+   stack, 2026-08-30, and in CI by the `rocq-bridge` job — see the
+   status note in §1.)*
 
 ---
 
@@ -121,6 +139,9 @@ fixture-based test suite regardless.
 **Fix:** handle same-line `name : type`; add Rocq parser fixtures.
 
 ### H1 — Inconsistent fallback axiom in the Lean tactic
+**✅ FIXED pass 2 (#4).** The axiom is gone; every fallthrough site
+`throwError`s, so a certified goal with no sound closer is a tactic
+failure that leaves the goal open (`Tactic.lean` header, "audit H1").
 *Verified.* `lean-bridge/ProofBroker/Tactic.lean:56`
 `axiom proofBrokerCertSound : ∀ (P : Prop), P` — proves `False`. It is
 the unconditional `catch _ =>` fallback for BV/UF/LRA-without-extension/
@@ -133,6 +154,18 @@ Lean's kernel.
 goal is a tactic error, never an admitted theorem.
 
 ### H2 — Tier-2 case-split verifier under-validates the disjunction (SDK)
+**✅ FIXED pass 2 (#5) — REGRADED.** The pass-2 commit (`c25324f`)
+found the "forged-cert" framing below overstated: the named
+hypothesis is a member of the context, so a one-branch "split"
+degenerates to a valid Tier-1 proof, and positive-scaled disjunct
+matching is equivalence-preserving for compiled `Le`/`Lt`/`Eq`
+atoms — the non-`Or` path was not a live unsoundness. The hardening
+landed as defense in depth: the named `disjunctive_hypothesis` must
+be syntactically `Or` (`Case_split_malformed` otherwise, aligning the
+verifier with the extractor), the two `assert false` on
+attacker-influenced lists became total, and the scaling match was
+deliberately kept (rationale in-code). Pinned by
+`test_case_split_rejects_non_or_hypothesis`.
 *Verified.* `sdk/lib/verifier.ml:325-424` +
 `sdk/lib/alethe_farkas.ml:395-398`. `disjuncts_of` returns `[s]` for
 any non-`Or` term, and case↔disjunct matching is by *positive-scaled*
@@ -148,6 +181,8 @@ contradiction all sound.)
 require exact case↔disjunct equality.
 
 ### H3 — Adapter subprocess spawn uses the shell; comment claims the opposite
+**✅ FIXED pass 3 (#6).** `Unix.open_process_args_full` everywhere; the
+comment corrected.
 *Verified.* `sdk/lib/adapter_{z3,cvc4,cvc5}.ml` (`:60/:71/:62`) call
 `Unix.open_process_full cmd …` where `cmd` is a concatenated **string**
 → runs via `/bin/sh -c`. `adapter_cvc4.ml:17-18` explicitly and
@@ -159,6 +194,9 @@ comment". Binaries are unqualified (PATH-trust).
 or documented PATH trust; correct the comment.
 
 ### H4 — Untrusted-input robustness in the Alethe/SMT parsers (SDK)
+**✅ FIXED pass 3 (#7).** Depth/length bounds with a `Stack_overflow`
+backstop in the parsers; a catch-all internal-error envelope in every
+FFI handler.
 *Verified by inspection.* `sdk/lib/alethe.ml:88-105` (recursive S-expr
 parse, no depth bound), `sdk/lib/z3_proof.ml:58-101`,
 `sdk/lib/linear_arith.ml:136` (`Z.pow 10 frac_len`, `frac_len` taken
@@ -173,6 +211,9 @@ catch only `Decode_error`/`Json_error`; anything else (`Stack_overflow`,
 every FFI handler.
 
 ### H5 — Cross-platform / signing jobs unenforced; PR secret-exposure shape
+**✅ FIXED pass 4 (#8).** The aggregating `ci-status` job is the one
+required check (it depends on the matrix); signing gated away from
+PR-controlled code; actions SHA-pinned.
 *Verified.* `validate.yml:85-188`. `fail-fast:false` + no `needs:`
 out-edge ⇒ macOS-aarch64 / linux-aarch64 / `dune install` / code-sign
 breakage **never blocks merge**. Signing secrets injected via `env:`
@@ -185,6 +226,15 @@ aggregating required job.
 ---
 
 ## 4. Findings — MEDIUM
+
+*(Status 2026-09-05: all eight numbered findings closed — M1–M3 in
+pass 5, M4 in pass 7, M5–M6 in pass 6, M7 in pass 9, M8 in pass 8;
+the stale `check_axioms.py` docstring rode with pass 1. Two of them
+were later strengthened beyond the pass: cross-document hash linkage
+is strict identity since `0a5ae40` and gates `rewrite_trace_hash`
+against the paired trace since R2 (`delta.md §5.3`); the manifest
+overclaims were closed at R2.4 with `check.py` membership gates
+(`delta.md §5.8`).)*
 
 - **No cross-document hash linkage check** (`tools/check.py`): cert ↔
   trace ↔ IR hash equality — the core "same proof" invariant the
@@ -231,6 +281,14 @@ aggregating required job.
 ---
 
 ## 5. Findings — LOW / quality
+
+*(Status 2026-09-05: closed in pass 10 (#18) — the CBOR-toggle claim
+is corrected in `sdk/FFI_CONVENTIONS.md` and the Phase-0 retro, the
+delta.md staleness items carry their "Audit #18" annotations — except
+the all-zero hashes, which were closed later: `config_hash` is the
+canonical hash of the manifest under `check.py`'s strict-identity
+linkage, and the `rewrite_trace_hash` sentinel was removed from every
+mint site and is rejected by the verifier since R2 (`delta.md §5.3`).)*
 
 - Duplicated trust-critical scale-factor logic
   (`sdk/lib/verifier.ml:273-304` vs `alethe_farkas.ml`).
@@ -291,16 +349,17 @@ claim (§5). Stale-but-self-disclosed: the delta.md items in §5.
 2. ~~Rewrite `check_axioms.py` parsers + fixture-based test suite
    (**C2/C3**)~~ ✅ done pass 1 (#2, #3) — `tools/test_check_axioms.py`,
    wired into CI. Rocq live confirmation tracked by #17.
-3. Tier-2 case-split hardening in `verifier.ml` (**H2**) — the only
-   confirmed SDK soundness gap.
-4. Replace `proofBrokerCertSound` fallthrough with `throwError`
-   (**H1**).
-5. `Unix.open_process_args_full` + bounds/guards in the Alethe parsers
-   + FFI catch-all envelope (**H3/H4**).
-6. CI hygiene: enforce or stop implying cross-platform/signing
+3. ~~Tier-2 case-split hardening in `verifier.ml` (**H2**) — the only
+   confirmed SDK soundness gap.~~ ✅ done pass 2 (#5), regraded to
+   defense in depth (see H2).
+4. ~~Replace `proofBrokerCertSound` fallthrough with `throwError`
+   (**H1**).~~ ✅ done pass 2 (#4).
+5. ~~`Unix.open_process_args_full` + bounds/guards in the Alethe parsers
+   + FFI catch-all envelope (**H3/H4**).~~ ✅ done pass 3 (#6, #7).
+6. ~~CI hygiene: enforce or stop implying cross-platform/signing
    coverage; SHA-pin actions; checksum the cvc5 download (**H5**); add
    cross-doc hash-linkage to `check.py`; close the two schemas
-   (**MED**).
+   (**MED**).~~ ✅ done passes 4, 5, 8 (#8, #9–#11, #16).
 
 ---
 

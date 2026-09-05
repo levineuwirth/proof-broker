@@ -106,6 +106,8 @@ trivially bridge-aware (one shared `dialect_of_ir`).
 * **BV / UF reach on Rocq.** Stdlib still doesn't ship a cheap
   `BitVec` library; the Phase-4 retro flagged this as deferred
   pending a third-party dep. Unchanged after Rocq parity.
+  *(As of 2026-09-05: UF on Rocq landed in `326f0f5` (see
+  `phase-4.md`'s "Since done" note); BV on Rocq remains deferred.)*
 
 * **Cross-bridge IR round-trip validation.** The original Phase 4
   exit criterion called for the same reference IRs serialized by
@@ -123,3 +125,5 @@ trivially bridge-aware (one shared `dialect_of_ir`).
   exist; Phase-1/2/3 (Lean-side) didn't get their own retros.
   This Phase-3-Rocq-parity retro fills part of the gap; the
   others could land as documentation-only PRs if useful.
+  *(Since done, 2026-09-05: `RETROSPECTIVES/phase-1-3-lean.md` — one
+  combined note, reconstructed from the record at R5.)*
