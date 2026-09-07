@@ -1,0 +1,18 @@
+{
+  "case": "C8_coef_2p18",
+  "ir_source": "ir/C8_coef_2p18.json",
+  "adapters": {
+    "z3": { "outcome": "cert", "tier": 0, "format": "oracle" },
+    "cvc5": { "outcome": "cert", "tier": 0, "format": "oracle" },
+    "cvc4": { "outcome": "cert", "tier": 0, "format": "oracle" }
+  },
+  "false_goal_check": {
+    "asserted": false,
+    "expectation": "not asserted for this case"
+  },
+  "corrupted_certificate": {
+    "status": "not applicable",
+    "detail": "no adapter minted a Tier 1 Farkas cert on this IR, so there is no genuine cert here to corrupt"
+  },
+  "gate": { "ok": true, "violations": [] }
+}

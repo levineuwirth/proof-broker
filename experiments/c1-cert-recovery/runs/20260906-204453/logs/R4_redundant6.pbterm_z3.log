@@ -1,0 +1,20 @@
+runs/20260906-204453/lean/R4_redundant6.pbterm_z3.lean:25:2: error: proof_broker_term: cert was minted but verifier did not accept it (reason: ProofBroker.CertReason.tierCheckDeferred "tier-0 soundness check not implemented (envelope verified)"); term-mode requires a verified Tier 1 Farkas or Tier 2 case-split cert
+tactic execution of ProofBroker.Tactic.proofBrokerTerm took 131ms
+cumulative profiling times:
+	attribute application 0.00828ms
+	elaboration 4.58ms
+	fix level params 0.0179ms
+	instantiate metavars 0.0127ms
+	interpretation 0.0676ms
+	linting 15.2ms
+	module linting 0.00164ms
+	overlappingInstancesLinter 1.09ms
+	parsing 0.41ms
+	process pre-definitions 0.341ms
+	share common exprs 0.064ms
+	tactic execution 131ms
+	tacticAnalysis 1.43ms
+	type checking 0.409ms
+	typeclass inference 4.5ms
+PEAK_RSS_BYTES=717717504
+EXIT=1 WALL=4.3s CAP=8G

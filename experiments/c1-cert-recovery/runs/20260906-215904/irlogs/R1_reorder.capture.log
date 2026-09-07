@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/R1_reorder.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/R1_reorder.dump.lean:18:2: warning: 'pb_dump_ir"ir/R1_reorder.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00812ms
+	elaboration 2.75ms
+	fix level params 0.00986ms
+	instantiate metavars 0.0155ms
+	interpretation 0.107ms
+	linting 15.7ms
+	module linting 0.00102ms
+	overlappingInstancesLinter 0.684ms
+	parsing 0.352ms
+	process pre-definitions 0.107ms
+	share common exprs 0.0378ms
+	tactic execution 10.2ms
+	tacticAnalysis 2.37ms
+	type checking 6.12ms
+	typeclass inference 9.13ms
+PEAK_RSS_BYTES=685338624
+EXIT=0 WALL=4.4s CAP=8G

@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/O6_E4.json | hypotheses=10 fragment=LIA | skipped_locals=[] | nat_atoms=[_pb_atom_0, _pb_atom_1] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/O6_E4.dump.lean:20:2: warning: 'pb_dump_ir"ir/O6_E4.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00782ms
+	elaboration 9.68ms
+	fix level params 0.0129ms
+	instantiate metavars 0.032ms
+	interpretation 0.105ms
+	linting 14.5ms
+	module linting 0.000862ms
+	overlappingInstancesLinter 0.669ms
+	parsing 0.463ms
+	process pre-definitions 0.121ms
+	share common exprs 0.0531ms
+	tactic execution 10.2ms
+	tacticAnalysis 2.52ms
+	type checking 12.6ms
+	typeclass inference 31.2ms
+PEAK_RSS_BYTES=690716672
+EXIT=0 WALL=4.0s CAP=8G

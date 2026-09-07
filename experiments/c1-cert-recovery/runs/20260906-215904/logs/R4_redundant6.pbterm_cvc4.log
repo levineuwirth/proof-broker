@@ -1,0 +1,20 @@
+proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1352 fragment=LIA hyps=15 dispatch_ms=114 verify_ms=0 wall_ms=134
+tactic execution of ProofBroker.Tactic.proofBrokerTerm took 124ms
+cumulative profiling times:
+	attribute application 0.00741ms
+	elaboration 4.43ms
+	fix level params 0.025ms
+	instantiate metavars 0.0425ms
+	interpretation 0.0529ms
+	linting 16.3ms
+	module linting 0.000892ms
+	overlappingInstancesLinter 0.601ms
+	parsing 0.361ms
+	process pre-definitions 0.28ms
+	share common exprs 0.174ms
+	tactic execution 127ms
+	tacticAnalysis 3.89ms
+	type checking 5.57ms
+	typeclass inference 11.8ms
+PEAK_RSS_BYTES=705740800
+EXIT=0 WALL=4.1s CAP=8G

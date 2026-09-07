@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/P5_plain_nat.json | hypotheses=3 fragment=LIA | skipped_locals=[] | nat_atoms=[] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/P5_plain_nat.dump.lean:18:2: warning: 'pb_dump_ir"ir/P5_plain_nat.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00708ms
+	elaboration 2.32ms
+	fix level params 0.00954ms
+	instantiate metavars 0.0158ms
+	interpretation 0.105ms
+	linting 11.8ms
+	module linting 0.00107ms
+	overlappingInstancesLinter 0.524ms
+	parsing 0.225ms
+	process pre-definitions 0.101ms
+	share common exprs 0.0347ms
+	tactic execution 8.34ms
+	tacticAnalysis 1.58ms
+	type checking 8.26ms
+	typeclass inference 8.61ms
+PEAK_RSS_BYTES=705642496
+EXIT=0 WALL=4.2s CAP=8G

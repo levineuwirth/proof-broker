@@ -21,8 +21,12 @@
        [((_ th-lemma arith farkas ...) p1 ... pn false)] with
        signed coefficients (consumers take absolute values, with
        [Farkas.verify] gating the result).
-    2. Internal Tier 1 — [Farkas_search.try_close] runs a bounded
-       search over the IR directly, rescuing Farkas-shaped goals
+    2. Internal Tier 1 — [Farkas_search.try_close_then_exact]: the
+       bounded coefficient enumeration, then, only where that came up
+       empty, exact support-bounded recovery (which solves for the
+       multipliers instead of guessing them, so a witness needing a
+       large coefficient is reachable). Runs over the IR directly,
+       rescuing Farkas-shaped goals
        z3 closed through theory rewrites the native extractor
        can't follow.
     3. Tier 0 oracle — falls back when neither produced a
@@ -294,7 +298,7 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                 ~witness
             in
             let try_internal_closer () =
-              match Farkas_search.try_close ir with
+              match Farkas_search.try_close_then_exact ir with
               | Ok witness -> mk_farkas witness
               | Error _ -> mk_oracle ()
             in

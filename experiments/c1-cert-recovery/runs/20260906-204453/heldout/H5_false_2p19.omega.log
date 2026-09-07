@@ -1,0 +1,24 @@
+heldout/H5_false_2p19.omega.lean:22:2: error: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  0 ≤ a ≤ 35184372088831
+  a ≥ 35184372080641
+where
+ a := ↑v.val
+cumulative profiling times:
+	attribute application 0.00716ms
+	elaboration 3.72ms
+	fix level params 0.0119ms
+	instantiate metavars 0.00936ms
+	interpretation 0.00418ms
+	linting 13.7ms
+	module linting 0.000972ms
+	overlappingInstancesLinter 0.657ms
+	parsing 0.399ms
+	process pre-definitions 0.162ms
+	share common exprs 0.0419ms
+	tactic execution 0.715ms
+	tacticAnalysis 1.73ms
+	type checking 0.269ms
+	typeclass inference 3.75ms
+PEAK_RSS_BYTES=698990592
+EXIT=1 WALL=4.1s CAP=8G

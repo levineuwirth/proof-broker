@@ -1,0 +1,10 @@
+# diagnostic executables, the shared objects the probe loads, and the
+# SDK they link. 2026-09-07T11:50:33+02:00. Rebuilt by tools/build_diag.sh, which
+# every campaign entry point runs before any timing or probing.
+  diag.exe         68f36c4f0bd186961c42cf7dfe48910522f6e76fabd2217ef52e543079c980e3  (diag.exe)
+  negcheck.exe     e28e314fac9f5f5c4d559cfc2828d8620dbb7a92f227e9a3c4a7925672bafbc0  (negcheck.exe)
+  exact_budget.exe 422c62639b2bc78a0a71af065fb13e964874388f570dcdf769ac64433030386b  (exact_budget.exe)
+  proof_broker_ffi fa0733db6d375be67da6f9e8127668b06b49fd7633d188bef28ee1b851eb8c8b  (proof_broker_ffi.so)
+  libpbglue.so     12363eb0b6369b8a44844b705de025defa740f50ba812182cecf91f5fdaf61ce  (libpbglue.so)
+  libproof_x2dbrok 93a7ec67c66445fbecb25ef5a19fbc96b672de1844526320e20391662cdd70ca  (libproof_x2dbroker_x2dbridge_ProofBroker.so)
+  proof_broker__Fa 1a81420b74ccd5fb44fb064361eb8f1f38ff9859dfb96534705dc1e9186c0cb5  (proof_broker__Farkas_search.cmx)

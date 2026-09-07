@@ -1,0 +1,26 @@
+cumulative profiling times:
+	attribute application 0.00771ms
+	congr simp thm 0.281ms
+	elaboration 2.41ms
+	fix level params 0.00887ms
+	grind 2.93ms
+	grind cutsat 0.178ms
+	grind mark subsingleton 0.0722ms
+	grind ring 0.0391ms
+	grind simp 2.11ms
+	instantiate metavars 0.0415ms
+	interpretation 0.0667ms
+	linting 14.1ms
+	module linting 0.00106ms
+	overlappingInstancesLinter 0.525ms
+	parsing 0.283ms
+	process pre-definitions 0.11ms
+	share common exprs 0.024ms
+	sym canon 0.559ms
+	sym typeclass inference 14.9ms
+	tactic execution 0.581ms
+	tacticAnalysis 2.54ms
+	type checking 5.34ms
+	typeclass inference 6.69ms
+PEAK_RSS_BYTES=699822080
+EXIT=0 WALL=4.2s CAP=8G

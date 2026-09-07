@@ -1,0 +1,19 @@
+heldout/H5_false_2p19.pb.lean:22:2: error: proof_broker: no adapter could close the goal (4 attempt(s); first: ProofBroker.AttemptOutcome.failed (ProofBroker.DispatchFailure.satReturned))
+cumulative profiling times:
+	attribute application 0.0115ms
+	elaboration 3.24ms
+	fix level params 0.0223ms
+	instantiate metavars 0.0129ms
+	interpretation 0.068ms
+	linting 9.79ms
+	module linting 0.000902ms
+	overlappingInstancesLinter 0.687ms
+	parsing 0.211ms
+	process pre-definitions 0.317ms
+	share common exprs 0.0833ms
+	tactic execution 28.1ms
+	tacticAnalysis 1.63ms
+	type checking 0.204ms
+	typeclass inference 4.42ms
+PEAK_RSS_BYTES=710041600
+EXIT=1 WALL=4.1s CAP=8G

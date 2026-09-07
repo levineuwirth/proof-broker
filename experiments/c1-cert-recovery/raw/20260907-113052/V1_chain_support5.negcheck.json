@@ -1,0 +1,224 @@
+{
+  "case": "V1_chain_support5",
+  "ir_source": "ir/V1_chain_support5.json",
+  "adapters": {
+    "z3": { "outcome": "cert", "tier": 1, "format": "farkas" },
+    "cvc5": { "outcome": "cert", "tier": 3, "format": "alethe-2024" },
+    "cvc4": { "outcome": "cert", "tier": 1, "format": "farkas" }
+  },
+  "false_goal_check": {
+    "asserted": false,
+    "expectation": "not asserted for this case"
+  },
+  "corrupted_certificate": {
+    "status": "checked",
+    "genuine_cert_from": "z3",
+    "genuine_witness": {
+      "coefficients": [
+        { "hypothesis": "h4", "coefficient": "1" },
+        { "hypothesis": "h2", "coefficient": "1" },
+        { "hypothesis": "neg_goal", "coefficient": "1" },
+        { "hypothesis": "h1", "coefficient": "1" },
+        { "hypothesis": "h3", "coefficient": "1" }
+      ]
+    },
+    "baseline_farkas_verify": "VERIFIED",
+    "baseline_cert_verify": "verified_farkas",
+    "mutation_target": {
+      "hypothesis": "h4",
+      "coefficient": "1",
+      "class": "has_variables",
+      "compiled": "Le(x3)"
+    },
+    "witness_entry_classes": [
+      {
+        "hypothesis": "h4",
+        "coefficient": "1",
+        "class": "has_variables",
+        "compiled": "Le(x3)"
+      },
+      {
+        "hypothesis": "h2",
+        "coefficient": "1",
+        "class": "has_variables",
+        "compiled": "Le(x1 + -x2)"
+      },
+      {
+        "hypothesis": "neg_goal",
+        "coefficient": "1",
+        "class": "has_variables",
+        "compiled": "Le(-x0 + 1)"
+      },
+      {
+        "hypothesis": "h1",
+        "coefficient": "1",
+        "class": "has_variables",
+        "compiled": "Le(x0 + -x1)"
+      },
+      {
+        "hypothesis": "h3",
+        "coefficient": "1",
+        "class": "has_variables",
+        "compiled": "Le(x2 + -x3)"
+      }
+    ],
+    "witness_mutations": [
+      {
+        "mutation": "coefficient_doubled",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "h4", "coefficient": "2" },
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_off_by_one",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "h4", "coefficient": "0" },
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_negated",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "h4", "coefficient": "-1" },
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "negative_coefficient",
+        "cert_verify": "farkas_negative_coefficient",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_zeroed",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "h4", "coefficient": "0" },
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "hypothesis_renamed",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "no_such_hypothesis", "coefficient": "1" },
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "unknown_hypothesis",
+        "cert_verify": "farkas_unknown_hypothesis",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "term_dropped",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "empty_witness",
+        "witness": { "coefficients": [] },
+        "expected": "rejected",
+        "farkas_verify": "malformed_witness",
+        "cert_verify": "farkas_malformed_witness",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_garbage",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "h4", "coefficient": "not-a-number" },
+            { "hypothesis": "h2", "coefficient": "1" },
+            { "hypothesis": "neg_goal", "coefficient": "1" },
+            { "hypothesis": "h1", "coefficient": "1" },
+            { "hypothesis": "h3", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "bad_coefficient",
+        "cert_verify": "farkas_bad_coefficient",
+        "agrees_with_oracle": true,
+        "farkas_agrees": true,
+        "cert_verifier_agrees": true,
+        "kind": "invalid_mutation"
+      }
+    ],
+    "envelope_mutations": [
+      {
+        "mutation": "dispatch_context_hash_replaced",
+        "cert_verify": "hash_mismatch",
+        "rejected": true
+      },
+      {
+        "mutation": "rewrite_trace_hash_replaced",
+        "cert_verify": "hash_mismatch",
+        "rejected": true
+      }
+    ]
+  },
+  "gate": { "ok": true, "violations": [] }
+}

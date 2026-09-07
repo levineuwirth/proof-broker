@@ -1,0 +1,14 @@
+unsat
+((set-logic QF_LIA)
+(proof
+(let (($x49 (>= _pb_atom_0 70368744161281)))
+(let ((@x52 (rewrite (= (not (<= 18446744069414584321 (* 262144 _pb_atom_0))) (not $x49)))))
+(let (($x42 (not (<= 18446744069414584321 (* 262144 _pb_atom_0)))))
+(let ((?x37 (* 262144 _pb_atom_0)))
+(let (($x38 (< ?x37 18446744069414584321)))
+(let ((@x54 (monotonicity (trans (rewrite (= $x38 $x42)) @x52 (= $x38 (not $x49))) (= (not $x38) (not (not $x49))))))
+(let ((@x59 (mp (asserted (not $x38)) (trans @x54 (rewrite (= (not (not $x49)) $x49)) (= (not $x38) $x49)) $x49)))
+(let (($x25 (<= _pb_atom_0 70368744161280)))
+(let ((@x26 (asserted $x25)))
+(unit-resolution ((_ th-lemma arith farkas 1 1) (or (not $x25) (not $x49))) (mp @x26 (rewrite (= $x25 $x25)) $x25) (mp @x59 (rewrite (= $x49 $x49)) $x49) false))))))))))))
+

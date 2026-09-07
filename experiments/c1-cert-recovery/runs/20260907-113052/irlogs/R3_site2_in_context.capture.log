@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/R3_site2_in_context.json | hypotheses=12 fragment=LIA | skipped_locals=[q — data local at an undeclarable type (ZMod P); S — data local at an undeclarable type (ZMod P); g_lo — data local at an undeclarable type (ZMod P); g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0, _pb_atom_1, _pb_atom_2, _pb_atom_3, _pb_atom_4] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/R3_site2_in_context.dump.lean:21:2: warning: 'pb_dump_ir"ir/R3_site2_in_context.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00735ms
+	elaboration 6.55ms
+	fix level params 0.0139ms
+	instantiate metavars 0.0306ms
+	interpretation 0.121ms
+	linting 14.8ms
+	module linting 0.000862ms
+	overlappingInstancesLinter 0.514ms
+	parsing 0.356ms
+	process pre-definitions 0.133ms
+	share common exprs 0.0663ms
+	tactic execution 10.4ms
+	tacticAnalysis 2.35ms
+	type checking 9.18ms
+	typeclass inference 33.2ms
+PEAK_RSS_BYTES=690372608
+EXIT=0 WALL=4.2s CAP=8G

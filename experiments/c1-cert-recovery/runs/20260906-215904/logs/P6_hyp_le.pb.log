@@ -1,0 +1,19 @@
+runs/20260906-215904/lean/P6_hyp_le.pb.lean:22:2: error: proof_broker: no adapter could close the goal (4 attempt(s); first: ProofBroker.AttemptOutcome.failed (ProofBroker.DispatchFailure.satReturned))
+cumulative profiling times:
+	attribute application 0.00885ms
+	elaboration 3.22ms
+	fix level params 0.021ms
+	instantiate metavars 0.0109ms
+	interpretation 0.0655ms
+	linting 13.3ms
+	module linting 0.000962ms
+	overlappingInstancesLinter 0.765ms
+	parsing 0.314ms
+	process pre-definitions 0.363ms
+	share common exprs 0.119ms
+	tactic execution 39.6ms
+	tacticAnalysis 1.11ms
+	type checking 0.143ms
+	typeclass inference 4.42ms
+PEAK_RSS_BYTES=728514560
+EXIT=1 WALL=4.1s CAP=8G

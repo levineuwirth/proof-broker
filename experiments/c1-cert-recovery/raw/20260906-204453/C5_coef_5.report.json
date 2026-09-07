@@ -1,0 +1,131 @@
+{
+  "case": "C5_coef_5",
+  "ir_source": "ir/C5_coef_5.json",
+  "ir_sha256": "sha256:0696dd5fba5297f15eca24dd2a68c6c2d7c4436498d76e6134e33b68269eb1e3",
+  "final_ir_sha256": "sha256:ee36073c535b37595a39b2a995903b8c925f397073376aaacb73848787737af5",
+  "pipeline": {
+    "trace_is_identity": false,
+    "entries": [
+      { "pass": "propositional_simplification", "outcome": "no_op" },
+      { "pass": "definition_unfolding", "outcome": "applied" }
+    ],
+    "rewrite_trace_hash": "sha256:9bb91c4afbcd883b749995dd73246271069b5c2625c6408ad484c09ea47a6427"
+  },
+  "fragment": "LIA",
+  "hypotheses_in_final_ir": 3,
+  "farkas_compiled_inputs": [
+    { "name": "hhi", "compiled": "Le(_pb_atom_0 + -4398046511103 <= 0)" },
+    { "name": "hP", "compiled": "Eq(0 = 0)" },
+    { "name": "_pb_nonneg_atom_0", "compiled": "Le(-_pb_atom_0 <= 0)" },
+    {
+      "name": "neg_goal",
+      "compiled": "Le(-5*_pb_atom_0 + 18446744069414584321 <= 0)"
+    }
+  ],
+  "hypotheses_not_compilable": [],
+  "witness_existence_probe": {
+    "status": "witness_exists",
+    "support": 2,
+    "max_abs_coefficient": "5",
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hhi", "coefficient": "5" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    },
+    "farkas_verify": { "verdict": "verified" }
+  },
+  "backends": {
+    "z3": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 7,
+      "proof_body_present": true,
+      "proof_bytes": 1081,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "no_farkas_th_lemma",
+        "detail": "no Farkas-flavored th-lemma in proof (likely opaque arith form)"
+      },
+      "fallback_search": {
+        "result": "error",
+        "ms": 0,
+        "kind": "search_exhausted",
+        "detail": "no Farkas witness found within the bounded coefficient search"
+      }
+    },
+    "cvc5": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 6,
+      "proof_body_present": true,
+      "proof_bytes": 3541,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "unmatched_literal",
+        "detail": "no IR input matches clause literal (not (<= (* -1 _pb_atom_0) (* -1 3689348813882916865))) (compiled Le(-_pb_atom_0 + 3689348813882916865))"
+      },
+      "case_split_extraction": "error: no_la_generic",
+      "fallback_search": {
+        "result": "error",
+        "ms": 0,
+        "kind": "search_exhausted",
+        "detail": "no Farkas witness found within the bounded coefficient search"
+      }
+    },
+    "cvc4": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 2,
+      "proof_body_present": false,
+      "native_extraction": "cvc4 has no proof-trace path (adapter goes straight to the internal closer)",
+      "fallback_search": {
+        "result": "error",
+        "ms": 0,
+        "kind": "search_exhausted",
+        "detail": "no Farkas witness found within the bounded coefficient search"
+      }
+    }
+  },
+  "adapter_minted": {
+    "z3": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 0,
+        "format": "oracle",
+        "payload": { "claim": "proved" }
+      }
+    },
+    "cvc5": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 0,
+        "format": "oracle",
+        "payload": { "claim": "proved" }
+      }
+    },
+    "cvc4": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 0,
+        "format": "oracle",
+        "payload": { "claim": "proved" }
+      }
+    }
+  },
+  "fallback_bound_sweep": {
+    "smallest_successful_bound": 6,
+    "ms": 1,
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hhi", "coefficient": "5" },
+        { "hypothesis": "hP", "coefficient": "-6" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    }
+  }
+}

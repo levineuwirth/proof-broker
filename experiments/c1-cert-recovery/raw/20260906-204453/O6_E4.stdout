@@ -1,0 +1,160 @@
+{
+  "case": "O6_E4",
+  "ir_source": "ir/O6_E4.json",
+  "ir_sha256": "sha256:86e59f0a3a614d03a73263ce365814f985cb270c813d9253ecaa88857cb693df",
+  "final_ir_sha256": "sha256:849b5794ca2e766d9d9b973832b1d2dd313ee9c03da3229b5d718df6eb4b27e3",
+  "pipeline": {
+    "trace_is_identity": false,
+    "entries": [
+      { "pass": "propositional_simplification", "outcome": "no_op" },
+      { "pass": "definition_unfolding", "outcome": "applied" }
+    ],
+    "rewrite_trace_hash": "sha256:62329e94a4d2650bd9ce1a8312c2b4419fb835123cc3092ddee533447053bd9f"
+  },
+  "fragment": "LIA",
+  "hypotheses_in_final_ir": 10,
+  "farkas_compiled_inputs": [
+    { "name": "hg1l", "compiled": "Le(g1l + -262143 <= 0)" },
+    { "name": "hBG", "compiled": "Le(B + -_pb_atom_0 + 1 <= 0)" },
+    {
+      "name": "hG2w",
+      "compiled": "Le(_pb_atom_1 + -4611686018427387904 <= 0)"
+    },
+    {
+      "name": "hsplit",
+      "compiled": "Eq(-68719476736*_pb_atom_0 + _pb_atom_1 = 0)"
+    },
+    { "name": "hP", "compiled": "Eq(0 = 0)" },
+    { "name": "_pb_nonneg_g1l", "compiled": "Le(-g1l <= 0)" },
+    { "name": "_pb_nonneg_B", "compiled": "Le(-B <= 0)" },
+    { "name": "_pb_nonneg_G2w", "compiled": "Le(-G2w <= 0)" },
+    { "name": "_pb_nonneg_atom_0", "compiled": "Le(-_pb_atom_0 <= 0)" },
+    { "name": "_pb_nonneg_atom_1", "compiled": "Le(-_pb_atom_1 <= 0)" },
+    {
+      "name": "neg_goal",
+      "compiled": "Le(-262144*B + -g1l + 18446744069414584321 <= 0)"
+    }
+  ],
+  "hypotheses_not_compilable": [],
+  "witness_existence_probe": {
+    "status": "witness_exists",
+    "support": 6,
+    "max_abs_coefficient": "68719214592",
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hg1l", "coefficient": "1" },
+        { "hypothesis": "hBG", "coefficient": "262144" },
+        { "hypothesis": "hG2w", "coefficient": "1" },
+        { "hypothesis": "hsplit", "coefficient": "-1" },
+        { "hypothesis": "_pb_nonneg_atom_0", "coefficient": "68719214592" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    },
+    "farkas_verify": { "verdict": "verified" }
+  },
+  "backends": {
+    "z3": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 8,
+      "proof_body_present": true,
+      "proof_bytes": 2468,
+      "native_extraction": {
+        "attempted": true,
+        "result": "ok",
+        "ms": 0,
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hBG", "coefficient": "68719476736" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "farkas_verify": { "verdict": "verified" }
+      },
+      "fallback_search": {
+        "result": "error",
+        "ms": 35,
+        "kind": "sparse_search_exhausted",
+        "detail": "dense coefficient space above the cap; the sparse-support rescue (support <= 4, 56937 candidates) found no Farkas witness"
+      }
+    },
+    "cvc5": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 7,
+      "proof_body_present": true,
+      "proof_bytes": 13383,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "unmatched_literal",
+        "detail": "no IR input matches clause literal (not (< _pb_atom_0 67108865)) (compiled Le(_pb_atom_0 + -67108864))"
+      },
+      "case_split_extraction": "error: no_la_generic",
+      "fallback_search": {
+        "result": "error",
+        "ms": 32,
+        "kind": "sparse_search_exhausted",
+        "detail": "dense coefficient space above the cap; the sparse-support rescue (support <= 4, 56937 candidates) found no Farkas witness"
+      }
+    },
+    "cvc4": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 3,
+      "proof_body_present": false,
+      "native_extraction": "cvc4 has no proof-trace path (adapter goes straight to the internal closer)",
+      "fallback_search": {
+        "result": "error",
+        "ms": 36,
+        "kind": "sparse_search_exhausted",
+        "detail": "dense coefficient space above the cap; the sparse-support rescue (support <= 4, 56937 candidates) found no Farkas witness"
+      }
+    }
+  },
+  "adapter_minted": {
+    "z3": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hsplit", "coefficient": "-1" },
+              { "hypothesis": "hBG", "coefficient": "68719476736" },
+              { "hypothesis": "hg1l", "coefficient": "262144" },
+              { "hypothesis": "neg_goal", "coefficient": "262144" },
+              { "hypothesis": "hG2w", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "cvc5": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 0,
+        "format": "oracle",
+        "payload": { "claim": "proved" }
+      }
+    },
+    "cvc4": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 0,
+        "format": "oracle",
+        "payload": { "claim": "proved" }
+      }
+    }
+  },
+  "fallback_bound_sweep": {
+    "smallest_successful_bound": null,
+    "ladder_exhausted_at": 32
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "case": "C3_coef_3",
+  "ir_source": "ir/C3_coef_3.json",
+  "ir_sha256": "sha256:d73d1d6722ba524aede92b5fe1b6d2f250372c197ea36240b4418ac3ee3d4b37",
+  "final_ir_sha256": "sha256:ff9484e84bd578cfdb3531454807439626ea7953829c94cee958df631db3c2d5",
+  "pipeline": {
+    "trace_is_identity": false,
+    "entries": [
+      { "pass": "propositional_simplification", "outcome": "no_op" },
+      { "pass": "definition_unfolding", "outcome": "applied" }
+    ],
+    "rewrite_trace_hash": "sha256:77ef3da290cc00f67fd324a30f94c35e2969207774ef0da05e313dc8062092ea"
+  },
+  "fragment": "LIA",
+  "hypotheses_in_final_ir": 3,
+  "farkas_compiled_inputs": [
+    { "name": "hhi", "compiled": "Le(_pb_atom_0 + -4398046511103 <= 0)" },
+    { "name": "hP", "compiled": "Eq(0 = 0)" },
+    { "name": "_pb_nonneg_atom_0", "compiled": "Le(-_pb_atom_0 <= 0)" },
+    {
+      "name": "neg_goal",
+      "compiled": "Le(-3*_pb_atom_0 + 18446744069414584321 <= 0)"
+    }
+  ],
+  "hypotheses_not_compilable": [],
+  "witness_existence_probe": {
+    "status": "witness_exists",
+    "support": 2,
+    "max_abs_coefficient": "3",
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hhi", "coefficient": "3" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    },
+    "farkas_verify": { "verdict": "verified" }
+  },
+  "backends": {
+    "z3": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 8,
+      "proof_body_present": true,
+      "proof_bytes": 1081,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "no_farkas_th_lemma",
+        "detail": "no Farkas-flavored th-lemma in proof (likely opaque arith form)"
+      },
+      "fallback_search": {
+        "route": "bounded_enumeration",
+        "bounded_enumeration": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "hP", "coefficient": "-3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        },
+        "exact_recovery": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        }
+      }
+    },
+    "cvc5": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 4,
+      "proof_body_present": true,
+      "proof_bytes": 3541,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "unmatched_literal",
+        "detail": "no IR input matches clause literal (not (<= (* -1 _pb_atom_0) (* -1 6148914689804861441))) (compiled Le(-_pb_atom_0 + 6148914689804861441))"
+      },
+      "case_split_extraction": "error: no_la_generic",
+      "fallback_search": {
+        "route": "bounded_enumeration",
+        "bounded_enumeration": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "hP", "coefficient": "-3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        },
+        "exact_recovery": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        }
+      }
+    },
+    "cvc4": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 3,
+      "proof_body_present": false,
+      "native_extraction": "cvc4 has no proof-trace path (adapter goes straight to the internal closer)",
+      "fallback_search": {
+        "route": "bounded_enumeration",
+        "bounded_enumeration": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "hP", "coefficient": "-3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        },
+        "exact_recovery": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        }
+      }
+    }
+  },
+  "adapter_minted": {
+    "z3": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "hP", "coefficient": "-3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "cvc5": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "hP", "coefficient": "-3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "cvc4": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "3" },
+              { "hypothesis": "hP", "coefficient": "-3" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "fallback_bound_sweep": {
+    "smallest_successful_bound": 3,
+    "ms": 0,
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hhi", "coefficient": "3" },
+        { "hypothesis": "hP", "coefficient": "-3" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    }
+  }
+}

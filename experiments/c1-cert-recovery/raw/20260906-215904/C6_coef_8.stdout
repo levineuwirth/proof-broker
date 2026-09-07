@@ -1,0 +1,197 @@
+{
+  "case": "C6_coef_8",
+  "ir_source": "ir/C6_coef_8.json",
+  "ir_sha256": "sha256:7171c449a3233072c179e8bfd37a3065e8c530c1464680e0aecb443e3966a31c",
+  "final_ir_sha256": "sha256:d51ecb81df67059e89db059c1ffc0b33f5cb6768577c9cbaaf6e34194b45a164",
+  "pipeline": {
+    "trace_is_identity": false,
+    "entries": [
+      { "pass": "propositional_simplification", "outcome": "no_op" },
+      { "pass": "definition_unfolding", "outcome": "applied" }
+    ],
+    "rewrite_trace_hash": "sha256:f2407da057a466f4076cdaba7d8d8144e629612650d61a736ce0de5bdf4abd49"
+  },
+  "fragment": "LIA",
+  "hypotheses_in_final_ir": 3,
+  "farkas_compiled_inputs": [
+    { "name": "hhi", "compiled": "Le(_pb_atom_0 + -4398046511103 <= 0)" },
+    { "name": "hP", "compiled": "Eq(0 = 0)" },
+    { "name": "_pb_nonneg_atom_0", "compiled": "Le(-_pb_atom_0 <= 0)" },
+    {
+      "name": "neg_goal",
+      "compiled": "Le(-8*_pb_atom_0 + 18446744069414584321 <= 0)"
+    }
+  ],
+  "hypotheses_not_compilable": [],
+  "witness_existence_probe": {
+    "status": "witness_exists",
+    "support": 2,
+    "max_abs_coefficient": "8",
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hhi", "coefficient": "8" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    },
+    "farkas_verify": { "verdict": "verified" }
+  },
+  "backends": {
+    "z3": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 9,
+      "proof_body_present": true,
+      "proof_bytes": 1081,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "no_farkas_th_lemma",
+        "detail": "no Farkas-flavored th-lemma in proof (likely opaque arith form)"
+      },
+      "fallback_search": {
+        "route": "exact_recovery",
+        "bounded_enumeration": {
+          "result": "error",
+          "ms": 0,
+          "kind": "search_exhausted",
+          "detail": "no Farkas witness found within the bounded coefficient search"
+        },
+        "exact_recovery": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "8" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        }
+      }
+    },
+    "cvc5": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 5,
+      "proof_body_present": true,
+      "proof_bytes": 3541,
+      "native_extraction": {
+        "attempted": true,
+        "result": "error",
+        "ms": 0,
+        "kind": "unmatched_literal",
+        "detail": "no IR input matches clause literal (not (<= (* -1 _pb_atom_0) (* -1 2305843008676823041))) (compiled Le(-_pb_atom_0 + 2305843008676823041))"
+      },
+      "case_split_extraction": "error: no_la_generic",
+      "fallback_search": {
+        "route": "exact_recovery",
+        "bounded_enumeration": {
+          "result": "error",
+          "ms": 0,
+          "kind": "search_exhausted",
+          "detail": "no Farkas witness found within the bounded coefficient search"
+        },
+        "exact_recovery": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "8" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        }
+      }
+    },
+    "cvc4": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "unsat",
+      "solver_ms": 3,
+      "proof_body_present": false,
+      "native_extraction": "cvc4 has no proof-trace path (adapter goes straight to the internal closer)",
+      "fallback_search": {
+        "route": "exact_recovery",
+        "bounded_enumeration": {
+          "result": "error",
+          "ms": 0,
+          "kind": "search_exhausted",
+          "detail": "no Farkas witness found within the bounded coefficient search"
+        },
+        "exact_recovery": {
+          "result": "ok",
+          "ms": 0,
+          "witness": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "8" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          },
+          "farkas_verify": { "verdict": "verified" }
+        }
+      }
+    }
+  },
+  "adapter_minted": {
+    "z3": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "8" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "cvc5": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "8" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "cvc4": {
+      "outcome": "cert",
+      "cert": {
+        "tier": 1,
+        "format": "farkas",
+        "payload": {
+          "witness_kind": "farkas",
+          "witness_data": {
+            "coefficients": [
+              { "hypothesis": "hhi", "coefficient": "8" },
+              { "hypothesis": "neg_goal", "coefficient": "1" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "fallback_bound_sweep": {
+    "smallest_successful_bound": 8,
+    "ms": 5,
+    "witness": {
+      "coefficients": [
+        { "hypothesis": "hhi", "coefficient": "8" },
+        { "hypothesis": "hP", "coefficient": "-8" },
+        { "hypothesis": "neg_goal", "coefficient": "1" }
+      ]
+    }
+  }
+}

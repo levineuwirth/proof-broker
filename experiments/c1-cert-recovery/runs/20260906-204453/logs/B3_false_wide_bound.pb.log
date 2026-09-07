@@ -1,0 +1,19 @@
+runs/20260906-204453/lean/B3_false_wide_bound.pb.lean:22:2: error: proof_broker: no adapter could close the goal (4 attempt(s); first: ProofBroker.AttemptOutcome.failed (ProofBroker.DispatchFailure.satReturned))
+cumulative profiling times:
+	attribute application 0.00988ms
+	elaboration 3.7ms
+	fix level params 0.0237ms
+	instantiate metavars 0.0101ms
+	interpretation 0.0489ms
+	linting 15.9ms
+	module linting 0.000942ms
+	overlappingInstancesLinter 0.78ms
+	parsing 0.445ms
+	process pre-definitions 0.313ms
+	share common exprs 0.12ms
+	tactic execution 28.6ms
+	tacticAnalysis 2.07ms
+	type checking 0.173ms
+	typeclass inference 3.93ms
+PEAK_RSS_BYTES=708575232
+EXIT=1 WALL=4.3s CAP=8G

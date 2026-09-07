@@ -1,0 +1,53 @@
+{"type_metadata": {},
+ "tier": "structural",
+ "source_system": {"version": "0.0", "name": "lean"},
+ "logic_classification":
+ {"order": "first_order",
+  "first_order_fragment": "LIA",
+  "features_used": [],
+  "decidable_theory": null},
+ "library_provenance": {},
+ "ir_version": "1.0",
+ "goal":
+ {"shell":
+  {"type_args": [],
+   "symbol": "LE.le",
+   "node": "App",
+   "args":
+   [{"node": "Var", "name": "x0"},
+    {"value": "0", "type": "Int", "node": "NumLit"}]}},
+ "definitional_metadata": {},
+ "context":
+ {"type_vars": [],
+  "hypotheses":
+  [{"shell":
+    {"type_args": [],
+     "symbol": "LE.le",
+     "node": "App",
+     "args": [{"node": "Var", "name": "x0"}, {"node": "Var", "name": "x1"}]},
+    "name": "h1"},
+   {"shell":
+    {"type_args": [],
+     "symbol": "LE.le",
+     "node": "App",
+     "args": [{"node": "Var", "name": "x1"}, {"node": "Var", "name": "x2"}]},
+    "name": "h2"},
+   {"shell":
+    {"type_args": [],
+     "symbol": "LE.le",
+     "node": "App",
+     "args": [{"node": "Var", "name": "x2"}, {"node": "Var", "name": "x3"}]},
+    "name": "h3"},
+   {"shell":
+    {"type_args": [],
+     "symbol": "LE.le",
+     "node": "App",
+     "args":
+     [{"node": "Var", "name": "x3"},
+      {"value": "0", "type": "Int", "node": "NumLit"}]},
+    "name": "h4"}],
+  "free_vars":
+  [{"type": "Int", "name": "x0"},
+   {"type": "Int", "name": "x1"},
+   {"type": "Int", "name": "x2"},
+   {"type": "Int", "name": "x3"}]}}

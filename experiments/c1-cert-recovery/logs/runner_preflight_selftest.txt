@@ -1,0 +1,19 @@
+# positive control: with a passing preflight the seams are live
+  capture_ir.sh              invocations=2    ok
+  run_carrylift.sh           invocations=10   ok
+  run_heldout_broker.sh      invocations=1    ok
+  run.py                     invocations=1    ok
+  run_negchecks.sh           invocations=31   ok
+
+# a failing build preflight must stop every entry point
+  capture_ir.sh              exit=2   invocations=0   ok
+  run_carrylift.sh           exit=2   invocations=0   ok
+  run_heldout_broker.sh      exit=2   invocations=0   ok
+  run_negchecks.sh           exit=2   invocations=0   ok
+  run.py                     exit=2   invocations=0   ok
+
+# the real campaign's evidence must be untouched by this test
+  runs/ raw/ logs/            unchanged                        ok
+
+all entry points refuse to run on a failed preflight, and the real
+campaign was not touched

@@ -1,0 +1,19 @@
+proof_broker report: tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=oracle cert_bytes=1246 fragment=LIA hyps=3 dispatch_ms=21 verify_ms=0 wall_ms=35
+cumulative profiling times:
+	attribute application 0.00861ms
+	elaboration 3.47ms
+	fix level params 0.0101ms
+	instantiate metavars 0.0156ms
+	interpretation 0.0452ms
+	linting 16.2ms
+	module linting 0.000912ms
+	overlappingInstancesLinter 0.853ms
+	parsing 0.246ms
+	process pre-definitions 0.134ms
+	share common exprs 0.037ms
+	tactic execution 28.8ms
+	tacticAnalysis 2.63ms
+	type checking 18.8ms
+	typeclass inference 8.64ms
+PEAK_RSS_BYTES=709021696
+EXIT=0 WALL=4.4s CAP=8G

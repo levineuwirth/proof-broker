@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/B4_true_exact.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/B4_true_exact.dump.lean:18:2: warning: 'pb_dump_ir"ir/B4_true_exact.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00706ms
+	elaboration 2.37ms
+	fix level params 0.00936ms
+	instantiate metavars 0.0186ms
+	interpretation 0.102ms
+	linting 16.4ms
+	module linting 0.000951ms
+	overlappingInstancesLinter 0.894ms
+	parsing 0.277ms
+	process pre-definitions 0.124ms
+	share common exprs 0.0414ms
+	tactic execution 9.49ms
+	tacticAnalysis 1.73ms
+	type checking 9.93ms
+	typeclass inference 8.95ms
+PEAK_RSS_BYTES=707170304
+EXIT=0 WALL=4.3s CAP=8G

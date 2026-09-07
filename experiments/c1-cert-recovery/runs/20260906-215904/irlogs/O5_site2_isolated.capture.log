@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/O5_site2_isolated.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/O5_site2_isolated.dump.lean:18:2: warning: 'pb_dump_ir"ir/O5_site2_isolated.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00997ms
+	elaboration 2.93ms
+	fix level params 0.0101ms
+	instantiate metavars 0.0148ms
+	interpretation 0.0892ms
+	linting 16.2ms
+	module linting 0.000972ms
+	overlappingInstancesLinter 0.572ms
+	parsing 0.259ms
+	process pre-definitions 0.115ms
+	share common exprs 0.0395ms
+	tactic execution 11.9ms
+	tacticAnalysis 2.25ms
+	type checking 8.44ms
+	typeclass inference 8.76ms
+PEAK_RSS_BYTES=688349184
+EXIT=0 WALL=4.3s CAP=8G

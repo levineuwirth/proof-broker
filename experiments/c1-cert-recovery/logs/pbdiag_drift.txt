@@ -1,0 +1,7 @@
+same   normalizeGoalForBroker
+same   introLeadingNatForalls
+same   smtSymbolTailChar
+same   smtReservedWords
+same   smtSafeIdent
+same   smtSanitizeIdent
+same   renameLocalsForSmt

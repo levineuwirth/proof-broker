@@ -1,0 +1,19 @@
+runs/20260907-113052/lean/B3_false_wide_bound.pbterm_cvc4.lean:22:2: error: proof_broker_term: no adapter minted a cert
+cumulative profiling times:
+	attribute application 0.00963ms
+	elaboration 2.9ms
+	fix level params 0.026ms
+	instantiate metavars 0.0103ms
+	interpretation 0.0519ms
+	linting 12.1ms
+	module linting 0.000861ms
+	overlappingInstancesLinter 0.677ms
+	parsing 0.219ms
+	process pre-definitions 0.358ms
+	share common exprs 0.0992ms
+	tactic execution 16.4ms
+	tacticAnalysis 1.61ms
+	type checking 0.296ms
+	typeclass inference 3.61ms
+PEAK_RSS_BYTES=692002816
+EXIT=1 WALL=4.3s CAP=8G

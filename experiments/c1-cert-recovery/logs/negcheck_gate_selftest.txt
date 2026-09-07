@@ -1,0 +1,14 @@
+# tools/run_negchecks.sh gate self-tests, 2026-09-07T00:25:14+02:00
+
+## 1. faulty executable (NEGCHECK_BIN stub exits 42)
+   exit: 1 (must be nonzero)
+## 2. missing logs/STAMP
+   exit: 2 (must be nonzero)
+## 3. expectation generator exits 42
+   exit: 2 (must be nonzero)
+## 4. expectation generator succeeds but emits nothing
+   exit: 2 (must be nonzero)
+## 5. build preflight fails (BUILD_DIAG stub exits 42)
+   exit: 2 (must be nonzero)
+## 6. stale FFI ledger (probe refuses to load it)
+   probe exit: 2 (must be nonzero)

@@ -1,0 +1,8 @@
+(set-logic QF_LIA)
+(declare-const v Int)
+(assert (< v 4398046511104))
+(assert (= 18446744069414584321 18446744069414584321))
+(assert (<= 0 v))
+(assert (not (< (* 262144 v) 18446744069414584321)))
+(check-sat)
+(exit)

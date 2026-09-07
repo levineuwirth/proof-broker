@@ -1,0 +1,22 @@
+unsat
+((set-logic QF_LIA)
+(proof
+(let (($x68 (>= _pb_atom_0 70368744161281)))
+(let ((@x71 (rewrite (= (not (<= 18446744069414584321 (* 262144 _pb_atom_0))) (not $x68)))))
+(let (($x59 (not (<= 18446744069414584321 (* 262144 _pb_atom_0)))))
+(let ((?x48 (* _pb_atom_0 262144)))
+(let (($x49 (< ?x48 18446744069414584321)))
+(let ((@x57 (monotonicity (rewrite (= ?x48 (* 262144 _pb_atom_0))) (= $x49 (< (* 262144 _pb_atom_0) 18446744069414584321)))))
+(let ((@x63 (trans @x57 (rewrite (= (< (* 262144 _pb_atom_0) 18446744069414584321) $x59)) (= $x49 $x59))))
+(let ((@x73 (monotonicity (trans @x63 @x71 (= $x49 (not $x68))) (= (not $x49) (not (not $x68))))))
+(let ((@x78 (mp (asserted (not $x49)) (trans @x73 (rewrite (= (not (not $x68)) $x68)) (= (not $x49) $x68)) $x68)))
+(let (($x34 (>= _pb_atom_0 4398046511104)))
+(let (($x33 (not $x34)))
+(let ((@x37 (rewrite (= (not (<= 4398046511104 _pb_atom_0)) $x33))))
+(let (($x28 (not (<= 4398046511104 _pb_atom_0))))
+(let ((@x30 (rewrite (= (< _pb_atom_0 4398046511104) $x28))))
+(let (($x25 (< _pb_atom_0 4398046511104)))
+(let ((@x26 (asserted $x25)))
+(let ((@x89 (mp (mp (mp @x26 @x30 $x28) (rewrite (= $x28 $x28)) $x28) @x37 $x33)))
+(unit-resolution ((_ th-lemma arith farkas 1 1) (or $x34 (not $x68))) @x89 (mp @x78 (rewrite (= $x68 $x68)) $x68) false))))))))))))))))))))
+

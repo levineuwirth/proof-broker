@@ -9,7 +9,7 @@
         test_tptp test_adapter_vampire test_tptp_proof test_tier3_tptp
         test_adapter_llm test_llm_reconstruct
         test_canonical_hash)
- (libraries proof_broker yojson alcotest str))
+ (libraries proof_broker yojson alcotest str unix))
 
 ; test_round_trip resolves the reference IR fixtures (in repo/examples,
 ; outside the sdk/ dune workspace) at runtime relative to its build

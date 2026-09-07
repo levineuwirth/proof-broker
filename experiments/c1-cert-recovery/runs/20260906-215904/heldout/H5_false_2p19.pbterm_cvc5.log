@@ -1,0 +1,19 @@
+heldout/H5_false_2p19.pbterm_cvc5.lean:22:2: error: proof_broker_term: no adapter minted a cert
+cumulative profiling times:
+	attribute application 0.00883ms
+	elaboration 2.73ms
+	fix level params 0.0122ms
+	instantiate metavars 0.0092ms
+	interpretation 0.0551ms
+	linting 15.6ms
+	module linting 0.000892ms
+	overlappingInstancesLinter 0.882ms
+	parsing 0.286ms
+	process pre-definitions 0.193ms
+	share common exprs 0.0527ms
+	tactic execution 29.7ms
+	tacticAnalysis 2.29ms
+	type checking 0.349ms
+	typeclass inference 3.67ms
+PEAK_RSS_BYTES=705048576
+EXIT=1 WALL=4.2s CAP=8G

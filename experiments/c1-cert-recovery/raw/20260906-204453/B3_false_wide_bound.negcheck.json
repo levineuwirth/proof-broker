@@ -1,0 +1,36 @@
+{
+  "case": "B3_false_wide_bound",
+  "ir_source": "ir/B3_false_wide_bound.json",
+  "adapters": {
+    "z3": {
+      "outcome": "failed",
+      "failure": {
+        "kind": "sat_returned",
+        "detail": "solver returned sat: home-system goal is not provable"
+      }
+    },
+    "cvc5": {
+      "outcome": "failed",
+      "failure": {
+        "kind": "sat_returned",
+        "detail": "solver returned sat: home-system goal is not provable"
+      }
+    },
+    "cvc4": {
+      "outcome": "failed",
+      "failure": {
+        "kind": "sat_returned",
+        "detail": "solver returned sat: home-system goal is not provable"
+      }
+    }
+  },
+  "false_goal_check": {
+    "asserted": true,
+    "expectation": "every adapter must fail (no cert minted)"
+  },
+  "corrupted_certificate": {
+    "status": "not applicable",
+    "detail": "no adapter minted a Tier 1 Farkas cert on this IR, so there is no genuine cert here to corrupt"
+  },
+  "gate": { "ok": true, "violations": [] }
+}

@@ -1,0 +1,42 @@
+H1_hyp_succ_form.grind             EXIT=0 | ok
+H1_hyp_succ_form.omega             EXIT=0 | ok
+H1_hyp_succ_form.pb                EXIT=0 | closer=gated_omega backend=cvc4 tier=1 format=farkas
+H1_hyp_succ_form.pbterm_cvc4       EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H1_hyp_succ_form.pbterm_cvc5       EXIT=0 | closer=term_mode_nat backend=cvc5 tier=1 format=farkas
+H1_hyp_succ_form.pbterm            EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H1_hyp_succ_form.pbterm_z3         EXIT=0 | closer=term_mode_nat backend=z3 tier=1 format=farkas
+H2_coef_2p36.grind                 EXIT=0 | ok
+H2_coef_2p36.omega                 EXIT=0 | ok
+H2_coef_2p36.pb                    EXIT=0 | closer=gated_omega backend=cvc4 tier=1 format=farkas
+H2_coef_2p36.pbterm_cvc4           EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H2_coef_2p36.pbterm_cvc5           EXIT=0 | closer=term_mode_nat backend=cvc5 tier=1 format=farkas
+H2_coef_2p36.pbterm                EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H2_coef_2p36.pbterm_z3             EXIT=0 | closer=term_mode_nat backend=z3 tier=1 format=farkas
+H3_two_large_coefs.grind           EXIT=0 | ok
+H3_two_large_coefs.omega           EXIT=0 | ok
+H3_two_large_coefs.pb              EXIT=0 | closer=gated_omega backend=cvc4 tier=1 format=farkas
+H3_two_large_coefs.pbterm_cvc4     EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H3_two_large_coefs.pbterm_cvc5     EXIT=0 | closer=term_mode_nat backend=cvc5 tier=1 format=farkas
+H3_two_large_coefs.pbterm          EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H3_two_large_coefs.pbterm_z3       EXIT=0 | closer=term_mode_nat backend=z3 tier=1 format=farkas
+H4_mixed_small_large.grind         EXIT=0 | ok
+H4_mixed_small_large.omega         EXIT=0 | ok
+H4_mixed_small_large.pb            EXIT=0 | closer=gated_omega backend=cvc4 tier=1 format=farkas
+H4_mixed_small_large.pbterm_cvc4   EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H4_mixed_small_large.pbterm_cvc5   EXIT=0 | closer=term_mode_nat backend=cvc5 tier=1 format=farkas
+H4_mixed_small_large.pbterm        EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H4_mixed_small_large.pbterm_z3     EXIT=0 | closer=term_mode_nat backend=z3 tier=1 format=farkas
+H5_false_2p19.grind                EXIT=1 | `grind` failed
+H5_false_2p19.omega                EXIT=1 | omega could not prove the goal:
+H5_false_2p19.pb                   EXIT=1 | proof_broker: no adapter could close the goal (4 attempt(s); first: ProofBroker.
+H5_false_2p19.pbterm_cvc4          EXIT=1 | proof_broker_term: no adapter minted a cert
+H5_false_2p19.pbterm_cvc5          EXIT=1 | proof_broker_term: no adapter minted a cert
+H5_false_2p19.pbterm               EXIT=1 | proof_broker_term: no adapter minted a cert
+H5_false_2p19.pbterm_z3            EXIT=1 | proof_broker_term: no adapter minted a cert
+H6_other_limb_width.grind          EXIT=0 | ok
+H6_other_limb_width.omega          EXIT=0 | ok
+H6_other_limb_width.pb             EXIT=0 | closer=gated_omega backend=cvc4 tier=1 format=farkas
+H6_other_limb_width.pbterm_cvc4    EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H6_other_limb_width.pbterm_cvc5    EXIT=0 | closer=term_mode_nat backend=cvc5 tier=1 format=farkas
+H6_other_limb_width.pbterm         EXIT=0 | closer=term_mode_nat backend=cvc4 tier=1 format=farkas
+H6_other_limb_width.pbterm_z3      EXIT=0 | closer=term_mode_nat backend=z3 tier=1 format=farkas

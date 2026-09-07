@@ -1,0 +1,47 @@
+sat
+(
+  (define-fun L2 () Int
+    1)
+  (define-fun A0 () Int
+    1)
+  (define-fun L9 () Int
+    0)
+  (define-fun A2 () Int
+    1)
+  (define-fun L0 () Int
+    1)
+  (define-fun A6 () Int
+    0)
+  (define-fun A9 () Int
+    0)
+  (define-fun A1 () Int
+    262144)
+  (define-fun L4 () Int
+    0)
+  (define-fun L6 () Int
+    0)
+  (define-fun A7 () Int
+    0)
+  (define-fun L5 () Int
+    0)
+  (define-fun A10 () Int
+    1)
+  (define-fun A4 () Int
+    0)
+  (define-fun A3 () Int
+    1)
+  (define-fun A5 () Int
+    0)
+  (define-fun A8 () Int
+    68719214592)
+  (define-fun L8 () Int
+    68719214592)
+  (define-fun L1 () Int
+    262144)
+  (define-fun L3 () Int
+    (- 1))
+  (define-fun L10 () Int
+    1)
+  (define-fun L7 () Int
+    0)
+)

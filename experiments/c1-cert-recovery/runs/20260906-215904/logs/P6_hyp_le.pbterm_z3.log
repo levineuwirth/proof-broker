@@ -1,0 +1,19 @@
+runs/20260906-215904/lean/P6_hyp_le.pbterm_z3.lean:22:2: error: proof_broker_term: no adapter minted a cert
+cumulative profiling times:
+	attribute application 0.0119ms
+	elaboration 3.2ms
+	fix level params 0.0408ms
+	instantiate metavars 0.0119ms
+	interpretation 0.0555ms
+	linting 13.2ms
+	module linting 0.000771ms
+	overlappingInstancesLinter 0.686ms
+	parsing 0.239ms
+	process pre-definitions 0.477ms
+	share common exprs 0.163ms
+	tactic execution 30ms
+	tacticAnalysis 1.92ms
+	type checking 0.238ms
+	typeclass inference 4.17ms
+PEAK_RSS_BYTES=715689984
+EXIT=1 WALL=4.2s CAP=8G

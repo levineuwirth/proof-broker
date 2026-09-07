@@ -1,0 +1,17 @@
+cumulative profiling times:
+	attribute application 0.00753ms
+	elaboration 5.33ms
+	fix level params 0.0101ms
+	instantiate metavars 0.0175ms
+	linting 12ms
+	module linting 0.00122ms
+	overlappingInstancesLinter 0.678ms
+	parsing 0.24ms
+	process pre-definitions 0.131ms
+	share common exprs 0.039ms
+	tactic execution 2.76ms
+	tacticAnalysis 2.35ms
+	type checking 6.92ms
+	typeclass inference 11.7ms
+PEAK_RSS_BYTES=688148480
+EXIT=0 WALL=4.3s CAP=8G

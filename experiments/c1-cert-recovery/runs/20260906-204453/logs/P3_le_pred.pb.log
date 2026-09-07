@@ -1,0 +1,18 @@
+runs/20260906-204453/lean/P3_le_pred.pb.lean:22:2: error: proof_broker: ℕ subtraction is truncated (`a - b` is not the ℤ difference), so the ℕ→ℤ specialization refuses it rather than cast naively; restate without ℕ subtraction (e.g. move the subtrahend to the other side as an addition)
+cumulative profiling times:
+	attribute application 0.00623ms
+	elaboration 3.2ms
+	fix level params 0.017ms
+	instantiate metavars 0.00876ms
+	linting 13ms
+	module linting 0.00101ms
+	overlappingInstancesLinter 0.626ms
+	parsing 0.295ms
+	process pre-definitions 0.204ms
+	share common exprs 0.0433ms
+	tactic execution 0.224ms
+	tacticAnalysis 1.68ms
+	type checking 0.289ms
+	typeclass inference 4.04ms
+PEAK_RSS_BYTES=703070208
+EXIT=1 WALL=3.8s CAP=8G

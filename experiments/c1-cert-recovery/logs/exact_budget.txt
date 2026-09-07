@@ -1,0 +1,70 @@
+# exact-recovery cost sweep — TWO SHAPES
+#
+# shape A (width 1): forms mention few variables each — the checkpoint-2
+#   benchmark. Small matrices per support.
+# shape B (width 64): every form is a sum of 64 variables — the shape the
+#   checkpoint-2 review used to show the support cap alone bounds nothing.
+
+## shape A (width 1)
+# exact-recovery cost sweep (witness-free IRs, whole space swept)
+# max_exact_support = 4, max_exact_supports = 200000
+
+inputs  columns   supports         ms   ms/support  outcome
+# form width (variables per hypothesis): 1
+     2        2          3        0.0       0.0029  exact_search_exhausted
+     4        4         15        0.0       0.0013  exact_search_exhausted
+     6        6         56        0.1       0.0013  exact_search_exhausted
+     8        8        162        0.2       0.0013  exact_search_exhausted
+    10       10        385        0.5       0.0014  exact_search_exhausted
+    12       12        793        0.9       0.0011  exact_search_exhausted
+    14       14       1470        1.0       0.0007  exact_search_exhausted
+    16       16       2516        1.6       0.0006  exact_search_exhausted
+    18       18       4047        2.6       0.0007  exact_search_exhausted
+    20       20       6195        4.2       0.0007  exact_search_exhausted
+    22       22       9108        6.5       0.0007  exact_search_exhausted
+    24       24      12950        8.6       0.0007  exact_search_exhausted
+    26       26      17901       12.3       0.0007  exact_search_exhausted
+    28       28      24157       16.5       0.0007  exact_search_exhausted
+    30       30      31930       22.1       0.0007  exact_search_exhausted
+    32       32      41448       29.4       0.0007  exact_search_exhausted
+    34       34      52955       39.3       0.0007  exact_search_exhausted
+    36       36      66711       46.3       0.0007  exact_search_exhausted
+    38       38      82992       58.8       0.0007  exact_search_exhausted
+    40       40     102090       69.5       0.0007  exact_search_exhausted
+    42       42     124313       85.7       0.0007  exact_search_exhausted
+    44       44     149985      104.4       0.0007  exact_search_exhausted
+    46       46     179446      112.5       0.0006  exact_search_work_exceeded
+    48       48     200001        0.0       0.0000  exact_search_space_exceeded
+    50       50     200001        0.0       0.0000  exact_search_space_exceeded
+
+## shape B (width 64)
+# exact-recovery cost sweep (witness-free IRs, whole space swept)
+# max_exact_support = 4, max_exact_supports = 200000
+
+inputs  columns   supports         ms   ms/support  outcome
+# form width (variables per hypothesis): 64
+     2        2          3        0.1       0.0354  exact_search_exhausted
+     4        4         15        0.7       0.0447  exact_search_exhausted
+     6        6         56        1.1       0.0194  exact_search_exhausted
+     8        8        162        3.5       0.0214  exact_search_exhausted
+    10       10        385        8.9       0.0232  exact_search_exhausted
+    12       12        793       18.9       0.0238  exact_search_exhausted
+    14       14       1470       35.4       0.0241  exact_search_exhausted
+    16       16       2516       60.2       0.0239  exact_search_exhausted
+    18       18       4047       99.7       0.0246  exact_search_exhausted
+    20       20       6195      152.2       0.0246  exact_search_exhausted
+    22       22       9108      246.2       0.0270  exact_search_exhausted
+    24       24      12950      322.7       0.0249  exact_search_work_exceeded
+    26       26      17901      340.1       0.0190  exact_search_work_exceeded
+    28       28      24157      336.4       0.0139  exact_search_work_exceeded
+    30       30      31930      325.2       0.0102  exact_search_work_exceeded
+    32       32      41448      331.4       0.0080  exact_search_work_exceeded
+    34       34      52955      342.0       0.0065  exact_search_work_exceeded
+    36       36      66711      341.5       0.0051  exact_search_work_exceeded
+    38       38      82992      347.7       0.0042  exact_search_work_exceeded
+    40       40     102090      357.6       0.0035  exact_search_work_exceeded
+    42       42     124313      367.5       0.0030  exact_search_work_exceeded
+    44       44     149985      376.8       0.0025  exact_search_work_exceeded
+    46       46     179446      386.7       0.0022  exact_search_work_exceeded
+    48       48     200001        1.0       0.0000  exact_search_space_exceeded
+    50       50     200001        0.7       0.0000  exact_search_space_exceeded

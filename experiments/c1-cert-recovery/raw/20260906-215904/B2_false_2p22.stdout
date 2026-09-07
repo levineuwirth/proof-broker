@@ -1,0 +1,134 @@
+{
+  "case": "B2_false_2p22",
+  "ir_source": "ir/B2_false_2p22.json",
+  "ir_sha256": "sha256:713ca982b52f7249d179ec24a087c26ef5546d045380423a07cefacf816f722b",
+  "final_ir_sha256": "sha256:13a91d759cce9e8bd0ebb938da1e799f8f006a8c85e9d7d34dc47437c736e988",
+  "pipeline": {
+    "trace_is_identity": false,
+    "entries": [
+      { "pass": "propositional_simplification", "outcome": "no_op" },
+      { "pass": "definition_unfolding", "outcome": "applied" }
+    ],
+    "rewrite_trace_hash": "sha256:937d0257bcf88d629326de874ec89bc575226be41ffc6af35963f557dc450b92"
+  },
+  "fragment": "LIA",
+  "hypotheses_in_final_ir": 3,
+  "farkas_compiled_inputs": [
+    { "name": "hhi", "compiled": "Le(_pb_atom_0 + -4398046511103 <= 0)" },
+    { "name": "hP", "compiled": "Eq(0 = 0)" },
+    { "name": "_pb_nonneg_atom_0", "compiled": "Le(-_pb_atom_0 <= 0)" },
+    {
+      "name": "neg_goal",
+      "compiled": "Le(-4194304*_pb_atom_0 + 18446744069414584321 <= 0)"
+    }
+  ],
+  "hypotheses_not_compilable": [],
+  "witness_existence_probe": {
+    "status": "no_witness_exists",
+    "detail": "no nonneg-integer Farkas combination of the compiled inputs is contradictory"
+  },
+  "backends": {
+    "z3": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "sat",
+      "solver_ms": 7,
+      "proof_body_present": false,
+      "proof_bytes": 0,
+      "native_extraction": {
+        "attempted": false,
+        "reason": "no proof body in solver stdout"
+      },
+      "fallback_search": {
+        "route": "none",
+        "bounded_enumeration": {
+          "result": "error",
+          "ms": 0,
+          "kind": "search_exhausted",
+          "detail": "no Farkas witness found within the bounded coefficient search"
+        },
+        "exact_recovery": {
+          "result": "error",
+          "ms": 0,
+          "kind": "exact_search_exhausted",
+          "detail": "exact recovery examined 30 support set(s) of size <= 4 and found no Farkas witness: on every one the variable-cancellation system was either full rank (only the zero multiplier) or rank-deficient by more than one (no extreme ray has exactly that support), or the ray it pinned failed the sign or contradiction condition"
+        }
+      }
+    },
+    "cvc5": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "sat",
+      "solver_ms": 11,
+      "proof_body_present": false,
+      "proof_bytes": 0,
+      "native_extraction": {
+        "attempted": false,
+        "reason": "no proof body in solver stdout"
+      },
+      "case_split_extraction": "not attempted",
+      "fallback_search": {
+        "route": "none",
+        "bounded_enumeration": {
+          "result": "error",
+          "ms": 0,
+          "kind": "search_exhausted",
+          "detail": "no Farkas witness found within the bounded coefficient search"
+        },
+        "exact_recovery": {
+          "result": "error",
+          "ms": 0,
+          "kind": "exact_search_exhausted",
+          "detail": "exact recovery examined 30 support set(s) of size <= 4 and found no Farkas witness: on every one the variable-cancellation system was either full rank (only the zero multiplier) or rank-deficient by more than one (no extreme ray has exactly that support), or the ray it pinned failed the sign or contradiction condition"
+        }
+      }
+    },
+    "cvc4": {
+      "smtlib_logic": "QF_LIA",
+      "solver_response": "sat",
+      "solver_ms": 3,
+      "proof_body_present": false,
+      "native_extraction": "cvc4 has no proof-trace path (adapter goes straight to the internal closer)",
+      "fallback_search": {
+        "route": "none",
+        "bounded_enumeration": {
+          "result": "error",
+          "ms": 0,
+          "kind": "search_exhausted",
+          "detail": "no Farkas witness found within the bounded coefficient search"
+        },
+        "exact_recovery": {
+          "result": "error",
+          "ms": 0,
+          "kind": "exact_search_exhausted",
+          "detail": "exact recovery examined 30 support set(s) of size <= 4 and found no Farkas witness: on every one the variable-cancellation system was either full rank (only the zero multiplier) or rank-deficient by more than one (no extreme ray has exactly that support), or the ray it pinned failed the sign or contradiction condition"
+        }
+      }
+    }
+  },
+  "adapter_minted": {
+    "z3": {
+      "outcome": "failed",
+      "failure": {
+        "kind": "sat_returned",
+        "detail": "solver returned sat: home-system goal is not provable"
+      }
+    },
+    "cvc5": {
+      "outcome": "failed",
+      "failure": {
+        "kind": "sat_returned",
+        "detail": "solver returned sat: home-system goal is not provable"
+      }
+    },
+    "cvc4": {
+      "outcome": "failed",
+      "failure": {
+        "kind": "sat_returned",
+        "detail": "solver returned sat: home-system goal is not provable"
+      }
+    }
+  },
+  "fallback_bound_sweep": {
+    "smallest_successful_bound": null,
+    "ladder_exhausted_at": 32
+  }
+}
