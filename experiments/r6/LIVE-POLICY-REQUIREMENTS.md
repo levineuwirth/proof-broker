@@ -42,10 +42,15 @@ is asked to echo an explicitly supplied identifier.
 
 This is already the meaning of the R6-001 fixture check:
 [`RequestSession.invoke`](proposal_episode.py) computes the digest and passes
-it as an argument. [`fixture_responder.c`](validate/fixture_responder.c) reads
-the request to EOF, checks that it is nonempty, and echoes `argv[2]`; it does not
-hash the file. The read loop is a property of the inspected fixture program
-under the recorded execution assumptions, not something proved by its echo.
+it as an argument. [`fixture_responder.c`](validate/fixture_responder.c) opens
+`/request.json`, counts bytes, and returns 4 if the count is zero. That guard
+checks only that the file opens and yields at least one byte. It never parses
+the request JSON or uses the arithmetic rows. It echoes `argv[2]` without
+hashing the file, so a correct echo is compatible with the rows being entirely
+ignored. These are properties of the inspected fixture program under the
+recorded execution assumptions, not facts proved by the echo. The
+`wrong_binding` case injects `'0'*64` from the harness; it does not perturb a
+digest computed by the fixture.
 
 Use `transport_binding_failure` for an echo mismatch in the new policy, with
 an error such as "Response request digest does not match the recorded request

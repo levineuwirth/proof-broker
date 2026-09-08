@@ -87,6 +87,13 @@ its own hash of the retained request bytes. Binding was therefore already the
 scope of this check under the fixture policy. The echo does not prove that the
 read loop ran or that the proposer used the arithmetic body.
 
+More precisely, the fixture opens `/request.json`, counts bytes and returns 4
+if the count is zero. The file guard checks only successful opening and a
+nonzero byte count. It never parses the request JSON or uses its arithmetic
+rows. `wrong_binding` is a harness-supplied all-zero digest argument, not a
+perturbed fixture computation. This makes a passing echo compatible with the
+arithmetic body being entirely ignored even in the existing fixture.
+
 The live-policy requirements now explicitly separate response binding,
 outbound-envelope consistency, and claims about remote computation. They
 require neutral transport-binding errors and controls in which an echo passes
