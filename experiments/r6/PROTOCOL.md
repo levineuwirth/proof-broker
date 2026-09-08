@@ -599,3 +599,39 @@ phase. The [next policy's requirements](LIVE-POLICY-REQUIREMENTS.md) now require
 model-visible row semantics with exact prompt-byte binding, distinct admission
 review versus payload-integrity errors, and explicit provider transport/retry
 accounting. The approved fixture policy and evidence remain frozen.
+
+## R6-002 checkpoint amendment — 2026-09-08
+
+The [R6-002 checkpoint](R6-002.md) now implements a frozen arithmetic prompt,
+request/prompt binding, and capture of the actual serialized bytes read by a
+local canned receiver. The new `canned_envelope_v1` policy preserves the
+R6-001 request information boundary and Farkas consumption/replay requirements.
+The approved historical sources, policies, tasks and episodes remain unchanged.
+
+The response's echoed digest checks association only. The canned receiver
+deliberately ignores the arithmetic body. Altered-message controls retain a
+passing echo but fail independent envelope validation; well-formed wrong
+witnesses pass both transport checks and fail certificate verification.
+Admission-review versus injected-payload errors now differ, and new failures
+record logical phase separately from detector stage. Unavailable simulated
+usage is null; actual live-model calls and spending are zero.
+
+The checkpoint passed 36 focused prompt/transport/admission checks, 13 native
+episodes (three positive runs on two tasks, ten deliberate failures), and 35
+artifact/audit regressions. All 5,698 preserved files pinned to `79a4a07` match.
+The three positive episodes have empty axiom deltas. C8 retains its previously
+qualified, statement-identical wrapper scope. This is readiness of the local
+interface, not a model-capability experiment or provider-transport validation.
+
+Next comes review of this artifact, followed by selection and freezing of the
+provider adapter, exact outbound capture, model revision, sampling settings and
+budget. Canned responses must exercise that adapter boundary before live calls.
+
+The author approved R6-002 after independent recomputation on 2026-09-08.
+The [review closeout](reviews/2026-09-08/R6-002-REVIEW.md) records three
+next-policy requirements: relation coverage before expansion, structured
+envelope-component diagnostics, and reuse of the existing frozen proof-check
+module. Current LIA compilation emits `le`/`eq`; a genuine `lt` path requires
+separate admission and end-to-end evidence. The approved broad prompt and
+its artifacts remain unchanged. Response decoding/support/binding acceptance
+is distinguished from the separate certificate's mathematical verdict.

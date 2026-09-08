@@ -1,0 +1,448 @@
+{
+  "scope": "R6-002 approved local commit preflight; artifact recomputation and audits, no native reruns",
+  "base_commit": "79a4a07",
+  "staged_files_excluding_this_record": 1503,
+  "all_staged_files_match_disk": true,
+  "sealed_episode_files_matched_against_index": 471,
+  "source_locks_match": true,
+  "prior_files_checked": 5698,
+  "prior_changed": 0,
+  "prior_missing": 0,
+  "checkpoint_sha256": "ff9b3ebbd5a10db94e5899f4a6f00305f33ae37547f494c20d3956f7586c63fa",
+  "final_checks_sha256": "2a87af83ba7952a2b1a7ff382f3dfa9675e5b135fe71ec1121e79e4a45e454c9",
+  "suites": {
+    "prompt-transport.json": {
+      "sha256": "db70dab991d95365692937f08e8eae1a596bff49079bd0ee6b41cdd3e5ef398d",
+      "count": 36
+    },
+    "native-envelopes.json": {
+      "sha256": "ac7e92febc24291b79323918ab3f9e0159b7fb0ab6cc77617c2a245278729f77",
+      "count": 13
+    },
+    "envelope-audits.json": {
+      "sha256": "8895dc27a8351054c49b0a1ff97bc23b9d70d04640268c21c0b17549bb5dece8",
+      "count": 35
+    }
+  },
+  "fresh_read_only_audits": {
+    "d1_valid": {
+      "accepted": true,
+      "verdict_sha256": "9bbbf6d5c1c89d760113cfac9ac45ee2e6b87162a601033be72a5b9cd72a09c1",
+      "seal_sha256": "db2d9933607b477839a5357d24770f7ebd086ef15de69c3b36fe20c9a9b7b712"
+    },
+    "c8_valid": {
+      "accepted": true,
+      "verdict_sha256": "a36624179b96b5d0ee10c310352e5440ca9983503342b2b7692be4793789e25e",
+      "seal_sha256": "81c7855222098a3d802eedf76cd61db4b66b1fe92610ee71ae3f54cda759d270"
+    },
+    "d1_alternate_encoding": {
+      "accepted": true,
+      "verdict_sha256": "260d3b5f8b3a4392f1955ad76ac1b6774c8f0294c172a18c3cdcc5e446478fe7",
+      "seal_sha256": "c17a4ceb9eb53496fa865720e21617741b1ede5a82aafd63a1d0729a3653b733"
+    },
+    "legacy_broker_v1": {
+      "accepted": true
+    },
+    "legacy_broker_v2": {
+      "accepted": true
+    },
+    "legacy_broker_v3": {
+      "accepted": true
+    },
+    "legacy_c8_v1": {
+      "accepted": true
+    },
+    "legacy_d1_fixture": {
+      "accepted": true
+    },
+    "legacy_c8_fixture": {
+      "accepted": true
+    }
+  },
+  "retention_excluding_final_checks": {
+    "files": 1484,
+    "apparent_bytes": 11692220,
+    "distinct_blobs": 410,
+    "unique_bytes": 4661809
+  },
+  "request_instances": 13,
+  "row_instances": {
+    "le": 193,
+    "eq": 24,
+    "lt": 0
+  },
+  "no_development_runs_or_compilation_products_staged": true,
+  "full_staged_whitespace_exit": 2,
+  "non_patch_whitespace_exit": 0,
+  "retained_patch_context_warnings": [
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_invalid_witness/preparation-input/source.patch",
+      "line": 10,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_invalid_witness/preparation-input/source.patch",
+      "line": 16,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/input/source.patch",
+      "line": 10,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/input/source.patch",
+      "line": 16,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/preparation-input/source.patch",
+      "line": 10,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/preparation-input/source.patch",
+      "line": 16,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/c8_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_body/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_body/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_body/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_body/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_prompt/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_alternate_encoding/input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_alternate_encoding/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_exhausted_budget/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_malformed/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_malformed/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_malformed/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_malformed/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_omitted_prompt/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_timeout/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_timeout/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_timeout/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_timeout/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_transport_error/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_transport_error/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_transport_error/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_transport_error/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_valid/input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_valid/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_wrong_echo/preparation-input/source.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 6,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 21,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    },
+    {
+      "path": "experiments/r6/runs/envelope-checkpoint-v1/d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 115,
+      "text_hex": "20",
+      "diagnostic": "trailing whitespace"
+    }
+  ],
+  "attribution_commit": "",
+  "live_model_calls": 0,
+  "scope_limit": "no provider SDK, remote receipt, compilation or inference attestation"
+}

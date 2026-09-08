@@ -1,0 +1,516 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "prompt_binding",
+    "exact_request_suffix",
+    "no_self_hash",
+    "same_messages_different_wire",
+    "changed_prompt",
+    "omitted_prompt",
+    "altered_body_correct_echo",
+    "messages_extra_field",
+    "duplicate_envelope_key",
+    "duplicate_response_key",
+    "wrong_prompt_hash",
+    "noncanonical_request",
+    "wrong_echo_neutral",
+    "malformed_response",
+    "invalid_witness_format",
+    "response_limit",
+    "request_limit",
+    "unknown_usage",
+    "reported_zero",
+    "partial_usage",
+    "invalid_usage",
+    "inconsistent_usage",
+    "d1_six_let_facts",
+    "c8_no_let_control",
+    "admission_auxiliary_review",
+    "admission_injected_body",
+    "admission_dropped_let",
+    "admission_placeholder",
+    "admission_precedes_preparation_request",
+    "missing_capture_rejected",
+    "budget_before_second_stage",
+    "p6_frozen_criterion",
+    "proof_checks_unchanged",
+    "missing_case_rejected",
+    "duplicate_case_rejected",
+    "source_lock_guard"
+  ],
+  "check_count": 36,
+  "checks": [
+    {
+      "name": "prompt_binding",
+      "passed": true,
+      "detail": {
+        "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+        "request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288"
+      }
+    },
+    {
+      "name": "exact_request_suffix",
+      "passed": true,
+      "detail": "Exact canonical UTF-8 request bytes occur as the user message suffix"
+    },
+    {
+      "name": "no_self_hash",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "same_messages_different_wire",
+      "passed": true,
+      "detail": {
+        "standard_sha256": "ca8ae81fdf77fc4cb63eab52c7adcffbeb0428e30385240addec14ffcb3a2c57",
+        "alternate_sha256": "14a355a55e5639d7e134b5a137391dabf44f72cc6092d9b29ff56890148a4320",
+        "decoded_messages_equal": true
+      }
+    },
+    {
+      "name": "changed_prompt",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Serialized messages differ from the frozen prompt and exact request bytes",
+        "evidence": null,
+        "echo_accepted": true,
+        "well_formed_response": true
+      }
+    },
+    {
+      "name": "omitted_prompt",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Serialized messages differ from the frozen prompt and exact request bytes",
+        "evidence": null,
+        "echo_accepted": true,
+        "well_formed_response": true
+      }
+    },
+    {
+      "name": "altered_body_correct_echo",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Serialized messages differ from the frozen prompt and exact request bytes",
+        "evidence": null,
+        "echo_accepted": true,
+        "well_formed_response": true
+      }
+    },
+    {
+      "name": "messages_extra_field",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Serialized messages differ from the frozen prompt and exact request bytes",
+        "evidence": null
+      }
+    },
+    {
+      "name": "duplicate_envelope_key",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Duplicate JSON field: schema_version",
+        "evidence": null
+      }
+    },
+    {
+      "name": "duplicate_response_key",
+      "passed": true,
+      "detail": {
+        "category": "response_decode",
+        "phase": "proposal",
+        "stage": "response-decode",
+        "error": "Duplicate JSON field: request_sha256",
+        "evidence": null
+      }
+    },
+    {
+      "name": "wrong_prompt_hash",
+      "passed": true,
+      "detail": {
+        "category": "request_binding_failure",
+        "phase": "preparation",
+        "stage": "payload",
+        "error": "Frozen policy/prompt binding differs",
+        "evidence": null
+      }
+    },
+    {
+      "name": "noncanonical_request",
+      "passed": true,
+      "detail": {
+        "category": "request_binding_failure",
+        "phase": "preparation",
+        "stage": "payload",
+        "error": "Request bytes are not canonical",
+        "evidence": null
+      }
+    },
+    {
+      "name": "wrong_echo_neutral",
+      "passed": true,
+      "detail": {
+        "category": "transport_binding_failure",
+        "phase": "proposal",
+        "stage": "response-binding",
+        "error": "Response request digest does not match the recorded request bytes",
+        "evidence": {
+          "expected_request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288",
+          "received_request_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    },
+    {
+      "name": "malformed_response",
+      "passed": true,
+      "detail": {
+        "category": "response_decode",
+        "phase": "proposal",
+        "stage": "response-decode",
+        "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+        "evidence": null
+      }
+    },
+    {
+      "name": "invalid_witness_format",
+      "passed": true,
+      "detail": {
+        "request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288",
+        "witness": {
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hZ"
+            },
+            {
+              "coefficient": "3",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "response_limit",
+      "passed": true,
+      "detail": {
+        "category": "response_decode",
+        "phase": "proposal",
+        "stage": "response-decode",
+        "error": "Response exceeds byte budget",
+        "evidence": null
+      }
+    },
+    {
+      "name": "request_limit",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Serialized envelope exceeds byte limit",
+        "evidence": null
+      }
+    },
+    {
+      "name": "unknown_usage",
+      "passed": true,
+      "detail": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "cost_usd": null,
+        "status": "unreported"
+      }
+    },
+    {
+      "name": "reported_zero",
+      "passed": true,
+      "detail": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "cost_usd": null,
+        "status": "provider_reported"
+      }
+    },
+    {
+      "name": "partial_usage",
+      "passed": true,
+      "detail": {
+        "input_tokens": 3,
+        "output_tokens": null,
+        "total_tokens": null,
+        "cost_usd": null,
+        "status": "provider_reported"
+      }
+    },
+    {
+      "name": "invalid_usage",
+      "passed": true,
+      "detail": [
+        {
+          "category": "usage_decode",
+          "phase": "proposal",
+          "stage": "response-decode",
+          "error": "Usage must be a nonnegative integer or unknown",
+          "evidence": null
+        },
+        {
+          "category": "usage_decode",
+          "phase": "proposal",
+          "stage": "response-decode",
+          "error": "Usage must be a nonnegative integer or unknown",
+          "evidence": null
+        },
+        {
+          "category": "usage_decode",
+          "phase": "proposal",
+          "stage": "response-decode",
+          "error": "Usage must be a nonnegative integer or unknown",
+          "evidence": null
+        },
+        {
+          "category": "usage_decode",
+          "phase": "proposal",
+          "stage": "response-decode",
+          "error": "Usage must be a nonnegative integer or unknown",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "name": "inconsistent_usage",
+      "passed": true,
+      "detail": {
+        "category": "usage_decode",
+        "phase": "proposal",
+        "stage": "response-decode",
+        "error": "Reported token counts disagree",
+        "evidence": null
+      }
+    },
+    {
+      "name": "d1_six_let_facts",
+      "passed": true,
+      "detail": [
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum"
+      ]
+    },
+    {
+      "name": "c8_no_let_control",
+      "passed": true,
+      "detail": "C8 contains no let bodies; the redaction controls use D1"
+    },
+    {
+      "name": "admission_auxiliary_review",
+      "passed": true,
+      "detail": {
+        "category": "context_admission_review_required",
+        "phase": "admission",
+        "stage": "context-admission",
+        "error": "Original context contains a barred auxiliary/reference; task admission needs review",
+        "evidence": {
+          "source_context_sha256": "c02f0519c3d624655c7811ea68165e5990a1d45d4d240389f483594158c24739",
+          "fields": [
+            {
+              "field": "/hypotheses/16/type",
+              "field_sha256": "071a6d97ac7a69783e58eb7e599951144c323e52ec6c5cd7aff3211d52b09238"
+            }
+          ]
+        },
+        "requests": 0,
+        "source_changed_for_control": true
+      }
+    },
+    {
+      "name": "admission_injected_body",
+      "passed": true,
+      "detail": {
+        "category": "payload_integrity_failure",
+        "phase": "admission",
+        "stage": "context-admission",
+        "error": "Context projection differs from the complete field allowlist",
+        "evidence": null,
+        "requests": 0,
+        "source_changed_for_control": false
+      }
+    },
+    {
+      "name": "admission_dropped_let",
+      "passed": true,
+      "detail": {
+        "category": "payload_integrity_failure",
+        "phase": "admission",
+        "stage": "context-admission",
+        "error": "Context projection differs from the complete field allowlist",
+        "evidence": null,
+        "requests": 0,
+        "source_changed_for_control": false
+      }
+    },
+    {
+      "name": "admission_placeholder",
+      "passed": true,
+      "detail": {
+        "category": "payload_integrity_failure",
+        "phase": "admission",
+        "stage": "context-admission",
+        "error": "Context projection differs from the complete field allowlist",
+        "evidence": null,
+        "requests": 0,
+        "source_changed_for_control": false
+      }
+    },
+    {
+      "name": "admission_precedes_preparation_request",
+      "passed": true,
+      "detail": {
+        "category": "context_admission_review_required",
+        "phase": "admission",
+        "stage": "context-admission",
+        "error": "Original context contains a barred auxiliary/reference; task admission needs review",
+        "evidence": {
+          "source_context_sha256": "c02f0519c3d624655c7811ea68165e5990a1d45d4d240389f483594158c24739",
+          "fields": [
+            {
+              "field": "/hypotheses/16/type",
+              "field_sha256": "071a6d97ac7a69783e58eb7e599951144c323e52ec6c5cd7aff3211d52b09238"
+            }
+          ]
+        },
+        "requests_constructed": 0
+      }
+    },
+    {
+      "name": "missing_capture_rejected",
+      "passed": true,
+      "detail": {
+        "category": "transport_capture_failure",
+        "phase": "proposal",
+        "stage": "envelope-audit",
+        "error": "Successful transport lacks a completed receiver capture",
+        "evidence": null
+      }
+    },
+    {
+      "name": "budget_before_second_stage",
+      "passed": true,
+      "detail": {
+        "category": "request_budget_exhaustion",
+        "phase": "proposal",
+        "stage": "proposal",
+        "error": "Frozen transmission budget exhausted",
+        "evidence": null
+      }
+    },
+    {
+      "name": "p6_frozen_criterion",
+      "passed": true,
+      "detail": {
+        "stratum": "translation_loss_diagnostic",
+        "dispatch_in_this_policy": false,
+        "repository": "https://github.com/levineuwirth/proof-broker.git",
+        "commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+        "inputs": {
+          "source": {
+            "path": "experiments/c1-cert-recovery/runs/20260907-113052/lean/P6_hyp_le.omega.lean",
+            "sha256": "58066119f10cf878917bcf58a65c6d8c42caa41ec809d2d3ff4ed9d8b4d9325a"
+          },
+          "reification_log": {
+            "path": "experiments/c1-cert-recovery/runs/20260907-113052/irlogs/P6_hyp_le.capture.log",
+            "sha256": "444a7056c315a95bfa4a429604ca642f94dc64644b4d4b427808870c49983d8e"
+          },
+          "final_ir": {
+            "path": "experiments/c1-cert-recovery/raw/20260907-113052/P6_hyp_le.final_ir.json",
+            "sha256": "73056aa5af222f8cd126a7d4aadbc5c3e5eb1a93570a1890c105a0ca38f1f5c3"
+          }
+        },
+        "evidence": {
+          "dropped_propositions": [
+            "hhi"
+          ],
+          "original_true": true,
+          "truth_method": "integer upper bound using the explicit hP equality and hhi bound",
+          "maximum_lhs": "1152921504606584832",
+          "rhs": "18446744069414584321",
+          "strict_margin": "17293822564807999489",
+          "satisfying_original_value": "0",
+          "ir_counterexample": {
+            "_pb_atom_0": "70368744161281"
+          },
+          "row_evaluations": [
+            {
+              "name": "hP",
+              "result": "0",
+              "satisfied": true
+            },
+            {
+              "name": "_pb_nonneg_atom_0",
+              "result": "-70368744161281",
+              "satisfied": true
+            },
+            {
+              "name": "neg_goal",
+              "result": "-262143",
+              "satisfied": true
+            }
+          ],
+          "ir_counterexample_checked": true,
+          "classification": "translation_loss_diagnostic"
+        }
+      }
+    },
+    {
+      "name": "proof_checks_unchanged",
+      "passed": true,
+      "detail": {
+        "unchanged_proof_checks_sha256": "21982bd97062398a379f23095fb9f9c62406f7e7c9b2385273aab7c8494a7df8"
+      }
+    },
+    {
+      "name": "missing_case_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'b'}"
+      }
+    },
+    {
+      "name": "duplicate_case_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case"
+      }
+    },
+    {
+      "name": "source_lock_guard",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope v1 requires its frozen source revision"
+      }
+    }
+  ]
+}

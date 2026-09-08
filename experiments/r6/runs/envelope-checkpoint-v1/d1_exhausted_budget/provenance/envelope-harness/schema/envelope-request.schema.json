@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_sha256",
+    "binding",
+    "problem"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "r6-farkas-request-2"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "manifest_sha256",
+        "challenge_sha256",
+        "input_ir_sha256",
+        "final_ir_sha256",
+        "prompt_sha256"
+      ],
+      "properties": {
+        "task_id": {
+          "enum": [
+            "verinf-d1-70",
+            "c1-c8-2p18"
+          ]
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "challenge_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "input_ir_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "final_ir_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "prompt_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "problem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fragment",
+        "rows"
+      ],
+      "properties": {
+        "fragment": {
+          "const": "LIA"
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "relation",
+              "constant",
+              "terms"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relation": {
+                "enum": [
+                  "le",
+                  "lt",
+                  "eq"
+                ]
+              },
+              "constant": {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]*)$",
+                "maxLength": 128
+              },
+              "terms": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "variable",
+                    "coefficient"
+                  ],
+                  "properties": {
+                    "variable": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "coefficient": {
+                      "type": "string",
+                      "pattern": "^-?(0|[1-9][0-9]*)$",
+                      "maxLength": 128
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

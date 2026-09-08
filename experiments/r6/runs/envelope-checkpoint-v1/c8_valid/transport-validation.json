@@ -1,0 +1,19 @@
+{
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "e03eb0e126838b537d611f2ad077abc5e5cc51fec5376e60ce7524d1635025d5",
+    "received_request_sha256": "e03eb0e126838b537d611f2ad077abc5e5cc51fec5376e60ce7524d1635025d5"
+  },
+  "outbound_envelope": {
+    "accepted": true,
+    "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+    "request_sha256": "e03eb0e126838b537d611f2ad077abc5e5cc51fec5376e60ce7524d1635025d5",
+    "captured_envelope_sha256": "64eb34ca8428f0b49a14edae34ae21d05a68f91f057dc6859cae083186521b62",
+    "messages_sha256": "4c250e15f90c1bc93ae09c6d98e886bfd8e81a3e0e3091f115263a916b14debd",
+    "evidence_scope": "local serialized-envelope consistency; no model-input or inference attestation"
+  },
+  "response_validated": true,
+  "response_failure_category": null
+}

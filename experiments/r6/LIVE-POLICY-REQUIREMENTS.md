@@ -148,3 +148,133 @@ accounting with canned responses first. Then freeze the concrete live policy,
 model/provider revision and spending limits before making the first request.
 R6-001's approval establishes fixture interface readiness; it supplies no model
 capability result. The model/provider and live-run budgets remain unspecified.
+
+## R6-002 implementation checkpoint — 2026-09-08
+
+[R6-002](R6-002.md) implements the prompt, byte binding, admission-error
+distinction and accounting controls using an isolated **local canned receiver**.
+Its checkpoint passes 84 checks, including fresh certificate consumption and
+independent proof replay on D1 and C8. The received serialized envelope,
+response/request association and mathematical witness are checked separately.
+The receiver deliberately ignores the arithmetic, so a passing echo is explicitly
+compatible with an ignored or altered body.
+
+This discharges the local canned-interface checkpoint above. It does not
+discharge provider integration: a selected SDK/HTTP adapter must retain its
+actual outbound bytes and pass canned controls at that boundary, including
+retry/usage handling, before live requests. Model revision, sampling, token
+and monetary limits still require a separately frozen live policy. The old
+fixture's sources, schemas, policy and evidence are unchanged.
+
+## R6-002 review decisions for R6-003 — 2026-09-08
+
+The author approved the local checkpoint. These requirements refine the next
+implementation; they do not modify the frozen `canned_envelope_v1` policy,
+prompt, diagnostics or artifacts. See the
+[approval and reporting closeout](reviews/2026-09-08/R6-002-REVIEW.md).
+
+### Scope the next prompt to reachable relations
+
+The review found zero `lt` rows across the 13 request instances (193 `le`,
+24 `eq`, with task repetition). This is structural for the present admitted
+pipeline, not just an unrepresentative sample:
+[`Farkas.compile_hypothesis`](../../sdk/lib/farkas.ml) emits `Lt(a-b)` in LRA
+but `Le(a-b+1)` in LIA, and
+[`payload.arithmetic_rows`](payload.py) independently tightens the integer
+forms. `payload.request` requires LIA and agreement with that projection.
+Relabeling a saved row, lying about the fragment, or applying the integer `+1`
+step to Real inputs would test a changed problem rather than this pipeline.
+
+For the first provider policy, retain the two frozen controls and **explicitly
+admit only emitted `le` and `eq` relations**. Freeze a new prompt and request
+schema around that scope; omit instructions for unreachable `lt` rows. This
+supersedes the earlier general `lt` prompt requirement for that first policy
+only. Preserve the R6-002 prompt bytes. Require controls demonstrating that:
+
+- A strict integer source bound produces the expected `+1` and `le` row exactly
+  once; its certificate is consumed and its original target independently replayed.
+- An injected `lt` row and an unsupported/effectively non-LIA problem fail
+  admission before a request, even if a metadata label claims LIA.
+- Request, prompt and actual outbound messages agree on the relation scope;
+  the live model is not given semantics for rows it cannot be asked to use.
+
+Before task expansion, explicitly review the admitted fragment/relation set.
+Before admitting any genuine `lt` row **or restoring `lt` instructions in a live
+prompt**, require an end-to-end control whose effective fragment actually
+compiles a strict row. Retain the ordinary request/envelope, independent
+certificate verification, certificate-consuming proof and isolated replay
+checks under a separately frozen compatible policy. SDK verification alone
+does not establish compatibility with the existing `term_mode_nat` consumer.
+
+For that strict-row extension, the minimum mathematical contrast is a weighted
+sum with all variables canceled and constant zero: accepted when a strict row
+has a positive multiplier, rejected when no strict row has positive weight.
+Also cover a negative multiplier on a strict row and a Real counterexample
+that an erroneous integer `+1` transformation would make contradictory. Assert
+at least one actual `lt` row before counting the strict control; do not let
+the test pass on an already-tightened `le` surrogate. The criterion is constant
+`>= 0` with positive strict weight, and `> 0` otherwise.
+
+Existing SDK tests provide starting points:
+[`test_farkas.ml`](../../sdk/test/test_farkas.ml) contains
+`test_compile_lt_lra`, `test_verify_lra_strict_residual_zero`,
+`test_verify_lra_strict_loose_mix`,
+`test_verify_real_typed_ir_mislabeled_lia_rejects_plus_one_trick`, and
+`test_verify_lra_strict_negative_coef_rejected`;
+[`test_farkas_search.ml`](../../sdk/test/test_farkas_search.ml) contains
+`test_exact_lra_strict_zero_residual`. Their source was inspected during
+closeout, not rerun. They exercise SDK behavior, not the R6 prompt/envelope/
+consumption/replay chain, and do not discharge the new admission gate.
+
+### Diagnose the diverging envelope component
+
+Retain category `outbound_envelope_binding` and phase `proposal`. The new policy
+must include a machine-readable mismatch list and a specific human explanation
+for the failing component: envelope decode/shape, message layout/role,
+system-message content, user prefix (including digest/header/separator), or
+exact request suffix. Record presence, expected/observed byte length and digest
+where applicable; use null for a missing component, not a fabricated empty
+string. These identify an observed discrepancy, not its causal author.
+
+Define deterministic handling of multiple discrepancies and unparseable or
+oversized envelopes. Do not discard component evidence when wrapping an
+exception or writing `transport-validation.json` and `failure.json`.
+Independently reconstruct each diagnostic in the artifact auditor from the
+retained captured bytes and frozen expected messages. A reported component
+label is evidence to check, not authority for the diagnosis.
+
+Controls must separately alter/remove the system message, alter the user prefix,
+and alter only the request suffix while keeping a correct response echo. Add a
+resealed mutation that falsely labels one component failure as another. Each
+must preserve the common category and identify the actual differing component;
+the valid standard/alternate serialization controls must remain accepted.
+The approved v1 generic error strings remain unchanged.
+
+### Reuse the already extracted proof-check module
+
+Decision: the next compatible policy calls
+[`envelope_proof_audit.audit`](envelope_proof_audit.py) as the shared frozen
+Nat/Farkas proof-path checker. Its approved SHA-256 is
+`ccd9b82881167affc17a6104c713c574207e1181d2093bb46d2c73600eeb3644`.
+It is already extracted and accepts task, packet, verdict, observations and
+artifact/receipt readers. A third copy or a rename-copy adds no useful boundary.
+
+Pin the module and its transitive implementation/protocol dependencies in the
+new policy's source/provenance contract; retain those bytes in its artifact.
+Verify before launch and during retained-artifact audit. Keep provider-specific
+receipt order, transport, accounting and attribution in the calling auditor.
+Do not rewrite R6-001's inline checks or redirect either historical auditor.
+Its equality regression with the R6-001 block remains a historical guard.
+
+The next checkpoint must demonstrate that production audit actually calls this
+module, accepts the existing positive proof paths, and rejects substituted
+certificate/proof/type/axiom evidence through it. A new theory, certificate
+consumer or replay predicate needs a new version with its own conformance
+controls; do not relax the Nat checker to make new inputs fit.
+
+Finally, keep `response_validated` separate from certificate acceptance in
+reports. The former checks decoding, shape, support, coefficient grammar and
+binding. Mathematical validity is in `certificate-verdict.json`. When a prior
+stage rejects, later verification is not reached, not a failed mathematical
+test. R6-002's controls separate these predicates; they are not all combinations
+of three Boolean outcomes.

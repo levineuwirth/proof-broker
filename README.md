@@ -123,7 +123,9 @@ The roadmap's original Phase 0–6 numbering is kept for the history in
 - `experiments/r6/` — [deterministic golden episodes for VerInf D1/70 and the C1-derived C8 control](experiments/r6/PROTOCOL.md),
   covering both synthesis branches with certificate consumption, isolated proof validation, and boundary tests (R6-000);
   [R6-001 adds fixture witness proposals](experiments/r6/R6-001.md) with frozen arithmetic requests, separate proposer/assembler attribution,
-  and the same Farkas-consumption and independent replay requirements. No live model calls yet.
+  and the same Farkas-consumption and independent replay requirements.
+  [R6-002 binds semantic prompt and serialized envelope bytes](experiments/r6/R6-002.md) with isolated canned responses
+  and separate transport/certificate failure controls. No live model calls yet.
 - `sdk/` — OCaml shared library: IR rewriter, certificate verifier
   (envelope, Farkas, per-step Alethe re-check = the Tier-3 mint gate,
   TSTP provenance), dispatcher (Thread-based concurrent driver),

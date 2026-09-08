@@ -1,0 +1,15 @@
+{
+  "request_sha256": "e03eb0e126838b537d611f2ad077abc5e5cc51fec5376e60ce7524d1635025d5",
+  "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+  "sanitized_context_sha256": "fcb6fa5264b8a6e70538749d239c0b267ca298063829f75ec5efd3346249c63e",
+  "context_projection_is_model_visible": false,
+  "source_context_sha256": "82b719ed5ceae124dcc45ab97345fc06174404e0f48626bd6adb40ff48bebc0b",
+  "let_facts_preserved": [],
+  "reifier_omissions": [
+    {
+      "name": "g_hi",
+      "reason": "data local at an undeclarable type (ZMod P)"
+    }
+  ],
+  "farkas_omissions": []
+}

@@ -24,6 +24,7 @@ runs/*/
 !runs/further-review-v3/
 !runs/task-initialization-v1/
 !runs/proposal-checkpoint-v2/
+!runs/envelope-checkpoint-v1/
 **/fixture
 **/proof.ndjson
 *.olean
@@ -34,6 +35,7 @@ runs/*/
 !**/resource_fixture.c
 !**/resource_probe.c
 !**/fixture_responder.c
+!**/envelope_receiver.c
 *.o
 **/output/verdict.json
 **/export/export.stdout

@@ -1,0 +1,12 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "canned_envelope_v1",
+  "failure_stage": "response-decode",
+  "failure_phase": "proposal",
+  "failure_category": "response_decode",
+  "error": "Expecting value: line 2 column 1 (char 12)",
+  "evidence": null,
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

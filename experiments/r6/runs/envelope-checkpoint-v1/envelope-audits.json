@@ -1,0 +1,420 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_retained_only",
+    "c8_retained_only",
+    "alternate_retained_only",
+    "changed_prompt_file",
+    "changed_prompt_binding",
+    "altered_body_passing_echo",
+    "omitted_serialized_prompt",
+    "capture_only_mutation",
+    "wrong_messages",
+    "wrong_client_arguments",
+    "wrong_transmission_receipt",
+    "missing_transmission_event",
+    "wrong_request_mount",
+    "unsafe_receiver_flag",
+    "wrong_budget",
+    "unknown_usage_as_zero",
+    "hidden_retry",
+    "hidden_fallback",
+    "wrong_proposer",
+    "wrong_assembler",
+    "wrong_witness",
+    "wrong_recovery",
+    "extra_attestation_claim",
+    "missing_receiver_source",
+    "wrong_new_source",
+    "wrong_old_source",
+    "late_failure_marker",
+    "current_source_independence",
+    "legacy_broker_v1",
+    "legacy_broker_v2",
+    "legacy_broker_v3",
+    "legacy_c8_v1",
+    "legacy_d1_fixture",
+    "legacy_c8_fixture",
+    "prior_artifacts_preserved"
+  ],
+  "check_count": 35,
+  "checks": [
+    {
+      "name": "d1_retained_only",
+      "passed": true,
+      "detail": {
+        "retained_files": 157
+      }
+    },
+    {
+      "name": "c8_retained_only",
+      "passed": true,
+      "detail": {
+        "retained_files": 157
+      }
+    },
+    {
+      "name": "alternate_retained_only",
+      "passed": true,
+      "detail": {
+        "retained_files": 157
+      }
+    },
+    {
+      "name": "changed_prompt_file",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: frozen semantic prompt changed",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "prompt.txt"
+        ]
+      }
+    },
+    {
+      "name": "changed_prompt_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: request differs from allowed arithmetic input",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "request.json"
+        ]
+      }
+    },
+    {
+      "name": "altered_body_passing_echo",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Serialized messages differ from the frozen prompt and exact request bytes",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "events.ndjson",
+          "serialized-envelope.json",
+          "stages/proposal-1/output/received-envelope.json",
+          "stages/proposal-1/output/transmission.json",
+          "transport-validation.json",
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "omitted_serialized_prompt",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Serialized messages differ from the frozen prompt and exact request bytes",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "events.ndjson",
+          "serialized-envelope.json",
+          "stages/proposal-1/output/received-envelope.json",
+          "stages/proposal-1/output/transmission.json",
+          "transport-validation.json",
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "capture_only_mutation",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: receiver capture differs from serialized output",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/output/received-envelope.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_messages",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: recorded messages differ",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "messages.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_client_arguments",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: client arguments differ from frozen messages",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "client-arguments.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_transmission_receipt",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: transmission receipt mismatch",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/output/transmission.json"
+        ]
+      }
+    },
+    {
+      "name": "missing_transmission_event",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: missing, extra, or reordered supervisor receipts",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "events.ndjson"
+        ]
+      }
+    },
+    {
+      "name": "wrong_request_mount",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: receiver command permits extra inputs, capabilities, or a different envelope",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "unsafe_receiver_flag",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: receiver command permits extra inputs, capabilities, or a different envelope",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_budget",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: stage limit receipt mismatch",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "unknown_usage_as_zero",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: accounting differs from observed attempt/usage",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "accounting.json"
+        ]
+      }
+    },
+    {
+      "name": "hidden_retry",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: accounting differs from observed attempt/usage",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "accounting.json"
+        ]
+      }
+    },
+    {
+      "name": "hidden_fallback",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: frozen envelope policy changed",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "search-policy.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_proposer",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "'canned_response' was expected\n\nFailed validating 'const' in schema['properties']['witness_proposer']:\n    {'const': 'canned_response'}\n\nOn instance['witness_proposer']:\n    'sdk_synthesis'",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_assembler",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "'sdk_proposal_assembler_v1' was expected\n\nFailed validating 'const' in schema['properties']['certificate_assembler']:\n    {'const': 'sdk_proposal_assembler_v1'}\n\nOn instance['certificate_assembler']:\n    'model'",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_witness",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: proposed and assembled witnesses differ",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "evidence.json",
+          "stages/assembly/output/evidence.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_recovery",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: recovery finish attribution",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "events.ndjson"
+        ]
+      }
+    },
+    {
+      "name": "extra_attestation_claim",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: independent transport checks differ",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "transport-validation.json"
+        ]
+      }
+    },
+    {
+      "name": "missing_receiver_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: artifact not retained: provenance/envelope-harness/validate/envelope_receiver.c",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "provenance/envelope-harness/validate/envelope_receiver.c"
+        ]
+      }
+    },
+    {
+      "name": "wrong_new_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: envelope harness source differs: envelope_payload.py",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "provenance/envelope-harness/envelope_payload.py"
+        ]
+      }
+    },
+    {
+      "name": "wrong_old_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: downstream harness source differs: proposal_episode.py",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "provenance/harness/proposal_episode.py"
+        ]
+      }
+    },
+    {
+      "name": "late_failure_marker",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope audit: episode has a failure marker",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "failure.json"
+        ]
+      }
+    },
+    {
+      "name": "current_source_independence",
+      "passed": true,
+      "detail": "Source identity uses frozen locks and saved bytes; protocol inputs and audit implementation remain trusted"
+    },
+    {
+      "name": "legacy_broker_v1",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_broker_v2",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_broker_v3",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_c8_v1",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_d1_fixture",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_c8_fixture",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "prior_artifacts_preserved",
+      "passed": true,
+      "detail": {
+        "checked_files": 5698,
+        "changed": 0,
+        "missing": 0,
+        "git_base": "79a4a07"
+      }
+    }
+  ]
+}
