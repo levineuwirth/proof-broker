@@ -1,0 +1,286 @@
+{
+  "suite_version": "r6-task-initialization-1",
+  "passed": true,
+  "expected_cases": [
+    "archived_silent_default",
+    "c8_explicit_checkout",
+    "c8_freeze_dispatch",
+    "c8_frozen_cli_guard",
+    "c8_missing_checkout_argument",
+    "c8_native_stage",
+    "c8_receipt_identity",
+    "c8_wrong_model_definition",
+    "d1_freeze_dispatch",
+    "d1_native_stage",
+    "d1_receipt_identity",
+    "first_empty",
+    "first_missing",
+    "first_unknown",
+    "internal_task_arguments_required",
+    "stage_closed_log",
+    "stage_empty_log",
+    "stage_missing_log",
+    "stage_unknown_task",
+    "third_task_freeze_rejected"
+  ],
+  "checks": [
+    {
+      "case": "first_missing",
+      "passed": true,
+      "observed": {
+        "error": "First event requires an explicit task_id",
+        "no_files_written": true
+      }
+    },
+    {
+      "case": "first_empty",
+      "passed": true,
+      "observed": {
+        "error": "Unregistered R6 task: ",
+        "no_files_written": true
+      }
+    },
+    {
+      "case": "first_unknown",
+      "passed": true,
+      "observed": {
+        "error": "Unregistered R6 task: unregistered-control",
+        "no_files_written": true
+      }
+    },
+    {
+      "case": "archived_silent_default",
+      "passed": true,
+      "observed": {
+        "implicit_task_id": "verinf-d1-70",
+        "source_sha256": "730273e73758f122a42a879ed6c09caf7e3d683329a17eac445fd8bce39ae0fa"
+      }
+    },
+    {
+      "case": "d1_receipt_identity",
+      "passed": true,
+      "observed": {
+        "explicit_then_inherited": "verinf-d1-70",
+        "conflict": "Cannot change task identity within an episode",
+        "rejection_preserved_log": true
+      }
+    },
+    {
+      "case": "c8_receipt_identity",
+      "passed": true,
+      "observed": {
+        "explicit_then_inherited": "c1-c8-2p18",
+        "conflict": "Cannot change task identity within an episode",
+        "rejection_preserved_log": true
+      }
+    },
+    {
+      "case": "stage_missing_log",
+      "passed": true,
+      "observed": {
+        "error": "A stage requires an initialized task receipt log",
+        "rejected_before_stage_creation": true
+      }
+    },
+    {
+      "case": "stage_empty_log",
+      "passed": true,
+      "observed": {
+        "error": "A stage requires an initialized task receipt log",
+        "rejected_before_stage_creation": true
+      }
+    },
+    {
+      "case": "stage_unknown_task",
+      "passed": true,
+      "observed": {
+        "error": "Unregistered R6 task: unregistered-control",
+        "rejected_before_stage_creation": true
+      }
+    },
+    {
+      "case": "stage_closed_log",
+      "passed": true,
+      "observed": {
+        "error": "Episode is already closed",
+        "rejected_before_stage_creation": true
+      }
+    },
+    {
+      "case": "internal_task_arguments_required",
+      "passed": true,
+      "observed": [
+        "run.policy",
+        "run.instrument",
+        "run.trusted_sources",
+        "run.build_tools",
+        "run.environment",
+        "run.finalize_freeze",
+        "run.frozen_task",
+        "run.compile_and_export",
+        "episode.local_policy",
+        "episode.final_validation",
+        "episode.golden",
+        "instrument.build",
+        "instrument.broker_capture_source",
+        "audit_episode.verify"
+      ]
+    },
+    {
+      "case": "third_task_freeze_rejected",
+      "passed": true,
+      "observed": "No freeze implementation for task: third-control"
+    },
+    {
+      "case": "d1_freeze_dispatch",
+      "passed": true,
+      "observed": {
+        "task_id": "verinf-d1-70",
+        "schema": "r6-task-1",
+        "c8_enrichment_calls": 0,
+        "inventory_is_fixture": true
+      }
+    },
+    {
+      "case": "c8_freeze_dispatch",
+      "passed": true,
+      "observed": {
+        "task_id": "c1-c8-2p18",
+        "schema": "r6-control-task-1",
+        "c8_enrichment_calls": 1,
+        "inventory_is_fixture": true
+      }
+    },
+    {
+      "case": "c8_explicit_checkout",
+      "passed": true,
+      "observed": {
+        "git_argv": [
+          "git",
+          "-C",
+          "/home/jeans/scratch/tmp/r6-task-init-xx4005zm/chosen VerInf checkout",
+          "show",
+          "573e1686323fe5fc1aa9a41c1d3c20b1175732cd:lean/RmsNormBracket/RmsNormBracket/Model.lean"
+        ],
+        "git_model_read_mocked": true,
+        "model_sha256": "ac539fb655da527d9e6ff3ce0423c899b191911ffcdaba5ec8781d28d0bc823b",
+        "provenance_unchanged": true
+      }
+    },
+    {
+      "case": "c8_wrong_model_definition",
+      "passed": true,
+      "observed": "Original field definition differs"
+    },
+    {
+      "case": "c8_missing_checkout_argument",
+      "passed": true,
+      "observed": {
+        "exit_code": "2",
+        "diagnostic": "usage: run.py [-h] [--task {verinf-d1-70,c1-c8-2p18}]\n              [--packages-dir PACKAGES_DIR] [--verinf-repo VERINF_REPO]\n              [--run-dir RUN_DIR] [--solution SOLUTION]\n              {build-tools,freeze,golden,validate,self-test}\nrun.py: error: Preparing an unfrozen C8 task requires --verinf-repo\n"
+      }
+    },
+    {
+      "case": "c8_frozen_cli_guard",
+      "passed": true,
+      "observed": "Task is already frozen; introduce a new task revision instead of overwriting it"
+    },
+    {
+      "case": "d1_native_stage",
+      "passed": true,
+      "observed": {
+        "task_id": "verinf-d1-70",
+        "process": {
+          "exit_code": 0,
+          "resource_exhausted": null,
+          "wall_seconds": 0.026670950996049214,
+          "execution_wall_seconds": 0.01637334899714915,
+          "cgroup_cpu_usec": 11257,
+          "resource_violations": [],
+          "cgroup_memory_peak_bytes": 5951488,
+          "memory_events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "monitor_error": null,
+          "observation_error": null,
+          "workload_empty_after_cleanup": true,
+          "output_bytes": 18,
+          "accounting_scope": "sandbox_process_tree"
+        }
+      }
+    },
+    {
+      "case": "c8_native_stage",
+      "passed": true,
+      "observed": {
+        "task_id": "c1-c8-2p18",
+        "process": {
+          "exit_code": 0,
+          "resource_exhausted": null,
+          "wall_seconds": 0.02137484600098105,
+          "execution_wall_seconds": 0.021052192998467945,
+          "cgroup_cpu_usec": 12902,
+          "resource_violations": [],
+          "cgroup_memory_peak_bytes": 5451776,
+          "memory_events": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "monitor_error": null,
+          "observation_error": null,
+          "workload_empty_after_cleanup": true,
+          "output_bytes": 18,
+          "accounting_scope": "sandbox_process_tree"
+        }
+      }
+    }
+  ],
+  "scope": "task initialization, temporary freeze plumbing, two native positive stages; no kernel replay",
+  "fixture_sha256": "74b36671b7dcacce220efaf1c6a4e44f359cad29f0a5d799108c8e1164ef3bbb",
+  "artifact_sha256": {
+    "c8-native/events.ndjson": "b44f1b8dc1b431989d50906efbe23600296ffa937274dac94c317fb09ba559ec",
+    "c8-native/stages/normal/command.json": "e24b9c198fcedce22b1aae6b2f6fbaa1fa7b918dd8cae5156390d9edea83fa7e",
+    "c8-native/stages/normal/normal.process.json": "4989186c2a308dae50f9419a0b2647f27f3891334ba1b7dab0a95fb7edc2a489",
+    "c8-native/stages/normal/normal.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "c8-native/stages/normal/normal.stdout": "da311720d5b09cf4095aadfcfee20d6d898992ae2c8f5613c0cc1c8872e1c370",
+    "c8-native/stages/normal/scope-command.json": "2a4f797c01c44cb0c3a37d4ebb9283954b085d56986931826f52f52bcd658bc9",
+    "c8-native/stages/normal/supervisor.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "c8-native/stages/normal/supervisor.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "d1-native/events.ndjson": "fb445eb190d66fc83d5e39c6dc05dd3769b7558c7c0e128a94b12865b0428550",
+    "d1-native/stages/normal/command.json": "26ec05f830a539f235b3c6f9cf2a5c8edb3491f635c533eee90558867d44421c",
+    "d1-native/stages/normal/normal.process.json": "baec76f8cb2cf7acb620bb2f6588f5727562718a804201dcd4589491aa2ce44a",
+    "d1-native/stages/normal/normal.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "d1-native/stages/normal/normal.stdout": "da311720d5b09cf4095aadfcfee20d6d898992ae2c8f5613c0cc1c8872e1c370",
+    "d1-native/stages/normal/scope-command.json": "ab11351b8d60855ddc626224be13879e8eb82b296e9ea5a10296916aa6068b93",
+    "d1-native/stages/normal/supervisor.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "d1-native/stages/normal/supervisor.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provenance/audit_episode.py": "ad995112f25e8b311f3b0ef61f403f5ccdeac47cdc80ed852ce7e680abc8b39d",
+    "provenance/c8_control.py": "57838f1f37d341c1743cf6dc461d81c7ca9bf5580e0664aebf5405a18f302baf",
+    "provenance/episode.py": "ad397ba4e4f4e299e48f7aaa58b3e9c71bca6212b384a60c90693b93946b6dd5",
+    "provenance/events.py": "875332d592bc98059a002f4124a045d4a7b278260a63013c431634d882d925af",
+    "provenance/instrument.py": "f899ea801c78989a84678646d0003c8abc61db951435a7713b4f70e5c7643565",
+    "provenance/reviews/2026-09-08/before/events.py": "730273e73758f122a42a879ed6c09caf7e3d683329a17eac445fd8bce39ae0fa",
+    "provenance/run.py": "8623dac7ac68f416b95ee91391c7019192655843fa9454865c9959314a3c77a4",
+    "provenance/schema/episode.schema.json": "32266bad36432b79d8a48043dca0ba148d249bc28cf915f0df9969483c5acfc0",
+    "provenance/schema/event.schema.json": "8f0936407d96a4f3c81f11fe8ab2c689d749bfa3ba1eea50b0b336caa911b202",
+    "provenance/schema/task-control.schema.json": "7f185d01be72a3f57520b0232abd8459c11d3bea145d49e7971f359a49fca33b",
+    "provenance/schema/task-manifest.schema.json": "7deb547cefc35d1bb049d4cac7cfd85f94cba85e4e1d057161342770df1a069e",
+    "provenance/schema/verdict.schema.json": "38c5d842d3330186a02db4e03867b38013ffa1c9daee7b3ae6e5cb796ea542f5",
+    "provenance/supervise.py": "8065782189791f8bbc5ce8edb759bf0a69242ad96a66f736d222805c74ec388c",
+    "provenance/task_spec.py": "29f2bb18945c7afcfd4b347d298ddb3547270f9636aa706675cc88498f74be58",
+    "provenance/tasks/c1-c8-2p18/source-provenance.json": "c5ed05b281d77f61c599dd06a8ec16911bda0dcc93cc1c4176fbb1f616ba51f9",
+    "provenance/test_task_initialization.py": "8cf5a09ad3028ecf9dbf20bc1bd126192cb936a20411577b890ad268d0c86368",
+    "resource_fixture.c": "ec41047181b13576e5d65d81df0e88752bf3c6a82062ce01ce3e5b2152679558"
+  }
+}

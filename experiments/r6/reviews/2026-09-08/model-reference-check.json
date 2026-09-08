@@ -1,0 +1,8 @@
+{
+  "checkout_used": "/home/jeans/Repos/research/verinf",
+  "commit": "573e1686323fe5fc1aa9a41c1d3c20b1175732cd",
+  "source_file": "lean/RmsNormBracket/RmsNormBracket/Model.lean",
+  "sha256": "ac539fb655da527d9e6ff3ce0423c899b191911ffcdaba5ec8781d28d0bc823b",
+  "matches_frozen_reference": true,
+  "method": "actual git show through parameterized read_model_reference; no source compilation"
+}

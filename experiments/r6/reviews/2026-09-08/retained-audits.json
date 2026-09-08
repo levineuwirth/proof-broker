@@ -1,0 +1,54 @@
+{
+  "golden-broker-v1": {
+    "accepted": true,
+    "task_id": "verinf-d1-70",
+    "solution_sha256": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+    "type_sha256": {
+      "local": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+      "whole": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe"
+    },
+    "checked_declarations": {
+      "local": 3702,
+      "whole": 3721
+    }
+  },
+  "golden-broker-v2": {
+    "accepted": true,
+    "task_id": "verinf-d1-70",
+    "solution_sha256": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+    "type_sha256": {
+      "local": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+      "whole": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe"
+    },
+    "checked_declarations": {
+      "local": 3702,
+      "whole": 3721
+    }
+  },
+  "golden-broker-v3": {
+    "accepted": true,
+    "task_id": "verinf-d1-70",
+    "solution_sha256": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+    "type_sha256": {
+      "local": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+      "whole": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe"
+    },
+    "checked_declarations": {
+      "local": 3702,
+      "whole": 3721
+    }
+  },
+  "golden-c8-v1": {
+    "accepted": true,
+    "task_id": "c1-c8-2p18",
+    "solution_sha256": "799feec12af62e5a3dccee0f2890739c48159dac1269087b09a49a9a4d0298b0",
+    "type_sha256": {
+      "local": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2",
+      "whole": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2"
+    },
+    "checked_declarations": {
+      "local": 1470,
+      "whole": 1471
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "stage": "export_parse",
+  "error": "Export metadata does not match the frozen format/environment",
+  "accepted": false
+}

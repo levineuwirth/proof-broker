@@ -1,0 +1,11 @@
+{
+  "base_commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+  "base_sources_checked": 53,
+  "overlay_sources_checked": 53,
+  "binaries_checked": 13,
+  "issues": [],
+  "additional_files_in_source_subtrees": [
+    "sdk/lib/episode_trace.ml"
+  ],
+  "qualification": "Source and binary consistency, under a trusted build/cache; not compilation attestation."
+}

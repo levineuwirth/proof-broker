@@ -1,0 +1,26 @@
+[
+  {
+    "case": "valid_certificate",
+    "injected_failure": "supervisor_failure",
+    "counted_as_pass": false,
+    "error": "injected post-verdict failure"
+  },
+  {
+    "case": "broker_proof_local",
+    "injected_failure": "stage_rejected",
+    "counted_as_pass": false,
+    "error": "injected post-verdict failure"
+  },
+  {
+    "case": "broker_proof_local",
+    "injected_failure": "supervisor_failure",
+    "counted_as_pass": false,
+    "error": "injected post-verdict failure"
+  },
+  {
+    "case": "invalid_witness",
+    "injected_failure": "resource_exhaustion",
+    "counted_as_pass": false,
+    "error": "injected post-verdict failure"
+  }
+]

@@ -120,6 +120,8 @@ The roadmap's original Phase 0–6 numbering is kept for the history in
   kinds)
 - `examples/` — hand-written reference IR documents for the spec §12
   worked examples; canonical fixtures for downstream components
+- `experiments/r6/` — [deterministic golden episodes for VerInf D1/70 and the C1-derived C8 control](experiments/r6/PROTOCOL.md),
+  covering both synthesis branches with certificate consumption, isolated proof validation, and boundary tests (R6-000)
 - `sdk/` — OCaml shared library: IR rewriter, certificate verifier
   (envelope, Farkas, per-step Alethe re-check = the Tier-3 mint gate,
   TSTP provenance), dispatcher (Thread-based concurrent driver),

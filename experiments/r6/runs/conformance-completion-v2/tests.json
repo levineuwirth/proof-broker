@@ -1,0 +1,323 @@
+{
+  "source_suite": "/home/jeans/Repos/research/proof-broker/experiments/r6/runs/broker-conformance-v2/tests.json",
+  "source_suite_sha256": "4fd80913c3f1d2911f32b824bddf0b9b4524ff58eee10468be7371bef75e91b6",
+  "test_source_sha256": "408264c242025d92f81a3231fa55f2ec9cb9c5961c83505bb26ad27b2998fe4d",
+  "completion_source_sha256": "f6798ea6d0608b7508a44cc7caaf643a48e7d65bf50fb7fba273b5ef952f127d",
+  "expected_mutations": [
+    "duplicate_replacing_missing",
+    "extra_duplicate",
+    "failed_check",
+    "missing_append_to_closed_episode",
+    "missing_broker_proof_local",
+    "missing_broker_proof_whole",
+    "missing_certificate_for_another_goal",
+    "missing_changed_dispatch_input",
+    "missing_changed_source",
+    "missing_consumed_certificate_substitution",
+    "missing_dropped_event",
+    "missing_duplicated_event",
+    "missing_existing_run_directory",
+    "missing_forbidden_axiom",
+    "missing_human_proof_lacks_farkas_reference",
+    "missing_invalid_proof",
+    "missing_invalid_witness",
+    "missing_malformed_certificate",
+    "missing_missing_declaration",
+    "missing_missing_local_reference",
+    "missing_native_escape_axiom",
+    "missing_reordered_events",
+    "missing_resource_cpu",
+    "missing_resource_cpu_descendants_reaped",
+    "missing_resource_memory",
+    "missing_resource_memory_descendants_reaped",
+    "missing_resource_normal_completion",
+    "missing_resource_output",
+    "missing_resource_output_descendants_reaped",
+    "missing_resource_wall",
+    "missing_resource_wall_descendants_reaped",
+    "missing_sorry",
+    "missing_truncated_sealed_episode",
+    "missing_valid_certificate",
+    "missing_valid_other_goal_certificate",
+    "missing_valid_positive_rescaling",
+    "missing_wrong_container",
+    "missing_wrong_target",
+    "unexpected_case"
+  ],
+  "passed": true,
+  "checks": [
+    {
+      "case": "missing_valid_certificate",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['valid_certificate'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_malformed_certificate",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['malformed_certificate'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_invalid_witness",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['invalid_witness'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_valid_positive_rescaling",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['valid_positive_rescaling'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_valid_other_goal_certificate",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['valid_other_goal_certificate'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_certificate_for_another_goal",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['certificate_for_another_goal'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_changed_dispatch_input",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['changed_dispatch_input'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_broker_proof_local",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['broker_proof_local'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_human_proof_lacks_farkas_reference",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['human_proof_lacks_farkas_reference'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_broker_proof_whole",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['broker_proof_whole'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_wrong_target",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['wrong_target'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_wrong_container",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['wrong_container'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_missing_declaration",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['missing_declaration'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_forbidden_axiom",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['forbidden_axiom'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_sorry",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['sorry'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_native_escape_axiom",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['native_escape_axiom'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_invalid_proof",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['invalid_proof'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_missing_local_reference",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['missing_local_reference'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_changed_source",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['changed_source'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_dropped_event",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['dropped_event'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_reordered_events",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['reordered_events'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_duplicated_event",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['duplicated_event'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_consumed_certificate_substitution",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['consumed_certificate_substitution'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_truncated_sealed_episode",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['truncated_sealed_episode'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_existing_run_directory",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['existing_run_directory'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_append_to_closed_episode",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['append_to_closed_episode'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_normal_completion",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_normal_completion'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_cpu",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_cpu'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_cpu_descendants_reaped",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_cpu_descendants_reaped'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_wall",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_wall'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_wall_descendants_reaped",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_wall_descendants_reaped'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_memory",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_memory'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_memory_descendants_reaped",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_memory_descendants_reaped'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_output",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_output'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "missing_resource_output_descendants_reaped",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['resource_output_descendants_reaped'], unexpected=[], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "duplicate_replacing_missing",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=['valid_certificate'], unexpected=[], duplicates=['malformed_certificate'], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "extra_duplicate",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=[], unexpected=[], duplicates=['valid_certificate'], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "unexpected_case",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=[], unexpected=['unexpected_case'], duplicates=[], failed=[]",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    },
+    {
+      "case": "failed_check",
+      "rejected": true,
+      "error": "Incomplete conformance suite: missing=[], unexpected=[], duplicates=[], failed=['valid_certificate']",
+      "failure_marker_preserved": true,
+      "completion_event_absent": true
+    }
+  ]
+}

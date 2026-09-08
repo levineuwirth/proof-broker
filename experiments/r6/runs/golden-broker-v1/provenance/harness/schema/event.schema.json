@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "R6 supervisor receipt event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "task_id", "sequence", "previous_hash", "event_hash", "receipt_monotonic_ns", "receipt_utc", "stage", "event", "source", "payload"],
+  "properties": {
+    "schema_version": {"const": "r6-event-1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "task_id": {"const": "verinf-d1-70"},
+    "sequence": {"type": "integer", "minimum": 0},
+    "previous_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "event_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "receipt_monotonic_ns": {"type": "integer", "minimum": 0},
+    "receipt_utc": {"type": "string", "format": "date-time"},
+    "stage": {"type": "string", "minLength": 1},
+    "event": {"type": "string", "minLength": 1},
+    "source": {"enum": ["supervisor", "child_report"]},
+    "payload": {"type": "object"}
+  }
+}

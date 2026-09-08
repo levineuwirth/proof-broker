@@ -1,0 +1,23 @@
+{
+  "exit_code": 0,
+  "resource_exhausted": null,
+  "wall_seconds": 0.01862019100008183,
+  "execution_wall_seconds": 0.018136639999283943,
+  "cgroup_cpu_usec": 7157,
+  "resource_violations": [],
+  "cgroup_memory_peak_bytes": 1277952,
+  "memory_events": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "monitor_error": null,
+  "observation_error": "Malformed or reserved broker observation",
+  "workload_empty_after_cleanup": true,
+  "output_bytes": 66,
+  "accounting_scope": "sandbox_process_tree"
+}

@@ -1,0 +1,31 @@
+{
+  "repository": "https://github.com/levineuwirth/proof-broker.git",
+  "commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+  "commit_date": "2026-09-07T10:11:08Z",
+  "files": {
+    "C8.omega.lean": "experiments/c1-cert-recovery/runs/20260907-113052/lean/C8_coef_2p18.omega.lean",
+    "corpus.py": "experiments/c1-cert-recovery/tools/corpus.py",
+    "truth_check.py": "experiments/c1-cert-recovery/tools/truth_check.py",
+    "C8.final_ir.json": "experiments/c1-cert-recovery/raw/20260907-113052/C8_coef_2p18.final_ir.json"
+  },
+  "files_sha256": {
+    "C8.omega.lean": "2c7c2131a28eb87201bbbf3c8793eea751741adc9309ac983af018b239072d0e",
+    "corpus.py": "97f53c521a0cb29fe5fe0e13b410da6b716a240bfecddf6d4a0ffe67aece1afa",
+    "truth_check.py": "fc162487fb013941dcb09ef9db7a1a0a57967cc26e26a246fd9d01fed69efe8d",
+    "C8.final_ir.json": "e2bc1e839b4d9536f7587c927651fa64d26a65cf0a0026795dd58520cfd81535"
+  },
+  "definition_reference": {
+    "repository": "https://github.com/JamesPetrie/VerInf.git",
+    "commit": "573e1686323fe5fc1aa9a41c1d3c20b1175732cd",
+    "source_file": "lean/RmsNormBracket/RmsNormBracket/Model.lean",
+    "sha256": "ac539fb655da527d9e6ff3ce0423c899b191911ffcdaba5ec8781d28d0bc823b"
+  },
+  "origin_is_anonymous_example": true,
+  "environment": "R6 uses the D1/70 Mathlib/toolchain lock; original C1 Model/ProofBroker imports are reference material",
+  "changes": [
+    "replace repository imports with Mathlib and the same numeral definition in namespace R6.C8",
+    "name the theorem coefficient_bound and expose a local hlt proof hole with an exact hlt wrapper",
+    "omit profiling/linter options; mathematical binders and goal retain their source spelling"
+  ],
+  "interpretation": "synthetic recovery control derived from C1 C8; not an unmodified downstream obligation"
+}

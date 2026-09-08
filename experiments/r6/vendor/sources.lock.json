@@ -1,0 +1,25 @@
+[
+  {
+    "name": "lean4export",
+    "repository": "https://github.com/leanprover/lean4export",
+    "commit": "4e7915201d3f9f04470d9eae002fa695f7cdc589",
+    "files_sha256": {
+      "Export.lean": "1c60d571dc24bfb99e7cbb218d8d489919bbc871238f6db9c76248521fbea998",
+      "Export/Parse.lean": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286",
+      "Main.lean": "bd8e350903f1382b25fe767f9086dd9882000f01085f7046ea06545e7848842a",
+      "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
+  },
+  {
+    "name": "comparator",
+    "repository": "https://github.com/leanprover/comparator",
+    "commit": "2312244ac716564a61cc0bf4e107d9abf1757a61",
+    "files_sha256": {
+      "Comparator.lean": "6c73ecd5bd429cf85e0aaa75b7c6f874ec0598d5afca60dcf5711d44e6bdef23",
+      "Comparator/Axioms.lean": "863c5e1329811be0427880e08c171de733343491c5a3619b5dbf2e12b34c6125",
+      "Comparator/Compare.lean": "9bc34cb7de5a069a6fef7f3b13b20fea22f1d52603f74320a93d519b735ad3dd",
+      "Comparator/Util.lean": "693d845330dd7122565aeb19314a3e3de4b49f9a8a7ac6e1fadbc9ab374b9f88",
+      "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
+  }
+]

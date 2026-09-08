@@ -1,0 +1,62 @@
+{
+  "staged_diff_check_exit_code": 2,
+  "blank_context_line_findings": 30,
+  "blank_context_lines": {
+    "experiments/r6/runs/golden-broker-v1/provenance/instrumentation.patch": [
+      20,
+      89,
+      104,
+      164
+    ],
+    "experiments/r6/runs/golden-broker-v1/provenance/search.patch": [
+      6
+    ],
+    "experiments/r6/runs/golden-broker-v2/provenance/instrumentation.patch": [
+      20,
+      89,
+      104,
+      164
+    ],
+    "experiments/r6/runs/golden-broker-v2/provenance/search.patch": [
+      6
+    ],
+    "experiments/r6/runs/golden-broker-v3/provenance/instrumentation.patch": [
+      20,
+      89,
+      104,
+      164
+    ],
+    "experiments/r6/runs/golden-broker-v3/provenance/search.patch": [
+      6
+    ],
+    "experiments/r6/runs/golden-c8-v1/provenance/instrumentation.patch": [
+      20,
+      89,
+      104,
+      164
+    ],
+    "experiments/r6/runs/golden-c8-v1/provenance/search.patch": [
+      6,
+      10,
+      16
+    ],
+    "experiments/r6/tasks/c1-c8-2p18/derivation.patch": [
+      10,
+      22,
+      26,
+      32
+    ],
+    "experiments/r6/tasks/c1-c8-2p18/permitted.patch": [
+      6,
+      10,
+      16
+    ],
+    "experiments/r6/tasks/verinf-d1-70/permitted.patch": [
+      6
+    ]
+  },
+  "every_reported_line_is_one_ascii_space": true,
+  "other_whitespace_findings": [],
+  "non_patch_staged_diff_check_exit_code": 0,
+  "interpretation": "All warnings concern required blank context lines in retained unified patches. Evidence bytes are preserved; no whitespace normalization is applied."
+}

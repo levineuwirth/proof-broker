@@ -1,0 +1,13 @@
+kernel_replay: while replaying declaration 'R6.C8.coefficient_bound.r6_c8':
+(kernel) declaration type mismatch, 'R6.C8.coefficient_bound.r6_c8' has type
+  True
+but it is expected to have type
+  (g_hi : ZMod R6.C8.P) →
+    @LT.lt Nat instLTNat (ZMod.val R6.C8.P g_hi)
+        (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 42) →
+      @Eq Nat R6.C8.P 18446744069414584321 →
+        @LT.lt Nat instLTNat
+          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+            (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 18)
+            (ZMod.val R6.C8.P g_hi))
+          R6.C8.P

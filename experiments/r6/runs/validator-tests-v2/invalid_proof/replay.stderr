@@ -1,0 +1,583 @@
+kernel_replay: while replaying declaration 'Bracket.lift_cell.r6_d1_70':
+(kernel) declaration type mismatch, 'Bracket.lift_cell.r6_d1_70' has type
+  True
+but it is expected to have type
+  {c x z zhigh : ZMod Bracket.P} →
+    {Zmax : Nat} →
+      @Eq (ZMod Bracket.P) c
+          (@HAdd.hAdd (ZMod Bracket.P) (ZMod Bracket.P) (ZMod Bracket.P)
+            (@instHAdd (ZMod Bracket.P)
+              (@Distrib.toAdd (ZMod Bracket.P)
+                (@instDistribOfSemiring (ZMod Bracket.P)
+                  (@CommSemiring.toSemiring (ZMod Bracket.P)
+                    (@CommRing.toCommSemiring (ZMod Bracket.P) (ZMod.commRing Bracket.P))))))
+            (@HAdd.hAdd (ZMod Bracket.P) (ZMod Bracket.P) (ZMod Bracket.P)
+              (@instHAdd (ZMod Bracket.P)
+                (@Distrib.toAdd (ZMod Bracket.P)
+                  (@instDistribOfSemiring (ZMod Bracket.P)
+                    (@CommSemiring.toSemiring (ZMod Bracket.P)
+                      (@CommRing.toCommSemiring (ZMod Bracket.P) (ZMod.commRing Bracket.P))))))
+              x z)
+            (@HMul.hMul (ZMod Bracket.P) (ZMod Bracket.P) (ZMod Bracket.P)
+              (@instHMul (ZMod Bracket.P)
+                (@Distrib.toMul (ZMod Bracket.P)
+                  (@instDistribOfSemiring (ZMod Bracket.P)
+                    (@CommSemiring.toSemiring (ZMod Bracket.P)
+                      (@CommRing.toCommSemiring (ZMod Bracket.P) (ZMod.commRing Bracket.P))))))
+              (@Nat.cast (ZMod Bracket.P)
+                (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                  (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                    (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                      (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                Zmax)
+              zhigh)) →
+        (hx :
+            @LT.lt Nat instLTNat (ZMod.val Bracket.P x)
+              (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)) →
+          (hz :
+              @LT.lt Nat instLTNat (ZMod.val Bracket.P z) (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2 Zmax)) →
+            (hzh :
+                @LT.lt Nat instLTNat (ZMod.val Bracket.P zhigh)
+                  (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2
+                    16)) →
+              (hZ :
+                  @LE.le Nat instLENat Zmax
+                    (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2
+                      16)) →
+                @LT.lt Nat instLTNat
+                    (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                      (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                        (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2 Zmax))
+                      (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)))
+                    Bracket.P →
+                  let hZval :=
+                    ZMod.val_natCast_of_lt Bracket.P Zmax
+                      (@Trans.trans Nat Nat Nat (@LE.le Nat instLENat) (@LT.lt Nat instLTNat)
+                        (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) Nat.instTransLeLt Zmax
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                        Bracket.P hZ
+                        (of_eq_true
+                          (@LT.lt Nat instLTNat
+                            (@HPow.hPow Nat Nat Nat
+                              (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                            18446744069414584321)
+                          (@Eq.trans Prop
+                            (@LT.lt Nat instLTNat
+                              (@HPow.hPow Nat Nat Nat
+                                (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                              18446744069414584321)
+                            (@LT.lt Nat instLTNat 65536 18446744069414584321) True
+                            (@congrFun' Nat Prop
+                              (@LT.lt Nat instLTNat
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                              (@LT.lt Nat instLTNat 65536)
+                              (@congrArg Nat (Nat → Prop)
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                65536 (@LT.lt Nat instLTNat)
+                                (@Mathlib.Meta.NormNum.IsNat.to_eq Nat Nat.instAddMonoidWithOne 65536
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                  65536
+                                  (@Mathlib.Meta.NormNum.isNat_pow Nat Nat.instSemiring
+                                    (@HPow.hPow Nat Nat Nat
+                                      (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))))
+                                    2 16 2 16 65536
+                                    (@Eq.refl (Nat → Nat → Nat)
+                                      (@HPow.hPow Nat Nat Nat
+                                        (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 2 2
+                                      (@Eq.refl Nat 2))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 16 16
+                                      (@Eq.refl Nat 16))
+                                    (Mathlib.Meta.NormNum.IsNatPowT.run 2 16 65536
+                                      (Mathlib.Meta.NormNum.IsNatPowT.trans 2 4 16 (@Eq Nat (Nat.pow 2 1) 2) 16 65536
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 2 4 (@Eq Nat (Nat.pow 2 1) 2) 4 16
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 1 2)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 2 4))
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 8 256 (@Eq Nat (Nat.pow 2 4) 16) 16
+                                          65536 (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 4 16)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 8 256)))))
+                                  (@Eq.refl Nat 65536)))
+                              18446744069414584321)
+                            (eq_true (@LT.lt Nat instLTNat 65536 18446744069414584321)
+                              (@Mathlib.Meta.NormNum.isNat_lt_true Nat Nat.instSemiring Nat.instPartialOrder
+                                (@StarOrderedRing.toIsOrderedRing Nat Nat.instCommSemiring Nat.instPartialOrder
+                                  Nat.instStarRing Nat.instStarOrderedRing)
+                                Nat.instCharZero 65536 18446744069414584321 65536 18446744069414584321
+                                (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 65536 65536
+                                  (@Eq.refl Nat 65536))
+                                (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 18446744069414584321
+                                  18446744069414584321 (@Eq.refl Nat 18446744069414584321))
+                                (@Eq.refl Bool Bool.false))))));
+                  let hprod_le :=
+                    Nat.mul_le_mul Zmax (ZMod.val Bracket.P zhigh) Zmax
+                      (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))
+                        2 16)
+                      (@le_refl Nat Nat.instPreorder Zmax)
+                      (@le_of_lt Nat Nat.instPreorder (ZMod.val Bracket.P zhigh)
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                        hzh);
+                  let hbound :=
+                    @Trans.trans Nat Nat Nat (@LE.le Nat instLENat) (@LT.lt Nat instLTNat)
+                      (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) Nat.instTransLeLt
+                      (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                      (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                      Bracket.P
+                      (Nat.mul_le_mul Zmax (ZMod.val Bracket.P zhigh)
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                        (@HPow.hPow Nat Nat Nat
+                          (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                        hZ
+                        (@le_of_lt Nat Nat.instPreorder (ZMod.val Bracket.P zhigh)
+                          (@HPow.hPow Nat Nat Nat
+                            (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                          hzh))
+                      (of_eq_true
+                        (@LT.lt Nat instLTNat
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                            (@HPow.hPow Nat Nat Nat
+                              (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                            (@HPow.hPow Nat Nat Nat
+                              (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                          18446744069414584321)
+                        (@Eq.trans Prop
+                          (@LT.lt Nat instLTNat
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                              (@HPow.hPow Nat Nat Nat
+                                (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                              (@HPow.hPow Nat Nat Nat
+                                (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                            18446744069414584321)
+                          (@LT.lt Nat instLTNat 4294967296 18446744069414584321) True
+                          (@congrFun' Nat Prop
+                            (@LT.lt Nat instLTNat
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)))
+                            (@LT.lt Nat instLTNat 4294967296)
+                            (@congrArg Nat (Nat → Prop)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                              4294967296 (@LT.lt Nat instLTNat)
+                              (@Mathlib.Meta.NormNum.IsNat.to_eq Nat Nat.instAddMonoidWithOne 4294967296
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                                4294967296
+                                (@Mathlib.Meta.NormNum.isNat_mul Nat Nat.instSemiring
+                                  (@HMul.hMul Nat Nat Nat
+                                    (@instHMul Nat (@Distrib.toMul Nat (@instDistribOfSemiring Nat Nat.instSemiring))))
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                  65536 65536 4294967296
+                                  (@Eq.refl (Nat → Nat → Nat)
+                                    (@HMul.hMul Nat Nat Nat
+                                      (@instHMul Nat
+                                        (@Distrib.toMul Nat (@instDistribOfSemiring Nat Nat.instSemiring)))))
+                                  (@Mathlib.Meta.NormNum.isNat_pow Nat Nat.instSemiring
+                                    (@HPow.hPow Nat Nat Nat
+                                      (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))))
+                                    2 16 2 16 65536
+                                    (@Eq.refl (Nat → Nat → Nat)
+                                      (@HPow.hPow Nat Nat Nat
+                                        (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 2 2
+                                      (@Eq.refl Nat 2))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 16 16
+                                      (@Eq.refl Nat 16))
+                                    (Mathlib.Meta.NormNum.IsNatPowT.run 2 16 65536
+                                      (Mathlib.Meta.NormNum.IsNatPowT.trans 2 4 16 (@Eq Nat (Nat.pow 2 1) 2) 16 65536
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 2 4 (@Eq Nat (Nat.pow 2 1) 2) 4 16
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 1 2)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 2 4))
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 8 256 (@Eq Nat (Nat.pow 2 4) 16) 16
+                                          65536 (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 4 16)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 8 256)))))
+                                  (@Mathlib.Meta.NormNum.isNat_pow Nat Nat.instSemiring
+                                    (@HPow.hPow Nat Nat Nat
+                                      (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))))
+                                    2 16 2 16 65536
+                                    (@Eq.refl (Nat → Nat → Nat)
+                                      (@HPow.hPow Nat Nat Nat
+                                        (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 2 2
+                                      (@Eq.refl Nat 2))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 16 16
+                                      (@Eq.refl Nat 16))
+                                    (Mathlib.Meta.NormNum.IsNatPowT.run 2 16 65536
+                                      (Mathlib.Meta.NormNum.IsNatPowT.trans 2 4 16 (@Eq Nat (Nat.pow 2 1) 2) 16 65536
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 2 4 (@Eq Nat (Nat.pow 2 1) 2) 4 16
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 1 2)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 2 4))
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 8 256 (@Eq Nat (Nat.pow 2 4) 16) 16
+                                          65536 (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 4 16)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 8 256)))))
+                                  (@Eq.refl Nat 4294967296))
+                                (@Eq.refl Nat 4294967296)))
+                            18446744069414584321)
+                          (eq_true (@LT.lt Nat instLTNat 4294967296 18446744069414584321)
+                            (@Mathlib.Meta.NormNum.isNat_lt_true Nat Nat.instSemiring Nat.instPartialOrder
+                              (@StarOrderedRing.toIsOrderedRing Nat Nat.instCommSemiring Nat.instPartialOrder
+                                Nat.instStarRing Nat.instStarOrderedRing)
+                              Nat.instCharZero 4294967296 18446744069414584321 4294967296 18446744069414584321
+                              (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 4294967296 4294967296
+                                (@Eq.refl Nat 4294967296))
+                              (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 18446744069414584321
+                                18446744069414584321 (@Eq.refl Nat 18446744069414584321))
+                              (@Eq.refl Bool Bool.false)))));
+                  let hmul :=
+                    @Eq.mpr
+                      (@Eq Nat
+                        (ZMod.val Bracket.P
+                          (@HMul.hMul (ZMod Bracket.P) (ZMod Bracket.P) (ZMod Bracket.P)
+                            (@instHMul (ZMod Bracket.P)
+                              (@Distrib.toMul (ZMod Bracket.P)
+                                (@instDistribOfSemiring (ZMod Bracket.P)
+                                  (@CommSemiring.toSemiring (ZMod Bracket.P)
+                                    (@CommRing.toCommSemiring (ZMod Bracket.P) (ZMod.commRing Bracket.P))))))
+                            (@Nat.cast (ZMod Bracket.P)
+                              (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                  (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                    (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                              Zmax)
+                            zhigh))
+                        (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                      (@Eq Nat
+                        (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                            (ZMod.val Bracket.P
+                              (@Nat.cast (ZMod Bracket.P)
+                                (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                  (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                    (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                      (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                Zmax))
+                            (ZMod.val Bracket.P zhigh))
+                          Bracket.P)
+                        (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                      (@id
+                        (@Eq Prop
+                          (@Eq Nat
+                            (ZMod.val Bracket.P
+                              (@HMul.hMul (ZMod Bracket.P) (ZMod Bracket.P) (ZMod Bracket.P)
+                                (@instHMul (ZMod Bracket.P)
+                                  (@Distrib.toMul (ZMod Bracket.P)
+                                    (@instDistribOfSemiring (ZMod Bracket.P)
+                                      (@CommSemiring.toSemiring (ZMod Bracket.P)
+                                        (@CommRing.toCommSemiring (ZMod Bracket.P) (ZMod.commRing Bracket.P))))))
+                                (@Nat.cast (ZMod Bracket.P)
+                                  (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                    (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                      (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                        (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                  Zmax)
+                                zhigh))
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                          (@Eq Nat
+                            (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                                (ZMod.val Bracket.P
+                                  (@Nat.cast (ZMod Bracket.P)
+                                    (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                      (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                        (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                          (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                    Zmax))
+                                (ZMod.val Bracket.P zhigh))
+                              Bracket.P)
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))))
+                        (@congrArg Nat Prop
+                          (ZMod.val Bracket.P
+                            (@HMul.hMul (ZMod Bracket.P) (ZMod Bracket.P) (ZMod Bracket.P)
+                              (@instHMul (ZMod Bracket.P)
+                                (@Distrib.toMul (ZMod Bracket.P)
+                                  (@instDistribOfSemiring (ZMod Bracket.P)
+                                    (@CommSemiring.toSemiring (ZMod Bracket.P)
+                                      (@CommRing.toCommSemiring (ZMod Bracket.P) (ZMod.commRing Bracket.P))))))
+                              (@Nat.cast (ZMod Bracket.P)
+                                (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                  (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                    (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                      (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                Zmax)
+                              zhigh))
+                          (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                              (ZMod.val Bracket.P
+                                (@Nat.cast (ZMod Bracket.P)
+                                  (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                    (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                      (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                        (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                  Zmax))
+                              (ZMod.val Bracket.P zhigh))
+                            Bracket.P)
+                          (fun _a =>
+                            @Eq Nat _a
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                          (ZMod.val_mul Bracket.P
+                            (@Nat.cast (ZMod Bracket.P)
+                              (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                  (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                    (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                              Zmax)
+                            zhigh)))
+                      (@Eq.mpr
+                        (@Eq Nat
+                          (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                              (ZMod.val Bracket.P
+                                (@Nat.cast (ZMod Bracket.P)
+                                  (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                    (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                      (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                        (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                  Zmax))
+                              (ZMod.val Bracket.P zhigh))
+                            Bracket.P)
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                        (@Eq Nat
+                          (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                            Bracket.P)
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                        (@id
+                          (@Eq Prop
+                            (@Eq Nat
+                              (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat)
+                                  (ZMod.val Bracket.P
+                                    (@Nat.cast (ZMod Bracket.P)
+                                      (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                        (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                          (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                            (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                      Zmax))
+                                  (ZMod.val Bracket.P zhigh))
+                                Bracket.P)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                            (@Eq Nat
+                              (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                                Bracket.P)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))))
+                          (@congrArg Nat Prop
+                            (ZMod.val Bracket.P
+                              (@Nat.cast (ZMod Bracket.P)
+                                (@AddMonoidWithOne.toNatCast (ZMod Bracket.P)
+                                  (@AddGroupWithOne.toAddMonoidWithOne (ZMod Bracket.P)
+                                    (@Ring.toAddGroupWithOne (ZMod Bracket.P)
+                                      (@CommRing.toRing (ZMod Bracket.P) (ZMod.commRing Bracket.P)))))
+                                Zmax))
+                            Zmax
+                            (fun _a =>
+                              @Eq Nat
+                                (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                                  (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) _a (ZMod.val Bracket.P zhigh))
+                                  Bracket.P)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                            hZval))
+                        (@Eq.mpr
+                          (@Eq Nat
+                            (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                              Bracket.P)
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                          (@Eq Nat (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                          (@id
+                            (@Eq Prop
+                              (@Eq Nat
+                                (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                                  (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                                  Bracket.P)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                              (@Eq Nat
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))))
+                            (@congrArg Nat Prop
+                              (@HMod.hMod Nat Nat Nat (@instHMod Nat Nat.instMod)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                                Bracket.P)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                              (fun _a =>
+                                @Eq Nat _a
+                                  (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))
+                              (Nat.mod_eq_of_lt
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh))
+                                Bracket.P hbound)))
+                          (@Eq.refl Nat
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) Zmax (ZMod.val Bracket.P zhigh)))));
+                  let hnum :=
+                    of_eq_true
+                      (@LE.le Nat instLENat
+                        (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                          (@HPow.hPow Nat Nat Nat
+                            (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2
+                            (@HPow.hPow Nat Nat Nat
+                              (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)))
+                        18446744069414584321)
+                      (@Eq.trans Prop
+                        (@LE.le Nat instLENat
+                          (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                            (@HPow.hPow Nat Nat Nat
+                              (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                            (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2
+                              (@HPow.hPow Nat Nat Nat
+                                (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)))
+                          18446744069414584321)
+                        (@LE.le Nat instLENat 16908288 18446744069414584321) True
+                        (@congrFun' Nat Prop
+                          (@LE.le Nat instLENat
+                            (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                              (@HPow.hPow Nat Nat Nat
+                                (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))))
+                          (@LE.le Nat instLENat 16908288)
+                          (@congrArg Nat (Nat → Prop)
+                            (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                              (@HPow.hPow Nat Nat Nat
+                                (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                              (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)))
+                            16908288 (@LE.le Nat instLENat)
+                            (@Mathlib.Meta.NormNum.IsNat.to_eq Nat Nat.instAddMonoidWithOne 16908288
+                              (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)))
+                              16908288
+                              (@Mathlib.Meta.NormNum.isNat_add Nat Nat.instAddMonoidWithOne
+                                (@HAdd.hAdd Nat Nat Nat
+                                  (@instHAdd Nat
+                                    (@AddSemigroup.toAdd Nat
+                                      (@AddMonoid.toAddSemigroup Nat
+                                        (@AddMonoidWithOne.toAddMonoid Nat Nat.instAddMonoidWithOne)))))
+                                (@HPow.hPow Nat Nat Nat
+                                  (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                                (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16))
+                                16777216 131072 16908288
+                                (@Eq.refl (Nat → Nat → Nat)
+                                  (@HAdd.hAdd Nat Nat Nat
+                                    (@instHAdd Nat
+                                      (@AddSemigroup.toAdd Nat
+                                        (@AddMonoid.toAddSemigroup Nat
+                                          (@AddMonoidWithOne.toAddMonoid Nat Nat.instAddMonoidWithOne))))))
+                                (@Mathlib.Meta.NormNum.isNat_pow Nat Nat.instSemiring
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))))
+                                  2 24 2 24 16777216
+                                  (@Eq.refl (Nat → Nat → Nat)
+                                    (@HPow.hPow Nat Nat Nat
+                                      (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))))
+                                  (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 2 2 (@Eq.refl Nat 2))
+                                  (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 24 24
+                                    (@Eq.refl Nat 24))
+                                  (Mathlib.Meta.NormNum.IsNatPowT.run 2 24 16777216
+                                    (Mathlib.Meta.NormNum.IsNatPowT.trans 2 6 64 (@Eq Nat (Nat.pow 2 1) 2) 24 16777216
+                                      (Mathlib.Meta.NormNum.IsNatPowT.trans 2 3 8 (@Eq Nat (Nat.pow 2 1) 2) 6 64
+                                        (Mathlib.Meta.NormNum.IsNatPowT.bit1 2 1 2)
+                                        (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 3 8))
+                                      (Mathlib.Meta.NormNum.IsNatPowT.trans 2 12 4096 (@Eq Nat (Nat.pow 2 6) 64) 24
+                                        16777216 (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 6 64)
+                                        (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 12 4096)))))
+                                (@Mathlib.Meta.NormNum.isNat_mul Nat Nat.instSemiring
+                                  (@HMul.hMul Nat Nat Nat
+                                    (@instHMul Nat (@Distrib.toMul Nat (@instDistribOfSemiring Nat Nat.instSemiring))))
+                                  2
+                                  (@HPow.hPow Nat Nat Nat
+                                    (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 16)
+                                  2 65536 131072
+                                  (@Eq.refl (Nat → Nat → Nat)
+                                    (@HMul.hMul Nat Nat Nat
+                                      (@instHMul Nat
+                                        (@Distrib.toMul Nat (@instDistribOfSemiring Nat Nat.instSemiring)))))
+                                  (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 2 2 (@Eq.refl Nat 2))
+                                  (@Mathlib.Meta.NormNum.isNat_pow Nat Nat.instSemiring
+                                    (@HPow.hPow Nat Nat Nat
+                                      (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))))
+                                    2 16 2 16 65536
+                                    (@Eq.refl (Nat → Nat → Nat)
+                                      (@HPow.hPow Nat Nat Nat
+                                        (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 2 2
+                                      (@Eq.refl Nat 2))
+                                    (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 16 16
+                                      (@Eq.refl Nat 16))
+                                    (Mathlib.Meta.NormNum.IsNatPowT.run 2 16 65536
+                                      (Mathlib.Meta.NormNum.IsNatPowT.trans 2 4 16 (@Eq Nat (Nat.pow 2 1) 2) 16 65536
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 2 4 (@Eq Nat (Nat.pow 2 1) 2) 4 16
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 1 2)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 2 4))
+                                        (Mathlib.Meta.NormNum.IsNatPowT.trans 2 8 256 (@Eq Nat (Nat.pow 2 4) 16) 16
+                                          65536 (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 4 16)
+                                          (Mathlib.Meta.NormNum.IsNatPowT.bit0 2 8 256)))))
+                                  (@Eq.refl Nat 131072))
+                                (@Eq.refl Nat 16908288))
+                              (@Eq.refl Nat 16908288)))
+                          18446744069414584321)
+                        (eq_true (@LE.le Nat instLENat 16908288 18446744069414584321)
+                          (@Mathlib.Meta.NormNum.isNat_le_true Nat Nat.instSemiring Nat.instPartialOrder
+                            (@StarOrderedRing.toIsOrderedRing Nat Nat.instCommSemiring Nat.instPartialOrder
+                              Nat.instStarRing Nat.instStarOrderedRing)
+                            16908288 18446744069414584321 16908288 18446744069414584321
+                            (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 16908288 16908288
+                              (@Eq.refl Nat 16908288))
+                            (@Mathlib.Meta.NormNum.isNat_ofNat Nat Nat.instAddMonoidWithOne 18446744069414584321
+                              18446744069414584321 (@Eq.refl Nat 18446744069414584321))
+                            (@Eq.refl Bool Bool.true))));
+                  let hzsum :=
+                    Decidable.byContradiction
+                      (@LT.lt Nat instLTNat
+                        (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat) (ZMod.val Bracket.P x)
+                          (ZMod.val Bracket.P z))
+                        (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                          (@HPow.hPow Nat Nat Nat
+                            (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2 Zmax)))
+                      (Nat.decLt
+                        (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat) (ZMod.val Bracket.P x)
+                          (ZMod.val Bracket.P z))
+                        (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                          (@HPow.hPow Nat Nat Nat
+                            (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid))) 2 24)
+                          (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2 Zmax)))
+                      fun a => Bracket.lift_cell._proof_1_1 x z zhigh Zmax hx hz hZval a;
+                  @LE.le Nat instLENat
+                    (@HAdd.hAdd Nat Nat Nat (@instHAdd Nat instAddNat)
+                      (@HPow.hPow Nat Nat Nat (@instHPow Nat Nat (@NPow.toPow Nat (@Monoid.toNPow Nat Nat.instMonoid)))
+                        2 24)
+                      (@HMul.hMul Nat Nat Nat (@instHMul Nat instMulNat) 2 Zmax))
+                    Bracket.P

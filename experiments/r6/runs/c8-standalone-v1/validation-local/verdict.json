@@ -1,0 +1,21 @@
+{
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "R6.C8.coefficient_bound.r6_c8",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "stage": "complete",
+  "local_proof_binding_checked": false,
+  "kernel_version": "4.32.2",
+  "checked_declarations": 1470,
+  "accepted": true
+}

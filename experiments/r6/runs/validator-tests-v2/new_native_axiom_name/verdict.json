@@ -1,0 +1,5 @@
+{
+  "stage": "axiom_policy",
+  "error": "Illegal axiom detected: 'R6_new_native_decide_axiom'",
+  "accepted": false
+}

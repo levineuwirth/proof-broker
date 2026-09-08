@@ -1,0 +1,95 @@
+{
+  "schema_version": "r6-control-task-1",
+  "task_id": "c1-c8-2p18",
+  "revision": 1,
+  "frozen_at": "2026-09-07T19:15:14.808914+00:00",
+  "task_unit": "local_obligation",
+  "upstream": {
+    "repository": "https://github.com/levineuwirth/proof-broker.git",
+    "commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+    "commit_date": "2026-09-07T10:11:08Z",
+    "source_file": "experiments/c1-cert-recovery/runs/20260907-113052/lean/C8_coef_2p18.omega.lean",
+    "line": 22,
+    "pristine_sha256": "2c7c2131a28eb87201bbbf3c8793eea751741adc9309ac983af018b239072d0e",
+    "proof_byte_span": {
+      "start": 664,
+      "end_exclusive": 669
+    }
+  },
+  "original_declaration": "R6.C8.coefficient_bound",
+  "local_name": "hlt",
+  "saved_local_declaration": "R6.C8.coefficient_bound.r6_c8",
+  "local_goal_source": "2^18 * g_hi.val < P",
+  "elaborated_context": "context/local-context.json",
+  "expected_declarations": "expected.json",
+  "allowed_imports": [
+    "Mathlib"
+  ],
+  "trusted_instrumentation_imports": [
+    "Capture"
+  ],
+  "environment_lock": "upstream-lake-manifest.json",
+  "compiled_environment_inventory": "environment-inventory.json.gz",
+  "allowed_axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "baseline_axioms": {
+    "R6.C8.coefficient_bound.r6_c8": [
+      "Quot.sound",
+      "propext"
+    ],
+    "R6.C8.coefficient_bound": [
+      "Quot.sound",
+      "propext"
+    ]
+  },
+  "axiom_policy": "transitive_allowlist; report added and removed relative to each baseline",
+  "context_policy": "complete_elaborated_context; auxiliary declaration placeholders recorded but excluded",
+  "model_context_policy": "undecided; reference human proofs are evaluator-only",
+  "permitted_modifications": "permitted.patch; no other source changes",
+  "acceptance": {
+    "local_obligation_closed": "expected local theorem/type/definitions/axioms/kernel replay",
+    "whole_declaration_validated": "original containing theorem/type/definitions/axioms/kernel replay and local-proof reference",
+    "episode_accepted": "local_obligation_closed AND whole_declaration_validated"
+  },
+  "artifacts_sha256": {
+    "Pristine.lean": "42d55407f02d104db111a21d1bfbc0a70ea7e3b9bdd8386169d8f7180e06670e",
+    "pristine.sha256": "189f58741a99e30ab2145518a22036a6ac312647cf135bbf459d98f62fbaeae1",
+    "expected.json": "b7943a2fe3c2e69c151bf5e404c11cdfe7dbc9aa4455718080811ce9dcb23bef",
+    "challenge.ndjson.gz": "cd323ad5ceea1b1531995d4b686415f50458ef4314ce065cfb81b94851e14143",
+    "baseline.ndjson.gz": "ade02f5d6e60e80fbafe55cca995758ed07a4f4d6c2101e20faec773188f81b3",
+    "context/local-context.json": "82b719ed5ceae124dcc45ab97345fc06174404e0f48626bd6adb40ff48bebc0b",
+    "permitted.patch": "9fcbccd2b4756d3e92d5798a7d6399cffd97122f95dda0565bd363a275a37fcf",
+    "upstream-lake-manifest.json": "a403bdda3993346837d7dbfba9e8637d35bc8d0bb032e16d2e40f78b37e6b9a5",
+    "upstream-lakefile.toml": "939d1a3051ca05afe988d401c1f8afd132cd5175097f2c819d7a3756d1486bfa",
+    "lean-toolchain": "2773c517aa90b66ea8a2c52bddddf84393157797f8341be0df45294fff7fd32e",
+    "environment-inventory.json.gz": "fe59473e2305722e932a711f57f24648d310ebd8d70d73e254e19ffb6b185aa3",
+    "Capture.lean": "2bc0c497b25dd5bc01c0bb04ad46280072140756a0f6024b15a00f795d53f4e9",
+    "source-provenance.json": "c5ed05b281d77f61c599dd06a8ec16911bda0dcc93cc1c4176fbb1f616ba51f9",
+    "derivation.patch": "5c6954b15fdb1bdf641dd7a03617171a7b01209cfd1652dc1b47e3a5d0b6bd3f",
+    "truth.json": "d82b13bddf4dd42dde4da2c76ea28d71a481f071f2d8cb9e819204f5b17ba1da",
+    "source/C8.final_ir.json": "e2bc1e839b4d9536f7587c927651fa64d26a65cf0a0026795dd58520cfd81535",
+    "source/C8.omega.lean": "2c7c2131a28eb87201bbbf3c8793eea751741adc9309ac983af018b239072d0e",
+    "source/Model.lean": "ac539fb655da527d9e6ff3ce0423c899b191911ffcdaba5ec8781d28d0bc823b",
+    "source/corpus.py": "97f53c521a0cb29fe5fe0e13b410da6b716a240bfecddf6d4a0ffe67aece1afa",
+    "source/truth_check.py": "fc162487fb013941dcb09ef9db7a1a0a57967cc26e26a246fd9d01fed69efe8d"
+  },
+  "capture_sha256": "2bc0c497b25dd5bc01c0bb04ad46280072140756a0f6024b15a00f795d53f4e9",
+  "vendor_lock_sha256": "cd8d79361006a996c567fb425a27c6370494e6a29bb13f820b37a9320b52e179",
+  "control": {
+    "kind": "synthetic_recovery_control",
+    "derived_source_sha256": "42d55407f02d104db111a21d1bfbc0a70ea7e3b9bdd8386169d8f7180e06670e",
+    "source_provenance": "source-provenance.json",
+    "derivation": "derivation.patch",
+    "truth_check": "truth.json",
+    "required_recovery_route": "exact_support_bounded",
+    "required_witness_coefficients": {
+      "hhi": "262144",
+      "neg_goal": "1"
+    },
+    "benchmark_breadth": false,
+    "original_declaration_meaning": "named derived control before proof-hole instrumentation; upstream is an anonymous example"
+  }
+}
