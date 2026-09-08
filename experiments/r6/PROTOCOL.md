@@ -574,3 +574,28 @@ comparison on this diagnostic stratum measures context/translation repair as
 well as search. Report original-task truth, IR status, context supplied, and the
 failure boundary separately. This is a proposed scope rule; no learned-policy
 selection or exclusion has yet been implemented.
+
+## R6-001 checkpoint amendment — 2026-09-08
+
+The preceding next-decision section records the R6-000 checkpoint. The
+[R6-001 implementation](R6-001.md) now adds a one-request, no-fallback fixture
+policy for Farkas witness proposals. Its implemented default is strict compiled
+arithmetic IR. A field-level sanitized Lean context is retained and tested
+separately as evaluator reference data; it is not part of that request.
+
+The [policy](policies/fixture-farkas-v1.json) binds the
+[pre-search admission rule and control membership](policies/admission-v1.json),
+including an independently checked counterexample to P6's weakened IR. The new
+policy separates witness proposer from certificate assembler and preserves the
+existing Farkas-consumption and independent declaration-validation requirements.
+Historical deterministic policies, artifacts and branch requirements remain
+the reference for R6-000. This checkpoint contains no live learned search; the
+next decision is the final context choice and a separately frozen live policy.
+
+The author approved R6-001 after independent recomputation on 2026-09-08. The
+[review closeout](reviews/2026-09-08/R6-001-REVIEW.md) qualifies the six negative
+cases as five failure categories and distinguishes detector stage from logical
+phase. The [next policy's requirements](LIVE-POLICY-REQUIREMENTS.md) now require
+model-visible row semantics with exact prompt-byte binding, distinct admission
+review versus payload-integrity errors, and explicit provider transport/retry
+accounting. The approved fixture policy and evidence remain frozen.

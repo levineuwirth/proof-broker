@@ -1,0 +1,18 @@
+[
+  "systemd-run",
+  "--user",
+  "--scope",
+  "--quiet",
+  "--unit=r6-ff8dc102f1e64d72a52f99fb7f7d2078.scope",
+  "-p",
+  "Delegate=yes",
+  "-p",
+  "OOMPolicy=continue",
+  "-p",
+  "TasksMax=128",
+  "-p",
+  "RuntimeMaxSec=165",
+  "/usr/bin/python3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/supervise.py",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/runs/proposal-checkpoint-v2/d1_wrong_binding/stages/pipeline-prepare/command.json"
+]

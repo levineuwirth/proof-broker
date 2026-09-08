@@ -1,0 +1,348 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_let_facts",
+    "c8_no_let_control",
+    "synthetic_leakage_precondition",
+    "synthetic_safe_projection",
+    "unredacted_rejected",
+    "value_field_rejected",
+    "placeholder_rejected",
+    "proof_string_rejected",
+    "dropped_let_rejected",
+    "changed_type_rejected",
+    "duplicate_index_rejected",
+    "strict_ir_request",
+    "request_proof_field_rejected",
+    "request_proof_string_rejected",
+    "altered_sdk_row_rejected",
+    "farkas_omission_rejected",
+    "wrong_response_binding",
+    "duplicate_json_rejected",
+    "unknown_support_rejected",
+    "repeated_support_rejected",
+    "oversized_coefficient_rejected",
+    "wrong_witness_is_well_formed",
+    "p6_checked_counterexample",
+    "p6_source_anchor_required",
+    "p6_drop_anchor_required",
+    "p6_bad_assignment",
+    "membership_all_conjuncts",
+    "membership_unknown",
+    "membership_typed",
+    "missing_case_rejected",
+    "duplicate_case_rejected",
+    "third_policy_task_rejected"
+  ],
+  "check_count": 32,
+  "checks": [
+    {
+      "name": "d1_let_facts",
+      "passed": true,
+      "detail": {
+        "kept_let_facts": [
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum"
+        ],
+        "genuine_entries": 17
+      }
+    },
+    {
+      "name": "c8_no_let_control",
+      "passed": true,
+      "detail": "Negative-shape control; does not establish proof-body redaction"
+    },
+    {
+      "name": "synthetic_leakage_precondition",
+      "passed": true,
+      "detail": "Exactly one placeholder and one proof-bearing let"
+    },
+    {
+      "name": "synthetic_safe_projection",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "unredacted_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Context projection dropped a genuine binder or let fact"
+      }
+    },
+    {
+      "name": "value_field_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Context projection is not the four-field allowlist"
+      }
+    },
+    {
+      "name": "placeholder_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Duplicate, unknown, or declaration-placeholder context entry"
+      }
+    },
+    {
+      "name": "proof_string_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proof auxiliary or declaration placeholder in payload projection"
+      }
+    },
+    {
+      "name": "dropped_let_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Context projection dropped a genuine binder or let fact"
+      }
+    },
+    {
+      "name": "changed_type_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Context projection changed a binder or fact type"
+      }
+    },
+    {
+      "name": "duplicate_index_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Duplicate, unknown, or declaration-placeholder context entry"
+      }
+    },
+    {
+      "name": "strict_ir_request",
+      "passed": true,
+      "detail": {
+        "request_sha256": "a86e420306dcae1aa67e0f64cd8f4d2560fbcb986d1723d2f55a2d205135c2ca",
+        "let_facts_in_rows": [
+          "hZval",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hprod_le",
+          "hzsum"
+        ]
+      }
+    },
+    {
+      "name": "request_proof_field_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Additional properties are not allowed ('context' was unexpected)\n\nFailed validating 'additionalProperties' in schema:\n    {'$schema': 'https://json-schema.org/draft/2020-12/schema',\n     'type': 'object',\n     'additionalProperties': False,\n     'required': ['schema_version', 'policy_sha256', 'binding', 'problem'],\n     'properties': {'schema_version': {'const': 'r6-farkas-request-1'},\n                    'policy_sha256': {'type': 'string',\n                                      'pattern': '^[a-f0-9]{64}$'},\n                    'binding': {'type': 'object',\n                                'additionalProperties': False,\n                                'required': ['task_id',\n                                             'manifest_sha256',\n                                             'challenge_sha256',\n                                             'input_ir_sha256',\n                                             'final_ir_sha256'],\n                                'properties': {'task_id': {'enum': ['verinf-d1-70',\n                                                                    'c1-c8-2p18']},\n                                               'manifest_sha256': {'type': 'string',\n                                                                   'pattern': '^[a-f0-9]{64}$'},\n                                               'challenge_sha256': {'type': 'string',\n                                                                    'pattern': '^[a-f0-9]{64}$'},\n                                               'input_ir_sha256': {'type': 'string',\n                                                                   'pattern': '^[a-f0-9]{64}$'},\n                                               'final_ir_sha256': {'type': 'string',\n                                                                   'pattern': '^[a-f0-9]{64}$'}}},\n                    'problem': {'type': 'object',\n                                'additionalProperties': False,\n                                'required': ['fragment', 'rows'],\n                                'properties': {'fragment': {'const': 'LIA'},\n                                               'rows': {'type': 'array',\n                                                        'minItems': 1,\n                                                        'items': {'type': 'object',\n                                                                  'additionalProperties': False,\n                                                                  'required': ['name',\n                                                                               'relation',\n                                                                               'constant',\n                                                                               'terms'],\n                                                                  'properties': {'name': {'type': 'string',\n                                                                                          'minLength': 1},\n                                                                                 'relation': {'enum': ['le',\n                                                                                                       'lt',\n                                                                                                       'eq']},\n                                                                                 'constant': {'type': 'string',\n                                                                                              'pattern': '^-?(0|[1-9][0-9]*)$',\n                                                                                              'maxLength': 128},\n                                                                                 'terms': {'type': 'array',\n                                                                                           'items': {'type': 'object',\n                                                                                                     'additionalProperties': False,\n                                                                                                     'required': ['variable',\n                                                                                                                  'coefficient'],\n                                                                                                     'properties': {'variable': {'type': 'string',\n                                                                                                                                 'minLength': 1},\n                                                                                                                    'coefficient': {'type': 'string',\n                                                                                                                                    'pattern': '^-?(0|[1-9][0-9]*)$',\n                                                                                                                                    'maxLength': 128}}}}}}}}}}}\n\nOn instance:\n    {'schema_version': 'r6-farkas-request-1',\n     'policy_sha256': 'd629a9e8565eab6aeb190c6fff45ecf9ccc5f90d2855ef85bde8c11ea26f457d',\n     'binding': {'task_id': 'verinf-d1-70',\n                 'manifest_sha256': '10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87',\n                 'challenge_sha256': '3864871a7878c096dc9fac19de410e1c56cda10000493a31f020d4d14cb4de55',\n                 'input_ir_sha256': '0b52df9dcf87fd0ecade553e9512af0975b0f507a265b668169231fc746f7558',\n                 'final_ir_sha256': '7a57f310cbc5dce20a2e56fdb6bb5bce4e16935bdaaf348a6a900fbfbb32d794'},\n     'problem': {'fragment': 'LIA',\n                 'rows': [{'name': 'hx',\n                           'relation': 'le',\n                           'constant': '-16777215',\n                           'terms': [{'variable': '_pb_atom_0',\n                                      'coefficient': '1'}]},\n                          {'name': 'hz',\n                           'relation': 'le',\n                           'constant': '1',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '-2'},\n                                     {'variable': '_pb_atom_1',\n                                      'coefficient': '1'}]},\n                          {'name': 'hzh',\n                           'relation': 'le',\n                           'constant': '-65535',\n                           'terms': [{'variable': '_pb_atom_2',\n                                      'coefficient': '1'}]},\n                          {'name': 'hZ',\n                           'relation': 'le',\n                           'constant': '-65536',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '1'}]},\n                          {'name': 'hwidth',\n                           'relation': 'le',\n                           'constant': '-18446744069397807104',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '65538'}]},\n                          {'name': 'hZval',\n                           'relation': 'eq',\n                           'constant': '0',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '-1'},\n                                     {'variable': '_pb_atom_3',\n                                      'coefficient': '1'}]},\n                          {'name': 'hprod_le',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '-65536'},\n                                     {'variable': '_pb_atom_4',\n                                      'coefficient': '1'}]},\n                          {'name': 'hbound',\n                           'relation': 'le',\n                           'constant': '-18446744069414584320',\n                           'terms': [{'variable': '_pb_atom_4',\n                                      'coefficient': '1'}]},\n                          {'name': 'hmul',\n                           'relation': 'eq',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_4',\n                                      'coefficient': '-1'},\n                                     {'variable': '_pb_atom_5',\n                                      'coefficient': '1'}]},\n                          {'name': 'hnum',\n                           'relation': 'le',\n                           'constant': '-18446744069397676033',\n                           'terms': []},\n                          {'name': 'hzsum',\n                           'relation': 'le',\n                           'constant': '-16777215',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '-2'},\n                                     {'variable': '_pb_atom_0',\n                                      'coefficient': '1'},\n                                     {'variable': '_pb_atom_1',\n                                      'coefficient': '1'}]},\n                          {'name': '_pb_nonneg_Zmax',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '-1'}]},\n                          {'name': '_pb_nonneg_atom_0',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_0',\n                                      'coefficient': '-1'}]},\n                          {'name': '_pb_nonneg_atom_1',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_1',\n                                      'coefficient': '-1'}]},\n                          {'name': '_pb_nonneg_atom_2',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_2',\n                                      'coefficient': '-1'}]},\n                          {'name': '_pb_nonneg_atom_3',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_3',\n                                      'coefficient': '-1'}]},\n                          {'name': '_pb_nonneg_atom_4',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_4',\n                                      'coefficient': '-1'}]},\n                          {'name': '_pb_nonneg_atom_5',\n                           'relation': 'le',\n                           'constant': '0',\n                           'terms': [{'variable': '_pb_atom_5',\n                                      'coefficient': '-1'}]},\n                          {'name': 'neg_goal',\n                           'relation': 'le',\n                           'constant': '18446744069397807106',\n                           'terms': [{'variable': 'Zmax',\n                                      'coefficient': '-2'}]}]},\n     'context': {'target': 'n ≤ 5',\n                 'hypotheses': [{'binder_info': 'default',\n                                 'index': 1,\n                                 'name': 'n',\n                                 'type': 'Nat'},\n                                {'binder_info': 'default',\n                                 'index': 2,\n                                 'name': 'hbound',\n                                 'type': 'n ≤ 5'}]}}"
+      }
+    },
+    {
+      "name": "request_proof_string_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proof auxiliary or declaration placeholder in payload projection"
+      }
+    },
+    {
+      "name": "altered_sdk_row_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "SDK rows differ from independent arithmetic projection"
+      }
+    },
+    {
+      "name": "farkas_omission_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Initial policy requires LIA rows without further Farkas compilation omissions"
+      }
+    },
+    {
+      "name": "wrong_response_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Response is bound to a different request"
+      }
+    },
+    {
+      "name": "duplicate_json_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Duplicate JSON field: a"
+      }
+    },
+    {
+      "name": "unknown_support_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Unknown or repeated witness hypothesis"
+      }
+    },
+    {
+      "name": "repeated_support_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Unknown or repeated witness hypothesis"
+      }
+    },
+    {
+      "name": "oversized_coefficient_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "'111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111' is too long\n\nFailed validating 'maxLength' in schema['properties']['witness']['properties']['coefficients']['items']['properties']['coefficient']:\n    {'type': 'string', 'pattern': '^-?(0|[1-9][0-9]*)$', 'maxLength': 128}\n\nOn instance['witness']['coefficients'][0]['coefficient']:\n    '111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111'"
+      }
+    },
+    {
+      "name": "wrong_witness_is_well_formed",
+      "passed": true,
+      "detail": {
+        "request_sha256": "a86e420306dcae1aa67e0f64cd8f4d2560fbcb986d1723d2f55a2d205135c2ca",
+        "witness": {
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hZ"
+            },
+            {
+              "coefficient": "2",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "p6_checked_counterexample",
+      "passed": true,
+      "detail": {
+        "dropped_propositions": [
+          "hhi"
+        ],
+        "original_true": true,
+        "truth_method": "integer upper bound using the explicit hP equality and hhi bound",
+        "maximum_lhs": "1152921504606584832",
+        "rhs": "18446744069414584321",
+        "strict_margin": "17293822564807999489",
+        "satisfying_original_value": "0",
+        "ir_counterexample": {
+          "_pb_atom_0": "70368744161281"
+        },
+        "row_evaluations": [
+          {
+            "name": "hP",
+            "result": "0",
+            "satisfied": true
+          },
+          {
+            "name": "_pb_nonneg_atom_0",
+            "result": "-70368744161281",
+            "satisfied": true
+          },
+          {
+            "name": "neg_goal",
+            "result": "-262143",
+            "satisfied": true
+          }
+        ],
+        "ir_counterexample_checked": true,
+        "classification": "translation_loss_diagnostic"
+      }
+    },
+    {
+      "name": "p6_source_anchor_required",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "P6 source truth anchor absent or ambiguous"
+      }
+    },
+    {
+      "name": "p6_drop_anchor_required",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "P6 dropped proposition anchor absent or ambiguous"
+      }
+    },
+    {
+      "name": "p6_bad_assignment",
+      "passed": true,
+      "detail": [
+        {
+          "name": "hP",
+          "result": "0",
+          "satisfied": true
+        },
+        {
+          "name": "_pb_nonneg_atom_0",
+          "result": "0",
+          "satisfied": true
+        },
+        {
+          "name": "neg_goal",
+          "result": "18446744069414584321",
+          "satisfied": false
+        }
+      ]
+    },
+    {
+      "name": "membership_all_conjuncts",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "membership_unknown",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "membership_typed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Admission evidence must be true, false, or unknown"
+      }
+    },
+    {
+      "name": "missing_case_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'b'}"
+      }
+    },
+    {
+      "name": "duplicate_case_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case"
+      }
+    },
+    {
+      "name": "third_policy_task_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal episode: task is outside the frozen fixture cohort"
+      }
+    }
+  ]
+}

@@ -23,6 +23,7 @@ runs/*/
 !runs/further-review-v2/
 !runs/further-review-v3/
 !runs/task-initialization-v1/
+!runs/proposal-checkpoint-v2/
 **/fixture
 **/proof.ndjson
 *.olean
@@ -32,6 +33,7 @@ runs/*/
 *.c
 !**/resource_fixture.c
 !**/resource_probe.c
+!**/fixture_responder.c
 *.o
 **/output/verdict.json
 **/export/export.stdout

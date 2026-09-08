@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "model_calls": 0,
+  "suites": {
+    "payload-admission.json": {
+      "sha256": "8f443a526e235194144083066d139dd9eb7ca81b19fc53a3b088309af94b0048",
+      "count": 32
+    },
+    "native-fixtures.json": {
+      "sha256": "f243bedd40a80b71193e864473a4583e0258240ab0621f2d77ea5bd08c21876c",
+      "count": 8
+    },
+    "audit-regressions.json": {
+      "sha256": "c84a329e43e05eba668c5f870c970ad4ec5e480d72822c29c7ff539df7336343",
+      "count": 24
+    }
+  }
+}

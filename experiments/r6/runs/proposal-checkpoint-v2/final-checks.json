@@ -1,0 +1,85 @@
+{
+  "checkpoint_sha256": "fea23cc2dfd2fc49bd4cf1525a0612bcfc485c0c5df3da8635961560682218eb",
+  "suites": {
+    "payload-admission.json": {
+      "checks": 32,
+      "passed": true,
+      "sha256": "8f443a526e235194144083066d139dd9eb7ca81b19fc53a3b088309af94b0048"
+    },
+    "native-fixtures.json": {
+      "checks": 8,
+      "passed": true,
+      "sha256": "f243bedd40a80b71193e864473a4583e0258240ab0621f2d77ea5bd08c21876c"
+    },
+    "audit-regressions.json": {
+      "checks": 24,
+      "passed": true,
+      "sha256": "c84a329e43e05eba668c5f870c970ad4ec5e480d72822c29c7ff539df7336343"
+    }
+  },
+  "positive_episodes": {
+    "d1_valid": {
+      "events": 44,
+      "retained_files": 135,
+      "verified_binaries": 14,
+      "verified_base_overlay_sources": 53,
+      "frozen_harness_sources": 21,
+      "request_bytes": 2854,
+      "request_sha256": "a86e420306dcae1aa67e0f64cd8f4d2560fbcb986d1723d2f55a2d205135c2ca",
+      "solution_sha256": "99a70cc2509592c03770cb28d81e08cfc6a83bd7993f71ee549b8d6cc0ab4a42",
+      "declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "ignored_required_paths": []
+    },
+    "c8_valid": {
+      "events": 44,
+      "retained_files": 135,
+      "verified_binaries": 14,
+      "verified_base_overlay_sources": 53,
+      "frozen_harness_sources": 21,
+      "request_bytes": 952,
+      "request_sha256": "bdbb2378f028c0c6387178c5a8490d593b56572b2cc3cdc77e71e6d79f419cde",
+      "solution_sha256": "82220d339794ad0a4143377e769c4b569d89161cf7080fe9ac1240643024404c",
+      "declarations": {
+        "local": 1470,
+        "whole": 1471
+      },
+      "axiom_delta": {
+        "R6.C8.coefficient_bound.r6_c8": {
+          "added": [],
+          "removed": []
+        },
+        "R6.C8.coefficient_bound": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "ignored_required_paths": []
+    }
+  },
+  "scope": "Recomputed retained hashes and on-host source/binary provenance after native fixture execution; no compilation or inference attestation",
+  "prior_artifacts": {
+    "base_commit": "25c3b77acd30cf97e191cb088ffbf4112066a971",
+    "checked_files": 4905,
+    "missing": 0,
+    "changed": 0
+  },
+  "retention_excluding_this_report": {
+    "files": 764,
+    "apparent_bytes": 6175312,
+    "unique_content_bytes": 4045699,
+    "unique_blobs": 282
+  }
+}

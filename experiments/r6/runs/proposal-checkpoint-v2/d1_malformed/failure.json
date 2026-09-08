@@ -1,0 +1,10 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "fixture_farkas_v1",
+  "failure_stage": "proposal",
+  "failure_category": "proposal_decode",
+  "error": "Expecting value: line 2 column 1 (char 12)",
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

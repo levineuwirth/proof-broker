@@ -1,0 +1,12 @@
+{
+  "coefficients": [
+    {
+      "hypothesis": "hZ",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "2"
+    }
+  ]
+}
