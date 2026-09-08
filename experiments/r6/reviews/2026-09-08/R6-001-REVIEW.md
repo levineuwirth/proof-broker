@@ -72,3 +72,24 @@ empty context lines in retained unified patches; each is exactly one ASCII
 space required by the patch format. All non-patch files pass. Those hashed
 patch bytes are preserved, and no ignored development run or compilation product
 is staged.
+
+## Post-commit clarification: digest echo semantics
+
+The author verified the local closeout commit `db1ba60`, the unchanged suite
+hashes/counts and 4,905 prior artifacts, and the staged-patch whitespace
+characterization. A further point for the live policy concerns the meaning of
+an echoed request digest.
+
+Inspection corrects one premise: the R6-001 fixture reads the request but does
+not hash it. `RequestSession.invoke` computes its SHA-256; the native responder
+echoes that supplied value from `argv[2]`. The validator compares the echo with
+its own hash of the retained request bytes. Binding was therefore already the
+scope of this check under the fixture policy. The echo does not prove that the
+read loop ran or that the proposer used the arithmetic body.
+
+The live-policy requirements now explicitly separate response binding,
+outbound-envelope consistency, and claims about remote computation. They
+require neutral transport-binding errors and controls in which an echo passes
+despite an ignored or altered body. Certificate verification and envelope audit
+must perform their own checks. This documentation clarification changes no
+frozen source, policy, schema or episode artifact.

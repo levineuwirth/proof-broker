@@ -33,11 +33,39 @@ give the model the resulting request digest explicitly to echo in its response.
 A hash alone never substitutes for the text. Compute the request digest before
 placing it in the outer transport envelope, avoiding a self-referential hash.
 
+The echoed digest establishes response/request binding only. The harness
+recomputes the expected digest from the retained request bytes and compares it
+with the response field. Equality does not establish that the proposer read,
+parsed, understood or used those bytes, nor that a remote model received or
+executed the claimed input. Hash computation belongs to the harness; the model
+is asked to echo an explicitly supplied identifier.
+
+This is already the meaning of the R6-001 fixture check:
+[`RequestSession.invoke`](proposal_episode.py) computes the digest and passes
+it as an argument. [`fixture_responder.c`](validate/fixture_responder.c) reads
+the request to EOF, checks that it is nonempty, and echoes `argv[2]`; it does not
+hash the file. The read loop is a property of the inspected fixture program
+under the recorded execution assumptions, not something proved by its echo.
+
+Use `transport_binding_failure` for an echo mismatch in the new policy, with
+an error such as "Response request digest does not match the recorded request
+bytes." Report the checked association, never `model_input_verified`,
+`request_consumed`, or an inference-attestation claim derived from this field.
+This category names the failed boundary; it does not assign the cause to the
+provider, model or harness. Keep the historical fixture's `proposal_binding`
+label and sealed records unchanged.
+
 Retain the complete model-visible messages and the actual serialized provider
 request envelope, with hashes. Bind request-start and response receipts to
 these bytes. If a client library transforms the envelope, capture what is sent
 at that boundary rather than recording only its input arguments. Keep credential
 headers outside the model-visible artifact; no credentials belong in the log.
+
+Checking the captured outbound envelope is a separate obligation from checking
+the echo. A correct echoed digest can coexist with an altered or omitted
+request body. The envelope audit must catch that discrepancy independently.
+Even a faithful local transport record does not attest what the remote model
+received, attended to or computed.
 
 Required controls before a live call:
 
@@ -50,6 +78,15 @@ Required controls before a live call:
 4. Malformed, wrongly bound, and well-formed invalid witnesses retain their
    distinct rejection boundaries. Request exhaustion and transport failure
    cannot be counted as a negative arithmetic-verification result.
+5. An echo-only canned responder that ignores the arithmetic body can pass the
+   digest comparison. Give it a well-formed invalid witness and require failure
+   at certificate verification, demonstrating that binding establishes neither
+   request use nor mathematical correctness. Its digest comparison must produce
+   no input-consumption or inference-verification claim.
+6. Mutate the outbound body while preserving a correct echoed request digest:
+   the echo comparison alone passes, but the independent envelope audit rejects
+   the mismatch. An incorrect echo with an otherwise valid witness instead
+   fails at transport binding, before certificate acceptance.
 
 ## Admission review versus payload-integrity failure
 
