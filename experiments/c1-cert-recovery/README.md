@@ -33,9 +33,12 @@ from. What is retained of each pass is below.
 ## The passes, and what is kept of each
 
 Five campaign passes were run. Each is retained at the level its evidence is
-actually cited at; nothing cited by a report has been omitted, and the omitted
-files are regenerable from `tools/` (see Reproduce). `raw/` and `runs/` are
-NOT blanket-ignored — every retained pass is versioned explicitly.
+actually cited at; nothing cited by a report has been omitted. The omitted
+historical files are gone and are not recoverable. The tools below can re-run
+the experiment and produce new evidence; they cannot recover those bytes.
+For `20260907-104934`, what survives is the ability to re-run the experiment
+plus its recorded comparison in `COMPARISON.md`. `raw/` and `runs/` are NOT
+blanket-ignored — every retained pass is versioned explicitly.
 
 | pass | kept | why |
 |---|---|---|

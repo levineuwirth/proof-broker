@@ -1,6 +1,7 @@
 # Checkpoint 2 — exact-coefficient recovery, implemented
 
-**Status: CHECKPOINT, for review. Nothing is committed.** Campaign directory
+**Status: implementation and campaign committed as `e627efe`; reporting
+amended 2026-09-07.** Campaign directory
 `experiments/c1-cert-recovery/`, branch `r6/c1-cert-recovery`, pass
 `20260907-113052`. Continues `reports/checkpoint-1.md` after its review; the three
 corrections that review required are applied there and summarized in §1 here.
@@ -12,11 +13,14 @@ a second review found six defects — the evidence for it is now produced by
 binaries that actually contain it. All four original carry obligations
 reconstruct in term mode (`CarryLiftPBTerm` 4/4, in file, in context,
 `[propext, Classical.choice, Quot.sound]`, no `sorryAx`), against the
-previously refused site 2. Across the 26-case corpus term mode closes 22 (from
-4 before the repair) with no regression in any of seven closers, and the
-held-out set, run once after the design was fixed, is six for six against the
-checkpoint-1 prediction. Coverage flagged by the first review is preserved by
-construction: exact recovery runs only where the enumerating search returned an
+previously refused site 2. On the 24 cases present in both the pre-repair and
+final passes, term mode improves from 4 closures to 20: **16 recoveries**, with
+no regression in any of seven closers on those paired cases. The final
+26-case corpus also includes two added preservation controls, both closed,
+bringing its total to 22 closures (§4.2). The held-out set, run once after the
+design was fixed, matches all six checkpoint-1 predictions: five true goals
+reconstruct and the false control is refused. Coverage flagged by the first
+review is preserved by construction: exact recovery runs only where the enumerating search returned an
 error, and `V1_chain_support5` still routes through the dense enumeration and
 still reconstructs. The second review's six findings are fixed and each is now
 pinned: `support_count` no longer overflows past its own cap (regression to
@@ -414,6 +418,32 @@ Site 2, which the completed VerInf case study records as refused, reconstructs.
 
 `closed` = the closer closed the original goal and the file elaborated (probe EXIT=0). Everything else is that run's own named outcome; none of it is a counterexample.
 
+The paired repair comparison uses the saved results from
+[`20260906-204453`](../runs/20260906-204453/results.json) (pre-repair) and
+[`20260907-113052`](../runs/20260907-113052/results.json) (final). They share
+24 case IDs: 22 true obligations and two deliberately false controls. All
+168 generated Lean files for those cases (24 × 7 closers) are byte-identical
+between the two passes. Matching by case ID and closer gives:
+
+| closer | pre-repair closures, same 24 cases | final closures, same 24 cases | recovered cases | regressions |
+|---|---|---|---|---|
+| `omega` | 22 | 22 | 0 | 0 |
+| `grind` | 22 | 22 | 0 | 0 |
+| `pb` | 20 | 20 | 0 | 0 |
+| `pbterm` | 4 | 20 | 16 | 0 |
+| `pbterm_z3` | 4 | 20 | 16 | 0 |
+| `pbterm_cvc5` | 3 | 19 | 16 | 0 |
+| `pbterm_cvc4` | 3 | 19 | 16 | 0 |
+
+Thus term mode improves from **4/22 to 20/22 on the shared true obligations**;
+neither false control closes. `V1_chain_support5` and `V2_chain_support7`
+were added as preservation controls after the original pass. Both close in
+the final pass, but neither has a row in that pre-repair run, so they are
+reported separately from the 16 recoveries. The expanded corpus below has
+26 cases (24 true, two false), of which term mode closes 22. The earlier
+headline "22 (from 4 before the repair)" mixed these populations; this paired
+comparison corrects that wording without changing either run's artifacts.
+
 | case | truth | omega | grind | pb | pbterm | pbterm_z3 | pbterm_cvc5 | pbterm_cvc4 |
 |---|---|---|---|---|---|---|---|---|
 | `O5_site2_isolated` | TRUE | closed | closed | closed | closed | closed | closed | closed |
@@ -495,12 +525,30 @@ Stated plainly, and kept out of the headline: this work demonstrates
 demonstrates **no improvement in solver-proof extraction**. The two extraction
 gaps diagnosed at checkpoint 1 — G1 (z3's mixed-polarity Farkas clause) and G2
 (integer-tightened literals that are not rescalings of the IR's) — are
-untouched, and z3's extracted witness for site 3 still exists; it simply loses
-the race to a faster backend that can now also mint tier 1.
+untouched. z3's extracted witness for site 3 still exists, while the recorded
+term-mode calls select cvc4's SDK-synthesized witness. That establishes which
+evidence was consumed, but does not establish that cvc4 finished first.
+
+[`Dispatch.run_parallel`](../../../sdk/lib/dispatch.ml) selects among
+certificates available at its decision point, applying the caller's tier
+preference, then numeric tier, then manifest input order. Equal-tier ties
+therefore favor the earlier manifest, regardless of which certificate arrived
+first. The stage tracer's separate sequential executions do not establish
+completion order in the actual tactic calls. The earlier explanation that
+z3 lost to a "faster backend" is withdrawn; attributing that selection to speed
+would require arrival times and the selection state from the same episode.
 
 ### 4.5 Costs
 
 Solver / extraction / fallback-search / Lean-side numbers are from different instruments and are NOT summable: the first three are the stage tracer's own timings of one sequential replay, the last two are the bridge's per-call report and Lean's profiler inside the probe. `n/a` = not measured.
+
+The dispatch driver joins every spawned runner before returning, even after
+its certificate selection is fixed. Consequently, `dispatch_ms` includes that
+wait and does not measure the selected certificate's arrival time. This
+campaign does not measure the decision time and subsequent join wait
+separately. R6 should record certificate arrivals, manifest order, tier
+preferences, the selection reason, decision time, and return time within the
+same episode.
 
 | case | z3 solve ms | z3 extract ms | enumerate ms | exact ms | `pbterm` dispatch ms | `pbterm` verify ms | `pbterm` tactic ms | `omega` tactic ms |
 |---|---|---|---|---|---|---|---|---|
@@ -716,12 +764,12 @@ tools/probe.sh runs/<stamp>/lean/O5_site2_isolated.pbterm.lean
 
 3. **Which certificate wins has shifted, and that is a provenance change, not
    only a recall change.** See §4: with exact recovery available, cvc4 — which
-   has no proof-trace path at all — can now mint tier 1 quickly enough to win
-   the parallel race on sites where z3's *extracted* witness used to win. The
-   broker still returns a verified certificate, but more of them are now
-   derived by the SDK rather than taken from a solver's own proof. If
-   provenance is part of what the broker is for, that trade-off deserves a
-   decision rather than a default.
+   has no proof-trace path at all — now supplies the consumed tier-1 witness
+   at site 3, where z3's *extracted* witness was previously consumed. This
+   change follows the recorded selections; it does not establish a speed
+   advantage, because equal-tier ties use manifest order (§4.4). All four
+   consumed carry-site witnesses are now derived by the SDK. Selection policy
+   therefore affects evidence provenance and needs to be recorded explicitly.
 
 4. **Checkpoint 1's §9.1 experiment is still not run.** Why z3 emits the
    mixed-polarity clause shape for single-variable conflicts and the direct
