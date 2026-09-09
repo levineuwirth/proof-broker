@@ -1,0 +1,30 @@
+{
+  "outbound_envelope": {
+    "accepted": true,
+    "category": null,
+    "mismatches": [],
+    "captured_body_sha256": "d1a7844ee1289a26d6a2f1b4e000e5046b3a8082dafca540bc2804f810fc5877",
+    "request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+    "observation": "local_server_received"
+  },
+  "capture_consistency": {
+    "checked": true,
+    "accepted": true
+  },
+  "provider_response": {
+    "accepted": true,
+    "failure_category": null
+  },
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+    "received_request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875"
+  },
+  "response_validated": true,
+  "response_failure_category": null,
+  "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+}

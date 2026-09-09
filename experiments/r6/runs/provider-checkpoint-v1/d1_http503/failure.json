@@ -1,0 +1,14 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "provider-response",
+  "failure_phase": "proposal",
+  "failure_category": "provider_http_error",
+  "error": "Provider HTTP status 503",
+  "evidence": {
+    "status": 503
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

@@ -25,6 +25,7 @@ runs/*/
 !runs/task-initialization-v1/
 !runs/proposal-checkpoint-v2/
 !runs/envelope-checkpoint-v1/
+!runs/provider-checkpoint-v1/
 **/fixture
 **/proof.ndjson
 *.olean

@@ -1,0 +1,1123 @@
+{
+  "scope": "R6-003 approved local commit preflight; documentation closeout and read-only audits, no native reruns",
+  "utc": "2026-09-09T08:18:14.734179+00:00",
+  "base_commit": "13baa73",
+  "staged_files_excluding_this_record": 2828,
+  "staged_inventory_sha256": "4b06c27d515341eb7712bfed26ca35858efb4a53c97e21f4eb98ef30dad1e8bc",
+  "all_staged_files_match_disk": true,
+  "sealed_episode_entries_matched_against_index": 2757,
+  "event_hashes_recomputed": 450,
+  "source_locks_match": true,
+  "prior_files_checked": 7195,
+  "prior_changed": 0,
+  "prior_missing": 0,
+  "checkpoint_sha256": "c5f90c19a9d323d1ca9322f708660e8c811a02dc353b7e94408f359dc51c9512",
+  "final_checks_sha256": "1a5b58fa231581a07f09167109b1179a51aafa1079184e05b9b145b486f4ed7b",
+  "suites": {
+    "provider-units.json": {
+      "sha256": "f6db21c32367fbd553d159cb3ad3508356bb946fd8bfa820c66b7b43eb257a08",
+      "count": 47
+    },
+    "provider-native.json": {
+      "sha256": "a8ccfe0184c313c24cb4c461f1d2427ecd2c51d4f886dbf1cd4445989b180c2b",
+      "count": 23
+    },
+    "provider-audits.json": {
+      "sha256": "631ae927a128d7e9b355c202f7c02ee237267f0acacf83154ab7cfa979489fda",
+      "count": 38
+    }
+  },
+  "total_checks": 108,
+  "fresh_read_only_audits": {
+    "d1_valid": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "events": 45,
+      "sealed_files": 172,
+      "seal_sha256": "a920e81c69c82d77b1248a35fe63d07a5d2e7131bfed95d3da9c81c12df8cd7e"
+    },
+    "c8_valid": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "events": 45,
+      "sealed_files": 172,
+      "seal_sha256": "06123115c34773466e4a495488fb9e2a0b1f8e2b0962643a8ff99b58cc7c0925"
+    },
+    "d1_alternate_encoding": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "events": 45,
+      "sealed_files": 172,
+      "seal_sha256": "c397f0bdb3d06fac46f338e1e7995f140931e94273705a72fc85a95bf9b6b76b"
+    },
+    "d1_invalid_witness": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 22,
+      "sealed_files": 129,
+      "seal_sha256": "3812da95a32705763012a2fbf75f04aeba3f289f7918bb001c94d9092be2cd42",
+      "failure_category": "certificate_verification"
+    },
+    "c8_invalid_witness": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 22,
+      "sealed_files": 129,
+      "seal_sha256": "0d7911fd4c9a246a119a9f28b66ed292ebf59490e554be7f18e2740c67bf75d7",
+      "failure_category": "certificate_verification"
+    },
+    "d1_altered_prompt": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 111,
+      "seal_sha256": "7b44aaa4b38ed9b4d07a76206d95c266d47739b52f7b07d1c596cd14dd747e42",
+      "failure_category": "outbound_envelope_binding"
+    },
+    "d1_omitted_prompt": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 111,
+      "seal_sha256": "1474041b2808d63e49ad96dfff5a387a6d2b92045a09eeff96a79a8040eb21a4",
+      "failure_category": "outbound_envelope_binding"
+    },
+    "d1_altered_prefix": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 111,
+      "seal_sha256": "cc988fe6cb49da2bbba2427acdf42ed682f6ba5caee569f075c9cb2bd92bf2b1",
+      "failure_category": "outbound_envelope_binding"
+    },
+    "d1_altered_body": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 111,
+      "seal_sha256": "2b26aab235282520b8e37423360ea3dabfcaa6d9be5f85d36a702ddbca666b92",
+      "failure_category": "outbound_envelope_binding"
+    },
+    "d1_wrong_echo": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 111,
+      "seal_sha256": "bd7c9749c64b310eb1dead4a14bc03bf8af2ae592401d69ca7a6743116b79591",
+      "failure_category": "transport_binding_failure"
+    },
+    "d1_malformed": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 111,
+      "seal_sha256": "c59405907e2fc32ac3f3bb8e414861890c42c4164ebbca6cb00988fe8a7fb897",
+      "failure_category": "response_decode"
+    },
+    "d1_http429": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "af792a21f36936e5711f77a48831b8230f4591ad08a6651e7ca08b36c0285668",
+      "failure_category": "provider_http_error"
+    },
+    "d1_http503": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "da45cc8104969eaaf63e091c11bb1cc9fab0676ab99f0a53657b2b310c0b2f10",
+      "failure_category": "provider_http_error"
+    },
+    "d1_redirect": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "2d59ed47c470fd88378c2e5ff4419a75d0e7f847876bbf158eaeffa071ef2102",
+      "failure_category": "provider_http_error"
+    },
+    "d1_timeout": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 109,
+      "seal_sha256": "66c9c20d5e7fd2d06300589141398b3e6bbcde7fd2aec3b7c78c84dfd56311ff",
+      "failure_category": "transport_timeout"
+    },
+    "d1_connection_error": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 108,
+      "seal_sha256": "1b3cf84d551dc0f33eff1d18167b2d06d7092d000608dda9976d53e95d6a588a",
+      "failure_category": "transport_failure"
+    },
+    "d1_disconnect": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 109,
+      "seal_sha256": "1c1d26ece2948ed120b622f468b622323771266d1de964798e56c39fcf56bf84",
+      "failure_category": "transport_failure"
+    },
+    "d1_refusal": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "5dc72fd758bba0566b96696e4f80fb4f687740e32c3691ef13faf25627b25568",
+      "failure_category": "provider_refusal"
+    },
+    "d1_incomplete": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "d07eaa565463043597c5c0fa4c831fbc1c4d0b5e40c5b0b498ad953ee6f32eeb",
+      "failure_category": "provider_incomplete"
+    },
+    "d1_tool_call": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "17987fc435160f3ac850cf90f532311090c37a792cf2784e840c9d6e601ad6a6",
+      "failure_category": "provider_output_shape"
+    },
+    "d1_malformed_provider": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "d6a6b048b3a3ba2735d498846a45acb39a446758ddb80356e5ea1f1a28c5de7c",
+      "failure_category": "provider_decode"
+    },
+    "d1_oversized_response": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 15,
+      "sealed_files": 110,
+      "seal_sha256": "ff9e975dd03623e260c0c9c84cef7f4628aaddcb3e77997ea6e59017ca647aa5",
+      "failure_category": "provider_response_byte_budget"
+    },
+    "d1_exhausted_budget": {
+      "audit_accepted": true,
+      "episode_accepted": false,
+      "events": 16,
+      "sealed_files": 111,
+      "seal_sha256": "516638891af0f0d1d01aefb4e523437b6590f8851f842480807a68b98f65795e",
+      "failure_category": "request_budget_exhaustion"
+    },
+    "legacy_broker_v1": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_broker_v2": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_broker_v3": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_c8_v1": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_d1_fixture": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_c8_fixture": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_d1_envelope": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_c8_envelope": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    },
+    "legacy_alternate_envelope": {
+      "audit_accepted": true,
+      "episode_accepted": true,
+      "native_rerun": false
+    }
+  },
+  "retention_excluding_final_checks": {
+    "files": 2808,
+    "apparent_bytes": 25163529,
+    "unique_contents": 673,
+    "unique_content_bytes": 6468592
+  },
+  "required_staged_publication_paths": 2780,
+  "row_instances": {
+    "eq": 44,
+    "le": 363
+  },
+  "row_inventory_including_unobserved": {
+    "le": 363,
+    "eq": 44,
+    "lt": 0
+  },
+  "request_instances": 23,
+  "full_staged_whitespace_exit": 2,
+  "non_evidence_whitespace_exit": 0,
+  "retained_whitespace_diagnostics": [
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_invalid_witness/preparation-input/source.patch",
+      "line": 10,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_invalid_witness/preparation-input/source.patch",
+      "line": 16,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/input/source.patch",
+      "line": 10,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/input/source.patch",
+      "line": 16,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/preparation-input/source.patch",
+      "line": 10,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/preparation-input/source.patch",
+      "line": 16,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/c8_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_body/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_body/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_body/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_body/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prefix/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prefix/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prefix/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prefix/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prompt/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_alternate_encoding/input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_alternate_encoding/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_connection_error/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_connection_error/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_connection_error/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_connection_error/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_disconnect/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_disconnect/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_disconnect/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_disconnect/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_exhausted_budget/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http429/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http429/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http429/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http429/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http503/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http503/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http503/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_http503/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_incomplete/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_incomplete/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_incomplete/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_incomplete/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed_provider/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed_provider/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed_provider/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_malformed_provider/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_omitted_prompt/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_oversized_response/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_oversized_response/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_oversized_response/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_oversized_response/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_oversized_response/stages/proposal-1/output/provider-response.json",
+      "line": 1,
+      "message": "trailing whitespace.",
+      "bytes": 262145,
+      "sha256": "27cb03b898e978f2493818e414119edabc05246a6697a65ea42b21b682dc07d4",
+      "kind": "deliberate_oversized_provider_body"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_oversized_response/stages/proposal-1/output/provider-response.json",
+      "line": 1,
+      "message": "new blank line at EOF.",
+      "bytes": 262145,
+      "sha256": "27cb03b898e978f2493818e414119edabc05246a6697a65ea42b21b682dc07d4",
+      "kind": "deliberate_oversized_provider_body"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_redirect/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_redirect/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_redirect/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_redirect/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_refusal/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_refusal/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_refusal/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_refusal/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_timeout/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_timeout/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_timeout/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_timeout/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_tool_call/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_tool_call/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_tool_call/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_tool_call/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_valid/input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_valid/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_wrong_echo/preparation-input/source.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 6,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 21,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "experiments/r6/runs/provider-checkpoint-v1/d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 115,
+      "message": "trailing whitespace.",
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    }
+  ],
+  "whitespace_kinds": {
+    "unified_diff_context": 101,
+    "deliberate_oversized_provider_body": 2
+  },
+  "no_development_runs_or_compilation_products_staged": true,
+  "documentation_links": "passed",
+  "attribution_commit": "",
+  "live_model_calls": 0,
+  "native_runs": 0,
+  "credential_canary_controls_added": false,
+  "credential_control_status": "required next canned checkpoint before live-policy freeze",
+  "tightening_arithmetic_interpretation": {
+    "without_increment": 0,
+    "authentic_rows": 4,
+    "extra_internal_increment": 8,
+    "model_behavior_inference": false,
+    "new_native_control": false
+  },
+  "scope_limit": "local recorded evidence; no credential-handling, TLS, remote-receipt, compilation or inference attestation"
+}

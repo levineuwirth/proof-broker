@@ -1,0 +1,37 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "envelope-audit",
+  "failure_phase": "proposal",
+  "failure_category": "outbound_envelope_binding",
+  "error": "Envelope components differ: system_message",
+  "evidence": {
+    "accepted": false,
+    "category": "outbound_envelope_binding",
+    "mismatches": [
+      {
+        "component": "system_message",
+        "expected": {
+          "present": true,
+          "type": "str",
+          "bytes": 2143,
+          "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+        },
+        "observed": {
+          "present": true,
+          "type": "str",
+          "bytes": 2167,
+          "sha256": "2f5ee0c5673a613da57778bd4d4fae1a5d6764e0dc827c1ccdc4cd85a1a7bd13"
+        }
+      }
+    ],
+    "captured_body_sha256": "d8d9be87a340771463ae7dff2cc03123f54f1b826214bc8c956b933ed70c9936",
+    "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+    "observation": "local_server_received"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

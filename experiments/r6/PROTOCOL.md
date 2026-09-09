@@ -635,3 +635,37 @@ module. Current LIA compilation emits `le`/`eq`; a genuine `lt` path requires
 separate admission and end-to-end evidence. The approved broad prompt and
 its artifacts remain unchanged. Response decoding/support/binding acceptance
 is distinguished from the separate certificate's mathematical verdict.
+
+## R6-003 candidate checkpoint — 2026-09-09
+
+The [R6-003 checkpoint](R6-003.md) selects an OpenAI Responses wire adapter
+implemented with Python's standard HTTP client and exercises it against an
+isolated local canned HTTP server. It captures client and server body bytes,
+checks component-specific envelope diagnostics, and separates HTTP/status/
+provider-output failures from invalid witnesses. The new prompt/schema admit
+only LIA `le`/`eq`. D1's canned witness makes the integer `+1` decisive: its
+weighted constant is `4`, versus `0` without tightening. The existing frozen
+proof-check module supplies the downstream audit, with no additional copy.
+
+The candidate passed 47 focused controls, 23 native episodes (three positives
+on two tasks and twenty deliberate failures), and 38 artifact/audit checks.
+D1 and C8 have empty axiom deltas. C8 retains its statement-identical wrapper
+scope. Nine historical episodes were audited, not rerun; all 7,195 preserved
+files pinned to `13baa73` match. Rejected episodes now carry an explicitly
+negative failure seal, distinct from an accepted completion seal.
+
+This is a local HTTP interface checkpoint awaiting review. No real model,
+credentials, external API endpoint, provider SDK or live spending is involved.
+A separately frozen live policy must still settle model/revision, settings,
+budgets and credential/TLS handling, with canned HTTPS handoff controls before
+the first live request. Historical policies, sources, tasks and evidence remain
+unchanged. See the [report and recount](R6-003.md) for the exact evidence scope.
+
+The author approved R6-003 after independent recomputation on 2026-09-09.
+The [review closeout](reviews/2026-09-09/R6-003-REVIEW.md) makes credential
+non-disclosure a required canned checkpoint before live-policy freeze or real
+credential input. The present Authorization-omission claim is based on inspected
+code and records; its regression control remains to be built under a new version.
+The closeout also distinguishes the verified `4` versus `0` tightening margin
+from any claim about a model's internal re-tightening. Approval does not change
+the frozen policy or episode evidence.

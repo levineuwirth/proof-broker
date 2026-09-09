@@ -1,0 +1,1390 @@
+{
+  "passed": true,
+  "recount_utc": "2026-09-09T07:39:43.957918+00:00",
+  "base_commit": "13baa73",
+  "scope": "artifact recomputation only; native suite performed the recorded executions; no remote receipt, compilation or inference attestation",
+  "reporter_sha256": "a1011d6ea30c30638211e220bde1c940ba6378ce0a1e29a074c34de4d68120d6",
+  "checkpoint_sha256": "c5f90c19a9d323d1ca9322f708660e8c811a02dc353b7e94408f359dc51c9512",
+  "suites": {
+    "provider-units.json": {
+      "sha256": "f6db21c32367fbd553d159cb3ad3508356bb946fd8bfa820c66b7b43eb257a08",
+      "count": 47,
+      "exact_case_set": true,
+      "duplicates": 0
+    },
+    "provider-native.json": {
+      "sha256": "a8ccfe0184c313c24cb4c461f1d2427ecd2c51d4f886dbf1cd4445989b180c2b",
+      "count": 23,
+      "exact_case_set": true,
+      "duplicates": 0
+    },
+    "provider-audits.json": {
+      "sha256": "631ae927a128d7e9b355c202f7c02ee237267f0acacf83154ab7cfa979489fda",
+      "count": 38,
+      "exact_case_set": true,
+      "duplicates": 0
+    }
+  },
+  "total_checks": 108,
+  "positive_episodes": {
+    "d1_valid": {
+      "events": 45,
+      "sealed_files": 172,
+      "seal_sha256": "a920e81c69c82d77b1248a35fe63d07a5d2e7131bfed95d3da9c81c12df8cd7e",
+      "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+      "solution_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "witness": [
+        {
+          "coefficient": "8",
+          "hypothesis": "hZ"
+        },
+        {
+          "coefficient": "4",
+          "hypothesis": "neg_goal"
+        },
+        {
+          "coefficient": "4",
+          "hypothesis": "hnum"
+        }
+      ],
+      "weighted_constant": "4",
+      "weighted_variables": {
+        "Zmax": 0
+      },
+      "declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "wrapper_scope": "real VerInf containing context"
+    },
+    "c8_valid": {
+      "events": 45,
+      "sealed_files": 172,
+      "seal_sha256": "06123115c34773466e4a495488fb9e2a0b1f8e2b0962643a8ff99b58cc7c0925",
+      "request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+      "solution_sha256": "67e53933b2185f0c65dc628a9e7d770d8e71638731fe7f4f20deb99cb53a68ae",
+      "witness": [
+        {
+          "coefficient": "1048576",
+          "hypothesis": "hhi"
+        },
+        {
+          "coefficient": "4",
+          "hypothesis": "neg_goal"
+        }
+      ],
+      "weighted_constant": "69175290259231997956",
+      "weighted_variables": {
+        "_pb_atom_0": 0
+      },
+      "declarations": {
+        "local": 1470,
+        "whole": 1471
+      },
+      "axiom_delta": {
+        "R6.C8.coefficient_bound.r6_c8": {
+          "added": [],
+          "removed": []
+        },
+        "R6.C8.coefficient_bound": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "wrapper_scope": "statement-identical wrapper; local-proof binding only"
+    },
+    "d1_alternate_encoding": {
+      "events": 45,
+      "sealed_files": 172,
+      "seal_sha256": "c397f0bdb3d06fac46f338e1e7995f140931e94273705a72fc85a95bf9b6b76b",
+      "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+      "solution_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "witness": [
+        {
+          "coefficient": "8",
+          "hypothesis": "hZ"
+        },
+        {
+          "coefficient": "4",
+          "hypothesis": "neg_goal"
+        },
+        {
+          "coefficient": "4",
+          "hypothesis": "hnum"
+        }
+      ],
+      "weighted_constant": "4",
+      "weighted_variables": {
+        "Zmax": 0
+      },
+      "declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "wrapper_scope": "real VerInf containing context"
+    }
+  },
+  "negative_episodes": {
+    "d1_invalid_witness": {
+      "failure_category": "certificate_verification",
+      "failure_stage": "certificate-check",
+      "failure_phase": "certificate_verification",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "c8_invalid_witness": {
+      "failure_category": "certificate_verification",
+      "failure_stage": "certificate-check",
+      "failure_phase": "certificate_verification",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_altered_prompt": {
+      "failure_category": "outbound_envelope_binding",
+      "failure_stage": "envelope-audit",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_omitted_prompt": {
+      "failure_category": "outbound_envelope_binding",
+      "failure_stage": "envelope-audit",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_altered_prefix": {
+      "failure_category": "outbound_envelope_binding",
+      "failure_stage": "envelope-audit",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_altered_body": {
+      "failure_category": "outbound_envelope_binding",
+      "failure_stage": "envelope-audit",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_wrong_echo": {
+      "failure_category": "transport_binding_failure",
+      "failure_stage": "response-binding",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_malformed": {
+      "failure_category": "response_decode",
+      "failure_stage": "response-decode",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_http429": {
+      "failure_category": "provider_http_error",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_http503": {
+      "failure_category": "provider_http_error",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_redirect": {
+      "failure_category": "provider_http_error",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_timeout": {
+      "failure_category": "transport_timeout",
+      "failure_stage": "proposal-1",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_connection_error": {
+      "failure_category": "transport_failure",
+      "failure_stage": "proposal-1",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 0,
+        "body_sends_returned": 0,
+        "transmissions_observed": 0,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_disconnect": {
+      "failure_category": "transport_failure",
+      "failure_stage": "proposal-1",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_refusal": {
+      "failure_category": "provider_refusal",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_incomplete": {
+      "failure_category": "provider_incomplete",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_tool_call": {
+      "failure_category": "provider_output_shape",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_malformed_provider": {
+      "failure_category": "provider_decode",
+      "failure_stage": "provider-response",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_oversized_response": {
+      "failure_category": "provider_response_byte_budget",
+      "failure_stage": "proposal-1",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    "d1_exhausted_budget": {
+      "failure_category": "request_budget_exhaustion",
+      "failure_stage": "proposal",
+      "failure_phase": "proposal",
+      "accounting": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "provider_reported",
+          "cost_usd": null,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "total_tokens": 18,
+          "cached_tokens": 2,
+          "reasoning_tokens": 3
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    }
+  },
+  "event_hashes_recomputed": 450,
+  "sealed_files_checked": 2757,
+  "preserved_files": 7195,
+  "preserved_changed_or_missing": [],
+  "preservation_snapshot_sha256": "3fd10b2048001d8357a08e7eb081f21eb59a5b76f220bcee58ba796a9f3b8186",
+  "sdk_base_commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+  "sdk_base_files_checked": 53,
+  "recorded_binaries_checked_on_disk": 15,
+  "runtime_files_checked": 741,
+  "runtime_libraries_checked": 24,
+  "source_lock_sha256": "cd51ec861614e70579e3bcf549ad86b61491275a6313703344c69a9b34aa76f0",
+  "runtime_lock_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "row_instances": {
+    "le": 363,
+    "eq": 44,
+    "lt": 0
+  },
+  "row_count_scope": "23 repeated task instances, not distinct obligations",
+  "required_publication_paths": 2780,
+  "ignored_required_paths": [],
+  "retention": {
+    "files": 2808,
+    "apparent_bytes": 25163529,
+    "unique_contents": 673,
+    "unique_content_bytes": 6468592,
+    "excludes": [
+      "final-checks.json"
+    ],
+    "scope": "Git-visible checkpoint directory only; uncompressed content bytes, not Git pack/disk/transfer size"
+  },
+  "whitespace_observations": [
+    {
+      "path": "c8_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_invalid_witness/preparation-input/source.patch",
+      "line": 10,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_invalid_witness/preparation-input/source.patch",
+      "line": 16,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/input/source.patch",
+      "line": 10,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/input/source.patch",
+      "line": 16,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/preparation-input/source.patch",
+      "line": 10,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/preparation-input/source.patch",
+      "line": 16,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "c8_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_body/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_body/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_body/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_body/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prefix/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prefix/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prefix/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prefix/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prompt/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_altered_prompt/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_alternate_encoding/input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_alternate_encoding/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_alternate_encoding/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_connection_error/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_connection_error/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_connection_error/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_connection_error/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_disconnect/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_disconnect/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_disconnect/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_disconnect/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_exhausted_budget/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http429/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http429/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http429/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http429/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http503/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http503/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http503/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_http503/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_incomplete/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_incomplete/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_incomplete/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_incomplete/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed_provider/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed_provider/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed_provider/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_malformed_provider/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_omitted_prompt/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_omitted_prompt/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_oversized_response/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_oversized_response/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_oversized_response/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_oversized_response/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_oversized_response/stages/proposal-1/output/provider-response.json",
+      "line": 1,
+      "bytes": 262145,
+      "sha256": "27cb03b898e978f2493818e414119edabc05246a6697a65ea42b21b682dc07d4",
+      "kind": "deliberate_oversized_provider_body"
+    },
+    {
+      "path": "d1_redirect/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_redirect/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_redirect/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_redirect/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_refusal/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_refusal/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_refusal/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_refusal/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_timeout/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_timeout/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_timeout/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_timeout/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_tool_call/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_tool_call/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_tool_call/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_tool_call/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_valid/input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_valid/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_wrong_echo/preparation-input/source.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    },
+    {
+      "path": "d1_wrong_echo/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+      "kind": "unified_diff_context"
+    }
+  ],
+  "whitespace_scope": "UTF-8 trailing-space scan of selected files; preserved evidence bytes are qualified, not suppressed",
+  "python_compile": [
+    "provider_contract.py",
+    "provider_payload.py",
+    "provider_http.py",
+    "provider_episode.py",
+    "provider_audit.py",
+    "test_provider.py"
+  ],
+  "documentation_links": "passed",
+  "tracked_diff_check": "passed",
+  "additional_native_runs": 0,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0
+}

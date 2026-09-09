@@ -1,0 +1,1506 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_valid",
+    "c8_valid",
+    "d1_alternate_encoding",
+    "d1_invalid_witness",
+    "c8_invalid_witness",
+    "d1_altered_prompt",
+    "d1_omitted_prompt",
+    "d1_altered_prefix",
+    "d1_altered_body",
+    "d1_wrong_echo",
+    "d1_malformed",
+    "d1_http429",
+    "d1_http503",
+    "d1_redirect",
+    "d1_timeout",
+    "d1_connection_error",
+    "d1_disconnect",
+    "d1_refusal",
+    "d1_incomplete",
+    "d1_tool_call",
+    "d1_malformed_provider",
+    "d1_oversized_response",
+    "d1_exhausted_budget"
+  ],
+  "check_count": 23,
+  "checks": [
+    {
+      "name": "d1_valid",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "fa1cca39da52cc1ca45bf3e0596daeef6a9bc93b9c224644b1cb7e765a07dbff",
+        "seal_sha256": "a920e81c69c82d77b1248a35fe63d07a5d2e7131bfed95d3da9c81c12df8cd7e",
+        "events": 45,
+        "sealed_files": 172,
+        "solution_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+        "axiom_delta": {
+          "Bracket.lift_cell.r6_d1_70": {
+            "added": [],
+            "removed": []
+          },
+          "Bracket.lift_cell": {
+            "added": [],
+            "removed": []
+          }
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        }
+      }
+    },
+    {
+      "name": "c8_valid",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "b72e8364948febe6712c0d190ee3713005e5016b83be87215a1da0eecd0b5185",
+        "seal_sha256": "06123115c34773466e4a495488fb9e2a0b1f8e2b0962643a8ff99b58cc7c0925",
+        "events": 45,
+        "sealed_files": 172,
+        "solution_sha256": "67e53933b2185f0c65dc628a9e7d770d8e71638731fe7f4f20deb99cb53a68ae",
+        "axiom_delta": {
+          "R6.C8.coefficient_bound.r6_c8": {
+            "added": [],
+            "removed": []
+          },
+          "R6.C8.coefficient_bound": {
+            "added": [],
+            "removed": []
+          }
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        }
+      }
+    },
+    {
+      "name": "d1_alternate_encoding",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "ad56bf441d4684fed270445bc85c82f9ceef6366bf9531b3ce029108d99e4f4c",
+        "seal_sha256": "c397f0bdb3d06fac46f338e1e7995f140931e94273705a72fc85a95bf9b6b76b",
+        "events": 45,
+        "sealed_files": 172,
+        "solution_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+        "axiom_delta": {
+          "Bracket.lift_cell.r6_d1_70": {
+            "added": [],
+            "removed": []
+          },
+          "Bracket.lift_cell": {
+            "added": [],
+            "removed": []
+          }
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        }
+      }
+    },
+    {
+      "name": "d1_invalid_witness",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "certificate_verification",
+        "failure_stage": "certificate-check",
+        "failure_phase": "certificate_verification",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "70dd3cf6a34145520a52efc5ec454cdf930db44c58438ea05069cc9db48a8743",
+        "failure_seal_sha256": "3812da95a32705763012a2fbf75f04aeba3f289f7918bb001c94d9092be2cd42",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "c8_invalid_witness",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "certificate_verification",
+        "failure_stage": "certificate-check",
+        "failure_phase": "certificate_verification",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "d1a7844ee1289a26d6a2f1b4e000e5046b3a8082dafca540bc2804f810fc5877",
+            "request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+            "received_request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "1edc69ac8367c357d0e1b09a2c9270191cf467b22e8059f236dafdf5d23e7103",
+        "failure_seal_sha256": "0d7911fd4c9a246a119a9f28b66ed292ebf59490e554be7f18e2740c67bf75d7",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_altered_prompt",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": false,
+            "category": "outbound_envelope_binding",
+            "mismatches": [
+              {
+                "component": "system_message",
+                "expected": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 2143,
+                  "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+                },
+                "observed": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 2167,
+                  "sha256": "2f5ee0c5673a613da57778bd4d4fae1a5d6764e0dc827c1ccdc4cd85a1a7bd13"
+                }
+              }
+            ],
+            "captured_body_sha256": "d8d9be87a340771463ae7dff2cc03123f54f1b826214bc8c956b933ed70c9936",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "46500e4f83d5a564b3a026455d9f5340382a1cbfb4c93dbc35337fbe674e4072",
+        "failure_seal_sha256": "7b44aaa4b38ed9b4d07a76206d95c266d47739b52f7b07d1c596cd14dd747e42",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_omitted_prompt",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": false,
+            "category": "outbound_envelope_binding",
+            "mismatches": [
+              {
+                "component": "message_layout",
+                "expected": {
+                  "present": true,
+                  "type": "list",
+                  "bytes": 91,
+                  "sha256": "2fa3aed338b3ca37a0511c61ad990d726435dc1535aba61a752bd7107876bc81"
+                },
+                "observed": {
+                  "present": true,
+                  "type": "list",
+                  "bytes": 45,
+                  "sha256": "0588c432db31fbf97250f625dc34f8bbabdd2277669947b2edf47258e54b953b"
+                }
+              },
+              {
+                "component": "system_message",
+                "expected": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 2143,
+                  "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+                },
+                "observed": {
+                  "present": false,
+                  "type": null,
+                  "bytes": null,
+                  "sha256": null
+                }
+              }
+            ],
+            "captured_body_sha256": "3a26febcc0f0aec23865bab2ae4464175c90f15b6726cb281dde8bca9e9a7189",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "c95312a604f7318949de5613941c108db9a5abc444c686f76de0d2f8db6502be",
+        "failure_seal_sha256": "1474041b2808d63e49ad96dfff5a387a6d2b92045a09eeff96a79a8040eb21a4",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_altered_prefix",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": false,
+            "category": "outbound_envelope_binding",
+            "mismatches": [
+              {
+                "component": "user_prefix",
+                "expected": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 123,
+                  "sha256": "893e9a0764cf46d9a46a7f0889be70857bac08d40e10208361ee3b1bc762e9bd"
+                },
+                "observed": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 139,
+                  "sha256": "0c2839b1f85a7489549fcf965bfcdeb59ed0c8818c8e29b0e4079beca584e476"
+                }
+              }
+            ],
+            "captured_body_sha256": "88cbdfa1e705abbb590d427679632286ba967fba3c9388b27436b915ff951341",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "5e5160891d4dfa357c6633bdc19e40d1716e7e62ebbec660bd9fa20bfbcd68a3",
+        "failure_seal_sha256": "cc988fe6cb49da2bbba2427acdf42ed682f6ba5caee569f075c9cb2bd92bf2b1",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_altered_body",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": false,
+            "category": "outbound_envelope_binding",
+            "mismatches": [
+              {
+                "component": "request_suffix",
+                "expected": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 2937,
+                  "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+                },
+                "observed": {
+                  "present": true,
+                  "type": "str",
+                  "bytes": 2937,
+                  "sha256": "b182448106b219883340ad8c7a75289f0253351574af2f36f70186ef50dc2a5e"
+                }
+              }
+            ],
+            "captured_body_sha256": "845e3f909819990df47c44b3e35d5a8a728ef59e1b5c05f1b1164a10fb9211f3",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "ce158a7f5f5babe692313dfc89e9208848c8c69bd1c8826492253a1a7a5ae542",
+        "failure_seal_sha256": "2b26aab235282520b8e37423360ea3dabfcaa6d9be5f85d36a702ddbca666b92",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_wrong_echo",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "transport_binding_failure",
+        "failure_stage": "response-binding",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": false,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "response_validated": false,
+          "response_failure_category": "transport_binding_failure",
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "22bc62704a2d0663a2ee2d2cbcff5e1cd3d9ca780d225683575f66f219c25c6a",
+        "failure_seal_sha256": "bd7c9749c64b310eb1dead4a14bc03bf8af2ae592401d69ca7a6743116b79591",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_malformed",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "response_decode",
+        "failure_stage": "response-decode",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": false,
+          "response_failure_category": "response_decode",
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "2cacd30faf9b21fb911e8aaca383475e3f03478cc6d28dd9a6f1efc6092fa042",
+        "failure_seal_sha256": "c59405907e2fc32ac3f3bb8e414861890c42c4164ebbca6cb00988fe8a7fb897",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_http429",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_http_error",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_http_error"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "7c48a14e29a8b611e76b57ae2ae2f1fb79dbc2e46eeb36689ab5c5e60dee3018",
+        "failure_seal_sha256": "af792a21f36936e5711f77a48831b8230f4591ad08a6651e7ca08b36c0285668",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_http503",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_http_error",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_http_error"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "ba18303233cd6c801b2046ea2fce05be51466be332130e7c16f5a1e0bf0d6e2e",
+        "failure_seal_sha256": "da45cc8104969eaaf63e091c11bb1cc9fab0676ab99f0a53657b2b310c0b2f10",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_redirect",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_http_error",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_http_error"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "9eaffcb166f39564a4800ab92efc520bd2d36c7bf0f8537698fb8f8431ea6125",
+        "failure_seal_sha256": "2d59ed47c470fd88378c2e5ff4419a75d0e7f847876bbf158eaeffa071ef2102",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_timeout",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "transport_timeout",
+        "failure_stage": "proposal-1",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": null,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "d56318548c54007b5ce5336dc23eefa12f5ddf9ef72714db4ceb2c97ea43f057",
+        "failure_seal_sha256": "66c9c20d5e7fd2d06300589141398b3e6bbcde7fd2aec3b7c78c84dfd56311ff",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_connection_error",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "transport_failure",
+        "failure_stage": "proposal-1",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "client_serialized_only"
+          },
+          "capture_consistency": {
+            "checked": false,
+            "accepted": null
+          },
+          "provider_response": {
+            "accepted": null,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 0,
+          "body_sends_returned": 0,
+          "transmissions_observed": 0,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "4d2e4dce720546aee456e8b4d47f6f90238c93da6b4abb400d69a1177d9b651d",
+        "failure_seal_sha256": "1b3cf84d551dc0f33eff1d18167b2d06d7092d000608dda9976d53e95d6a588a",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_disconnect",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "transport_failure",
+        "failure_stage": "proposal-1",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": null,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "4d2e4dce720546aee456e8b4d47f6f90238c93da6b4abb400d69a1177d9b651d",
+        "failure_seal_sha256": "1c1d26ece2948ed120b622f468b622323771266d1de964798e56c39fcf56bf84",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_refusal",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_refusal",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_refusal"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "51fbfc50aedf3df74c6348a73b54638be84e5acded751dac6a9ef2e7202e86be",
+        "failure_seal_sha256": "5dc72fd758bba0566b96696e4f80fb4f687740e32c3691ef13faf25627b25568",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_incomplete",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_incomplete",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_incomplete"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "3ab80e53c97d1ef04511f11c03d9baba58d25e85040698c052599eabc72ec9b3",
+        "failure_seal_sha256": "d07eaa565463043597c5c0fa4c831fbc1c4d0b5e40c5b0b498ad953ee6f32eeb",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_tool_call",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_output_shape",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_output_shape"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "887320f08bd087505343ff94ff32c525a59859f4d06288a459aa997b9e3e88f8",
+        "failure_seal_sha256": "17987fc435160f3ac850cf90f532311090c37a792cf2784e840c9d6e601ad6a6",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_malformed_provider",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_decode",
+        "failure_stage": "provider-response",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": false,
+            "failure_category": "provider_decode"
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "e198f255f0d8341c8256ad3dca6b6c66900b3fc48f929002191ef889d8a19f9f",
+        "failure_seal_sha256": "d6a6b048b3a3ba2735d498846a45acb39a446758ddb80356e5ea1f1a28c5de7c",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_oversized_response",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "provider_response_byte_budget",
+        "failure_stage": "proposal-1",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": null,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": false,
+            "accepted": null,
+            "scope": "response_request_association"
+          },
+          "response_validated": null,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "20299f1789214814cad034a12409a5feade58e86678469cc451c71ad9598f09b",
+        "failure_seal_sha256": "ff9e975dd03623e260c0c9c84cef7f4628aaddcb3e77997ea6e59017ca647aa5",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_exhausted_budget",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "audit_accepted": true,
+        "failure_category": "request_budget_exhaustion",
+        "failure_stage": "proposal",
+        "failure_phase": "proposal",
+        "transport_validation": {
+          "outbound_envelope": {
+            "accepted": true,
+            "category": null,
+            "mismatches": [],
+            "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+            "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+            "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+            "observation": "local_server_received"
+          },
+          "capture_consistency": {
+            "checked": true,
+            "accepted": true
+          },
+          "provider_response": {
+            "accepted": true,
+            "failure_category": null
+          },
+          "response_request_binding": {
+            "checked": true,
+            "accepted": true,
+            "scope": "response_request_association",
+            "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+            "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+          },
+          "response_validated": true,
+          "response_failure_category": null,
+          "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "client_connection_attempts": 1,
+          "body_sends_started": 1,
+          "body_sends_returned": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+        },
+        "scope": "recorded rejection boundary; no proof-success or execution-attestation claim",
+        "failure_sha256": "ceda2aac870619a18c30076c8531d8d14a7928520ba6efb5f8e48109301305f1",
+        "failure_seal_sha256": "516638891af0f0d1d01aefb4e523437b6590f8851f842480807a68b98f65795e",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    }
+  ]
+}

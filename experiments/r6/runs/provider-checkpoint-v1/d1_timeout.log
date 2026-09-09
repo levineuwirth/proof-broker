@@ -1,0 +1,35 @@
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4269:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+Traceback (most recent call last):
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/provider_episode.py", line 339, in <module>
+    main()
+    ~~~~^^
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/provider_episode.py", line 322, in main
+    execute(run, task, args.case, args.packages_dir)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/provider_episode.py", line 259, in execute
+    response = session.invoke(tools, case)
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/provider_episode.py", line 189, in invoke
+    if error: raise error
+              ^^^^^^^^^^^
+provider_payload.Failure: HTTP adapter: transport_timeout

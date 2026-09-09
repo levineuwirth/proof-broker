@@ -278,3 +278,91 @@ binding. Mathematical validity is in `certificate-verdict.json`. When a prior
 stage rejects, later verification is not reached, not a failed mathematical
 test. R6-002's controls separate these predicates; they are not all combinations
 of three Boolean outcomes.
+
+## R6-003 candidate implementation — 2026-09-09
+
+[R6-003](R6-003.md) implements the selected OpenAI Responses wire interface
+through a direct Python HTTP adapter, tested with a private loopback server.
+The frozen candidate passes 108 controls and preserves the approved prior
+sources and artifacts. Its new relation scope, independently reconstructed
+component diagnostics and shared proof checker implement the three R6-002
+review decisions above. D1's revised canned witness depends on the integer
+`+1`; omitting it leaves a zero weighted constant, which is not contradictory.
+
+The HTTP controls record body-send observations separately from server receipts,
+exercise status errors, redirects, disconnects, incomplete output and refusal,
+and require explicit reservation before each attempt. Missing observations
+following reservation are unknown. Synthetic usage and actual zero live calls
+remain separate. Rejected episodes have a negative failure seal and a dedicated
+recorded-boundary audit; neither is a proof-success claim.
+
+Review of this candidate precedes live-policy selection. The selected API/HTTP
+shape does not establish remote API acceptance, HTTPS credential handling,
+remote receipt or inference. Before a live call, freeze the concrete
+model/provider revision, sampling/reasoning options and token/retry/monetary
+limits; supply credentials outside retained arguments and environment dumps;
+and exercise the HTTPS/client handoff with canned controls. Preserve the exact
+entity-body checks without presenting them as encrypted-wire or model-input
+attestation. Fragment expansion remains separately gated.
+
+## R6-003 approved pre-live credential control — 2026-09-09
+
+The author approved R6-003 after independently re-deriving its reported figures.
+The [closeout](reviews/2026-09-09/R6-003-REVIEW.md) records one outstanding gate:
+Authorization omission is observed in the current records but has no leakage
+regression. `authorization_present` and `no_external_endpoint` do not establish
+that property. Resolve it in a separately versioned **canned checkpoint before
+freezing or executing the live policy**. Preserve the approved HTTP actor,
+policy, source locks and episodes.
+
+The minimum controls are:
+
+1. **A reproducible synthetic canary and the actual credential path.** Inject a
+   distinctive non-credential Authorization value through the mechanism intended
+   to carry the future credential, with no real key or external API. One suitable
+   construction derives the canary from a retained non-secret nonce and a frozen
+   generator: reviewers can reconstruct it without its literal value appearing
+   in publication records. Keep the value out of recorded argv, environment
+   dumps and generated source; Bubblewrap `--setenv` arguments themselves appear
+   in the current command record. Use a private input channel for injection.
+2. **Assert receipt of the exact value before counting the absence check.** The
+   endpoint must compare/hash the Authorization value actually read from the
+   incoming HTTP header. Derive the expected value independently from the
+   canary fixture. A presence bit, host-supplied echo or declared injection does
+   not discharge this precondition. Missing-header and wrong-value controls must
+   defeat it. Any digest retained for this test is a synthetic-canary commitment,
+   not a requirement to publish fingerprints of future real credentials.
+3. **Scan the full declared publication surface.** Require zero canary/header
+   value occurrences in every retained/sealed artifact and every file selected
+   for publication, including command/environment records, HTTP metadata,
+   stdout/stderr, supervisor and outer runner logs, exception/failure records,
+   and the scan report itself. Inspect the uncompressed bytes of retained gzip
+   objects with explicit limits; declare the raw and common escaped/encoded
+   forms covered. Exact source-file exemptions, if necessary for a literal
+   fixture, must be listed and hash-bound. Do not exempt entire provenance or
+   log directories. A derived canary should allow an empty exemption list.
+4. **Exercise success and failure paths.** Run at least one complete existing
+   obligation through the new canned adapter, certificate consumption and final
+   declaration checks, plus an HTTP-error path that produces diagnostic logs.
+   Both must satisfy exact canary receipt and publication non-disclosure.
+   Keep the existing prompt/body/association predicates and source restrictions.
+   This is a credential-channel/recording control, not model-input or inference
+   attestation. Apply it again at the subsequent HTTPS handoff.
+5. **Prove that the scanner notices a leak.** Deliberately inject the same canary
+   into an ordinary log, a nested metadata field and a compressed artifact.
+   Assert each injection's precondition, and require rejection at the disclosure
+   boundary. Include a coherently rehashed/resealed mutation so a broken hash is
+   not the detector. Tainted copies can be temporary test inputs; publication
+   reports must retain locations and non-sensitive evidence, not re-emit the
+   value in an error message. Treat disclosure as a publication failure; never
+   silently edit already sealed evidence to make the scan pass.
+6. **Audit the audit.** Freeze the expected case names and file inventory before
+   running. Check omission of the scanner, a dropped scan target and a falsified
+   passing scan result. Retain enough canary derivation, source and inventory
+   evidence for independent recomputation; an asserted zero count is not proof
+   that the intended value or all intended files were examined.
+
+These are requirements for the next checkpoint, not additional checks attributed
+to R6-003. They do not claim protection against every transformation, partial
+secret disclosure, or a hostile host. Live model/revision, sampling/reasoning,
+token/retry/monetary limits and credential/TLS setup remain separately unset.

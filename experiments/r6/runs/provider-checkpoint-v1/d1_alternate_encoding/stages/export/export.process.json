@@ -1,0 +1,23 @@
+{
+  "exit_code": 0,
+  "resource_exhausted": null,
+  "wall_seconds": 3.237616516009439,
+  "execution_wall_seconds": 3.2370086110022385,
+  "cgroup_cpu_usec": 3189065,
+  "resource_violations": [],
+  "cgroup_memory_peak_bytes": 727429120,
+  "memory_events": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "monitor_error": null,
+  "observation_error": null,
+  "workload_empty_after_cleanup": true,
+  "output_bytes": 10778141,
+  "accounting_scope": "sandbox_process_tree"
+}

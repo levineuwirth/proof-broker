@@ -1,0 +1,37 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "envelope-audit",
+  "failure_phase": "proposal",
+  "failure_category": "outbound_envelope_binding",
+  "error": "Envelope components differ: user_prefix",
+  "evidence": {
+    "accepted": false,
+    "category": "outbound_envelope_binding",
+    "mismatches": [
+      {
+        "component": "user_prefix",
+        "expected": {
+          "present": true,
+          "type": "str",
+          "bytes": 123,
+          "sha256": "893e9a0764cf46d9a46a7f0889be70857bac08d40e10208361ee3b1bc762e9bd"
+        },
+        "observed": {
+          "present": true,
+          "type": "str",
+          "bytes": 139,
+          "sha256": "0c2839b1f85a7489549fcf965bfcdeb59ed0c8818c8e29b0e4079beca584e476"
+        }
+      }
+    ],
+    "captured_body_sha256": "88cbdfa1e705abbb590d427679632286ba967fba3c9388b27436b915ff951341",
+    "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+    "observation": "local_server_received"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

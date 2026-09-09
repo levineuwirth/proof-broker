@@ -1,0 +1,28 @@
+{
+  "outbound_envelope": {
+    "accepted": true,
+    "category": null,
+    "mismatches": [],
+    "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+    "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+    "observation": "client_serialized_only"
+  },
+  "capture_consistency": {
+    "checked": false,
+    "accepted": null
+  },
+  "provider_response": {
+    "accepted": null,
+    "failure_category": null
+  },
+  "response_request_binding": {
+    "checked": false,
+    "accepted": null,
+    "scope": "response_request_association"
+  },
+  "response_validated": null,
+  "response_failure_category": null,
+  "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+}

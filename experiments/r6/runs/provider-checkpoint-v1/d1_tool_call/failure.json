@@ -1,0 +1,22 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "provider-response",
+  "failure_phase": "proposal",
+  "failure_category": "provider_output_shape",
+  "error": "Unexpected provider output item",
+  "evidence": {
+    "usage": {
+      "status": "provider_reported",
+      "cost_usd": null,
+      "input_tokens": 11,
+      "output_tokens": 7,
+      "total_tokens": 18,
+      "cached_tokens": 2,
+      "reasoning_tokens": 3
+    }
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

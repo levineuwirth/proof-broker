@@ -1,0 +1,953 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "prompt_le_eq_only",
+    "compiled_strict_integer_once",
+    "decisive_tightening_witness",
+    "injected_lt_before_request",
+    "real_mislabeled_lia_before_request",
+    "prompt_request_binding",
+    "alternate_encoding_equal_messages",
+    "system_component",
+    "missing_system_component",
+    "empty_system_component",
+    "prefix_component",
+    "suffix_component",
+    "multiple_components",
+    "missing_user_components",
+    "role_layout",
+    "options_component",
+    "duplicate_envelope",
+    "malformed_envelope",
+    "correct_echo_ignored_body",
+    "wrong_echo_neutral",
+    "malformed_witness",
+    "invalid_witness_well_formed",
+    "reasoning_before_message",
+    "split_text_reassembly",
+    "refusal",
+    "incomplete",
+    "unrequested_tool",
+    "missing_message",
+    "reported_model_mismatch",
+    "unknown_usage",
+    "partial_usage",
+    "reported_zero",
+    "bad_usage_details",
+    "inconsistent_usage",
+    "excessive_output",
+    "no_external_endpoint",
+    "no_hidden_retry",
+    "budget_before_second_stage",
+    "reserved_observations_unknown",
+    "killed_after_transmission",
+    "missing_http_observations",
+    "production_lt_admission_order",
+    "production_real_admission_order",
+    "shared_checker_binding",
+    "source_lock_guard",
+    "missing_case_rejected",
+    "duplicate_case_rejected"
+  ],
+  "check_count": 47,
+  "checks": [
+    {
+      "name": "prompt_le_eq_only",
+      "passed": true,
+      "detail": {
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "admitted_relations": [
+          "le",
+          "eq"
+        ]
+      }
+    },
+    {
+      "name": "compiled_strict_integer_once",
+      "passed": true,
+      "detail": {
+        "compiled_source": "x.val < 16777216",
+        "compiled_row": {
+          "name": "hx",
+          "relation": "le",
+          "constant": "-16777215",
+          "terms": [
+            {
+              "variable": "_pb_atom_0",
+              "coefficient": "1"
+            }
+          ]
+        },
+        "tightening_count": 1,
+        "provenance": "retained R6-002 compiler output; fresh D1 native run checks the same row"
+      }
+    },
+    {
+      "name": "decisive_tightening_witness",
+      "passed": true,
+      "detail": {
+        "variables_canceled": true,
+        "constant": 4,
+        "without_integer_tightening": 0,
+        "criterion": "constant > 0; zero is not contradictory",
+        "witness": [
+          {
+            "coefficient": "8",
+            "hypothesis": "hZ"
+          },
+          {
+            "coefficient": "4",
+            "hypothesis": "neg_goal"
+          },
+          {
+            "coefficient": "4",
+            "hypothesis": "hnum"
+          }
+        ]
+      }
+    },
+    {
+      "name": "injected_lt_before_request",
+      "passed": true,
+      "detail": {
+        "category": "unsupported_theory",
+        "stage": "provider-admission",
+        "phase": "admission",
+        "evidence": null,
+        "error": "First provider policy requires integer le/eq rows; non-LIA or strict rows need admission",
+        "requests_constructed": 0,
+        "transmissions": 0
+      }
+    },
+    {
+      "name": "real_mislabeled_lia_before_request",
+      "passed": true,
+      "detail": {
+        "category": "unsupported_theory",
+        "stage": "provider-admission",
+        "phase": "admission",
+        "evidence": null,
+        "error": "First provider policy requires integer le/eq rows; non-LIA or strict rows need admission",
+        "requests_constructed": 0,
+        "transmissions": 0
+      }
+    },
+    {
+      "name": "prompt_request_binding",
+      "passed": true,
+      "detail": {
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+      }
+    },
+    {
+      "name": "alternate_encoding_equal_messages",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "system_component",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "system_message",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2143,
+              "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+            },
+            "observed": {
+              "present": true,
+              "type": "str",
+              "bytes": 2167,
+              "sha256": "2f5ee0c5673a613da57778bd4d4fae1a5d6764e0dc827c1ccdc4cd85a1a7bd13"
+            }
+          }
+        ],
+        "captured_body_sha256": "d8d9be87a340771463ae7dff2cc03123f54f1b826214bc8c956b933ed70c9936",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "missing_system_component",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "message_layout",
+            "expected": {
+              "present": true,
+              "type": "list",
+              "bytes": 91,
+              "sha256": "2fa3aed338b3ca37a0511c61ad990d726435dc1535aba61a752bd7107876bc81"
+            },
+            "observed": {
+              "present": true,
+              "type": "list",
+              "bytes": 45,
+              "sha256": "0588c432db31fbf97250f625dc34f8bbabdd2277669947b2edf47258e54b953b"
+            }
+          },
+          {
+            "component": "system_message",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2143,
+              "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+            },
+            "observed": {
+              "present": false,
+              "type": null,
+              "bytes": null,
+              "sha256": null
+            }
+          }
+        ],
+        "captured_body_sha256": "3a26febcc0f0aec23865bab2ae4464175c90f15b6726cb281dde8bca9e9a7189",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "prefix_component",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "user_prefix",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 123,
+              "sha256": "893e9a0764cf46d9a46a7f0889be70857bac08d40e10208361ee3b1bc762e9bd"
+            },
+            "observed": {
+              "present": true,
+              "type": "str",
+              "bytes": 139,
+              "sha256": "0c2839b1f85a7489549fcf965bfcdeb59ed0c8818c8e29b0e4079beca584e476"
+            }
+          }
+        ],
+        "captured_body_sha256": "88cbdfa1e705abbb590d427679632286ba967fba3c9388b27436b915ff951341",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "suffix_component",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "request_suffix",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2937,
+              "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+            },
+            "observed": {
+              "present": true,
+              "type": "str",
+              "bytes": 2937,
+              "sha256": "b182448106b219883340ad8c7a75289f0253351574af2f36f70186ef50dc2a5e"
+            }
+          }
+        ],
+        "captured_body_sha256": "845e3f909819990df47c44b3e35d5a8a728ef59e1b5c05f1b1164a10fb9211f3",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "empty_system_component",
+      "passed": true,
+      "detail": {
+        "empty": {
+          "present": true,
+          "type": "str",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "absent": {
+          "present": false,
+          "type": null,
+          "bytes": null,
+          "sha256": null
+        }
+      }
+    },
+    {
+      "name": "multiple_components",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "system_message",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2143,
+              "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+            },
+            "observed": {
+              "present": true,
+              "type": "str",
+              "bytes": 7,
+              "sha256": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+            }
+          },
+          {
+            "component": "user_prefix",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 123,
+              "sha256": "893e9a0764cf46d9a46a7f0889be70857bac08d40e10208361ee3b1bc762e9bd"
+            },
+            "observed": {
+              "present": true,
+              "type": "str",
+              "bytes": 17,
+              "sha256": "8681ca8d88aaff97f57fdad5d430ccc9b4accd38d915f8c15c8d8213e2bc5486"
+            }
+          },
+          {
+            "component": "request_suffix",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2937,
+              "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+            },
+            "observed": {
+              "present": false,
+              "type": null,
+              "bytes": null,
+              "sha256": null
+            }
+          }
+        ],
+        "captured_body_sha256": "6ab5150d124eace9b4be40a066dbd58c2e66a4ff84d3bfc8aa3e3c0166d524b2",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "missing_user_components",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "message_layout",
+            "expected": {
+              "present": true,
+              "type": "list",
+              "bytes": 91,
+              "sha256": "2fa3aed338b3ca37a0511c61ad990d726435dc1535aba61a752bd7107876bc81"
+            },
+            "observed": {
+              "present": true,
+              "type": "list",
+              "bytes": 47,
+              "sha256": "514dee3d42a1a86439d53ad5dfcc79aea201ed5b1df8105c2d28adb2fd268b1f"
+            }
+          },
+          {
+            "component": "user_prefix",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 123,
+              "sha256": "893e9a0764cf46d9a46a7f0889be70857bac08d40e10208361ee3b1bc762e9bd"
+            },
+            "observed": {
+              "present": false,
+              "type": null,
+              "bytes": null,
+              "sha256": null
+            }
+          },
+          {
+            "component": "request_suffix",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2937,
+              "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+            },
+            "observed": {
+              "present": false,
+              "type": null,
+              "bytes": null,
+              "sha256": null
+            }
+          }
+        ],
+        "captured_body_sha256": "5615ce1ce16c0ea4916253769f653c3a5f9eec348a1d276f06576e338105dc54",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "role_layout",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "message_layout",
+            "expected": {
+              "present": true,
+              "type": "list",
+              "bytes": 91,
+              "sha256": "2fa3aed338b3ca37a0511c61ad990d726435dc1535aba61a752bd7107876bc81"
+            },
+            "observed": {
+              "present": true,
+              "type": "list",
+              "bytes": 94,
+              "sha256": "5bf543831cce9a59f51a86793509365635993d98464b4c7910b8922bba488a19"
+            }
+          },
+          {
+            "component": "system_message",
+            "expected": {
+              "present": true,
+              "type": "str",
+              "bytes": 2143,
+              "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+            },
+            "observed": {
+              "present": false,
+              "type": null,
+              "bytes": null,
+              "sha256": null
+            }
+          }
+        ],
+        "captured_body_sha256": "9fbb1f42cdff4d7d9ac71e8770c82b7be0cecf98327d5fca2275c0c5a8219b79",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "options_component",
+      "passed": true,
+      "detail": {
+        "accepted": false,
+        "category": "outbound_envelope_binding",
+        "mismatches": [
+          {
+            "component": "request_options",
+            "expected": {
+              "present": true,
+              "type": "dict",
+              "bytes": 204,
+              "sha256": "ecd45b8e4fae7cfc5776db065b7e5f9d245c05109671ace31e0fc5c79d385b3a"
+            },
+            "observed": {
+              "present": true,
+              "type": "dict",
+              "bytes": 203,
+              "sha256": "224e0b3b8a3d769c02080ef9746a874a81cb80cce2d591088398ce3ebeadff5c"
+            }
+          }
+        ],
+        "captured_body_sha256": "14407733f2be22503fb8c5d7bc542cdacc5d6ee481a484e3c6edfa1105e23f1e",
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+        "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+      }
+    },
+    {
+      "name": "duplicate_envelope",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "stage": "envelope-audit",
+        "phase": "proposal",
+        "evidence": {
+          "accepted": false,
+          "category": "outbound_envelope_binding",
+          "mismatches": [
+            {
+              "component": "envelope_decode",
+              "expected": {
+                "present": true,
+                "type": "dict",
+                "bytes": 6041,
+                "sha256": "00d0234fb0384924e478dd8a75890f3fb9fc79f862d3af52b30957332693196d"
+              },
+              "observed": {
+                "present": true,
+                "type": "bytes",
+                "bytes": 23,
+                "sha256": "6d58ff3e08c054f54bd449dd84796b14d023187c838b23546c069cec2d071ba6"
+              },
+              "detail": "Duplicate JSON field: input"
+            }
+          ],
+          "captured_body_sha256": "6d58ff3e08c054f54bd449dd84796b14d023187c838b23546c069cec2d071ba6",
+          "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+          "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+          "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+        },
+        "error": "Envelope components differ: envelope_decode"
+      }
+    },
+    {
+      "name": "malformed_envelope",
+      "passed": true,
+      "detail": {
+        "category": "outbound_envelope_binding",
+        "stage": "envelope-audit",
+        "phase": "proposal",
+        "evidence": {
+          "accepted": false,
+          "category": "outbound_envelope_binding",
+          "mismatches": [
+            {
+              "component": "envelope_decode",
+              "expected": {
+                "present": true,
+                "type": "dict",
+                "bytes": 6041,
+                "sha256": "00d0234fb0384924e478dd8a75890f3fb9fc79f862d3af52b30957332693196d"
+              },
+              "observed": {
+                "present": true,
+                "type": "bytes",
+                "bytes": 1,
+                "sha256": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96"
+              },
+              "detail": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+            }
+          ],
+          "captured_body_sha256": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96",
+          "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+          "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+          "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation"
+        },
+        "error": "Envelope components differ: envelope_decode"
+      }
+    },
+    {
+      "name": "correct_echo_ignored_body",
+      "passed": true,
+      "detail": {
+        "echo": true,
+        "response_format": true,
+        "envelope": false,
+        "arithmetic_verification": "unobserved here"
+      }
+    },
+    {
+      "name": "wrong_echo_neutral",
+      "passed": true,
+      "detail": {
+        "category": "transport_binding_failure",
+        "stage": "response-binding",
+        "phase": "proposal",
+        "evidence": {
+          "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+          "received_request_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "error": "Response request digest does not match the recorded request bytes"
+      }
+    },
+    {
+      "name": "malformed_witness",
+      "passed": true,
+      "detail": {
+        "category": "response_decode",
+        "stage": "response-decode",
+        "phase": "proposal",
+        "evidence": null,
+        "error": "Expecting value: line 1 column 12 (char 11)"
+      }
+    },
+    {
+      "name": "invalid_witness_well_formed",
+      "passed": true,
+      "detail": {
+        "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+        "witness": {
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hZ"
+            },
+            {
+              "coefficient": "4",
+              "hypothesis": "neg_goal"
+            },
+            {
+              "coefficient": "4",
+              "hypothesis": "hnum"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "reasoning_before_message",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "split_text_reassembly",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "refusal",
+      "passed": true,
+      "detail": {
+        "category": "provider_refusal",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": {
+          "usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          }
+        },
+        "error": "Provider returned a refusal"
+      }
+    },
+    {
+      "name": "incomplete",
+      "passed": true,
+      "detail": {
+        "category": "provider_incomplete",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": {
+          "usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          },
+          "incomplete_details": {
+            "reason": "max_output_tokens"
+          }
+        },
+        "error": "Provider response is incomplete"
+      }
+    },
+    {
+      "name": "unrequested_tool",
+      "passed": true,
+      "detail": {
+        "category": "provider_output_shape",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": {
+          "usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          }
+        },
+        "error": "Unexpected provider output item"
+      }
+    },
+    {
+      "name": "missing_message",
+      "passed": true,
+      "detail": {
+        "category": "provider_output_shape",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": {
+          "usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          }
+        },
+        "error": "Expected exactly one completed assistant message"
+      }
+    },
+    {
+      "name": "reported_model_mismatch",
+      "passed": true,
+      "detail": {
+        "category": "provider_model_binding",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": {
+          "usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": 11,
+            "output_tokens": 7,
+            "total_tokens": 18,
+            "cached_tokens": 2,
+            "reasoning_tokens": 3
+          }
+        },
+        "error": "Reported model differs from requested wire model"
+      }
+    },
+    {
+      "name": "unknown_usage",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "partial_usage",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "reported_zero",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "bad_usage_details",
+      "passed": true,
+      "detail": [
+        {
+          "category": "usage_decode",
+          "stage": "provider-response",
+          "phase": "proposal",
+          "evidence": null,
+          "error": "Invalid token details"
+        },
+        {
+          "category": "usage_decode",
+          "stage": "provider-response",
+          "phase": "proposal",
+          "evidence": null,
+          "error": "Invalid token details"
+        },
+        {
+          "category": "usage_decode",
+          "stage": "provider-response",
+          "phase": "proposal",
+          "evidence": null,
+          "error": "Invalid token details"
+        },
+        {
+          "category": "usage_decode",
+          "stage": "provider-response",
+          "phase": "proposal",
+          "evidence": null,
+          "error": "Invalid token details"
+        }
+      ]
+    },
+    {
+      "name": "inconsistent_usage",
+      "passed": true,
+      "detail": {
+        "category": "usage_decode",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": null,
+        "error": "Reported token totals disagree"
+      }
+    },
+    {
+      "name": "excessive_output",
+      "passed": true,
+      "detail": {
+        "category": "provider_output_budget",
+        "stage": "provider-response",
+        "phase": "proposal",
+        "evidence": {
+          "usage": {
+            "status": "provider_reported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": 257,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          }
+        },
+        "error": "Reported output exceeds requested limit"
+      }
+    },
+    {
+      "name": "no_external_endpoint",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "no_hidden_retry",
+      "passed": true,
+      "detail": {
+        "connection_attempts": 1
+      }
+    },
+    {
+      "name": "budget_before_second_stage",
+      "passed": true,
+      "detail": {
+        "category": "request_budget_exhaustion",
+        "stage": "proposal",
+        "phase": "proposal",
+        "evidence": null,
+        "error": "Frozen transmission budget exhausted"
+      }
+    },
+    {
+      "name": "reserved_observations_unknown",
+      "passed": true,
+      "detail": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": null,
+        "body_sends_started": null,
+        "body_sends_returned": null,
+        "transmissions_observed": null,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    {
+      "name": "killed_after_transmission",
+      "passed": true,
+      "detail": {
+        "attempts_reserved": 1,
+        "client_connection_attempts": 1,
+        "body_sends_started": 1,
+        "body_sends_returned": 1,
+        "transmissions_observed": 1,
+        "reported_usage": {
+          "status": "unreported",
+          "cost_usd": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "total_tokens": null,
+          "cached_tokens": null,
+          "reasoning_tokens": null
+        },
+        "live_model_calls": 0,
+        "live_model_cost_usd": 0,
+        "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+      }
+    },
+    {
+      "name": "missing_http_observations",
+      "passed": true,
+      "detail": {
+        "category": "transport_capture_failure",
+        "stage": "proposal-1",
+        "phase": "proposal",
+        "evidence": null,
+        "error": "HTTP actor lacks readable observations"
+      }
+    },
+    {
+      "name": "production_lt_admission_order",
+      "passed": true,
+      "detail": {
+        "category": "unsupported_theory",
+        "stage": "provider-admission",
+        "phase": "admission",
+        "evidence": null,
+        "error": "First provider policy requires integer le/eq rows; non-LIA or strict rows need admission",
+        "requests_constructed": 0,
+        "proposal_stages": 0
+      }
+    },
+    {
+      "name": "production_real_admission_order",
+      "passed": true,
+      "detail": {
+        "category": "unsupported_theory",
+        "stage": "provider-admission",
+        "phase": "admission",
+        "evidence": null,
+        "error": "First provider policy requires integer le/eq rows; non-LIA or strict rows need admission",
+        "requests_constructed": 0,
+        "proposal_stages": 0
+      }
+    },
+    {
+      "name": "shared_checker_binding",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "source_lock_guard",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider policy requires its frozen source revision"
+      }
+    },
+    {
+      "name": "missing_case_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'b'}"
+      }
+    },
+    {
+      "name": "duplicate_case_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case"
+      }
+    }
+  ]
+}

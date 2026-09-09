@@ -1,0 +1,20 @@
+{
+  "accepted": false,
+  "task_id": "c1-c8-2p18",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "certificate-check",
+  "failure_phase": "certificate_verification",
+  "failure_category": "certificate_verification",
+  "error": "Farkas witness was not verified",
+  "evidence": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "farkas_not_contradictory",
+      "detail": "weighted sum is -1048575*_pb_atom_0 + 73786971879611826181, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:ddf682106c6c91fc911f5f3198141e5ccc9c53a4690c24659d0c58426cda9af7"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

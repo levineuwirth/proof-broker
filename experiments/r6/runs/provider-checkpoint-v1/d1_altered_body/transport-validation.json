@@ -1,0 +1,46 @@
+{
+  "outbound_envelope": {
+    "accepted": false,
+    "category": "outbound_envelope_binding",
+    "mismatches": [
+      {
+        "component": "request_suffix",
+        "expected": {
+          "present": true,
+          "type": "str",
+          "bytes": 2937,
+          "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+        },
+        "observed": {
+          "present": true,
+          "type": "str",
+          "bytes": 2937,
+          "sha256": "b182448106b219883340ad8c7a75289f0253351574af2f36f70186ef50dc2a5e"
+        }
+      }
+    ],
+    "captured_body_sha256": "845e3f909819990df47c44b3e35d5a8a728ef59e1b5c05f1b1164a10fb9211f3",
+    "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+    "observation": "local_server_received"
+  },
+  "capture_consistency": {
+    "checked": true,
+    "accepted": true
+  },
+  "provider_response": {
+    "accepted": true,
+    "failure_category": null
+  },
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+    "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+  },
+  "response_validated": true,
+  "response_failure_category": null,
+  "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+}

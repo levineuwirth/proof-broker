@@ -1,0 +1,17 @@
+{
+  "response_id": "r6_canned_response",
+  "model": "r6-canned-model-not-a-live-selection",
+  "status": "completed",
+  "usage": {
+    "status": "unreported",
+    "cost_usd": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cached_tokens": null,
+    "reasoning_tokens": null
+  },
+  "output_text_parts": 1,
+  "reasoning_items": 0,
+  "identity_scope": "provider-reported fields; no model-computation attestation"
+}

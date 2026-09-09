@@ -1,0 +1,15 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "response-binding",
+  "failure_phase": "proposal",
+  "failure_category": "transport_binding_failure",
+  "error": "Response request digest does not match the recorded request bytes",
+  "evidence": {
+    "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+    "received_request_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}
