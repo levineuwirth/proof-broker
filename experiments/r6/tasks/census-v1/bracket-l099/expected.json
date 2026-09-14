@@ -1,0 +1,139 @@
+{
+  "task_id": "bracket-l099",
+  "challenge_sha256": "2ee48a260fc8389f8671bce0b51ef505ecf624dd9b19b2e476a6e81de6ad895a",
+  "baseline_sha256": "005f58f87cbd655ceda0bd037dfbf5766fc886541d78e13b5f97de2a20b91dd4",
+  "environment": {
+    "dependencies": [
+      {
+        "name": "mathlib",
+        "repository": "https://github.com/leanprover-community/mathlib4",
+        "commit": "81a5d257c8e410db227a6665ed08f64fea08e997"
+      },
+      {
+        "name": "plausible",
+        "repository": "https://github.com/leanprover-community/plausible",
+        "commit": "e12c1910fe855cbfc38803cd4e55543906d5fa62"
+      },
+      {
+        "name": "LeanSearchClient",
+        "repository": "https://github.com/leanprover-community/LeanSearchClient",
+        "commit": "c5d5b8fe6e5158def25cd28eb94e4141ad97c843"
+      },
+      {
+        "name": "importGraph",
+        "repository": "https://github.com/leanprover-community/import-graph",
+        "commit": "7e9612bf0b9ee66db3cb5b9988a35afc706f5a12"
+      },
+      {
+        "name": "proofwidgets",
+        "repository": "https://github.com/leanprover-community/ProofWidgets4",
+        "commit": "6e311e2a844da9b2cc3971187df2fe0066947b93"
+      },
+      {
+        "name": "aesop",
+        "repository": "https://github.com/leanprover-community/aesop",
+        "commit": "a7dbf0c63b694e47f425f3dcddbc0e178bb432d3"
+      },
+      {
+        "name": "Qq",
+        "repository": "https://github.com/leanprover-community/quote4",
+        "commit": "38d591e778f100aec9762bb582f9c7f55f50e9dc"
+      },
+      {
+        "name": "batteries",
+        "repository": "https://github.com/leanprover-community/batteries",
+        "commit": "023ce7d62a0531e22a5331e20b587817a80d49ff"
+      },
+      {
+        "name": "Cli",
+        "repository": "https://github.com/leanprover/lean4-cli",
+        "commit": "88679d088c9720c27ebdf2ba4dafe17341747f94"
+      }
+    ],
+    "elaboration_lean": "Lean (version 4.32.0, x86_64-unknown-linux-gnu, commit 8c9756b28d64dab099da31a4c09229a9e6a2ef35, Release)",
+    "elaboration_lean_sha256": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+    "validator_lean": "Lean (version 4.32.2, x86_64-unknown-linux-gnu, commit f3b06c705e6c85f5314019d5d3baab0fec5b580c, Release)"
+  },
+  "baseline_whole_declaration": {
+    "statement_and_dependencies_match": true,
+    "name": "Bracket.threshold_unique",
+    "kernel_accepted": true,
+    "declaration_exists": true,
+    "axioms": [
+      "Quot.sound",
+      "propext"
+    ],
+    "type_sha256": "c089bdc5b594dea92e4e757782b7eb9f3e121374d58deb54541413b73945bab0",
+    "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+  },
+  "source_binding_validated": true,
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.threshold_unique.r6_site_l099",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "f389d12ac068b39bca8e460f8380fd2fab30fa47046dfc2fc7649d26d129ee85",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    },
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.threshold_unique",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "c089bdc5b594dea92e4e757782b7eb9f3e121374d58deb54541413b73945bab0",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "policy": {
+    "theorem_names": [
+      "Bracket.threshold_unique.r6_site_l099",
+      "Bracket.threshold_unique"
+    ],
+    "permitted_axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "primitive_names": [
+      "Nat.add",
+      "Nat.sub",
+      "Nat.mul",
+      "Nat.pow",
+      "Nat.gcd",
+      "Nat.div",
+      "Nat.mod",
+      "Nat.beq",
+      "Nat.ble",
+      "Nat.land",
+      "Nat.lor",
+      "Nat.xor",
+      "Nat.shiftLeft",
+      "Nat.shiftRight",
+      "String.ofList",
+      "Char.ofNat",
+      "List",
+      "eagerReduce",
+      "Nat",
+      "String",
+      "String.mk",
+      "Char",
+      "optParam",
+      "autoParam",
+      "semiOutParam",
+      "outParam"
+    ],
+    "required_dependency": [
+      "Bracket.threshold_unique",
+      "Bracket.threshold_unique.r6_site_l099"
+    ]
+  }
+}

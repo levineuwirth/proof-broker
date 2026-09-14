@@ -1,0 +1,21 @@
+{
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.threshold_unique",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "c089bdc5b594dea92e4e757782b7eb9f3e121374d58deb54541413b73945bab0",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "stage": "complete",
+  "local_proof_binding_checked": false,
+  "kernel_version": "4.32.2",
+  "checked_declarations": 1498,
+  "accepted": true
+}

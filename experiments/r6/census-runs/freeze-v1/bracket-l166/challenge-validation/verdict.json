@@ -1,0 +1,34 @@
+{
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.cell_value_neutral.r6_site_l166",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "8c67a2da0861d74e3adec73ff6606133430988cad47d8ebd62a3770235fb8745",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    },
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.cell_value_neutral",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "10b2a967a9e2880a3d3a27031b7699a9c5fab2900cc3b1d510b56c0fa2ab523e",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "stage": "complete",
+  "local_proof_binding_checked": true,
+  "kernel_version": "4.32.2",
+  "checked_declarations": 3735,
+  "accepted": true
+}

@@ -1,0 +1,35 @@
+{
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.lift_cell.r6_site_l071",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "dea13e9070c2addd2ef108efddd9eda631063805ec9c5c10cefd20aa6bd30540",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    },
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.lift_cell",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "stage": "complete",
+  "local_proof_binding_checked": true,
+  "kernel_version": "4.32.2",
+  "checked_declarations": 3712,
+  "accepted": true
+}

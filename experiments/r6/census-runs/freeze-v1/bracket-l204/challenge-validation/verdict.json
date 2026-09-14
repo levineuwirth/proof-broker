@@ -1,0 +1,35 @@
+{
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.Row.s1_noninc.r6_site_l204",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "f414d8e4e81fdf0def3b65b4b1a67d1283ee0707d270afa3c4d1af61f6999938",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    },
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.Row.s1_noninc",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "03f41413a066a2a00cf964b45864292ebfd45c1a9d6e4aff3310c480d40a63dc",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "stage": "complete",
+  "local_proof_binding_checked": true,
+  "kernel_version": "4.32.2",
+  "checked_declarations": 2886,
+  "accepted": true
+}
