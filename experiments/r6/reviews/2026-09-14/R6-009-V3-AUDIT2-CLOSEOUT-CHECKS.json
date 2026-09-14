@@ -1,0 +1,162 @@
+{
+  "complete": true,
+  "reviewed_commit": "d3a22f7",
+  "records": {
+    "audit": {
+      "fresh_sha256": "65e63df8789c52c94c75287af235456e61beb211ba9e10308d7ba47bcc69879a",
+      "recorded_sha256": "65e63df8789c52c94c75287af235456e61beb211ba9e10308d7ba47bcc69879a",
+      "cases": 208,
+      "values_identical": true,
+      "superseded": false
+    },
+    "superseded-v2": {
+      "fresh_sha256": "4273a6cd3288ab76a9bea0ffd649d2953f33b11e4c2aa1e853486aa401437285",
+      "recorded_sha256": "4273a6cd3288ab76a9bea0ffd649d2953f33b11e4c2aa1e853486aa401437285",
+      "cases": 208,
+      "values_identical": true,
+      "superseded": true
+    },
+    "superseded-v1": {
+      "fresh_sha256": "059961ad203c22ba419e2b7f4912b4a3d4b58e9e30255ab345e4cf0ad2f3d761",
+      "recorded_sha256": "059961ad203c22ba419e2b7f4912b4a3d4b58e9e30255ab345e4cf0ad2f3d761",
+      "cases": 169,
+      "values_identical": true,
+      "superseded": true
+    },
+    "controls": {
+      "fresh_sha256": "c89d2062769f255e8107ab0656afe3c6ebe40772e318d16a1d1c4d3f002135c4",
+      "recorded_sha256": "c89d2062769f255e8107ab0656afe3c6ebe40772e318d16a1d1c4d3f002135c4",
+      "controls": 44,
+      "values_identical": true,
+      "accepted_baselines": 1,
+      "rejected_mutations": 43
+    }
+  },
+  "runs": {
+    "r1-d1-draw1": {
+      "kind": "proof",
+      "stages": [
+        "assembly",
+        "capture-build",
+        "certificate-check",
+        "export",
+        "pipeline-prepare",
+        "preparation",
+        "preparation-build",
+        "proposal-1",
+        "reconstruct",
+        "validation-local",
+        "validation-whole"
+      ],
+      "events": 51,
+      "retained": 294,
+      "ephemeral": 8
+    },
+    "r1-d1-draw2-format": {
+      "kind": "release",
+      "stages": [
+        "pipeline-prepare",
+        "preparation",
+        "preparation-build",
+        "proposal-1"
+      ],
+      "events": 20,
+      "retained": 228,
+      "ephemeral": 2
+    },
+    "r1-c8-draw1": {
+      "kind": "proof",
+      "stages": [
+        "assembly",
+        "capture-build",
+        "certificate-check",
+        "export",
+        "pipeline-prepare",
+        "preparation",
+        "preparation-build",
+        "proposal-1",
+        "reconstruct",
+        "validation-local",
+        "validation-whole"
+      ],
+      "events": 51,
+      "retained": 294,
+      "ephemeral": 8
+    },
+    "r2-d1-draw1-refused": {
+      "kind": "refused",
+      "stages": [
+        "pipeline-prepare",
+        "preparation",
+        "preparation-build"
+      ],
+      "events": 14,
+      "retained": 192,
+      "ephemeral": 2
+    },
+    "r2-d1-draw2": {
+      "kind": "proof",
+      "stages": [
+        "assembly",
+        "capture-build",
+        "certificate-check",
+        "export",
+        "pipeline-prepare",
+        "preparation",
+        "preparation-build",
+        "proposal-1",
+        "reconstruct",
+        "validation-local",
+        "validation-whole"
+      ],
+      "events": 51,
+      "retained": 294,
+      "ephemeral": 8
+    },
+    "r2-c8-draw2": {
+      "kind": "proof",
+      "stages": [
+        "assembly",
+        "capture-build",
+        "certificate-check",
+        "export",
+        "pipeline-prepare",
+        "preparation",
+        "preparation-build",
+        "proposal-1",
+        "reconstruct",
+        "validation-local",
+        "validation-whole"
+      ],
+      "events": 51,
+      "retained": 294,
+      "ephemeral": 8
+    }
+  },
+  "source_lock_sha256": "3351d52969a96b84d54944720761b5f1d3d4c70e9955a8118ae6604ba8e616ee",
+  "source_lock_verified": true,
+  "live_enabled": false,
+  "event_hashes": 238,
+  "retained_entries": 1596,
+  "ephemeral_entries": 36,
+  "ledger": {
+    "rows": 12,
+    "consumed_slots": 4,
+    "committed_micro_usd": 409600,
+    "open_reservations": []
+  },
+  "preservation": {
+    "checked_files": 42791,
+    "changed": [],
+    "missing": [],
+    "inventory_sha256": "7c7f1bbfc33e09be4bd815316ce2b592ecc9c975a97b7dff699a6ffedd692415",
+    "inventory_path": "/home/jeans/scratch/tmp/r6-009-v3-audit2-review-af4384xp/before.json",
+    "scope": "review-start r6 files, excluding .cache and __pycache__"
+  },
+  "native_episodes_rerun": 0,
+  "focused_native_controls_rerun": false,
+  "real_credentials_read": 0,
+  "live_model_calls": 0,
+  "scope": "historical audit and copied-artifact controls plus independent hashes/counts; no build or kernel replay",
+  "program_sha256": "127d4b6596d6ac95bd17f16c2ccd0c2a7d5efe1f1937237fef0a21abb0d50e57"
+}
