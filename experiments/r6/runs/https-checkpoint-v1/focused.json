@@ -1,0 +1,238 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "sources_locked",
+    "credential_file_format",
+    "credential_header_injection",
+    "input_semantics_preserved",
+    "response_echo_only",
+    "http_endpoint_rejected",
+    "verification_disabled_rejected",
+    "hostname_disabled_rejected",
+    "tls_floor_rejected",
+    "money_exhausted",
+    "input_bytes_exhausted",
+    "request_exhausted",
+    "durable_attempts",
+    "campaign_attempts",
+    "unknown_usage_not_zero",
+    "truncated_ledger_rejected",
+    "ledger_policy_rejected",
+    "ledger_amount_rejected",
+    "model_not_attested",
+    "sampling_explicit",
+    "no_live_cli",
+    "no_proxy_environment",
+    "source_binding_changed",
+    "missing_case",
+    "duplicate_case"
+  ],
+  "check_count": 25,
+  "checks": [
+    {
+      "name": "sources_locked",
+      "passed": true,
+      "detail": {
+        "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+        "source_lock_sha256": "e849da261b95210a864c39a2dbf47ae32ea86383cf56ef4e5552df7649112911"
+      }
+    },
+    {
+      "name": "credential_file_format",
+      "passed": true,
+      "detail": {
+        "read_exact_header": true,
+        "removed": true
+      }
+    },
+    {
+      "name": "credential_header_injection",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "credential_format"
+      }
+    },
+    {
+      "name": "input_semantics_preserved",
+      "passed": true,
+      "detail": {
+        "rows": 19,
+        "message_bytes": 5203
+      }
+    },
+    {
+      "name": "response_echo_only",
+      "passed": true,
+      "detail": {
+        "echo_passes_ignored_arithmetic": true,
+        "arithmetic_result": "checked separately by native invalid_witness"
+      }
+    },
+    {
+      "name": "http_endpoint_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "https_endpoint_policy"
+      }
+    },
+    {
+      "name": "verification_disabled_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "tls_context_policy"
+      }
+    },
+    {
+      "name": "hostname_disabled_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "tls_context_policy"
+      }
+    },
+    {
+      "name": "tls_floor_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "tls_context_policy"
+      }
+    },
+    {
+      "name": "money_exhausted",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Monetary reservation exhausted"
+      }
+    },
+    {
+      "name": "input_bytes_exhausted",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Messages exceed frozen byte admission"
+      }
+    },
+    {
+      "name": "request_exhausted",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Request budget exhausted"
+      }
+    },
+    {
+      "name": "durable_attempts",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Request budget exhausted"
+      }
+    },
+    {
+      "name": "campaign_attempts",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Campaign request budget exhausted"
+      }
+    },
+    {
+      "name": "unknown_usage_not_zero",
+      "passed": true,
+      "detail": {
+        "status": "unreported",
+        "cost_usd": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "cached_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "name": "truncated_ledger_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Truncated reservation ledger"
+      }
+    },
+    {
+      "name": "ledger_policy_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Reservation ledger identity differs"
+      }
+    },
+    {
+      "name": "ledger_amount_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Reservation amount differs from the frozen policy"
+      }
+    },
+    {
+      "name": "model_not_attested",
+      "passed": true,
+      "detail": {
+        "allowed_response_ids": [
+          "gpt-5.6-sol"
+        ],
+        "model_computation_attested": false,
+        "requested_id": "gpt-5.6-sol",
+        "revision_status": "provider model ID only; no dated immutable snapshot established in inspected documentation"
+      }
+    },
+    {
+      "name": "sampling_explicit",
+      "passed": true,
+      "detail": {
+        "reasoning_effort": "medium",
+        "seed": "not requested; no reproducibility claim",
+        "temperature": "omitted; provider default, not claimed deterministic",
+        "top_p": "omitted; provider default"
+      }
+    },
+    {
+      "name": "no_live_cli",
+      "passed": true,
+      "detail": "canned CLI only"
+    },
+    {
+      "name": "no_proxy_environment",
+      "passed": true,
+      "detail": "stdlib direct connection"
+    },
+    {
+      "name": "source_binding_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Live contract: locked source changed: live_https.py"
+      }
+    },
+    {
+      "name": "missing_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'duplicate_case'}"
+      }
+    },
+    {
+      "name": "duplicate_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case"
+      }
+    }
+  ]
+}

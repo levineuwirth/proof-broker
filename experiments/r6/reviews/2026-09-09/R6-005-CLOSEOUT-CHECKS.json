@@ -1,0 +1,101 @@
+{
+  "checkpoint_checks": 96,
+  "distinct_prior_files_preserved": 16277,
+  "fresh_public_gate_sha256": "05f99326b0c0a4a73c706825b1dd8cd7db3518fd24a2c0026e7aeb1846a21931",
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "model_decision": {
+    "dated_id_is_model_content_hash": false,
+    "frozen_canned_id": "gpt-5.6-sol",
+    "inference_attested": false,
+    "policy_changed": false,
+    "recommended_measurement_id": "gpt-5.4-2026-03-05",
+    "status": "recommendation; author selection pending"
+  },
+  "native_episodes_rerun": 0,
+  "passed": true,
+  "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+  "preservation": {
+    "R6-005-CLOSEOUT-PRESERVATION.json": {
+      "files_checked": 13406,
+      "sha256": "3d0c468b6a200aafdcd583a8712ae74966cf5c05c9a0fde60446f3b25af79edb"
+    },
+    "R6-005-PRESERVATION.json": {
+      "files_checked": 12242,
+      "sha256": "32b4840cc4a4d4914420c5b853d8609312f324a9e2dc74e803c7569d65725484"
+    }
+  },
+  "pricing": {
+    "billing_guarantee": false,
+    "live_admission_implemented": false,
+    "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+    "rates_match": true,
+    "reservation_micro_usd": 163840,
+    "source_extract_sha256": "11bc59365ac4fd4046c4c142738d1c5f838baf71df248835828263299a572eca",
+    "source_raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+    "source_receipt_sha256": "f80d0d079d714f9b8bc15c1a05f49e6482f008a4d692699c46c694d22f223f35"
+  },
+  "program_sha256": "4c23aa3bbc6b41e5676f1614c71f3549ce4dbf46681fe46df5c8817fccbbb7e7",
+  "r6_004_d1_raw_proof_replayed": true,
+  "replay_observations": {
+    "c8_valid": {
+      "checked_declarations": {
+        "local": 1470,
+        "whole": 1471
+      },
+      "derivation_replayed": false,
+      "interpretation_basis": "fresh passing original-tree episode audit, including the shared proof auditor; retained final_validation reports and receipts, not a new replay",
+      "proof_export_bytes": 4032429,
+      "proof_export_sha256": "67e53933b2185f0c65dc628a9e7d770d8e71638731fe7f4f20deb99cb53a68ae",
+      "r6_003_verdict_sha256": "b72e8364948febe6712c0d190ee3713005e5016b83be87215a1da0eecd0b5185",
+      "raw_proof_replayed": null,
+      "raw_proof_replayed_field_present": false,
+      "recorded_proof_replay_confirmed_by_artifact_audit": true,
+      "uncompressed_export_byte_identical_to_r6_003": true,
+      "verdict_sha256": "2f86553c0aae232465eb9d93c7eb55f2811a6ef3208be8fda0678ab3e578685c"
+    },
+    "d1_valid": {
+      "checked_declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "derivation_replayed": false,
+      "interpretation_basis": "fresh passing original-tree episode audit, including the shared proof auditor; retained final_validation reports and receipts, not a new replay",
+      "proof_export_bytes": 10778141,
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "r6_003_verdict_sha256": "fa1cca39da52cc1ca45bf3e0596daeef6a9bc93b9c224644b1cb7e765a07dbff",
+      "raw_proof_replayed": null,
+      "raw_proof_replayed_field_present": false,
+      "recorded_proof_replay_confirmed_by_artifact_audit": true,
+      "uncompressed_export_byte_identical_to_r6_003": true,
+      "verdict_sha256": "cfcc32f94e84627c9abb5ea36c1fcc9184e52200b5d1969ba128424160a3a10d"
+    }
+  },
+  "schema_version": "r6-005-closeout-checks-1",
+  "scope": "closeout of local canned HTTPS evidence; source captures postdate the checkpoint; no live policy or spending authorization",
+  "source_controls": {
+    "count": 12,
+    "sha256": "289cf86f6356b00ebf37cb87c46e076d4b42a49064c1b739beb418de68526545"
+  },
+  "source_lock_sha256": "e849da261b95210a864c39a2dbf47ae32ea86383cf56ef4e5552df7649112911",
+  "sources": {
+    "gpt-5.4": {
+      "cache_write_rate": null,
+      "canonical_extract_sha256": "e9dfc136cafeaf7f21718c8094ddc49716f02413ac2805764041cb981de155c2",
+      "listed_dated_ids": [
+        "gpt-5.4-2026-03-05"
+      ],
+      "raw_bytes": 419092,
+      "raw_sha256": "8f0fe8436d3dd497776501fa47f2760a23c54cc421aea3e5df1ce3e5dbd72613",
+      "receipt_sha256": "dba5a60a4fdbd0c8dca634d5b88a5c0d55989eaf573a38445300e986aaa4c796"
+    },
+    "gpt-5.6-sol": {
+      "cache_write_rate": "5.00",
+      "canonical_extract_sha256": "11bc59365ac4fd4046c4c142738d1c5f838baf71df248835828263299a572eca",
+      "listed_dated_ids": [],
+      "raw_bytes": 418566,
+      "raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+      "receipt_sha256": "f80d0d079d714f9b8bc15c1a05f49e6482f008a4d692699c46c694d22f223f35"
+    }
+  }
+}

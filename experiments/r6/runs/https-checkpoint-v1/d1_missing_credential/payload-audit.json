@@ -1,0 +1,38 @@
+{
+  "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "sanitized_context_sha256": "63515e423d974f043520da8b852820cc5fb1508e2c9e4f701505957f9c378080",
+  "context_projection_is_model_visible": false,
+  "source_context_sha256": "11f6eabb5c8b4929798fe8d7067caa1b8747d87d7a841bbc2d1e1bfa40199019",
+  "let_facts_preserved": [
+    "hZval",
+    "hprod_le",
+    "hbound",
+    "hmul",
+    "hnum",
+    "hzsum"
+  ],
+  "reifier_omissions": [
+    {
+      "name": "c",
+      "reason": "data local at an undeclarable type (ZMod P)"
+    },
+    {
+      "name": "x",
+      "reason": "data local at an undeclarable type (ZMod P)"
+    },
+    {
+      "name": "z",
+      "reason": "data local at an undeclarable type (ZMod P)"
+    },
+    {
+      "name": "zhigh",
+      "reason": "data local at an undeclarable type (ZMod P)"
+    },
+    {
+      "name": "hrec",
+      "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+    }
+  ],
+  "farkas_omissions": []
+}

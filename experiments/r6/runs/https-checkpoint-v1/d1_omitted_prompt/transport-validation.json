@@ -1,0 +1,57 @@
+{
+  "outbound_envelope": {
+    "accepted": false,
+    "category": "outbound_envelope_binding",
+    "mismatches": [
+      {
+        "component": "message_layout",
+        "expected": {
+          "present": true,
+          "type": "list",
+          "bytes": 91,
+          "sha256": "2fa3aed338b3ca37a0511c61ad990d726435dc1535aba61a752bd7107876bc81"
+        },
+        "observed": {
+          "present": true,
+          "type": "list",
+          "bytes": 45,
+          "sha256": "0588c432db31fbf97250f625dc34f8bbabdd2277669947b2edf47258e54b953b"
+        }
+      },
+      {
+        "component": "system_message",
+        "expected": {
+          "present": true,
+          "type": "str",
+          "bytes": 2143,
+          "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+        },
+        "observed": {
+          "present": false,
+          "type": null,
+          "bytes": null,
+          "sha256": null
+        }
+      }
+    ],
+    "captured_body_sha256": "1d97536cbc8c0542bf43e05bf63d9c3e8d9b9c2bc08d1940bc835b65132190dc",
+    "request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+    "evidence_scope": "local serialized entity-body consistency; no remote-input or inference attestation"
+  },
+  "body_consistency": {
+    "checked": true,
+    "accepted": true
+  },
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707",
+    "received_request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707"
+  },
+  "certificate_verified": null,
+  "failure_category": "outbound_envelope_binding",
+  "failure_phase": "proposal"
+}

@@ -1,0 +1,211 @@
+{
+  "check_count": 12,
+  "checks": [
+    {
+      "detail": {
+        "gpt54_cache_write": null,
+        "gpt54_dated_ids": [
+          "gpt-5.4-2026-03-05"
+        ],
+        "sol_dated_ids": [],
+        "sources": 2
+      },
+      "name": "captured_sources",
+      "passed": true
+    },
+    {
+      "detail": {
+        "billing_guarantee": false,
+        "live_admission_implemented": false,
+        "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+        "rates_match": true,
+        "reservation_micro_usd": 163840,
+        "source_extract_sha256": "11bc59365ac4fd4046c4c142738d1c5f838baf71df248835828263299a572eca",
+        "source_raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+        "source_receipt_sha256": "f80d0d079d714f9b8bc15c1a05f49e6482f008a4d692699c46c694d22f223f35"
+      },
+      "name": "sol_policy_reservation",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "rejection": "raw source binding differs",
+        "unmutated_copy_passes": true
+      },
+      "name": "raw_mutation_rejected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "rejection": "pricing extraction differs from retained page",
+        "unmutated_copy_passes": true
+      },
+      "name": "rehashed_false_extract_rejected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "rejection": "[Errno 2] No such file or directory: '/home/jeans/scratch/tmp/r6-pricing-control-yvrx3nxy/sources/gpt-5.6-sol.html'",
+        "unmutated_copy_passes": true
+      },
+      "name": "missing_page_rejected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "comparison": {
+          "automatic_live_authorization": false,
+          "changed_fields": [
+            "per_million_tokens",
+            "pricing_section"
+          ],
+          "extract_changed": true,
+          "model_page": "gpt-5.6-sol",
+          "new_raw_sha256": "bdbdd60773c78297eae16286cf23959f66ed95e3bce01844d8de38e6cc84949e",
+          "old_raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+          "pricing_text_changed": true,
+          "rates_changed": true,
+          "raw_changed": true,
+          "snapshot_ids_changed": false
+        },
+        "policy_rejection": "policy rates differ from source",
+        "unmutated_copy_passes": true
+      },
+      "name": "changed_output_rate_detected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "comparison": {
+          "automatic_live_authorization": false,
+          "changed_fields": [
+            "cache_write_multiplier",
+            "per_million_tokens",
+            "pricing_section"
+          ],
+          "extract_changed": true,
+          "model_page": "gpt-5.6-sol",
+          "new_raw_sha256": "5dc3247e5b1eb5636871e157d12bef48042a5a203aaba8a17249363d1e841539",
+          "old_raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+          "pricing_text_changed": true,
+          "rates_changed": true,
+          "raw_changed": true,
+          "snapshot_ids_changed": false
+        },
+        "policy_rejection": "policy rates differ from source",
+        "unmutated_copy_passes": true
+      },
+      "name": "changed_cache_multiplier_detected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "comparison": {
+          "automatic_live_authorization": false,
+          "changed_fields": [
+            "pricing_section"
+          ],
+          "extract_changed": true,
+          "model_page": "gpt-5.6-sol",
+          "new_raw_sha256": "fc3b3845af11acfe06b4d6dd74e5d6f1dc262ccd3120f06d169fbb1b7374669d",
+          "old_raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+          "pricing_text_changed": true,
+          "rates_changed": false,
+          "raw_changed": true,
+          "snapshot_ids_changed": false
+        },
+        "numeric_policy_comparison_still_passes": true,
+        "unmutated_copy_passes": true
+      },
+      "name": "changed_pricing_condition_detected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "comparison": {
+          "automatic_live_authorization": false,
+          "changed_fields": [
+            "listed_dated_ids",
+            "listed_ids",
+            "snapshot_section"
+          ],
+          "extract_changed": true,
+          "model_page": "gpt-5.4",
+          "new_raw_sha256": "70eb59f1e8793cbe20f7422c24f8ad0d3c61d0e436e16c2df27595b921e5c4d8",
+          "old_raw_sha256": "8f0fe8436d3dd497776501fa47f2760a23c54cc421aea3e5df1ce3e5dbd72613",
+          "pricing_text_changed": false,
+          "rates_changed": false,
+          "raw_changed": true,
+          "snapshot_ids_changed": true
+        },
+        "replaced_occurrences": 2,
+        "unmutated_copy_passes": true
+      },
+      "name": "changed_dated_id_detected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "comparison": {
+          "automatic_live_authorization": false,
+          "changed_fields": [],
+          "extract_changed": false,
+          "model_page": "gpt-5.6-sol",
+          "new_raw_sha256": "22fc076f4721082c9e716140ab1370a78937ccc0dc94073a70a46671acedbff4",
+          "old_raw_sha256": "62a2c2bbd43c5b42829a0490cc7a36041bd710dd1ade274d92e723181faefafc",
+          "pricing_text_changed": false,
+          "rates_changed": false,
+          "raw_changed": true,
+          "snapshot_ids_changed": false
+        },
+        "unmutated_copy_passes": true
+      },
+      "name": "raw_change_without_extract_change",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "rejection": "missing or ambiguous Text tokens section",
+        "unmutated_copy_passes": true
+      },
+      "name": "missing_pricing_section_rejected",
+      "passed": true
+    },
+    {
+      "detail": {
+        "changed_relationships": 1,
+        "rejection": "extractor source binding differs",
+        "unmutated_copy_passes": true
+      },
+      "name": "wrong_extractor_digest_rejected",
+      "passed": true
+    }
+  ],
+  "expected_cases": [
+    "captured_sources",
+    "sol_policy_reservation",
+    "raw_mutation_rejected",
+    "rehashed_false_extract_rejected",
+    "missing_page_rejected",
+    "changed_output_rate_detected",
+    "changed_cache_multiplier_detected",
+    "changed_pricing_condition_detected",
+    "changed_dated_id_detected",
+    "raw_change_without_extract_change",
+    "missing_pricing_section_rejected",
+    "wrong_extractor_digest_rejected"
+  ],
+  "extractor_sha256": "35745aecd1df1921232169d2eed6db8257bc4fb831cbab69129bd7bc621c5c1a",
+  "passed": true,
+  "program_sha256": "289c992ce10f406db952d8fc606f2e7ccb6d1d8ffc3f6763c3e103009f143211",
+  "scope": "offline source-provenance and comparison controls; separate from the frozen 96-check checkpoint; no native episode or live admission test"
+}

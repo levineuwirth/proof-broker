@@ -1,0 +1,8 @@
+{
+  "name": "responses_https_canned_v1",
+  "task_id": "verinf-d1-70",
+  "case": "altered_prefix",
+  "config_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+  "source_lock_sha256": "e849da261b95210a864c39a2dbf47ae32ea86383cf56ef4e5552df7649112911",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87"
+}
