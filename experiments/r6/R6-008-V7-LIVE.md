@@ -47,13 +47,17 @@ seal digest and record digest to the run.
 
 ## The result, read carefully
 
-Two live samples now exist for D1 from the same model and prompt: the pilot's
-`hwidth + 32769·neg_goal` and this run's `2·hZ + neg_goal`. The second is the
-deterministic first hit exactly. So the pilot's witness was one draw from a
-model whose choice varies, not a property of the model on this obligation;
-any cohort design has to treat k, not just the obligation, as a variable.
-Both samples verified; both are valid proofs of the same statement. Nothing
-here is a rate, a reliability claim or a comparison.
+Two live samples now exist for D1: the pilot's `hwidth + 32769·neg_goal` and
+this run's `2·hZ + neg_goal`, the deterministic first hit exactly. They share
+the instruction bytes, the arithmetic rows and the generation options, but
+not the full request: `schema_version` and the model-visible `policy_sha256`
+differ, so the user message and its echoed digest differ. They are two
+distinct valid outputs under one mathematical task and instruction template;
+they do not isolate sampling randomness from that metadata change. The
+design consequence stands — repetition (k) is a variable — and R6-009 makes
+the model input byte-identical across revisions so that future repeats do
+isolate it. Both samples verified; nothing here is a rate, a reliability
+claim or a comparison.
 
 ## Audit
 

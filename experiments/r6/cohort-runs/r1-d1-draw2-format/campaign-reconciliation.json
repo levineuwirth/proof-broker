@@ -1,0 +1,26 @@
+{
+  "reservation_id": "b67adf9e7c734e4db923e090071b9d4e",
+  "episode_id": "r1-d1-draw2-format",
+  "task_id": "verinf-d1-70",
+  "draw": 2,
+  "evidence": {
+    "process_sha256": "f1b2cb3d3b232925f5e497bed8c240805e753aed5431d7dea1386d172c5ecf2f",
+    "http_sha256": "1aa75dbe157c561f96ca85b6bb051b632029ce86f36f894fe6e5b4bad09f4e5d",
+    "grant_file_sha256": null,
+    "launched": true,
+    "process_exit_code": 0,
+    "record_read_failures": []
+  },
+  "launched": true,
+  "termination_established": true,
+  "reconciled_at_unix": 1789394546,
+  "kind": "release",
+  "reason": "pre_send_failure_with_established_termination",
+  "failure_category": "credential_format",
+  "transport_record_present": true,
+  "marker_sha256": "fb14465b2701d6d1732db04e42346686b768d92a3ace66352562f19266d553ae",
+  "domain": "r6-cohort-ledger-1",
+  "sequence": 4,
+  "previous_hash": "12e327b5e4cf6983c110998ac76227b2435c2b389e3f91e91e4c50becf4d6640",
+  "row_hash": "a56fa72517e1f4c0371773f674041e7f640d0dfed4c559ad85e04a9f093c66f9"
+}

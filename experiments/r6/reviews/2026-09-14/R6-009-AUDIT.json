@@ -1,0 +1,163 @@
+{
+  "runs": {
+    "r1-d1-draw1": {
+      "kind": "proof",
+      "task": "verinf-d1-70",
+      "draw": 1,
+      "revision": 1,
+      "policy_sha256": "685fda573a23b7f25659cd6268ba9e6b046e479b0759415f24a8532b2c3be059"
+    },
+    "r1-d1-draw2-format": {
+      "kind": "release",
+      "task": "verinf-d1-70",
+      "draw": 2,
+      "revision": 1,
+      "policy_sha256": "685fda573a23b7f25659cd6268ba9e6b046e479b0759415f24a8532b2c3be059"
+    },
+    "r2-d1-draw1-refused": {
+      "kind": "refused",
+      "task": "verinf-d1-70",
+      "draw": 1,
+      "revision": 2,
+      "policy_sha256": "da3d268d6f921336bb8556232a491213bcfef13f51f5f9d9752c38adb475727d"
+    },
+    "r2-d1-draw2": {
+      "kind": "proof",
+      "task": "verinf-d1-70",
+      "draw": 2,
+      "revision": 2,
+      "policy_sha256": "da3d268d6f921336bb8556232a491213bcfef13f51f5f9d9752c38adb475727d"
+    },
+    "r2-d1-draw3": {
+      "kind": "proof",
+      "task": "verinf-d1-70",
+      "draw": 3,
+      "revision": 2,
+      "policy_sha256": "da3d268d6f921336bb8556232a491213bcfef13f51f5f9d9752c38adb475727d"
+    }
+  },
+  "accepted": true,
+  "cases": {
+    "population:exactly_expected_runs": true,
+    "r1-d1-draw1:versions:policy_revision_contract_campaign_bound": true,
+    "r1-d1-draw1:chain:valid": true,
+    "r1-d1-draw1:request:regenerated_under_contract": true,
+    "r1-d1-draw1:envelope:recomputed_from_contract": true,
+    "r1-d1-draw1:pricing:host_and_actor_rederived": true,
+    "r1-d1-draw1:ledger:permit_and_reconciliation_bound": true,
+    "r1-d1-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "r1-d1-draw1:seal:retained_hashes_and_outcome": true,
+    "r1-d1-draw1:proof:shared_checker": true,
+    "r1-d1-draw1:grant:ordered_before_first_header_byte": true,
+    "r1-d1-draw2-format:versions:policy_revision_contract_campaign_bound": true,
+    "r1-d1-draw2-format:chain:valid": true,
+    "r1-d1-draw2-format:request:regenerated_under_contract": true,
+    "r1-d1-draw2-format:envelope:recomputed_from_contract": true,
+    "r1-d1-draw2-format:pricing:host_and_actor_rederived": true,
+    "r1-d1-draw2-format:ledger:permit_and_reconciliation_bound": true,
+    "r1-d1-draw2-format:slot:identity_in_receipts_not_in_model_bytes": true,
+    "r1-d1-draw2-format:seal:retained_hashes_and_outcome": true,
+    "r2-d1-draw1-refused:versions:policy_revision_contract_campaign_bound": true,
+    "r2-d1-draw1-refused:chain:valid": true,
+    "r2-d1-draw1-refused:request:regenerated_under_contract": true,
+    "r2-d1-draw1-refused:envelope:recomputed_from_contract": true,
+    "r2-d1-draw1-refused:pricing:host_and_actor_rederived": true,
+    "r2-d1-draw1-refused:ledger:permit_and_reconciliation_bound": true,
+    "r2-d1-draw1-refused:slot:identity_in_receipts_not_in_model_bytes": true,
+    "r2-d1-draw1-refused:seal:retained_hashes_and_outcome": true,
+    "r2-d1-draw2:versions:policy_revision_contract_campaign_bound": true,
+    "r2-d1-draw2:chain:valid": true,
+    "r2-d1-draw2:request:regenerated_under_contract": true,
+    "r2-d1-draw2:envelope:recomputed_from_contract": true,
+    "r2-d1-draw2:pricing:host_and_actor_rederived": true,
+    "r2-d1-draw2:ledger:permit_and_reconciliation_bound": true,
+    "r2-d1-draw2:slot:identity_in_receipts_not_in_model_bytes": true,
+    "r2-d1-draw2:seal:retained_hashes_and_outcome": true,
+    "r2-d1-draw2:proof:shared_checker": true,
+    "r2-d1-draw2:grant:ordered_before_first_header_byte": true,
+    "r2-d1-draw3:versions:policy_revision_contract_campaign_bound": true,
+    "r2-d1-draw3:chain:valid": true,
+    "r2-d1-draw3:request:regenerated_under_contract": true,
+    "r2-d1-draw3:envelope:recomputed_from_contract": true,
+    "r2-d1-draw3:pricing:host_and_actor_rederived": true,
+    "r2-d1-draw3:ledger:permit_and_reconciliation_bound": true,
+    "r2-d1-draw3:slot:identity_in_receipts_not_in_model_bytes": true,
+    "r2-d1-draw3:seal:retained_hashes_and_outcome": true,
+    "r2-d1-draw3:proof:shared_checker": true,
+    "r2-d1-draw3:grant:ordered_before_first_header_byte": true,
+    "campaign:single_identity": true,
+    "input:identical_model_bytes:verinf-d1-70": true,
+    "revisions:at_least_two_distinct_policies": true,
+    "receipts:distinct_across_runs": true,
+    "ledger:continuous_across_revisions": true,
+    "ledger:consumed_slots_persist": true
+  },
+  "case_count": 53,
+  "campaign_id": "38ed8cbae3c74651b2a8d19827f4bb49",
+  "contract_sha256": "84d9289abf8c6c0df3cb3282e5c46826450ee6645a54981e76a91c228c43fe90",
+  "revisions": {
+    "1": "685fda573a23b7f25659cd6268ba9e6b046e479b0759415f24a8532b2c3be059",
+    "2": "da3d268d6f921336bb8556232a491213bcfef13f51f5f9d9752c38adb475727d"
+  },
+  "entity_body_sha256": {
+    "verinf-d1-70": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+  },
+  "identities": {
+    "r1-d1-draw1": {
+      "reservation_id": "146e3461dc264582a534058af7a4116d",
+      "grant_id": "414fd49bcdf845ab81d3a2a885b4b497",
+      "commitment": "80932d5bb0ca9c16c7825f5110ad09c37395b7413dd242b37754cf992d3dfc7d",
+      "nonce": "43d650c95d0f6f89c17da0145be270d3eff6a47c8adc924df3b3fd98681b8ca0"
+    },
+    "r1-d1-draw2-format": {
+      "reservation_id": "b67adf9e7c734e4db923e090071b9d4e",
+      "grant_id": null,
+      "commitment": null,
+      "nonce": "d3f5615de74a65eca7160b05978e82a94e33102a58b0575a5c6490485f010752"
+    },
+    "r2-d1-draw2": {
+      "reservation_id": "305447d563414e59b9cc2c78941114c2",
+      "grant_id": "223fb4b66f304f699ca669220354a536",
+      "commitment": "d01f062563f9ab14e161dd2c183ca81449418fd2a2543e193911fc5f6abfd6f0",
+      "nonce": "f7726889ca2ed266bb4e749f713ebef0e07e526ac04bd64788c9e73cf691c3ec"
+    },
+    "r2-d1-draw3": {
+      "reservation_id": "649c14681aae40c182fded5aeab41c48",
+      "grant_id": "f6f1dd1cf0524dd0932481509f598af0",
+      "commitment": "5c0afd8efa1054b791f3fb41febb871cc533a4a05d41b68c56bfac59d71ab1d9",
+      "nonce": "a3f5142d180490619af80cb6ce0d1400a5a6f24e4d39154d720350d8bac174d6"
+    }
+  },
+  "ledger_state": {
+    "revision": 1,
+    "revisions": [
+      "685fda573a23b7f25659cd6268ba9e6b046e479b0759415f24a8532b2c3be059",
+      "da3d268d6f921336bb8556232a491213bcfef13f51f5f9d9752c38adb475727d"
+    ],
+    "transmissions_consumed": 3,
+    "slots": {
+      "verinf-d1-70/1": {
+        "consumed": true,
+        "released": 0,
+        "open": null,
+        "reservations": 1
+      },
+      "verinf-d1-70/2": {
+        "consumed": true,
+        "released": 1,
+        "open": null,
+        "reservations": 2
+      },
+      "verinf-d1-70/3": {
+        "consumed": true,
+        "released": 0,
+        "open": null,
+        "reservations": 1
+      }
+    },
+    "committed_micro_usd": 307200
+  },
+  "program_sha256": "432f90525a7510d0ef5e28a7846eeb43f27f6b95a7f12a216e4d6f09ea3d2cd3",
+  "live_model_calls": 0,
+  "credentials_read": 0
+}

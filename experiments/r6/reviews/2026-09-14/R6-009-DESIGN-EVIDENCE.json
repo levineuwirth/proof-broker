@@ -1,0 +1,242 @@
+{
+  "authorization_changes": 0,
+  "billing_guarantee": false,
+  "credential_reads": 0,
+  "current_pricing_refetched": false,
+  "git_base": "4b8a7d984648c0fd8a4624707fc5526d328dfa93",
+  "historical_input_comparison": {
+    "different_valid_observed_witnesses": true,
+    "estimates_failure_rate": false,
+    "isolates_sampling_randomness": false,
+    "model_visible_request_differences": [
+      "/policy_sha256",
+      "/schema_version"
+    ],
+    "request_options": {
+      "background": false,
+      "max_output_tokens": 4096,
+      "model": "gpt-5.4-2026-03-05",
+      "parallel_tool_calls": false,
+      "reasoning": {
+        "effort": "medium"
+      },
+      "service_tier": "default",
+      "store": false,
+      "stream": false,
+      "tool_choice": "none",
+      "tools": [],
+      "truncation": "disabled"
+    },
+    "same_complete_model_input": false,
+    "same_problem_and_binding_objects": true,
+    "same_request_options": true,
+    "same_system_prompt_bytes": true,
+    "system_prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+  },
+  "inputs": {
+    "experiments/r6/campaign-runs-v7/live-1/live-arguments.json": {
+      "bytes": 6195,
+      "sha256": "746a86002feed266d1da060a6104c52a876021f712ef7319dc58818d6e6dbf75"
+    },
+    "experiments/r6/campaign-runs-v7/live-1/live-request.json": {
+      "bytes": 2937,
+      "sha256": "f66f82db9e0d596484b7b273b2a858bc1b90b9c42e98c11bbb9d640d3af34e49"
+    },
+    "experiments/r6/campaign-runs-v7/live-1/prompt.txt": {
+      "bytes": 2143,
+      "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+    },
+    "experiments/r6/campaign-runs-v7/live-1/solution.ndjson.gz": {
+      "bytes": 1676956,
+      "sha256": "7065b6642f37b51f640e36a3eac6a40b5b081876fb040699db1eb08dd2072ed5"
+    },
+    "experiments/r6/campaign-runs-v7/live-1/validated-response.json": {
+      "bytes": 288,
+      "sha256": "0b79c016165ab1892c4eab6cbe1e7741cb408815044051e6b28793a32c632bd0"
+    },
+    "experiments/r6/campaign-runs-v7/live-1/verdict.json": {
+      "bytes": 2695,
+      "sha256": "ac05dd4d4689297ebb0bb361325280b6831153c268a6998288f62873442af5ec"
+    },
+    "experiments/r6/campaign_budget.py": {
+      "bytes": 8482,
+      "sha256": "fe6ad3ba64172b7c3529f2f476385d82c34a61aa348f74d03e67a8d563832cf9"
+    },
+    "experiments/r6/campaign_contract.py": {
+      "bytes": 14728,
+      "sha256": "82e42b0118c54c24eb1bf67a28ddf9a65f815cbff141477b131a0ed224b7a045"
+    },
+    "experiments/r6/campaign_ledger.py": {
+      "bytes": 23198,
+      "sha256": "d0e0f385491d677e3c563e6f2ca547b8721c55b14546ca0356923aa6fbb41235"
+    },
+    "experiments/r6/pilot-runs/live-2/live-arguments.json": {
+      "bytes": 6195,
+      "sha256": "9b45d93ef279ce07ff5a17667fcfcf96c7e59ed462c93d634d482872a0977637"
+    },
+    "experiments/r6/pilot-runs/live-2/live-request.json": {
+      "bytes": 2937,
+      "sha256": "e449c34f90e125be3fd8d3d630221893bb749a1078927c9da6f02029ef51e3f7"
+    },
+    "experiments/r6/pilot-runs/live-2/prompt.txt": {
+      "bytes": 2143,
+      "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+    },
+    "experiments/r6/pilot-runs/live-2/solution.ndjson.gz": {
+      "bytes": 1676862,
+      "sha256": "c61bad449ae648616b01b2b4f785f97aa7908c673121e295a35578ab42e3a8db"
+    },
+    "experiments/r6/pilot-runs/live-2/validated-response.json": {
+      "bytes": 296,
+      "sha256": "5fb8439d9cad21bea1346a2834eedbc6e7bcc5d953697583e294c6fed6ac085f"
+    },
+    "experiments/r6/pilot-runs/live-2/verdict.json": {
+      "bytes": 2643,
+      "sha256": "bdaa7c74603b139ec26c4e7dd8c039eaf15517b9809548a8bd06d138a5ec146e"
+    },
+    "experiments/r6/policies/responses-campaign-v7.json": {
+      "bytes": 8309,
+      "sha256": "7e16462d13a4fc3e29590c54d10508abf88982564abbc800678604352914f039"
+    },
+    "experiments/r6/tasks/verinf-d1-70/Pristine.lean": {
+      "bytes": 10082,
+      "sha256": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2"
+    },
+    "experiments/r6/tasks/verinf-d1-70/manifest.json": {
+      "bytes": 3363,
+      "sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87"
+    },
+    "sdk/lib/farkas_search.ml": {
+      "bytes": 36071,
+      "sha256": "79646a6e778816b0b6399afc0b10a4fb90530c561063790c611d4eb04758a7dd"
+    }
+  },
+  "new_model_calls": 0,
+  "new_native_episodes": 0,
+  "observations": {
+    "campaign-runs-v7/live-1": {
+      "arithmetic": {
+        "positive_constant": "18446744069397676034",
+        "residual_terms": {}
+      },
+      "primitive_witness": {
+        "hZ": 2,
+        "neg_goal": 1
+      },
+      "proof_export_sha256": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+      "request_sha256": "f66f82db9e0d596484b7b273b2a858bc1b90b9c42e98c11bbb9d640d3af34e49",
+      "witness": {
+        "coefficients": [
+          {
+            "coefficient": "2",
+            "hypothesis": "hZ"
+          },
+          {
+            "coefficient": "1",
+            "hypothesis": "neg_goal"
+          }
+        ]
+      }
+    },
+    "pilot-runs/live-2": {
+      "arithmetic": {
+        "positive_constant": "604462909666027343249410",
+        "residual_terms": {}
+      },
+      "primitive_witness": {
+        "hwidth": 1,
+        "neg_goal": 32769
+      },
+      "proof_export_sha256": "862f16b9d9efc5de246fc8aa8aa2278bfff5590fbc70dd6b8d42ab993ab25c27",
+      "request_sha256": "e449c34f90e125be3fd8d3d630221893bb749a1078927c9da6f02029ef51e3f7",
+      "witness": {
+        "coefficients": [
+          {
+            "coefficient": "1",
+            "hypothesis": "hwidth"
+          },
+          {
+            "coefficient": "32769",
+            "hypothesis": "neg_goal"
+          }
+        ]
+      }
+    }
+  },
+  "per_draw_reservation_micro_usd_from_retained_v7_basis": 102400,
+  "planning_arithmetic": [
+    {
+      "detect_at_least_one_success_if_p_is_0_2_iid": 0.5903999999999999,
+      "draws_per_task": 4,
+      "fifteen_tasks_reserved_micro_usd": 6144000,
+      "fifteen_tasks_transmissions": 60,
+      "fourteen_tasks_reserved_micro_usd": 5734400,
+      "fourteen_tasks_transmissions": 56,
+      "one_sided_95_lower_bound_if_all_succeed_iid": 0.4728708045015879,
+      "one_sided_95_upper_bound_if_all_fail_iid": 0.5271291954984121
+    },
+    {
+      "detect_at_least_one_success_if_p_is_0_2_iid": 0.8322278399999999,
+      "draws_per_task": 8,
+      "fifteen_tasks_reserved_micro_usd": 12288000,
+      "fifteen_tasks_transmissions": 120,
+      "fourteen_tasks_reserved_micro_usd": 11468800,
+      "fourteen_tasks_transmissions": 112,
+      "one_sided_95_lower_bound_if_all_succeed_iid": 0.6876560219336321,
+      "one_sided_95_upper_bound_if_all_fail_iid": 0.31234397806636793
+    },
+    {
+      "detect_at_least_one_success_if_p_is_0_2_iid": 0.9718525023289344,
+      "draws_per_task": 16,
+      "fifteen_tasks_reserved_micro_usd": 24576000,
+      "fifteen_tasks_transmissions": 240,
+      "fourteen_tasks_reserved_micro_usd": 22937600,
+      "fourteen_tasks_transmissions": 224,
+      "one_sided_95_lower_bound_if_all_succeed_iid": 0.8292502770175191,
+      "one_sided_95_upper_bound_if_all_fail_iid": 0.17074972298248092
+    }
+  ],
+  "policy_changes": 0,
+  "positive_rescaling_controls": 2,
+  "program_sha256": "5103c619586454f872d6fd0da065e80e1d2abc226acc35f4dca44ec1b60732c4",
+  "recommended_draws_per_primary_task": 8,
+  "required_all_successes_for_one_sided_95_lower_bound_at_least_0_9_iid": 29,
+  "sample_size_is_power_calculation": false,
+  "scope": "historical byte comparison, integer witness arithmetic and prospective planning formulas; no new kernel check",
+  "source_census": {
+    "admitted_task_count": null,
+    "extraction_performed": false,
+    "textual_omega_lines": [
+      69,
+      70,
+      71,
+      78,
+      96,
+      98,
+      99,
+      101,
+      158,
+      166,
+      170,
+      175,
+      178,
+      180,
+      204
+    ],
+    "textual_sites": 15,
+    "upstream": {
+      "commit": "c07e03c94884e9084ffaf7a7294fc0907672f6c2",
+      "commit_date": "2026-07-21T22:25:27Z",
+      "line": 70,
+      "pristine_sha256": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+      "proof_byte_span": {
+        "end_exclusive": 3344,
+        "start": 3339
+      },
+      "repository": "https://github.com/JamesPetrie/VerInf.git",
+      "source_file": "lean/BracketSpike/BracketSpike/Bracket.lean"
+    }
+  },
+  "status": "design evidence; no frozen cohort or spending authorization",
+  "subset_identity_checks": 36
+}
