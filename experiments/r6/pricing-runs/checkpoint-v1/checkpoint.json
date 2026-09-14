@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "policy_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+  "source_lock_sha256": "71fda7eb6d7c2b40dce1b14b73613216c6bc91ad39ab662a90f418e86e5d1bbb",
+  "live_model_calls": 0,
+  "preservation": {
+    "checked_files": 16292,
+    "inventory_sha256": "7203c7be2bc8f68c6472bb7cc6e810f758d8adf5adc7e078958b47ee9b60d6b9",
+    "git_base": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+    "scope": "pre-work Git-selected bytes, including closed uncommitted R6-004/005 and closeouts"
+  },
+  "suites": {
+    "focused.json": {
+      "sha256": "b5f2ee45a19965f466ce56a686026bf6d692b62af236f7c82e0bf34bf9890526",
+      "count": 28
+    },
+    "native.json": {
+      "sha256": "1c0c861dfee12324e81736849d28f4f5c68c358db1c8d8232fc957572b717e92",
+      "count": 17
+    },
+    "audits.json": {
+      "sha256": "0e6015dc0f3e25edd7367b078647694b5b7d792c2d82534538299c885f450678",
+      "count": 32
+    }
+  }
+}

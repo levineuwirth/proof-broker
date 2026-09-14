@@ -1,0 +1,565 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "sources_locked",
+    "dated_model_fields",
+    "cache_surcharge_zero_not_free",
+    "nano_rounding_up",
+    "source_policy_admission",
+    "fresh_capture_new_receipt",
+    "wire_encoding_distinct",
+    "missing_source_before_ledger",
+    "stale_source_before_ledger",
+    "forged_source_extract",
+    "source_bytes_changed",
+    "semantic_source_changed",
+    "model_alias_rejected",
+    "exact_message_binding",
+    "missing_permit_before_connect",
+    "forged_permit_before_connect",
+    "wrong_amount_before_connect",
+    "expired_permit",
+    "durable_attempt_limit",
+    "campaign_attempt_limit",
+    "monetary_limit",
+    "input_limit",
+    "unknown_usage_not_zero",
+    "tls_primitives_reused",
+    "no_live_cli",
+    "duplicate_json_rejected",
+    "missing_case",
+    "duplicate_case",
+    "source_condition_fields",
+    "below_context_limit",
+    "context_at_limit",
+    "context_over_limit",
+    "host_context_before_ledger",
+    "host_regional_before_ledger",
+    "actor_context_before_connect",
+    "actor_regional_before_connect",
+    "missing_applicability",
+    "declared_threshold_forged",
+    "declared_input_multiplier_forged",
+    "declared_output_multiplier_forged",
+    "declared_uplift_forged",
+    "declared_endpoint_allowlist_forged",
+    "source_threshold_changed",
+    "source_uplift_changed",
+    "unknown_endpoint_rejected",
+    "previous_response_rejected"
+  ],
+  "check_count": 46,
+  "checks": [
+    {
+      "name": "sources_locked",
+      "passed": true,
+      "detail": {
+        "policy_sha256": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d"
+      }
+    },
+    {
+      "name": "dated_model_fields",
+      "passed": true,
+      "detail": {
+        "requested_id": "gpt-5.4-2026-03-05",
+        "inference_attested": false
+      }
+    },
+    {
+      "name": "cache_surcharge_zero_not_free",
+      "passed": true,
+      "detail": {
+        "additional_write_charge": 0,
+        "write_input_charge_nano_usd_per_token": 2500
+      }
+    },
+    {
+      "name": "nano_rounding_up",
+      "passed": true,
+      "detail": {
+        "one_input_token_micro_usd": 3,
+        "two_input_tokens_micro_usd": 5,
+        "reservation_micro_usd": 102400
+      }
+    },
+    {
+      "name": "source_policy_admission",
+      "passed": true,
+      "detail": {
+        "schema_version": "r6-pricing-admission-2",
+        "accepted": true,
+        "policy_sha256": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d",
+        "request_sha256": "9058dadcf45abb410dd5c60356de8b1af213bf09222fd83240d777b2b8ac3154",
+        "arguments_sha256": "3e6ef32dc2d9d7c92d5891e72ff9adeafda2469f6d738f8284011f172546d0b8",
+        "body_sha256": "956a7f45d120cf156306bb496fa573c9fa9c94c6fe3685d37bbd4f808467a9f8",
+        "sources": {
+          "model": {
+            "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819",
+            "extract_sha256": "c3769aa47f08763af4aa774f3d2232c1d2b3b6dc1220213724a71298e7d62ab4",
+            "receipt_sha256": "59069ac6205fd9758eb6842c49aadb8cf8e6c658416429ff6be64cc8a1a7f50b"
+          },
+          "caching": {
+            "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af",
+            "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+            "receipt_sha256": "c7c38cce2c3b5908ae3fae77903cd3a0d72f3fce04addb13f2be8a25310ed319"
+          }
+        },
+        "nano_usd_per_token": {
+          "input": 2500,
+          "cached_input": 250,
+          "output": 15000,
+          "cache_write": 2500
+        },
+        "reserved_micro_usd": 102400,
+        "applicability": {
+          "source_conditions": {
+            "long_context": {
+              "input_tokens_threshold": 272000,
+              "comparison": "greater_than",
+              "input_multiplier": "2",
+              "output_multiplier": "1.5",
+              "scope": "full_session",
+              "service_tiers": [
+                "standard",
+                "batch",
+                "flex"
+              ]
+            },
+            "regional_processing": {
+              "uplift_percent": 10,
+              "scope": "regional_processing_endpoints"
+            }
+          },
+          "input_tokens_reserved": 16384,
+          "input_tokens_upper_bound_exclusive": 272000,
+          "endpoint": {
+            "host": "api.openai.com",
+            "path": "/v1/responses",
+            "port": 443,
+            "scheme": "https"
+          },
+          "long_context_surcharge_applicable": false,
+          "regional_surcharge_applicable": false,
+          "session_scope": "one_stateless_request",
+          "scope": "local policy/input applicability under the existing token-bound assumption; not billing attestation"
+        },
+        "message_utf8_bytes": 5203,
+        "evaluated_at_unix": 1789024373.840882,
+        "billing_guarantee": false,
+        "evidence_scope": "local retained-source, clock and request consistency; no remote pricing or inference attestation"
+      }
+    },
+    {
+      "name": "fresh_capture_new_receipt",
+      "passed": true,
+      "detail": {
+        "changed_capture_identity": true,
+        "same_approved_content_admitted": true,
+        "scope": "synthetic receipt timestamps; not an actual refetch"
+      }
+    },
+    {
+      "name": "wire_encoding_distinct",
+      "passed": true,
+      "detail": {
+        "non_ascii_precondition": true,
+        "body_binding_matches_frozen_encoder": true,
+        "body_bytes": 6093,
+        "canonical_utf8_bytes": 6082
+      }
+    },
+    {
+      "name": "missing_source_before_ledger",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_source_population",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "stale_source_before_ledger",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_capture_stale",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "forged_source_extract",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_extract_binding",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "source_bytes_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_raw_drift_model",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "semantic_source_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_semantic_drift_model",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "model_alias_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_request_options"
+      }
+    },
+    {
+      "name": "exact_message_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_request_body_binding"
+      }
+    },
+    {
+      "name": "missing_permit_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_permit_passes": true,
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "failure_code": "pricing_permit_missing"
+      }
+    },
+    {
+      "name": "forged_permit_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_permit_passes": true,
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "failure_code": "pricing_permit_binding"
+      }
+    },
+    {
+      "name": "wrong_amount_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_permit_passes": true,
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "failure_code": "pricing_reservation_amount"
+      }
+    },
+    {
+      "name": "expired_permit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_permit_stale"
+      }
+    },
+    {
+      "name": "durable_attempt_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Request budget exhausted",
+        "ledger_unchanged": true
+      }
+    },
+    {
+      "name": "campaign_attempt_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "campaign_request_budget",
+        "ledger_unchanged": true
+      }
+    },
+    {
+      "name": "monetary_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Monetary reservation exhausted"
+      }
+    },
+    {
+      "name": "input_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Messages exceed frozen byte admission"
+      }
+    },
+    {
+      "name": "unknown_usage_not_zero",
+      "passed": true,
+      "detail": {
+        "status": "unreported",
+        "cost_usd": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "cached_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "name": "tls_primitives_reused",
+      "passed": true,
+      "detail": {
+        "frozen_transport_sha256": "81af8d122159f63e1f20adacdbb8e135e2526e07a8e7df0665afb5c99d3e083c"
+      }
+    },
+    {
+      "name": "no_live_cli",
+      "passed": true,
+      "detail": {
+        "live_enabled": false,
+        "real_calls": 0
+      }
+    },
+    {
+      "name": "duplicate_json_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate_json_key"
+      }
+    },
+    {
+      "name": "missing_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'previous_response_rejected'}"
+      }
+    },
+    {
+      "name": "duplicate_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case"
+      }
+    },
+    {
+      "name": "source_condition_fields",
+      "passed": true,
+      "detail": {
+        "source_conditions": {
+          "long_context": {
+            "input_tokens_threshold": 272000,
+            "comparison": "greater_than",
+            "input_multiplier": "2",
+            "output_multiplier": "1.5",
+            "scope": "full_session",
+            "service_tiers": [
+              "standard",
+              "batch",
+              "flex"
+            ]
+          },
+          "regional_processing": {
+            "uplift_percent": 10,
+            "scope": "regional_processing_endpoints"
+          }
+        },
+        "policy_bound_exclusive": 272000,
+        "source_threshold_comparison": "greater_than"
+      }
+    },
+    {
+      "name": "below_context_limit",
+      "passed": true,
+      "detail": {
+        "unmutated_copy_passes": true,
+        "input_tokens_reserved": 271999,
+        "accepted": true,
+        "scope": "synthetic coherent policy allowance; no large context or model call"
+      }
+    },
+    {
+      "name": "context_at_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_out_of_scope",
+        "unmutated_copy_passes": true,
+        "input_tokens_reserved": 272000,
+        "request_rebound": true
+      }
+    },
+    {
+      "name": "context_over_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_out_of_scope",
+        "unmutated_copy_passes": true,
+        "input_tokens_reserved": 272001,
+        "request_rebound": true
+      }
+    },
+    {
+      "name": "host_context_before_ledger",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_out_of_scope",
+        "unmutated_copy_passes": true,
+        "ledger_created": false,
+        "scope": "production reserve with a substituted configuration; request coherently rebound"
+      }
+    },
+    {
+      "name": "host_regional_before_ledger",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_regional_endpoint_out_of_scope",
+        "unmutated_copy_passes": true,
+        "ledger_created": false,
+        "scope": "production reserve with a substituted configuration; request coherently rebound"
+      }
+    },
+    {
+      "name": "actor_context_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_copy_passes": true,
+        "failure_code": "pricing_long_context_out_of_scope",
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "request_rebound": true
+      }
+    },
+    {
+      "name": "actor_regional_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_copy_passes": true,
+        "failure_code": "pricing_regional_endpoint_out_of_scope",
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "request_rebound": true
+      }
+    },
+    {
+      "name": "missing_applicability",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_applicability_policy",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "declared_threshold_forged",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_policy",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "declared_input_multiplier_forged",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_policy",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "declared_output_multiplier_forged",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_policy",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "declared_uplift_forged",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_regional_processing_policy",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "declared_endpoint_allowlist_forged",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_regional_processing_policy",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "source_threshold_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_long_context_policy",
+        "unmutated_copy_passes": true,
+        "source_hashes_rebound": true,
+        "source_condition_changed": true
+      }
+    },
+    {
+      "name": "source_uplift_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_regional_processing_policy",
+        "unmutated_copy_passes": true,
+        "source_hashes_rebound": true,
+        "source_condition_changed": true
+      }
+    },
+    {
+      "name": "unknown_endpoint_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_regional_endpoint_out_of_scope",
+        "unmutated_copy_passes": true,
+        "scope": "exact allowlist, not a claim that this synthetic hostname offers regional processing"
+      }
+    },
+    {
+      "name": "previous_response_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_session_out_of_scope",
+        "unmutated_copy_passes": true
+      }
+    }
+  ]
+}

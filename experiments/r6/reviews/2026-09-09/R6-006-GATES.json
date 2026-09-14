@@ -1,0 +1,173 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "incomplete_checkpoint",
+    "wrong_policy_declaration",
+    "wrong_source_lock_declaration",
+    "missing_frozen_case",
+    "substituted_frozen_case",
+    "duplicated_frozen_case",
+    "wrong_suite_digest",
+    "missing_episode",
+    "wrong_native_seal",
+    "wrong_native_log_digest",
+    "wrong_native_disclosures",
+    "wrong_native_coverage",
+    "wrong_native_task",
+    "wrong_preservation_summary",
+    "unexpected_outer_log_disclosure"
+  ],
+  "check_count": 15,
+  "checks": [
+    {
+      "name": "incomplete_checkpoint",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "checkpoint is incomplete",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_policy_declaration",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "checkpoint policy differs",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_source_lock_declaration",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "checkpoint source lock differs",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "missing_frozen_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "suite hash/count binding differs",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "substituted_frozen_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'undeclared_check', 'duplicate_case'}",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "duplicated_frozen_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_suite_digest",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "suite hash/count binding differs",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "missing_episode",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "episode population differs",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_native_seal",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "native suite record differs from recomputation",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_native_log_digest",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "native suite record differs from recomputation",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_native_disclosures",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "native suite record differs from recomputation",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_native_coverage",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "native suite record differs from recomputation",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_native_task",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "native suite record differs from recomputation",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "wrong_preservation_summary",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "checkpoint preservation differs",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    },
+    {
+      "name": "unexpected_outer_log_disclosure",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "unexpected checkpoint disclosure",
+        "unmutated_copy_passes": true,
+        "changed_relationships": 1
+      }
+    }
+  ]
+}

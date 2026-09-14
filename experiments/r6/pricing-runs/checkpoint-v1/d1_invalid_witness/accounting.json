@@ -1,0 +1,37 @@
+{
+  "attempts_reserved": 1,
+  "reservation": {
+    "attempt": 1,
+    "reserved_micro_usd": 102400,
+    "spent_plus_reserved_micro_usd": 102400,
+    "message_utf8_bytes": 5203,
+    "input_tokens_reserved": 16384,
+    "output_tokens_reserved": 4096,
+    "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+    "billing_guarantee": false,
+    "request_sha256": "80e04cb5ee73f1599069af11241703e5e6f58305f35f9a4905d459fd6421136b",
+    "arguments_sha256": "3131e2a72c8e6a2519477516c6e07f4899cba31a7e7c5f79fc07f692bceb461b",
+    "policy_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+    "pricing_admission_sha256": "ab5159bee05dff461bfe7c8da3104425b52fb94e4692388842cf30c55e937d12"
+  },
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "bodies_started": 1,
+  "bodies_returned": 1,
+  "endpoint_receipts": 1,
+  "usage": {
+    "status": "provider_reported",
+    "cost_usd": null,
+    "input_tokens": 11,
+    "output_tokens": 7,
+    "total_tokens": 18,
+    "cached_tokens": 2,
+    "reasoning_tokens": 3
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 133,
+  "reservation_released": false,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "independent simulated episode reservation; synthetic usage or unknown, no billing observation"
+}

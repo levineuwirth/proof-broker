@@ -1,0 +1,66 @@
+{
+  "approval": {
+    "date": "2026-09-10",
+    "findings_outstanding": 0,
+    "scope": "local canned HTTPS pricing and applicability admission; no live-model selection or spending approval",
+    "source": "author review in conversation",
+    "status": "approved"
+  },
+  "approved_v2_retention_recomputed": {
+    "apparent_bytes": 103209285,
+    "distinct_blobs": 918,
+    "files": 4022,
+    "inventory_sha256": "e4de23a85e2c76234000f4f55f6a2fbcbfd0f04ace6bb8837f73b6335bf5cc2f",
+    "unique_bytes": 12391981
+  },
+  "distinct_prior_paths_compared": 23558,
+  "earlier_inventory_contained": {
+    "files": 16292,
+    "matching_entries": 16292
+  },
+  "events": 431,
+  "evidence_sha256": {
+    "experiments/r6/R6-006-V2.md": "9ceee7f08515034723fbfcc40d99d49b7506e7c34cd841c6de0525b216037738",
+    "experiments/r6/R6-006.md": "6b71a0de11ec1295ce34bf23529a828b3c8ec3122512fc50d3c139d723aa5c57",
+    "experiments/r6/policies/priced-harness-v2.sha256.json": "1c37c0f123ba442d816e43356a9602db843c6583dcf8b64357f27147a867f81e",
+    "experiments/r6/policies/responses-priced-https-v2.json": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d",
+    "experiments/r6/pricing-v2-runs/checkpoint-v2/checkpoint.json": "8ca209f2ca862f476e170af10b3a4cf87b333142fa42c3cd76232348266c726a",
+    "experiments/r6/reviews/2026-09-09/R6-006-CLOSEOUT-PUBLIC-GATE.json": "49965bf9a8304fedd073aa7fd925557efd0b3c811d567a53582b501e61126474",
+    "experiments/r6/reviews/2026-09-09/R6-006-CLOSEOUT.md": "750040ad492dee3a79a975582b4260723231d3779d161c427205197cba1e071a",
+    "experiments/r6/reviews/2026-09-09/R6-006-V2-GATES.json": "a979389412cd7a7ad1acbb2a52873ae4e003ef3ec0bbdbeacc45140187ee495b",
+    "experiments/r6/reviews/2026-09-09/R6-006-V2-MEASUREMENTS.json": "ce2bd240330af9008ab2d1deb25d09e72195bccf4821c8fa02a18245ef6cb146",
+    "experiments/r6/reviews/2026-09-09/R6-006-V2-PREFLIGHT.json": "40c3fba98dd8e22e66faa0e6125b541aa351bb07d8c9d2904c3a99be772a5c06",
+    "experiments/r6/reviews/2026-09-09/R6-006-V2-PRESERVATION.json": "c909c0899e240f268490797bbfb1d6e97597c26225e58e90c22827f222173076",
+    "experiments/r6/reviews/2026-09-09/R6-006-V2-PUBLIC-GATE.json": "49965bf9a8304fedd073aa7fd925557efd0b3c811d567a53582b501e61126474",
+    "experiments/r6/reviews/2026-09-09/pricing_closeout_checks.py": "823c8f46cfb1a8d14370c2620071180123c61efe7882f8b5577428965234c704"
+  },
+  "lean_replays_rerun": 0,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "live_model_selection": "pending",
+  "native_episodes_rerun": 0,
+  "outer_mutations_rerun": 0,
+  "passed": true,
+  "preservation": {
+    "checked_files": 19536,
+    "git_base": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+    "inventory_sha256": "c909c0899e240f268490797bbfb1d6e97597c26225e58e90c22827f222173076",
+    "scope": "pre-revision Git-selected bytes, including reviewed R6-004/005/006 and closeouts"
+  },
+  "prior_preflight_record": {
+    "scope": "bound at closeout; excluded from its own historical retention inventory",
+    "sha256": "40c3fba98dd8e22e66faa0e6125b541aa351bb07d8c9d2904c3a99be772a5c06"
+  },
+  "schema_version": "r6-006-closeout-1",
+  "scope": "artifact comparison and author approval record; no new native execution, provider observation or inference attestation",
+  "sealed_entries": 3951,
+  "sources_refetched_during_closeout": false,
+  "spending_authorization": "pending",
+  "suite_counts": [
+    46,
+    20,
+    39,
+    15
+  ],
+  "total_checks": 120
+}

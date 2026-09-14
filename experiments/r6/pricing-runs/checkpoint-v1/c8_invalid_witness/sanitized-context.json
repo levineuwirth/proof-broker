@@ -1,0 +1,23 @@
+{
+  "target": "2 ^ 18 * g_hi.val < P",
+  "hypotheses": [
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 1,
+      "name": "g_hi",
+      "type": "ZMod P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 2,
+      "name": "hhi",
+      "type": "g_hi.val < 2 ^ 42"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 3,
+      "name": "hP",
+      "type": "P = 18446744069414584321"
+    }
+  ]
+}

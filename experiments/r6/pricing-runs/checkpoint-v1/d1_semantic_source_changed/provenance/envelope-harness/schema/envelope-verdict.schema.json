@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "R6 local canned envelope accepted episode v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "search_policy",
+    "accepted",
+    "search_succeeded",
+    "certificate_type",
+    "trust_tier",
+    "recovery_route",
+    "certificate_verified",
+    "certificate_consumed",
+    "derivation_replayed",
+    "residual_closer",
+    "proof_replayed",
+    "local_obligation_closed",
+    "whole_declaration_validated",
+    "local_proof_required_reference",
+    "resources",
+    "axiom_delta",
+    "failure_category",
+    "solution_sha256",
+    "challenge_sha256",
+    "manifest_sha256",
+    "final_validation",
+    "certificate_validation",
+    "evidence_receipt_claim",
+    "witness_proposer",
+    "certificate_assembler",
+    "request_sha256",
+    "response_sha256",
+    "accounting",
+    "transport_validation",
+    "failure_phase",
+    "prompt_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "r6-envelope-episode-1"
+    },
+    "task_id": {
+      "enum": [
+        "verinf-d1-70",
+        "c1-c8-2p18"
+      ]
+    },
+    "search_policy": {
+      "const": "canned_envelope_v1"
+    },
+    "accepted": {
+      "type": "boolean"
+    },
+    "search_succeeded": {
+      "type": "boolean"
+    },
+    "certificate_type": {
+      "const": "farkas"
+    },
+    "trust_tier": {
+      "const": 1,
+      "type": "integer"
+    },
+    "recovery_route": {
+      "const": "canned_envelope_v1"
+    },
+    "certificate_verified": {
+      "type": "boolean"
+    },
+    "certificate_consumed": {
+      "type": "boolean"
+    },
+    "derivation_replayed": {
+      "const": false
+    },
+    "residual_closer": {
+      "const": "omega"
+    },
+    "proof_replayed": {
+      "type": "boolean"
+    },
+    "local_obligation_closed": {
+      "type": "boolean"
+    },
+    "whole_declaration_validated": {
+      "type": "boolean"
+    },
+    "local_proof_required_reference": {
+      "const": "ProofBroker.TermMode.farkasContradictN"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "axiom_delta": {
+      "type": "object"
+    },
+    "failure_category": {
+      "type": "null"
+    },
+    "solution_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "challenge_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "manifest_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "final_validation": {
+      "type": "object",
+      "required": [
+        "local",
+        "whole"
+      ]
+    },
+    "certificate_validation": {
+      "type": "object",
+      "required": [
+        "accepted",
+        "stage"
+      ]
+    },
+    "evidence_receipt_claim": {
+      "type": "string"
+    },
+    "witness_proposer": {
+      "const": "canned_response"
+    },
+    "certificate_assembler": {
+      "const": "sdk_proposal_assembler_v1"
+    },
+    "request_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "response_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "accounting": {
+      "type": "object"
+    },
+    "transport_validation": {
+      "type": "object"
+    },
+    "failure_phase": {
+      "type": "null"
+    },
+    "prompt_sha256": {
+      "$ref": "#/$defs/hash"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": false
+}
