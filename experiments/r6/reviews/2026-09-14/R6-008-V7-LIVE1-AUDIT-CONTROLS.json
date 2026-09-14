@@ -1,0 +1,52 @@
+{
+  "passed": true,
+  "controls": 10,
+  "live_cases": 32,
+  "results": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 32
+    },
+    "operator_commitment_unbound": {
+      "rejected": true,
+      "rejected_case": "live:operator_scan:bound_to_commitment_and_seal"
+    },
+    "operator_seal_digest_stale": {
+      "rejected": true,
+      "rejected_case": "live:operator_scan:bound_to_commitment_and_seal"
+    },
+    "operator_scan_rejected": {
+      "rejected": true,
+      "rejected_case": "live:operator_scan:bound_to_commitment_and_seal"
+    },
+    "terminal_accepted_forged": {
+      "rejected": true,
+      "rejected_case": "live:terminal:pending_and_commitments_bound"
+    },
+    "attribution_retrofitted": {
+      "rejected": true,
+      "rejected_case": "live:proof:attribution_live"
+    },
+    "ledger_terminal_row_removed": {
+      "rejected": true,
+      "rejected_case": "live:ledger:permit_and_reconciliation_bound"
+    },
+    "checkpoint_mismatch": {
+      "rejected": true,
+      "rejected_case": "live:versions:signed_policy_and_lock_bound"
+    },
+    "outbound_altered": {
+      "rejected": true,
+      "rejected_case": "live:transport:local_send_checked_remote_unobservable"
+    },
+    "summary_task_identity": {
+      "rejected": true,
+      "rejected_case": "live:summary:bound_to_audited_records"
+    }
+  },
+  "auditor_sha256": "fe322809477edc572f5e12ce424ba3377ab089fbb268eacd49560200c549a7d4",
+  "program_sha256": "80d2b816ce776b5b8e74fecf09b7eff5736c890de933af101a8f1035d01b064c",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies of live-1, the ledgers, the operator summary and the checkpoint copy; one relationship per mutation"
+}
