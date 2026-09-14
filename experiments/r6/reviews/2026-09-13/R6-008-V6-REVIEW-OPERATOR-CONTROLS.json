@@ -1,0 +1,119 @@
+{
+  "passed": true,
+  "controls": 9,
+  "results": {
+    "baseline": {
+      "exit_code": 0,
+      "scan_accepted": true,
+      "disclosures": 0,
+      "receipt": {
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true
+      }
+    },
+    "unscanned_run": {
+      "exit_code": 1,
+      "scan_accepted": true,
+      "disclosures": 0,
+      "receipt": {
+        "covered_by_scan": false,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true
+      }
+    },
+    "missing_seal": {
+      "exit_code": 1,
+      "scan_accepted": true,
+      "disclosures": 0,
+      "receipt": {
+        "covered_by_scan": true,
+        "sealed_and_intact": false,
+        "commitment_record_sealed": false,
+        "commitment_bound": true
+      }
+    },
+    "http_changed_after_sealing": {
+      "exit_code": 1,
+      "scan_accepted": true,
+      "disclosures": 0,
+      "receipt": {
+        "covered_by_scan": true,
+        "sealed_and_intact": false,
+        "commitment_record_sealed": false,
+        "commitment_bound": true
+      }
+    },
+    "wrong_credential": {
+      "exit_code": 1,
+      "scan_accepted": true,
+      "disclosures": 0,
+      "receipt": {
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": false
+      }
+    },
+    "disclosure_in_bound_run": {
+      "exit_code": 1,
+      "scan_accepted": false,
+      "disclosures": 2,
+      "receipt": {
+        "covered_by_scan": true,
+        "sealed_and_intact": false,
+        "commitment_record_sealed": false,
+        "commitment_bound": true
+      }
+    },
+    "two_roots_colliding_names": {
+      "exit_code": 0,
+      "scan_accepted": true,
+      "disclosures": 0,
+      "receipt": [
+        {
+          "covered_by_scan": true,
+          "sealed_and_intact": true,
+          "commitment_record_sealed": true,
+          "commitment_bound": true
+        },
+        {
+          "covered_by_scan": true,
+          "sealed_and_intact": true,
+          "commitment_record_sealed": true,
+          "commitment_bound": true
+        }
+      ]
+    },
+    "canary_bearing_root_name": {
+      "exit_code": 0,
+      "scan_accepted": true,
+      "token_copies_in_report": 0,
+      "root_label": "sha256:439132f",
+      "receipt": {
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true
+      }
+    },
+    "unreadable_bound_file_under_canary_root": {
+      "exit_code": 1,
+      "stderr_empty": true,
+      "token_copies_in_report": 0,
+      "read_failures": 1,
+      "receipt": {
+        "covered_by_scan": false,
+        "sealed_and_intact": false,
+        "commitment_record_sealed": false,
+        "commitment_bound": false
+      }
+    }
+  },
+  "scanner_sha256": "fe563145dbc280f6401bc0c7a1bbce1eed64decc7195cbf3eccd90b4d67e2fad",
+  "program_sha256": "d68191eb01fba9a118a44b8a915a27e1a022b6a2a5dba7e201c927d4f92a3d91",
+  "credentials_read": 0,
+  "scope": "synthetic canary in temporary runs; one relationship per case"
+}

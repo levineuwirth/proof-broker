@@ -1,0 +1,84 @@
+{
+  "commits_created": 0,
+  "files": {
+    "R6-008-V3-REVIEW-AUDIT-CONTROLS.json": {
+      "bytes": 5164,
+      "sha256": "81f8c799882c12a04e370000ddc9dc0f900e2ca38647a261b0851b6a1a2fa601"
+    },
+    "R6-008-V3-REVIEW-AUDIT.json": {
+      "bytes": 4799,
+      "sha256": "9ccd52b904b29e7697ab3856248cab57382efe3f4a3667c687ab8b926566dc6a"
+    },
+    "R6-008-V3-REVIEW-BEFORE.json.gz": {
+      "bytes": 975139,
+      "sha256": "eb0f5323ca597f93e0432e716191cf504fe2e518df1e6f519dceb07189fb7b4c"
+    },
+    "R6-008-V3-REVIEW-FOCUSED.json": {
+      "bytes": 14565,
+      "sha256": "dc42dce6f74d197562921be961341064ba440e03b8be867c3099eba598be974e"
+    },
+    "R6-008-V3-REVIEW-OPERATOR-CONTROLS.json": {
+      "bytes": 2500,
+      "sha256": "bba44386d426395cb8d2598924b6573442b4e23ddf82e0d1494c63fe502ee3fb"
+    },
+    "R6-008-V3-REVIEW-PILOT-AUDIT.json": {
+      "bytes": 13618,
+      "sha256": "580eb75ea6d2aca38cd89bfba2162a68d9ce39c7f72d5d4f38888b49b667a0a4"
+    },
+    "R6-008-V3-REVIEW-PROBES.json": {
+      "bytes": 13632,
+      "sha256": "a5db0e11388d4e48c1c01ab7510156a08a459393dd007c3347121ac9ad7f3635"
+    },
+    "R6-008-V3-REVIEW-RECOUNT.json": {
+      "bytes": 3214,
+      "sha256": "8140dbad900f4723c10ce8a7c07fba0bcecce2eb4b3becfc0e0f8f3f228bb6f2"
+    },
+    "R6-008-V3-REVIEW.md": {
+      "bytes": 14201,
+      "sha256": "d3e16e3fcc9811649781a12fb685d789d07de4b765faf2ebe4d5a86b7f64ebdb"
+    },
+    "campaign_v3_review_probes.py": {
+      "bytes": 16279,
+      "sha256": "faf2b87e10994c8a29591952eb59fabd54a41ac78e7b1650975a59eb9e8d93c2"
+    },
+    "campaign_v3_review_recount.py": {
+      "bytes": 7617,
+      "sha256": "ad382712aec079d03d1402c0fac880b61e823cd261e152ec2828d7af1a625b9d"
+    }
+  },
+  "files_before_this_record": 11,
+  "head": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+  "historical_record_qualification": {
+    "R6-008-OPERATOR-SCAN-CONTROLS.json": {
+      "at_v2_review_start_sha256": "94d6be81be8596a23106b100e30e09a192d3d87abe47d497926fa8b59b1f580c",
+      "current_sha256": "bba44386d426395cb8d2598924b6573442b4e23ddf82e0d1494c63fe502ee3fb",
+      "unchanged": false
+    },
+    "R6-008-V2-AUDIT-CONTROLS.json": {
+      "at_v2_review_start_sha256": "a771865262bec5ddfeab560cf63af2933c2aeda4ab6d82d99df9735f4614321b",
+      "current_sha256": "a771865262bec5ddfeab560cf63af2933c2aeda4ab6d82d99df9735f4614321b",
+      "unchanged": true
+    },
+    "R6-008-V2-AUDIT.json": {
+      "at_v2_review_start_sha256": "f348a64031d0c54cfd1926859dfc31f030d2c2dd264e4674c6efd1ac970855c7",
+      "current_sha256": "f348a64031d0c54cfd1926859dfc31f030d2c2dd264e4674c6efd1ac970855c7",
+      "unchanged": true
+    },
+    "R6-008-V2-CONTROLS.json": {
+      "at_v2_review_start_sha256": "9337990e06da462eb924bc50d4e205037df33d71e7b2776e1d549e7e826b22ed",
+      "current_sha256": "9337990e06da462eb924bc50d4e205037df33d71e7b2776e1d549e7e826b22ed",
+      "unchanged": true
+    }
+  },
+  "new_native_episodes": 0,
+  "provider_calls": 0,
+  "python_sources_compile": true,
+  "real_credentials_read": 0,
+  "scope": "review-only additions; prior files unchanged during review per recount",
+  "tracked_status": [
+    "README.md",
+    "experiments/r6/.gitignore",
+    "experiments/r6/LIVE-POLICY-REQUIREMENTS.md",
+    "experiments/r6/PROTOCOL.md"
+  ]
+}

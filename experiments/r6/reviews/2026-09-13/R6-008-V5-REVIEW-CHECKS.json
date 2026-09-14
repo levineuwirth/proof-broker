@@ -1,0 +1,68 @@
+{
+  "changed": [],
+  "committed": false,
+  "completed": true,
+  "disposition": "three P2 review findings remain; policy kept disabled",
+  "git_diff_check_clean": true,
+  "git_head": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+  "missing": [],
+  "new_lean_replays": 0,
+  "new_native_episodes": 0,
+  "policy_signed": false,
+  "preserved_files": 36281,
+  "provider_calls": 0,
+  "pushed": false,
+  "real_credentials_read": 0,
+  "report_links_checked": true,
+  "review_artifact_count_including_this_index": 12,
+  "review_files_excluding_this_index": {
+    "R6-008-V5-REVIEW-AUDIT-CONTROLS.json": {
+      "bytes": 7668,
+      "sha256": "350063e7094dd3cb9045b536031ac9760111c854ed20596d84f652fd6c096bb2"
+    },
+    "R6-008-V5-REVIEW-AUDIT.json": {
+      "bytes": 4799,
+      "sha256": "e9341a4f928b20695492c450af320e65f8108edf5c6a10d8881a8840c60926a4"
+    },
+    "R6-008-V5-REVIEW-BEFORE.json.gz": {
+      "bytes": 1062577,
+      "sha256": "2070e112bb229b2d43905a720fd0ac0cc0658371938c3f2f19f0fd90ae531706"
+    },
+    "R6-008-V5-REVIEW-FOCUSED.json": {
+      "bytes": 22491,
+      "sha256": "fda6348a69175b1d5ea30b9521752680e64181ff4b5dbf403f0f549040ec298f"
+    },
+    "R6-008-V5-REVIEW-OPERATOR-CONTROLS.json": {
+      "bytes": 3176,
+      "sha256": "ba4e5130ca0e3a0bc9ecd47a094782ed8e9112f0f725630edb407b781bdcb982"
+    },
+    "R6-008-V5-REVIEW-PILOT-AUDIT.json": {
+      "bytes": 13618,
+      "sha256": "74bc7693bd15ee80bcb258b9173cbdc668c1e735226ea4b16104aec5be3bfac4"
+    },
+    "R6-008-V5-REVIEW-PROBES.json": {
+      "bytes": 5442,
+      "sha256": "917d78d2c8660851b7727a3e92e8ad62783f7bd83337fc035c07e2fba55b5ba9"
+    },
+    "R6-008-V5-REVIEW-RECOUNT.json": {
+      "bytes": 6317,
+      "sha256": "ae176ef2cac8b5a2b4f8b632705bde010e891f3433cf2fe17b2729e585425998"
+    },
+    "R6-008-V5-REVIEW.md": {
+      "bytes": 8891,
+      "sha256": "320735ed22b743177a2e65a754916927c9676282ce81da76c629119d53ab4eef"
+    },
+    "campaign_v5_review_probes.py": {
+      "bytes": 12838,
+      "sha256": "5e0b6dc1f2c2efceb1b1486a93e708affdee6456e969a54644495791b2b50d4c"
+    },
+    "campaign_v5_review_recount.py": {
+      "bytes": 11840,
+      "sha256": "6804e28a463005f36c6c03d9dc66dbbcdb2bdf9a79d63f18c0095d5b1ad7bc8e"
+    }
+  },
+  "scope": "Fresh canned checks and audit probes plus byte recomputation. This index does not approve the policy or attest compilation/inference.",
+  "source_syntax_and_whitespace_checked": true,
+  "supplemental_review_probes": 11,
+  "tracked_status_unchanged": true
+}

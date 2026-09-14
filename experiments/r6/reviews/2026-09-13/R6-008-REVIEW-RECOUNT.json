@@ -1,0 +1,43 @@
+{
+ "policy_sha256": "d63a6680d591201b43332134be4f53c3a5a91ce683bb80b04ebc4d6739188e0b",
+ "source_lock_sha256": "077aa0e1a82866d69ebaf71294a2338dfe78b6b9f8d96e2b6cfb38845d1309a2",
+ "sources_verified": true,
+ "live_enabled": false,
+ "live_ledger_exists": false,
+ "runs": {
+  "rehearsal-1": {
+   "events": 19,
+   "sealed_entries": 214,
+   "mismatches": [],
+   "terminal_matches_seal": true,
+   "policy_match": true
+  },
+  "rehearsal-2": {
+   "events": 17,
+   "sealed_entries": 208,
+   "mismatches": [],
+   "terminal_matches_seal": true,
+   "policy_match": true
+  },
+  "rehearsal-3": {
+   "events": 50,
+   "sealed_entries": 281,
+   "mismatches": [],
+   "terminal_matches_seal": true,
+   "policy_match": true,
+   "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+   "axiom_delta": {
+    "Bracket.lift_cell.r6_d1_70": {
+     "added": [],
+     "removed": []
+    },
+    "Bracket.lift_cell": {
+     "added": [],
+     "removed": []
+    }
+   }
+  }
+ },
+ "total_events": 86,
+ "total_sealed_entries": 703
+}

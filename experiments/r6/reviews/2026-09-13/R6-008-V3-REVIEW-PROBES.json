@@ -1,0 +1,376 @@
+{
+  "completed": true,
+  "policy_sha256": "3a5af1d844bcf72fe37c09d53a2b8c78f62e409b2c0c0724b8afe84863c53f5d",
+  "source_lock_sha256": "30934b333f9f0c163e3296b47becb1adcb4c410f9363e70b78b837ebdd00b05b",
+  "program_sha256": "faf2b87e10994c8a29591952eb59fabd54a41ac78e7b1650975a59eb9e8d93c2",
+  "real_credentials_read": 0,
+  "provider_calls": 0,
+  "new_native_episodes": 0,
+  "expected_cases": [
+    "interrupted_control",
+    "http_empty_object",
+    "reserve_head_failure",
+    "reservation_receipt_failure",
+    "reconciliation_receipt_failure",
+    "ledger_short_append",
+    "scan_root_canary",
+    "scan_stream_mutation",
+    "missing_durability",
+    "live_unknown_accounting",
+    "imported_driver_source"
+  ],
+  "cases": {
+    "interrupted_control": {
+      "fault": "interrupted_control",
+      "calls": {
+        "launched": 1,
+        "injected": 0,
+        "reconcile_called": 1
+      },
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "transport_record_unreadable",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "reservation": {
+            "reserved_micro_usd": 102400,
+            "message_utf8_bytes": 5203,
+            "input_tokens_reserved": 16384,
+            "output_tokens_reserved": 4096,
+            "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+            "billing_guarantee": false,
+            "reservation_id": "6b36c28bc75a4fb398394c48627e304b",
+            "request_sha256": "595662de67d6e7facb5818566159187ca761c4527f512efb83cfff3fe87fc7ae",
+            "arguments_sha256": "481943316161322ed38cef6b25557787648eded0efcf571d47f29ef4a9c18aa2",
+            "policy_sha256": "3a5af1d844bcf72fe37c09d53a2b8c78f62e409b2c0c0724b8afe84863c53f5d",
+            "pricing_admission_sha256": "62924199e90bc8f1ba8219517eae601f325252cf85e6cdb7323f489ed9278c35",
+            "ledger_row_hash": "6605ad8a8b40c4c5b420acaa3c88a834d0b9160fd8bf5a436a566f2501d0143f",
+            "ledger_sha256": "c06795dd56464b467deb676f1dba6dba184305fa75ad9873629d5fbcffa0bb4a"
+          },
+          "reservation_id": "6b36c28bc75a4fb398394c48627e304b",
+          "transport_record_observed": false,
+          "connection_attempts": null,
+          "headers_started": null,
+          "transmissions_observed": null,
+          "transmissions_returned": null,
+          "grant_committed": true,
+          "send_outcome": "unknown",
+          "ledger_outcome": "send_grant",
+          "ledger_reconciled": true,
+          "allowance_consumed": 1,
+          "endpoint_receipts": null,
+          "usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "usage_status": "unreported",
+          "priced_usage_ceiling_micro_usd": null,
+          "live_transmissions_consumed": 0,
+          "live_usage_ceiling_usd": null,
+          "scope": "rehearsal against a local canned receiver; no live transmission, no cost"
+        }
+      },
+      "raised": null,
+      "sealed": true,
+      "terminal_event": "episode_rejected",
+      "summary_error": "unreadable transport record: JSONDecodeError",
+      "actual_reservations": 1,
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "actual_terminal_kind": "send_grant",
+      "authoritative_grant_exists": true,
+      "http_object_accepted_by_reader": false
+    },
+    "http_empty_object": {
+      "fault": "http_empty_object",
+      "calls": {
+        "launched": 1,
+        "injected": 0,
+        "reconcile_called": 1
+      },
+      "result": null,
+      "raised": {
+        "type": "KeyError",
+        "message": "'connection_attempts'"
+      },
+      "sealed": false,
+      "terminal_event": "credential_receipt_checked",
+      "summary_error": null,
+      "actual_reservations": 1,
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "actual_terminal_kind": "send_grant",
+      "authoritative_grant_exists": true,
+      "http_object_accepted_by_reader": true
+    },
+    "reserve_head_failure": {
+      "fault": "reserve_head_failure",
+      "calls": {
+        "launched": 0,
+        "injected": 1,
+        "reconcile_called": 0
+      },
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "harness_failure",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": true,
+        "accounting": {
+          "attempts_reserved": 0,
+          "reservation": null,
+          "reservation_id": null,
+          "transport_record_observed": false,
+          "connection_attempts": null,
+          "headers_started": null,
+          "transmissions_observed": null,
+          "transmissions_returned": null,
+          "grant_committed": null,
+          "send_outcome": null,
+          "ledger_outcome": null,
+          "ledger_reconciled": true,
+          "allowance_consumed": null,
+          "endpoint_receipts": null,
+          "usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "usage_status": "unreported",
+          "priced_usage_ceiling_micro_usd": null,
+          "live_transmissions_consumed": 0,
+          "live_usage_ceiling_usd": null,
+          "scope": "rehearsal against a local canned receiver; no live transmission, no cost"
+        }
+      },
+      "raised": null,
+      "sealed": true,
+      "terminal_event": "episode_rejected",
+      "summary_error": "OSError: [Errno 5] synthetic head failure after reservation append",
+      "actual_reservations": 1,
+      "actual_open": 1,
+      "actual_consumed": 0,
+      "actual_terminal_kind": null,
+      "authoritative_grant_exists": false,
+      "http_object_accepted_by_reader": null
+    },
+    "reservation_receipt_failure": {
+      "fault": "reservation_receipt_failure",
+      "calls": {
+        "launched": 0,
+        "injected": 1,
+        "reconcile_called": 0
+      },
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "harness_failure",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": false,
+        "accounting": {
+          "attempts_reserved": 1,
+          "reservation": null,
+          "reservation_id": "f48d4568708b48968e346b95bc682d26",
+          "transport_record_observed": false,
+          "connection_attempts": null,
+          "headers_started": null,
+          "transmissions_observed": null,
+          "transmissions_returned": null,
+          "grant_committed": null,
+          "send_outcome": null,
+          "ledger_outcome": null,
+          "ledger_reconciled": false,
+          "allowance_consumed": null,
+          "endpoint_receipts": null,
+          "usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "usage_status": "unreported",
+          "priced_usage_ceiling_micro_usd": null,
+          "live_transmissions_consumed": 0,
+          "live_usage_ceiling_usd": null,
+          "scope": "rehearsal against a local canned receiver; no live transmission, no cost"
+        }
+      },
+      "raised": null,
+      "sealed": true,
+      "terminal_event": "episode_rejected",
+      "summary_error": "OSError: [Errno 5] synthetic evidence-write failure",
+      "actual_reservations": 1,
+      "actual_open": 1,
+      "actual_consumed": 0,
+      "actual_terminal_kind": null,
+      "authoritative_grant_exists": false,
+      "http_object_accepted_by_reader": null
+    },
+    "reconciliation_receipt_failure": {
+      "fault": "reconciliation_receipt_failure",
+      "calls": {
+        "launched": 1,
+        "injected": 1,
+        "reconcile_called": 1
+      },
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "reconciliation_failure",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": false,
+        "accounting": {
+          "attempts_reserved": 1,
+          "reservation": {
+            "reserved_micro_usd": 102400,
+            "message_utf8_bytes": 5203,
+            "input_tokens_reserved": 16384,
+            "output_tokens_reserved": 4096,
+            "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+            "billing_guarantee": false,
+            "reservation_id": "b306f4e4f8bc4914927bb740d989f531",
+            "request_sha256": "595662de67d6e7facb5818566159187ca761c4527f512efb83cfff3fe87fc7ae",
+            "arguments_sha256": "481943316161322ed38cef6b25557787648eded0efcf571d47f29ef4a9c18aa2",
+            "policy_sha256": "3a5af1d844bcf72fe37c09d53a2b8c78f62e409b2c0c0724b8afe84863c53f5d",
+            "pricing_admission_sha256": "a3ebdd72644b313d67ef0cd9df74fea7e2a3f75353e82c5e76416a878dcc947a",
+            "ledger_row_hash": "2508cbf1ded92766043ddd9373aff16b866edff421b4612f6702b3812b5181ef",
+            "ledger_sha256": "fea9c6ffde68c53e4098e2710562b834c86b18dd4a6ab3c327280e210e1498cb"
+          },
+          "reservation_id": "b306f4e4f8bc4914927bb740d989f531",
+          "transport_record_observed": false,
+          "connection_attempts": null,
+          "headers_started": null,
+          "transmissions_observed": null,
+          "transmissions_returned": null,
+          "grant_committed": null,
+          "send_outcome": null,
+          "ledger_outcome": null,
+          "ledger_reconciled": false,
+          "allowance_consumed": null,
+          "endpoint_receipts": null,
+          "usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "usage_status": "unreported",
+          "priced_usage_ceiling_micro_usd": null,
+          "live_transmissions_consumed": 0,
+          "live_usage_ceiling_usd": null,
+          "scope": "rehearsal against a local canned receiver; no live transmission, no cost"
+        }
+      },
+      "raised": null,
+      "sealed": true,
+      "terminal_event": "episode_rejected",
+      "summary_error": "Reservation left open: OSError: [Errno 5] synthetic evidence-write failure",
+      "actual_reservations": 1,
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "actual_terminal_kind": "send_grant",
+      "authoritative_grant_exists": true,
+      "http_object_accepted_by_reader": false
+    },
+    "ledger_short_append": {
+      "reserve_returned_success": true,
+      "append_bytes_requested": 728,
+      "append_bytes_written": 7,
+      "head_rows": 2,
+      "next_snapshot_raises": "JSONDecodeError"
+    },
+    "scan_root_canary": {
+      "safe_root": {
+        "return_code": 0,
+        "scan_accepted": true,
+        "all_four_binding_predicates": true,
+        "reported_disclosures": 0,
+        "report_token_occurrences": 0,
+        "stdout_token_occurrences": 0,
+        "root_label_redacted": false,
+        "unrestricted_entry_roots": 0
+      },
+      "canary_root": {
+        "return_code": 0,
+        "scan_accepted": true,
+        "all_four_binding_predicates": true,
+        "reported_disclosures": 0,
+        "report_token_occurrences": 3,
+        "stdout_token_occurrences": 0,
+        "root_label_redacted": true,
+        "unrestricted_entry_roots": 3
+      }
+    },
+    "scan_stream_mutation": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "retained_streams": [
+        "raw"
+      ],
+      "recomputed_streams": [
+        "raw",
+        "gzip"
+      ],
+      "count_updated_consistently": true,
+      "terminal_and_seal_rebound": true
+    },
+    "missing_durability": {
+      "predicate_only": true,
+      "unmutated_passed": true,
+      "missing_durability_passed": true,
+      "scope": "grant predicate only; no rewritten HTTP digest or full-audit claim"
+    },
+    "live_unknown_accounting": {
+      "allowance_consumed": null,
+      "live_transmissions_consumed": 0,
+      "ledger_reconciled": false,
+      "scope": "pure accounting function with live flag; policy remains disabled, no signing or transport"
+    },
+    "imported_driver_source": {
+      "unmutated_audit_accepted": true,
+      "foreign_source_audit_accepted": true,
+      "audit_cases": 73,
+      "retained_source_sha256": "b7408b235cc6d5f126cab5a6111542aa4b5976f333a1d22ad5f22dbf4a91ab97",
+      "imported_source_sha256": "811b9e509c7ca4d7fab7eac2c35b747d44b36c8ff784ef653df1a2380476b950",
+      "retained_artifacts_modified": false,
+      "scope": "actual accounting function loaded from a different temporary source copy; harmless comment change"
+    }
+  },
+  "case_count": 11
+}

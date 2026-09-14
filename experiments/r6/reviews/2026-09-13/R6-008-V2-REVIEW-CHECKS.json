@@ -1,0 +1,61 @@
+{
+  "commits_created": 0,
+  "files": {
+    "R6-008-V2-REVIEW-AUDIT-CONTROLS.json": {
+      "bytes": 3219,
+      "sha256": "a771865262bec5ddfeab560cf63af2933c2aeda4ab6d82d99df9735f4614321b"
+    },
+    "R6-008-V2-REVIEW-AUDIT.json": {
+      "bytes": 4192,
+      "sha256": "f348a64031d0c54cfd1926859dfc31f030d2c2dd264e4674c6efd1ac970855c7"
+    },
+    "R6-008-V2-REVIEW-BEFORE.json.gz": {
+      "bytes": 942960,
+      "sha256": "75208b07199c539785f1304a1351e7435b5ebc506537eca39d9aa10a388198ab"
+    },
+    "R6-008-V2-REVIEW-FOCUSED.json": {
+      "bytes": 12476,
+      "sha256": "9337990e06da462eb924bc50d4e205037df33d71e7b2776e1d549e7e826b22ed"
+    },
+    "R6-008-V2-REVIEW-OPERATOR-CONTROLS.json": {
+      "bytes": 2013,
+      "sha256": "94d6be81be8596a23106b100e30e09a192d3d87abe47d497926fa8b59b1f580c"
+    },
+    "R6-008-V2-REVIEW-PILOT-AUDIT.json": {
+      "bytes": 13618,
+      "sha256": "ee727e937ffb5f0da5ee18627bd47cc95b8954f035e63c32e18c65d72a9254e0"
+    },
+    "R6-008-V2-REVIEW-PROBES.json": {
+      "bytes": 9254,
+      "sha256": "90a57a436ad3d31939b16672d3aadbf443ce4be5f729ed5608cf080c6dd9accd"
+    },
+    "R6-008-V2-REVIEW-RECOUNT.json": {
+      "bytes": 3178,
+      "sha256": "29c9a53ed2a4798078ffc22bbfc62f12cc5ad3beb9a0e04cbd8979e4a5eab471"
+    },
+    "R6-008-V2-REVIEW.md": {
+      "bytes": 13392,
+      "sha256": "f16317d4919b3e2e9efb8d6e8d2b345bfb88270f67923d649ffbeddc4d456098"
+    },
+    "campaign_v2_review_probes.py": {
+      "bytes": 18169,
+      "sha256": "8556da6faf0ffebb0126f23c306fd2d84c8ce840e68b883795c99fad5580a9bd"
+    },
+    "campaign_v2_review_recount.py": {
+      "bytes": 7105,
+      "sha256": "f29a16d73ab67cd891640e17ec2bb954696ebfa0eacfec513246167bdee37959"
+    }
+  },
+  "files_before_this_record": 11,
+  "head": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+  "provider_calls": 0,
+  "python_sources_compile": true,
+  "real_credentials_read": 0,
+  "scope": "review-only additions; frozen source and prior evidence unchanged per recount",
+  "tracked_status": [
+    "README.md",
+    "experiments/r6/.gitignore",
+    "experiments/r6/LIVE-POLICY-REQUIREMENTS.md",
+    "experiments/r6/PROTOCOL.md"
+  ]
+}

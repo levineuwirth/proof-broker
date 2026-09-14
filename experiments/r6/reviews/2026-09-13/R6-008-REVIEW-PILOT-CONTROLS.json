@@ -1,0 +1,210 @@
+{
+  "passed": true,
+  "controls": 27,
+  "mutations": 23,
+  "named_cases": 124,
+  "results": {
+    "unmutated_copy_accepted:summary_only": {
+      "accepted": true,
+      "case_count": 124
+    },
+    "unmutated_copy_accepted:full_report": {
+      "accepted": true,
+      "case_count": 124
+    },
+    "retained_only_copy_accepted": {
+      "accepted": true,
+      "case_count": 124
+    },
+    "full_mode_rejects_missing_historical_files": {
+      "accepted": false,
+      "rejected_case": "live-1:inventory_bound",
+      "detail": "live-1:inventory_bound: 2 paths differ in presence, 0 in content"
+    },
+    "summary_rejected": {
+      "rejected": true,
+      "rejected_case": "operator_scan:consistent",
+      "route": "full_report"
+    },
+    "report_rejected": {
+      "rejected": true,
+      "rejected_case": "operator_scan:consistent",
+      "route": "full_report"
+    },
+    "wrong_target": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:shared_checker",
+      "allowed_cases": [
+        "live-2:proof:shared_checker"
+      ],
+      "route": "summary_only"
+    },
+    "wrong_type": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:shared_checker",
+      "allowed_cases": [
+        "live-2:proof:shared_checker"
+      ],
+      "route": "summary_only"
+    },
+    "forbidden_axiom": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:shared_checker",
+      "allowed_cases": [
+        "live-2:proof:shared_checker"
+      ],
+      "route": "summary_only"
+    },
+    "invalid_proof_export": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:shared_checker",
+      "allowed_cases": [
+        "live-2:proof:shared_checker"
+      ],
+      "route": "summary_only"
+    },
+    "wrong_reconstruction_context": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:shared_checker",
+      "allowed_cases": [
+        "live-2:proof:shared_checker"
+      ],
+      "route": "summary_only"
+    },
+    "substituted_certificate_witness": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:certificate_bound",
+      "allowed_cases": [
+        "live-2:proof:certificate_bound"
+      ],
+      "route": "summary_only"
+    },
+    "false_host_admission": {
+      "rejected": true,
+      "rejected_case": "live-2:pricing:host_admission_rederived",
+      "allowed_cases": [
+        "live-2:pricing:host_admission_rederived"
+      ],
+      "route": "summary_only"
+    },
+    "broken_reservation_ledger": {
+      "rejected": true,
+      "rejected_case": "live-2:ledger:consistent",
+      "allowed_cases": [
+        "live-2:ledger:consistent"
+      ],
+      "route": "summary_only"
+    },
+    "altered_outbound_body": {
+      "rejected": true,
+      "rejected_case": "live-2:transport:local_send_equals_serialized",
+      "allowed_cases": [
+        "live-2:transport:local_send_equals_serialized"
+      ],
+      "route": "summary_only"
+    },
+    "rehearsal_file_drift": {
+      "rejected": true,
+      "rejected_case": "rehearsal-4:seal:retained_hashes",
+      "allowed_cases": [
+        "rehearsal-4:seal:retained_hashes"
+      ],
+      "route": "summary_only"
+    },
+    "unsealed_file_drift": {
+      "rejected": true,
+      "rejected_case": "live-1:request:regenerated",
+      "allowed_cases": [
+        "live-1:inventory_bound",
+        "live-1:request:regenerated"
+      ],
+      "route": "summary_only"
+    },
+    "extra_live_episode": {
+      "rejected": true,
+      "rejected_case": "population:exactly_six_runs",
+      "allowed_cases": [
+        "population:exactly_six_runs"
+      ],
+      "route": "summary_only"
+    },
+    "duplicate_receipt_dropped": {
+      "rejected": true,
+      "rejected_case": "live-2:chain:expected_sequence",
+      "allowed_cases": [
+        "live-2:chain:expected_sequence"
+      ],
+      "route": "summary_only"
+    },
+    "provider_status_500": {
+      "rejected": true,
+      "rejected_case": "live-2:transport:remote_receipt",
+      "allowed_cases": [
+        "live-2:transport:remote_receipt"
+      ],
+      "route": "summary_only"
+    },
+    "second_ledger_row": {
+      "rejected": true,
+      "rejected_case": "live-2:ledger:consistent",
+      "allowed_cases": [
+        "live-2:ledger:consistent"
+      ],
+      "route": "summary_only"
+    },
+    "attribution_retrofitted": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:attribution_audited",
+      "allowed_cases": [
+        "live-2:proof:attribution_audited"
+      ],
+      "route": "summary_only"
+    },
+    "file_added_after_scan": {
+      "rejected": true,
+      "rejected_case": "operator_scan:consistent",
+      "allowed_cases": [
+        "operator_scan:consistent"
+      ],
+      "route": "summary_only"
+    },
+    "retained_policy_altered": {
+      "rejected": true,
+      "rejected_case": "live-2:versions:policy_lock_sources_bound",
+      "allowed_cases": [
+        "live-2:versions:policy_lock_sources_bound"
+      ],
+      "route": "summary_only"
+    },
+    "unbound_rehearsal_source": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:versions:policy_lock_sources_bound",
+      "allowed_cases": [
+        "rehearsal-1:versions:policy_lock_sources_bound"
+      ],
+      "route": "summary_only"
+    },
+    "wrong_challenge": {
+      "rejected": true,
+      "rejected_case": "live-2:proof:shared_checker",
+      "allowed_cases": [
+        "live-2:proof:shared_checker"
+      ],
+      "route": "summary_only"
+    },
+    "failed_process": {
+      "rejected": true,
+      "rejected_case": "live-2:live:duplicate_receipts_audited",
+      "allowed_cases": [
+        "live-2:live:duplicate_receipts_audited"
+      ],
+      "route": "summary_only"
+    }
+  },
+  "auditor_sha256": "313c1b26457631469aa2de4d56320cdfbb9f48f9e235f4f04980a98c3b92cb2a",
+  "probes_sha256": "f12f3b68afe482197397fb052f997702b3de61229a9a96ae37dd1568c63c1c18",
+  "program_sha256": "f1d74c5d67ed57a2d8badd4ceeb789f5886153220a076714b96a2dc4b763fac5",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies; every mutation is one relationship; rejection case names are pinned; mutations audited summary-only"
+}

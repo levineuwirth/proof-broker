@@ -1,0 +1,294 @@
+{
+  "policy_sha256": "b250561eae5ad8f26c7ec5f0d88ae1e83ea798719a6ba0c48ff46c5a06349f64",
+  "source_lock_sha256": "45d2a9d599b126b77bc5450625bbe204064ccad2bf6a168f7dcc449cf575f58d",
+  "program_sha256": "8556da6faf0ffebb0126f23c306fd2d84c8ce840e68b883795c99fad5580a9bd",
+  "live_model_calls": 0,
+  "real_credentials_read": 0,
+  "new_native_episodes": 0,
+  "cases": {
+    "truncated_http_after_grant": {
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "transport_record_unreadable",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "reservation": {
+            "reserved_micro_usd": 102400,
+            "message_utf8_bytes": 5203,
+            "input_tokens_reserved": 16384,
+            "output_tokens_reserved": 4096,
+            "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+            "billing_guarantee": false,
+            "reservation_id": "fcb63aa2578143ba904ddb3aa3de9773",
+            "request_sha256": "2b4a347c2c67dc556ce7d8171a5dc1cf0be7e38360619e7258068ca8bdb3918d",
+            "arguments_sha256": "582ad66df860835c6730ca8dac207809d6ce028ddcf1dd81916cbbd598c21ede",
+            "policy_sha256": "b250561eae5ad8f26c7ec5f0d88ae1e83ea798719a6ba0c48ff46c5a06349f64",
+            "pricing_admission_sha256": "02749996ed530e4f8e873a5b410d62f0ea516d63d3ec7135c7d5a6c0723586ab",
+            "ledger_row_hash": "bd4d591c0a0abde6549b21dcbe2e3226444679e4a977e6c97d3475bb206b6d81",
+            "ledger_sha256": "7ac185bdd8764bc42f6a27237ce1fc152afb5a6890e32c85b00d35f85b1c0b49"
+          },
+          "reservation_id": "fcb63aa2578143ba904ddb3aa3de9773",
+          "connection_attempts": 0,
+          "headers_started": 0,
+          "transmissions_started": 0,
+          "transmissions_returned": 0,
+          "grant_committed": false,
+          "send_outcome": "not_started",
+          "ledger_outcome": "send_grant",
+          "endpoint_receipts": 0,
+          "usage": {
+            "status": "unreported",
+            "cost_usd": null,
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cached_tokens": null,
+            "reasoning_tokens": null
+          },
+          "usage_status": "unreported",
+          "priced_usage_ceiling_micro_usd": null,
+          "live_transmissions_consumed": 0,
+          "live_usage_ceiling_usd": null,
+          "scope": "rehearsal against a local canned receiver; no live transmission, no cost"
+        }
+      },
+      "reservation_exists": true,
+      "authoritative_grant_exists": true,
+      "actual_open_reservations": 0,
+      "actual_consumed": 1,
+      "reconciliation": {
+        "kind": "send_grant",
+        "send_outcome": "unknown",
+        "termination_established": true
+      },
+      "terminal_event": "episode_rejected",
+      "sealed": true,
+      "process_termination_predicate": true
+    },
+    "http_nonempty_list_after_grant": {
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "harness_failure",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": true,
+        "accounting": {
+          "attempts_reserved": 0,
+          "reservation": null,
+          "reservation_id": null,
+          "transmissions_started": 0,
+          "transmissions_returned": 0,
+          "grant_committed": false,
+          "send_outcome": "not_started",
+          "ledger_outcome": null,
+          "live_transmissions_consumed": 0,
+          "scope": "failed before any reservation"
+        }
+      },
+      "reservation_exists": true,
+      "authoritative_grant_exists": true,
+      "actual_open_reservations": 1,
+      "actual_consumed": 0,
+      "reconciliation": null,
+      "terminal_event": "episode_rejected",
+      "sealed": true,
+      "process_termination_predicate": true
+    },
+    "process_list_after_grant": {
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "harness_failure",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": true,
+        "accounting": {
+          "attempts_reserved": 0,
+          "reservation": null,
+          "reservation_id": null,
+          "transmissions_started": 0,
+          "transmissions_returned": 0,
+          "grant_committed": false,
+          "send_outcome": "not_started",
+          "ledger_outcome": null,
+          "live_transmissions_consumed": 0,
+          "scope": "failed before any reservation"
+        }
+      },
+      "reservation_exists": true,
+      "authoritative_grant_exists": true,
+      "actual_open_reservations": 1,
+      "actual_consumed": 0,
+      "reconciliation": null,
+      "terminal_event": "episode_rejected",
+      "sealed": true,
+      "process_termination_predicate": false
+    },
+    "copy_failure_after_reservation": {
+      "result": {
+        "accepted": false,
+        "mode": "rehearsal",
+        "proof_accepted": false,
+        "failure_category": "harness_failure",
+        "credential_use_accepted": false,
+        "publication_accepted": true,
+        "publication_pending": false,
+        "ledger_reconciled": true,
+        "accounting": {
+          "attempts_reserved": 0,
+          "reservation": null,
+          "reservation_id": null,
+          "transmissions_started": 0,
+          "transmissions_returned": 0,
+          "grant_committed": false,
+          "send_outcome": "not_started",
+          "ledger_outcome": null,
+          "live_transmissions_consumed": 0,
+          "scope": "failed before any reservation"
+        }
+      },
+      "reservation_exists": true,
+      "authoritative_grant_exists": false,
+      "actual_open_reservations": 1,
+      "actual_consumed": 0,
+      "reconciliation": null,
+      "terminal_event": "episode_rejected",
+      "sealed": true,
+      "process_termination_predicate": false
+    },
+    "io_partial_write_and_unreadable": {
+      "unreadable_record_precondition": true,
+      "read_record": {
+        "raised": "PermissionError"
+      },
+      "unreadable_grant_reconciliation": "PermissionError",
+      "short_write": {
+        "bytes_durable": 7,
+        "expected_bytes": 350,
+        "commit_reported_durable": true,
+        "reader_rejects": "campaign_grant_unreadable",
+        "reconciled_conservatively_as": "unknown"
+      }
+    },
+    "authoritative_grant_altered": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutation": {
+        "only_authoritative_slot_changed": true,
+        "production_reader_rejects": "campaign_grant_binding"
+      }
+    },
+    "ledger_mount_altered": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutation": {
+        "guest_mount": "/ledger.ndjson",
+        "host_mount_changed": true,
+        "normal_finalizer": true
+      }
+    },
+    "grant_mount_altered": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutation": {
+        "guest_mount": "/grant",
+        "host_mount_changed": true,
+        "normal_finalizer": true
+      }
+    },
+    "scan_event_hash_forged": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutation": {
+        "one_inventory_field_changed": "sha256",
+        "terminal_and_seal_rebound": true
+      }
+    },
+    "scan_event_length_forged": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutation": {
+        "one_inventory_field_changed": "bytes",
+        "terminal_and_seal_rebound": true
+      }
+    },
+    "release_despite_live_workload": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 63
+      },
+      "mutation": {
+        "recorded_termination_established": true,
+        "recomputed_termination_established": false,
+        "retained_release": true,
+        "ledger_and_all_mirrors_rehashed": true
+      }
+    },
+    "operator_multi_root_collision": {
+      "each_root_alone_accepted": [
+        true,
+        true
+      ],
+      "combined_scan_accepted": true,
+      "combined_coverage": [
+        false,
+        true
+      ],
+      "combined_sealed": [
+        true,
+        true
+      ],
+      "combined_commitment_bound": [
+        true,
+        true
+      ]
+    }
+  },
+  "case_count": 12,
+  "completed": true
+}

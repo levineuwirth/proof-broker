@@ -1,0 +1,97 @@
+{
+  "accepted": true,
+  "audit_cases": 63,
+  "audit_controls": {
+    "baseline": 1,
+    "copy_mutations": 19,
+    "predicate_mutations": 3
+  },
+  "before_snapshot_sha256": "75208b07199c539785f1304a1351e7435b5ebc506537eca39d9aa10a388198ab",
+  "changed": [],
+  "evidence": {
+    "AUDIT": {
+      "bytes": 4192,
+      "sha256": "f348a64031d0c54cfd1926859dfc31f030d2c2dd264e4674c6efd1ac970855c7"
+    },
+    "AUDIT-CONTROLS": {
+      "bytes": 3219,
+      "sha256": "a771865262bec5ddfeab560cf63af2933c2aeda4ab6d82d99df9735f4614321b"
+    },
+    "FOCUSED": {
+      "bytes": 12476,
+      "sha256": "9337990e06da462eb924bc50d4e205037df33d71e7b2776e1d549e7e826b22ed"
+    },
+    "OPERATOR-CONTROLS": {
+      "bytes": 2013,
+      "sha256": "94d6be81be8596a23106b100e30e09a192d3d87abe47d497926fa8b59b1f580c"
+    },
+    "PILOT-AUDIT": {
+      "bytes": 13618,
+      "sha256": "ee727e937ffb5f0da5ee18627bd47cc95b8954f035e63c32e18c65d72a9254e0"
+    },
+    "PROBES": {
+      "bytes": 9254,
+      "sha256": "90a57a436ad3d31939b16672d3aadbf443ce4be5f729ed5608cf080c6dd9accd"
+    }
+  },
+  "focused_controls": 39,
+  "live_enabled": false,
+  "live_ledger_exists": false,
+  "missing": [],
+  "new_review_probes": 12,
+  "operator_controls": 6,
+  "pilot_audit_cases": 124,
+  "policy_sha256": "b250561eae5ad8f26c7ec5f0d88ae1e83ea798719a6ba0c48ff46c5a06349f64",
+  "preserved_files": 34047,
+  "program_sha256": "f29a16d73ab67cd891640e17ec2bb954696ebfa0eacfec513246167bdee37959",
+  "provider_calls": 0,
+  "real_credentials_read": 0,
+  "runs": {
+    "rehearsal-1": {
+      "accepted": false,
+      "events": 19,
+      "ledger_kind": "release",
+      "retained_files": 215,
+      "seal_sha256": "19a0fea5e1c65da589764a7aa8e5523f4162654f3d192dabcd39a180f7fcccf2",
+      "termination_established": true
+    },
+    "rehearsal-2": {
+      "accepted": false,
+      "events": 17,
+      "ledger_kind": "release",
+      "retained_files": 209,
+      "seal_sha256": "6e0baffd846962a68b448e58338ab8e9091756dae4a967961b19145ed270d4d3",
+      "termination_established": true
+    },
+    "rehearsal-3": {
+      "accepted": true,
+      "axiom_delta": {
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "checked_declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "events": 50,
+      "grant_creation_to_durability_ns": 10991729,
+      "grant_durability_to_header_ns": 486847,
+      "ledger_kind": "send_grant",
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "retained_files": 281,
+      "seal_sha256": "eb0605cd1feb6237a439032ec5f5f841a3c8168a8e24464e3686f3862a0a0ab1",
+      "termination_established": true
+    }
+  },
+  "scope": "byte consistency, fresh controls and historical audits; no new native episode or Lean replay",
+  "snapshot_scope": "review-start working tree; experiments/r6 excluding .cache and __pycache__; not a committed baseline",
+  "source_lock_sha256": "45d2a9d599b126b77bc5450625bbe204064ccad2bf6a168f7dcc449cf575f58d",
+  "total_events": 86,
+  "total_sealed_entries": 705
+}

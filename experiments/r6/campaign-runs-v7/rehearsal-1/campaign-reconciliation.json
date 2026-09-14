@@ -1,0 +1,24 @@
+{
+  "reservation_id": "2442e6a96a954c05b0b96f70113fa616",
+  "episode_id": "rehearsal-1",
+  "evidence": {
+    "process_sha256": "6616a58a925da41186413565338142bd15f03e63ec667714496e6af8ebfb13b8",
+    "http_sha256": "e19130740d4066ba193efe0661f80be9f58acd9bdbb413bb44325160ea65d314",
+    "grant_file_sha256": null,
+    "launched": true,
+    "process_exit_code": 0,
+    "record_read_failures": []
+  },
+  "launched": true,
+  "termination_established": true,
+  "reconciled_at_unix": 1789373494,
+  "kind": "release",
+  "reason": "pre_send_failure_with_established_termination",
+  "failure_category": "credential_format",
+  "transport_record_present": true,
+  "marker_sha256": "74e07d73f06f37759e5987594fe56cf61bd3527175c920252b73476676503ae9",
+  "domain": "r6-campaign-ledger-2",
+  "sequence": 2,
+  "previous_hash": "11f0cc4dd27b0ee76405c30d6980a4d17e3da0d7a59e894c1c102499a0052499",
+  "row_hash": "8723ce28250b1fa29e4747a3caf4ac6c9d80228f40747f333889dd271ed17581"
+}

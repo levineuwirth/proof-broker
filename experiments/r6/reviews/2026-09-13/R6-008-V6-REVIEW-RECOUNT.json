@@ -1,0 +1,238 @@
+{
+  "acceptance_scope": "review recount completed; no authorization to sign or spend",
+  "accepted": true,
+  "archived_run_files_matching_independent_v5_review": 3598,
+  "audit_cases": 76,
+  "audit_controls": {
+    "baseline": 1,
+    "copy_mutations": 40,
+    "layout_positive": 1,
+    "predicate_mutations": 4
+  },
+  "before_snapshot": {
+    "bytes": 1095182,
+    "sha256": "31a79c9a64f32ebc942871a68df1040f15180945ee6160c225e957c4965b9689"
+  },
+  "changed": [],
+  "directed_audit_controls": 45,
+  "evidence": {
+    "AUDIT": {
+      "bytes": 4973,
+      "sha256": "7eb1c8bde4e210d90ac5d5c07fa1027f22ba39e4c08522b643f9fc7aba71d09e"
+    },
+    "AUDIT-CONTROLS": {
+      "bytes": 8613,
+      "sha256": "c4bcfd0143e561e9be8dde0de0748f203adbe2dfed5b107dc93f8301396f6f59"
+    },
+    "FOCUSED": {
+      "bytes": 23137,
+      "sha256": "3830024eb1f273f0ffd46c03f9e6ebfc96df36ae5a79e7942700d774b8e1012d"
+    },
+    "OPERATOR-CONTROLS": {
+      "bytes": 3176,
+      "sha256": "6e822bd7eb43b493c9adc056174fd57d3b5d976a8ee5af81d2a1b2a2888ae42d"
+    },
+    "PILOT-AUDIT": {
+      "bytes": 13618,
+      "sha256": "74bc7693bd15ee80bcb258b9173cbdc668c1e735226ea4b16104aec5be3bfac4"
+    },
+    "PROBES": {
+      "bytes": 6188,
+      "sha256": "c873161da1a53d76d37f26260871713c64fba6453fe9450324caec3cac008401"
+    }
+  },
+  "fault_sweep_cases": 17,
+  "focused_controls": 49,
+  "live_enabled": false,
+  "live_ledger_exists": false,
+  "missing": [],
+  "new_lean_replays": 0,
+  "new_native_episodes": 0,
+  "new_review_probes": 11,
+  "older_policy_files": {
+    "campaign-harness-v1.sha256.json": {
+      "bytes": 648,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "077aa0e1a82866d69ebaf71294a2338dfe78b6b9f8d96e2b6cfb38845d1309a2"
+    },
+    "campaign-harness-v2.sha256.json": {
+      "bytes": 648,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "45d2a9d599b126b77bc5450625bbe204064ccad2bf6a168f7dcc449cf575f58d"
+    },
+    "campaign-harness-v3.sha256.json": {
+      "bytes": 648,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "30934b333f9f0c163e3296b47becb1adcb4c410f9363e70b78b837ebdd00b05b"
+    },
+    "campaign-harness-v4.sha256.json": {
+      "bytes": 648,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "1800644081b39cd7f4178f3818425b2233557405d9d98a1c180215bd06ddd1bb"
+    },
+    "campaign-harness-v5.sha256.json": {
+      "bytes": 648,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "4df4f48aacde9c361efcc44b9c444815634b11707db28b1833c2ac63fae3889e"
+    },
+    "responses-campaign-v1.json": {
+      "bytes": 7577,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "d63a6680d591201b43332134be4f53c3a5a91ce683bb80b04ebc4d6739188e0b"
+    },
+    "responses-campaign-v2.json": {
+      "bytes": 8028,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "b250561eae5ad8f26c7ec5f0d88ae1e83ea798719a6ba0c48ff46c5a06349f64"
+    },
+    "responses-campaign-v3.json": {
+      "bytes": 8028,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "3a5af1d844bcf72fe37c09d53a2b8c78f62e409b2c0c0724b8afe84863c53f5d"
+    },
+    "responses-campaign-v4.json": {
+      "bytes": 8028,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "fd6b53d475c57c7bca0d9e361de37a9081a30e079139992207cd9d3ca1212327"
+    },
+    "responses-campaign-v5.json": {
+      "bytes": 8028,
+      "matches_independent_v5_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "f9349ed27308859980380d72d8bce0e0a8ca7fcd4f3230195ac59ccf9a9595a9"
+    }
+  },
+  "operator_controls": 9,
+  "pilot_audit_cases": 124,
+  "policy_sha256": "0f83bf91c8bce4c1720fa41cc9b141ec418999fa15bbc74ba8d130ecaa406376",
+  "preserved_files": 37026,
+  "pricing_freshness": {
+    "after_deadline_failure_code": "pricing_capture_stale",
+    "after_deadline_test_unix": 1789383537.965977,
+    "billing_guarantee": false,
+    "historical_admission_rederived_exactly": true,
+    "historical_evaluated_at_unix": 1789333197.9296987,
+    "last_accepted_unix_by_role": {
+      "caching": 1789383537.382957,
+      "model": 1789383536.965977
+    },
+    "last_accepted_utc_by_role": {
+      "caching": "2026-09-14T10:58:57.382957+00:00",
+      "model": "2026-09-14T10:58:56.965977+00:00"
+    },
+    "maximum_source_age_seconds": 86400,
+    "new_fetch": false,
+    "scope": "retained-source freshness gate at two supplied times; no current provider pricing or availability claim",
+    "source_directory": "experiments/r6/sources/pricing-approved-pilot-1",
+    "source_files": {
+      "caching.extract.json": {
+        "bytes": 1909,
+        "sha256": "52463a4a0f3a9b5784fff4c1a2dfd33be0e1fea71012234c6ae488870ecd6a50"
+      },
+      "caching.html": {
+        "bytes": 704039,
+        "sha256": "7bed029c171427f3353bd22b9d1f4bd2426138bb728bfc4fb3ca3e9450d76755"
+      },
+      "caching.receipt.json": {
+        "bytes": 1001,
+        "sha256": "bf01546abfa2f580f17ae39710b196930d9ea1f6e80407790ebcf3898ba5d5ab"
+      },
+      "model.extract.json": {
+        "bytes": 1137,
+        "sha256": "600b0b4b724aae61e7db67b9a3f3c8a62c80c92e16246cd13cb7b1f6fbfee8ae"
+      },
+      "model.html": {
+        "bytes": 429765,
+        "sha256": "631040b5d883a6a9081646cf1d76a73e9e50263639f9588b258ca51400f553d2"
+      },
+      "model.receipt.json": {
+        "bytes": 972,
+        "sha256": "2f9b9ab6bbde71cf48db1432e6b9466dbcb941d17ade79ec99b3ec3939289a36"
+      }
+    }
+  },
+  "program_sha256": "8390baa8b034fd555f5e0d58aca0de10fd250104335d0e2a8d0409ca8575f5ef",
+  "provider_calls": 0,
+  "real_credentials_read": 0,
+  "runs": {
+    "rehearsal-1": {
+      "accepted": false,
+      "events": 20,
+      "evidence_complete": true,
+      "ledger_kind": "release",
+      "retained_files": 215,
+      "seal": {
+        "bytes": 25408,
+        "sha256": "6ed47274837e553c245b929382ccc034e3faa28c432187e3b9392d11dc6e7fa8"
+      },
+      "summary_accounting_matches_file": true,
+      "summary_task_id_matches_frozen_task": true,
+      "termination_established": true
+    },
+    "rehearsal-2": {
+      "accepted": false,
+      "events": 18,
+      "evidence_complete": true,
+      "ledger_kind": "release",
+      "retained_files": 209,
+      "seal": {
+        "bytes": 24747,
+        "sha256": "5f76eaac93f3e347db58f38dc235e44db05b5c06bcaf95bd60caeb54176be605"
+      },
+      "summary_accounting_matches_file": true,
+      "summary_task_id_matches_frozen_task": true,
+      "termination_established": true
+    },
+    "rehearsal-3": {
+      "accepted": true,
+      "axiom_delta": {
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "checked_declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "events": 51,
+      "evidence_complete": true,
+      "grant_creation_to_durability_ns": 15692976,
+      "grant_durability_to_header_ns": 442062,
+      "ledger_kind": "send_grant",
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "retained_files": 281,
+      "seal": {
+        "bytes": 33493,
+        "sha256": "a2791ab56c03c9405aa56a276d822c2ed34213d8c8665472e332aa2226fe8a38"
+      },
+      "summary_accounting_matches_file": true,
+      "summary_task_id_matches_frozen_task": true,
+      "termination_established": true
+    }
+  },
+  "scope": "byte consistency, fresh canned controls, historical audits and fault probes; no new native episode or Lean replay",
+  "snapshot_scope": "review-start working tree; experiments/r6 excluding .cache and __pycache__; not a committed baseline",
+  "source_lock_sha256": "1ac95bfab7925be6655094ba5b546c11b9d604f85c26a010752f7d15559683f6",
+  "superseded_positive_audits": 5,
+  "total_events": 89,
+  "total_sealed_entries": 705,
+  "verification_run_notes": [
+    "Fresh focused suite completed with approved local socket access.",
+    "Focused tests exercise synthetic signing in temporary state; the actual disabled policy was not signed.",
+    "Initial recount selected the compact search-policy receipt for pricing and stopped on its missing pricing field; corrected to the retained full policy before writing any result."
+  ]
+}

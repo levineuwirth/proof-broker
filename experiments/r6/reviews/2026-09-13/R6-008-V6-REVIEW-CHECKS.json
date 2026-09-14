@@ -1,0 +1,93 @@
+{
+  "review": "R6-008 revision 6",
+  "recorded_utc": "2026-09-13T22:03:12.414560+00:00",
+  "disposition": "passes review at canned checkpoint scope; no further blocking finding",
+  "authorization_to_sign_or_spend": false,
+  "policy_sha256": "0f83bf91c8bce4c1720fa41cc9b141ec418999fa15bbc74ba8d130ecaa406376",
+  "source_lock_sha256": "1ac95bfab7925be6655094ba5b546c11b9d604f85c26a010752f7d15559683f6",
+  "live_enabled": false,
+  "live_ledger_exists": false,
+  "preserved_files": 37026,
+  "changed": [],
+  "missing": [],
+  "head": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+  "tracked_status_unchanged": [
+    " M README.md",
+    " M experiments/r6/.gitignore",
+    " M experiments/r6/LIVE-POLICY-REQUIREMENTS.md",
+    " M experiments/r6/PROTOCOL.md"
+  ],
+  "git_diff_check": "passed",
+  "evidence": {
+    "campaign_v6_review_probes.py": {
+      "bytes": 13365,
+      "sha256": "af1554abf824605ec21fcbb0a6302c631619be312c017ceffe0bf32b7959d620"
+    },
+    "campaign_v6_review_recount.py": {
+      "bytes": 15802,
+      "sha256": "8390baa8b034fd555f5e0d58aca0de10fd250104335d0e2a8d0409ca8575f5ef"
+    },
+    "R6-008-V6-REVIEW-BEFORE.json.gz": {
+      "bytes": 1095182,
+      "sha256": "31a79c9a64f32ebc942871a68df1040f15180945ee6160c225e957c4965b9689"
+    },
+    "R6-008-V6-REVIEW.md": {
+      "bytes": 6851,
+      "sha256": "147521a6648fe82c461ea0a44dad0c247d13a37fe9eef20faf39002083c4f521"
+    },
+    "R6-008-V6-REVIEW-FOCUSED.json": {
+      "bytes": 23137,
+      "sha256": "3830024eb1f273f0ffd46c03f9e6ebfc96df36ae5a79e7942700d774b8e1012d"
+    },
+    "R6-008-V6-REVIEW-AUDIT.json": {
+      "bytes": 4973,
+      "sha256": "7eb1c8bde4e210d90ac5d5c07fa1027f22ba39e4c08522b643f9fc7aba71d09e"
+    },
+    "R6-008-V6-REVIEW-AUDIT-CONTROLS.json": {
+      "bytes": 8613,
+      "sha256": "c4bcfd0143e561e9be8dde0de0748f203adbe2dfed5b107dc93f8301396f6f59"
+    },
+    "R6-008-V6-REVIEW-OPERATOR-CONTROLS.json": {
+      "bytes": 3176,
+      "sha256": "6e822bd7eb43b493c9adc056174fd57d3b5d976a8ee5af81d2a1b2a2888ae42d"
+    },
+    "R6-008-V6-REVIEW-PILOT-AUDIT.json": {
+      "bytes": 13618,
+      "sha256": "74bc7693bd15ee80bcb258b9173cbdc668c1e735226ea4b16104aec5be3bfac4"
+    },
+    "R6-008-V6-REVIEW-PROBES.json": {
+      "bytes": 6188,
+      "sha256": "c873161da1a53d76d37f26260871713c64fba6453fe9450324caec3cac008401"
+    },
+    "R6-008-V6-REVIEW-RECOUNT.json": {
+      "bytes": 8584,
+      "sha256": "f040566ddc17a65a903c5d09214f888eb418ec2fc7af84acac246f6a6f763f9c"
+    }
+  },
+  "fresh_verification": {
+    "focused": 49,
+    "fault_sweep": 17,
+    "current_audit": 76,
+    "audit_copy_negatives": 40,
+    "audit_predicate_negatives": 4,
+    "audit_layout_positive": 1,
+    "audit_baseline_positive": 1,
+    "historical_positive_audits": 5,
+    "operator_controls": 9,
+    "pilot_audit": 124,
+    "supplemental_probes": 11
+  },
+  "events_rehashed": 89,
+  "sealed_entries_rehashed": 705,
+  "scope": {
+    "new_full_native_episodes": 0,
+    "new_lean_replays": 0,
+    "real_credentials_read": 0,
+    "provider_calls": 0,
+    "actual_policy_signed": false,
+    "synthetic_signing_controls_in_temporary_state": true,
+    "commits": 0,
+    "pushes": 0
+  },
+  "new_review_files_including_this_index": 12
+}

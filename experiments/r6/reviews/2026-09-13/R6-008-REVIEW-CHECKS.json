@@ -1,0 +1,58 @@
+{
+ "files": {
+  "R6-008-REVIEW-AUDIT-CONTROLS.json": {
+   "bytes": 2321,
+   "sha256": "9bf9c73c454d573bf9d21f49111699cf2c625db8ac21dd2f781e27baccff1acf"
+  },
+  "R6-008-REVIEW-AUDIT.json": {
+   "bytes": 3846,
+   "sha256": "0827174338cf347c74c7bf74eff3e485cfa734a448392c702da3682f552e2f17"
+  },
+  "R6-008-REVIEW-BEFORE.json.gz": {
+   "bytes": 910992,
+   "sha256": "d6e53eed5119c2610f4e239046be35d228309c2d301799383432dd520599e63e"
+  },
+  "R6-008-REVIEW-FOCUSED.json": {
+   "bytes": 9044,
+   "sha256": "55087b9affa24caf9daed465a7b5bb19d2104df679dc59006f0b52768f17419f"
+  },
+  "R6-008-REVIEW-LOOPBACK.json": {
+   "bytes": 829,
+   "sha256": "559d0e0ebcf315085b6657a06096f449df2d493c01b6d0e02b028eab32f6ac5d"
+  },
+  "R6-008-REVIEW-PILOT-CONTROLS.json": {
+   "bytes": 6085,
+   "sha256": "13422d154716bce44da9ceccb5935ab438b3fefde98820d95b3bb711cbf91487"
+  },
+  "R6-008-REVIEW-PRESERVATION.json": {
+   "bytes": 324,
+   "sha256": "0de2e53c545a20d05b08725b43d7cec9909bb8fc75cad6ae8d0efdf6d07a1133"
+  },
+  "R6-008-REVIEW-PROBES.json": {
+   "bytes": 3561,
+   "sha256": "8cd58dbd633aef48202b364412ea064bc6537a4efab1fbcb63c0785e0efa7623"
+  },
+  "R6-008-REVIEW-RECOUNT.json": {
+   "bytes": 1034,
+   "sha256": "d8953aa2e362e9ff350ca216907b054ba678cf915a706603f03ec5d9182a91fd"
+  },
+  "R6-008-REVIEW.md": {
+   "bytes": 13695,
+   "sha256": "40a19a6d88a0ea9ff70c8d7afa2df64cb3e90f2b413e59a3b2fbe5fe001b06c1"
+  },
+  "campaign_review_probes.py": {
+   "bytes": 19462,
+   "sha256": "6b3fda89518f0229cb800e2648a4dacd9fe95fb53eb84964eacda1f439378703"
+  }
+ },
+ "preserved_files": 33301,
+ "preservation_problems": 0,
+ "frozen_sources_verified": true,
+ "live_enabled": false,
+ "live_ledger_exists": false,
+ "provider_calls": 0,
+ "operator_credentials_read": 0,
+ "full_native_episodes_repeated": 0,
+ "fresh_kernel_replays": 0,
+ "scope": "review evidence; loopback actor controls and offline fault injections, not a repaired-policy checkpoint"
+}

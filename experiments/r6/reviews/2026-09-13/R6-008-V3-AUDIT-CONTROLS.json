@@ -1,0 +1,155 @@
+{
+  "passed": true,
+  "controls": 31,
+  "named_cases": 73,
+  "results": {
+    "unmutated_copy_accepted": {
+      "accepted": true,
+      "case_count": 73
+    },
+    "predicate_controls": {
+      "grant_out_of_order": "rehearsal-3:grant:ordered_before_first_header_byte",
+      "commitment_mismatch": "rehearsal-3:commitment:bound_to_mounted_canary",
+      "receipt_disagrees_with_process": "rehearsal-3:receipts:single_pair_bound_to_process"
+    },
+    "superseded_revision_audited:campaign-runs": {
+      "accepted": true,
+      "case_count": 73,
+      "dispatch": {
+        "revision": "responses_campaign_v1",
+        "superseded": true,
+        "campaign_modules_differ_from_current": [
+          "campaign_contract",
+          "campaign_ledger"
+        ],
+        "qualification": "auditor/source incompatibility for the campaign modules is recorded, not an invalidity verdict"
+      }
+    },
+    "superseded_revision_audited:campaign-runs-v2": {
+      "accepted": true,
+      "case_count": 73,
+      "dispatch": {
+        "revision": "responses_campaign_v2",
+        "superseded": true,
+        "campaign_modules_differ_from_current": [
+          "campaign_contract",
+          "campaign_ledger"
+        ],
+        "qualification": "auditor/source incompatibility for the campaign modules is recorded, not an invalidity verdict"
+      }
+    },
+    "run_added": {
+      "rejected": true,
+      "rejected_case": "population:exactly_three_runs"
+    },
+    "failure_run_unsealed": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:seal:retained_hashes"
+    },
+    "retained_policy_live_enabled": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:versions:policy_lock_sources_bound"
+    },
+    "duplicate_receipt_added": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:chain:expected_sequence"
+    },
+    "attribution_retrofitted": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:proof:attribution_passed_through"
+    },
+    "outbound_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:transport:local_send_and_remote_receipt"
+    },
+    "invalid_proof_export": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:proof:shared_checker"
+    },
+    "shared_ledger_truncated": {
+      "rejected": true,
+      "rejected_case": "shared_ledger:rows_present_and_consistent"
+    },
+    "shared_ledger_missing_reconciliation": {
+      "rejected": true,
+      "rejected_case": "shared_ledger:rows_present_and_consistent"
+    },
+    "grant_file_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:permit_and_reconciliation_bound"
+    },
+    "http_record_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:permit_and_reconciliation_bound"
+    },
+    "reservation_rebound": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:permit_and_reconciliation_bound"
+    },
+    "source_lock_rebound": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:versions:policy_lock_sources_bound"
+    },
+    "publication_scan_rejected": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:publication:recomputed"
+    },
+    "disclosure_overridden_by_terminal": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:publication:recomputed"
+    },
+    "false_terminal_summary_digest": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:terminal:commitments_bound"
+    },
+    "retained_module_altered": {
+      "rejected": true,
+      "rejected_case": "modules:bound_to_retained_copies"
+    },
+    "file_added_after_sealing": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:seal:retained_hashes"
+    },
+    "slot_marker_removed": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:slot:authoritative_matches_retained"
+    },
+    "release_despite_live_workload": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:ledger:disposition_derived"
+    },
+    "authoritative_grant_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:disposition_derived"
+    },
+    "authoritative_marker_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:slot:authoritative_matches_retained"
+    },
+    "ledger_mount_changed": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:mounts:authority_bound"
+    },
+    "grant_mount_changed": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:mounts:authority_bound"
+    },
+    "scan_event_hash_forged": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:publication:recomputed"
+    },
+    "scan_event_length_forged": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:publication:recomputed"
+    },
+    "retained_campaign_module_altered_current_revision": {
+      "rejected": true,
+      "rejected_case": "modules:campaign_revision"
+    }
+  },
+  "auditor_sha256": "42c9f890b0998629ae042254d91297d3cfa8a9067c4838abd49b4ce47adf0c0b",
+  "program_sha256": "ae130255377e96c425bf039c7055f0d1199270191747a5291eae6c11dbc92bf9",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies of runs and ledgers; one relationship per mutation"
+}
