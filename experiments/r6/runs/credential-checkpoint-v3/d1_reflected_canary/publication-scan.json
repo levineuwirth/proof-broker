@@ -1,0 +1,1555 @@
+{
+  "schema_version": "r6-publication-scan-2",
+  "canary_nonce": "9d7bb633c6ba214874e42393552ec1c9675bf0815465499a6102a245dfd52f76",
+  "derivation_domain": "r6-004-synthetic-canary-v1",
+  "representations": [
+    "token",
+    "authorization"
+  ],
+  "encoded_forms": [
+    "utf-8",
+    "utf-8-lower",
+    "utf-8-upper",
+    "base64",
+    "hex",
+    "utf-16-le",
+    "utf-16-be"
+  ],
+  "extra_canary_count": 0,
+  "decompression_limit_bytes": 67108864,
+  "roots": [
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/runs/credential-checkpoint-v3/d1_reflected_canary",
+      "name_sha256": "741dd191840524c05152f1937464202897c7ab2458b3a6319f3cd201ede763fe"
+    }
+  ],
+  "files_scanned": 124,
+  "gzip_streams_scanned": 0,
+  "unreadable_directories": [],
+  "irregular_entries": [],
+  "exempted_files": [],
+  "incompletely_scanned": [],
+  "disclosures": [
+    {
+      "path": "stages/proposal-1/output/provider-response.json",
+      "path_sha256": "f353e19fc669fc1c136666c09088bd9cc346f21365caa0e4ddee8eb3fa36a0d3",
+      "stream": "raw",
+      "representation": "authorization",
+      "form": "utf-8",
+      "offset": 52
+    },
+    {
+      "path": "stages/proposal-1/output/provider-response.json",
+      "path_sha256": "f353e19fc669fc1c136666c09088bd9cc346f21365caa0e4ddee8eb3fa36a0d3",
+      "stream": "raw",
+      "representation": "token",
+      "form": "utf-8",
+      "offset": 59
+    }
+  ],
+  "accepted": false,
+  "inventory": [
+    {
+      "path": "accounting.json",
+      "path_sha256": "99ea1137c96ca599912db2c2b3f1364990da816d94b867d0e44fac763d2d93b1",
+      "sha256": "4e162b74fb3793fec33f612f373455201c104829c83dd8420ecae5fb22586c1c",
+      "bytes": 525,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "canned-provider.json",
+      "path_sha256": "f58dea82720a79c68df75bc09e14933388411869ce260a22a86a21d915d204bd",
+      "sha256": "fba844ce4a8e3f7465a28cbb940b4fe7a150574be41a077582dcb7fa90131bfa",
+      "bytes": 1019,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "client-arguments.json",
+      "path_sha256": "dc7c7ac5cb65903e9a85b8f6e32b6bf851f73fccac55fc15014ac7717c9c136b",
+      "sha256": "07e0e8ecd79c6ebf92c2b38a14afc5857c1f06a0a7c43855998f48d36e240f79",
+      "bytes": 6138,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "credential-canary.json",
+      "path_sha256": "0ef07415ecfa2c85b32f179b5082b580054d2f2e1b0cfaba74f2e275d7d97d46",
+      "sha256": "4da64bb1c86bb879c84a78f5d806b0bd6ca2a786c6d257a0511fbb31c4699e4b",
+      "bytes": 520,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "credential-receipt.json",
+      "path_sha256": "9e0641131f8ae16e693a860cf95d947747024ccdb1fde154ba9be2365735ead4",
+      "sha256": "73908365fe3fa082d321647389117af14dd161dd43efe6d357ec9eac0f3866bb",
+      "bytes": 561,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "credential-summary.json",
+      "path_sha256": "98534e14dab08e4376e7620e223c4987c208b81f1dd1a97891ca0282876f0358",
+      "sha256": "34287ea3c5cd8f5da721e054252314771748721770c103ab0b4e1d80b2867f2b",
+      "bytes": 542,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "events.ndjson",
+      "path_sha256": "45934dbbdcde3c535a198904f35f4a9d31f7523057186f45e44683757363ed6e",
+      "sha256": "3d51e83d5cf5f96d09a7809cb3dca294a52f8c82f2cfb45128b3adda1af63d6f",
+      "bytes": 12544,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "input-ir.json",
+      "path_sha256": "f616a3a37799d1870cc178f7d21f5c9fc96611548a55fa86bda3f4e4806c1e36",
+      "sha256": "13451b787f2bb4e85db534140e5a02acc51afe6f80a8f43c64ea68d23be3e967",
+      "bytes": 19194,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "messages.json",
+      "path_sha256": "a12aa54daf6b7d53ddaf120b8fd1c8c39b24fa6ab02377832e8b6aaf5f96091f",
+      "sha256": "b8a924dc912373d99b9e03b8e2e49b9bd8ca9e920ac9acffe6b2d2492d60ddba",
+      "bytes": 5866,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "payload-audit.json",
+      "path_sha256": "ea1b75e91c21ffbbc9efaf966061ab4dc906c503439c9a43902618b0d50afc6e",
+      "sha256": "775643fb7f9d1dcb6628c05ca77e7e6eb070eec9a645cb906b28279e889812ee",
+      "bytes": 1091,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "preparation-input/Frozen.lean",
+      "path_sha256": "34967921f8bde6469a8b38641696d4cbeab3644183740a0ce27e81f5ea1d4a80",
+      "sha256": "00683f8ebf6c5717232f5b0aa7ffa2136ee2cd9b08c3ce05b20e3fcb65e01ba9",
+      "bytes": 10113,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "preparation-input/PreparationCapture.lean",
+      "path_sha256": "6b1d06ff0dbdc0a23ea97a903723102ecb519e7d59c2e2a566aa90a476f29437",
+      "sha256": "3d440a02cc784ccf2ab85855dc888bf5b5049615f9b30163627df64c8591ebec",
+      "bytes": 3727,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "preparation-input/source.patch",
+      "path_sha256": "aa3c5c6c190c9abc3f91fc708050c7f55f22b5cbeb618de37ba0ae57d871ee1c",
+      "sha256": "b89f279576958ff1702d77ca9edf425595c9776e50943122e845e1bbf0c5e84c",
+      "bytes": 552,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "prepared.json",
+      "path_sha256": "f57b3db823168c104afc5d55a576592cc86b504a2bf6f60add834682a6561f90",
+      "sha256": "6b603f6dedb519a50554a0f11773ce32550abb5b808fc9212fc187fae9cf8b9b",
+      "bytes": 20227,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "prompt.txt",
+      "path_sha256": "bc63bb8626af82801aa6253fe5e8b578203c08fba1c3423895ac4c6d4ea0ec58",
+      "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+      "bytes": 2143,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/binaries.json",
+      "path_sha256": "ce78fbc5604cba90b5e76d9d5c02486d451c62fa75eca509de0420bd724ff6ea",
+      "sha256": "f466d54d31950ddd2e2bc89e748610302c9c1c9eb37821e2c004438f02e43356",
+      "bytes": 2842,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/credential.py",
+      "path_sha256": "4e5896c5c707caed45aca6460c571c063eaf83c7b6e45342730120ae3e0f58fb",
+      "sha256": "a501d8ff28eea7536b04afc360c5b081310ec9b51fa7a4dd13675ff7f32b7163",
+      "bytes": 2866,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/credential_audit.py",
+      "path_sha256": "9a3a3d00888ff3320d71eebd37a156caf972a6c94565cb626063a32e5e1038d2",
+      "sha256": "f541879009f03128830737265c003e2644957db4fcd95d64744c64a77e2150cd",
+      "bytes": 37646,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/credential_contract.py",
+      "path_sha256": "ca9264f8c57ef9589b2b2abe326c255285560f022ebdd19f9c6aa6f3b6580da4",
+      "sha256": "c7df0c0c0c6bc0d4c67c8af9f05c73938d3601b818608880a60749f007a6c331",
+      "bytes": 6635,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/credential_episode.py",
+      "path_sha256": "e02f1d4a036a565ec47e883670322b42b4f75148e30eb08b2473aa6e8a480ed5",
+      "sha256": "3bbdc98ff744055509396f0b2569f08c9d404558901742995f2bf21a523bc2da",
+      "bytes": 16821,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/credential_http.py",
+      "path_sha256": "a9070b9c55c1e7f768063eef691b3b22622fcf563a857638a832dc988ee2376e",
+      "sha256": "5559ed7c4dd0c21bf3d11dff805a17d2ceef0326f9aef69d10b9ed065bfa2b42",
+      "bytes": 8952,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/policies/credential-harness-v3.sha256.json",
+      "path_sha256": "4e5eb8de27325b1ffcab626ed2e29a51b1ee4f0e393c96d6b4afb5c674755134",
+      "sha256": "846ffd8beb6e41457c31d557189c026d807ae1e9d662a782e02417fb8caf379b",
+      "bytes": 758,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/policies/credential-http-v3.json",
+      "path_sha256": "193ce3ca72270a82d811da7edd0bb4ff24d4fd3cb21b97342abcca994b5fcd0b",
+      "sha256": "e6e037d11b206326b064653ea3648db7cf8a0533880b78990738a783230bd39f",
+      "bytes": 4025,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/publication.py",
+      "path_sha256": "be6cad8e5f8e9e56b7c0ece7a15521ef8619bcc59e21dcecd33b572c633a755e",
+      "sha256": "0404a755a97631273188e24bf380f9e64ac61bd53ecac9021b70533fbd0b7ad6",
+      "bytes": 10752,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/schema/credential-verdict.schema.json",
+      "path_sha256": "ab7d03070e85093018262de2b063b0b01b54ae0ca52adc0e24382f05ad3aebf1",
+      "sha256": "bfa5c80b5803ab0acb331f1e17c9a8760e10fc0bb63d211bbaf0088fa8a2b87c",
+      "bytes": 3241,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/credential-harness/test_credentials.py",
+      "path_sha256": "73afdabf2bc3cbe0c749f3cfd80de97829e4b42c54cf87e5e7bbb8b80a8394f1",
+      "sha256": "5f2fdb7d1c09943109536889a115e8654ae13d3210c9ae0563eb42725354e74b",
+      "bytes": 42808,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/envelope_audit.py",
+      "path_sha256": "e13f3e2a384738d2abd1001cfafb0c9b8a5f861f9e9a7dd01b9d7ca534d0cb0e",
+      "sha256": "14d60b14061cff1020f9833b9222db8f7db8d72221a74c672efa855c73c727f6",
+      "bytes": 17886,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/envelope_contract.py",
+      "path_sha256": "d016b0bcb09b580fdeb87e38fbfa6a38a5887778136aadfa6a159afbe90f7f02",
+      "sha256": "003501ede4f6b7344402aa440206ec28a8f0fb2bb514b26b62a1481a83caa043",
+      "bytes": 4046,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/envelope_episode.py",
+      "path_sha256": "4879b01774225b6d2bda1949a39df11847cf2f9cc194349ec0eacd9dabe32eb9",
+      "sha256": "9d3385df7251ee2c88bc77189039b1e48893eb73933f3acb72b5fa7636b82204",
+      "bytes": 20526,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/envelope_payload.py",
+      "path_sha256": "56f8aac88e11d1eab13b92b6027971731d188d5c23a3daf13f1e336ee7470010",
+      "sha256": "e8ad82f6ad261a537ba78015abf2cc764b775496cb0fa5be98683424f1187dad",
+      "bytes": 8054,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/envelope_proof_audit.py",
+      "path_sha256": "24be38fa90ab5d274866f95969f6c97bc021dfd05e9f513a0fa2a1f26fbc604f",
+      "sha256": "ccd9b82881167affc17a6104c713c574207e1181d2093bb46d2c73600eeb3644",
+      "bytes": 6424,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/policies/canned-envelope-harness-v1.sha256.json",
+      "path_sha256": "b00f6c4c3a67ef53dbbf1ab849f7ccc5db4d02e23b92d7c7e98b67d353718489",
+      "sha256": "5db38ec734b924913ca3d61b728518f6811dfa6d355217e2e624310611bdb8a0",
+      "bytes": 982,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/policies/canned-envelope-v1.json",
+      "path_sha256": "f4de35359936c0f2fb80ebccf98dfa9e06098520a72ae777dc29488e7da53458",
+      "sha256": "9cbd96a36b0f1b818836ac2ce04449147b45127f84947b253d7b167a4f304dca",
+      "bytes": 2088,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/prompts/farkas-rows-v1.txt",
+      "path_sha256": "f7b9fe689a168ee86232fdd46d8a43d33d2d5a4ca89c191fcf5f92c09ec63846",
+      "sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+      "bytes": 2354,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/schema/envelope-request.schema.json",
+      "path_sha256": "dc13ff47af96d05a7481c98229661e90a515026e7ea9808e9c3f60558ebf1980",
+      "sha256": "ad8eb1b09a63a2f6d5f91726790345c877a348f500bde139491ac7319d60deff",
+      "bytes": 3064,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/schema/envelope-verdict.schema.json",
+      "path_sha256": "8b13707e3a3854c6717f61e52658bc4180be9407ebb1956d5edead7028eceb9f",
+      "sha256": "dc6c83e24a6738a09e6a341c7650ca735564ecc5243d41e4acba38f410986391",
+      "bytes": 3293,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/test_envelopes.py",
+      "path_sha256": "6720aab1bc885dfec2201c499b97cf0bc4b98ceae339e84c229ef8d0ee810549",
+      "sha256": "ea4da21c65659d0306cc2f362c239b43157132a539459c89f91e5e248d0d3785",
+      "bytes": 31900,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/envelope-harness/validate/envelope_receiver.c",
+      "path_sha256": "d823ce791b0deb45fdcca94350015b0249cf5a0c48d815ff6457e371c55c4635",
+      "sha256": "c113477bc66f3f6609a7872daae1ae4daece495bd6a74cc14e9d9f6fd2771900",
+      "bytes": 1270,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/fixture-runtime.json",
+      "path_sha256": "aa0c3af4d6ebd1b186c96edaddcc3ac7c3e3d0a56119ebbf208c19a7e406134c",
+      "sha256": "c2d2be05d87065dd8d8a433e9a83ee74f74ec977574ffbe1b38a3d0c4d3bf9a6",
+      "bytes": 345,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/admission.py",
+      "path_sha256": "8df508f32008cc6580437c463333dfe28a3ccc46a045fed90efa1e747fca72f3",
+      "sha256": "0937387f16fdb90b64ee6ed772b1fec0951fa555890871ec0fd0dd6c8651e324",
+      "bytes": 6430,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/episode.py",
+      "path_sha256": "84b7e4c448ea418ef8c9f6126a22462c7a10df445baac66b9f7dd0b43a572d67",
+      "sha256": "c85914f79944c4eb28e1f711af14895f950491c6070ab1a221c41c49228cb05d",
+      "bytes": 27687,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/events.py",
+      "path_sha256": "d55364fed45c3844c341c4b43afdbe9132b17b4b84f366aa476bbf0336546057",
+      "sha256": "875332d592bc98059a002f4124a045d4a7b278260a63013c431634d882d925af",
+      "bytes": 2916,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/instrument.py",
+      "path_sha256": "dba2d75a01a011cbc1e96f58efd25b247351ea605b7648e2ea7b829c3e278d8a",
+      "sha256": "f899ea801c78989a84678646d0003c8abc61db951435a7713b4f70e5c7643565",
+      "bytes": 10677,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/payload.py",
+      "path_sha256": "920ab00fd2407568879af0a83397e502555f614f6f73a5507ea171b380b52c2c",
+      "sha256": "ac1f594e6be800728b07cceb154b672046a70f1b0c57cf3cb625e6a06254b473",
+      "bytes": 8637,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/policies/admission-v1.json",
+      "path_sha256": "8f0754ae9fa601358db45d00f85757b2364f4708ba1ba8791a2be6650aaf5935",
+      "sha256": "d3b28b78683023a7ebe55733fc557f254145f5aed0bada32f8040cd7426a7ddf",
+      "bytes": 2870,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/policies/fixture-farkas-v1.json",
+      "path_sha256": "2572e255f6fe47fd59c63c30462b3d7100ed531e17ecfc420e39db906346e95c",
+      "sha256": "d629a9e8565eab6aeb190c6fff45ecf9ccc5f90d2855ef85bde8c11ea26f457d",
+      "bytes": 1094,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/policies/fixture-harness-v1.sha256.json",
+      "path_sha256": "48cdb0288e01fd3fad96d2e6177d0be0945222464c8659d9fbe8242f91445bc5",
+      "sha256": "570f2cc90d4b583579e752d01760282ae9943efdde89fab5312a660edde5709b",
+      "bytes": 1972,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/proposal_audit.py",
+      "path_sha256": "6e30af99a6c8570964ef73fa2023464eef21eb2d6c53b841d2a46e4427a9de3a",
+      "sha256": "a9dc79a38b8594802cd5bb1ea2446d556a786227ac381e8b1031b4d7939798e7",
+      "bytes": 20222,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/proposal_episode.py",
+      "path_sha256": "5a5ef7797753979672ba5cf376b372d49f097dc9c453d1e3a256890df75df16f",
+      "sha256": "3a2b35744e55f5538c11c4d2da2adabeefef7c44e876c5b701f094a7caceefc9",
+      "bytes": 17402,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/proposal_instrument.py",
+      "path_sha256": "313db4ccf85862057e219cbb657c836ac5324f7963e272590ec5956e4b479532",
+      "sha256": "e55276242efb238063cc88bcee90f32c9fcd8707647be111c5e655347fe10ed6",
+      "bytes": 8766,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/run.py",
+      "path_sha256": "49e7aa7f383fc874aceb49c539d17d71168d43ce456f160c28ca1e15028fcfa4",
+      "sha256": "8623dac7ac68f416b95ee91391c7019192655843fa9454865c9959314a3c77a4",
+      "bytes": 26044,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/schema/event.schema.json",
+      "path_sha256": "a5dbe88281cf107e9c3654b687e1b85d856ffa00c885e2ef393bce1c931bbd43",
+      "sha256": "8f0936407d96a4f3c81f11fe8ab2c689d749bfa3ba1eea50b0b336caa911b202",
+      "bytes": 1308,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/schema/proposal-episode.schema.json",
+      "path_sha256": "6fa16d110e82141d31be496f4e7f3e257090d16f8186a9784033567efe3daf8a",
+      "sha256": "fedfbcfa9d21b9b083025f75ae0e6a41357bde7351b14bf96e555712191091af",
+      "bytes": 3353,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/schema/proposal-request.schema.json",
+      "path_sha256": "47df789eaab6635930e75e89d83a4bbe5cf24f7dbad811238325bf2dd469b3d5",
+      "sha256": "8354f3e7597cee1deffcceba3d37c42a645b899332081500cf68bbe15fde6a95",
+      "bytes": 2935,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/schema/proposal-response.schema.json",
+      "path_sha256": "065acce34184a9be0d95bc44460749755e49b99163f84e9e1c63a65497984eef",
+      "sha256": "300add447d792e3c3b20d3e333e4d5a2db8df5279c9da1b236929c0111e84083",
+      "bytes": 1087,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/supervise.py",
+      "path_sha256": "3202949d95b93b79ab791dee0d68eb44ec365e034f8c37ad18f769b8d8c41c27",
+      "sha256": "8065782189791f8bbc5ce8edb759bf0a69242ad96a66f736d222805c74ec388c",
+      "bytes": 7887,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/task_spec.py",
+      "path_sha256": "68b6218c11ce15dcbc5b3506f4fd6865b1a3d1bec9d490782b4a2d0c1ac911b2",
+      "sha256": "29f2bb18945c7afcfd4b347d298ddb3547270f9636aa706675cc88498f74be58",
+      "bytes": 1599,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/test_proposals.py",
+      "path_sha256": "5211a91fd5c3bb0036594243f6caa6f61d1cdee8458e7e294434d56eeaa2676f",
+      "sha256": "71c2556acbe8d01a0c8dbf0585bed75b0828dd4a2b5d1f5dc4671b50ebcbcd28",
+      "bytes": 23649,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/test_task_identity.py",
+      "path_sha256": "f84d057f4d6ac15fc14726908153a377aecc9cf70915919f4f1899d0e4dcdabf",
+      "sha256": "75459927864717525d95b89ea6cbf5f69f9ccf1f27adcaa6973e83b3cfdcf3bd",
+      "bytes": 2135,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/validate/Replay.lean",
+      "path_sha256": "0428c187de7cb840604e2b2cb16cb6c207c114d8a6d40948dd1df92fa814638f",
+      "sha256": "7106ff8078eeb243bc3b30d3de68ee9f719ae3cf25b1206469d8963c3a9e4f9e",
+      "bytes": 7617,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/validate/fixture_responder.c",
+      "path_sha256": "0af5209e990e68fad518b008b7ec44dc34afe4b33baa2142fba16092f52531ab",
+      "sha256": "a3b6ce81e513d4648d1afd75e43c0f5082935f1e7b058fa7ba369fadc1e8336d",
+      "bytes": 828,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/validate/proposal_driver.ml",
+      "path_sha256": "213da31b556af60aee0c7bbd141c0e35835c88c6ae62a6cdfde715dd09ae701c",
+      "sha256": "4415130b0a3df5e37d674d58cc22aee5f47350b087ec2b430ed231ca466b6fae",
+      "bytes": 3325,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/harness/validate/verify_certificate.ml",
+      "path_sha256": "652cafc6c3578de83a43b6546a14ec3e5ccf82823eb0f0eab0ba4160f4bedb32",
+      "sha256": "e840d9661d1cca9419e570273e1198946db2746838560abb3010765fb5477867",
+      "bytes": 1301,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/instrumentation.patch",
+      "path_sha256": "42ca4a4e526a6399ca368e4c81ab00a22abf0b7d076368040409cd178e52b96f",
+      "sha256": "0df77aa98ab8f7071518d6c3a1cc7323a8b48d556ef41fdeb3fe096a3ef34af2",
+      "bytes": 6870,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/policies/openai-responses-http-v1.json",
+      "path_sha256": "9f2d3114a91077599e02757d8c2872584e00e4e416d9f82c113145d514c28ff0",
+      "sha256": "eefae339cb7067f88802d768e2acb3444651da3037b90e3e74441567672c4487",
+      "bytes": 2728,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/policies/provider-harness-v1.sha256.json",
+      "path_sha256": "afce7dcf79cece236078d2e435edf59292200b80e7b0dcc184a192667904ee94",
+      "sha256": "cd51ec861614e70579e3bcf549ad86b61491275a6313703344c69a9b34aa76f0",
+      "bytes": 871,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/policies/provider-runtime-v1.json",
+      "path_sha256": "72c7a0e70b79c2f62c4d70694ab19faa5a1f24a6e3b6f57a53a42eb070007430",
+      "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+      "bytes": 98558,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/prompts/farkas-lia-v1.txt",
+      "path_sha256": "45e9d052fe644f78559e316f0d731f8fa379df30b970fe8b7ce08a1e1c052d65",
+      "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+      "bytes": 2143,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/provider_audit.py",
+      "path_sha256": "40f833e0511c79b98473fc1aae536fa9512863cd0dea5b2f18890f7e333a7206",
+      "sha256": "63e508eb142f6dcb632564f37dd42aad0195c44d0028e59e7f52922c4d1a28b2",
+      "bytes": 27864,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/provider_contract.py",
+      "path_sha256": "19634d42fabc468a2707112e4798f17653339926ddbf912bb1699c9d6015d335",
+      "sha256": "ab41219b9c82e4ca62769e40966feb63a13c14cb824a07dc080d1b2c2e6d31b8",
+      "bytes": 6845,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/provider_episode.py",
+      "path_sha256": "be9faf6ccb875c6b279fa8afb7c1ea820f0eaa59071bc43d110ecd94651fcc99",
+      "sha256": "b211e7781baef8d3a3b88db6a323b8a7bb0c45611c3469fd325e559efdeacdc2",
+      "bytes": 22389,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/provider_http.py",
+      "path_sha256": "be9092363c4545aab41ea1f4f3798b7f08af53eeb56886deb158468e55a57302",
+      "sha256": "7c34c749b073c982e39e94a73e04e5d18c26fb648a4726cd74ce6bde86e52160",
+      "bytes": 7298,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/provider_payload.py",
+      "path_sha256": "5952a9f43790a77bfeaeb447e1dfd5beb9ffa77f80f3b27308c54752737cb553",
+      "sha256": "caa57b356dda9218085e741e2e806d590d8b6cbf4d94ff9f7044149d14b8c6e1",
+      "bytes": 14052,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/schema/provider-request.schema.json",
+      "path_sha256": "7aeefaff6bbf2b158d201bb4178465f560d4387c14c85dfdd89fe35e05b25d06",
+      "sha256": "a322dacf7d640a5f0053c79da75298fe8aadd2240a32396bbe11fc2d3dd4a233",
+      "bytes": 3040,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/schema/provider-verdict.schema.json",
+      "path_sha256": "2ee28db295d71b7e5c96461ee9885829f717e1659079a78797ddb6f22776038b",
+      "sha256": "2e23dc9eee14da78ad8d2cc0ea8401a4fc41e6727147658829589c107dbed1ec",
+      "bytes": 3345,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/provider-harness/test_provider.py",
+      "path_sha256": "cb181aa41ae03334d5176a8906bb12560854b50b6536d22206c2b95830ff659f",
+      "sha256": "173f793b922f61d397e4210114516d7bdafe11f442d94db90f9a7e2e72a4d681",
+      "bytes": 36353,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/python-runtime.json",
+      "path_sha256": "1acd2b80ee14e44a91e9d08f32050f4f8ef81dad17a843044e772922eec1cf9f",
+      "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+      "bytes": 98558,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/roles.json",
+      "path_sha256": "8158a891a275f65908e253433214d0003ae82dc0da9f496cd196bccbf0e5049b",
+      "sha256": "1925bbe9f0ece887bf9ced85fe7fcf98cd074bda7a54e71e9bd35e6894532eb0",
+      "bytes": 1077,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provenance/sources.json",
+      "path_sha256": "a69b893293490d76394afbda0536a861e827d8c18e562ed4981f256d460303ff",
+      "sha256": "66b7bbf6a21dddeea36318f3b580b15dd1ec755d1405460b53af71530632fade",
+      "bytes": 11539,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "provider-metadata.json",
+      "path_sha256": "81167398d779b926a0a3545dc0b1c40f8a35b07c3b8d3759715a9c90763abe16",
+      "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed",
+      "bytes": 5,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "request.json",
+      "path_sha256": "6f72414898b4aee477d7cf095e3c6a845ff8ec091baf747f34b0c802cac1924f",
+      "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+      "bytes": 2937,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "request.sha256",
+      "path_sha256": "363282bd95fdaddf59fffd12eda757ccf9f3cc7160b787eaf8f468afc6fdfb53",
+      "sha256": "3ab46df2ced233b9149e1c1ce36c9dceb51221aca34fe872da5540f76fad1ac0",
+      "bytes": 79,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "runtime.json",
+      "path_sha256": "2b50b57164d45c2968f38c72e79b537c55bd212fe7c859b6e659e28c2aaf96d1",
+      "sha256": "ed766ca5e91ddeb9fe9d580f66777d16142b5e752f0f9cc6fa47bdef68504993",
+      "bytes": 1040,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "sanitized-context.json",
+      "path_sha256": "080a79c0070a5cd64fa8b72cdce91347d9aa7c609232edf464ef0a271a5354c8",
+      "sha256": "63515e423d974f043520da8b852820cc5fb1508e2c9e4f701505957f9c378080",
+      "bytes": 2404,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "search-policy.json",
+      "path_sha256": "d1c0f1ff09b18058e2f9396e07f44d321dcc6cb094bf0de8d5a665917d3cb4ba",
+      "sha256": "f75d53ec5c8e848331f7c8e17d6be243442b673cc5c9c5cc71813f35c7edeee5",
+      "bytes": 4332,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/command.json",
+      "path_sha256": "aa52bb1d6e10843085c89670506406c2d6e66152d750ca007f68a85babdb6921",
+      "sha256": "a36ee149b469ec152a52955a4e5455ad2ce568f41ffc29d5431a47d095ef68a2",
+      "bytes": 1812,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/output/prepared.json",
+      "path_sha256": "0c14b3e89a6688198346e160bfc61c0189cac70d4478a42b672cc64a235cdb9d",
+      "sha256": "6b603f6dedb519a50554a0f11773ce32550abb5b808fc9212fc187fae9cf8b9b",
+      "bytes": 20227,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/pipeline-prepare.process.json",
+      "path_sha256": "f223f6eebf3111fffe9718a0caf9546d41a83063b1b28aee839a83426735ed65",
+      "sha256": "1b22eba83361eec57432e084b59dff58f56522f216542d2e1207c7c8bba1084e",
+      "bytes": 547,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/pipeline-prepare.stderr",
+      "path_sha256": "9b164af51b50fc63b01f907970a802a37dcb9b9bbf2ebb4b4b006e4dfe80bf47",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/pipeline-prepare.stdout",
+      "path_sha256": "18b86c06c98a39d693887b5ffb691c4b3ed4a902495b40c5a78c541a0fed8b81",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/scope-command.json",
+      "path_sha256": "ce25859376b4d451cefeb6e5347d4f4660ddd69c7e61ebe4b2322e72efd4ac98",
+      "sha256": "a28ffe12fafb33281d5410f7ef3cfa158334cc48010e7d6a14eb505ea5cfb631",
+      "bytes": 469,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/supervisor.stderr",
+      "path_sha256": "50dd185b0cf4c640a9161bbd2e7056d8ee735cf1f92c0b35e6bb278b7fbc51a8",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/pipeline-prepare/supervisor.stdout",
+      "path_sha256": "b368f72bc617e6487b6ac51eeda38effc1b6b51bd19d2d1ab37884032bc5cdc7",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/command.json",
+      "path_sha256": "d762b7cc6c97f75992f08237732a94e4a6999ad55786602e6b297722475e590a",
+      "sha256": "f1133bd7d9dd6c1ca1c433be78726919e702e1bbb1a9e488f2977ffad2a5fe00",
+      "bytes": 4714,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/output/PreparationCapture.olean",
+      "path_sha256": "adab63a016f40b54a532141c8116579f4a1d06f05830255bab1308e20d7d2407",
+      "sha256": "d776f2b0607d3bf72157e8286d228efae9b52978706a7cf22faf7719095aa29b",
+      "bytes": 719488,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/preparation-build.process.json",
+      "path_sha256": "dc6f537cdc1f88da3e0abd30d8f31dd8865f207f0c2635b8e59f22db8ff9d584",
+      "sha256": "692d489ef4dc5b6747405c5b0eacc960ff69a0a050ed6f9e913743d9372383ce",
+      "bytes": 548,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/preparation-build.stderr",
+      "path_sha256": "5171c4cad9869585176223f09c709dd4a043fe408b75475b00df23155518dd61",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/preparation-build.stdout",
+      "path_sha256": "0d9f8da0b75991cc3c733035a4d842039ba1defa11fa06004d6910da6816986d",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/scope-command.json",
+      "path_sha256": "ea6bf69ecbfe0a579bce9017b788b8e8a02eba1f47601c3e6decf72f71ea0574",
+      "sha256": "bd6c98d6c898473ffc9b18ef71c613938f3b0f245fe3b288f5a86a071e32bde9",
+      "bytes": 470,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/supervisor.stderr",
+      "path_sha256": "c5f5f04309925c3254ae515fd9ddf3228bb7ff8697fbf976a9e9dc6b2502ad4d",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation-build/supervisor.stdout",
+      "path_sha256": "d23a68f74d736ace1126bb7865bb0a4d984533733f9b15f5b73fd8c2534bbd7a",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/command.json",
+      "path_sha256": "4f3c22eef6bb5fb0873a4ea13e25f85740b1d1ff42cb3d37f93bda6588f8fa34",
+      "sha256": "6f4b07c21931408735d7a822539546655ffac89a21b07fcc15d7914115913085",
+      "bytes": 4989,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/output/Frozen.olean",
+      "path_sha256": "3eed5c658fc69c98a6fa55948cfa4719b2e46e279bb56ae16bc583a674f5d28d",
+      "sha256": "c3ab021c6c21ba8673c0b8874f3ad3473880e63c17019ae012d8ff02aeefe32c",
+      "bytes": 437944,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/output/context.json",
+      "path_sha256": "48d95ba1838b303951f47bfef5f7018e90171e1b89de93f6ea520e116e3df734",
+      "sha256": "11f6eabb5c8b4929798fe8d7067caa1b8747d87d7a841bbc2d1e1bfa40199019",
+      "bytes": 10525,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/output/reification.json",
+      "path_sha256": "eb1a5fa9178d8b790e112fece4c7ce4fa870dd106b9520acc03ae24c0f755727",
+      "sha256": "9b4627d6b8063ed8645176b749885181c56eb56cd590ed2d1f7dc5d1c3479764",
+      "bytes": 8575,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/preparation.process.json",
+      "path_sha256": "798429b04b878960935c1eedd6a4c101ab024856d9e8c30ee3c3065bd55957f3",
+      "sha256": "bd36bd4023f11841d04a585476be8592e1018febe541bc0ff92db43b3e4f45e0",
+      "bytes": 549,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/preparation.stderr",
+      "path_sha256": "69399454f22420c1ccadf243d54bffcd244501bb4779edc381b526dd5f1cb056",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/preparation.stdout",
+      "path_sha256": "a5e60d48a5d843ad564b208eab5a9a4d8e357de5f56ee538e749fec5b0b42162",
+      "sha256": "bd2113d9c1fc80a8ad0e13f8ee929cac12c2ea6e8fabcd172dadf39ef13b4650",
+      "bytes": 242,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/scope-command.json",
+      "path_sha256": "114d4490a7f271d940296b0abf0172158f3565ef3d182a667a3fdd169472b7bd",
+      "sha256": "b4941ab31fe059c3f3947c6122d19b8dfa7b376f4d569ed9708f0947f7f7010c",
+      "bytes": 464,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/supervisor.stderr",
+      "path_sha256": "a917474b0a5697fe281e00fad8210a75f221efdbdd1a635aabb07e099762cdfd",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/preparation/supervisor.stdout",
+      "path_sha256": "1140665c9ba05a5167f9a3a7117969d9c9e59da02bfdc80bddf2a39b31ccacdf",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/command.json",
+      "path_sha256": "b1e2169738b2c87ca28dcf76c71ce1a5a1657ba106b78b389175f92250d0e90b",
+      "sha256": "564f5a58174e397d1f0398960fa45d17ba45c00e8c7125c58b354c9a501c9c55",
+      "bytes": 4207,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/output/http.json",
+      "path_sha256": "ea757d1ec31b80c12bab18e5dc7194de6723805b5c49a5836db5a6083915a6df",
+      "sha256": "f6ad11ec8395d55cf58369f1bb5537ce85ac5c90cd6f5144c4430740101e0431",
+      "bytes": 729,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/output/outbound-body.json",
+      "path_sha256": "c51690759cea486ab28250ee38d999e373a27c1d650e44b428112e2b22718e89",
+      "sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+      "bytes": 6042,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/output/provider-response.json",
+      "path_sha256": "f353e19fc669fc1c136666c09088bd9cc346f21365caa0e4ddee8eb3fa36a0d3",
+      "sha256": "9dbbb594a79f0375b87d05a82a586f06e1028e06e2146d4c72d96b65b1dec1e1",
+      "bytes": 160,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": [
+        {
+          "stream": "raw",
+          "representation": "authorization",
+          "form": "utf-8",
+          "offset": 52
+        },
+        {
+          "stream": "raw",
+          "representation": "token",
+          "form": "utf-8",
+          "offset": 59
+        }
+      ]
+    },
+    {
+      "path": "stages/proposal-1/output/received-body-1.json",
+      "path_sha256": "9ee811e18fb08945f8475aaa208c3c37d6e3951b8cfdae06c0a41aa3ed4cd91f",
+      "sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+      "bytes": 6042,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/output/server.json",
+      "path_sha256": "d8812a69d352471bc465b639f3a7b84b7acdf253d9e22dc8b6e0150f1a64f9f8",
+      "sha256": "fe597eb2004f4e7d31fd99ec4dd37e221518cf91dfc3e6f69e2d69074976054d",
+      "bytes": 350,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/proposal-1.process.json",
+      "path_sha256": "8acfd04d23c37529e65ddc1a7521af3689dbc6fef2a9967a71d9851def1748f2",
+      "sha256": "49849999d9d64eb41843f48173bc0f411edd48808c3a54de5d8c4ecf1adc9786",
+      "bytes": 547,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/proposal-1.stderr",
+      "path_sha256": "abc9284d6bd03554ba7fdddee0c621c5faf47f6880359b98847b74213f86a24e",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/proposal-1.stdout",
+      "path_sha256": "24cda8a04ca1c3626437a7ac55e2c7c7213deb084e513d340e9eac120794b24d",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/scope-command.json",
+      "path_sha256": "78a35d352099140e07f16e68c512a06db0c1bb04c22b6497c8cb19387717d8ba",
+      "sha256": "2119fe92d1577a97b48456228fbd14ad4d2ca8becdb49db5cdd38641f4ec7d33",
+      "bytes": 462,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/supervisor.stderr",
+      "path_sha256": "f75f81cfa15a8a00896150bdb75f923e7915ae0e407d5b23ffd8311be87856c6",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "stages/proposal-1/supervisor.stdout",
+      "path_sha256": "9202bc2642eefd6cb4b068b7c3814c1f23d1fbffe632676bc6a6a36894af01d5",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    },
+    {
+      "path": "transport-validation.json",
+      "path_sha256": "04df04f94d16e6ccb3305d97f035f47e07e478ffa684dad5c3d9125e907aaa09",
+      "sha256": "17c93b7fb4d3870b5d3a941ac033f6d7d809378308efbc1c160240387f012172",
+      "bytes": 984,
+      "streams": [
+        "raw"
+      ],
+      "scanned": true,
+      "error": null,
+      "findings": []
+    }
+  ],
+  "scope": "declared representations and encoded forms over the walked inventory; symlinks and non-regular entries are rejected, not followed; not a proof of protection against every transformation or partial disclosure"
+}

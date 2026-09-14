@@ -127,7 +127,9 @@ The roadmap's original Phase 0–6 numbering is kept for the history in
   [R6-002 binds semantic prompt and serialized envelope bytes](experiments/r6/R6-002.md) with isolated canned responses
   and separate transport/certificate failure controls;
   [R6-003 adds a Responses HTTP adapter](experiments/r6/R6-003.md), tested against an isolated canned server,
-  with component diagnostics, transmission/usage accounting and the shared proof checker. Approved; credential-canary controls precede live policy.
+  with component diagnostics, transmission/usage accounting and the shared proof checker;
+  [R6-004 delivers a synthetic credential canary over a private mount](experiments/r6/R6-004.md), asserts exact
+  endpoint receipt, and scans the whole publication bundle for disclosure as a separate acceptance predicate.
 - `sdk/` — OCaml shared library: IR rewriter, certificate verifier
   (envelope, Farkas, per-step Alethe re-check = the Tier-3 mint gate,
   TSTP provenance), dispatcher (Thread-based concurrent driver),

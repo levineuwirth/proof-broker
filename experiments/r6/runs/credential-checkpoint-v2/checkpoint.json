@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "live_model_calls": 0,
+  "scope": "synthetic canary over an isolated local HTTP fixture; no real credential, TLS, remote receipt, compilation or inference attestation",
+  "canary_derivation": "r6-004-synthetic-canary-v1",
+  "policy_sha256": "92f10afadc5944ee32fc4580b576e4c91358d913b4d0b246a941b927837539dd",
+  "source_lock_sha256": "e581a905f6f69b06b0bc291e80fca79777e726a2164b6d1d237cfc0bedd7997a",
+  "publication_representations": [
+    "token",
+    "authorization"
+  ],
+  "publication_encoded_forms": [
+    "utf-8",
+    "utf-8-lower",
+    "utf-8-upper",
+    "base64",
+    "hex",
+    "utf-16-le",
+    "utf-16-be"
+  ],
+  "suites": {
+    "credential-units.json": {
+      "sha256": "fa706618f713bea873722ec934aa7a71f0c762dc45f5fe6c07fcb5c405bf98ba",
+      "count": 25
+    },
+    "credential-native.json": {
+      "sha256": "fe27e6cac875a989acec92aa231ff0a75d82fe12602e75648ed61476577f1b87",
+      "count": 5
+    },
+    "credential-audits.json": {
+      "sha256": "12a43146488c88cde55d55ba4bbc8d3510ee9641f56b70d4c1a4cf61a1a0a41b",
+      "count": 32
+    }
+  }
+}

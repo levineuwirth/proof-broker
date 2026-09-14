@@ -669,3 +669,40 @@ code and records; its regression control remains to be built under a new version
 The closeout also distinguishes the verified `4` versus `0` tightening margin
 from any claim about a model's internal re-tightening. Approval does not change
 the frozen policy or episode evidence.
+
+## R6-004 candidate checkpoint — 2026-09-09
+
+The [R6-004 checkpoint](R6-004.md) closes the credential-recording gap R6-003's
+closeout named. A synthetic canary, derived from a retained per-episode nonce by
+a frozen generator, is delivered to the wire adapter on a private read-only file
+mounted outside the artifact tree and removed afterwards. It never enters argv or
+the environment. The canned endpoint commits to a digest of the Authorization
+header it actually read, and that expectation is re-derived from the nonce, so a
+presence bit or host echo does not discharge it.
+
+Publication acceptance is recorded separately from proof acceptance. The scan
+walks its own inventory, covers seven declared encoded forms and decompressed
+gzip members under an explicit limit, treats unreadable or incompletely scanned
+artifacts as rejections, and records locations without re-emitting the value it
+found. Finalization runs the scan last; every later write is structurally
+restricted to digests, counts and booleans, which is what replaces a
+self-referential hash of the report. A disclosure fails publication even when
+every mathematical check passed, and the sealed evidence is preserved.
+
+The adapter, episode driver and auditor are versioned with their own policy and
+source lock; R6-003 stays reproducible and is re-audited here. The proof block
+remains the single frozen shared checker. One control has the canned endpoint
+reflect the canary into an HTTP error body, so the disclosure arrives through the
+ordinary failure-recording path rather than a hand-edited file.
+
+This is a local canned control. It establishes no HTTPS, real-credential,
+remote-receipt or live-provider property; that boundary is exercised again at the
+HTTPS handoff before the first budgeted call.
+
+The [R6-004 closeout review](reviews/2026-09-09/R6-004-CLOSEOUT.md) accepted v3
+and the corrected outer recount on 2026-09-09. The R6-003 canned credential gate
+is satisfied. The 67 frozen checks and five supplementary outer-gate controls
+remain separate populations; closeout mutation checks add no native episodes.
+The complete-checkpoint recount requires original-tree coverage, while
+retained-only episode audits report unavailable build products separately.
+Live-policy freeze and canned HTTPS/client handoff controls are next.

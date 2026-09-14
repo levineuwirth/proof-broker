@@ -26,6 +26,9 @@ runs/*/
 !runs/proposal-checkpoint-v2/
 !runs/envelope-checkpoint-v1/
 !runs/provider-checkpoint-v1/
+!runs/credential-checkpoint-v1/
+!runs/credential-checkpoint-v2/
+!runs/credential-checkpoint-v3/
 **/fixture
 **/proof.ndjson
 *.olean
@@ -41,3 +44,11 @@ runs/*/
 **/output/verdict.json
 **/export/export.stdout
 **/resource-fixture
+reviews/2026-09-13/operator-disclosure-scan.json
+ledgers/**/*.lock
+campaign-runs/
+campaign-runs-v2/
+campaign-runs-v3/
+campaign-runs-v4/
+campaign-runs-v5/
+campaign-runs-v6/

@@ -1,0 +1,135 @@
+{
+  "passed": true,
+  "scope": "artifact recomputation after the native suite; no additional execution, credential experiment, TLS, remote receipt, compilation or inference attestation",
+  "recount_utc": "2026-09-09T12:17:29.645045+00:00",
+  "base_commit": "ac0f50f",
+  "suites": {
+    "credential-units.json": {
+      "sha256": "222b242e3eaa3d548591063a35637e5352489c77520f496116b764e5e112f28d",
+      "count": 20,
+      "exact_case_set": true,
+      "duplicates": 0
+    },
+    "credential-native.json": {
+      "sha256": "aa80ec8e9a2059db3b6025f9f2a952127e5724545c4fa8eeb695b12cfe4d0bac",
+      "count": 5,
+      "exact_case_set": true,
+      "duplicates": 0
+    },
+    "credential-audits.json": {
+      "sha256": "6a04b35f35048ef67294053aeaafa27cac8f715646c7b19977631d358d6a5cbe",
+      "count": 22,
+      "exact_case_set": true,
+      "duplicates": 0
+    }
+  },
+  "total_checks": 47,
+  "episodes": {
+    "d1_http503": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "disclosures": 0,
+      "failure_category": "provider_http_error",
+      "events": 16,
+      "sealed_files": 124,
+      "seal_sha256": "49cb8b51d5fd30a6a2b0781108fd1369acbcd2b9fb18f5caa5ae4780cf9feceb",
+      "canary_reconstructed_from_nonce": true,
+      "outer_log_clean": true
+    },
+    "d1_missing_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "disclosures": 0,
+      "failure_category": "credential_receipt_failure",
+      "events": 16,
+      "sealed_files": 125,
+      "seal_sha256": "8ccd28a29016bcede4d6541c4f0a165c9c539249a7a9bd684e4320a85b301bcc",
+      "canary_reconstructed_from_nonce": true,
+      "outer_log_clean": true
+    },
+    "d1_reflected_canary": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": false,
+      "disclosures": 1,
+      "failure_category": "provider_http_error",
+      "events": 16,
+      "sealed_files": 124,
+      "seal_sha256": "bcfe9efed6de4fc17ca91d790cac48d192d8d35c46a2eb71a141a9fce4ee7438",
+      "canary_reconstructed_from_nonce": true,
+      "outer_log_clean": true
+    },
+    "d1_valid": {
+      "accepted": true,
+      "proof_accepted": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "disclosures": 0,
+      "failure_category": null,
+      "events": 47,
+      "sealed_files": 187,
+      "seal_sha256": "93bbefb8be9238612ef50c570ccc247fac8ec7f9039e70a11cce9c4a1e2d08a7",
+      "canary_reconstructed_from_nonce": true,
+      "outer_log_clean": true
+    },
+    "d1_wrong_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "disclosures": 0,
+      "failure_category": "credential_receipt_failure",
+      "events": 16,
+      "sealed_files": 125,
+      "seal_sha256": "a959dd40463e9345b1c5ad817deba48090f17536a2cf37162ed8fb62b7309cf4",
+      "canary_reconstructed_from_nonce": true,
+      "outer_log_clean": true
+    }
+  },
+  "episode_count": 5,
+  "event_hashes_recomputed": 111,
+  "sealed_entries_checked": 685,
+  "files_rescanned": 711,
+  "canary_derivation": "r6-004-synthetic-canary-v1",
+  "canary_values_found_in_publication": 0,
+  "publication_encoded_forms": [
+    "base64",
+    "hex",
+    "utf-16-be",
+    "utf-16-le",
+    "utf-8",
+    "utf-8-lower",
+    "utf-8-upper"
+  ],
+  "publication_decompression_limit_bytes": 67108864,
+  "finalization_order": [
+    "artifacts",
+    "scan",
+    "scan_report",
+    "report_scan",
+    "terminal_event",
+    "seal"
+  ],
+  "prior_files_checked": 9986,
+  "prior_changed_or_missing": [],
+  "policy_sha256": "a0a2c2846c4efde80c835b0de893466012b7d8d0ef25bd6e2df36ccd1cd02051",
+  "source_lock_sha256": "4f95ecd912e97512cb82d31397331e3da9ec74718ef466091b609227bb306836",
+  "runtime_lock_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "declared_cases": [
+    "valid",
+    "http503",
+    "missing_credential",
+    "wrong_credential",
+    "reflected_canary"
+  ],
+  "python_compile_exit": 0,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "real_credentials_used": 0
+}

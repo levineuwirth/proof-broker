@@ -307,6 +307,11 @@ attestation. Fragment expansion remains separately gated.
 
 ## R6-003 approved pre-live credential control — 2026-09-09
 
+**Status: satisfied at the local canned HTTP scope by R6-004**, following the
+[2026-09-09 closeout review](reviews/2026-09-09/R6-004-CLOSEOUT.md). The original
+requirements below remain the historical contract. The HTTPS/client handoff
+must exercise the control again before the first externally billed request.
+
 The author approved R6-003 after independently re-deriving its reported figures.
 The [closeout](reviews/2026-09-09/R6-003-REVIEW.md) records one outstanding gate:
 Authorization omission is observed in the current records but has no leakage
@@ -366,3 +371,27 @@ These are requirements for the next checkpoint, not additional checks attributed
 to R6-003. They do not claim protection against every transformation, partial
 secret disclosure, or a hostile host. Live model/revision, sampling/reasoning,
 token/retry/monetary limits and credential/TLS setup remain separately unset.
+
+## R6-004 credential-control closeout — 2026-09-09
+
+The reviewed object is `credential_http_fixture_v3`, its unchanged 67-check
+checkpoint, and the corrected outer recount with five supplementary controls.
+The [closeout evidence](reviews/2026-09-09/R6-004-CLOSEOUT.json) binds the source
+and result files. Exact receipt, publication disclosure and mathematical proof
+remain separate predicates. The reflected-canary negative deliberately retains
+its synthetic disclosure; zero unexpected disclosures and zero disclosures in
+publication-accepted episodes are population-qualified claims.
+
+The complete checkpoint checks its own policy declarations, native-suite seal
+and observation records, and the exact preservation inventory against pinned
+Git objects. It requires original-tree coverage. Retained-only episode audits
+remain available with unavailable build products explicitly marked
+`recorded_not_recomputed`; they do not satisfy that original-tree coverage
+contract.
+
+The next policy must freeze model/provider identity, sampling/reasoning settings
+and token/retry/monetary limits, then exercise synthetic credential and outbound
+capture controls at the actual HTTPS/client handoff using canned responses.
+This closeout establishes no remote receipt or model-input/inference attestation.
+No native episode, Lean replay, real credential or live call was run during the
+outer-gate closeout.

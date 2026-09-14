@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "unmutated_checkpoint_accepted",
+    "false_checkpoint_policy_hashes",
+    "false_native_seal_digest",
+    "contradictory_native_observations",
+    "empty_preservation_inventory"
+  ],
+  "check_count": 5,
+  "checks": [
+    {
+      "name": "unmutated_checkpoint_accepted",
+      "passed": true,
+      "detail": {
+        "passed": true,
+        "total_checks": 67,
+        "prior_files_checked": 9986,
+        "preservation": {
+          "files": 9986,
+          "membership_source": "git ls-tree at ac0f50f",
+          "values_source": "git cat-file at ac0f50f",
+          "changed_or_missing": 0
+        },
+        "checkpoint_declarations": {
+          "canary_derivation": "r6-004-synthetic-canary-v1",
+          "publication_representations": [
+            "token",
+            "authorization"
+          ],
+          "publication_encoded_forms": [
+            "utf-8",
+            "utf-8-lower",
+            "utf-8-upper",
+            "base64",
+            "hex",
+            "utf-16-le",
+            "utf-16-be"
+          ],
+          "live_model_calls": 0,
+          "scope": "synthetic canary over an isolated local HTTP fixture; no real credential, TLS, remote receipt, compilation or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "false_checkpoint_policy_hashes",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: checkpoint policy digest differs from the frozen policy",
+        "unmutated_copy_passes": true,
+        "gate": "public recount and gate-suite record"
+      }
+    },
+    {
+      "name": "false_native_seal_digest",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: native suite record seal digest differs from the episode: d1_valid",
+        "unmutated_copy_passes": true,
+        "gate": "public recount and gate-suite record"
+      }
+    },
+    {
+      "name": "contradictory_native_observations",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: native suite record scan count differs from the episode: d1_valid",
+        "unmutated_copy_passes": true,
+        "gate": "public recount and gate-suite record"
+      }
+    },
+    {
+      "name": "empty_preservation_inventory",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: preservation inventory differs from the pinned commit population",
+        "unmutated_copy_passes": true,
+        "gate": "public recount and gate-suite record"
+      }
+    }
+  ]
+}

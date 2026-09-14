@@ -1,0 +1,161 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "contract_baseline",
+    "source_lock_binding",
+    "derivation_binding",
+    "representations_binding",
+    "encoded_forms_binding",
+    "live_calls_binding",
+    "native_disclosure_binding",
+    "native_log_binding",
+    "native_coverage_binding",
+    "preservation_substitution",
+    "preservation_content",
+    "preservation_suite_count",
+    "preservation_suite_base",
+    "retained_only_scope"
+  ],
+  "check_count": 14,
+  "checks": [
+    {
+      "name": "contract_baseline",
+      "passed": true,
+      "detail": {
+        "content_checks": 61,
+        "gate_checks": 6,
+        "observation_scope": "original trees independently re-audited before component mutations"
+      }
+    },
+    {
+      "name": "source_lock_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: checkpoint source-lock digest differs from the frozen lock",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "derivation_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: checkpoint declaration differs from its authority: canary_derivation",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "representations_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: checkpoint declaration differs from its authority: publication_representations",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "encoded_forms_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: checkpoint declaration differs from its authority: publication_encoded_forms",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "live_calls_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: checkpoint declaration differs from its authority: live_model_calls",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "native_disclosure_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: native suite record disclosure count differs from the episode: d1_valid",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "native_log_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: native suite record log result differs from recomputation: d1_valid",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "native_coverage_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: native suite record coverage differs from the re-audited episode: d1_valid",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "preservation_substitution",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: preservation inventory differs from the pinned commit population",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "preservation_content",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: preservation inventory disagrees with the pinned commit content",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "preservation_suite_count",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: preservation suite record differs from the verified population",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "preservation_suite_base",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "R6-004 recount: preservation suite record differs from the verified population",
+        "unmutated_component_passes": true
+      }
+    },
+    {
+      "name": "retained_only_scope",
+      "passed": true,
+      "detail": {
+        "retained_only_episode_accepted": true,
+        "original_coverage": {
+          "recomputed": 193,
+          "recorded_not_recomputed": 0,
+          "files_scanned": 193
+        },
+        "retained_only_coverage": {
+          "recomputed": 185,
+          "recorded_not_recomputed": 8,
+          "files_scanned": 193
+        },
+        "original_tree_contract_rejection": {
+          "rejected": true,
+          "reason": "R6-004 recount: native suite record coverage differs from the re-audited episode: d1_valid"
+        },
+        "scope": "complete checkpoint requires original-tree coverage; retained-only episode audit remains usable"
+      }
+    }
+  ]
+}
