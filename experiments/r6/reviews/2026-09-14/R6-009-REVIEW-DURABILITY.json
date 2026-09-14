@@ -1,0 +1,45 @@
+{
+  "complete": true,
+  "new_task_and_draw_precondition": true,
+  "scope": "actual fsync observation during production reserve and grant; no simulated power loss",
+  "calls": [
+    {
+      "path": "ledger/slots/verinf-d1-70/1",
+      "directory": true
+    },
+    {
+      "path": "ledger/ledger.ndjson",
+      "directory": false
+    },
+    {
+      "path": "ledger/head.json.tmp",
+      "directory": false
+    },
+    {
+      "path": "ledger",
+      "directory": true
+    },
+    {
+      "path": "ledger/slots/verinf-d1-70/1/c7b5db8e258b42028d6d5b2de3616d8f/send-grant.json",
+      "directory": false
+    },
+    {
+      "path": "ledger/slots/verinf-d1-70/1/c7b5db8e258b42028d6d5b2de3616d8f",
+      "directory": true
+    }
+  ],
+  "reserve_end": 4,
+  "parent_directory_fsyncs": {
+    "ledger/slots": false,
+    "ledger/slots/verinf-d1-70": false,
+    "ledger/slots/verinf-d1-70/1": true,
+    "ledger/slots/verinf-d1-70/1/c7b5db8e258b42028d6d5b2de3616d8f": true
+  },
+  "missing_parent_fsyncs": [
+    "ledger/slots",
+    "ledger/slots/verinf-d1-70"
+  ],
+  "program_sha256": "a1026a8b4f56312ecb128d2c2e1a63a8176fc0c8e4b299d03b9017381085331b",
+  "live_model_calls": 0,
+  "real_credentials_read": 0
+}

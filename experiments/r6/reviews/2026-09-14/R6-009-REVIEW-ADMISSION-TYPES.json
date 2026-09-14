@@ -1,0 +1,36 @@
+{
+  "complete": true,
+  "scope": "production shared admission predicate only; no actor or provider transmission",
+  "results": {
+    "baseline": {
+      "admission_accepted": true,
+      "changed_field": null,
+      "expected_type": null,
+      "observed_type": null,
+      "expected_entity_sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5",
+      "actual_entity_sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5",
+      "entity_bytes_equal": true
+    },
+    "integer_option_as_float": {
+      "admission_accepted": true,
+      "changed_field": "max_output_tokens",
+      "expected_type": "int",
+      "observed_type": "float",
+      "expected_entity_sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5",
+      "actual_entity_sha256": "461627333c2d0fb7872a5ced1e3b31b04c111a569bfbad996c7b8d476d8465d9",
+      "entity_bytes_equal": false
+    },
+    "boolean_option_as_integer": {
+      "admission_accepted": true,
+      "changed_field": "store",
+      "expected_type": "bool",
+      "observed_type": "int",
+      "expected_entity_sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5",
+      "actual_entity_sha256": "12adc99da71e80541b129f6f2fdc6051a6031f48c5d93a7921082ac8cf6b81bc",
+      "entity_bytes_equal": false
+    }
+  },
+  "program_sha256": "9eaf5fce457de454f4690d59cc69e0102b267abd9c87c8f3767f5b76c28a5414",
+  "live_model_calls": 0,
+  "real_credentials_read": 0
+}

@@ -1,0 +1,219 @@
+{
+  "complete": true,
+  "reviewed_commit": "34eae76",
+  "program_sha256": "a11760e7971734794451020b888dc3409e6b15b877f6ec9c274ab3e31e442e6f",
+  "scope": "byte recount and retained-report consistency; no Lean rerun or remote attestation",
+  "live_model_calls": 0,
+  "real_credentials_read": 0,
+  "live_enabled": false,
+  "live_ledger_absent": true,
+  "source_lock_verified": true,
+  "runs": {
+    "r1-d1-draw1": {
+      "events": 51,
+      "sealed_entries": 294,
+      "bodies": {
+        "serialized-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "outbound-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "received-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        }
+      },
+      "body_sends_started": 1,
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      }
+    },
+    "r1-d1-draw2-format": {
+      "events": 20,
+      "sealed_entries": 228,
+      "bodies": {
+        "serialized-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "outbound-body.json": null,
+        "received-body.json": null
+      },
+      "body_sends_started": 0,
+      "proof_export_sha256": null,
+      "declarations": null,
+      "axiom_delta": null
+    },
+    "r2-d1-draw1-refused": {
+      "events": 14,
+      "sealed_entries": 192,
+      "bodies": {
+        "serialized-body.json": null,
+        "outbound-body.json": null,
+        "received-body.json": null
+      },
+      "body_sends_started": null,
+      "proof_export_sha256": null,
+      "declarations": null,
+      "axiom_delta": null
+    },
+    "r2-d1-draw2": {
+      "events": 51,
+      "sealed_entries": 294,
+      "bodies": {
+        "serialized-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "outbound-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "received-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        }
+      },
+      "body_sends_started": 1,
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      }
+    },
+    "r2-d1-draw3": {
+      "events": 51,
+      "sealed_entries": 294,
+      "bodies": {
+        "serialized-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "outbound-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        },
+        "received-body.json": {
+          "bytes": 6095,
+          "sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5"
+        }
+      },
+      "body_sends_started": 1,
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      }
+    }
+  },
+  "totals": {
+    "event_hashes": 187,
+    "sealed_entries": 1302
+  },
+  "distinct_receipts": {
+    "reservations": 4,
+    "grants": 3,
+    "nonces": 4
+  },
+  "ledger": {
+    "rows": 10,
+    "sequence": [
+      "activation",
+      "reservation",
+      "send_grant",
+      "reservation",
+      "release",
+      "authorization_revision",
+      "reservation",
+      "send_grant",
+      "reservation",
+      "send_grant"
+    ],
+    "sha256": "8452c06a18f2d277ca6d05b59d28d7cc4a47d3d5daa21d73156b5d43f619063c",
+    "committed_micro_usd": 307200,
+    "consumed_slots": [
+      [
+        "verinf-d1-70",
+        1
+      ],
+      [
+        "verinf-d1-70",
+        2
+      ],
+      [
+        "verinf-d1-70",
+        3
+      ]
+    ],
+    "open_reservations": []
+  },
+  "preservation": {
+    "inventory_sha256": "c00ab6752ed7486b312d449390927a7d0b6680278126c86a7a3b6aaae8dd2704",
+    "inventory_path": "/home/jeans/scratch/tmp/r6-009-review-j5bc49ei/before.json",
+    "checked_files": 39444,
+    "missing": [],
+    "changed": [],
+    "scope": "review-start r6 files, excluding .cache and __pycache__"
+  },
+  "evidence_files": {
+    "R6-009-REVIEW-ACTOR-PROBES.json": {
+      "sha256": "ecc9413e8f580b6e0889b75bd34ecb99b8fe50ae667200c0a4375a930ce6f848",
+      "bytes": 6063
+    },
+    "R6-009-REVIEW-AUDIT-PROBES.json": {
+      "sha256": "9cda0325ac935782d3122f5664330eb0ca6f379e83a998bad015cea2c0e0ffc2",
+      "bytes": 2231
+    },
+    "R6-009-REVIEW-BASE-AUDIT.json": {
+      "sha256": "d89637ba3158ad94346ef2603c5ab4c03bcbb0e33da271eca68c4115cdaf8a19",
+      "bytes": 6775
+    },
+    "R6-009-REVIEW-BASE-CONTROLS.json": {
+      "sha256": "fe4fe99950befd75cb4e7b90b13c20a86317a9c8fc2ef868b0b64ece921ce29f",
+      "bytes": 1475
+    },
+    "R6-009-REVIEW-DURABILITY.json": {
+      "sha256": "9163722c040f0ff367cb7c9fd70c52dc82e2e3754c7b214d4c4b8102fe43c83c",
+      "bytes": 1190
+    },
+    "R6-009-REVIEW-FOCUSED.json": {
+      "sha256": "a29a28bc3dd747489ca8c209ec7b92ebcc26fc500ab0791dba1beb3aa716541d",
+      "bytes": 14456
+    }
+  }
+}
