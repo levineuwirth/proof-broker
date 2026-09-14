@@ -1,0 +1,204 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "policy_frozen_disabled",
+    "authorization_required",
+    "authorization_scope",
+    "authorization_subject",
+    "live_requires_flag_and_record",
+    "ca_bundle_pinned",
+    "live_refuses_fixture",
+    "rehearsal_requires_fixture",
+    "ledger_ceiling_is_one_attempt",
+    "attribution_versioned",
+    "model_is_dated_snapshot",
+    "network_stage_keeps_every_other_namespace",
+    "network_stage_shares_only_net",
+    "network_stage_declares_scope",
+    "other_stages_stay_unshared",
+    "no_environment_credential",
+    "endpoint_allowlist_exact"
+  ],
+  "check_count": 17,
+  "checks": [
+    {
+      "name": "policy_frozen_disabled",
+      "passed": true,
+      "detail": {
+        "live_enabled": false,
+        "authorization": null,
+        "scope": "a live destination is unreachable until the author signs a new frozen policy"
+      }
+    },
+    {
+      "name": "authorization_required",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pilot_authorization_absent"
+      }
+    },
+    {
+      "name": "authorization_scope",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pilot_authorization_scope"
+      }
+    },
+    {
+      "name": "authorization_subject",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pilot_authorization_subject"
+      }
+    },
+    {
+      "name": "live_requires_flag_and_record",
+      "passed": true,
+      "detail": {
+        "flag_alone_insufficient": true,
+        "record_alone_insufficient": true
+      }
+    },
+    {
+      "name": "ca_bundle_pinned",
+      "passed": true,
+      "detail": {
+        "bundle": "/etc/ca-certificates/extracted/tls-ca-bundle.pem",
+        "certificates": 121,
+        "sha256": "8c97794a899a32666593979dc7adfaec8bda2b420eb092ff0d987e44ad0bf6ea",
+        "checked_inside_actor": true
+      }
+    },
+    {
+      "name": "live_refuses_fixture",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "live refuses fixture inputs"
+      }
+    },
+    {
+      "name": "rehearsal_requires_fixture",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "rehearsal requires --fixture, --server-cert and --server-key"
+      }
+    },
+    {
+      "name": "ledger_ceiling_is_one_attempt",
+      "passed": true,
+      "detail": {
+        "ledger_ceiling_micro_usd": 102400,
+        "attempts": 1,
+        "scope": "the ledger cannot fund a second attempt even if something retries"
+      }
+    },
+    {
+      "name": "attribution_versioned",
+      "passed": true,
+      "detail": {
+        "certificate_assembler": "sdk_proposal_assembler_v1",
+        "scope": "new proposer identity; no canned or earlier receipt is reused",
+        "witness_proposer": "live_model_response"
+      }
+    },
+    {
+      "name": "model_is_dated_snapshot",
+      "passed": true,
+      "detail": {
+        "model": "gpt-5.4-2026-03-05",
+        "revision_status": "documented dated provider snapshot; not a model-content hash or an attestation that the returned text came from it"
+      }
+    },
+    {
+      "name": "network_stage_keeps_every_other_namespace",
+      "passed": true,
+      "detail": {
+        "namespaces_retained": [
+          "--unshare-user",
+          "--unshare-ipc",
+          "--unshare-pid",
+          "--unshare-uts",
+          "--unshare-cgroup"
+        ]
+      }
+    },
+    {
+      "name": "network_stage_shares_only_net",
+      "passed": true,
+      "detail": {
+        "network_namespace": "shared",
+        "resolver_mounted": "/etc/resolv.conf"
+      }
+    },
+    {
+      "name": "network_stage_declares_scope",
+      "passed": true,
+      "detail": "shared namespace, not an egress filter; destination is enforced by the actor endpoint check and this recorded command"
+    },
+    {
+      "name": "other_stages_stay_unshared",
+      "passed": true,
+      "detail": {
+        "shared_builder_unchanged": true,
+        "pilot_stage_is_separate": true
+      }
+    },
+    {
+      "name": "no_environment_credential",
+      "passed": true,
+      "detail": {
+        "environment_read": false,
+        "channel": "private_read_only_file"
+      }
+    },
+    {
+      "name": "endpoint_allowlist_exact",
+      "passed": true,
+      "detail": {
+        "endpoint": {
+          "host": "api.openai.com",
+          "path": "/v1/responses",
+          "port": 443,
+          "scheme": "https"
+        },
+        "enforced_by": "actor endpoint check and audited command"
+      }
+    }
+  ],
+  "replay": {
+    "policy_sha256": "833035eb0d34b103aed7aad5f32cb519963b48d34040d2afb14e0739e36fa0ea",
+    "source_lock_sha256": "bf5d637bc5639fcc7619d5819c1d4f4c01ecda641e822f18a3df8151c151e0d9",
+    "sources": {
+      "pilot_contract.py": "5dbb0bd71081f5fc884ae8c0fa82b448d39e16959328d4a4fefea14ab6949113",
+      "pilot_https.py": "168171eb541795a257cae07f7d842f91814a62d6a9588dc774cca4f91ae6b30a",
+      "pilot_network.py": "ddde1277ce8a3e2318d70d5b402527bfad5ba1b8297277ddadf0d3d7f8795d17",
+      "pilot_budget.py": "129517581a90ad195c1ca0bbfff7bd1749bef7616b59824393fee416960baa71",
+      "pilot_episode.py": "f818e52be09a771ab06a560c2fa31810671b396a1b22e4dd8bbe249e4c09fadd",
+      "test_pilot.py": "f96e655fccd993d0c39aa9f8bbf4aed32ca4f11e91117eb144906f3d7ac71a25"
+    },
+    "substituted_fields": {
+      "live_enabled": false,
+      "authorization": null,
+      "live_model_calls_authorized": 0
+    },
+    "signed_values_replaced": {
+      "live_enabled": true,
+      "authorization": {
+        "approved_by": "Levi Neuwirth",
+        "approved_utc": "2026-09-13T11:07:39Z",
+        "maximum_attempts": 1,
+        "maximum_micro_usd": 102400,
+        "model_id": "gpt-5.4-2026-03-05",
+        "scope": "one provider request for the D1/70 arithmetic obligation; no campaign, no second attempt"
+      },
+      "live_model_calls_authorized": 1
+    },
+    "program_sha256": "2a78d1bbf7607bc388cc7554defe711d4b5bcba31bcedab3b11c88b3ae361bc1",
+    "scope": "same 17 cases as test_pilot.py over the frozen sources; only the three signature fields are viewed as unsigned"
+  }
+}

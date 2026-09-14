@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/adapter.py", line 180, in <module>
+    main()
+    ~~~~^^
+  File "/adapter.py", line 176, in main
+    execute(args)
+    ~~~~~~~^^^^^^
+  File "/adapter.py", line 102, in execute
+    authorization = read_credential(args.credential_file)
+  File "/live_https.py", line 31, in read_credential
+    raise ValueError('credential_format')
+ValueError: credential_format

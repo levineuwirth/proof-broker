@@ -1,0 +1,974 @@
+{
+ "file_count": 193,
+ "files": {
+  "client-arguments.json": {
+   "bytes": 6138,
+   "git_selected": true,
+   "sha256": "07e0e8ecd79c6ebf92c2b38a14afc5857c1f06a0a7c43855998f48d36e240f79"
+  },
+  "credential-canary.json": {
+   "bytes": 520,
+   "git_selected": true,
+   "sha256": "054ea2f2a6a42ceabb5240bcc16cbcf0f5b4d6da81ed0552d1ccff007aa29b6d"
+  },
+  "events.ndjson": {
+   "bytes": 13024,
+   "git_selected": true,
+   "sha256": "76eacd41f92b1372e13c9c93973dbee8bf28612fa402028f9910478fee8d8608"
+  },
+  "host-pricing-admission.json": {
+   "bytes": 2359,
+   "git_selected": true,
+   "sha256": "33a0a6f82edc8b8b6a794bdd0310913df4f23b87a2476dac7846f3af26adba41"
+  },
+  "input-ir.json": {
+   "bytes": 19194,
+   "git_selected": true,
+   "sha256": "13451b787f2bb4e85db534140e5a02acc51afe6f80a8f43c64ea68d23be3e967"
+  },
+  "live-arguments.json": {
+   "bytes": 6195,
+   "git_selected": true,
+   "sha256": "9b45d93ef279ce07ff5a17667fcfcf96c7e59ed462c93d634d482872a0977637"
+  },
+  "live-messages.json": {
+   "bytes": 5866,
+   "git_selected": true,
+   "sha256": "8de55e71c320712a454d2173ab3b6f528e37482efb52dd5faca9d15de8d1b91f"
+  },
+  "live-payload.json": {
+   "bytes": 756,
+   "git_selected": true,
+   "sha256": "9f11ba3c4bcdc5be0687e5df7200d02441c9ecd223169079b339f21994cbfabd"
+  },
+  "live-request.json": {
+   "bytes": 2937,
+   "git_selected": true,
+   "sha256": "e449c34f90e125be3fd8d3d630221893bb749a1078927c9da6f02029ef51e3f7"
+  },
+  "messages.json": {
+   "bytes": 5866,
+   "git_selected": true,
+   "sha256": "b8a924dc912373d99b9e03b8e2e49b9bd8ca9e920ac9acffe6b2d2492d60ddba"
+  },
+  "payload-audit.json": {
+   "bytes": 1091,
+   "git_selected": true,
+   "sha256": "775643fb7f9d1dcb6628c05ca77e7e6eb070eec9a645cb906b28279e889812ee"
+  },
+  "preparation-input/Frozen.lean": {
+   "bytes": 10113,
+   "git_selected": true,
+   "sha256": "00683f8ebf6c5717232f5b0aa7ffa2136ee2cd9b08c3ce05b20e3fcb65e01ba9"
+  },
+  "preparation-input/PreparationCapture.lean": {
+   "bytes": 3727,
+   "git_selected": true,
+   "sha256": "3d440a02cc784ccf2ab85855dc888bf5b5049615f9b30163627df64c8591ebec"
+  },
+  "preparation-input/source.patch": {
+   "bytes": 552,
+   "git_selected": true,
+   "sha256": "b89f279576958ff1702d77ca9edf425595c9776e50943122e845e1bbf0c5e84c"
+  },
+  "prepared.json": {
+   "bytes": 20227,
+   "git_selected": true,
+   "sha256": "6b603f6dedb519a50554a0f11773ce32550abb5b808fc9212fc187fae9cf8b9b"
+  },
+  "pricing-origin/caching.extract.json": {
+   "bytes": 1909,
+   "git_selected": true,
+   "sha256": "52463a4a0f3a9b5784fff4c1a2dfd33be0e1fea71012234c6ae488870ecd6a50"
+  },
+  "pricing-origin/caching.html": {
+   "bytes": 704039,
+   "git_selected": true,
+   "sha256": "7bed029c171427f3353bd22b9d1f4bd2426138bb728bfc4fb3ca3e9450d76755"
+  },
+  "pricing-origin/caching.receipt.json": {
+   "bytes": 1001,
+   "git_selected": true,
+   "sha256": "bf01546abfa2f580f17ae39710b196930d9ea1f6e80407790ebcf3898ba5d5ab"
+  },
+  "pricing-origin/model.extract.json": {
+   "bytes": 1137,
+   "git_selected": true,
+   "sha256": "600b0b4b724aae61e7db67b9a3f3c8a62c80c92e16246cd13cb7b1f6fbfee8ae"
+  },
+  "pricing-origin/model.html": {
+   "bytes": 429765,
+   "git_selected": true,
+   "sha256": "631040b5d883a6a9081646cf1d76a73e9e50263639f9588b258ca51400f553d2"
+  },
+  "pricing-origin/model.receipt.json": {
+   "bytes": 972,
+   "git_selected": true,
+   "sha256": "2f9b9ab6bbde71cf48db1432e6b9466dbcb941d17ade79ec99b3ec3939289a36"
+  },
+  "pricing-permit.json": {
+   "bytes": 3233,
+   "git_selected": true,
+   "sha256": "37a11798fb49c3212f09a754eb1ceb2a7da42c7fa205ec5dcfcf473326678e52"
+  },
+  "pricing-sources/caching.extract.json": {
+   "bytes": 1909,
+   "git_selected": true,
+   "sha256": "52463a4a0f3a9b5784fff4c1a2dfd33be0e1fea71012234c6ae488870ecd6a50"
+  },
+  "pricing-sources/caching.html": {
+   "bytes": 704039,
+   "git_selected": true,
+   "sha256": "7bed029c171427f3353bd22b9d1f4bd2426138bb728bfc4fb3ca3e9450d76755"
+  },
+  "pricing-sources/caching.receipt.json": {
+   "bytes": 1001,
+   "git_selected": true,
+   "sha256": "bf01546abfa2f580f17ae39710b196930d9ea1f6e80407790ebcf3898ba5d5ab"
+  },
+  "pricing-sources/model.extract.json": {
+   "bytes": 1137,
+   "git_selected": true,
+   "sha256": "600b0b4b724aae61e7db67b9a3f3c8a62c80c92e16246cd13cb7b1f6fbfee8ae"
+  },
+  "pricing-sources/model.html": {
+   "bytes": 429765,
+   "git_selected": true,
+   "sha256": "631040b5d883a6a9081646cf1d76a73e9e50263639f9588b258ca51400f553d2"
+  },
+  "pricing-sources/model.receipt.json": {
+   "bytes": 972,
+   "git_selected": true,
+   "sha256": "2f9b9ab6bbde71cf48db1432e6b9466dbcb941d17ade79ec99b3ec3939289a36"
+  },
+  "prompt.txt": {
+   "bytes": 2143,
+   "git_selected": true,
+   "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+  },
+  "provenance/binaries.json": {
+   "bytes": 2842,
+   "git_selected": true,
+   "sha256": "f466d54d31950ddd2e2bc89e748610302c9c1c9eb37821e2c004438f02e43356"
+  },
+  "provenance/credential-harness/credential.py": {
+   "bytes": 2866,
+   "git_selected": true,
+   "sha256": "a501d8ff28eea7536b04afc360c5b081310ec9b51fa7a4dd13675ff7f32b7163"
+  },
+  "provenance/credential-harness/credential_audit.py": {
+   "bytes": 37646,
+   "git_selected": true,
+   "sha256": "f541879009f03128830737265c003e2644957db4fcd95d64744c64a77e2150cd"
+  },
+  "provenance/credential-harness/credential_contract.py": {
+   "bytes": 6635,
+   "git_selected": true,
+   "sha256": "c7df0c0c0c6bc0d4c67c8af9f05c73938d3601b818608880a60749f007a6c331"
+  },
+  "provenance/credential-harness/credential_episode.py": {
+   "bytes": 16821,
+   "git_selected": true,
+   "sha256": "3bbdc98ff744055509396f0b2569f08c9d404558901742995f2bf21a523bc2da"
+  },
+  "provenance/credential-harness/credential_http.py": {
+   "bytes": 8952,
+   "git_selected": true,
+   "sha256": "5559ed7c4dd0c21bf3d11dff805a17d2ceef0326f9aef69d10b9ed065bfa2b42"
+  },
+  "provenance/credential-harness/policies/credential-harness-v3.sha256.json": {
+   "bytes": 758,
+   "git_selected": true,
+   "sha256": "846ffd8beb6e41457c31d557189c026d807ae1e9d662a782e02417fb8caf379b"
+  },
+  "provenance/credential-harness/policies/credential-http-v3.json": {
+   "bytes": 4025,
+   "git_selected": true,
+   "sha256": "e6e037d11b206326b064653ea3648db7cf8a0533880b78990738a783230bd39f"
+  },
+  "provenance/credential-harness/policies/provider-runtime-v1.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935"
+  },
+  "provenance/credential-harness/publication.py": {
+   "bytes": 10752,
+   "git_selected": true,
+   "sha256": "0404a755a97631273188e24bf380f9e64ac61bd53ecac9021b70533fbd0b7ad6"
+  },
+  "provenance/credential-harness/schema/credential-verdict.schema.json": {
+   "bytes": 3241,
+   "git_selected": true,
+   "sha256": "bfa5c80b5803ab0acb331f1e17c9a8760e10fc0bb63d211bbaf0088fa8a2b87c"
+  },
+  "provenance/credential-harness/test_credentials.py": {
+   "bytes": 42808,
+   "git_selected": true,
+   "sha256": "5f2fdb7d1c09943109536889a115e8654ae13d3210c9ae0563eb42725354e74b"
+  },
+  "provenance/envelope-harness/envelope_audit.py": {
+   "bytes": 17886,
+   "git_selected": true,
+   "sha256": "14d60b14061cff1020f9833b9222db8f7db8d72221a74c672efa855c73c727f6"
+  },
+  "provenance/envelope-harness/envelope_contract.py": {
+   "bytes": 4046,
+   "git_selected": true,
+   "sha256": "003501ede4f6b7344402aa440206ec28a8f0fb2bb514b26b62a1481a83caa043"
+  },
+  "provenance/envelope-harness/envelope_episode.py": {
+   "bytes": 20526,
+   "git_selected": true,
+   "sha256": "9d3385df7251ee2c88bc77189039b1e48893eb73933f3acb72b5fa7636b82204"
+  },
+  "provenance/envelope-harness/envelope_payload.py": {
+   "bytes": 8054,
+   "git_selected": true,
+   "sha256": "e8ad82f6ad261a537ba78015abf2cc764b775496cb0fa5be98683424f1187dad"
+  },
+  "provenance/envelope-harness/envelope_proof_audit.py": {
+   "bytes": 6424,
+   "git_selected": true,
+   "sha256": "ccd9b82881167affc17a6104c713c574207e1181d2093bb46d2c73600eeb3644"
+  },
+  "provenance/envelope-harness/policies/canned-envelope-harness-v1.sha256.json": {
+   "bytes": 982,
+   "git_selected": true,
+   "sha256": "5db38ec734b924913ca3d61b728518f6811dfa6d355217e2e624310611bdb8a0"
+  },
+  "provenance/envelope-harness/policies/canned-envelope-v1.json": {
+   "bytes": 2088,
+   "git_selected": true,
+   "sha256": "9cbd96a36b0f1b818836ac2ce04449147b45127f84947b253d7b167a4f304dca"
+  },
+  "provenance/envelope-harness/prompts/farkas-rows-v1.txt": {
+   "bytes": 2354,
+   "git_selected": true,
+   "sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4"
+  },
+  "provenance/envelope-harness/schema/envelope-request.schema.json": {
+   "bytes": 3064,
+   "git_selected": true,
+   "sha256": "ad8eb1b09a63a2f6d5f91726790345c877a348f500bde139491ac7319d60deff"
+  },
+  "provenance/envelope-harness/schema/envelope-verdict.schema.json": {
+   "bytes": 3293,
+   "git_selected": true,
+   "sha256": "dc6c83e24a6738a09e6a341c7650ca735564ecc5243d41e4acba38f410986391"
+  },
+  "provenance/envelope-harness/test_envelopes.py": {
+   "bytes": 31900,
+   "git_selected": true,
+   "sha256": "ea4da21c65659d0306cc2f362c239b43157132a539459c89f91e5e248d0d3785"
+  },
+  "provenance/envelope-harness/validate/envelope_receiver.c": {
+   "bytes": 1270,
+   "git_selected": true,
+   "sha256": "c113477bc66f3f6609a7872daae1ae4daece495bd6a74cc14e9d9f6fd2771900"
+  },
+  "provenance/fixture-runtime.json": {
+   "bytes": 345,
+   "git_selected": true,
+   "sha256": "c2d2be05d87065dd8d8a433e9a83ee74f74ec977574ffbe1b38a3d0c4d3bf9a6"
+  },
+  "provenance/harness/admission.py": {
+   "bytes": 6430,
+   "git_selected": true,
+   "sha256": "0937387f16fdb90b64ee6ed772b1fec0951fa555890871ec0fd0dd6c8651e324"
+  },
+  "provenance/harness/episode.py": {
+   "bytes": 27687,
+   "git_selected": true,
+   "sha256": "c85914f79944c4eb28e1f711af14895f950491c6070ab1a221c41c49228cb05d"
+  },
+  "provenance/harness/events.py": {
+   "bytes": 2916,
+   "git_selected": true,
+   "sha256": "875332d592bc98059a002f4124a045d4a7b278260a63013c431634d882d925af"
+  },
+  "provenance/harness/instrument.py": {
+   "bytes": 10677,
+   "git_selected": true,
+   "sha256": "f899ea801c78989a84678646d0003c8abc61db951435a7713b4f70e5c7643565"
+  },
+  "provenance/harness/payload.py": {
+   "bytes": 8637,
+   "git_selected": true,
+   "sha256": "ac1f594e6be800728b07cceb154b672046a70f1b0c57cf3cb625e6a06254b473"
+  },
+  "provenance/harness/policies/admission-v1.json": {
+   "bytes": 2870,
+   "git_selected": true,
+   "sha256": "d3b28b78683023a7ebe55733fc557f254145f5aed0bada32f8040cd7426a7ddf"
+  },
+  "provenance/harness/policies/fixture-farkas-v1.json": {
+   "bytes": 1094,
+   "git_selected": true,
+   "sha256": "d629a9e8565eab6aeb190c6fff45ecf9ccc5f90d2855ef85bde8c11ea26f457d"
+  },
+  "provenance/harness/policies/fixture-harness-v1.sha256.json": {
+   "bytes": 1972,
+   "git_selected": true,
+   "sha256": "570f2cc90d4b583579e752d01760282ae9943efdde89fab5312a660edde5709b"
+  },
+  "provenance/harness/proposal_audit.py": {
+   "bytes": 20222,
+   "git_selected": true,
+   "sha256": "a9dc79a38b8594802cd5bb1ea2446d556a786227ac381e8b1031b4d7939798e7"
+  },
+  "provenance/harness/proposal_episode.py": {
+   "bytes": 17402,
+   "git_selected": true,
+   "sha256": "3a2b35744e55f5538c11c4d2da2adabeefef7c44e876c5b701f094a7caceefc9"
+  },
+  "provenance/harness/proposal_instrument.py": {
+   "bytes": 8766,
+   "git_selected": true,
+   "sha256": "e55276242efb238063cc88bcee90f32c9fcd8707647be111c5e655347fe10ed6"
+  },
+  "provenance/harness/run.py": {
+   "bytes": 26044,
+   "git_selected": true,
+   "sha256": "8623dac7ac68f416b95ee91391c7019192655843fa9454865c9959314a3c77a4"
+  },
+  "provenance/harness/schema/event.schema.json": {
+   "bytes": 1308,
+   "git_selected": true,
+   "sha256": "8f0936407d96a4f3c81f11fe8ab2c689d749bfa3ba1eea50b0b336caa911b202"
+  },
+  "provenance/harness/schema/proposal-episode.schema.json": {
+   "bytes": 3353,
+   "git_selected": true,
+   "sha256": "fedfbcfa9d21b9b083025f75ae0e6a41357bde7351b14bf96e555712191091af"
+  },
+  "provenance/harness/schema/proposal-request.schema.json": {
+   "bytes": 2935,
+   "git_selected": true,
+   "sha256": "8354f3e7597cee1deffcceba3d37c42a645b899332081500cf68bbe15fde6a95"
+  },
+  "provenance/harness/schema/proposal-response.schema.json": {
+   "bytes": 1087,
+   "git_selected": true,
+   "sha256": "300add447d792e3c3b20d3e333e4d5a2db8df5279c9da1b236929c0111e84083"
+  },
+  "provenance/harness/supervise.py": {
+   "bytes": 7887,
+   "git_selected": true,
+   "sha256": "8065782189791f8bbc5ce8edb759bf0a69242ad96a66f736d222805c74ec388c"
+  },
+  "provenance/harness/task_spec.py": {
+   "bytes": 1599,
+   "git_selected": true,
+   "sha256": "29f2bb18945c7afcfd4b347d298ddb3547270f9636aa706675cc88498f74be58"
+  },
+  "provenance/harness/test_proposals.py": {
+   "bytes": 23649,
+   "git_selected": true,
+   "sha256": "71c2556acbe8d01a0c8dbf0585bed75b0828dd4a2b5d1f5dc4671b50ebcbcd28"
+  },
+  "provenance/harness/test_task_identity.py": {
+   "bytes": 2135,
+   "git_selected": true,
+   "sha256": "75459927864717525d95b89ea6cbf5f69f9ccf1f27adcaa6973e83b3cfdcf3bd"
+  },
+  "provenance/harness/validate/Replay.lean": {
+   "bytes": 7617,
+   "git_selected": true,
+   "sha256": "7106ff8078eeb243bc3b30d3de68ee9f719ae3cf25b1206469d8963c3a9e4f9e"
+  },
+  "provenance/harness/validate/fixture_responder.c": {
+   "bytes": 828,
+   "git_selected": true,
+   "sha256": "a3b6ce81e513d4648d1afd75e43c0f5082935f1e7b058fa7ba369fadc1e8336d"
+  },
+  "provenance/harness/validate/proposal_driver.ml": {
+   "bytes": 3325,
+   "git_selected": true,
+   "sha256": "4415130b0a3df5e37d674d58cc22aee5f47350b087ec2b430ed231ca466b6fae"
+  },
+  "provenance/harness/validate/verify_certificate.ml": {
+   "bytes": 1301,
+   "git_selected": true,
+   "sha256": "e840d9661d1cca9419e570273e1198946db2746838560abb3010765fb5477867"
+  },
+  "provenance/instrumentation.patch": {
+   "bytes": 6870,
+   "git_selected": true,
+   "sha256": "0df77aa98ab8f7071518d6c3a1cc7323a8b48d556ef41fdeb3fe096a3ef34af2"
+  },
+  "provenance/live-harness/live_audit.py": {
+   "bytes": 26584,
+   "git_selected": true,
+   "sha256": "548eb3d79b03e85407c7d09632b621e38b1143f8fde4c167eea31f42b3561d30"
+  },
+  "provenance/live-harness/live_budget.py": {
+   "bytes": 2260,
+   "git_selected": true,
+   "sha256": "63ef5462113e3638cc92353d2dc3c198aaabf2ff87f5eb25dac07aae7d5ef8f5"
+  },
+  "provenance/live-harness/live_contract.py": {
+   "bytes": 2912,
+   "git_selected": true,
+   "sha256": "22dd6739d79c2826bba4e8c260bc495f1134a0488e2c6e4102e748e82ad08e1e"
+  },
+  "provenance/live-harness/live_episode.py": {
+   "bytes": 11212,
+   "git_selected": true,
+   "sha256": "8f7c56d78c815b6aafb49e95492b164e44463dd02dc3d140f33329d4bc6c8356"
+  },
+  "provenance/live-harness/live_https.py": {
+   "bytes": 10407,
+   "git_selected": true,
+   "sha256": "81af8d122159f63e1f20adacdbb8e135e2526e07a8e7df0665afb5c99d3e083c"
+  },
+  "provenance/live-harness/live_payload.py": {
+   "bytes": 9953,
+   "git_selected": true,
+   "sha256": "84a184b188ce4c0b77550d4fb97fb4b0a7eb7940ba103f510dc175f6f58022cf"
+  },
+  "provenance/live-harness/live_tls_fixture.py": {
+   "bytes": 2724,
+   "git_selected": true,
+   "sha256": "496051d508aa0318a697587478eebe18c9e3e50ad4936d3222c53d3d0ecc6b06"
+  },
+  "provenance/live-harness/policies/live-harness-v1.sha256.json": {
+   "bytes": 712,
+   "git_selected": true,
+   "sha256": "e849da261b95210a864c39a2dbf47ae32ea86383cf56ef4e5552df7649112911"
+  },
+  "provenance/live-harness/policies/provider-runtime-v1.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935"
+  },
+  "provenance/live-harness/policies/responses-https-v1.json": {
+   "bytes": 4263,
+   "git_selected": true,
+   "sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4"
+  },
+  "provenance/live-harness/test_live.py": {
+   "bytes": 23696,
+   "git_selected": true,
+   "sha256": "5052d099eba6f565b6982eef0e3b54cad5c2b673ef84f4db2dcc72d7967c2b33"
+  },
+  "provenance/pilot-harness/pilot_budget.py": {
+   "bytes": 9509,
+   "git_selected": true,
+   "sha256": "129517581a90ad195c1ca0bbfff7bd1749bef7616b59824393fee416960baa71"
+  },
+  "provenance/pilot-harness/pilot_contract.py": {
+   "bytes": 12591,
+   "git_selected": true,
+   "sha256": "5dbb0bd71081f5fc884ae8c0fa82b448d39e16959328d4a4fefea14ab6949113"
+  },
+  "provenance/pilot-harness/pilot_episode.py": {
+   "bytes": 17853,
+   "git_selected": true,
+   "sha256": "f818e52be09a771ab06a560c2fa31810671b396a1b22e4dd8bbe249e4c09fadd"
+  },
+  "provenance/pilot-harness/pilot_https.py": {
+   "bytes": 9917,
+   "git_selected": true,
+   "sha256": "168171eb541795a257cae07f7d842f91814a62d6a9588dc774cca4f91ae6b30a"
+  },
+  "provenance/pilot-harness/pilot_network.py": {
+   "bytes": 5185,
+   "git_selected": true,
+   "sha256": "ddde1277ce8a3e2318d70d5b402527bfad5ba1b8297277ddadf0d3d7f8795d17"
+  },
+  "provenance/pilot-harness/policies/pilot-harness-v1.sha256.json": {
+   "bytes": 538,
+   "git_selected": true,
+   "sha256": "bf5d637bc5639fcc7619d5819c1d4f4c01ecda641e822f18a3df8151c151e0d9"
+  },
+  "provenance/pilot-harness/policies/pilot-runtime-v1.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "7e32ccee50b1476d867c4526bd40f5549bcf3bd17e040ce0313c02ac04e60231"
+  },
+  "provenance/pilot-harness/policies/responses-live-pilot-v1.json": {
+   "bytes": 6776,
+   "git_selected": true,
+   "sha256": "833035eb0d34b103aed7aad5f32cb519963b48d34040d2afb14e0739e36fa0ea"
+  },
+  "provenance/pilot-harness/test_pilot.py": {
+   "bytes": 8542,
+   "git_selected": true,
+   "sha256": "f96e655fccd993d0c39aa9f8bbf4aed32ca4f11e91117eb144906f3d7ac71a25"
+  },
+  "provenance/priced-harness/policies/priced-harness-v1.sha256.json": {
+   "bytes": 815,
+   "git_selected": true,
+   "sha256": "71fda7eb6d7c2b40dce1b14b73613216c6bc91ad39ab662a90f418e86e5d1bbb"
+  },
+  "provenance/priced-harness/policies/provider-runtime-v1.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935"
+  },
+  "provenance/priced-harness/policies/responses-priced-https-v1.json": {
+   "bytes": 4436,
+   "git_selected": true,
+   "sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2"
+  },
+  "provenance/priced-harness/priced_audit.py": {
+   "bytes": 34915,
+   "git_selected": true,
+   "sha256": "ca79fedf29d66844ccc6652be40eb242b38adea9b13410c261db1c288b758781"
+  },
+  "provenance/priced-harness/priced_budget.py": {
+   "bytes": 2343,
+   "git_selected": true,
+   "sha256": "aaa60854b2f34bfdba4c3da2d767d077a22aa0fac53583aecf387788cc7c149d"
+  },
+  "provenance/priced-harness/priced_contract.py": {
+   "bytes": 2988,
+   "git_selected": true,
+   "sha256": "0ab2dcfaf93c4abdc4f4613093cb3d07f58dbc06c2402097d5852d090137c3cd"
+  },
+  "provenance/priced-harness/priced_episode.py": {
+   "bytes": 15743,
+   "git_selected": true,
+   "sha256": "c5d4b38c0d84824f59aeb8a8d50c2da5544b9779601a1d94b5a410e1c9182d76"
+  },
+  "provenance/priced-harness/priced_https.py": {
+   "bytes": 7652,
+   "git_selected": true,
+   "sha256": "4eaf3e8990ed1c78af0b9e8211bfc167722e5bb67b71afd1bf1deee15d8540b0"
+  },
+  "provenance/priced-harness/priced_payload.py": {
+   "bytes": 10194,
+   "git_selected": true,
+   "sha256": "37584c8da1757b2190bb3219344a1ff342d787e5661d62ae5dbd7f66e066e353"
+  },
+  "provenance/priced-harness/pricing_capture.py": {
+   "bytes": 2155,
+   "git_selected": true,
+   "sha256": "f5ad92bd11cf668990240678090c078c1fec39fd01f31be994e8df2bf999b1eb"
+  },
+  "provenance/priced-harness/pricing_gate.py": {
+   "bytes": 12564,
+   "git_selected": true,
+   "sha256": "ad38eb4e9a9a53fa11f8ca3eec06bf6be6a1f16131a21323e4803c41abde74db"
+  },
+  "provenance/priced-harness/test_pricing.py": {
+   "bytes": 29268,
+   "git_selected": true,
+   "sha256": "258e4f391f8e53e3d99e0a625c59a57fb8597f455ef825b718578af50ecb8cf9"
+  },
+  "provenance/priced-v2-harness/policies/priced-harness-v2.sha256.json": {
+   "bytes": 842,
+   "git_selected": true,
+   "sha256": "1c37c0f123ba442d816e43356a9602db843c6583dcf8b64357f27147a867f81e"
+  },
+  "provenance/priced-v2-harness/policies/provider-runtime-v1.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935"
+  },
+  "provenance/priced-v2-harness/policies/responses-priced-https-v2.json": {
+   "bytes": 5136,
+   "git_selected": true,
+   "sha256": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d"
+  },
+  "provenance/priced-v2-harness/priced_audit_v2.py": {
+   "bytes": 35177,
+   "git_selected": true,
+   "sha256": "14df47a0f7ff7c70c47b6958a7ea090322da7a5860b2e27c6f2e5dc49b4694b9"
+  },
+  "provenance/priced-v2-harness/priced_budget_v2.py": {
+   "bytes": 2352,
+   "git_selected": true,
+   "sha256": "f83d9353d986e62d76ef3966c55d971ba72b7520286bbf676f618ec4f4897721"
+  },
+  "provenance/priced-v2-harness/priced_contract_v2.py": {
+   "bytes": 3020,
+   "git_selected": true,
+   "sha256": "045c71a33435f7b575a894981986f4053e8a053cac8d5fa8d0761bfb8978ebf2"
+  },
+  "provenance/priced-v2-harness/priced_episode_v2.py": {
+   "bytes": 16276,
+   "git_selected": true,
+   "sha256": "c7c08db070b7e17b47bcbcb3499dc8237f1d1cc3eb4e8ddf2bfaed4f19479767"
+  },
+  "provenance/priced-v2-harness/priced_https_v2.py": {
+   "bytes": 7655,
+   "git_selected": true,
+   "sha256": "10e459e3fa99475cf2bee9b4f95b481cec8dfd97912a909258ea69f80bf9e01f"
+  },
+  "provenance/priced-v2-harness/priced_payload_v2.py": {
+   "bytes": 10203,
+   "git_selected": true,
+   "sha256": "3438298dbcd969900421ea8d3bc27d5df86c7b7af490c0c99eba53c29b8e57be"
+  },
+  "provenance/priced-v2-harness/pricing_capture_v2.py": {
+   "bytes": 2158,
+   "git_selected": true,
+   "sha256": "181516665c9ed696f7f847ddb273b83ab2161dc3f61d8f178e3404a97fda1cc5"
+  },
+  "provenance/priced-v2-harness/pricing_gate_v2.py": {
+   "bytes": 15936,
+   "git_selected": true,
+   "sha256": "19199a6a4c54fd5a24f3b5ccc44320dbe211ab2421278dd6f4d7afc10a4097eb"
+  },
+  "provenance/priced-v2-harness/test_pricing_v2.py": {
+   "bytes": 40493,
+   "git_selected": true,
+   "sha256": "b242279dffc88dc489a538e082b38664f73e4995392445879cd560e36729c9d6"
+  },
+  "provenance/provider-harness/policies/openai-responses-http-v1.json": {
+   "bytes": 2728,
+   "git_selected": true,
+   "sha256": "eefae339cb7067f88802d768e2acb3444651da3037b90e3e74441567672c4487"
+  },
+  "provenance/provider-harness/policies/provider-harness-v1.sha256.json": {
+   "bytes": 871,
+   "git_selected": true,
+   "sha256": "cd51ec861614e70579e3bcf549ad86b61491275a6313703344c69a9b34aa76f0"
+  },
+  "provenance/provider-harness/policies/provider-runtime-v1.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935"
+  },
+  "provenance/provider-harness/prompts/farkas-lia-v1.txt": {
+   "bytes": 2143,
+   "git_selected": true,
+   "sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+  },
+  "provenance/provider-harness/provider_audit.py": {
+   "bytes": 27864,
+   "git_selected": true,
+   "sha256": "63e508eb142f6dcb632564f37dd42aad0195c44d0028e59e7f52922c4d1a28b2"
+  },
+  "provenance/provider-harness/provider_contract.py": {
+   "bytes": 6845,
+   "git_selected": true,
+   "sha256": "ab41219b9c82e4ca62769e40966feb63a13c14cb824a07dc080d1b2c2e6d31b8"
+  },
+  "provenance/provider-harness/provider_episode.py": {
+   "bytes": 22389,
+   "git_selected": true,
+   "sha256": "b211e7781baef8d3a3b88db6a323b8a7bb0c45611c3469fd325e559efdeacdc2"
+  },
+  "provenance/provider-harness/provider_http.py": {
+   "bytes": 7298,
+   "git_selected": true,
+   "sha256": "7c34c749b073c982e39e94a73e04e5d18c26fb648a4726cd74ce6bde86e52160"
+  },
+  "provenance/provider-harness/provider_payload.py": {
+   "bytes": 14052,
+   "git_selected": true,
+   "sha256": "caa57b356dda9218085e741e2e806d590d8b6cbf4d94ff9f7044149d14b8c6e1"
+  },
+  "provenance/provider-harness/schema/provider-request.schema.json": {
+   "bytes": 3040,
+   "git_selected": true,
+   "sha256": "a322dacf7d640a5f0053c79da75298fe8aadd2240a32396bbe11fc2d3dd4a233"
+  },
+  "provenance/provider-harness/schema/provider-verdict.schema.json": {
+   "bytes": 3345,
+   "git_selected": true,
+   "sha256": "2e23dc9eee14da78ad8d2cc0ea8401a4fc41e6727147658829589c107dbed1ec"
+  },
+  "provenance/provider-harness/test_provider.py": {
+   "bytes": 36353,
+   "git_selected": true,
+   "sha256": "173f793b922f61d397e4210114516d7bdafe11f442d94db90f9a7e2e72a4d681"
+  },
+  "provenance/python-runtime.json": {
+   "bytes": 98558,
+   "git_selected": true,
+   "sha256": "7e32ccee50b1476d867c4526bd40f5549bcf3bd17e040ce0313c02ac04e60231"
+  },
+  "provenance/roles.json": {
+   "bytes": 1122,
+   "git_selected": true,
+   "sha256": "20c926c67215485cb4316dc603d9f34141bf32d7949c517ffa130367c4774c2a"
+  },
+  "provenance/sources.json": {
+   "bytes": 11539,
+   "git_selected": true,
+   "sha256": "66b7bbf6a21dddeea36318f3b580b15dd1ec755d1405460b53af71530632fade"
+  },
+  "request.json": {
+   "bytes": 2937,
+   "git_selected": true,
+   "sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+  },
+  "request.sha256": {
+   "bytes": 79,
+   "git_selected": true,
+   "sha256": "3ab46df2ced233b9149e1c1ce36c9dceb51221aca34fe872da5540f76fad1ac0"
+  },
+  "reservation-ledger.ndjson": {
+   "bytes": 2623,
+   "git_selected": true,
+   "sha256": "591da5552421fa26b224c9efb725faadbb52ea92a3ded4719d375d98c972fe83"
+  },
+  "reservation.json": {
+   "bytes": 655,
+   "git_selected": true,
+   "sha256": "886c953180f88dfda237d208d57ee834e812feaa9ef8411c784dbbc7387b543c"
+  },
+  "runtime.json": {
+   "bytes": 1040,
+   "git_selected": true,
+   "sha256": "13d7512afd4309dcb34a9145c60fa9de99429dea5ff724087c3ecf7b9ae39eaa"
+  },
+  "sanitized-context.json": {
+   "bytes": 2404,
+   "git_selected": true,
+   "sha256": "63515e423d974f043520da8b852820cc5fb1508e2c9e4f701505957f9c378080"
+  },
+  "search-policy.json": {
+   "bytes": 355,
+   "git_selected": true,
+   "sha256": "4b36e36ad1e19cfcbaa4f8727a9df6f0431da073271d746007f7cb4912d6cb38"
+  },
+  "stages/pipeline-prepare/command.json": {
+   "bytes": 1684,
+   "git_selected": true,
+   "sha256": "dae652a924add0b93496a04a1f6ab8442e3d66f94c7a53190533ad9f87fcefae"
+  },
+  "stages/pipeline-prepare/output/prepared.json": {
+   "bytes": 20227,
+   "git_selected": true,
+   "sha256": "6b603f6dedb519a50554a0f11773ce32550abb5b808fc9212fc187fae9cf8b9b"
+  },
+  "stages/pipeline-prepare/pipeline-prepare.process.json": {
+   "bytes": 549,
+   "git_selected": true,
+   "sha256": "9562d2a5900cadb03ed9081357760194315caba033de4d8a02d8fdf359f86a9e"
+  },
+  "stages/pipeline-prepare/pipeline-prepare.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/pipeline-prepare/pipeline-prepare.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/pipeline-prepare/scope-command.json": {
+   "bytes": 437,
+   "git_selected": true,
+   "sha256": "554cf37b31d199031c7eb14ea952b715e63bdaf744538c1ff8af120e08e006a4"
+  },
+  "stages/pipeline-prepare/supervisor.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/pipeline-prepare/supervisor.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation-build/command.json": {
+   "bytes": 4586,
+   "git_selected": true,
+   "sha256": "a36cf9b58ac981ccf295afb763129ba34b80a38080f14af52a27f7f3aecea099"
+  },
+  "stages/preparation-build/output/PreparationCapture.olean": {
+   "bytes": 719488,
+   "git_selected": false,
+   "sha256": "d776f2b0607d3bf72157e8286d228efae9b52978706a7cf22faf7719095aa29b"
+  },
+  "stages/preparation-build/preparation-build.process.json": {
+   "bytes": 549,
+   "git_selected": true,
+   "sha256": "ef2cd45af02eca9b54a7def36fdc625b4b56e307f46e383fd7374553378ca827"
+  },
+  "stages/preparation-build/preparation-build.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation-build/preparation-build.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation-build/scope-command.json": {
+   "bytes": 438,
+   "git_selected": true,
+   "sha256": "bfc8cd570cc5a62024f0ac671d898d41451452df9d1f8a8f22ef964c3bca4db8"
+  },
+  "stages/preparation-build/supervisor.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation-build/supervisor.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation/command.json": {
+   "bytes": 4829,
+   "git_selected": true,
+   "sha256": "95dee2a0641eb01543d8cec19a5b1002ab5643701040aa07f3cd8111903e1d6d"
+  },
+  "stages/preparation/output/Frozen.olean": {
+   "bytes": 437944,
+   "git_selected": false,
+   "sha256": "c3ab021c6c21ba8673c0b8874f3ad3473880e63c17019ae012d8ff02aeefe32c"
+  },
+  "stages/preparation/output/context.json": {
+   "bytes": 10525,
+   "git_selected": true,
+   "sha256": "11f6eabb5c8b4929798fe8d7067caa1b8747d87d7a841bbc2d1e1bfa40199019"
+  },
+  "stages/preparation/output/reification.json": {
+   "bytes": 8575,
+   "git_selected": true,
+   "sha256": "9b4627d6b8063ed8645176b749885181c56eb56cd590ed2d1f7dc5d1c3479764"
+  },
+  "stages/preparation/preparation.process.json": {
+   "bytes": 550,
+   "git_selected": true,
+   "sha256": "6cd2251b618d09d01550c5de5d3005e656ab34232cdfe57cd165803796a491c6"
+  },
+  "stages/preparation/preparation.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation/preparation.stdout": {
+   "bytes": 242,
+   "git_selected": true,
+   "sha256": "bd2113d9c1fc80a8ad0e13f8ee929cac12c2ea6e8fabcd172dadf39ef13b4650"
+  },
+  "stages/preparation/scope-command.json": {
+   "bytes": 432,
+   "git_selected": true,
+   "sha256": "848183c00d82afd5feae0bfead9946db439fbe37c78c479b24c71c119ada0602"
+  },
+  "stages/preparation/supervisor.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/preparation/supervisor.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/proposal-1/command.json": {
+   "bytes": 5353,
+   "git_selected": true,
+   "sha256": "74d11ae21886650ff92808ea3a00217c35cc7c999f4ae1503f2153f675e6a023"
+  },
+  "stages/proposal-1/output/authorization.json": {
+   "bytes": 231,
+   "git_selected": true,
+   "sha256": "cf9f1a45d2a132c4613e87bd1dfda8b28c42a00de56124f1367386a0524301d2"
+  },
+  "stages/proposal-1/output/http.json": {
+   "bytes": 1055,
+   "git_selected": true,
+   "sha256": "c9530146fcf136878fbe9dc9873ecba08434c765729f0bfab8cabb64a0847d49"
+  },
+  "stages/proposal-1/output/pricing-check.json": {
+   "bytes": 2241,
+   "git_selected": true,
+   "sha256": "939aebb2acd54c5b95d2bb3ce5bcf966f031dfbf995b1e1d6662b5ffaec39802"
+  },
+  "stages/proposal-1/output/serialized-body.json": {
+   "bytes": 6093,
+   "git_selected": true,
+   "sha256": "e4cadc6ad1d9dfb70aa9ab8300499fbe5987dba9ea7f4ce3b522c0c8364efccf"
+  },
+  "stages/proposal-1/output/server.json": {
+   "bytes": 75,
+   "git_selected": true,
+   "sha256": "582c2863834cf3788070eb57abc2304cd8d96f597e96ec0475df23183113147a"
+  },
+  "stages/proposal-1/proposal-1.process.json": {
+   "bytes": 549,
+   "git_selected": true,
+   "sha256": "dba59a86a56e50c73d6c7fac7d06645e600fc47a3b4e0b98df1e68f25cba20ab"
+  },
+  "stages/proposal-1/proposal-1.stderr": {
+   "bytes": 403,
+   "git_selected": true,
+   "sha256": "855b3b1d5c7fe4956b3695b23c78359beb012987931bee9cdf9510be96d22bce"
+  },
+  "stages/proposal-1/proposal-1.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/proposal-1/scope-command.json": {
+   "bytes": 430,
+   "git_selected": true,
+   "sha256": "81af68117d541d1e3a55fae8a9e391fc0e6d5ec7f3b4d77f5698d5258fab6f41"
+  },
+  "stages/proposal-1/supervisor.stderr": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stages/proposal-1/supervisor.stdout": {
+   "bytes": 0,
+   "git_selected": true,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "transport-arguments.json": {
+   "bytes": 6195,
+   "git_selected": true,
+   "sha256": "9b45d93ef279ce07ff5a17667fcfcf96c7e59ed462c93d634d482872a0977637"
+  },
+  "transport-ledger.ndjson": {
+   "bytes": 2623,
+   "git_selected": true,
+   "sha256": "591da5552421fa26b224c9efb725faadbb52ea92a3ded4719d375d98c972fe83"
+  },
+  "transport-policy.json": {
+   "bytes": 8190,
+   "git_selected": true,
+   "sha256": "e7968b401f63e6ea5a50cfd559e5f448ca6bace5ba1ae16b3e59701a0118c27e"
+  },
+  "transport-pricing-sources/caching.extract.json": {
+   "bytes": 1909,
+   "git_selected": true,
+   "sha256": "52463a4a0f3a9b5784fff4c1a2dfd33be0e1fea71012234c6ae488870ecd6a50"
+  },
+  "transport-pricing-sources/caching.html": {
+   "bytes": 704039,
+   "git_selected": true,
+   "sha256": "7bed029c171427f3353bd22b9d1f4bd2426138bb728bfc4fb3ca3e9450d76755"
+  },
+  "transport-pricing-sources/caching.receipt.json": {
+   "bytes": 1001,
+   "git_selected": true,
+   "sha256": "bf01546abfa2f580f17ae39710b196930d9ea1f6e80407790ebcf3898ba5d5ab"
+  },
+  "transport-pricing-sources/model.extract.json": {
+   "bytes": 1137,
+   "git_selected": true,
+   "sha256": "600b0b4b724aae61e7db67b9a3f3c8a62c80c92e16246cd13cb7b1f6fbfee8ae"
+  },
+  "transport-pricing-sources/model.html": {
+   "bytes": 429765,
+   "git_selected": true,
+   "sha256": "631040b5d883a6a9081646cf1d76a73e9e50263639f9588b258ca51400f553d2"
+  },
+  "transport-pricing-sources/model.receipt.json": {
+   "bytes": 972,
+   "git_selected": true,
+   "sha256": "2f9b9ab6bbde71cf48db1432e6b9466dbcb941d17ade79ec99b3ec3939289a36"
+  },
+  "transport-request.json": {
+   "bytes": 2937,
+   "git_selected": true,
+   "sha256": "e449c34f90e125be3fd8d3d630221893bb749a1078927c9da6f02029ef51e3f7"
+  }
+ },
+ "git_selected_count": 191,
+ "inventory_sha256": "7b8c158a6248fd0fa05f3b1f5b521f377e24ba090d8332bee0f93428643677df",
+ "run": "live-1",
+ "schema_version": "r6-007-live1-inventory-1"
+}

@@ -1,0 +1,26 @@
+{
+  "outbound_envelope": {
+    "accepted": true,
+    "category": null,
+    "mismatches": [],
+    "captured_body_sha256": "678067d082a18eeecbb031d85af3889ef010d14abb4e9c2423a7b7b53a68a3b9",
+    "request_sha256": "92c598f886d552c3c050f64385ef594efcfab505e5c58407ee59ca72e77c051f",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "evidence_scope": "serialized entity-body consistency; no remote-input or inference attestation"
+  },
+  "body_consistency": {
+    "checked": true,
+    "accepted": true,
+    "scope": "local canned TLS receiver"
+  },
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "92c598f886d552c3c050f64385ef594efcfab505e5c58407ee59ca72e77c051f",
+    "received_request_sha256": "92c598f886d552c3c050f64385ef594efcfab505e5c58407ee59ca72e77c051f"
+  },
+  "certificate_verified": null,
+  "failure_category": null,
+  "failure_phase": null
+}

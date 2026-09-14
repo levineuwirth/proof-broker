@@ -1,0 +1,81 @@
+{
+  "sequence": 0,
+  "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "episode_id": "rehearsal-2",
+  "policy_sha256": "225945dac1718ae06cc59c7f865f3ec6302720e184dce67a01bb560424bc72da",
+  "request_sha256": "81ad663794daa3c78d78f019bc384e3f4019e4a7776a1069785de6b60e87d0a7",
+  "arguments_sha256": "2ac3f5b2635ca9158e456ecfb67e74c97e95a7809796d6454b287815964dff64",
+  "reservation": {
+    "reserved_micro_usd": 102400,
+    "input_tokens_reserved": 16384,
+    "output_tokens": 4096,
+    "message_utf8_bytes": 5203,
+    "spent_before_micro_usd": 0,
+    "ceiling_micro_usd": 102400,
+    "billing_guarantee": false,
+    "scope": "conditional reservation under the frozen rates; the ceiling funds exactly one attempt"
+  },
+  "pricing_admission": {
+    "schema_version": "r6-pricing-admission-2",
+    "accepted": true,
+    "policy_sha256": "225945dac1718ae06cc59c7f865f3ec6302720e184dce67a01bb560424bc72da",
+    "request_sha256": "81ad663794daa3c78d78f019bc384e3f4019e4a7776a1069785de6b60e87d0a7",
+    "arguments_sha256": "2ac3f5b2635ca9158e456ecfb67e74c97e95a7809796d6454b287815964dff64",
+    "body_sha256": "c2a71e6b854665020b9b22e15a98b9d071e4eff646255d4e5fc332354655dd77",
+    "sources": {
+      "model": {
+        "raw_sha256": "631040b5d883a6a9081646cf1d76a73e9e50263639f9588b258ca51400f553d2",
+        "extract_sha256": "c3769aa47f08763af4aa774f3d2232c1d2b3b6dc1220213724a71298e7d62ab4",
+        "receipt_sha256": "2f9b9ab6bbde71cf48db1432e6b9466dbcb941d17ade79ec99b3ec3939289a36"
+      },
+      "caching": {
+        "raw_sha256": "7bed029c171427f3353bd22b9d1f4bd2426138bb728bfc4fb3ca3e9450d76755",
+        "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+        "receipt_sha256": "bf01546abfa2f580f17ae39710b196930d9ea1f6e80407790ebcf3898ba5d5ab"
+      }
+    },
+    "nano_usd_per_token": {
+      "input": 2500,
+      "cached_input": 250,
+      "output": 15000,
+      "cache_write": 2500
+    },
+    "reserved_micro_usd": 102400,
+    "applicability": {
+      "source_conditions": {
+        "long_context": {
+          "input_tokens_threshold": 272000,
+          "comparison": "greater_than",
+          "input_multiplier": "2",
+          "output_multiplier": "1.5",
+          "scope": "full_session",
+          "service_tiers": [
+            "standard",
+            "batch",
+            "flex"
+          ]
+        },
+        "regional_processing": {
+          "uplift_percent": 10,
+          "scope": "regional_processing_endpoints"
+        }
+      },
+      "input_tokens_reserved": 16384,
+      "input_tokens_upper_bound_exclusive": 272000,
+      "endpoint": {
+        "host": "api.openai.com",
+        "path": "/v1/responses",
+        "port": 443,
+        "scheme": "https"
+      },
+      "long_context_surcharge_applicable": false,
+      "regional_surcharge_applicable": false,
+      "session_scope": "one_stateless_request",
+      "scope": "local policy/input applicability under the existing token-bound assumption; not billing attestation"
+    },
+    "message_utf8_bytes": 5203,
+    "evaluated_at_unix": 1789297269.798339,
+    "billing_guarantee": false,
+    "evidence_scope": "local retained-source, clock and request consistency; no remote pricing or inference attestation"
+  }
+}
