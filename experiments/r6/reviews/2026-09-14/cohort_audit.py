@@ -15,7 +15,9 @@ persisting into a later revision's refusal) and a second task whose model input 
 reservation amount is the price of the frozen limits and equals the rederived admission (committed money is derived from
 those checked amounts); the sender's stage returned within the frozen resource limits; module mounts are bound to the
 recorded repository layout and the driver's recorded roles; and every supervisor receipt payload is reconstructed from
-the record it names and compared exactly, the credential receipt to the canary and the receiver's observation.
+the record it names and compared exactly, the credential receipt to the canary and the receiver's observation. After the v3
+review: the whole sender command is rebuilt from the pinned runtime record and the recorded layout and compared exactly, and
+every stage on the outcome's frozen path must have returned within its limits, not only the sender.
 
 The case population is derived from the frozen run population and its declared outcomes; the audit fails unless exactly
 that set of named cases was evaluated. Superseded revisions are audited under explicit version dispatch and reported as
@@ -32,6 +34,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 import campaign_ledger as base
+import campaign_network as network
 import cohort_budget as budget
 import cohort_contract as contract
 import cohort_episode as driver
@@ -40,6 +43,7 @@ import credential
 import credential_episode as publication_driver
 import envelope_proof_audit
 import episode
+import inspect
 import events
 import payload
 import priced_payload_v2 as v2
@@ -107,6 +111,15 @@ PROOF = [('supervisor', 'assembly', 'stage_started'), ('supervisor', 'assembly',
          ('supervisor', 'validation-whole', 'stage_finished'), ('supervisor', 'validation-whole', 'kernel_verdict'),
          ('supervisor', 'episode', 'proof_validated'), ('supervisor', 'episode', 'episode_finished')]
 REJECTED = [('supervisor', 'episode', 'episode_rejected')]
+STAGES = {'refused': ('preparation-build', 'preparation', 'pipeline-prepare'), 'release': ('preparation-build', 'preparation', 'pipeline-prepare', 'proposal-1'),
+          'proof': ('preparation-build', 'preparation', 'pipeline-prepare', 'proposal-1', 'assembly', 'certificate-check', 'capture-build', 'reconstruct',
+                    'export', 'validation-local', 'validation-whole')}
+RUNTIME_PIN = 'campaign-runtime-v1'
+SENDER_PREFIX = ['bwrap', *network.NAMESPACES, '--unshare-net', '--die-with-parent', '--new-session', '--cap-drop', 'ALL',
+                 '--clearenv', '--setenv', 'PATH', '/no-programs', '--setenv', 'LEAN_ABORT_ON_PANIC', '1',
+                 '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
+                 '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/work', '--chdir', '/work']
+EPHEMERAL = ('/credential', '/ca.pem', '/server.pem', '/server.key')
 SEQUENCES = {'proof': PREFIX+OBSERVED+RECEIPT+PROOF, 'release': PREFIX+OBSERVED+RECEIPT+REJECTED,
              'refused': PREPARED+[('supervisor', 'campaign-ledger', 'reservation_refused')]+RECEIPT+REJECTED}
 
@@ -142,11 +155,12 @@ def expected_cases(population):
                   f'{run}:request:regenerated_under_contract', f'{run}:envelope:recomputed_from_contract', f'{run}:pricing:host_admission_rederived',
                   f'{run}:seal:retained_hashes', f'{run}:publication:recomputed', f'{run}:terminal:commitments_bound',
                   f'{run}:summary:bound_to_audited_records', f'{run}:seal:chain_and_outcome', f'{run}:accounting:recomputed', f'{run}:credential_receipt:recorded',
-                  f'{run}:receipts:payloads_bound_to_records']
+                  f'{run}:receipts:payloads_bound_to_records', f'{run}:stages:every_stage_on_the_path_returned']
         if kind == 'refused':
             names += [f'{run}:refusal:slot_consumed_before_reservation']; continue
         names += [f'{run}:ledger:permit_and_reconciliation_bound', f'{run}:ledger:reservation_priced_from_contract_limits', f'{run}:ledger:disposition_derived',
-                  f'{run}:slot:authoritative_matches_retained', f'{run}:mounts:authority_bound', f'{run}:receipts:single_pair_bound_to_process',
+                  f'{run}:slot:authoritative_matches_retained', f'{run}:mounts:authority_bound', f'{run}:command:reconstructed_from_pinned_runtime_and_layout',
+                  f'{run}:receipts:single_pair_bound_to_process',
                   f'{run}:receipts:stage_returned_within_frozen_limits', f'{run}:grant:consistent_with_outcome',
                   f'{run}:pricing:actor_check_rederived', f'{run}:transport:record_consistent', f'{run}:transport:bodies_are_the_contract_rendering',
                   f'{run}:interpretation:reproduced', f'{run}:commitment:bound_to_mounted_canary', f'{run}:slot:identity_in_receipts_not_in_model_bytes']
@@ -407,6 +421,49 @@ def mounts(a, run, name, sp, task, draw, permit, book):
           and option('--contract') == '/contract.json' and option('--instruction') == '/instruction.txt' and option('--permit') == '/permit.json'
           and option('--ledger') == '/ledger.ndjson' and option('--grant') == '/grant' and option('--mode') == 'rehearsal')
     a.require(ok, f'{name}:mounts:authority_bound', f'ledger {ledger_src}, grant {grant_src}')
+    return root
+
+
+def command_reconstructed(a, run, name, sp, policy, task, draw, permit, http, root):
+    """The whole recorded sender command, rebuilt from the pinned runtime record, the recorded repository root and this run's own paths, compared
+    exactly: every library mount is the pinned inventory's, the stdlib is the materialization of the pin under that root, the interpreter is the
+    pinned one, the module and record mounts are the frozen population, the only unconstrained sources are the four ephemeral credential/TLS
+    files, and nothing else is mounted. No original directory needs to exist."""
+    command = load(run/'stages/proposal-1/command.json'); argv = command['argv']; run_dir = command['run']; roles = load(run/'provenance/roles.json')
+    pin_path = run/'provenance/cohort-harness/policies'/(RUNTIME_PIN+'.json'); pin = load(pin_path)
+    pinned = sha(pin_path.read_bytes()) == policy['runtime_lock_sha256'] and load(run/'provenance/python-runtime.json') == pin and roles['runtime_pin'] == RUNTIME_PIN \
+             and load(run/'provenance/binaries.json').get(pin['python']) == pin['python_sha256'] and roles['python'] == pin['python']
+    stdlib_source = f"{root}.cache/campaign-runtime/{policy['runtime_lock_sha256']}/stdlib"
+    pinned = pinned and roles['runtime_path'] == stdlib_source
+    libraries = [x for lib in sorted(pin['libraries'], key=lambda l: l['guest']) for x in ('--ro-bind', lib['host'], lib['guest'])]
+    modules = [x for guest, module in (('/adapter.py', 'cohort_https.py'), ('/live_https.py', 'live_https.py'), ('/pricing_gate_v2.py', 'pricing_gate_v2.py'),
+                                       ('/pricing_gate_v3.py', 'pricing_gate_v3.py'), ('/campaign_ledger.py', 'campaign_ledger.py'), ('/cohort_ledger.py', 'cohort_ledger.py'))
+               for x in ('--ro-bind', root+module, guest)]
+    records = [x for file, guest in (('transport-policy.json', '/policy.json'), ('transport-contract.json', '/contract.json'), ('transport-instruction.txt', '/instruction.txt'),
+                                     ('transport-arguments.json', '/arguments.json'), ('transport-request.json', '/request.json'),
+                                     ('transport-pricing-sources', '/pricing-sources'), ('campaign-permit.json', '/permit.json'))
+               for x in ('--ro-bind', run_dir+'/'+file, guest)]
+    # the four ephemeral sources are taken from the record itself, after checking they are the only unconstrained mounts and are well formed
+    def source(guest):
+        hits = [i for i, x in enumerate(argv) if x == guest and i >= 2 and argv[i-2] == '--ro-bind']
+        return argv[hits[0]-1] if len(hits) == 1 else None
+    ephemeral = {guest: source(guest) for guest in EPHEMERAL}
+    tls = [ephemeral[g] for g in ('/ca.pem', '/server.pem', '/server.key')]
+    ephemeral_ok = (all(isinstance(v, str) and v.startswith('/') for v in ephemeral.values())
+                    and all(Path(v).name == g[1:] for g, v in ephemeral.items() if g != '/credential')
+                    and len({str(Path(v).parent) for v in tls}) == 1 and not any(v.startswith((root, run_dir)) for v in ephemeral.values()))
+    expected = (SENDER_PREFIX + libraries + ['--ro-bind', stdlib_source, pin['stdlib']] + modules + records
+                + ['--ro-bind', root+sp['ledger_path'], '/ledger.ndjson', '--ro-bind', run_dir+'/canned-provider.json', '/fixture.json']
+                + [x for g in EPHEMERAL for x in ('--ro-bind', ephemeral[g] or '', g)]
+                + ['--ro-bind', pin['python'], '/runner/bin/program', '--bind', run_dir+'/stages/proposal-1/output', '/out',
+                   '--bind', f"{root}{sp['ledger_slots']}/{task.id}/{draw}/{permit['reservation_id']}", '/grant', '/runner/bin/program',
+                   '-I', '-S', '-B', '/adapter.py', '--mode', 'rehearsal', '--policy', '/policy.json', '--contract', '/contract.json', '--instruction', '/instruction.txt',
+                   '--arguments', '/arguments.json', '--credential-file', '/credential', '--ca', '/ca.pem', '--out', '/out', '--request', '/request.json',
+                   '--sources', '/pricing-sources', '--permit', '/permit.json', '--ledger', '/ledger.ndjson', '--episode', name, '--task', task.id, '--draw', str(draw),
+                   '--grant', '/grant', '--commitment-nonce', http['commitment_nonce'], '--fixture', '/fixture.json', '--server-cert', '/server.pem', '--server-key', '/server.key'])
+    first = next((i for i, (x, y) in enumerate(zip(argv, expected)) if x != y), min(len(argv), len(expected)) if len(argv) != len(expected) else None)
+    a.require(pinned and ephemeral_ok and argv == expected, f'{name}:command:reconstructed_from_pinned_runtime_and_layout',
+              f'pinned {pinned}, ephemeral {ephemeral_ok}, first difference at {first}: {argv[first:first+3] if first is not None else None}')
 
 
 def receipts(a, run, name, rows, policy):
@@ -427,6 +484,30 @@ def receipts(a, run, name, rows, policy):
               and started[0]['wall_limit_seconds'] == command['wall_seconds'] and started[0]['cpu_limit_seconds'] == command['cpu_seconds']
               and started[0]['memory_limit_bytes'] == command['memory_bytes'],
               f'{name}:receipts:stage_returned_within_frozen_limits', f"exit {process['exit_code']}, limits {started[0]}")
+
+
+def stage_outcomes(a, run, name, kind, policy):
+    """The driver reached this outcome only because every stage on its frozen path returned: the retained stage population is exactly the path's,
+    and each process record shows a zero exit, no exhaustion or violation, monitor and observation success and an empty workload — under the
+    sender's policy limits or the frozen build/replay defaults."""
+    present = sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()) if (run/'stages').is_dir() else []
+    defaults = {k: v.default for k, v in inspect.signature(episode.stage).parameters.items() if k in ('wall', 'cpu', 'memory', 'output_limit')}
+    limits = policy['limits']; problems = []
+    if present != sorted(STAGES[kind]): problems.append(f'stages {present}')
+    for stage in STAGES[kind]:
+        if stage not in present: continue
+        process = load(run/'stages'/stage/(stage+'.process.json')); cmd = load(run/'stages'/stage/'command.json')
+        returned = (process['exit_code'] == 0 and process['resource_exhausted'] is None and process['resource_violations'] == [] and process['monitor_error'] is None
+                    and process['observation_error'] is None and process['workload_empty_after_cleanup'] is True and process['accounting_scope'] == 'sandbox_process_tree'
+                    and process['output_bytes'] <= cmd['output_bytes'] and cmd['stage'] == stage and cmd['records'] == cmd['run']+'/stages/'+stage)
+        if stage == 'proposal-1':
+            bounded = (cmd['wall_seconds'], cmd['cpu_seconds'], cmd['memory_bytes'], cmd['output_bytes']) == \
+                      (limits['request_wall_seconds'], limits['request_cpu_seconds'], limits['request_memory_bytes'], limits['request_output_bytes']) and cmd['capture_events'] is False
+        else:
+            bounded = (cmd['wall_seconds'], cmd['cpu_seconds'], cmd['memory_bytes'], cmd['output_bytes']) == \
+                      (defaults['wall'], defaults['cpu'], defaults['memory'], defaults['output_limit']) and cmd['capture_events'] is (stage == 'reconstruct')
+        if not (returned and bounded): problems.append(f"{stage} exit {process['exit_code']} returned {returned} bounded {bounded}")
+    a.require(not problems, f'{name}:stages:every_stage_on_the_path_returned', '; '.join(problems))
 
 
 def payload_receipts(a, run, name, kind, rows, sp, task, permit, reconciliation, http, admission):
@@ -818,7 +899,9 @@ def audit(root, ledgers, revision_name):
             permits[name], reconciliations[name] = permit, reconciliation
             priced[name] = reservation_priced(a, run, name, policy, permit, admission, envelope)
             disposition(a, run, name, kind, rules, permit, reconciliation, book); slot_contents(a, run, name, rules, permit, reconciliation, book)
-            mounts(a, run, name, sp, task, draw, permit, book); receipts(a, run, name, rows, policy)
+            layout_root = mounts(a, run, name, sp, task, draw, permit, book)
+            command_reconstructed(a, run, name, sp, policy, task, draw, permit, load(run/'stages/proposal-1/output/http.json'), layout_root)
+            receipts(a, run, name, rows, policy)
         s = seal(a, run, name); report, final = publication_recomputed(a, run, name)
         accepted = terminal(a, run, name, kind, rows, report, final)
         summary_bound(a, run, name, kind, task, draw, sp, contract_digest); chain_and_outcome(a, run, name, kind, rows, s, accepted)
@@ -834,6 +917,7 @@ def audit(root, ledgers, revision_name):
                                 'commitment': http['credential_commitment_sha256'], 'nonce': http['commitment_nonce']}
         accounting(a, run, name, kind, policy, http, permit, reconciliation)
         payload_receipts(a, run, name, kind, rows, sp, task, permit, reconciliation, http, admission)
+        stage_outcomes(a, run, name, kind, policy)
         if kind == 'proof': proof(a, run, name, rows, task, sp, request_bytes)
         elif kind == 'release': failure(a, run, name, http)
         else: refusal(a, run, name, rows, admission)

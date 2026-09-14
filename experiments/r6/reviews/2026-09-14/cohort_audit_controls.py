@@ -11,7 +11,9 @@ missing-case probe of the independent review; the reviewer's type-substitution p
 coherently rebound transport record; and, after the v2 review, its ten further corrupted copies: a coherent zero reservation
 against a 102,400 µUSD admission, a foreign adapter mount with the approved basename, a coherently rebound non-zero sender
 exit, a false credential-hash pair, and five false receipt payloads (admission, reservation, reconciliation, HTTP observation,
-transport validation) plus a false resource-limit receipt.
+transport validation) plus a false resource-limit receipt; and, after the v3 review, its five: a foreign stdlib source with its
+role, a foreign interpreter source with its role, an extra read-only repository mount, and non-zero exits of the assembly and
+whole-declaration validation stages with matching finish receipts.
 """
 import argparse
 import importlib.util
@@ -78,6 +80,12 @@ EXPECTED = {
     'https_observed_receipt_wrong': f'{LAST}:receipts:payloads_bound_to_records',
     'transport_validated_receipt_false': f'{LAST}:receipts:payloads_bound_to_records',
     'resource_limit_receipt_wrong': f'{LAST}:receipts:stage_returned_within_frozen_limits',
+    # the v3 review's corrupted copies (R6-009-V3-REVIEW-PROBES.json), each previously accepted
+    'runtime_source_and_role_foreign': f'{LAST}:command:reconstructed_from_pinned_runtime_and_layout',
+    'interpreter_source_and_role_foreign': f'{LAST}:command:reconstructed_from_pinned_runtime_and_layout',
+    'extra_readonly_host_mount': f'{LAST}:command:reconstructed_from_pinned_runtime_and_layout',
+    'nonzero_assembly_exit_coherent': f'{LAST}:stages:every_stage_on_the_path_returned',
+    'nonzero_whole_validation_exit_coherent': f'{LAST}:stages:every_stage_on_the_path_returned',
 }
 RUNS = audit.POPULATIONS[audit.contract.NAME]['runs']
 CONTROLS = ('baseline', *EXPECTED)
@@ -277,6 +285,23 @@ def mutate(name, root, ledgers):
         refinalize(root/LAST, lambda run, rows: event(rows, 'transport_validated')['outbound_envelope'].__setitem__('accepted', False))
     elif name == 'resource_limit_receipt_wrong':
         refinalize(root/LAST, lambda run, rows: event(rows, 'stage_started', 'proposal-1').__setitem__('wall_limit_seconds', 0))
+    elif name in ('runtime_source_and_role_foreign', 'interpreter_source_and_role_foreign'):  # the mount and the recorded role agree; the pin does not
+        key = 'runtime_path' if name.startswith('runtime') else 'python'
+        def change(run, rows):
+            roles = J(run/'provenance/roles.json'); old = roles[key]; new = '/tmp/r6-009-controls-unapproved/'+('stdlib' if key == 'runtime_path' else 'python3.14')
+            def alter(v):
+                hits = [i for i, x in enumerate(v['argv']) if x == old and i >= 1 and v['argv'][i-1] == '--ro-bind']; assert len(hits) == 1
+                v['argv'][hits[0]] = new
+            change_json(run, 'stages/proposal-1/command.json', alter); roles[key] = new; W(run/'provenance/roles.json', roles)
+        refinalize(root/LAST, change)
+    elif name == 'extra_readonly_host_mount':  # one more read-only mount, everything else unchanged
+        refinalize(root/LAST, lambda run, rows: change_json(run, 'stages/proposal-1/command.json', lambda v: v['argv'].__setitem__(slice(1, 1), ['--ro-bind', str(ROOT.parents[1]), '/extra-reference'])))
+    elif name in ('nonzero_assembly_exit_coherent', 'nonzero_whole_validation_exit_coherent'):  # a later stage failed, its finish receipt agrees
+        stage = 'assembly' if 'assembly' in name else 'validation-whole'
+        def change(run, rows):
+            path = run/'stages'/stage/(stage+'.process.json'); record = J(path); assert record['exit_code'] == 0; record['exit_code'] = 7; W(path, record)
+            finish = event(rows, 'stage_finished', stage); finish.clear(); finish.update(record)
+        refinalize(root/LAST, change)
     else: raise AssertionError(name)
 
 
