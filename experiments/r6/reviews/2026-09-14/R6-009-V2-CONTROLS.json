@@ -1,0 +1,568 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "policy_frozen_disabled",
+    "contract_frozen_canonical_and_bound",
+    "request_carries_contract_not_policy",
+    "envelope_identical_across_revisions",
+    "slot_identity_absent_from_model_bytes",
+    "policy_conflicts_with_contract_rejected",
+    "host_admission_recomputes_envelope",
+    "actor_validates_envelope_against_contract",
+    "request_task_joined_to_funded_slot",
+    "request_grammar_enforced_at_admission",
+    "generation_option_types_exact",
+    "slot_hierarchy_durable",
+    "actor_permit_bound_to_slot",
+    "actor_live_rejects_unsigned_policy",
+    "campaign_identity_survives_revision",
+    "unregistered_revision_refused",
+    "revision_registration_rules",
+    "distinct_campaigns_share_contract",
+    "slot_rules",
+    "activation_bound_to_policy_and_mode",
+    "actor_grant_before_first_header_byte",
+    "actor_commitment_recorded",
+    "actor_credential_format_classified",
+    "persistence_fault_sweep",
+    "counters_separate",
+    "ca_bundle_pinned",
+    "endpoint_allowlist_exact"
+  ],
+  "check_count": 27,
+  "checks": [
+    {
+      "name": "policy_frozen_disabled",
+      "passed": true,
+      "detail": {
+        "live_enabled": false,
+        "campaign_id": "d6d6644d4f924e1aae9a3c5b44fd3d86",
+        "revision": 2,
+        "schedule": {
+          "verinf-d1-70": 3
+        }
+      }
+    },
+    {
+      "name": "contract_frozen_canonical_and_bound",
+      "passed": true,
+      "detail": {
+        "contract_sha256": "84d9289abf8c6c0df3cb3282e5c46826450ee6645a54981e76a91c228c43fe90",
+        "instruction_bytes": 2143,
+        "omitted_options": 14
+      }
+    },
+    {
+      "name": "request_carries_contract_not_policy",
+      "passed": true,
+      "detail": {
+        "request_keys": [
+          "binding",
+          "contract_sha256",
+          "problem",
+          "schema_version"
+        ],
+        "binding_keys": [
+          "challenge_sha256",
+          "final_ir_sha256",
+          "input_ir_sha256",
+          "manifest_sha256",
+          "prompt_sha256",
+          "task_id"
+        ]
+      }
+    },
+    {
+      "name": "envelope_identical_across_revisions",
+      "passed": true,
+      "detail": {
+        "entity_body_sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5",
+        "identical_under_revised_policy": true
+      }
+    },
+    {
+      "name": "slot_identity_absent_from_model_bytes",
+      "passed": true,
+      "detail": {
+        "checked_absent": [
+          "draw",
+          "reservation",
+          "campaign id",
+          "policy digest",
+          "slot"
+        ]
+      }
+    },
+    {
+      "name": "policy_conflicts_with_contract_rejected",
+      "passed": true,
+      "detail": {
+        "rejections": [
+          "generation option",
+          "omitted option added",
+          "scientific limit",
+          "model",
+          "contract digest"
+        ]
+      }
+    },
+    {
+      "name": "host_admission_recomputes_envelope",
+      "passed": true,
+      "detail": {
+        "altered_prompt_text": "contract_envelope_messages",
+        "omitted_option_present": "contract_envelope_keys",
+        "generation_option": "contract_generation_max_output_tokens",
+        "model": "contract_generation_model",
+        "foreign_contract_digest": "contract_request_binding",
+        "instruction_bytes": "contract_instruction_bytes"
+      }
+    },
+    {
+      "name": "actor_validates_envelope_against_contract",
+      "passed": true,
+      "detail": {
+        "altered_prompt_text": "contract_envelope_messages",
+        "omitted_option_present": "contract_envelope_keys",
+        "generation_option": "contract_generation_max_output_tokens",
+        "unaltered": "sent"
+      }
+    },
+    {
+      "name": "request_task_joined_to_funded_slot",
+      "passed": true,
+      "detail": {
+        "host_d1_request_c8_slot": "cohort_request_task_mismatch",
+        "host_identity_mismatch": "cohort_request_task_identity",
+        "actor_d1_request_c8_permit": "cohort_request_task_mismatch, no credential read, no connection",
+        "host_c8_request_d1_slot": "cohort_request_task_mismatch"
+      }
+    },
+    {
+      "name": "request_grammar_enforced_at_admission",
+      "passed": true,
+      "detail": {
+        "host": {
+          "policy_digest_injected": "contract_request_keys",
+          "binding_task_deleted": "contract_request_binding_keys",
+          "extra_binding_key": "contract_request_binding_keys",
+          "unknown_task": "contract_request_task",
+          "bad_digest_form": "contract_request_binding_form",
+          "empty_rows": "contract_request_rows_empty",
+          "row_extra_key": "contract_request_row_keys",
+          "constant_leading_zero": "contract_request_constant_grammar",
+          "coefficient_float": "contract_request_term_grammar",
+          "duplicate_row": "contract_request_duplicate_row",
+          "fragment_changed": "contract_request_problem_keys"
+        },
+        "actor": {
+          "policy_digest_injected": "contract_request_keys",
+          "binding_task_deleted": "contract_request_binding_keys"
+        },
+        "schema_parity": 10,
+        "validator_only": [
+          "duplicate_row"
+        ]
+      }
+    },
+    {
+      "name": "generation_option_types_exact",
+      "passed": true,
+      "detail": {
+        "host": {
+          "float_for_int": "contract_generation_max_output_tokens",
+          "int_for_bool": "contract_generation_store",
+          "bool_for_int": "contract_generation_max_output_tokens"
+        },
+        "policy": [
+          "float_for_int",
+          "int_for_bool"
+        ],
+        "actor": [
+          "float_for_int",
+          "int_for_bool"
+        ]
+      }
+    },
+    {
+      "name": "slot_hierarchy_durable",
+      "passed": true,
+      "detail": {
+        "first_task_first_draw": "attempt, draw, task, slots — each new component durable, child before parent",
+        "new_draw_existing_task": "attempt, draw, task"
+      }
+    },
+    {
+      "name": "actor_permit_bound_to_slot",
+      "passed": true,
+      "detail": {
+        "draw_mismatch": "cohort_permit_binding",
+        "consumed_permit": "cohort_permit_not_last_row",
+        "slot_in_receipt": true
+      }
+    },
+    {
+      "name": "actor_live_rejects_unsigned_policy",
+      "passed": true,
+      "detail": {
+        "disabled_policy": "cohort_live_disabled",
+        "rehearsal_ledger_under_live_policy": "cohort_activation_purpose",
+        "connections": 0
+      }
+    },
+    {
+      "name": "campaign_identity_survives_revision",
+      "passed": true,
+      "detail": {
+        "consumed_before_refresh": "still consumed",
+        "old_revision": "cohort_revision_not_current",
+        "released_slot": "retried under the new revision, same slot",
+        "continuous_accounting": "2 consumed across 2 revisions"
+      }
+    },
+    {
+      "name": "unregistered_revision_refused",
+      "passed": true,
+      "detail": {
+        "unregistered_policy_digest": "refused by host and actor"
+      }
+    },
+    {
+      "name": "revision_registration_rules",
+      "passed": true,
+      "detail": {
+        "refused": [
+          "campaign identity",
+          "contract",
+          "schedule shrunk",
+          "purpose",
+          "while open",
+          "money below committed",
+          "duplicate"
+        ]
+      }
+    },
+    {
+      "name": "distinct_campaigns_share_contract",
+      "passed": true,
+      "detail": {
+        "shared_contract": true,
+        "independent_ledgers": true
+      }
+    },
+    {
+      "name": "slot_rules",
+      "passed": true,
+      "detail": {
+        "wrong_task": "cohort_slot_not_scheduled",
+        "draw_out_of_schedule": "cohort_slot_not_scheduled",
+        "same_slot_presend_retries": 3,
+        "unknown": "consumes the draw",
+        "global_money_cap": "cohort_money_exhausted"
+      }
+    },
+    {
+      "name": "activation_bound_to_policy_and_mode",
+      "passed": true,
+      "detail": {
+        "rehearsal_under_live": "cohort_activation_purpose",
+        "foreign_authorization": "cohort_revision_not_current"
+      }
+    },
+    {
+      "name": "actor_grant_before_first_header_byte",
+      "passed": true,
+      "detail": {
+        "order": "tls_verified < grant created < grant durable < header_send",
+        "slot": "slots/<task>/<draw>/<reservation_id>"
+      }
+    },
+    {
+      "name": "actor_commitment_recorded",
+      "passed": true,
+      "detail": {
+        "commitment": "sha256(domain:nonce:header)",
+        "value_absent_from_records": true
+      }
+    },
+    {
+      "name": "actor_credential_format_classified",
+      "passed": true,
+      "detail": {
+        "classified": "credential_format",
+        "connections": 0
+      }
+    },
+    {
+      "name": "persistence_fault_sweep",
+      "passed": true,
+      "detail": {
+        "ledger_short_append": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "ledger_append_failure_after_partial": {
+          "reservations": 0,
+          "open": 0,
+          "consumed": 0,
+          "terminal": null,
+          "attempts": 0,
+          "state": "not_reserved",
+          "reconciled": true,
+          "allowance": null,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "cohort_ledger"
+        },
+        "reserve_head_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reservation_receipt_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "request_reserved_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "stage_interrupted_truncated_http": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "http_empty_object": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "http_wrong_types": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "process_missing_fields_no_grant": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "unknown",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reconciliation_receipt_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "reservation_uncertain_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reservation_recovered_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reservation_reconciled_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "reconcile_append_failure_after_marker": {
+          "reservations": 1,
+          "open": 1,
+          "consumed": 0,
+          "terminal": null,
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": false,
+          "allowance": null,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "reconciliation_failure"
+        },
+        "reconcile_head_failure_after_row": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "reconcile_recovery_snapshot_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "evidence_copy_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        }
+      }
+    },
+    {
+      "name": "counters_separate",
+      "passed": true,
+      "detail": {
+        "accounting_fields": "R6-008 revision 6 shape, unchanged"
+      }
+    },
+    {
+      "name": "ca_bundle_pinned",
+      "passed": true,
+      "detail": {
+        "bundle": "/etc/ca-certificates/extracted/tls-ca-bundle.pem",
+        "sha256": "8c97794a899a32666593979dc7adfaec8bda2b420eb092ff0d987e44ad0bf6ea"
+      }
+    },
+    {
+      "name": "endpoint_allowlist_exact",
+      "passed": true,
+      "detail": {
+        "endpoint": {
+          "host": "api.openai.com",
+          "path": "/v1/responses",
+          "port": 443,
+          "scheme": "https"
+        }
+      }
+    }
+  ]
+}
