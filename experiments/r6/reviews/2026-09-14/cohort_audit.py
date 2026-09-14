@@ -11,7 +11,11 @@ authority mounts (ledger read-only, this reservation's slot writable, contract a
 receipts, the credential commitment, accounting recomputed with the driver's own helper, publication recomputed with the
 frozen scanner, terminal commitments and complete finalization are all reconstructed from retained bytes. On top: the
 cross-revision relationships (identical model input per task, distinct receipts, continuous accounting, consumed slots
-persisting into a later revision's refusal) and a second task whose model input is distinct.
+persisting into a later revision's refusal) and a second task whose model input is distinct. After the v2 review: every
+reservation amount is the price of the frozen limits and equals the rederived admission (committed money is derived from
+those checked amounts); the sender's stage returned within the frozen resource limits; module mounts are bound to the
+recorded repository layout and the driver's recorded roles; and every supervisor receipt payload is reconstructed from
+the record it names and compared exactly, the credential receipt to the canary and the receiver's observation.
 
 The case population is derived from the frozen run population and its declared outcomes; the audit fails unless exactly
 that set of named cases was evaluated. Superseded revisions are audited under explicit version dispatch and reported as
@@ -53,9 +57,16 @@ POPULATIONS = {
                                       'r2-d1-draw1-refused': ('refused', D1, 1, 2), 'r2-d1-draw2': ('proof', D1, 2, 2), 'r2-d1-draw3': ('proof', D1, 3, 2)}},
     'farkas_cohort_v2': {'runs': 'cohort-runs-v2', 'lock': 'cohort-harness-v2.sha256.json', 'policy': 'farkas-cohort-v2.json',
                          'expected': {'r1-d1-draw1': ('proof', D1, 1, 1), 'r1-d1-draw2-format': ('release', D1, 2, 1), 'r1-c8-draw1': ('proof', C8, 1, 1),
+                                      'r2-d1-draw1-refused': ('refused', D1, 1, 2), 'r2-d1-draw2': ('proof', D1, 2, 2), 'r2-c8-draw2': ('proof', C8, 2, 2)}},
+    'farkas_cohort_v3': {'runs': 'cohort-runs-v3', 'lock': 'cohort-harness-v3.sha256.json', 'policy': 'farkas-cohort-v3.json',
+                         'expected': {'r1-d1-draw1': ('proof', D1, 1, 1), 'r1-d1-draw2-format': ('release', D1, 2, 1), 'r1-c8-draw1': ('proof', C8, 1, 1),
                                       'r2-d1-draw1-refused': ('refused', D1, 1, 2), 'r2-d1-draw2': ('proof', D1, 2, 2), 'r2-c8-draw2': ('proof', C8, 2, 2)}}}
 RULES = {'farkas_cohort_v1': {'task_join': False, 'grant_domain': 'r6-campaign-send-grant-2'},
-         'farkas_cohort_v2': {'task_join': True, 'grant_domain': 'r6-campaign-send-grant-2'}}
+         'farkas_cohort_v2': {'task_join': True, 'grant_domain': 'r6-campaign-send-grant-2'},
+         'farkas_cohort_v3': {'task_join': True, 'grant_domain': 'r6-campaign-send-grant-2'}}
+MODULE_MOUNTS = {'/adapter.py': 'cohort_https.py', '/cohort_ledger.py': 'cohort_ledger.py', '/campaign_ledger.py': 'campaign_ledger.py',
+                 '/pricing_gate_v3.py': 'pricing_gate_v3.py', '/pricing_gate_v2.py': 'pricing_gate_v2.py', '/live_https.py': 'live_https.py'}
+RESERVATION_STATUS = 'byte_ceiling_plus_framing_assumption'
 COHORT_MODULES = ('cohort_budget', 'cohort_contract', 'cohort_ledger', 'cohort_episode', 'cohort_https', 'pricing_gate_v3')
 # imported modules bound to the run's retained copy; file-only entries are frozen upstream sources the driver mounts or imports
 MODULES = {'cohort_budget': ('cohort-harness', budget), 'cohort_contract': ('cohort-harness', contract), 'cohort_ledger': ('cohort-harness', ledger),
@@ -130,11 +141,13 @@ def expected_cases(population):
         names += [f'{run}:versions:policy_lock_contract_campaign_bound', f'{run}:chain:valid', f'{run}:chain:expected_sequence',
                   f'{run}:request:regenerated_under_contract', f'{run}:envelope:recomputed_from_contract', f'{run}:pricing:host_admission_rederived',
                   f'{run}:seal:retained_hashes', f'{run}:publication:recomputed', f'{run}:terminal:commitments_bound',
-                  f'{run}:summary:bound_to_audited_records', f'{run}:seal:chain_and_outcome', f'{run}:accounting:recomputed', f'{run}:credential_receipt:recorded']
+                  f'{run}:summary:bound_to_audited_records', f'{run}:seal:chain_and_outcome', f'{run}:accounting:recomputed', f'{run}:credential_receipt:recorded',
+                  f'{run}:receipts:payloads_bound_to_records']
         if kind == 'refused':
             names += [f'{run}:refusal:slot_consumed_before_reservation']; continue
-        names += [f'{run}:ledger:permit_and_reconciliation_bound', f'{run}:ledger:disposition_derived', f'{run}:slot:authoritative_matches_retained',
-                  f'{run}:mounts:authority_bound', f'{run}:receipts:single_pair_bound_to_process', f'{run}:grant:consistent_with_outcome',
+        names += [f'{run}:ledger:permit_and_reconciliation_bound', f'{run}:ledger:reservation_priced_from_contract_limits', f'{run}:ledger:disposition_derived',
+                  f'{run}:slot:authoritative_matches_retained', f'{run}:mounts:authority_bound', f'{run}:receipts:single_pair_bound_to_process',
+                  f'{run}:receipts:stage_returned_within_frozen_limits', f'{run}:grant:consistent_with_outcome',
                   f'{run}:pricing:actor_check_rederived', f'{run}:transport:record_consistent', f'{run}:transport:bodies_are_the_contract_rendering',
                   f'{run}:interpretation:reproduced', f'{run}:commitment:bound_to_mounted_canary', f'{run}:slot:identity_in_receipts_not_in_model_bytes']
         if kind == 'proof':
@@ -227,7 +240,7 @@ def request(a, run, name, kind, sp, task, contract_value, contract_digest):
               and sha(instruction.encode()) == contract_value['instruction']['sha256'] and envelope['request_sha256'] == sha(request_bytes)
               and envelope['body_sha256'] == sha(gate2.entity_body(expected)) and sha((run/'prompt.txt').read_bytes()) == contract_value['instruction']['sha256'],
               f'{name}:envelope:recomputed_from_contract')
-    return request_bytes, expected, instruction, gate2.entity_body(expected)
+    return request_bytes, expected, instruction, gate2.entity_body(expected), envelope
 
 
 def host_admission(a, run, name, kind, policy, contract_value, instruction, request_bytes, arguments):
@@ -286,6 +299,22 @@ def ledger_rows(a, run, name, kind, sp, task, draw, revision, rules, request_byt
               and consistent_termination and attempt_identity_bound(run, permit),
               f'{name}:ledger:permit_and_reconciliation_bound')
     return permit, reconciliation
+
+
+def reservation_priced(a, run, name, policy, permit, admission, envelope):
+    """The reservation amount is the price of the frozen token limits at the admitted rates, equal to the rederived admission's, not merely to
+    its own mirrors; its size inputs are the recomputed envelope's."""
+    limits = policy['limits']; rates = policy['pricing']['nano_usd_per_token']
+    expected = {'reserved_micro_usd': gate.cost_micro(limits['input_tokens_reserved'], limits['output_tokens'], rates), 'message_utf8_bytes': envelope['message_utf8_bytes'],
+                'input_tokens_reserved': limits['input_tokens_reserved'], 'output_tokens_reserved': limits['output_tokens'],
+                'input_token_bound_status': RESERVATION_STATUS, 'billing_guarantee': False}
+    reservation = load(run/'reservation.json'); check = load(run/'stages/proposal-1/output/pricing-check.json')
+    a.require(permit['reservation'] == expected and permit['reserved_micro_usd'] == admission['reserved_micro_usd'] == check['reserved_micro_usd'] == expected['reserved_micro_usd']
+              and admission['message_utf8_bytes'] == check['message_utf8_bytes'] == envelope['message_utf8_bytes'] <= limits['message_utf8_bytes']
+              and admission['nano_usd_per_token'] == rates and all(reservation[k] == v for k, v in expected.items())
+              and type(permit['reserved_micro_usd']) is int and expected['reserved_micro_usd'] > 0,
+              f'{name}:ledger:reservation_priced_from_contract_limits', f"permit {permit['reserved_micro_usd']}, admission {admission['reserved_micro_usd']}, expected {expected['reserved_micro_usd']}")
+    return expected['reserved_micro_usd']
 
 
 def stage_records(run):
@@ -359,15 +388,20 @@ def mounts(a, run, name, sp, task, draw, permit, book):
     ledger_src, grant_src = source('/ledger.ndjson', '--ro-bind'), source('/grant', '--bind')
     root = ledger_src[:-len(sp['ledger_path'])] if ledger_src and ledger_src.endswith(sp['ledger_path']) else None
     run_dir = command['run']
+    # The recorded repository layout: the root is the directory whose campaign ledger the sender mounted; every module the sender ran came
+    # from that root, the driver recorded the same files as its roles, and the retained provenance copies are those files (modules:*).
+    roles = load(run/'provenance/roles.json')
+    runtime = [i for i, x in enumerate(argv) if x == roles['runtime_path'] and i >= 1 and argv[i-1] == '--ro-bind']
     ok = (root is not None and grant_src == f"{root}{sp['ledger_slots']}/{task.id}/{draw}/{permit['reservation_id']}" and command['grant_slot'] == grant_src
           and Path(ledger_src).name == book.path.name and Path(grant_src).parent.parent.parent.name == book.slots.name
           and source('/policy.json', '--ro-bind') == run_dir+'/transport-policy.json' and source('/permit.json', '--ro-bind') == run_dir+'/campaign-permit.json'
           and source('/contract.json', '--ro-bind') == run_dir+'/transport-contract.json' and source('/instruction.txt', '--ro-bind') == run_dir+'/transport-instruction.txt'
           and source('/arguments.json', '--ro-bind') == run_dir+'/transport-arguments.json' and source('/request.json', '--ro-bind') == run_dir+'/transport-request.json'
           and source('/pricing-sources', '--ro-bind') == run_dir+'/transport-pricing-sources'
-          and all(Path(source(guest, '--ro-bind') or '').name == module for guest, module in
-                  (('/adapter.py', 'cohort_https.py'), ('/cohort_ledger.py', 'cohort_ledger.py'), ('/campaign_ledger.py', 'campaign_ledger.py'),
-                   ('/pricing_gate_v3.py', 'pricing_gate_v3.py'), ('/pricing_gate_v2.py', 'pricing_gate_v2.py'), ('/live_https.py', 'live_https.py')))
+          and all(source(guest, '--ro-bind') == root+module for guest, module in MODULE_MOUNTS.items())
+          and roles['actor_source'] == root+'cohort_https.py' and roles['ledger_module'] == root+'cohort_ledger.py' and roles['network_stage'] == root+'campaign_network.py'
+          and roles['ledger_directory'] == root+'ledgers/campaigns' and roles['contract'] == root+'contracts/farkas-proposal-contract-v1.json'
+          and len(runtime) == 1 and roles['python'] in argv and command['records'] == run_dir+'/stages/proposal-1'
           and source('/out', '--bind') == command['records']+'/output' and source('/grant', '--ro-bind') is None and source('/ledger.ndjson', '--bind') is None
           and argv.count('--bind') == 2 and option('--task') == task.id and option('--draw') == str(draw) and option('--episode') == name
           and option('--contract') == '/contract.json' and option('--instruction') == '/instruction.txt' and option('--permit') == '/permit.json'
@@ -375,13 +409,67 @@ def mounts(a, run, name, sp, task, draw, permit, book):
     a.require(ok, f'{name}:mounts:authority_bound', f'ledger {ledger_src}, grant {grant_src}')
 
 
-def receipts(a, run, name, rows):
+def receipts(a, run, name, rows, policy):
     started = [r['payload'] for r in rows if r['stage'] == 'proposal-1' and r['event'] == 'stage_started']
     finished = [r['payload'] for r in rows if r['stage'] == 'proposal-1' and r['event'] == 'stage_finished']
     process = load(run/'stages/proposal-1/proposal-1.process.json'); command = load(run/'stages/proposal-1/command.json')
     a.require(len(started) == 1 and len(finished) == 1 and finished[0] == process and started[0]['command_file'] == 'stages/proposal-1/command.json'
               and command['network_namespace'] == 'unshared' and '--unshare-net' in command['argv'] and '/grant' in command['argv'],
               f'{name}:receipts:single_pair_bound_to_process')
+    # The driver continued past the sender only because the stage returned: zero exit, no exhaustion or violation, monitor and observation
+    # succeeded, the workload was gone — under the frozen resource limits, which the command and the start receipt both name.
+    limits = policy['limits']
+    a.require(process['exit_code'] == 0 and process['resource_exhausted'] is None and process['resource_violations'] == [] and process['monitor_error'] is None
+              and process['observation_error'] is None and process['workload_empty_after_cleanup'] is True and process['accounting_scope'] == 'sandbox_process_tree'
+              and command['wall_seconds'] == limits['request_wall_seconds'] and command['cpu_seconds'] == limits['request_cpu_seconds']
+              and command['memory_bytes'] == limits['request_memory_bytes'] and command['output_bytes'] == limits['request_output_bytes']
+              and command['capture_events'] is False and command['stage'] == 'proposal-1' and process['output_bytes'] <= command['output_bytes']
+              and started[0]['wall_limit_seconds'] == command['wall_seconds'] and started[0]['cpu_limit_seconds'] == command['cpu_seconds']
+              and started[0]['memory_limit_bytes'] == command['memory_bytes'],
+              f'{name}:receipts:stage_returned_within_frozen_limits', f"exit {process['exit_code']}, limits {started[0]}")
+
+
+def payload_receipts(a, run, name, kind, rows, sp, task, permit, reconciliation, http, admission):
+    """Every supervisor receipt in the chain is reconstructed from the record it names and compared exactly; presence and order are not meaning."""
+    _, frozen = r6.frozen_task(task); nonce = load(run/'credential-canary.json')['nonce']; problems = []
+    def expect(stage, event, value, drop=()):
+        hits = [r['payload'] for r in rows if r['source'] == 'supervisor' and r['stage'] == stage and r['event'] == event]
+        got = [{k: v for k, v in h.items() if k not in drop} for h in hits]
+        if got != [value]: problems.append(f'{stage}/{event}')
+    for stage in sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()):
+        cmd = load(run/'stages'/stage/'command.json')
+        expect(stage, 'stage_started', {'command_file': f'stages/{stage}/command.json', 'cpu_limit_seconds': cmd['cpu_seconds'],
+                                        'memory_limit_bytes': cmd['memory_bytes'], 'wall_limit_seconds': cmd['wall_seconds']}, drop=('cgroup',))
+        expect(stage, 'stage_finished', load(run/'stages'/stage/(stage+'.process.json')))
+    expect('episode', 'episode_started', {'policy_sha256': sha((run/'search-policy.json').read_bytes()), 'challenge_sha256': frozen['challenge_sha256'], 'nonce': nonce, 'mode': 'rehearsal'})
+    expect('payload', 'payload_validated', {'client_arguments_sha256': sha((run/'client-arguments.json').read_bytes()), 'messages_sha256': sha((run/'messages.json').read_bytes()),
+                                            'payload_audit_sha256': sha((run/'payload-audit.json').read_bytes()), 'prompt_sha256': sha((run/'prompt.txt').read_bytes()),
+                                            'request_sha256': sha((run/'request.json').read_bytes())})
+    expect('live-payload', 'payload_validated', {'arguments_sha256': sha((run/'live-arguments.json').read_bytes()), 'contract_sha256': sp['contract_sha256'],
+                                                 'messages_sha256': sha((run/'live-messages.json').read_bytes()), 'policy_sha256': sp['config_sha256'],
+                                                 'preparation_request_sha256': sha((run/'request.json').read_bytes()), 'prepared_sha256': sha((run/'prepared.json').read_bytes()),
+                                                 'prompt_sha256': sha((run/'prompt.txt').read_bytes()), 'request_sha256': sha((run/'live-request.json').read_bytes())}, drop=('inner_binding',))
+    expect('credential-receipt', 'credential_receipt_checked', load(run/'credential-receipt.json'))
+    if kind == 'refused':
+        attempts = [r['payload'] for r in rows if r['event'] == 'reservation_attempted']
+        if not (len(attempts) == 1 and isinstance(attempts[0].get('attempt_id'), str) and len(attempts[0]['attempt_id']) == 64): problems.append('campaign-ledger/reservation_attempted')
+        expect('campaign-ledger', 'reservation_refused', admission)
+    else:
+        out = run/'stages/proposal-1/output'
+        expect('campaign-ledger', 'reservation_attempted', {'attempt_id': permit['attempt_id']})
+        expect('pricing-admission', 'pricing_admitted', {'admission_sha256': sha((run/'host-pricing-admission.json').read_bytes())})
+        expect('campaign-ledger', 'request_reserved', load(run/'reservation.json'))
+        expect('campaign-ledger', 'reservation_reconciled', {'kind': reconciliation['kind'], 'reservation_id': reconciliation['reservation_id'], 'row_hash': reconciliation['row_hash'],
+                                                             'send_outcome': reconciliation.get('send_outcome'), 'termination_established': reconciliation['termination_established'],
+                                                             'record_read_failures': len(reconciliation['evidence']['record_read_failures']), 'evidence_write_failures': [],
+                                                             'ledger_sha256': sha((run/'ledger-after.ndjson').read_bytes()), 'recovered': None})
+        expect('proposal', 'https_observed', {'http_sha256': sha((out/'http.json').read_bytes()), 'server_sha256': sha((out/'server.json').read_bytes()),
+                                              'pricing_check_sha256': sha((out/'pricing-check.json').read_bytes())})
+        expect('proposal', 'transport_validated', load(run/'transport-validation.json'))
+    if kind == 'proof':
+        verdict = load(run/'verdict.json')
+        expect('validation-local', 'kernel_verdict', verdict['final_validation']['local']); expect('validation-whole', 'kernel_verdict', verdict['final_validation']['whole'])
+    a.require(not problems, f'{name}:receipts:payloads_bound_to_records', 'receipts differ from their records: '+', '.join(problems))
 
 
 def seal(a, run, name):
@@ -487,6 +575,7 @@ def actor_check(a, run, name, policy, contract_value, instruction, request_bytes
     try: derived = gate.admission(policy, contract_value, instruction, run/'transport-pricing-sources', arguments, request_bytes, record['evaluated_at_unix'])
     except gate.Failure as error: a.require(False, f'{name}:pricing:actor_check_rederived', error.code)
     a.require(record['accepted'] is True and {k: v for k, v in record.items() if k != 'admitted_at_ns'} == derived
+              and record['reserved_micro_usd'] == permit['reserved_micro_usd'] == permit['reservation']['reserved_micro_usd']
               and record['body_sha256'] == sha((out/'serialized-body.json').read_bytes()) == sha(body)
               and 0 <= record['evaluated_at_unix']-permit['pricing_admission']['evaluated_at_unix'] <= policy['pricing_admission']['maximum_permit_age_seconds'],
               f'{name}:pricing:actor_check_rederived')
@@ -553,10 +642,13 @@ def accounting(a, run, name, kind, policy, http, permit, reconciliation):
                      'reservation_state': 'reserved', 'evidence_write_failures': []}
     expected = driver.accounting_for(run, policy, False, http, server, lifecycle)
     a.require(acct == expected and acct['allowance_consumed'] == {'proof': 1, 'release': 0, 'refused': None}[kind], f'{name}:accounting:recomputed')
-    r = load(run/'credential-receipt.json')
+    r = load(run/'credential-receipt.json'); nonce = load(run/'credential-canary.json')['nonce']
+    expected_header = sha(credential.header(credential.derive(nonce)).encode())
+    observed = server['requests'][0]['authorization_sha256'] if kind == 'proof' else None
     a.require(r['schema_version'] == 'r6-credential-receipt-1' and r['channel'] == 'private_read_only_file' and r['declared_case'] == 'rehearsal'
-              and r['exact_receipt'] is (kind == 'proof') and r['transmissions'] == (1 if kind == 'proof' else 0)
-              and r['authorization_present'] is (kind == 'proof') and (r['observed_authorization_sha256'] == r['expected_authorization_sha256']) is (kind == 'proof'),
+              and r['exact_receipt'] is (kind == 'proof') and r['transmissions'] == (len(server['requests']) if server else 0) == (1 if kind == 'proof' else 0)
+              and r['authorization_present'] is (kind == 'proof') and r['expected_authorization_sha256'] == expected_header
+              and r['observed_authorization_sha256'] == observed and (observed == expected_header) is (kind == 'proof'),
               f'{name}:credential_receipt:recorded')
 
 
@@ -629,7 +721,7 @@ def proof(a, run, name, rows, task, sp, request_bytes):
               f'{name}:proof:export_expected')
 
 
-def cross_run(a, root, ledgers, expected, sp_by_run, policies, bodies, sent, identities, permits, reconciliations, admissions, contract_digest):
+def cross_run(a, root, ledgers, expected, sp_by_run, policies, bodies, sent, identities, permits, reconciliations, admissions, priced, contract_digest):
     names = sorted(expected)
     campaign_ids = {sp['campaign_id'] for sp in sp_by_run.values()}
     a.require(len(campaign_ids) == 1, 'campaign:single_identity', str(campaign_ids))
@@ -684,7 +776,7 @@ def cross_run(a, root, ledgers, expected, sp_by_run, policies, bodies, sent, ide
               'ledger:continuous_across_revisions', str([r['kind'] for r in rows]))
     consumed = {f'{t}/{d}' for (k, t, d, _) in expected.values() if k == 'proof'}
     released = {f'{t}/{d}' for (k, t, d, _) in expected.values() if k == 'release'}
-    committed = sum(permits[n]['reserved_micro_usd'] for n in permits if expected[n][0] == 'proof')
+    committed = sum(priced[n] for n in priced if expected[n][0] == 'proof')  # from the reservations checked against the rederived price, not the rows' own amounts
     a.require({k for k, v in s['slots'].items() if v['consumed']} == consumed and s['transmissions_consumed'] == len(consumed)
               and all(s['slots'][k]['released'] == sum(1 for (kk, t, d, _) in expected.values() if kk == 'release' and f'{t}/{d}' == k) for k in released)
               and s['committed_micro_usd'] == committed and s['maximum_transmissions'] == sum(contract.REHEARSAL_SCHEDULE.values()),
@@ -711,21 +803,22 @@ def audit(root, ledgers, revision_name):
     tasks = {t: r6.get_task(t) for t in sorted({t for (_, t, _, _) in expected.values()})}
     a.require(all(load(root/n/'search-policy.json')['manifest_sha256'] == sha((tasks[expected[n][1]].path/'manifest.json').read_bytes()) for n in names), 'tasks:manifests_bound')
     result['modules'] = modules(a, root, names, revision_name)
-    sp_by_run, policies, bodies, sent, identities, permits, reconciliations, admissions = {}, {}, {}, {}, {}, {}, {}, {}
+    sp_by_run, policies, bodies, sent, identities, permits, reconciliations, admissions, priced = {}, {}, {}, {}, {}, {}, {}, {}, {}
     for name in names:
         run = root/name; kind, task_id, draw, revision = expected[name]; task = tasks[task_id]
         sp, policy = versions(a, run, name, kind, task, draw, revision, population, revision_name, contract_value, contract_digest)
         sp_by_run[name] = sp; policies[revision] = policy
         rows = chain(a, run, name, kind, task)
-        request_bytes, arguments, instruction, body = request(a, run, name, kind, sp, task, contract_value, contract_digest)
+        request_bytes, arguments, instruction, body, envelope = request(a, run, name, kind, sp, task, contract_value, contract_digest)
         admission = host_admission(a, run, name, kind, policy, contract_value, instruction, request_bytes, arguments); admissions[name] = admission
         book = ledger.Ledger(ledgers/sp['campaign_id']/'rehearsal', sp['campaign_id'])
         permit = reconciliation = http = None
         if kind != 'refused':
             permit, reconciliation = ledger_rows(a, run, name, kind, sp, task, draw, revision, rules, request_bytes, policy, admission, contract_digest)
             permits[name], reconciliations[name] = permit, reconciliation
+            priced[name] = reservation_priced(a, run, name, policy, permit, admission, envelope)
             disposition(a, run, name, kind, rules, permit, reconciliation, book); slot_contents(a, run, name, rules, permit, reconciliation, book)
-            mounts(a, run, name, sp, task, draw, permit, book); receipts(a, run, name, rows)
+            mounts(a, run, name, sp, task, draw, permit, book); receipts(a, run, name, rows, policy)
         s = seal(a, run, name); report, final = publication_recomputed(a, run, name)
         accepted = terminal(a, run, name, kind, rows, report, final)
         summary_bound(a, run, name, kind, task, draw, sp, contract_digest); chain_and_outcome(a, run, name, kind, rows, s, accepted)
@@ -740,12 +833,13 @@ def audit(root, ledgers, revision_name):
             identities[name] = {'reservation_id': permit['reservation_id'], 'attempt_id': permit['attempt_id'], 'grant_id': http.get('grant_id'),
                                 'commitment': http['credential_commitment_sha256'], 'nonce': http['commitment_nonce']}
         accounting(a, run, name, kind, policy, http, permit, reconciliation)
+        payload_receipts(a, run, name, kind, rows, sp, task, permit, reconciliation, http, admission)
         if kind == 'proof': proof(a, run, name, rows, task, sp, request_bytes)
         elif kind == 'release': failure(a, run, name, http)
         else: refusal(a, run, name, rows, admission)
         result['runs'][name] = {'kind': kind, 'task': task_id, 'draw': draw, 'revision': revision, 'policy_sha256': sp['config_sha256'],
                                 'ledger_outcome': reconciliation['kind'] if reconciliation else None, 'body_sha256': sha(body)}
-    result['campaign'] = cross_run(a, root, ledgers, expected, sp_by_run, policies, bodies, sent, identities, permits, reconciliations, admissions, contract_digest)
+    result['campaign'] = cross_run(a, root, ledgers, expected, sp_by_run, policies, bodies, sent, identities, permits, reconciliations, admissions, priced, contract_digest)
     cases = expected_cases(population)
     missing = sorted(set(cases)-set(a.cases)); extra = sorted(set(a.cases)-set(cases))
     if missing or extra or len(a.cases) != len(cases): raise Rejection('cases:population', f'missing {missing} extra {extra}')

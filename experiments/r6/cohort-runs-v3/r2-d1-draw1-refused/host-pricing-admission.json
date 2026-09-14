@@ -1,0 +1,7 @@
+{
+  "accepted": false,
+  "failure_code": "cohort_slot_consumed",
+  "evaluated_at_unix": 1789409983.803173,
+  "reservation_state": "not_reserved",
+  "stage": "cohort_ledger"
+}

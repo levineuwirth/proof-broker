@@ -1,0 +1,18 @@
+[
+  "systemd-run",
+  "--user",
+  "--scope",
+  "--quiet",
+  "--unit=r6-7f9c8f9019e04a77a3dfed9efdd57ee4.scope",
+  "-p",
+  "Delegate=yes",
+  "-p",
+  "OOMPolicy=continue",
+  "-p",
+  "TasksMax=128",
+  "-p",
+  "RuntimeMaxSec=165",
+  "/usr/bin/python3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/supervise.py",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/cohort-runs-v3/r1-d1-draw1/stages/assembly/command.json"
+]

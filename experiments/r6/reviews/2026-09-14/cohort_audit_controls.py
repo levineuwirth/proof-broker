@@ -7,8 +7,11 @@ finalizer (scan, terminal event, seal) or a coherent ledger rebind is applied so
 relationship and not an incidental hash mismatch. The set of controls is a fixed population: the record is refused unless
 exactly these names were exercised. Carried forward: the R6-009 v1 controls; the fourteen corrupted-copy probes and the
 missing-case probe of the independent review; the reviewer's type-substitution probe at audit level; a second-task control
-(D1 bytes in a C8 run); a refusal control; and the grant-ordering control driven through the production auditor on a
-coherently rebound transport record.
+(D1 bytes in a C8 run); a refusal control; the grant-ordering control driven through the production auditor on a
+coherently rebound transport record; and, after the v2 review, its ten further corrupted copies: a coherent zero reservation
+against a 102,400 µUSD admission, a foreign adapter mount with the approved basename, a coherently rebound non-zero sender
+exit, a false credential-hash pair, and five false receipt payloads (admission, reservation, reconciliation, HTTP observation,
+transport validation) plus a false resource-limit receipt.
 """
 import argparse
 import importlib.util
@@ -64,7 +67,19 @@ EXPECTED = {
     'refusal_code_altered': 'r2-d1-draw1-refused:pricing:host_admission_rederived',
     'permit_task_join_altered': f'{LAST}:ledger:permit_and_reconciliation_bound',
     'grant_reordered_coherent': f'{LAST}:grant:ordered_before_first_header_byte',
+    # the v2 review's corrupted copies (R6-009-V2-REVIEW-PROBES.json), each previously accepted
+    'zero_reservation_coherent': f'{LAST}:ledger:reservation_priced_from_contract_limits',
+    'mounted_adapter_foreign': f'{LAST}:mounts:authority_bound',
+    'nonzero_sender_exit_coherent': f'{LAST}:receipts:stage_returned_within_frozen_limits',
+    'credential_hash_pair_false': f'{LAST}:credential_receipt:recorded',
+    'pricing_admitted_receipt_wrong': f'{LAST}:receipts:payloads_bound_to_records',
+    'request_reserved_receipt_wrong': f'{LAST}:receipts:payloads_bound_to_records',
+    'reservation_reconciled_receipt_wrong': f'{LAST}:receipts:payloads_bound_to_records',
+    'https_observed_receipt_wrong': f'{LAST}:receipts:payloads_bound_to_records',
+    'transport_validated_receipt_false': f'{LAST}:receipts:payloads_bound_to_records',
+    'resource_limit_receipt_wrong': f'{LAST}:receipts:stage_returned_within_frozen_limits',
 }
+RUNS = audit.POPULATIONS[audit.contract.NAME]['runs']
 CONTROLS = ('baseline', *EXPECTED)
 
 
@@ -103,22 +118,64 @@ def rewrite_ledger(book, campaign, rows):
     W(book/'head.json', {'campaign_id': campaign, 'rows': len(rows), 'last_hash': rows[-1]['row_hash']})
 
 
-def rebind_http(root, book, campaign, name, change):
-    """Mutate the last run's transport record and rebind every digest that commits to it: the reconciliation row (and so the
-    authoritative ledger, its head and the run's ledger snapshot), the supervisor receipts, then the scan, terminal event and seal."""
-    run = root/name; http_path = run/'stages/proposal-1/output/http.json'
-    change_json(run, 'stages/proposal-1/output/http.json', change)
-    rec = J(run/'campaign-reconciliation.json'); rec['evidence']['http_sha256'] = r6.sha(http_path)
-    rows = [json.loads(l) for l in (book/'ledger.ndjson').read_bytes().splitlines()]
+def event(rows, name, stage=None):
+    matches = [r for r in rows if r['event'] == name and (stage is None or r['stage'] == stage)]
+    assert len(matches) == 1, (name, len(matches))
+    return matches[0]['payload']
+
+
+def rebind_terminal_row(root, book, campaign, name, rec, change_events):
+    """Rewrite the last run's reconciliation row and everything that commits to it: the authoritative ledger and head, the run's ledger
+    snapshot, the supervisor receipts, then the scan, terminal event and seal."""
+    run = root/name; rows = [json.loads(l) for l in (book/'ledger.ndjson').read_bytes().splitlines()]
     index = next(i for i, r in enumerate(rows) if r['kind'] in audit.ledger.TERMINAL and r['reservation_id'] == rec['reservation_id'])
     assert index == len(rows)-1, 'the control rebinds only a terminal row that is the last row'
     rows[index] = dict(rec); rewrite_ledger(book, campaign, rows)
     rec = rows[index]; W(run/'campaign-reconciliation.json', rec); shutil.copyfile(book/'ledger.ndjson', run/'ledger-after.ndjson')
-    def change_events(run, rows):
-        for r in rows:
-            if r['event'] == 'reservation_reconciled': r['payload'].update(row_hash=rec['row_hash'], ledger_sha256=r6.sha(run/'ledger-after.ndjson'))
-            if r['event'] == 'https_observed': r['payload']['http_sha256'] = r6.sha(http_path)
-    refinalize(run, change_events)
+    def change(run, rows):
+        event(rows, 'reservation_reconciled').update(row_hash=rec['row_hash'], ledger_sha256=r6.sha(run/'ledger-after.ndjson'))
+        change_events(run, rows)
+    refinalize(run, change)
+    return rec
+
+
+def rebind_http(root, book, campaign, name, change):
+    """Mutate the last run's transport record and rebind every digest that commits to it."""
+    run = root/name; http_path = run/'stages/proposal-1/output/http.json'
+    change_json(run, 'stages/proposal-1/output/http.json', change)
+    rec = J(run/'campaign-reconciliation.json'); rec['evidence']['http_sha256'] = r6.sha(http_path)
+    rebind_terminal_row(root, book, campaign, name, rec, lambda run, rows: event(rows, 'https_observed').__setitem__('http_sha256', r6.sha(http_path)))
+
+
+def coherent_exit(root, book, campaign, name):
+    """The sender's process record says exit 7; the finish receipt, reconciliation evidence, ledger, snapshot and receipts all agree with it."""
+    run = root/name; p = run/'stages/proposal-1/proposal-1.process.json'
+    process = J(p); assert process['exit_code'] == 0; process['exit_code'] = 7; W(p, process)
+    rec = J(run/'campaign-reconciliation.json'); rec['evidence']['process_sha256'] = r6.sha(p); rec['evidence']['process_exit_code'] = 7
+    def change(run, rows):
+        finish = event(rows, 'stage_finished', 'proposal-1'); finish.clear(); finish.update(process)
+    rebind_terminal_row(root, book, campaign, name, rec, change)
+
+
+def coherent_zero(root, book, campaign, name):
+    """One false reservation amount carried through every mirror: permit, ledger rows, snapshots, reservation, accounting, summary, receipts.
+    The host and actor pricing records still say 102,400."""
+    run = root/name; rows = [json.loads(l) for l in (book/'ledger.ndjson').read_bytes().splitlines()]
+    permit, rec = rows[-2], rows[-1]
+    assert permit['reservation_id'] == rec['reservation_id'] and permit['kind'] == 'reservation' and permit['reserved_micro_usd'] == 102400
+    permit['reserved_micro_usd'] = 0; permit['reservation']['reserved_micro_usd'] = 0
+    rewrite_ledger(book, campaign, rows); permit, rec = rows[-2], rows[-1]
+    W(run/'campaign-permit.json', permit); W(run/'campaign-reconciliation.json', rec)
+    (run/'transport-ledger.ndjson').write_bytes(b''.join(events.canonical(r)+b'\n' for r in rows[:-1]))
+    shutil.copyfile(book/'ledger.ndjson', run/'ledger-after.ndjson')
+    reservation = J(run/'reservation.json')
+    reservation.update(reserved_micro_usd=0, ledger_row_hash=permit['row_hash'], ledger_sha256=r6.sha(run/'transport-ledger.ndjson')); W(run/'reservation.json', reservation)
+    accounting = J(run/'accounting.json'); accounting['reservation'] = dict(reservation); W(run/'accounting.json', accounting)
+    summary = J(run/'credential-summary.json'); summary['accounting'] = dict(accounting); W(run/'credential-summary.json', summary)
+    def change(run, rows):
+        reserved = event(rows, 'request_reserved'); reserved.clear(); reserved.update(reservation)
+        event(rows, 'reservation_reconciled').update(row_hash=rec['row_hash'], ledger_sha256=r6.sha(run/'ledger-after.ndjson'))
+    refinalize(run, change)
 
 
 def mutate(name, root, ledgers):
@@ -196,6 +253,30 @@ def mutate(name, root, ledgers):
         refinalize(root/LAST, lambda run, rows: change_json(run, 'campaign-permit.json', lambda v: v.__setitem__('task_manifest_sha256', other)))
     elif name == 'grant_reordered_coherent':
         rebind_http(root, book, campaign, LAST, lambda v: v.__setitem__('header_send_at_ns', v['tls_verified_at_ns']))
+    elif name == 'zero_reservation_coherent': coherent_zero(root, book, campaign, LAST)
+    elif name == 'nonzero_sender_exit_coherent': coherent_exit(root, book, campaign, LAST)
+    elif name == 'mounted_adapter_foreign':  # the approved basename from an unapproved directory
+        def alter(v):
+            argv = v['argv']; hits = [i for i, x in enumerate(argv) if x == '/adapter.py' and i >= 2 and argv[i-2] == '--ro-bind']; assert len(hits) == 1
+            argv[hits[0]-1] = '/tmp/r6-009-controls-unapproved/cohort_https.py'
+        refinalize(root/LAST, lambda run, rows: change_json(run, 'stages/proposal-1/command.json', alter))
+    elif name == 'credential_hash_pair_false':  # both hashes false but equal, in the file and its receipt event
+        def change(run, rows):
+            receipt = J(run/'credential-receipt.json'); receipt['expected_authorization_sha256'] = receipt['observed_authorization_sha256'] = '0'*64
+            W(run/'credential-receipt.json', receipt); mirror = event(rows, 'credential_receipt_checked'); mirror.clear(); mirror.update(receipt)
+        refinalize(root/LAST, change)
+    elif name == 'pricing_admitted_receipt_wrong':
+        refinalize(root/LAST, lambda run, rows: event(rows, 'pricing_admitted').__setitem__('admission_sha256', '0'*64))
+    elif name == 'request_reserved_receipt_wrong':
+        refinalize(root/LAST, lambda run, rows: event(rows, 'request_reserved').__setitem__('reserved_micro_usd', 0))
+    elif name == 'reservation_reconciled_receipt_wrong':
+        refinalize(root/LAST, lambda run, rows: event(rows, 'reservation_reconciled').__setitem__('row_hash', '0'*64))
+    elif name == 'https_observed_receipt_wrong':
+        refinalize(root/LAST, lambda run, rows: event(rows, 'https_observed').__setitem__('http_sha256', '0'*64))
+    elif name == 'transport_validated_receipt_false':
+        refinalize(root/LAST, lambda run, rows: event(rows, 'transport_validated')['outbound_envelope'].__setitem__('accepted', False))
+    elif name == 'resource_limit_receipt_wrong':
+        refinalize(root/LAST, lambda run, rows: event(rows, 'stage_started', 'proposal-1').__setitem__('wall_limit_seconds', 0))
     else: raise AssertionError(name)
 
 
@@ -208,7 +289,7 @@ def main():
     for name in CONTROLS:
         with tempfile.TemporaryDirectory(prefix='r6-009-controls-') as temp:
             root = Path(temp)/'cohort-runs'; ledgers = Path(temp)/'ledgers'
-            shutil.copytree(ROOT/'cohort-runs-v2', root); shutil.copytree(ROOT/'ledgers/campaigns', ledgers)
+            shutil.copytree(ROOT/RUNS, root); shutil.copytree(ROOT/'ledgers/campaigns', ledgers)
             baseline = run_audit(root, ledgers); assert baseline['accepted'] is True, baseline
             if name == 'baseline': results[name] = baseline; continue
             if name == 'audit_case_removed':
@@ -223,7 +304,7 @@ def main():
             results[name] = {'rejected': True, 'rejected_case': observed['rejected_case']}
             print(name, observed['rejected_case'], flush=True)
     assert tuple(results) == CONTROLS and set(results) == {'baseline', *EXPECTED}, sorted(results)
-    record = {'passed': True, 'controls': len(results), 'expected_controls': list(CONTROLS), 'results': results,
+    record = {'passed': True, 'controls': len(results), 'expected_controls': list(CONTROLS), 'results': results, 'runs': RUNS, 'revision': audit.contract.NAME,
               'auditor_sha256': r6.sha(Path(__file__).with_name('cohort_audit.py')), 'program_sha256': r6.sha(Path(__file__)),
               'live_model_calls': 0, 'credentials_read': 0, 'scope': 'temporary copies; one relationship per mutation; exact control population'}
     r6.write_json(args.output, record)
