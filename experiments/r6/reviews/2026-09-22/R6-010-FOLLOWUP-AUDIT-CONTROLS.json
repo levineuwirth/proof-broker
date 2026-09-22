@@ -1,0 +1,133 @@
+{
+  "passed": true,
+  "controls": 24,
+  "expected_controls": [
+    "baseline",
+    "wrong_challenge_export",
+    "false_local_type",
+    "missing_required_artifact_binding",
+    "helper_added_logic",
+    "freeze_site_removed",
+    "extra_file_in_census",
+    "extra_file_in_site",
+    "retained_normalized_type_altered_coherently",
+    "baseline_export_substituted",
+    "captured_context_altered_coherently",
+    "instrumented_source_altered",
+    "stage_exit_nonzero",
+    "membership_site_dropped",
+    "exposure_premise_dropped",
+    "audit_case_removed",
+    "source_binding_other_family",
+    "replay_wrong_solution_mount",
+    "replay_command_missing",
+    "extra_freeze_output",
+    "optional_export_differs",
+    "export_declarations_altered",
+    "checker_program_foreign",
+    "baseline_report_incomplete_coherently"
+  ],
+  "results": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 157
+    },
+    "wrong_challenge_export": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:challenge_export_bound"
+    },
+    "false_local_type": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:replays_derived_from_raw_reports"
+    },
+    "missing_required_artifact_binding": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:inventory_exact"
+    },
+    "helper_added_logic": {
+      "rejected": true,
+      "rejected_case": "helper:exact_transformation"
+    },
+    "freeze_site_removed": {
+      "rejected": true,
+      "rejected_case": "population:exact_freeze_directory"
+    },
+    "extra_file_in_census": {
+      "rejected": true,
+      "rejected_case": "population:exact_census_directory"
+    },
+    "extra_file_in_site": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:inventory_exact"
+    },
+    "retained_normalized_type_altered_coherently": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:replays_derived_from_raw_reports"
+    },
+    "baseline_export_substituted": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:baseline_bound"
+    },
+    "captured_context_altered_coherently": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:capture_inputs_and_context"
+    },
+    "instrumented_source_altered": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:capture_inputs_and_context"
+    },
+    "stage_exit_nonzero": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:stages_returned"
+    },
+    "membership_site_dropped": {
+      "rejected": true,
+      "rejected_case": "membership:bound_to_census_and_decision"
+    },
+    "exposure_premise_dropped": {
+      "rejected": true,
+      "rejected_case": "exposure:addendum_recomputed"
+    },
+    "audit_case_removed": {
+      "rejected": true,
+      "rejected_case": "cases:population"
+    },
+    "source_binding_other_family": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:replays_derived_from_raw_reports"
+    },
+    "replay_wrong_solution_mount": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:commands_bound_to_roles"
+    },
+    "replay_command_missing": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:evidence_inventory_exact"
+    },
+    "extra_freeze_output": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:evidence_inventory_exact"
+    },
+    "optional_export_differs": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:evidence_inventory_exact"
+    },
+    "export_declarations_altered": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:commands_bound_to_roles"
+    },
+    "checker_program_foreign": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:commands_bound_to_roles"
+    },
+    "baseline_report_incomplete_coherently": {
+      "rejected": true,
+      "rejected_case": "baselines:family_exports_replayed"
+    }
+  },
+  "auditor_sha256": "cab510890348d154cd387f1ceafd06eb78c1f1b25c59d48e164b3a82d7bc98c5",
+  "program_sha256": "53c7a195c174fd10bfad27da1d9b6c744a1fb34ccc4b8a32d64dc03d478c5f4e",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies; one relationship per mutation; exact control population"
+}

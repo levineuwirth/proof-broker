@@ -7,6 +7,11 @@ and digested; the expected declarations, types, axioms and admission results are
 frozen normalization; capture contexts, instrumented sources and helper bytes are bound to the retained freeze inputs and
 outputs; every sandbox stage of the freeze must have returned; the site helper must differ from the R6-000 helper by exactly
 the documented transformation; membership, the review's population decision and the exposure addendum must be recomputed.
+After the follow-up review: every replay report (baseline, source binding, local) meets the full report contract, and the
+source-binding target equals its family baseline's and the containing target; each site's and family's retained evidence is
+an exact inventory of required files plus optional ignored build products, which must equal their frozen exports when
+present; and every recorded build, export and replay command is bound to its role — challenge and solution mounts, input,
+objects and output directories, checker, exporter, toolchain, environment and libraries — under one recorded layout.
 The named case population is fixed: the audit fails unless exactly those cases were evaluated.
 """
 import argparse
@@ -87,12 +92,101 @@ def normalized(raw_path):
     return raw
 
 
+# Per-stage retained evidence: required files (committed), and optional build products (ignored by Git; compared when present).
+SITE_REQUIRED = sorted(['challenge/export/export.command.json', 'challenge/export/export.process.json', 'challenge/export/export.stderr',
+    'challenge/input/Capture.lean', 'challenge/input/Frozen.lean',
+    *[f'challenge/output/{s}.{x}' for s in ('capture-build', 'task-build') for x in ('command.json', 'process.json', 'stderr', 'stdout')],
+    'challenge/output/context.json',
+    *[f'{v}/{x}' for v in ('challenge-validation', 'source-binding-validation') for x in ('replay.command.json', 'replay.process.json', 'replay.stderr', 'replay.stdout', 'verdict.json', 'verdict.raw.json.gz')]])
+SITE_OPTIONAL = sorted(['challenge/output/Capture.olean', 'challenge/output/Frozen.olean', 'challenge/output/proof.ndjson'])
+BASELINE_REQUIRED = sorted(['baseline/export/export.command.json', 'baseline/export/export.process.json', 'baseline/export/export.stderr',
+    'baseline/input/Capture.lean', 'baseline/input/Frozen.lean',
+    *[f'baseline/output/task-build.{x}' for x in ('command.json', 'process.json', 'stderr', 'stdout')],
+    *[f'baseline-validation/{x}' for x in ('replay.command.json', 'replay.process.json', 'replay.stderr', 'replay.stdout', 'verdict.json', 'verdict.raw.json.gz')]])
+BASELINE_OPTIONAL = sorted(['baseline/output/Frozen.olean', 'baseline/output/proof.ndjson'])
+SANDBOX_PREFIX = ['bwrap', '--unshare-all', '--die-with-parent', '--new-session', '--cap-drop', 'ALL', '--clearenv', '--setenv', 'PATH', '/no-programs',
+                  '--setenv', 'LEAN_ABORT_ON_PANIC', '1', '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64', '--proc', '/proc',
+                  '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/work', '--chdir', '/work']
+SANDBOX_LIMITS = {'timeout_seconds': 150, 'address_space_bytes': 32*1024**3, 'cpu_seconds': 120, 'max_output_file_bytes': 256*1024**2}
+
+
+def inventory_ok(directory, required, optional, exports):
+    """Required evidence present, nothing unlisted, and an optional export, when present, equal to the frozen one."""
+    present = listing(directory)
+    if not (set(required) <= set(present) <= set(required) | set(optional)): return False, f'present {sorted(set(present) ^ set(required))}'
+    for name, digest in exports.items():
+        if (directory/name).exists() and sha((directory/name).read_bytes()) != digest: return False, f'{name} differs from its frozen export'
+    return True, ''
+
+
+def parse_command(path):
+    """A recorded sandbox command, split into its fixed prefix, its bind/setenv operations and the program arguments."""
+    record = load(path); argv = record['argv']; limits = {k: v for k, v in record.items() if k != 'argv'}
+    if argv[:len(SANDBOX_PREFIX)] != SANDBOX_PREFIX or limits != SANDBOX_LIMITS: return None
+    i = len(SANDBOX_PREFIX); ops = []
+    while i < len(argv) and argv[i] in ('--ro-bind', '--bind', '--setenv'):
+        ops.append(tuple(argv[i:i+3])); i += 3
+    libraries = [o for o in ops if o[0] == '--ro-bind' and o[2].startswith(('/usr/lib/', '/usr/lib64/'))]
+    environment = [o for o in ops if o[0] == '--ro-bind' and o[2].startswith('/env/')]
+    rest = [o for o in ops if o not in libraries and o not in environment]
+    return {'libraries': libraries, 'environment': environment, 'ops': rest, 'program': argv[i:]}
+
+
+class Layout:
+    """The recorded freeze layout, derived from the records and required to be the same for every command: the freeze root, the
+    repository root under it, the elaboration toolchain, the environment mounts, and the two library sets."""
+    def __init__(self, freeze_root, runtime):
+        self.F = freeze_root; self.R = freeze_root[:-len('census-runs/freeze-v1')]; self.runtime = runtime; self.seen = {}
+
+    def same(self, key, value):
+        return self.seen.setdefault(key, value) == value
+
+    def check(self, path, kind, directory, **role):
+        """`kind` in capture-build, task-build, export, replay; `directory` is the recorded stage parent (site or baseline dir)."""
+        c = parse_command(path)
+        if c is None: return False
+        F, R = self.F, self.R
+        if kind == 'replay':
+            ok = self.same('replay-libraries', c['libraries']) and sorted(g for _, _, g in c['libraries']) == sorted(self.runtime['validator_libraries_sha256']) and c['environment'] == []
+            policy = c['ops'][2][1] if len(c['ops']) > 2 else ''
+            ok = ok and Path(policy).name == 'policy.json' and Path(policy).parent.name.startswith('r6-policy-') and not policy.startswith((F, R))
+            return ok and c['ops'] == [('--ro-bind', role['challenge'], '/challenge.ndjson'), ('--ro-bind', role['solution'], '/solution.ndjson'),
+                                        ('--ro-bind', policy, '/policy.json'), ('--ro-bind', R+'.cache/checker/.lake/build/bin/r6-replay', '/runner/bin/program'),
+                                        ('--bind', role['out'], '/out')] \
+                and c['program'] == ['/runner/bin/program', '/challenge.ndjson', '/solution.ndjson', '/policy.json', '/out/verdict.json']
+        T = c['ops'][0][1][:-len('/lib')] if c['ops'] and c['ops'][0][2] == '/toolchain/lib' else ''
+        E = ':'.join(g for _, _, g in c['environment'])
+        ok = self.same('toolchain', T) and T.endswith('leanprover--lean4---v4.32.0') and self.same('lean-libraries', c['libraries']) and self.same('environment', c['environment'])
+        ok = ok and bool(c['environment']) and all(g.startswith('/env/') for _, _, g in c['environment'])
+        head = [('--ro-bind', T+'/lib', '/toolchain/lib'), ('--ro-bind', T+'/bin/lean', '/toolchain/bin/lean'),
+                ('--setenv', 'LEAN_SYSROOT', '/toolchain'), ('--setenv', 'LD_LIBRARY_PATH', '/toolchain/lib/lean:/toolchain/lib')]
+        if kind in ('capture-build', 'task-build'):
+            env = [] if kind == 'capture-build' else [('--setenv', 'LEAN_PATH', E+':/out'), ('--setenv', 'R6_CAPTURE_OUTPUT', '/out/context.json')]
+            target = 'Capture' if kind == 'capture-build' else 'Frozen'
+            return ok and c['ops'] == [*head, ('--ro-bind', directory+'/input', '/input'), *env, ('--ro-bind', T+'/bin/lean', '/toolchain/bin/program'),
+                                       ('--bind', directory+'/output', '/out')] \
+                and c['program'] == ['/toolchain/bin/program', '-R', '/input', '-o', f'/out/{target}.olean', f'/input/{target}.lean']
+        return ok and c['ops'] == [*head, ('--ro-bind', directory+'/output', '/objects'), ('--setenv', 'LEAN_PATH', E+':/objects'),
+                                   ('--ro-bind', R+'.cache/exporter/.lake/build/bin/lean4export', '/toolchain/bin/program'), ('--bind', directory+'/export', '/out')] \
+            and c['program'] == ['/toolchain/bin/program', 'Frozen', '--', *role['declarations'], *r6.EXPORT_TARGETS]
+
+
+def report_ok(report, names, binding):
+    """The full replay-report contract, not `accepted` alone: completion, kernel, exact targets and every per-target predicate."""
+    return (report.get('accepted') is True and report.get('stage') == 'complete' and report.get('kernel_version') == '4.32.2'
+            and report.get('local_proof_binding_checked') is binding and isinstance(report.get('checked_declarations'), int) and report['checked_declarations'] > 0
+            and [t['name'] for t in report['targets']] == names
+            and all(t['declaration_exists'] is True and t['kernel_accepted'] is True and t['statement_and_dependencies_match'] is True
+                    and set(t['axioms']) <= set(r6.AXIOMS) and t['type_hash_format'] == 'Lean-4.32.2-reprStr-Expr-UTF8' for t in report['targets']))
+
+
 def expected_cases(site_ids):
     names = ['population:exact_census_directory', 'population:exact_freeze_directory', 'helper:exact_transformation',
              'sources:lock_and_recorded_digests', 'baselines:family_exports_replayed']
     for s in site_ids:
         names += [f'{s}:census_entry_reproduced', f'{s}:inventory_exact', f'{s}:challenge_export_bound', f'{s}:baseline_bound',
-                  f'{s}:replays_derived_from_raw_reports', f'{s}:capture_inputs_and_context', f'{s}:stages_returned', f'{s}:manifest_derived']
+                  f'{s}:replays_derived_from_raw_reports', f'{s}:capture_inputs_and_context', f'{s}:stages_returned',
+                  f'{s}:evidence_inventory_exact', f'{s}:commands_bound_to_roles', f'{s}:manifest_derived']
     names += ['membership:bound_to_census_and_decision', 'exposure:addendum_recomputed']
     return tuple(names)
 
@@ -116,14 +210,25 @@ def audit(census_dir, freeze_dir, capture=site_freeze.CAPTURE, decision=exposure
               and frozen['pristine_sha256'] == census.SOURCE_HASH == sha((census_dir/'Pristine.lean').read_bytes())
               and frozen['shared_artifacts_sha256'] == {n: sha((census_dir/n).read_bytes()) for n in site_freeze.SHARED}
               and frozen['runtime'] == load(freeze_dir/'runtime.json'), 'sources:lock_and_recorded_digests')
-    baseline_reports = {}; ok = True
+    # the recorded layout, taken from one record and then required of every command
+    tail = f'/baseline-{families[0]}/baseline-validation'
+    try: out = (parse_command(freeze_dir/f'baseline-{families[0]}/baseline-validation/replay.command.json') or {'ops': [('', '', '')]})['ops'][-1][1]
+    except (OSError, ValueError, KeyError, IndexError, TypeError): out = ''
+    recorded_root = out[:-len(tail)] if out.endswith(tail) else ''
+    layout = Layout(recorded_root, load(freeze_dir/'runtime.json')); F = recorded_root
+    baseline_reports = {}; ok = recorded_root.endswith('/census-runs/freeze-v1'); detail = ''
     for f in families:
-        d = freeze_dir/f'baseline-{f}'
+        d = freeze_dir/f'baseline-{f}'; rd = f'{F}/baseline-{f}'; export = f'{rd}/baseline/output/proof.ndjson'
         report = normalized(d/'baseline-validation/verdict.raw.json.gz'); baseline_reports[f] = report
-        ok = ok and report == load(d/'baseline-validation/verdict.json') and report['accepted'] is True and [t['name'] for t in report['targets']] == [f]
+        ok = ok and report == load(d/'baseline-validation/verdict.json') and report_ok(report, [f], False)
+        inventory, why = inventory_ok(d, BASELINE_REQUIRED, BASELINE_OPTIONAL, {'baseline/output/proof.ndjson': frozen['baseline_exports_sha256'][f]})
+        ok = ok and inventory and layout.check(d/'baseline/output/task-build.command.json', 'task-build', rd+'/baseline') \
+             and layout.check(d/'baseline/export/export.command.json', 'export', rd+'/baseline', declarations=[f]) \
+             and layout.check(d/'baseline-validation/replay.command.json', 'replay', rd, challenge=export, solution=export, out=rd+'/baseline-validation')
+        detail = detail or why
         ok = ok and (d/'baseline/input/Frozen.lean').read_bytes() == data and sorted(str(p.relative_to(d)) for p in d.rglob('*.process.json')) == BASELINE_STAGES
         ok = ok and all(load(p)['exit_code'] == 0 and not load(p).get('timed_out') for p in d.rglob('*.process.json'))
-    a.require(ok, 'baselines:family_exports_replayed')
+    a.require(ok, 'baselines:family_exports_replayed', detail)
     results = {r['site_id']: r for r in frozen['results']}; schema = load(site_freeze.SCHEMA)
     for entry in record['sites']:
         s = entry['site_id']; d = census_dir/s; w = freeze_dir/s; st = site_freeze.Site(entry)
@@ -146,7 +251,8 @@ def audit(census_dir, freeze_dir, capture=site_freeze.CAPTURE, decision=exposure
         binding = normalized(w/'source-binding-validation/verdict.raw.json.gz'); local = normalized(w/'challenge-validation/verdict.raw.json.gz')
         local_type = next((t['type_sha256'] for t in local['targets'] if t['name'] == st.local), None)
         a.require(binding == load(w/'source-binding-validation/verdict.json') and local == load(w/'challenge-validation/verdict.json')
-                  and binding['accepted'] is True and local['accepted'] is True and local['local_proof_binding_checked'] is True
+                  and report_ok(binding, [st.whole], False) and report_ok(local, [st.local, st.whole], True)
+                  and binding['targets'][0] == baseline_reports[st.whole]['targets'][0] == local['targets'][1]
                   and expected['source_binding_validated'] is True and expected['targets'] == local['targets']
                   and [t['name'] for t in local['targets']] == [st.local, st.whole] and all(t['kernel_accepted'] and t['statement_and_dependencies_match'] for t in local['targets'])
                   and all(set(t['axioms']) <= set(r6.AXIOMS) for t in local['targets']) and results[s]['local_type_sha256'] == local_type
@@ -161,6 +267,15 @@ def audit(census_dir, freeze_dir, capture=site_freeze.CAPTURE, decision=exposure
         processes = sorted(str(p.relative_to(w)) for p in w.rglob('*.process.json'))
         a.require(processes == SITE_STAGES and all(load(w/p)['exit_code'] == 0 and not load(w/p).get('timed_out') for p in processes),
                   f'{s}:stages_returned', str(processes))
+        inventory, why = inventory_ok(w, SITE_REQUIRED, SITE_OPTIONAL, {'challenge/output/proof.ndjson': expected['challenge_sha256']})
+        a.require(inventory, f'{s}:evidence_inventory_exact', why)
+        sd = f'{F}/{s}'; site_export = f'{sd}/challenge/output/proof.ndjson'; family_export = f'{F}/baseline-{st.whole}/baseline/output/proof.ndjson'
+        a.require(layout.check(w/'challenge/output/capture-build.command.json', 'capture-build', sd+'/challenge')
+                  and layout.check(w/'challenge/output/task-build.command.json', 'task-build', sd+'/challenge')
+                  and layout.check(w/'challenge/export/export.command.json', 'export', sd+'/challenge', declarations=[st.whole, st.local])
+                  and layout.check(w/'source-binding-validation/replay.command.json', 'replay', sd, challenge=family_export, solution=site_export, out=sd+'/source-binding-validation')
+                  and layout.check(w/'challenge-validation/replay.command.json', 'replay', sd, challenge=site_export, solution=site_export, out=sd+'/challenge-validation'),
+                  f'{s}:commands_bound_to_roles')
         try: jsonschema.validate(m, schema); valid = True
         except jsonschema.ValidationError: valid = False
         a.require(valid and m['task_id'] == s and m['census_id'] == census.CENSUS_ID and m['upstream'] == {**census.UPSTREAM, 'line': entry['line'],

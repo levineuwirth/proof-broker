@@ -5,9 +5,11 @@ Every mutation is applied to a fresh copy that first passes the unmutated audit,
 case. Records that commit to a mutated file by digest (manifest artifact and shared digests, census results) are rebound so
 the rejection is the intended relationship, not an incidental hash mismatch. The control population is fixed and asserted.
 Carried in: the review's three corrupted copies (R6-010-REVIEW-PROBES.json), each previously accepted by all eleven
-non-native census controls.
+non-native census controls, and the follow-up review's four (R6-010-FOLLOWUP-PROBES.json), each previously accepted by this
+auditor at 127 cases.
 """
 import argparse
+import gzip
 import hashlib
 import importlib.util
 import json
@@ -47,6 +49,16 @@ EXPECTED = {
     'membership_site_dropped': 'membership:bound_to_census_and_decision',
     'exposure_premise_dropped': 'exposure:addendum_recomputed',
     'audit_case_removed': 'cases:population',
+    # the follow-up review's corrupted copies (R6-010-FOLLOWUP-PROBES.json), each previously accepted
+    'source_binding_other_family': f'{S}:replays_derived_from_raw_reports',
+    'replay_wrong_solution_mount': f'{S}:commands_bound_to_roles',
+    'replay_command_missing': f'{S}:evidence_inventory_exact',
+    'extra_freeze_output': f'{S}:evidence_inventory_exact',
+    # the remaining new boundaries
+    'optional_export_differs': f'{S}:evidence_inventory_exact',
+    'export_declarations_altered': f'{S}:commands_bound_to_roles',
+    'checker_program_foreign': f'{S}:commands_bound_to_roles',
+    'baseline_report_incomplete_coherently': 'baselines:family_exports_replayed',
 }
 CONTROLS = ('baseline', *EXPECTED)
 
@@ -101,8 +113,36 @@ def mutate(name, census_dir, freeze_dir, temp):
     elif name == 'exposure_premise_dropped':
         x = J(census_dir/'exposure-addendum.json'); x['sites'][S]['class'] = 'none_recorded'; x['sites'][S]['prior_input_premise'] = []
         W(census_dir/'exposure-addendum.json', x)
+    elif name == 'source_binding_other_family':  # another family's accepted baseline report, raw and normalized together
+        other = freeze_dir/'baseline-Bracket.threshold_unique/baseline-validation'
+        for f in ('verdict.raw.json.gz', 'verdict.json'): shutil.copyfile(other/f, w/'source-binding-validation'/f)
+    elif name == 'replay_wrong_solution_mount':
+        def alter(argv):
+            i = argv.index('/solution.ndjson'); assert argv[i-2] == '--ro-bind'; argv[i-1] = argv[i-1].replace('/bracket-l069/', '/bracket-l099/')
+        command_edit(w/'challenge-validation/replay.command.json', alter)
+    elif name == 'replay_command_missing': (w/'challenge-validation/replay.command.json').unlink()
+    elif name == 'extra_freeze_output': (w/'challenge/output/unlisted.json').write_text('{}\n')
+    elif name == 'optional_export_differs': (w/'challenge/output/proof.ndjson').write_bytes(b'{"not": "the frozen export"}\n')
+    elif name == 'export_declarations_altered':
+        def alter(argv):
+            i = argv.index('Bracket.lift_cell.r6_site_l069'); argv[i] = 'Bracket.lift_cell.r6_site_l070'
+        command_edit(w/'challenge/export/export.command.json', alter)
+    elif name == 'checker_program_foreign':
+        def alter(argv):
+            i = argv.index('/runner/bin/program'); assert argv[i-2] == '--ro-bind'; argv[i-1] = '/tmp/r6-foreign/r6-replay'
+        command_edit(w/'challenge-validation/replay.command.json', alter)
+    elif name == 'baseline_report_incomplete_coherently':  # raw and normalized agree on an incomplete replay that still says accepted
+        d = freeze_dir/'baseline-Bracket.lift_cell/baseline-validation'
+        raw = json.loads(gzip.decompress((d/'verdict.raw.json.gz').read_bytes())); raw['stage'] = 'incomplete'
+        (d/'verdict.raw.json.gz').write_bytes(gzip.compress(json.dumps(raw).encode()))
+        v = J(d/'verdict.json'); v['stage'] = 'incomplete'; W(d/'verdict.json', v)
     else: raise AssertionError(name)
     return None
+
+
+def command_edit(path, alter):
+    record = J(path); before = list(record['argv']); alter(record['argv']); assert record['argv'] != before, 'vacuous mutation'
+    W(path, record)
 
 
 def main():
