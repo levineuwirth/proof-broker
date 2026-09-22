@@ -1,0 +1,15 @@
+{
+  "source_fragment": "LIA",
+  "omitted": [
+    {
+      "name": "hzh",
+      "reason": "Unsupported proposition in arithmetic projection"
+    }
+  ],
+  "omitted_names": [
+    "hzh"
+  ],
+  "posed_fragment": "LIA",
+  "input_ir_sha256": "54571a6841d4f06e2b920b3858dbd8a1465e17e1cd1ffb89c148b2707c3f8dab",
+  "final_ir_sha256": "54571a6841d4f06e2b920b3858dbd8a1465e17e1cd1ffb89c148b2707c3f8dab"
+}
