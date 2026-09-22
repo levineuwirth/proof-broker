@@ -1,0 +1,2068 @@
+{
+  "schema_version": "r6-representability-2",
+  "population": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "denominator": 15,
+  "classes": {
+    "preparation_failed": [],
+    "interface_refused": [
+      "bracket-l098",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l180"
+    ],
+    "ambiguous_reference": [],
+    "policy_c_refused": [],
+    "posable_negative_control": [
+      "bracket-l170"
+    ],
+    "posable_certificate": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l166",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l204"
+    ]
+  },
+  "results": [
+    {
+      "site_id": "bracket-l069",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_input_premise_formula",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 18,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hx",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "hz",
+          "coefficient": "1"
+        },
+        {
+          "index": 17,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 3,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "616720887114cc45cbf3e43a318a85e50f4db1b85b7fca4c410bbfd3b20f3aa8",
+        "final_ir_sha256": "363a738900721affb5ded032d4a4f9d346542d3a095e8298c5756fed28e4ed11"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 16,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": true,
+        "final_ir_equal": true,
+        "rows_equal": true,
+        "user_directives_before": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "row_names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.3
+    },
+    {
+      "site_id": "bracket-l070",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_direct_target",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 19,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 3,
+          "name": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "index": 18,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "0b52df9dcf87fd0ecade553e9512af0975b0f507a265b668169231fc746f7558",
+        "final_ir_sha256": "7a57f310cbc5dce20a2e56fdb6bb5bce4e16935bdaaf348a6a900fbfbb32d794"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 17,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": true,
+        "final_ir_equal": true,
+        "rows_equal": true,
+        "user_directives_before": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "row_names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l071",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_target_family",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 20,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "hle",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hx",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "hz",
+          "coefficient": "1"
+        },
+        {
+          "index": 3,
+          "name": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "index": 19,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "840dabdaf23cc0fb43a02cd2fb9755b6243f63baec5b61814eefbad9d07af297",
+        "final_ir_sha256": "647529381623d1c3e9cceee7dcb290bfb0577bbfeb9bbf5fc666ce45f9913412"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 18,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": true,
+        "final_ir_equal": true,
+        "rows_equal": true,
+        "user_directives_before": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "row_names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "hle",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "hle",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l078",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_target_family",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 20,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hxz",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "_pb_nonneg_atom_6",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5",
+        "_pb_atom_6"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hx",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "hz",
+          "coefficient": "1"
+        },
+        {
+          "index": 6,
+          "name": "hprod_le",
+          "coefficient": "1"
+        },
+        {
+          "index": 19,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hprod_le",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "ebdfdfb086199f109144ed4fc552f09df7f66c267ae3237bbbedfb82fc2c5cae",
+        "final_ir_sha256": "848afd081f857d5d817ca68bd7e602a732e84a47958e5497ca989fa013f8b3f6"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 17,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": true,
+        "final_ir_equal": true,
+        "rows_equal": true,
+        "user_directives_before": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ],
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          }
+        },
+        "row_names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hxz",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "_pb_nonneg_atom_6",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hxz",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "_pb_nonneg_atom_6",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5",
+          "_pb_atom_6"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_atom_0",
+          "_pb_atom_1",
+          "_pb_atom_2",
+          "_pb_atom_3",
+          "_pb_atom_4",
+          "_pb_atom_5",
+          "_pb_atom_6"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.5
+    },
+    {
+      "site_id": "bracket-l096",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "UF",
+      "row_count": 2,
+      "row_names": [
+        "hlt",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "c",
+        "c_"
+      ],
+      "reifier_data_locals": [],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hf",
+        "h1",
+        "h2",
+        "h1_",
+        "h2_",
+        "hne"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "not_lia",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "UF",
+        "omitted": [
+          {
+            "name": "hf",
+            "reason": "Unsupported proposition in arithmetic projection"
+          },
+          {
+            "name": "h1",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h1_",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2_",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "hne",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hf",
+          "h1",
+          "h2",
+          "h1_",
+          "h2_",
+          "hne"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "3775a5ab2f496bd0f82a2d07338dc1494e66a5d291daffab8bee5f39baf2927e",
+        "final_ir_sha256": "3775a5ab2f496bd0f82a2d07338dc1494e66a5d291daffab8bee5f39baf2927e"
+      },
+      "search_context_renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "search_context_entries": 11,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": false,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hlt",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hlt",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "c",
+          "c'"
+        ],
+        "variables_after": [
+          "c",
+          "c_"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l098",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v4/bracket-l098/stages/pipeline-prepare",
+      "search_context_renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "search_context_entries": 13,
+      "revision_2_comparison": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l099",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "UF",
+      "row_count": 2,
+      "row_names": [
+        "hgt",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "c",
+        "c_"
+      ],
+      "reifier_data_locals": [],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hf",
+        "h1",
+        "h2",
+        "h1_",
+        "h2_",
+        "hne"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "not_lia",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hgt",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hgt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "UF",
+        "omitted": [
+          {
+            "name": "hf",
+            "reason": "Unsupported proposition in arithmetic projection"
+          },
+          {
+            "name": "h1",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h1_",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2_",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "hne",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hf",
+          "h1",
+          "h2",
+          "h1_",
+          "h2_",
+          "hne"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "7265a8b3f83bd0854f3715cd9808331095f6c8d3d43ddb96ba4e9cd1ed4a5e26",
+        "final_ir_sha256": "7265a8b3f83bd0854f3715cd9808331095f6c8d3d43ddb96ba4e9cd1ed4a5e26"
+      },
+      "search_context_renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "search_context_entries": 11,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": false,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hgt",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hgt",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "c",
+          "c'"
+        ],
+        "variables_after": [
+          "c",
+          "c_"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.3
+    },
+    {
+      "site_id": "bracket-l101",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v4/bracket-l101/stages/pipeline-prepare",
+      "search_context_renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "search_context_entries": 13,
+      "revision_2_comparison": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.3
+    },
+    {
+      "site_id": "bracket-l158",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v4/bracket-l158/stages/pipeline-prepare",
+      "search_context_renamed": [],
+      "search_context_entries": 11,
+      "revision_2_comparison": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l166",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 10,
+      "row_names": [
+        "hz0",
+        "hz",
+        "hZpos",
+        "hzh0",
+        "hv",
+        "hrec",
+        "hlt",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "v0",
+        "z"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "projection_unsupported",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 6,
+          "name": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "index": 9,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+        "final_ir_sha256": "81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 11,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": true,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hz0",
+          "hz",
+          "hZpos",
+          "hzh0",
+          "hv",
+          "hrec",
+          "hlt",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hz0",
+          "hz",
+          "hZpos",
+          "hzh0",
+          "hv",
+          "hrec",
+          "hlt",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "v0",
+          "z"
+        ],
+        "variables_after": [
+          "Zmax",
+          "v0",
+          "z"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.3
+    },
+    {
+      "site_id": "bracket-l170",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_negative_control",
+      "fragment": "LIA",
+      "row_count": 9,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "farkas_omissions",
+      "arithmetic_certificate": false,
+      "feasible_point": {
+        "Zmax": "1",
+        "_pb_iatom_0": "-1",
+        "v": "0",
+        "v0": "0",
+        "z": "1",
+        "zhigh": "0"
+      },
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [
+          {
+            "name": "hzh",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hzh"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "4c43aa4c9895ea8dabb151e035f005226e727c65f784d6cd72c73830290477a8",
+        "final_ir_sha256": "4c43aa4c9895ea8dabb151e035f005226e727c65f784d6cd72c73830290477a8"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 13,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": true,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_iatom_0",
+          "v",
+          "v0",
+          "z",
+          "zhigh"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_iatom_0",
+          "v",
+          "v0",
+          "z",
+          "zhigh"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l175",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 11,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "hzh1",
+        "this",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "farkas_omissions",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 1,
+          "name": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "index": 2,
+          "name": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "index": 7,
+          "name": "this",
+          "coefficient": "1"
+        },
+        {
+          "index": 10,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [
+          {
+            "name": "hzh",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hzh"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "22cb44d17ca7a23570da9f051c6306981010bcc8f7baf9439cda773fd73f372f",
+        "final_ir_sha256": "22cb44d17ca7a23570da9f051c6306981010bcc8f7baf9439cda773fd73f372f"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 15,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": true,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_iatom_0",
+          "v",
+          "v0",
+          "z",
+          "zhigh"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_iatom_0",
+          "v",
+          "v0",
+          "z",
+          "zhigh"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l178",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 12,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "hzh1",
+        "this_1",
+        "this",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "farkas_omissions",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 7,
+          "name": "this_1",
+          "coefficient": "1"
+        },
+        {
+          "index": 8,
+          "name": "this",
+          "coefficient": "1"
+        },
+        {
+          "index": 11,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 3,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [
+          {
+            "name": "hzh",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hzh"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "47aa4fc6cc5592c0dbea56ba22d65d486a14993dca1f5c8c9ca30a2a7b47dc40",
+        "final_ir_sha256": "47aa4fc6cc5592c0dbea56ba22d65d486a14993dca1f5c8c9ca30a2a7b47dc40"
+      },
+      "search_context_renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 15,
+          "original_name": "this",
+          "search_name": "this_1"
+        }
+      ],
+      "search_context_entries": 16,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": false,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this_1",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "_pb_iatom_0",
+          "v",
+          "v0",
+          "z",
+          "zhigh"
+        ],
+        "variables_after": [
+          "Zmax",
+          "_pb_iatom_0",
+          "v",
+          "v0",
+          "z",
+          "zhigh"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l180",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v4/bracket-l180/stages/pipeline-prepare",
+      "search_context_renamed": [],
+      "search_context_entries": 16,
+      "revision_2_comparison": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.3
+    },
+    {
+      "site_id": "bracket-l204",
+      "family": "Bracket.Row.s1_noninc",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 5,
+      "row_names": [
+        "hab",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "_pb_nonneg_n",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "a",
+        "b",
+        "n",
+        "v0"
+      ],
+      "reifier_data_locals": [
+        "R",
+        "i"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "a._@._internal.0.Frozen.2507035005._hygCtx._hyg.39",
+          "reason": "proposition outside the reifiable fragment (i ∈ Finset.univ)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hab",
+          "coefficient": "1"
+        },
+        {
+          "index": 4,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "1c9bca8d160c748b1efbece23a0c16a3766adc7e8179251e56ec19a654cfd9d6",
+        "final_ir_sha256": "1c9bca8d160c748b1efbece23a0c16a3766adc7e8179251e56ec19a654cfd9d6"
+      },
+      "search_context_renamed": [],
+      "search_context_entries": 9,
+      "revision_2_comparison": {
+        "prepared_before": true,
+        "prepared_after": true,
+        "input_ir_equal": false,
+        "final_ir_equal": false,
+        "rows_equal": true,
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "row_names_before": [
+          "hab",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "_pb_nonneg_n",
+          "neg_goal"
+        ],
+        "row_names_after": [
+          "hab",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "_pb_nonneg_n",
+          "neg_goal"
+        ],
+        "variables_before": [
+          "Zmax",
+          "a",
+          "b",
+          "n",
+          "v0"
+        ],
+        "variables_after": [
+          "Zmax",
+          "a",
+          "b",
+          "n",
+          "v0"
+        ],
+        "rows_equal_modulo_names": true
+      },
+      "revision_3_identical": {
+        "input-ir.json": true,
+        "prepared.json": true,
+        "stages/preparation/output/reification.json": true,
+        "stages/preparation/output/context.json": true,
+        "stages/pipeline-prepare/pipeline-prepare.stderr": true
+      },
+      "seconds": 6.4
+    }
+  ],
+  "runs_sha256": {
+    "bracket-l069": "0ff8a980b3fc4c051540624de6d8aa110882712f904a82375c60ace058a7402b",
+    "bracket-l070": "8645403e4d65189542b0a6b38ca9b08d4903ca932a190c1f69d2c48d2dc3cf20",
+    "bracket-l071": "2eab1b06ec853331732c841fb16954b5eb260d5fa51e5667d108427d6cdcba51",
+    "bracket-l078": "c3b42de3543db4c9356c042eea4094fcd8a92e8de43516ab4cb7f4ce5e1a7911",
+    "bracket-l096": "7e3409c7f286918d7aba28d83a55571fbe7b9fbecadf20b8f0bc7258208202c7",
+    "bracket-l098": "093bcb15ab4ee4cd0d923c9e272ea532a7d01771e8fc0307bd14cb4d570dfe41",
+    "bracket-l099": "773350ac4e7e43aafe006b01014aecf0a6ef4543af04418bbbf6047018031fb6",
+    "bracket-l101": "420e1caffd3a9e8a09baacf8be3a181f10ff8ca87390ae9241de085f051c362f",
+    "bracket-l158": "9f93f465f75bfdf5c2b8a89961f36d5e8884c28e78a046dba5618800fbe963e0",
+    "bracket-l166": "8a50a6c5e50ed402de8a63f74842f412ad10a3e35f6f672d4498832dca5d3e17",
+    "bracket-l170": "fdce16358711c71844abc3c2c844dd59cb270a822de6167e10c91927c59c37dd",
+    "bracket-l175": "043d4b5a903fa1b81c0c6723e1638a883f963eeaeab04210e7e31894b710a949",
+    "bracket-l178": "8c19f0d3a662017711700e2098f58a9a5a86ce11eeb0486758df02d9f0a907ad",
+    "bracket-l180": "2fedfba86cc89599d3a51b02b02c6f1ebdc780562754335186de92217c0a17bf",
+    "bracket-l204": "de3940047c515be68906eac2588123ca7931ceaec288bd43d99976755bf63cf5"
+  },
+  "site_lock_sha256": "d4a53ddf16d74d5822565f7cae23c73309d060238c182c5792e4d4471f726440",
+  "site_task_sha256": "c12815916afa885ebca87ffc2f635db06eb180ce692288de8ba0efd70cb365b3",
+  "program_sha256": "b2d52d9b9bbfabe752d6ffec958b14250381749e64bf5251dc4fdd859d92a30a",
+  "scope": "the frozen IR and Farkas interface on every reviewed site; no proposal, no deterministic search, no provider call"
+}

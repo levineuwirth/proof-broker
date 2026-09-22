@@ -1,0 +1,12 @@
+{
+  "diagnosis": "nat_closer_int_goal",
+  "closer": "term_mode_nat",
+  "comparison_type": "ℤ",
+  "goal": "a - R.x i ≤ b - R.x i",
+  "certificate_sha256": "0f09c221d798e7a8161da22006f3e0dda926b0622db7fd066c1387279ddb5bc3",
+  "error_line": "/input/Frozen.lean:205:52: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got a - R.x i ≤",
+  "process_sha256": "9af7efe039f2d8c09b310f5ca5b5dfb90810f29c3a1e36fcc6bb3099d48c696c",
+  "stdout_sha256": "cec2d43413665e54353b7f9c77f72725d90a5075539b24c875bc3ce2034eaf82",
+  "stderr_sha256": "6648ef6f6333559e0ae7eb65c11e2be347ab10022a357911bfbf0315775de946",
+  "scope": "pinned tactic behavior at e627efe; not a witness failure"
+}

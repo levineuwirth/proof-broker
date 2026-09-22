@@ -1,0 +1,91 @@
+{
+  "case": "combined",
+  "expected_renames": [
+    "c'",
+    "this"
+  ],
+  "repaired": {
+    "prepared": true,
+    "user_directives": {
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    },
+    "search_context": [
+      {
+        "fvar_in_original": true,
+        "index": 1,
+        "original_name": "c_",
+        "search_name": "c_"
+      },
+      {
+        "fvar_in_original": true,
+        "index": 2,
+        "original_name": "c'",
+        "search_name": "c__1"
+      },
+      {
+        "fvar_in_original": true,
+        "index": 3,
+        "original_name": "hlt",
+        "search_name": "hlt"
+      },
+      {
+        "fvar_in_original": true,
+        "index": 4,
+        "original_name": "this",
+        "search_name": "this_1"
+      },
+      {
+        "fvar_in_original": true,
+        "index": 5,
+        "original_name": "this",
+        "search_name": "this"
+      }
+    ],
+    "hypothesis_names": [
+      "hlt",
+      "this_1",
+      "this"
+    ],
+    "free_var_names": [
+      "c_",
+      "c__1"
+    ],
+    "same_ir": {
+      "guard_rejected": false,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:11:2: error: R6 proposal trace decode: property not found: entries"
+    },
+    "directives_removed": {
+      "guard_rejected": true,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:11:2: error: R6 proposal input differs from freshly reified goal/context"
+    },
+    "rename_reverted": {
+      "guard_rejected": true,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:11:2: error: R6 proposal input differs from freshly reified goal/context"
+    }
+  },
+  "unrepaired": {
+    "prepared": true,
+    "user_directives": null,
+    "search_context": null,
+    "hypothesis_names": [
+      "hlt",
+      "this",
+      "this"
+    ],
+    "free_var_names": [
+      "c_",
+      "c'"
+    ],
+    "same_ir": {
+      "guard_rejected": true,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:11:2: error: R6 proposal input differs from freshly reified goal/context"
+    }
+  }
+}

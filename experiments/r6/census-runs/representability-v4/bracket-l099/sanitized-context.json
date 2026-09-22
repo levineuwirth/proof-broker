@@ -1,0 +1,71 @@
+{
+  "target": "c' ≤ c - 1",
+  "hypotheses": [
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 1,
+      "name": "f",
+      "type": "ℤ → ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 2,
+      "name": "hf",
+      "type": "∀ (a b : ℤ), a ≤ b → f b ≤ f a"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 3,
+      "name": "c",
+      "type": "ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 4,
+      "name": "c'",
+      "type": "ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 5,
+      "name": "T",
+      "type": "ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 6,
+      "name": "h1",
+      "type": "f c ≤ T"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 7,
+      "name": "h2",
+      "type": "T < f (c - 1)"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 8,
+      "name": "h1'",
+      "type": "f c' ≤ T"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 9,
+      "name": "h2'",
+      "type": "T < f (c' - 1)"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 10,
+      "name": "hne",
+      "type": "¬c = c'"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 11,
+      "name": "hgt",
+      "type": "c' < c"
+    }
+  ]
+}

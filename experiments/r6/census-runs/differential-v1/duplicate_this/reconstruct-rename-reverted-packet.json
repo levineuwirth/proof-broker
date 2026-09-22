@@ -1,0 +1,138 @@
+{
+  "input_ir": {
+    "context": {
+      "free_vars": [
+        {
+          "name": "a",
+          "type": "Int"
+        },
+        {
+          "name": "b",
+          "type": "Int"
+        }
+      ],
+      "hypotheses": [
+        {
+          "name": "h",
+          "shell": {
+            "args": [
+              {
+                "name": "a",
+                "node": "Var"
+              },
+              {
+                "name": "b",
+                "node": "Var"
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        },
+        {
+          "name": "this",
+          "shell": {
+            "args": [
+              {
+                "name": "a",
+                "node": "Var"
+              },
+              {
+                "name": "b",
+                "node": "Var"
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        },
+        {
+          "name": "this",
+          "shell": {
+            "args": [
+              {
+                "name": "b",
+                "node": "Var"
+              },
+              {
+                "args": [
+                  {
+                    "name": "b",
+                    "node": "Var"
+                  },
+                  {
+                    "node": "NumLit",
+                    "type": "Int",
+                    "value": "1"
+                  }
+                ],
+                "node": "App",
+                "symbol": "HAdd.hAdd",
+                "type_args": []
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        }
+      ],
+      "type_vars": []
+    },
+    "definitional_metadata": {},
+    "goal": {
+      "shell": {
+        "args": [
+          {
+            "name": "a",
+            "node": "Var"
+          },
+          {
+            "args": [
+              {
+                "name": "b",
+                "node": "Var"
+              },
+              {
+                "node": "NumLit",
+                "type": "Int",
+                "value": "2"
+              }
+            ],
+            "node": "App",
+            "symbol": "HAdd.hAdd",
+            "type_args": []
+          }
+        ],
+        "node": "App",
+        "symbol": "LE.le",
+        "type_args": []
+      }
+    },
+    "ir_version": "1.0",
+    "library_provenance": {},
+    "logic_classification": {
+      "decidable_theory": null,
+      "features_used": [],
+      "first_order_fragment": "LIA",
+      "order": "first_order"
+    },
+    "source_system": {
+      "name": "lean",
+      "version": "0.0"
+    },
+    "tier": "structural",
+    "type_metadata": {},
+    "user_directives": {
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    }
+  },
+  "certificate": {},
+  "final_ir": {},
+  "trace": {}
+}
