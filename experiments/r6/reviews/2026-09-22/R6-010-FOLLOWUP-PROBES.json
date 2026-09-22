@@ -1,0 +1,51 @@
+{
+  "complete": true,
+  "reviewed_commit": "0db6c9d",
+  "expected_cases": [
+    "source_binding_other_family",
+    "replay_wrong_solution_mount",
+    "replay_command_missing",
+    "extra_freeze_output"
+  ],
+  "results": {
+    "source_binding_other_family": {
+      "unmutated_copy_accepted": true,
+      "mutation": {
+        "expected": "Bracket.lift_cell",
+        "observed": [
+          "Bracket.threshold_unique"
+        ]
+      },
+      "accepted": true,
+      "case_count": 127
+    },
+    "replay_wrong_solution_mount": {
+      "unmutated_copy_accepted": true,
+      "mutation": {
+        "old": "/home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/freeze-v1/bracket-l069/challenge/output/proof.ndjson",
+        "new": "/home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/freeze-v1/bracket-l099/challenge/output/proof.ndjson"
+      },
+      "accepted": true,
+      "case_count": 127
+    },
+    "replay_command_missing": {
+      "unmutated_copy_accepted": true,
+      "mutation": {
+        "removed": "bracket-l069/challenge-validation/replay.command.json"
+      },
+      "accepted": true,
+      "case_count": 127
+    },
+    "extra_freeze_output": {
+      "unmutated_copy_accepted": true,
+      "mutation": {
+        "added": "bracket-l069/challenge/output/unlisted.json"
+      },
+      "accepted": true,
+      "case_count": 127
+    }
+  },
+  "auditor_sha256": "1aaa7a1ea549b802c0e24dcf24c8757c16717dbfac578d0c55967c4fb4da67c0",
+  "program_sha256": "ce5ff436eae24f94f8e7ba4505e9ee6fb09928c272b4d94e4f3b73c3943b4e8b",
+  "scope": "copies of retained artifacts; no compilation, kernel replay, credential read or provider call"
+}

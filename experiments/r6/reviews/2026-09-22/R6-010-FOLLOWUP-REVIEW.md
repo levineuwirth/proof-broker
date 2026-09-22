@@ -1,0 +1,22 @@
+# R6-010 follow-up review at 0db6c9d
+
+The exposure correction is closed. All fifteen remain the chosen primary population, with the agreed strata and sensitivity sets. The three original artifact mutations now reject. Two residual P2 auditor gaps remain before execution readiness; neither requires a new lock or recapture.
+
+## Findings
+
+1. **P2 — source-binding replay is not bound to its expected declaration.** `census_audit.py:148–154` checks equality of raw and normalized source-binding reports and `accepted: true`, but never checks that report's target against the site's containing declaration. On a fresh copy, replacing l069's raw and normalized source-binding reports with the successful `Bracket.threshold_unique` family-baseline reports leaves all 127 cases accepted. No census, manifest, decision, or exposure digest was changed. Require the exact source-binding target population, declaration existence, kernel/statement/dependency predicates, kernel version and completion stage; join its type and axiom footprint to the correct baseline and containing target. Apply the corresponding full report contract to baseline and local replay records, rather than relying on `accepted` alone.
+
+2. **P2 — replay invocation evidence is neither required nor bound.** `population:exact_freeze_directory` checks only top-level entries, and `stages_returned` checks process-file names and exits without reading commands. Replacing l069's recorded `/solution.ndjson` mount with l099's export passes all 127 cases. Deleting l069's challenge-validation `replay.command.json` also passes; adding an unlisted nested output passes too. Require the retained per-stage evidence inventory, and bind replay challenge/solution roles to the family baseline and this site's export. Audit the command's checker/runtime and sandbox relationships against the frozen layout. Distinguish mandatory retained evidence from optional ignored build products; when those products exist, compare them to their frozen exports. The current claim of an exact freeze file inventory is broader than the implemented top-level check.
+
+All four probes start with a fresh unmutated copy that passes, and change only the copied freeze tree. See [probe source](census_followup_probes.py) and [results](R6-010-FOLLOWUP-PROBES.json). Each corrupted copy still returns `accepted: true, case_count: 127`. These are missing historical-evidence checks, not evidence that Lean accepted an invalid theorem.
+
+## Verification and scope
+
+- Fresh public audit: 127 accepted cases. Fresh auditor control suite: 16/16, including all three original corruption probes, the extra-helper-line probe and the omitted-case gate; [record](R6-010-FOLLOWUP-CONTROLS.json).
+- Independently inspected the original fifteen source-binding reports: their exact target records equal the corresponding baseline and containing-target records; all have `stage: complete`, kernel 4.32.2 and acceptance. Original source-binding mounts name the correct family baseline and site export. All fifteen available uncompressed site exports hash to their frozen challenges. Thus the proposed checks are compatible with the actual evidence.
+- Exposure addendum recomputes to `fe7834ee…`; l070 is the prior direct target, l069 is the prior premise, and l071/l078 share the prior-target family. No reference witness was supplied in either historical request.
+- The three construction records agree with the final record on all fifteen challenge digests, local-type digests and target strings, and all four compressed baseline digests. Only construction record 3 additionally contains `baseline_exports_sha256`; those four digests also match. The earlier records establish recorded construction-time agreement, not independent reproduction of the earlier builds.
+- Git comparison from `51dd7ab` confirms the repairs added review records and the exposure addendum and changed the report; locked implementation and existing capture artifacts were not modified.
+- This follow-up did not re-run Lean, kernel replay, or the native exclusion. The native 12/12 rerun is retained by the author; this review freshly ran the historical auditor and its 16 copy controls. No credential read, provider call, signing, commit or push.
+
+After these two auditor repairs, proceed with IR representability classification and driver generalization, preserving all fifteen sites in the denominator. Unsupported theory, dropped hypotheses and route failures remain measured categories; deterministic success must not decide membership.
