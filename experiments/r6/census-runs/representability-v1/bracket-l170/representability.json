@@ -1,0 +1,37 @@
+{
+  "site_id": "bracket-l170",
+  "family": "Bracket.cell_value_neutral",
+  "exposure_class": "none_recorded",
+  "class": "farkas_omissions",
+  "fragment": "LIA",
+  "row_count": 9,
+  "row_names": [
+    "hv",
+    "hrec",
+    "hz0",
+    "hz",
+    "hzh0",
+    "hZpos",
+    "_pb_nonneg_Zmax",
+    "_pb_nonneg_v0",
+    "neg_goal"
+  ],
+  "neg_goal_rows": 1,
+  "variables": [
+    "Zmax",
+    "_pb_iatom_0",
+    "v",
+    "v0",
+    "z",
+    "zhigh"
+  ],
+  "reifier_data_locals": [
+    "cert"
+  ],
+  "reifier_dropped_propositions": [],
+  "farkas_omissions": [
+    "hzh"
+  ],
+  "sdk_rows_rational_certificate": false,
+  "seconds": 7.1
+}
