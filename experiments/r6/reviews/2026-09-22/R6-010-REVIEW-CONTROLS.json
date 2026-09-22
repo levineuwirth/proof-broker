@@ -1,0 +1,218 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "census_reproduced_from_pristine_bytes",
+    "comments_and_strings_are_not_sites",
+    "site_identity_is_the_byte_span",
+    "forms_classified_exactly_once",
+    "capture_helper_differs_only_by_parameterization",
+    "permitted_modification_is_one_token_and_one_import",
+    "site_manifests_bound",
+    "line70_reproduces_the_r6_000_control",
+    "families_and_exposure_recorded",
+    "membership_partitions_and_binds_the_census",
+    "exclusion_records_failing_stage_and_stderr",
+    "freeze_bound_to_its_sources"
+  ],
+  "check_count": 12,
+  "checks": [
+    {
+      "name": "census_reproduced_from_pristine_bytes",
+      "passed": true,
+      "detail": {
+        "sites": 15,
+        "removed_site_rejected": true,
+        "added_site_rejected": true
+      }
+    },
+    {
+      "name": "comments_and_strings_are_not_sites",
+      "passed": true,
+      "detail": {
+        "comment": "masked",
+        "block_comment": "masked",
+        "string": "masked",
+        "identifier": "not a token"
+      }
+    },
+    {
+      "name": "site_identity_is_the_byte_span",
+      "passed": true,
+      "detail": {
+        "distinct_spans": 15,
+        "repeated_bare_lines": [
+          71,
+          98,
+          101,
+          178
+        ],
+        "wrong_span_rejected": true
+      }
+    },
+    {
+      "name": "forms_classified_exactly_once",
+      "passed": true,
+      "detail": {
+        "named_have": 5,
+        "bare_goal": 4,
+        "term_by": 1,
+        "have_post_simp": 1,
+        "inline_term": 2,
+        "post_simp": 1,
+        "anonymous_have": 1
+      }
+    },
+    {
+      "name": "capture_helper_differs_only_by_parameterization",
+      "passed": true,
+      "detail": {
+        "signature": "parameterized by saved name and site id",
+        "removed_logic_lines": 0,
+        "added_lines": 11
+      }
+    },
+    {
+      "name": "permitted_modification_is_one_token_and_one_import",
+      "passed": true,
+      "detail": {
+        "hunks_per_site": 2,
+        "retained_patches_match": true
+      }
+    },
+    {
+      "name": "site_manifests_bound",
+      "passed": true,
+      "detail": {
+        "bracket-l069": {
+          "form": "named_have",
+          "target": "x.val + z.val < 2 ^ 24 + 2 * Zmax",
+          "telescope": 17
+        },
+        "bracket-l070": {
+          "form": "named_have",
+          "target": "2 ^ 24 + 2 * Zmax ≤ P",
+          "telescope": 18
+        },
+        "bracket-l071": {
+          "form": "bare_goal",
+          "target": "x.val + z.val < P",
+          "telescope": 19
+        },
+        "bracket-l078": {
+          "form": "term_by",
+          "target": "x.val + z.val + Zmax * zhigh.val < 2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16",
+          "telescope": 18
+        },
+        "bracket-l096": {
+          "form": "named_have",
+          "target": "c ≤ c' - 1",
+          "telescope": 12
+        },
+        "bracket-l098": {
+          "form": "bare_goal",
+          "target": "False",
+          "telescope": 14
+        },
+        "bracket-l099": {
+          "form": "named_have",
+          "target": "c' ≤ c - 1",
+          "telescope": 12
+        },
+        "bracket-l101": {
+          "form": "bare_goal",
+          "target": "False",
+          "telescope": 14
+        },
+        "bracket-l158": {
+          "form": "have_post_simp",
+          "target": "z = v",
+          "telescope": 12
+        },
+        "bracket-l166": {
+          "form": "inline_term",
+          "target": "↑v0 ≤ z",
+          "telescope": 12
+        },
+        "bracket-l170": {
+          "form": "named_have",
+          "target": "1 ≤ zhigh",
+          "telescope": 14
+        },
+        "bracket-l175": {
+          "form": "post_simp",
+          "target": "↑Zmax ≤ v",
+          "telescope": 16
+        },
+        "bracket-l178": {
+          "form": "bare_goal",
+          "target": "↑v0 ≤ v",
+          "telescope": 17
+        },
+        "bracket-l180": {
+          "form": "anonymous_have",
+          "target": "¬v < ↑v0",
+          "telescope": 17
+        },
+        "bracket-l204": {
+          "form": "inline_term",
+          "target": "a - R.x i ≤ b - R.x i",
+          "telescope": 10
+        }
+      }
+    },
+    {
+      "name": "line70_reproduces_the_r6_000_control",
+      "passed": true,
+      "detail": {
+        "context_equal_modulo_identity": true,
+        "local_type_sha256": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+        "span_equal": true
+      }
+    },
+    {
+      "name": "families_and_exposure_recorded",
+      "passed": true,
+      "detail": {
+        "families": 4,
+        "exposed": [
+          "bracket-l070"
+        ]
+      }
+    },
+    {
+      "name": "membership_partitions_and_binds_the_census",
+      "passed": true,
+      "detail": {
+        "primary": 15,
+        "excluded": 0,
+        "exposed": [
+          "bracket-l070"
+        ],
+        "families": {
+          "Bracket.Row.s1_noninc": 1,
+          "Bracket.cell_value_neutral": 6,
+          "Bracket.lift_cell": 4,
+          "Bracket.threshold_unique": 4
+        }
+      }
+    },
+    {
+      "name": "exclusion_records_failing_stage_and_stderr",
+      "passed": true,
+      "detail": {
+        "status": "excluded",
+        "stage": "task-build",
+        "census_untouched": true
+      }
+    },
+    {
+      "name": "freeze_bound_to_its_sources",
+      "passed": true,
+      "detail": {
+        "census_module": "9b521af3da614bbc",
+        "site_freeze": "1374bcfee81ad945",
+        "capture": "d2f5dfd1c2a2f5a5"
+      }
+    }
+  ]
+}
