@@ -43,10 +43,11 @@ CENSUS_DIR = site_freeze.CENSUS_DIR
 MEMBERSHIP_DECISION = r6.ROOT/'reviews/2026-09-22/R6-010-MEMBERSHIP-REVIEW.json'
 MEMBERSHIP_DECISION_SHA256 = '107e59ef6dd255a6088aee91d9136b218748089849e7612ddd431fa4686a6bb6'  # the reviewed population decision, pinned
 ADDENDUM = CENSUS_DIR/'exposure-addendum.json'
+ADDENDUM_SHA256 = 'fe7834eebbf840a726fc43c0737051e2b213e73a6976ef321e92f302601b2490'  # the exposure addendum's bytes, pinned
 
 
-LOCK = r6.ROOT/'policies/site-harness-v1.sha256.json'
-FILES = ('site_task.py', 'site_stage.py', 'site_supervise.py', 'site_representability.py', 'test_site.py')
+LOCK = r6.ROOT/'policies/site-harness-v2.sha256.json'
+FILES = ('site_task.py', 'site_stage.py', 'site_supervise.py', 'site_request.py', 'site_representability.py', 'test_site.py')
 
 
 def sha(data): return hashlib.sha256(data).hexdigest()
@@ -89,7 +90,9 @@ def frozen_site(task):
     census.verify_lock()
     decision_bytes = MEMBERSHIP_DECISION.read_bytes(); decision = json.loads(decision_bytes)
     if sha(decision_bytes) != MEMBERSHIP_DECISION_SHA256: raise ValueError('reviewed membership decision changed')
-    frozen = json.loads((CENSUS_DIR/'census.json').read_bytes()); addendum = json.loads(ADDENDUM.read_bytes())
+    addendum_bytes = ADDENDUM.read_bytes()
+    if sha(addendum_bytes) != ADDENDUM_SHA256: raise ValueError('exposure addendum bytes differ from the reviewed ones')
+    frozen = json.loads((CENSUS_DIR/'census.json').read_bytes()); addendum = json.loads(addendum_bytes)
     if sha((CENSUS_DIR/'census.json').read_bytes()) != decision['census_sha256'] or sha((CENSUS_DIR/'membership.json').read_bytes()) != decision['membership_proposal_sha256']:
         raise ValueError('census or membership differs from the reviewed decision')
     if addendum['decision_sha256'] != sha(decision_bytes) or addendum['census_sha256'] != decision['census_sha256']:

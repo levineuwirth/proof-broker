@@ -1,21 +1,23 @@
-"""R6-011 representability: what the frozen IR and Farkas interface make of each reviewed census site, before either arm.
+"""R6-012 representability, revision 2: what the frozen IR and Farkas interface make of each reviewed census site.
 
-For every primary site the frozen preparation stages run on the site (`site_task`): the reifier builds the IR from the goal
-state at the site and records every local it skips, the SDK pipeline compiles the IR into Farkas rows and records its own
-omissions, and the context captured there must equal the frozen one. The prepared problem is then classified, with the
-fifteen-site denominator preserved and no site removed for any outcome:
+Revision 1 (R6-011) keyed the exact Farkas computation by row *name*; two distinct l178 rows are both named `this`, the first
+was silently overwritten, and the classifier reported no certificate where one exists. Revision 2 separates three questions
+that revision 1 conflated, each decided exactly and each recorded per site:
 
-- `preparation_failed`: a stage did not return; the failing stage and its output digests are the reason.
-- `not_lia` / `farkas_omissions`: the frozen request policy refuses the problem (fragment, or rows the compiler dropped).
-- `projection_mismatch`: the SDK rows differ from the independent arithmetic projection of the final IR.
-- `rational_certificate` / `no_rational_certificate`: whether the rows, as sent, admit a Farkas certificate over the rationals
-  — decided exactly (a phase-one simplex over fractions on the dual system, Bland's rule), not by any search route, and the
-  certificate checked exactly. Without a rational certificate the frozen certificate path cannot close the site however the
-  witness is proposed; with one, the reconstruction path is still unexercised until the deterministic arm runs.
+- **Arithmetic.** Over the rows as emitted, addressed by *index*: a rational Farkas certificate (phase-one simplex over
+  fractions on the dual system, Bland's rule, checked exactly by index), or, when there is none, an exhibited rational point
+  satisfying every row (phase one on the primal system, checked exactly). Nonexistence is never reported without that point.
+- **Name addressing.** Whether every row name is unique. The model, the SDK assembler and verifier and the Lean
+  reconstruction address rows by name, so a certificate is only name-addressable over unique names; the name-addressed
+  checker refuses an ambiguous row set rather than choosing a row.
+- **Admission.** The frozen request policy (`payload.request`) as before, and policy C (`site_request.admit`), the reviewed
+  choice for the learned arm.
 
-Every class records the reifier's omissions split into data locals (undeclarable types) and dropped propositions: a dropped
-proposition is a hypothesis the model will never see, and is reported as such, never as a model failure. The certificate found
-here is an existence proof and a canned rehearsal fixture; it is never model-visible and is not the deterministic arm's result.
+The headline class is policy C's: `posable_certificate`, `posable_negative_control` (posable, no certificate over the rows,
+feasible point exhibited), `ambiguous_reference`, another `policy_c_refused` code, `interface_refused` (the SDK's own refusal
+at pipeline preparation), or `preparation_failed`. The fifteen-site denominator is kept; nothing is selected on success. The
+certificate or point is evaluator-only: an existence fact and a rehearsal fixture, never model-visible, not the deterministic
+arm's result. What the learned interface cannot pose says nothing, by itself, about the deterministic arm's evidence path.
 """
 import argparse
 from fractions import Fraction
@@ -28,35 +30,23 @@ import episode
 import events
 import payload
 import run as r6
+import site_request
 import site_task
 
-RUNS = r6.ROOT/'census-runs/representability-v1'
-CLASSES = ('preparation_failed', 'interface_refused', 'not_lia', 'farkas_omissions', 'projection_unsupported', 'projection_mismatch', 'no_rational_certificate', 'rational_certificate')
+RUNS = r6.ROOT/'census-runs/representability-v2'
+CLASSES = ('preparation_failed', 'interface_refused', 'ambiguous_reference', 'policy_c_refused', 'posable_negative_control', 'posable_certificate')
+FROZEN_POLICY_CLASSES = ('not_lia', 'farkas_omissions', 'projection_unsupported', 'projection_mismatch', 'admissible')
 
 
-def farkas(rows):
-    """Exact: nonnegative multipliers for `le` rows and free ones for `eq` rows whose combination cancels every variable and leaves
-    a positive constant, i.e. sum(c_i y_i) = 1 and sum(a_ij y_i) = 0 for every variable j. Returns {row name: Fraction} or None."""
-    variables = sorted({t['variable'] for r in rows for t in r['terms']})
-    columns = []  # (row name, sign)
-    for r in rows:
-        columns.append((r['name'], 1))
-        if r['relation'] == 'eq': columns.append((r['name'], -1))
-    by_name = {r['name']: r for r in rows}
-    def coefficient(col, var):
-        name, sign = col; t = next((t for t in by_name[name]['terms'] if t['variable'] == var), None)
-        return sign*int(t['coefficient']) if t else 0
-    A = [[Fraction(coefficient(c, v)) for c in columns] for v in variables] + [[Fraction(sign*int(by_name[n]['constant'])) for n, sign in columns]]
-    b = [Fraction(0)]*len(variables) + [Fraction(1)]
-    m, n = len(A), len(columns)
-    # phase one: minimize the sum of artificials a_k in A y + a = b, y, a >= 0
-    tableau = [A[i] + [Fraction(int(i == k)) for k in range(m)] + [b[i]] for i in range(m)]
+def phase_one(A, b):
+    """Exact: a nonnegative y with A y = b (b >= 0), or None. Artificial basis, Bland's rule, fractions throughout."""
+    m, n = len(A), len(A[0]) if A else 0
+    tableau = [[Fraction(x) for x in A[i]] + [Fraction(int(i == k)) for k in range(m)] + [Fraction(b[i])] for i in range(m)]
     basis = [n+i for i in range(m)]
     cost = [Fraction(0)]*n + [Fraction(1)]*m + [Fraction(0)]
-    def reduced():
-        return [cost[j] - sum(cost[basis[i]]*tableau[i][j] for i in range(m)) for j in range(n+m+1)]
-    for _ in range(10000):
-        z = reduced(); entering = next((j for j in range(n+m) if z[j] < 0), None)  # Bland: lowest index
+    for _ in range(100000):
+        z = [cost[j] - sum(cost[basis[i]]*tableau[i][j] for i in range(m)) for j in range(n+m)]
+        entering = next((j for j in range(n+m) if z[j] < 0), None)
         if entering is None: break
         ratios = [(tableau[i][-1]/tableau[i][entering], basis[i], i) for i in range(m) if tableau[i][entering] > 0]
         if not ratios: raise ValueError('phase one unbounded')
@@ -71,9 +61,38 @@ def farkas(rows):
     y = [Fraction(0)]*n
     for i in range(m):
         if basis[i] < n: y[basis[i]] = tableau[i][-1]
+    return y
+
+
+def coefficient(row, variable):
+    return next((int(t['coefficient']) for t in row['terms'] if t['variable'] == variable), 0)
+
+
+def farkas(rows):
+    """Multipliers by row *index*: nonnegative for `le`, free for `eq`, cancelling every variable with sum(c_i y_i) = 1."""
+    variables = sorted({t['variable'] for r in rows for t in r['terms']})
+    columns = [(i, s) for i, r in enumerate(rows) for s in ((1,) if r['relation'] == 'le' else (1, -1))]
+    A = [[s*coefficient(rows[i], v) for i, s in columns] for v in variables] + [[s*int(rows[i]['constant']) for i, s in columns]]
+    y = phase_one(A, [0]*len(variables) + [1])
+    if y is None: return None
     multipliers = {}
-    for (name, sign), value in zip(columns, y): multipliers[name] = multipliers.get(name, Fraction(0)) + sign*value
+    for (i, s), value in zip(columns, y): multipliers[i] = multipliers.get(i, Fraction(0)) + s*value
     return {k: v for k, v in multipliers.items() if v != 0}
+
+
+def feasible_point(rows):
+    """An exact rational assignment satisfying every row (`le` rows <= 0, `eq` rows = 0), or None. Variables are free: x = p - q."""
+    variables = sorted({t['variable'] for r in rows for t in r['terms']})
+    slack = [i for i, r in enumerate(rows) if r['relation'] == 'le']
+    A, b = [], []
+    for i, r in enumerate(rows):
+        line = [coefficient(r, v) for v in variables] + [-coefficient(r, v) for v in variables] + [int(i == k) for k in slack]
+        rhs = -int(r['constant'])
+        if rhs < 0: line, rhs = [-x for x in line], -rhs
+        A.append(line); b.append(rhs)
+    y = phase_one(A, b) if A else []
+    if y is None: return None
+    return {v: y[j] - y[len(variables)+j] for j, v in enumerate(variables)}
 
 
 def primitive(multipliers):
@@ -84,15 +103,34 @@ def primitive(multipliers):
     return {k: v//g for k, v in ints.items()}
 
 
-def check_certificate(rows, witness):
-    """Exact check of an integer witness against the rows: `le` multipliers nonnegative, every variable cancelled, positive constant."""
-    by_name = {r['name']: r for r in rows}
-    if not witness or any(n not in by_name for n in witness): return False
-    if any(by_name[n]['relation'] == 'le' and c < 0 for n, c in witness.items()): return False
+def check_indexed(rows, witness):
+    """Exact check of an integer witness addressed by row index."""
+    if not witness or any(not (0 <= i < len(rows)) for i in witness): return False
+    if any(rows[i]['relation'] == 'le' and c < 0 for i, c in witness.items()): return False
     total = {}
-    for n, c in witness.items():
-        for t in by_name[n]['terms']: total[t['variable']] = total.get(t['variable'], 0) + c*int(t['coefficient'])
-    return all(v == 0 for v in total.values()) and sum(c*int(by_name[n]['constant']) for n, c in witness.items()) > 0
+    for i, c in witness.items():
+        for t in rows[i]['terms']: total[t['variable']] = total.get(t['variable'], 0) + c*int(t['coefficient'])
+    return all(v == 0 for v in total.values()) and sum(c*int(rows[i]['constant']) for i, c in witness.items()) > 0
+
+
+class Ambiguous(ValueError):
+    pass
+
+
+def check_certificate(rows, witness):
+    """The name-addressed check the proposal interface implies: refuses an ambiguous row set instead of choosing a row."""
+    names = [r['name'] for r in rows]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    if duplicates: raise Ambiguous('ambiguous row names: '+', '.join(duplicates))
+    if any(n not in names for n in witness): return False
+    return check_indexed(rows, {names.index(n): c for n, c in witness.items()})
+
+
+def check_point(rows, point):
+    for r in rows:
+        value = int(r['constant']) + sum(int(t['coefficient'])*point.get(t['variable'], 0) for t in r['terms'])
+        if (r['relation'] == 'le' and value > 0) or (r['relation'] == 'eq' and value != 0): return False
+    return True
 
 
 def failure_record(run):
@@ -110,33 +148,49 @@ def failure_record(run):
     return {'stage': 'unknown'}
 
 
+def frozen_policy(prepared):
+    """The frozen request policy's verdict, reported beside policy C's."""
+    if prepared['fragment'] != 'LIA': return 'not_lia'
+    if prepared['farkas_omissions']: return 'farkas_omissions'
+    try: projected = payload.arithmetic_rows(prepared['final_ir'])
+    except ValueError: return 'projection_unsupported'
+    names = [r['name'] for r in prepared['rows']]
+    if projected != prepared['rows'] or names.count('neg_goal') != 1 or len(names) != len(set(names)): return 'projection_mismatch'
+    return 'admissible'
+
+
 def classify(prepared, reified):
     omissions = reified['skipped_locals']
-    data_locals = [o for o in omissions if o['reason'].startswith('data local')]
-    dropped = [o for o in omissions if not o['reason'].startswith('data local')]
     rows = prepared['rows']; names = [r['name'] for r in rows]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
     base = {'fragment': prepared['fragment'], 'row_count': len(rows), 'row_names': names, 'neg_goal_rows': names.count('neg_goal'),
-            'variables': sorted({t['variable'] for r in rows for t in r['terms']}), 'reifier_data_locals': [o['name'] for o in data_locals],
-            'reifier_dropped_propositions': dropped, 'farkas_omissions': prepared['farkas_omissions']}
-    # the SDK rows always get the exact certificate question answered, whatever the frozen request policy says about them
+            'variables': sorted({t['variable'] for r in rows for t in r['terms']}),
+            'reifier_data_locals': [o['name'] for o in omissions if o['reason'].startswith('data local')],
+            'reifier_dropped_propositions': [o for o in omissions if not o['reason'].startswith('data local')],
+            'farkas_omissions': prepared['farkas_omissions'], 'names_unique': not duplicates, 'duplicate_names': duplicates,
+            'frozen_policy_class': frozen_policy(prepared)}
     multipliers = farkas(rows) if rows else None
-    if multipliers is None: certificate = {'sdk_rows_rational_certificate': False}
-    else:
+    if multipliers is not None:
         witness = primitive(multipliers)
-        if not check_certificate(rows, witness): raise ValueError('exact certificate failed its own check')
-        certificate = {'sdk_rows_rational_certificate': True,
-                       'certificate': [{'hypothesis': n, 'coefficient': str(witness[n])} for n in names if n in witness],
-                       'certificate_support': len(witness), 'certificate_uses_neg_goal': 'neg_goal' in witness,
-                       'certificate_scope': 'existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm'}
-    base.update(certificate)
-    # then the frozen request policy (`payload.request`): LIA, no compilation omissions, rows equal to the independent projection
-    if prepared['fragment'] != 'LIA': return {'class': 'not_lia', **base}
-    if prepared['farkas_omissions']: return {'class': 'farkas_omissions', **base}
-    try: projected = payload.arithmetic_rows(prepared['final_ir'])
-    except ValueError as error: return {'class': 'projection_unsupported', 'detail': str(error), **base}
-    if projected != rows: return {'class': 'projection_mismatch', 'detail': 'SDK rows differ from the independent projection', **base}
-    if names.count('neg_goal') != 1: return {'class': 'projection_mismatch', 'detail': 'the request policy requires exactly one neg_goal row', **base}
-    return {'class': 'rational_certificate' if certificate['sdk_rows_rational_certificate'] else 'no_rational_certificate', **base}
+        if not check_indexed(rows, witness): raise ValueError('exact certificate failed its own check')
+        base.update(arithmetic_certificate=True, certificate_rows=[{'index': i, 'name': rows[i]['name'], 'coefficient': str(witness[i])} for i in sorted(witness)],
+                    certificate_support=len(witness), certificate_uses_neg_goal=any(rows[i]['name'] == 'neg_goal' for i in witness))
+        if not duplicates:
+            named = {rows[i]['name']: c for i, c in witness.items()}
+            if not check_certificate(rows, named): raise ValueError('name-addressed certificate failed its check')
+            base['certificate'] = [{'hypothesis': rows[i]['name'], 'coefficient': str(witness[i])} for i in sorted(witness)]
+    else:
+        point = feasible_point(rows)
+        if point is None or not check_point(rows, point): raise ValueError('neither a certificate nor a feasible point: the exact computation is inconsistent')
+        base.update(arithmetic_certificate=False, feasible_point={k: str(v) for k, v in sorted(point.items())})
+    base['evidence_scope'] = 'exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction'
+    try:
+        posed, evidence = site_request.admit(prepared)
+        base.update(policy_c='posable', policy_c_evidence=evidence)
+        return {'class': 'posable_certificate' if base['arithmetic_certificate'] else 'posable_negative_control', **base}
+    except site_request.Refusal as refusal:
+        base.update(policy_c=refusal.code, policy_c_detail=str(refusal))
+        return {'class': 'ambiguous_reference' if refusal.code == 'policy_ambiguous_reference' else 'policy_c_refused', **base}
 
 
 def seal(run):
@@ -190,7 +244,7 @@ def main():
     for site_id in site_task.primary():
         result = classify_site(site_id, args.packages_dir.resolve(), runs); results.append(result)
         print(json.dumps({k: result[k] for k in ('site_id', 'class', 'seconds')}), flush=True)
-    summary = {'schema_version': 'r6-representability-1', 'population': list(site_task.primary()), 'denominator': len(results),
+    summary = {'schema_version': 'r6-representability-2', 'population': list(site_task.primary()), 'denominator': len(results),
                'classes': {c: [r['site_id'] for r in results if r['class'] == c] for c in CLASSES},
                'results': results, 'runs_sha256': {r['site_id']: r6.sha(runs/r['site_id']/'seal.json') for r in results},
                'site_lock_sha256': r6.sha(site_task.LOCK), 'site_task_sha256': r6.sha(r6.ROOT/'site_task.py'), 'program_sha256': r6.sha(Path(__file__)),

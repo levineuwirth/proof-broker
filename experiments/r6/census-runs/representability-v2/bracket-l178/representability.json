@@ -1,0 +1,67 @@
+{
+  "site_id": "bracket-l178",
+  "family": "Bracket.cell_value_neutral",
+  "exposure_class": "none_recorded",
+  "class": "ambiguous_reference",
+  "fragment": "LIA",
+  "row_count": 12,
+  "row_names": [
+    "hv",
+    "hrec",
+    "hz0",
+    "hz",
+    "hzh0",
+    "hZpos",
+    "hzh1",
+    "this",
+    "this",
+    "_pb_nonneg_Zmax",
+    "_pb_nonneg_v0",
+    "neg_goal"
+  ],
+  "neg_goal_rows": 1,
+  "variables": [
+    "Zmax",
+    "_pb_iatom_0",
+    "v",
+    "v0",
+    "z",
+    "zhigh"
+  ],
+  "reifier_data_locals": [
+    "cert"
+  ],
+  "reifier_dropped_propositions": [],
+  "farkas_omissions": [
+    "hzh"
+  ],
+  "names_unique": false,
+  "duplicate_names": [
+    "this"
+  ],
+  "frozen_policy_class": "farkas_omissions",
+  "arithmetic_certificate": true,
+  "certificate_rows": [
+    {
+      "index": 7,
+      "name": "this",
+      "coefficient": "1"
+    },
+    {
+      "index": 8,
+      "name": "this",
+      "coefficient": "1"
+    },
+    {
+      "index": 11,
+      "name": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "certificate_support": 3,
+  "certificate_uses_neg_goal": true,
+  "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+  "policy_c": "policy_ambiguous_reference",
+  "policy_c_detail": "policy_ambiguous_reference: this",
+  "seconds": 6.8
+}
