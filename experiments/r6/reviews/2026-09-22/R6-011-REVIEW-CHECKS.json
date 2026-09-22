@@ -1,0 +1,167 @@
+{
+  "complete": true,
+  "reviewed_commit": "27579e5",
+  "duplicate_row_names": {
+    "bracket-l178": {
+      "this": 2
+    }
+  },
+  "l178": {
+    "prepared_sha256": "11732c7a83e1f473253e95a173c623f289b5f27e243f945dfd897d603d4f5a4c",
+    "selected_zero_based_indices": [
+      7,
+      8,
+      11
+    ],
+    "selected_rows": [
+      {
+        "name": "this",
+        "relation": "le",
+        "constant": "0",
+        "terms": [
+          {
+            "variable": "Zmax",
+            "coefficient": "1"
+          },
+          {
+            "variable": "v",
+            "coefficient": "-1"
+          }
+        ]
+      },
+      {
+        "name": "this",
+        "relation": "le",
+        "constant": "0",
+        "terms": [
+          {
+            "variable": "Zmax",
+            "coefficient": "-1"
+          },
+          {
+            "variable": "v0",
+            "coefficient": "1"
+          }
+        ]
+      },
+      {
+        "name": "neg_goal",
+        "relation": "le",
+        "constant": "1",
+        "terms": [
+          {
+            "variable": "v",
+            "coefficient": "1"
+          },
+          {
+            "variable": "v0",
+            "coefficient": "-1"
+          }
+        ]
+      }
+    ],
+    "multipliers": [
+      1,
+      1,
+      1
+    ],
+    "sum_constant": 1,
+    "sum_terms": {
+      "Zmax": 0,
+      "v": 0,
+      "v0": 0
+    },
+    "current_classifier_returns_no_certificate": true,
+    "index_named_arithmetic_witness": {
+      "row_7": 1,
+      "row_8": 1,
+      "row_11": 1
+    },
+    "scope": "arithmetic contradiction over actual distinct rows; not a name-addressed SDK certificate or Lean reconstruction"
+  },
+  "l170": {
+    "prepared_sha256": "896053555767a9bc9769db9100045ebdb23a1fcfd1f2d900cd6380bd96f68998",
+    "exact_feasible_assignment": {
+      "v": 0,
+      "_pb_iatom_0": 0,
+      "z": 0,
+      "Zmax": 1,
+      "zhigh": 0,
+      "v0": 0
+    },
+    "evaluated_rows": [
+      {
+        "name": "hv",
+        "relation": "le",
+        "value": 0
+      },
+      {
+        "name": "hrec",
+        "relation": "eq",
+        "value": 0
+      },
+      {
+        "name": "hz0",
+        "relation": "le",
+        "value": 0
+      },
+      {
+        "name": "hz",
+        "relation": "le",
+        "value": -1
+      },
+      {
+        "name": "hzh0",
+        "relation": "le",
+        "value": 0
+      },
+      {
+        "name": "hZpos",
+        "relation": "le",
+        "value": 0
+      },
+      {
+        "name": "_pb_nonneg_Zmax",
+        "relation": "le",
+        "value": -1
+      },
+      {
+        "name": "_pb_nonneg_v0",
+        "relation": "le",
+        "value": 0
+      },
+      {
+        "name": "neg_goal",
+        "relation": "le",
+        "value": 0
+      }
+    ],
+    "scope": "satisfies all emitted rows including neg_goal, independently excludes a rational Farkas contradiction over these rows"
+  },
+  "locks": {
+    "fixture-harness-v1": {
+      "sha256": "570f2cc90d4b583579e752d01760282ae9943efdde89fab5312a660edde5709b",
+      "files": 21,
+      "matched": true
+    },
+    "cohort-harness-v3": {
+      "sha256": "3351d52969a96b84d54944720761b5f1d3d4c70e9955a8118ae6604ba8e616ee",
+      "files": 7,
+      "matched": true
+    },
+    "census-harness-v1": {
+      "sha256": "e2a33824064d742af943ba8b1cf402c7758fe7fea2df364f0589b635906af52c",
+      "files": 5,
+      "matched": true
+    },
+    "site-harness-v1": {
+      "sha256": "560663f223d14fb557ab64c2896ea1da3b589c24d94c3f4e865332d9a090d71d",
+      "files": 5,
+      "matched": true
+    }
+  },
+  "program_sha256": "4a75141d7be58f309c2354d802ea85bb03c42bc4772fbff18313fa16be074736",
+  "native_runs": 0,
+  "provider_calls": 0,
+  "credentials_read": 0
+}
