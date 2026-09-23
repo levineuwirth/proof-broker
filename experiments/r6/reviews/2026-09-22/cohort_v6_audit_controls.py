@@ -13,6 +13,12 @@ another certificate, a verdict naming another closer, reconstruction IR differin
 branch evidence, with its diagnosis altered, from a crashed process, with an unrelated error, and with fabricated completion; site
 identity, preparation, context, renaming, eligibility, pricing and bridge-revision bindings; and the v4 and v5 historical checks,
 including a synthesized v5 consumption receipt.
+
+Revision 2, after the R6-013 review: its six accepted probes (`reviews/2026-09-23/cohort_v6_review_probes.py`) under their names, each now
+rejected at its own case, and one control per new binding: the refused path's trace and child component, the proof path's dispatched final
+IR, a coherent relabeling of the refused closer, foreign inputs in the certificate-check, assembly, preparation, pipeline and replay
+commands, an altered export target, and a wrong historical kernel target in v4. Two earlier controls now reject at the new
+evidence-binding case, which runs before the closer-selection and consumption cases.
 """
 import argparse
 import importlib.util
@@ -91,10 +97,10 @@ EXPECTED = {
     'nonzero_whole_validation_exit_coherent': f'{LAST}:stages:every_stage_on_the_path_returned',
     # R6-013: consumption receipts (LAST is the core ℤ closer; NAT the ℕ closer)
     'consumption_receipt_removed': f'{LAST}:chain:expected_sequence',
-    'consumption_receipt_forged_certificate': f'{LAST}:proof:certificate_consumed',
+    'consumption_receipt_forged_certificate': f'{LAST}:reconstruction:evidence_bound',  # revision 2: bound before consumption
     'consumption_receipt_wrong_closer': f'{LAST}:proof:certificate_consumed',
     'nat_consumption_receipt_wrong_closer': f'{NAT}:proof:certificate_consumed',
-    'closer_selection_wrong_certificate': f'{LAST}:reconstruction:closer_selected',
+    'closer_selection_wrong_certificate': f'{LAST}:reconstruction:evidence_bound',  # revision 2: bound before selection
     'verdict_names_another_closer': f'{LAST}:proof:certificate_consumed',
     'reconstruction_ir_differs_from_preparation': f'{LAST}:reconstruction:preparation_ir_equal',
     # R6-013: refused reconstruction
@@ -126,7 +132,28 @@ EXPECTED = {
     'history_v5_consumption_receipt_synthesized': 'history_v5:qualified_kernel_successes',
     'history_v5_refusal_recategorized': 'history_v5:closer_refusals_recorded',
     'history_v5_terminal_row_dropped': 'history_v5:ledger_dispositions',
+    # R6-013 review: the six accepted probes, by the reviewer's names
+    'refused_dispatch_certificate': f'{REF}:reconstruction:evidence_bound',
+    'refused_dispatch_final_ir': f'{REF}:reconstruction:evidence_bound',
+    'refused_verification_started_certificate': f'{REF}:reconstruction:evidence_bound',
+    'coherent_wrong_success_closer': f'{LAST}:reconstruction:closer_selected',
+    'refused_reconstruction_foreign_packet': f'{REF}:stages:commands_reconstructed',
+    'historical_wrong_kernel_target': 'history_v5:qualified_kernel_successes',
+    # R6-013 review: one control per further binding
+    'refused_dispatch_trace': f'{REF}:reconstruction:evidence_bound',
+    'refused_child_foreign_component': f'{REF}:reconstruction:evidence_bound',
+    'proof_dispatch_final_ir': f'{LAST}:reconstruction:evidence_bound',
+    'coherent_wrong_refused_closer': f'{REF}:reconstruction:closer_selected',
+    'certificate_check_foreign_packet': f'{LAST}:stages:commands_reconstructed',
+    'assembly_foreign_prepared_problem': f'{LAST}:stages:commands_reconstructed',
+    'preparation_foreign_input': f'{NAT}:stages:commands_reconstructed',
+    'pipeline_prepare_foreign_ir': f'{IFACE}:stages:commands_reconstructed',
+    'validation_foreign_solution': f'{NAT}:stages:commands_reconstructed',
+    'export_target_altered': f'{NAT}:stages:commands_reconstructed',
+    'history_v4_wrong_kernel_target': 'history_v4:kernel_reports_bound',
 }
+REVIEW_PROBES = ('refused_dispatch_certificate', 'refused_dispatch_final_ir', 'refused_verification_started_certificate',
+                 'coherent_wrong_success_closer', 'refused_reconstruction_foreign_packet', 'historical_wrong_kernel_target')
 NOT_APPLICABLE = {'revision_row_removed': 'one revision: its only revision row is the activation, exercised by activation_row_removed',
                   'refusal_code_altered': 'no slot-consumed refusal in a single-revision checkpoint; the refusal kind here is exercised by interface_refusal_altered',
                   'd1_bytes_in_c8_run': 'renamed other_site_bytes_in_run: l070 bytes in the l099 run'}
@@ -466,6 +493,56 @@ def mutate(name, paths):
         reseal_history(v5/'l166-draw1', lambda run, rows: change_json(run, 'credential-summary.json', lambda v: v.__setitem__('failure_category', 'reconstruction_refused')))
     elif name == 'history_v5_terminal_row_dropped':
         c5 = J(ROOT/'policies'/audit.HISTORY_V5['policy'])['campaign']['id']; drop_terminal_row(ledgers/c5/'rehearsal', c5, 'l204-draw1')
+    # ---------------------------------------------------------------- R6-013 review
+    elif name in ('refused_dispatch_certificate', 'refused_dispatch_final_ir', 'refused_verification_started_certificate', 'refused_dispatch_trace', 'proof_dispatch_final_ir'):
+        observation = 'certificate_verification_started' if name == 'refused_verification_started_certificate' else 'dispatch_received'
+        key = {'refused_dispatch_final_ir': 'final_ir', 'proof_dispatch_final_ir': 'final_ir', 'refused_dispatch_trace': 'trace'}.get(name, 'certificate')
+        def change(run, rows):
+            data = child(rows, observation); assert data[key] != {'review_probe': 'different_evidence'}; data[key] = {'review_probe': 'different_evidence'}
+        refinalize(root/(LAST if name.startswith('proof') else REF), change)
+    elif name == 'refused_child_foreign_component':  # an observation inside the reconstruction window attributed to another component
+        def change(run, rows):
+            r = next(r for r in rows if r['source'] == 'child_report' and r['event'] == 'reification_started'); r['payload']['component'] = 'other_component'
+        refinalize(root/REF, change)
+    elif name in ('coherent_wrong_success_closer', 'coherent_wrong_refused_closer'):  # every closer mirror changed together; the IR is not
+        target, old, new = (LAST, 'term_mode_int', 'term_mode_nat') if name == 'coherent_wrong_success_closer' else (REF, 'term_mode_nat', 'term_mode_int')
+        def change(run, rows):
+            for observed in ('closer_selected', 'reconstruction_finished'):
+                if any(r['source'] == 'child_report' and r['event'] == observed for r in rows):
+                    data = child(rows, observed); assert data['closer'] == old; data['closer'] = new
+            if (run/'verdict.json').exists(): rebind_verdict(run, rows, lambda v: v.__setitem__('closer', new))
+            if (run/'reconstruction-refusal.json').exists():
+                change_json(run, 'reconstruction-refusal.json', lambda v: v.__setitem__('closer', new))
+                receipt = event(rows, 'reconstruction_refused', 'reconstruct'); receipt.clear(); receipt.update(J(run/'reconstruction-refusal.json'))
+        refinalize(root/target, change)
+    elif name in ('refused_reconstruction_foreign_packet', 'certificate_check_foreign_packet', 'assembly_foreign_prepared_problem', 'preparation_foreign_input',
+                  'pipeline_prepare_foreign_ir', 'validation_foreign_solution'):
+        target, stage, guest, other = {
+            'refused_reconstruction_foreign_packet': (REF, 'reconstruct', '/evidence.json', NAT),
+            'certificate_check_foreign_packet': (LAST, 'certificate-check', '/evidence.json', NAT),
+            'assembly_foreign_prepared_problem': (LAST, 'assembly', '/prepared.json', NAT),
+            'preparation_foreign_input': (NAT, 'preparation-build', '/input', FIRST),
+            'pipeline_prepare_foreign_ir': (IFACE, 'pipeline-prepare', '/input-ir.json', 'l101-draw1'),
+            'validation_foreign_solution': (NAT, 'validation-local', '/solution.ndjson', FIRST)}[name]
+        def change(run, rows):
+            def command(v):
+                a = v['argv']; i = a.index(guest)
+                assert a[i-2] == '--ro-bind' and f'/{target}/' in a[i-1]; a[i-1] = a[i-1].replace(f'/{target}/', f'/{other}/')
+            change_json(run, f'stages/{stage}/command.json', command)
+        refinalize(root/target, change)
+    elif name == 'export_target_altered':
+        def change(run, rows):
+            def command(v):
+                a = v['argv']; i = a.index('--', a.index('Frozen')); assert a[i+1].startswith('Bracket.'); a[i+1] = 'Unrelated.theorem'
+            change_json(run, 'stages/export/command.json', command)
+        refinalize(nat, change)
+    elif name in ('historical_wrong_kernel_target', 'history_v4_wrong_kernel_target'):
+        base = v5 if name.startswith('historical') else v4; run_name = 'l096-draw1' if name.startswith('historical') else 'l070-draw1'
+        def change(run, rows):
+            def verdict(v):
+                target = v['final_validation']['local']['targets'][0]; assert target['name'] != 'Unrelated.theorem'; target['name'] = 'Unrelated.theorem'
+            rebind_verdict(run, rows, verdict)
+        reseal_history(base/run_name, change)
     else: raise AssertionError(name)
 
 
@@ -501,6 +578,7 @@ def main():
         print(json.dumps({'trial': True, 'controls': len(results)})); return
     assert tuple(results) == CONTROLS and set(results) == {'baseline', *EXPECTED}, sorted(results)
     record = {'passed': True, 'controls': len(results), 'expected_controls': list(CONTROLS), 'results': results, 'not_applicable': NOT_APPLICABLE,
+              'review_probes': list(REVIEW_PROBES), 'baseline_cases': results['baseline']['case_count'],
               'runs': audit.RUNS, 'revision': audit.REVISION, 'auditor_sha256': r6.sha(Path(__file__).with_name('cohort_v6_audit.py')),
               'program_sha256': r6.sha(Path(__file__)), 'live_model_calls': 0, 'credentials_read': 0,
               'scope': 'temporary copies; one relationship per mutation; exact control population'}

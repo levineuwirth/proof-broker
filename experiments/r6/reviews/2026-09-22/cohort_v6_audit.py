@@ -22,6 +22,15 @@ where it still applies; `CARRIED_FORWARD` states where each is checked now or wh
   checked for IR equality in v6 independently of any later success.
 
 The case population is derived before any run is read; the audit fails unless exactly that set of named cases was evaluated.
+
+Revision 2, after the R6-013 review (`reviews/2026-09-23/R6-013-REVIEW.md`, four P2 findings):
+1. `reconstruction:evidence_bound`, before the success/refusal split: every certificate-bearing child observation, the dispatched final
+   IR and trace, the dispatch settings and the child boundaries are bound to this run's packet, on the refused path as on the proof path;
+2. the selected closer is derived from the pinned dispatch predicates (`natModeOf`, `polyModeOf`, the strategy hint, and the extension
+   registry, which the reconstruction's loaded modules and imports show empty) over the dispatched IR; every closer mirror is compared to it;
+3. `stages:commands_reconstructed`: every non-sender stage command is rebuilt from the stage code, the pinned tools and this run's own inputs
+   (the host library closure is bounded to system libraries, equal across runs for the same stage), and compared exactly;
+4. historical kernel successes are bound to their retained raw replay reports (target, type, axioms, receipts, verdict), as the proof path is.
 """
 import argparse
 import copy
@@ -52,12 +61,14 @@ import payload
 import priced_payload_v2 as v2
 import pricing_gate_v2 as gate2
 import pricing_gate_v4 as gate
+import provider_episode
 import provider_payload
 import publication
 import run as r6
 import consumption_overlay
 import site_network
 import site_representability as rep
+import site_stage
 import site_request
 import site_task
 
@@ -166,7 +177,7 @@ HISTORY_V5 = {'runs': 'cohort-runs-v5', 'policy': 'farkas-cohort-v5.json', 'lock
 # v4: the guard failures' preparation/reconstruction IR equality in v6 is its own case, independent of any later success.
 HISTORY_CASES = ('history_v4:population_exact', 'history_v4:seals_and_chains', 'history_v4:verified_certificates',
                  'history_v4:reconstruction_errors', 'history_v4:ledger_dispositions', 'history_v4:preparation_ir_equal_in_v6',
-                 'history_v4:later_outcomes_recorded_in_v6',
+                 'history_v4:later_outcomes_recorded_in_v6', 'history_v4:kernel_reports_bound',
                  'history_v5:population_exact', 'history_v5:seals_and_chains', 'history_v5:qualified_kernel_successes',
                  'history_v5:closer_refusals_recorded', 'history_v5:ledger_dispositions')
 
@@ -244,7 +255,7 @@ def expected_cases(expected):
                   f'{run}:site:original_context_bound', f'{run}:site:renaming_recorded',
                   f'{run}:seal:retained_hashes', f'{run}:publication:recomputed', f'{run}:terminal:commitments_bound',
                   f'{run}:summary:bound_to_audited_records', f'{run}:seal:chain_and_outcome', f'{run}:accounting:recomputed', f'{run}:credential_receipt:recorded',
-                  f'{run}:receipts:payloads_bound_to_records', f'{run}:stages:every_stage_on_the_path_returned']
+                  f'{run}:receipts:payloads_bound_to_records', f'{run}:stages:every_stage_on_the_path_returned', f'{run}:stages:commands_reconstructed']
         if kind == 'interface_refused':
             names += [f'{run}:interface:refused_before_reservation']; continue
         names += [f'{run}:request:regenerated_under_contract', f'{run}:envelope:recomputed_from_contract', f'{run}:pricing:host_admission_rederived',
@@ -258,7 +269,8 @@ def expected_cases(expected):
             names += [f'{run}:transport:local_send_and_remote_receipt', f'{run}:grant:ordered_before_first_header_byte',
                       f'{run}:{kind}:response_bound', f'{run}:{kind}:attribution_passed_through']
         if kind in ('proof', 'reconstruction_refused'):
-            names += [f'{run}:certificate:verified_and_bound', f'{run}:reconstruction:preparation_ir_equal', f'{run}:reconstruction:closer_selected']
+            names += [f'{run}:certificate:verified_and_bound', f'{run}:reconstruction:preparation_ir_equal', f'{run}:reconstruction:evidence_bound',
+                      f'{run}:reconstruction:closer_selected']
         if kind == 'proof':
             names += [f'{run}:proof:certificate_consumed', f'{run}:proof:shared_checker', f'{run}:proof:original_declarations_validated', f'{run}:proof:export_recorded']
         elif kind == 'reconstruction_refused':
@@ -776,6 +788,89 @@ def stage_outcomes(a, run, name, kind, policy):
     a.require(not problems, f'{name}:stages:every_stage_on_the_path_returned', '; '.join(problems))
 
 
+def stage_tools():
+    """The pinned tools every site stage used: the D1 toolchain and environment and the revision 2 bridge, as `consumption_overlay.setup`
+    assembles them, recomputed on this host without building anything."""
+    compiler, exporter, checker = r6.build_tools(task=r6.D1)
+    mounts, lean_path, _ = r6.environment((ROOT.parents[1]/'lean-bridge/.lake/packages').resolve(), compiler, r6.D1)
+    dest = consumption_overlay.DEST; native = dest/'bridge/.lake/build/lib/lean'
+    modules = [native/f'r6_x2dproposal_ProofBroker_{m}.so' for m in BRIDGE_MODULES]
+    ffi = dest/'sdk/_build/default/ffi/proof_broker_ffi.so'; glue = ROOT.parents[1]/'lean-bridge/.lake/build/lib/libpbglue.so'
+    loads = ['--load-dynlib=/broker/lib/glue.so', '--load-dynlib=/broker/lib/ffi.so'] + [f'--load-dynlib=/broker/modules/{m.name}' for m in modules]
+    return {'compiler': compiler, 'exporter': exporter, 'checker': checker, 'loads': loads, 'lean_path': lean_path+':/broker/modules',
+            'mounts': [*mounts, (native, '/broker/modules'), (ffi, '/broker/lib/ffi.so'), (glue, '/broker/lib/glue.so')],
+            'driver': dest/'sdk/_build/default/validate/proposal_driver.exe', 'verifier': dest/'sdk/_build/default/validate/verify_certificate.exe'}
+
+
+def stage_specs(run, task, tools):
+    """Each non-sender stage's (binary, argv, mounts, compiler?, env), exactly as `site_task.prepare`, `cohort_episode.consume` and
+    `site_network.final_validation` pass them to `site_stage.stage`; `run` is the recorded run directory."""
+    T = tools; lean = T['compiler']/'bin/lean'; out = lambda stage: run/'stages'/stage/'output'
+    validation = lambda kind: (T['checker'], ['/challenge.ndjson', '/solution.ndjson', '/policy.json', '/out/verdict.json'],
+                               [(None, '/challenge.ndjson'), (run/'stages/export/export.stdout', '/solution.ndjson'), (run/'validation-input'/kind/'policy.json', '/policy.json')], False, {})
+    return {
+        'preparation-build': (lean, [*T['loads'], '-R', '/input', '-o', '/out/PreparationCapture.olean', '/input/PreparationCapture.lean'],
+                              [*T['mounts'], (run/'preparation-input', '/input')], True, {'LEAN_PATH': T['lean_path']+':/out'}),
+        'preparation': (lean, [*T['loads'], '-R', '/input', '-o', '/out/Frozen.olean', '/input/Frozen.lean'],
+                        [*T['mounts'], (run/'preparation-input', '/input'), (out('preparation-build'), '/capture')], True,
+                        {'LEAN_PATH': T['lean_path']+':/capture', 'R6_CAPTURE_OUTPUT': '/out/context.json', 'R6_PREPARE_OUTPUT': '/out/reification.json'}),
+        'pipeline-prepare': (T['driver'], ['prepare', '/input-ir.json', '/out/prepared.json'], [(run/'input-ir.json', '/input-ir.json')], False, {}),
+        'assembly': (T['driver'], ['assemble', '/prepared.json', '/response.json', 'sha256:'+r6.sha(provider_episode.contract.CONFIG), '/out/evidence.json'],
+                     [(run/'prepared.json', '/prepared.json'), (run/'validated-response.json', '/response.json')], False, {}),
+        'certificate-check': (T['verifier'], ['/evidence.json', '/out/verdict.json'], [(run/'evidence.json', '/evidence.json')], False, {}),
+        'capture-build': (lean, [*T['loads'], '-R', '/input', '-o', '/out/ProposalCapture.olean', '/input/ProposalCapture.lean'],
+                          [*T['mounts'], (run/'input', '/input')], True, {'LEAN_PATH': T['lean_path']+':/out'}),
+        'reconstruct': (lean, [*T['loads'], '-R', '/input', '-o', '/out/Frozen.olean', '/input/Frozen.lean'],
+                        [*T['mounts'], (run/'input', '/input'), (out('capture-build'), '/capture'), (run/'evidence.json', '/evidence.json')], True,
+                        {'LEAN_PATH': T['lean_path']+':/capture', 'R6_PROPOSAL_PACKET': '/evidence.json', 'PROOF_BROKER_EPISODE_TRACE': '1', 'R6_CAPTURE_OUTPUT': '/out/context.json'}),
+        'export': (T['exporter'], ['Frozen', '--', task.whole, task.local, *r6.EXPORT_TARGETS], [*T['mounts'], (out('reconstruct'), '/objects'), (out('capture-build'), '/capture')],
+                   True, {'LEAN_PATH': T['lean_path']+':/capture:/objects'}),
+        'validation-local': validation('local'), 'validation-whole': validation('whole')}
+
+
+SANDBOX = ['bwrap', '--unshare-all', '--die-with-parent', '--new-session', '--cap-drop', 'ALL',
+           '--clearenv', '--setenv', 'PATH', '/no-programs', '--setenv', 'LEAN_ABORT_ON_PANIC', '1',
+           '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
+           '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/work', '--chdir', '/work']
+LIBRARY_BLOCKS = {}
+
+
+def stage_commands(a, run, name, kind, task, tools, root):
+    """Every non-sender stage's recorded command, rebuilt as `site_stage.stage` builds it from that stage's call and compared exactly. The
+    one host-dependent part, the shared-library closure, must be system libraries mounted at their own paths and equal for the same stage
+    across runs; the challenge is the verified temporary copy, one file for both replays."""
+    problems = []; recorded_root = Path(root+RUNS)/name; challenge = {}
+    specs = stage_specs(recorded_root, task, tools)
+    for stage in sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()):
+        if stage == 'proposal-1': continue  # the sender: `command:reconstructed_from_pinned_runtime_and_layout`
+        cmd = load(run/'stages'/stage/'command.json'); argv = cmd['argv']
+        if stage not in specs or cmd['run'] != str(recorded_root) or cmd['stage'] != stage: problems.append(stage+': identity'); continue
+        binary, args, mounts, compiled, env = specs[stage]
+        if stage.startswith('validation-'):
+            hits = [i for i, x in enumerate(argv) if x == '/challenge.ndjson' and argv[i-2] == '--ro-bind']
+            source = Path(argv[hits[0]-1]) if len(hits) == 1 else None
+            if source is None or source.name != 'challenge.ndjson' or not source.parent.name.startswith('r6-campaign-challenge-') or str(source).startswith(root):
+                problems.append(stage+': challenge'); continue
+            challenge[stage] = source; mounts = [(source, g) if h is None else (h, g) for h, g in mounts]
+        compiler = tools['compiler'] if compiled else None
+        head = list(SANDBOX)
+        if compiler:
+            head += ['--ro-bind', str(compiler/'lib'), '/toolchain/lib', '--ro-bind', str(compiler/'bin/lean'), '/toolchain/bin/lean',
+                     '--setenv', 'LEAN_SYSROOT', '/toolchain', '--setenv', 'LD_LIBRARY_PATH', '/toolchain/lib/lean:/toolchain/lib']
+        program = '/toolchain/bin/program' if compiler else '/runner/bin/program'
+        tail = [x for host, guest in mounts for x in ('--ro-bind', str(Path(host).resolve()), guest)]
+        tail += [x for k, v in env.items() for x in ('--setenv', k, v)]
+        tail += ['--ro-bind', str(binary), program, '--bind', str(recorded_root/'stages'/stage/'output'), '/out', program, *args]
+        libraries = argv[len(head):len(argv)-len(tail)]
+        well_formed = (argv[:len(head)] == head and argv[len(argv)-len(tail):] == tail and len(libraries) % 3 == 0
+                       and all(libraries[i] == '--ro-bind' and libraries[i+1].startswith('/usr/lib/') and libraries[i+2].startswith(('/usr/lib/', '/usr/lib64/'))
+                               for i in range(0, len(libraries), 3)))
+        if not well_formed: problems.append(stage+': command differs from its rebuilt form'); continue
+        if LIBRARY_BLOCKS.setdefault(stage, libraries) != libraries: problems.append(stage+': library closure differs across runs')
+    if len(set(challenge.values())) > 1: problems.append('the two replays read different challenge copies')
+    a.require(not problems, f'{name}:stages:commands_reconstructed', '; '.join(problems))
+
+
 def payload_receipts(a, run, name, kind, rows, sp, task, permit, reconciliation, http, admission, frozen):
     nonce = load(run/'credential-canary.json')['nonce']; problems = []
     def expect(stage, event, value, drop=()):
@@ -1071,6 +1166,63 @@ def merged_directives(ir):
     return ir
 
 
+BRIDGE_MODULES = ('IR', 'Trace', 'Bridge', 'TermMode', 'Alethe', 'Tactic')
+
+
+def no_extension_registered(run):
+    """The pinned registry `reifierExt` starts empty and is set only by `ProofBrokerMathlib`: the reconstruction loads exactly the six core
+    bridge modules and neither of its inputs imports the extension."""
+    argv = load(run/'stages/reconstruct/command.json')['argv']
+    loads = [x for x in argv if x.startswith('--load-dynlib=')]
+    expected = ['--load-dynlib=/broker/lib/glue.so', '--load-dynlib=/broker/lib/ffi.so'] + [f'--load-dynlib=/broker/modules/r6_x2dproposal_ProofBroker_{m}.so' for m in BRIDGE_MODULES]
+    imports = [l for f in ('input/Frozen.lean', 'input/ProposalCapture.lean') for l in (run/f).read_text().splitlines() if l.startswith('import ')]
+    return loads == expected and not any('ProofBrokerMathlib' in l for l in imports)
+
+
+def pinned_closer(ir, cert, extension=False):
+    """`runTermModeOnGoal`'s branch at e627efe for this IR and certificate: `natModeOf` (a ℕ free variable or a `nat_nonlinear_atom` goal
+    payload), then `polyModeOf` (type variables), then the case-split hint, then the extension's fragment, else the core ℤ closer. None
+    where the pinned code throws before any closer (a case split over ℕ or α, or an extension path with no extension registered)."""
+    payloads = ir['goal'].get('payloads') or {}
+    nat = any(v.get('type') == 'Nat' for v in ir['context']['free_vars']) or \
+          any(isinstance(v, dict) and v.get('kind') == 'nat_nonlinear_atom' for v in (payloads.values() if isinstance(payloads, dict) else ()))
+    hint = ((cert.get('payload') or {}).get('strategy_hint')) or ''
+    if nat: return None if hint == 'case_split_farkas' else 'term_mode_nat'
+    if ir['context'].get('type_vars'): return None if (hint == 'case_split_farkas' or not extension) else 'term_mode_poly'
+    if hint == 'case_split_farkas': return 'term_mode_case_split' if extension else None
+    return 'term_mode_int'  # no extension: the core ℤ closer, whatever the fragment
+
+
+def kernel_reports(task, verdict, path, read, receipt, frozen):
+    """The retained raw replay reports, normalized as `final_validation` normalizes them, equal to the verdict and to both kernel receipts;
+    each names the expected declaration, is accepted, keeps the frozen type and adds no axiom. Returns the problems found."""
+    baseline = {t['name']: t for t in frozen['targets']}; problems = []; delta = {}
+    for kind, target, config_policy in [('local', task.local, episode.local_policy(task)), ('whole', task.whole, r6.policy([task.whole], True, task=task))]:
+        try:
+            if read(f'validation-input/{kind}/policy.json') != config_policy: problems.append(kind+': validation policy'); continue
+            with gzip.open(path(f'validation-{kind}.raw.json.gz'), 'rb') as f: raw = f.read(4*1024**2+1)
+            report = json.loads(raw)
+            if len(raw) > 4*1024**2 or len(report['targets']) != 1: problems.append(kind+': report shape'); continue
+            t = report['targets'][0]; t['type_sha256'] = hashlib.sha256(t.pop('type_repr').encode()).hexdigest(); t['type_hash_format'] = 'Lean-4.32.2-reprStr-Expr-UTF8'
+            if not (report['accepted'] is True and report['stage'] == 'complete' and report['kernel_version'] == '4.32.2' and report['local_proof_binding_checked'] is True
+                    and report['checked_declarations'] > 0 and t['name'] == target and all(t[k] is True for k in ('declaration_exists', 'statement_and_dependencies_match', 'kernel_accepted'))
+                    and t['type_sha256'] == baseline[target]['type_sha256'] and set(t['axioms']) <= set(r6.AXIOMS)):
+                problems.append(kind+': report content')
+            if not (report == verdict['final_validation'][kind] == receipt('validation-'+kind, 'kernel_verdict')): problems.append(kind+': report, verdict and receipt differ')
+            delta[target] = {'added': sorted(set(t['axioms'])-set(baseline[target]['axioms'])), 'removed': sorted(set(baseline[target]['axioms'])-set(t['axioms']))}
+        except (OSError, KeyError, ValueError, EOFError, gzip.BadGzipFile) as error: problems.append(f'{kind}: {type(error).__name__}: {error}')
+    if verdict['axiom_delta'] != delta or any(v != {'added': [], 'removed': []} for v in delta.values()): problems.append('axiom delta')
+    return problems
+
+
+def receipts_of(rows):
+    def receipt(stage, event):
+        hits = [r['payload'] for r in rows if r['source'] == 'supervisor' and r['stage'] == stage and r['event'] == event]
+        if len(hits) != 1: raise ValueError(f'{stage}/{event}: {len(hits)} receipts')
+        return hits[0]
+    return receipt
+
+
 def site_shared_checker(task, packet, verdict, rows, path, read, receipt):
     """`envelope_proof_audit.audit` (the frozen R6-001 proof-path checks), with the site's frozen identity and instrumentation in place of
     the registered task's; the reification comparison uses the tactic's directive merge, which creates the directive record when absent."""
@@ -1105,27 +1257,13 @@ def site_shared_checker(task, packet, verdict, rows, path, read, receipt):
                 and path(f'{directory}/{helper}.lean').read_text() == site_task.capture_source(task, preparation), 'source differs from permitted extraction')
         require(path(f'{directory}/source.patch').read_text() == ''.join(difflib.unified_diff(
             pristine.splitlines(True), source.splitlines(True), fromfile='Pristine.lean', tofile='Frozen.lean')), 'reported source modification differs')
-    baseline = {t['name']: t for t in expected['targets']}
     delta = {}; digest = hashlib.sha256(); length = 0
     with gzip.open(path('solution.ndjson.gz'), 'rb') as f:
         while block := f.read(1024**2):
             length += len(block); require(length <= 256*1024**2, 'proof export exceeds budget'); digest.update(block)
     require(digest.hexdigest() == verdict['solution_sha256'], 'proof hash mismatch')
-    for kind, target, config_policy in [('local', task.local, episode.local_policy(task)), ('whole', task.whole, r6.policy([task.whole], True, task=task))]:
-        require(read(f'validation-input/{kind}/policy.json') == config_policy, 'validation policy changed')
-        with gzip.open(path(f'validation-{kind}.raw.json.gz'), 'rb') as f: raw_report = f.read(4*1024**2+1)
-        require(len(raw_report) <= 4*1024**2, 'oversized replay report')
-        report = json.loads(raw_report)
-        require(report['accepted'] is True and report['stage'] == 'complete' and report['kernel_version'] == '4.32.2'
-                and report['local_proof_binding_checked'] is True and report['checked_declarations'] > 0, 'independent kernel/reference check failed')
-        require(len(report['targets']) == 1 and report['targets'][0]['name'] == target, 'missing expected declaration')
-        t = report['targets'][0]
-        require(all(t[k] is True for k in ['declaration_exists', 'statement_and_dependencies_match', 'kernel_accepted']), 'target validation')
-        t['type_sha256'] = hashlib.sha256(t.pop('type_repr').encode()).hexdigest(); t['type_hash_format'] = 'Lean-4.32.2-reprStr-Expr-UTF8'
-        require(t['type_sha256'] == baseline[target]['type_sha256'] and set(t['axioms']) <= set(r6.AXIOMS), 'frozen type/axiom policy')
-        require(report == verdict['final_validation'][kind] == receipt('validation-'+kind, 'kernel_verdict'), 'replay report/receipt mismatch')
-        delta[target] = {'added': sorted(set(t['axioms'])-set(baseline[target]['axioms'])), 'removed': sorted(set(baseline[target]['axioms'])-set(t['axioms']))}
-    require(verdict['axiom_delta'] == delta, 'axiom delta mismatch')
+    problems = kernel_reports(task, verdict, path, read, receipt, expected)
+    require(not problems, 'replay reports: '+', '.join(problems))
 
 
 def reconstruction_common(a, run, name, rows, sp, request_bytes, record, response, kind):
@@ -1148,12 +1286,27 @@ def reconstruction_common(a, run, name, rows, sp, request_bytes, record, respons
     reified, dispatched = observed['reification_finished']['ir'], observed['dispatch_started']['ir']
     a.require(merged_directives(reified) == evidence['input_ir'] == load(run/'input-ir.json') == load(run/'prepared.json')['input_ir'] == dispatched
               and GUARD.encode() not in log, f'{name}:reconstruction:preparation_ir_equal')
-    selected = [r['payload']['data'] for r in rows if r['source'] == 'child_report' and r['event'] == 'closer_selected']
+    # every observation the bridge made is bound to this run's packet, on the refused path as on the proof path (review finding 1)
+    children = [r for r in rows if r['source'] == 'child_report']; cert = evidence['certificate']; problems = []
+    start = next(r['sequence'] for r in rows if r['stage'] == 'reconstruct' and r['event'] == 'stage_started')
+    finish = next(r['sequence'] for r in rows if r['stage'] == 'reconstruct' and r['event'] == 'stage_finished')
+    if [r['event'] for r in children][:len(RECONSTRUCTED)] != list(RECONSTRUCTED): problems.append('observation sequence')
+    if not all(start < r['sequence'] < finish and r['stage'] == 'reconstruct' and r['payload']['component'] == 'lean_bridge' for r in children): problems.append('child boundary')
+    if not (observed['dispatch_started']['manifests'] == [] and observed['dispatch_started']['prefer_higher_tier'] is False): problems.append('dispatch settings')
+    received = observed['dispatch_received']
+    if not (received['certificate'] == cert and received['final_ir'] == evidence['final_ir'] and received['trace'] == evidence['trace']): problems.append('dispatch evidence')
+    if evidence['final_ir'] != load(run/'prepared.json')['final_ir']: problems.append('packet final IR is not the prepared one')
+    for event in ('certificate_verification_started', 'certificate_verification_finished', 'reconstruction_started', 'closer_selected', 'reconstruction_finished'):
+        if event in observed and observed[event]['certificate'] != cert: problems.append('certificate at '+event)
     verification = observed['certificate_verification_finished']
-    a.require(len(selected) == 1 and selected[0]['certificate'] == evidence['certificate'] == observed['reconstruction_started']['certificate']
-              and verification['ok'] is True and verification['envelope_ok'] is True and verification['certificate'] == evidence['certificate']
-              and isinstance(selected[0]['goal'], str) and selected[0]['closer'] in ('term_mode_nat', 'term_mode_int', 'term_mode_poly', 'term_mode_case_split', 'term_mode_ext'),
-              f'{name}:reconstruction:closer_selected', str(selected)[:300])
+    if not (verification['ok'] is True and verification['envelope_ok'] is True): problems.append('bridge verification')
+    a.require(not problems, f'{name}:reconstruction:evidence_bound', ', '.join(problems))
+    # the closer the pinned dispatch selects for this IR and certificate, derived, not read from the observations (review finding 2)
+    selected = [r['payload']['data'] for r in children if r['event'] == 'closer_selected']
+    extension = not no_extension_registered(run)
+    derived = pinned_closer(dispatched, cert, extension)
+    a.require(len(selected) == 1 and not extension and derived is not None and selected[0]['closer'] == derived and isinstance(selected[0]['goal'], str),
+              f'{name}:reconstruction:closer_selected', f'derived {derived}, observed {selected}'[:300])
     return evidence, observed, selected[0]
 
 
@@ -1365,6 +1518,15 @@ def history_v4(a, v4_root, ledgers, expected_v6, v6_cases):
         else: ok = False
         outcomes[site] = k if ok else f'{k} (unverified)'
     a.require(all(not v.endswith('(unverified)') for v in outcomes.values()) and len(outcomes) == 6, 'history_v4:later_outcomes_recorded_in_v6', str(outcomes))
+    problems = []
+    for n, (kind, site) in population.items():
+        if kind != 'proof': continue
+        run = v4_root/n; verdict = load(run/'verdict.json'); task = site_task.get(site)
+        reports = kernel_reports(task, verdict, lambda f, r=run: r/f, lambda f, r=run: load(r/f), receipts_of(rows_by[n]), site_task.frozen_site(task)[1])
+        proved = next((r['payload'] for r in rows_by[n] if r['event'] == 'proof_validated'), None)
+        if reports or verdict['task_id'] != site or proved != {'verdict_sha256': sha((run/'verdict.json').read_bytes()), 'proof_accepted': True, 'solution_sha256': verdict['solution_sha256']}:
+            problems.append(f'{n}: '+', '.join(reports or ['verdict identity or receipt']))
+    a.require(not problems, 'history_v4:kernel_reports_bound', '; '.join(problems))
     result.update(superseded=True, preparation_repaired=repaired, later_outcomes_in_v6=outcomes,
                   qualification='v4 is superseded (v5 supersedes it; v6 supersedes v5); its records are audited as retained, not as invalid')
     return result
@@ -1399,9 +1561,13 @@ def history_v5(a, v5_root, ledgers):
         rows = rows_by[n]; children = [r['event'] for r in rows if r['source'] == 'child_report']
         if 'closer_selected' in children: problems.append(n+': a v5 record carries a closer selection')
         if kind in ('proof', 'kernel_success_unreceipted'):
-            verdict = load(v5_root/n/'verdict.json'); summary = load(v5_root/n/'credential-summary.json')
-            replayed = all(verdict['final_validation'][k]['accepted'] is True for k in ('local', 'whole')) and summary['proof_accepted'] is True \
-                       and all(v == {'added': [], 'removed': []} for v in verdict['axiom_delta'].values())
+            verdict = load(v5_root/n/'verdict.json'); summary = load(v5_root/n/'credential-summary.json'); task = site_task.get(site)
+            reports = kernel_reports(task, verdict, lambda f, r=v5_root/n: r/f, lambda f, r=v5_root/n: load(r/f), receipts_of(rows), site_task.frozen_site(task)[1])
+            proved = next((r['payload'] for r in rows if r['event'] == 'proof_validated'), None)
+            replayed = not reports and summary['proof_accepted'] is True and verdict['task_id'] == site and verdict['local_obligation_closed'] is True \
+                       and verdict['whole_declaration_validated'] is True and proved == {'verdict_sha256': sha((v5_root/n/'verdict.json').read_bytes()),
+                                                                                         'proof_accepted': True, 'solution_sha256': verdict['solution_sha256']}
+            if reports: problems.append(f'{n}: '+', '.join(reports))
             receipted = 'reconstruction_finished' in children
             if kind == 'proof' and not (replayed and receipted): problems.append(n)
             if kind == 'kernel_success_unreceipted':
@@ -1466,7 +1632,7 @@ def strata(classes, expected, runs):
 
 def audit(root, ledgers, representability=None, v4_root=None, v5_root=None):
     representability = representability or ROOT/REPRESENTABILITY; v4_root = v4_root or ROOT/HISTORY_V4['runs']; v5_root = v5_root or ROOT/HISTORY_V5['runs']
-    a = Audit(); result = {'runs': {}}
+    a = Audit(); result = {'runs': {}}; LIBRARY_BLOCKS.clear(); tools = stage_tools()
     classes = eligibility(a, representability)
     try: expected = derive_population(classes); derived = len({t for (_, t, _, _) in expected.values()}) == 15
     except ValueError as error: a.require(False, 'population:derived_from_eligibility', str(error))
@@ -1516,6 +1682,7 @@ def audit(root, ledgers, representability=None, v4_root=None, v5_root=None):
         accounting(a, run, name, kind, run_policy, http, permit, reconciliation)
         payload_receipts(a, run, name, kind, rows, sp, task, permit, reconciliation, http, None, frozen)
         stage_outcomes(a, run, name, kind, run_policy)
+        stage_commands(a, run, name, kind, task, tools, load(run/'provenance/roles.json')['actor_source'].removesuffix('cohort_https.py'))
         solution = closer = None
         if kind in SENT:
             response = response_bound(a, run, name, kind, request_bytes); attribution(a, run, name, kind, rows, sp)

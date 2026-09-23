@@ -5,6 +5,9 @@ Before is representability revision 2 (the frozen R6-001 preparation overlay); a
 equals revision 3's byte for byte). For each site: the input IR's differing top-level fields and user directives, the renamed search
 context, the Farkas rows (equal, equal up to names, or different), the policy C request before and after (or its refusal), and whether
 the classification changed. Nothing is inferred from outcomes.
+
+Revision 2 (R6-013 review): the request comparison records every differing JSON path, and separates requests that differ only in their
+IR bindings from requests whose problem rows also differ (renamed row variables).
 """
 import argparse
 import json
@@ -28,8 +31,17 @@ def request(task, run):
     try: body, evidence = budget.request(task, r6.read_json(path))
     except site_request.Refusal as refusal: return {'posed': False, 'code': refusal.code}
     value = json.loads(body)
-    return {'posed': True, 'request_sha256': r6.hashlib.sha256(body).hexdigest(), 'row_names': [r['name'] for r in value['problem']['rows']],
+    return {'posed': True, 'value': value, 'request_sha256': r6.hashlib.sha256(body).hexdigest(), 'row_names': [r['name'] for r in value['problem']['rows']],
             'binding_input_ir_sha256': value['binding']['input_ir_sha256'], 'omitted': evidence['omitted_names']}
+
+
+def paths(a, b, at=''):
+    """Every JSON path at which `a` and `b` differ."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        return [x for k in sorted(set(a) | set(b)) for x in paths(a.get(k), b.get(k), f'{at}.{k}' if at else k)]
+    if isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+        return [x for i, (u, v) in enumerate(zip(a, b)) for x in paths(u, v, f'{at}[{i}]')]
+    return [] if a == b else [at]
 
 
 def site(site_id):
@@ -50,7 +62,11 @@ def site(site_id):
         record['rows'] = {'prepared_before': (a/'prepared.json').exists(), 'prepared_after': (b/'prepared.json').exists()}
     before, after = request(task, a), request(task, b)
     posed = before['posed'] and after['posed']  # None: not posed on both sides, so there are no bytes to compare
-    record['request'] = {'before': before, 'after': after, 'bytes_equal': before['request_sha256'] == after['request_sha256'] if posed else None}
+    differing = paths(before['value'], after['value']) if posed else None
+    for side in (before, after): side.pop('value', None)
+    record['request'] = {'before': before, 'after': after, 'bytes_equal': before['request_sha256'] == after['request_sha256'] if posed else None,
+                         'differing_paths': differing,
+                         'rows_differ': None if differing is None else any(x.startswith('problem.') for x in differing)}
     return record
 
 
@@ -66,10 +82,13 @@ def main():
                'rows_changed_in_meaning': sorted(s for s, r in sites.items() if 'equal_up_to_names' in r['rows'] and not r['rows']['equal_up_to_names']),
                'renamed': {s: [(e['original_name'], e['search_name']) for e in r['renamed']] for s, r in sites.items() if r['renamed']},
                'request_changed': sorted(s for s, r in sites.items() if r['request']['bytes_equal'] is False),
+               'request_changed_bindings_only': sorted(s for s, r in sites.items() if r['request']['bytes_equal'] is False and not r['request']['rows_differ']),
+               'request_changed_rows_too': {s: [x for x in r['request']['differing_paths'] if x.startswith('problem.')]
+                                            for s, r in sites.items() if r['request']['rows_differ']},
                'request_posed_only_after': sorted(s for s, r in sites.items() if r['request']['after']['posed'] and not r['request']['before']['posed']),
                'request_not_posed': sorted(s for s, r in sites.items() if not r['request']['after']['posed']),
                'class_changed': {s: [r['class_before'], r['class_after']] for s, r in sites.items() if r['class_before'] != r['class_after']}}
-    r6.write_json(args.output, {'schema_version': 'r6-preparation-differences-1', 'before': str(BEFORE.relative_to(ROOT)), 'after': str(AFTER.relative_to(ROOT)),
+    r6.write_json(args.output, {'schema_version': 'r6-preparation-differences-2', 'before': str(BEFORE.relative_to(ROOT)), 'after': str(AFTER.relative_to(ROOT)),
                                 'summary': summary, 'sites': sites, 'program_sha256': r6.sha(Path(__file__)),
                                 'scope': 'retained classification runs only; no native execution'})
     print(json.dumps(summary, indent=1))
