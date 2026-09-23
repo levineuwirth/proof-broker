@@ -1,31 +1,121 @@
 # Proof Broker
 
-Implementation work tracking the Proof Brokerage Architecture spec
-v1.0 as amended by the v1.1 delta (`delta.md §7`; TeX sources in
-`spec/`). v1 brokers proof goals from Lean 4 and Rocq through an
-intermediate representation, an IR rewriter, and per-backend adapters
-to SMT solvers, ATPs, and LLM provers, then verifies returned
-certificates and lifts the resulting proof terms back to the home
-system. The v1.0 roadmap and refcard live in `spec/`, with the
-R-series roadmap v1.1 (`spec/roadmap-v1.1.md`) that supersedes the
-v1.0 phase sequence; `delta.md` records post-spec engineering
-decisions (notably the OCaml language flip) and the per-phase
-decision records.
+Proof Broker lets Lean 4 and Rocq use untrusted automation — SMT
+solvers, a saturation prover, and language models — without trusting
+it. A goal leaves the proof assistant through a shared intermediate
+representation; what comes back is not a verdict but a *certificate*
+with a graded trust tier. The broker verifies the certificate, and the
+home kernel checks the proof term built from it. Nothing behind that
+boundary joins the trusted base.
 
-> **R4 demo — 19/19 on VerInf.** In a real downstream consumer —
-> [VerInf](https://github.com/JamesPetrie/VerInf)'s softmax-bracket
-> spike, statements untouched — 19 of 19 targeted Lean obligations
-> close through the broker: external search (cvc4 / cvc5 / z3), every
-> certificate checked before Lean accepts the result, everything
-> within the sanctioned axiom ceiling *(the count is the demo's
-> generated one: `tools/obligation_table.py` over the `reference/one/`
-> probe logs, 2026-09-05, demo commit `f208e97`)*. Evidence and
-> generated tables:
-> [proof-broker-demo](https://github.com/levineuwirth/proof-broker-demo);
-> signed release:
-> [`r4`](https://github.com/levineuwirth/proof-broker/releases/tag/r4).
+```lean
+import ProofBroker
 
-## Status
+def P : Nat := 18446744069414584321
+
+-- From VerInf's softmax-bracket spike (Bracket.lean:70).
+theorem hle (Zmax : Nat) (hZ : Zmax ≤ 2^16) :
+    (2:Nat)^24 + 2 * Zmax ≤ P := by
+  proof_broker_term
+```
+
+cvc4 answers `unsat` in milliseconds and produces no proof. The broker
+recovers a Farkas witness consistent with that verdict — the bound on
+`Zmax` taken twice, the negated goal once — checks that the weighted
+sum is contradictory before minting a certificate, and Lean builds the
+proof term from those same coefficients. Had the solver been wrong, the
+error would have stopped at the certificate check or at the kernel.
+
+## Why
+
+Using external search without trusting it is established practice:
+Isabelle's `sledgehammer` reconstructs what external provers return,
+and SMTCoq checks SMT proof witnesses in Coq. F* sits at the other
+extreme and trusts its SMT encoding and solver outright. Proof Broker
+generalizes the first approach into one boundary shared by several
+home systems and several backends:
+
+- **One interface.** A single IR and certificate format, so *N* home
+  systems and *M* backends need *N* + *M* adapters rather than *N* × *M*
+  bridges.
+- **Graded evidence.** Every result records its tier: a replayable
+  proof trace (Tier 3), a Farkas witness or its case-split extension
+  (Tiers 1–2), or only a verdict in an integrity envelope (Tier 0). The
+  tier grades the evidence, not the backend; trust in the backend is
+  zero at every tier.
+- **Synthesized certificates.** A backend need not speak the
+  certificate language natively; the broker can recover a checkable
+  certificate from a bare verdict, as in the example above.
+- **Lifting.** Certificates survive the broker's own rewrites (ℕ→ℤ
+  specialization, polymorphic instantiation, definition unfolding):
+  refinement records carry each rewrite so the proof is lifted back to
+  the original goal.
+
+## Where trust lives
+
+```mermaid
+flowchart LR
+  subgraph KC["kernel-checked — the only logical TCB"]
+    G[Lean goal]
+    PT["final proof term"] --> KRN["Lean kernel"]
+  end
+  subgraph B["broker machinery — unprivileged"]
+    R[reification] --> IR["IR + rewrite trace"] --> DP[dispatch]
+    CV{{"certificate verification<br/>(acceptance boundary)"}} --> RC["reconstruction / closer"]
+  end
+  subgraph U["untrusted search"]
+    S["cvc4 / cvc5 / z3<br/>(or Vampire, or an LLM)"]
+  end
+  G --> R
+  DP --> S
+  S -->|"certificate<br/>(tier + provenance)"| CV
+  RC --> PT
+```
+
+Certificate verification is the acceptance boundary: a candidate that
+fails it never reaches a closer. The broker machinery itself is
+deliberately outside the logical trusted base. Every closer ends in an
+ordinary term the kernel checks, the FFI returns data rather than
+proofs, and an axiom guard on every build refuses `sorry`-bearing
+axioms and `native_decide`. A broker bug could admit a bad candidate
+past the boundary, but it cannot make Lean accept a false theorem.
+
+## Result: a real downstream consumer
+
+On [VerInf](https://github.com/JamesPetrie/VerInf)'s softmax-bracket
+spike, with its statements untouched, 19 of 19 targeted Lean
+obligations close through the broker, each certificate checked before
+Lean accepts the result and every theorem within Lean's standard axioms.
+The certificates span the ladder: four close in term mode from Farkas
+witnesses, five replay cvc5 proof traces step by step, nine close
+through certificate-gated `omega`, and one rides a Tier 0 verdict,
+reported as such. Integrating the unmodified file also exposed three
+defects the broker's own test suite had missed. *(The count is the
+demo's generated one: `tools/obligation_table.py` over the
+`reference/one/` probe logs, 2026-09-05, demo commit `f208e97`.)*
+
+Evidence and generated tables:
+[proof-broker-demo](https://github.com/levineuwirth/proof-broker-demo) ·
+signed release: [`r4`](https://github.com/levineuwirth/proof-broker/releases/tag/r4) ·
+write-up: [Separating Proof Search from Trust](https://levineuwirth.org/essays/proof-broker/).
+
+## Current work
+
+Language models as certificate proposers. Rather than asking a model
+for a proof, the broker asks it for a certificate — so far, a Farkas
+witness over named arithmetic rows — which is verified before any proof
+is built and then consumed by a fixed reconstruction tactic. The
+evaluation treats certificate validity, consumption, and kernel
+acceptance as separate outcomes, fixes its population before any run is
+read, and asks what a learned proposal adds beyond deterministic search.
+
+## Project status
+
+This repository implements the Proof Brokerage Architecture spec v1.0
+as amended by the v1.1 delta (`delta.md §7`; TeX sources in `spec/`).
+The R-series roadmap v1.1 (`spec/roadmap-v1.1.md`) supersedes the v1.0
+phase sequence; `delta.md` records post-spec engineering decisions
+(notably the OCaml language flip) and the per-phase decision records.
 
 What ships is a sound, gated, multi-backend **certificate-gated
 re-proving** system: goals from Lean 4 and Rocq are reified into the
@@ -73,7 +163,7 @@ The table and the note under it are generated by `python3
 tools/status_table.py` from the committed JSON / source files it names
 (`--check` in the schemas CI job fails if this copy drifts; `--write`
 refreshes it). It is the only place this README states a count of
-this repository's own surfaces; the R4 demo callout above carries the
+this repository's own surfaces; the downstream result above carries the
 demo repository's generated count, with its provenance and date
 inline.
 
