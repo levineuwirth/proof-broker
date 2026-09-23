@@ -5,6 +5,11 @@ Each control mutates a fresh copy of the retained runs (`census-runs/determinist
 guarded by the chain and seal, re-chains and re-seals the copy with the production `site_network.seal`, as a coherent forger would; the
 copy must be rejected at exactly the named case. The baseline copy must be accepted. Included: the review's two probes (an empty population;
 l070's local type digest zeroed with the verdict, outcome, summary, terminal event and seal re-bound) and a raw report changed coherently.
+
+Revision 2 (R6-014 revision 2 review): the review's probes — a zero witness at every certificate-bearing observation of a refused run
+(whose packet the independent checker is first shown to reject), a relabelled closer on a refused run, a verification observation carrying
+another certificate on a proof, a non-empty search workload, a proof exit code other than zero, and another site's export substituted
+for a proof's solution — each coherently re-chained and re-sealed.
 """
 import argparse
 import gzip
@@ -54,8 +59,18 @@ EXPECTED = {
     'unlisted_file_added': f'{REFUSED}:seal:every_retained_file_at_its_digest',
     'solution_replaced_resealed': f'{PROOF}:proof:solution_bound',
     'summary_cost_changed': f'{PROOF}:outcome:record_bound',
+    # revision 2
+    'refused_zero_witness_resealed': f'{REFUSED}:search:observations_bound',
+    'refused_closer_relabelled_resealed': f'{REFUSED}:search:observations_bound',
+    'verification_observation_certificate_altered_resealed': f'{PROOF}:search:observations_bound',
+    'search_workload_not_emptied_resealed': f'{PROOF}:search:terminated_cleanly',
+    'proof_search_exit_nonzero_resealed': f'{PROOF}:search:terminated_cleanly',
+    'solution_from_other_site_resealed': f'{PROOF}:proof:solution_bound',
 }
+ZERO_WITNESS = [{'hypothesis': 'neg_goal', 'coefficient': '0'}]
+PRECONDITIONS = {}  # recorded positive preconditions of the controls that need one
 CONTROLS = ('baseline', *EXPECTED)
+TOOLS = []
 
 
 def J(p): return json.loads(Path(p).read_bytes())
@@ -164,6 +179,35 @@ def mutate(name, root):
         p = root/PROOF/'solution.ndjson.gz'
         with gzip.open(p, 'ab') as f: f.write(b'\n')
         rebind(root, PROOF)
+    elif name == 'refused_zero_witness_resealed':
+        def change(rows):
+            count = 0
+            for row in rows:
+                cert = row['payload'].get('data', {}).get('certificate')
+                if cert and cert.get('tier') == 1 and cert.get('format') == 'farkas':
+                    cert['payload']['witness_data']['coefficients'] = ZERO_WITNESS; count += 1
+            assert count >= 3
+        rebind(root, REFUSED, change)
+        rows = events.read(root/REFUSED/'events.ndjson'); data = {r['event']: r['payload']['data'] for r in rows if r['source'] == 'child_report'}
+        packet = {'certificate': data['dispatch_received']['certificate'], 'input_ir': data['dispatch_started']['ir'],
+                  'final_ir': data['dispatch_received']['final_ir'], 'trace': data['dispatch_received']['trace']}
+        check = audit.verifier_on_packet(TOOLS[0], packet); assert check['accepted'] is False, check  # the precondition: the checker rejects it
+        PRECONDITIONS[name] = {'independent_check_accepted': check['accepted'], 'reason': check.get('reason') or check.get('error')}
+    elif name == 'refused_closer_relabelled_resealed':
+        outcome = J(root/REFUSED/'outcome.json'); outcome['closer'] = 'term_mode_int'; W(root/REFUSED/'outcome.json', outcome)
+        rebind(root, REFUSED, lambda rows: child(rows, 'closer_selected')['payload']['data'].__setitem__('closer', 'term_mode_int'))
+    elif name == 'verification_observation_certificate_altered_resealed':
+        rebind(root, PROOF, lambda rows: child(rows, 'certificate_verification_finished')['payload']['data']['certificate']['payload']['witness_data'].__setitem__('coefficients', ZERO_WITNESS))
+    elif name in ('search_workload_not_emptied_resealed', 'proof_search_exit_nonzero_resealed'):
+        p = root/PROOF/'stages/search/search.process.json'; process = J(p)
+        if name == 'search_workload_not_emptied_resealed': process['workload_empty_after_cleanup'] = False
+        else: process['exit_code'] = 7
+        W(p, process); rebind(root, PROOF, lambda rows: receipt(rows, 'search', 'stage_finished').__setitem__('payload', process))
+    elif name == 'solution_from_other_site_resealed':
+        import hashlib
+        with gzip.open(broker.RUNS/ARM/'bracket-l069/solution.ndjson.gz', 'rb') as f: other = f.read()
+        with gzip.open(root/PROOF/'solution.ndjson.gz', 'wb') as f: f.write(other)
+        verdict = J(root/PROOF/'verdict.json'); verdict['solution_sha256'] = hashlib.sha256(other).hexdigest(); W(root/PROOF/'verdict.json', verdict); rebind(root, PROOF)
     elif name == 'summary_cost_changed':
         summary = J(root/'deterministic.json'); summary['results'][ARM]['bracket-l070']['resources']['wall_seconds'] += 1; W(root/'deterministic.json', summary)
     else: raise AssertionError(name)
@@ -182,6 +226,7 @@ def main():
     args = parser.parse_args()
     if args.output.exists(): raise SystemExit('Refusing to overwrite: '+str(args.output))
     tools = broker.tools_for(ROOT.parents[1]/'lean-bridge/.lake/packages')  # built once; every audit uses these
+    TOOLS.append(tools)
     results = {}
     with patch.object(broker, 'tools_for', lambda packages: tools):
         for name in CONTROLS:
@@ -195,7 +240,7 @@ def main():
                 results[name] = observed; print(name, observed.get('rejected_case') or observed, flush=True)
     if args.only: print(json.dumps({'trial': True, 'controls': len(results)})); return
     assert tuple(results) == CONTROLS
-    r6.write_json(args.output, {'passed': True, 'controls': len(results), 'results': results, 'baseline_cases': results['baseline']['case_count'],
+    r6.write_json(args.output, {'passed': True, 'controls': len(results), 'results': results, 'baseline_cases': results['baseline']['case_count'], 'preconditions': PRECONDITIONS,
                                 'auditor_sha256': r6.sha(Path(__file__).with_name('deterministic_audit.py')), 'program_sha256': r6.sha(Path(__file__)),
                                 'scope': 'temporary copies; one relationship per mutation; coherent re-chaining and re-sealing where the relationship is sealed'})
     print(json.dumps({'passed': True, 'controls': len(results)}, indent=1))

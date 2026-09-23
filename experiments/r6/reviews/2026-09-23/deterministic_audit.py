@@ -20,6 +20,19 @@ summary they were checking and never derived a verdict from its raw replay repor
 * **outcome record**: the costs recomputed, the verdict digest, the summary entry, the terminal event and the seal's acceptance.
 
 Each case is named; the first failure rejects the audit. Controls: `deterministic_audit_controls.py`.
+
+Revision 2 (R6-014 revision 2 review):
+* finding 3 — every run's search observations follow the frozen grammar for its route and outcome (`OBSERVATIONS`: event, component,
+  order); every certificate-bearing observation carries the certificate the bridge received (the SDK's `certificate_created` differs only
+  by the unbound backend configuration digest that `certificate_bound` fills in); wherever the bridge claims verification, on refused runs
+  too, the packet is rebuilt from the observations and the independent checker re-executed; the selected closer is derived from the pinned
+  dispatch (`pinned_closer`, the cohort auditor's, for this IR and certificate without the extension), never read from the observation;
+* finding 4 — the retained solution is joined to the export that the replays read: its decompressed bytes equal the retained export stdout
+  and its sealed digest, its size is the export's recorded output and receipt, and it contains the site's local and whole declarations;
+  that the replays read these bytes is established by the stage commands and the chain, not by re-running them;
+* finding 5 — every search stage terminated cleanly (no monitor, observation or resource failure, the workload empty after cleanup); only
+  its exit code may carry a mathematical refusal, and a proof requires exit 0;
+* the complete per-outcome case population is computed and gated before acceptance (`audit:case_population_complete`).
 """
 import argparse
 import copy
@@ -52,6 +65,86 @@ PROVED = {broker.ARM: 'proof', broker.REFERENCE: 'closed_and_validated'}
 PROVENANCE = (*broker.FILES, 'site_task.py', 'site_stage.py', 'site_supervise.py', 'site_network.py', 'instrument.py', 'consumption_overlay.py')
 STAGES_REJECTED = ('capture-build', 'search')
 STAGES_PROVED = ('capture-build', 'search', 'certificate-check', 'export', 'validation-local', 'validation-whole')
+UNBOUND_CONFIG = 'sha256:'+'0'*64
+# Revision 2: the frozen observation grammar, (event, component) in order, by route and search outcome (as the pinned overlay emits them).
+_OPEN = [('reification_started', 'lean_bridge'), ('reification_finished', 'lean_bridge'), ('dispatch_started', 'lean_bridge')]
+_SOLVED = [('solver_started', 'sdk'), ('solver_finished', 'sdk')]
+_RECOVERED = [('recovery_started', 'sdk'), ('recovery_finished', 'sdk')]
+_RETURNED = [('certificate_created', 'sdk'), ('certificate_bound', 'sdk'), ('selection_decided', 'sdk'), ('dispatch_returned', 'sdk'), ('dispatch_received', 'lean_bridge'),
+             ('certificate_verification_started', 'lean_bridge'), ('certificate_verification_finished', 'lean_bridge')]
+_ARM_RECONSTRUCTION = [('reconstruction_started', 'lean_bridge'), ('closer_selected', 'lean_bridge')]
+OBSERVATIONS = {
+    (broker.ARM, 'consumed'): _OPEN+_SOLVED+_RECOVERED+_RETURNED+_ARM_RECONSTRUCTION+[('residual_started', 'lean_bridge'), ('residual_finished', 'lean_bridge'), ('reconstruction_finished', 'lean_bridge')],
+    (broker.ARM, 'reconstruction_refused'): _OPEN+_SOLVED+_RECOVERED+_RETURNED+_ARM_RECONSTRUCTION,
+    (broker.ARM, 'witness_not_recovered'): _OPEN+_SOLVED+_RECOVERED+_RECOVERED+_RETURNED+[('reconstruction_started', 'lean_bridge')],
+    (broker.ARM, 'backend_not_invoked'): _OPEN+[('dispatch_received', 'lean_bridge')],
+    (broker.REFERENCE, 'closed'): _OPEN+_SOLVED+_RECOVERED+_RETURNED+[('broker_closer_returned', 'lean_bridge')],
+    (broker.REFERENCE, 'witness_not_recovered'): _OPEN+_SOLVED+_RECOVERED+_RECOVERED+_RETURNED+[('broker_closer_returned', 'lean_bridge')],
+    (broker.REFERENCE, 'backend_not_invoked'): _OPEN+[('dispatch_received', 'lean_bridge')]}
+
+
+def pinned_closer(ir, cert, extension=False):
+    """`reviews/2026-09-23/cohort_v8_audit.py`'s derivation of `runTermModeOnGoal`'s branch at e627efe, verbatim."""
+    payloads = ir['goal'].get('payloads') or {}
+    nat = any(v.get('type') == 'Nat' for v in ir['context']['free_vars']) or \
+          any(isinstance(v, dict) and v.get('kind') == 'nat_nonlinear_atom' for v in (payloads.values() if isinstance(payloads, dict) else ()))
+    hint = ((cert.get('payload') or {}).get('strategy_hint')) or ''
+    if nat: return None if hint == 'case_split_farkas' else 'term_mode_nat'
+    if ir['context'].get('type_vars'): return None if (hint == 'case_split_farkas' or not extension) else 'term_mode_poly'
+    if hint == 'case_split_farkas': return 'term_mode_case_split' if extension else None
+    return 'term_mode_int'  # no extension: the core ℤ closer, whatever the fragment
+
+
+def verifier_on_packet(tools, packet):
+    with tempfile.TemporaryDirectory(prefix='r6-014-det-packet-') as temp:
+        path = Path(temp)/'evidence.json'; r6.write_json(path, packet); return verifier_verdict(tools, path)
+
+
+def observations_bound(a, name, run, route, search_outcome, tools):
+    """Revision 2 (finding 3): the grammar, the certificate at every observation, re-checked wherever verification is claimed, the pinned closer."""
+    rows = broker.children(run); problems = []
+    grammar = [(r['event'], r['payload'].get('component')) for r in rows]
+    if grammar != OBSERVATIONS.get((route, search_outcome)) or any(r['stage'] != 'search' for r in rows): problems.append('grammar')
+    data = {r['event']: r['payload']['data'] for r in rows}
+    received = data.get('dispatch_received') or {}; cert = received.get('certificate')
+    if cert is not None:
+        for r in rows:
+            d = r['payload']['data']
+            if 'certificate' not in d or r['event'] in ('dispatch_received',): continue
+            if r['event'] == 'certificate_created':
+                unbound = copy.deepcopy(cert); unbound['backend'] = {**unbound['backend'], 'config_hash': UNBOUND_CONFIG}
+                if d['certificate'] != unbound: problems.append('certificate_created')
+            elif d['certificate'] != cert: problems.append('certificate at '+r['event'])
+        bound = data.get('certificate_bound') or {}
+        if bound.get('after') != cert or bound.get('before') != (data.get('certificate_created') or {}).get('certificate'): problems.append('certificate_bound')
+        verified = data.get('certificate_verification_finished') or {}
+        if verified.get('ok') is True:
+            packet = {'certificate': cert, 'input_ir': data['dispatch_started']['ir'], 'final_ir': received['final_ir'], 'trace': received['trace']}
+            recheck = verifier_on_packet(tools, packet)
+            if not (recheck and recheck.get('accepted') is True and verified.get('envelope_ok') is True): problems.append('claimed verification not reproduced by the checker')
+        if route == broker.ARM and 'closer_selected' in data:
+            derived = pinned_closer(data['dispatch_started']['ir'], cert, False)
+            if data['closer_selected']['closer'] != derived: problems.append(f"closer {data['closer_selected']['closer']}, pinned {derived}")
+    elif any('certificate' in r['payload']['data'] for r in rows if r['event'] != 'dispatch_received'): problems.append('certificate without dispatch')
+    a.require(not problems, f'{name}:search:observations_bound', '; '.join(problems))
+
+
+def expected_cases(primary, outcomes):
+    """Revision 2: the complete case population, by each run's recorded outcome; the audit is accepted only if it evaluated exactly these."""
+    names = ['population:reviewed_fifteen_sites', 'population:exactly_fifteen_sites_by_two_routes', 'population:summary_bound', 'tools:equal_to_the_frozen_policy']
+    for route in (broker.ARM, broker.REFERENCE):
+        for site in primary:
+            n = f'{route}/{site}'
+            names += [f'{n}:{c}' for c in ('chain:valid', 'seal:every_retained_file_at_its_digest', 'chain:expected_sequence', 'identity:bound',
+                                            'provenance:locked_sources_and_overlay', 'provenance:binaries_at_current_tool_digests', 'inputs:recomputed',
+                                            'stages:exactly_the_outcome_path', 'commands:rebuilt_by_the_stage_function', 'search:terminated_cleanly',
+                                            'search:outcome_recomputed', 'search:fields_recomputed', 'search:observations_bound', 'search:downstream_exactly_when_proved',
+                                            'outcome:record_bound')]
+            if outcomes[(route, site)] == PROVED[route]:
+                names += [f'{n}:proof:{c}' for c in ('context_frozen', 'evidence_rebuilt_from_observations', 'certificate_check_reexecuted',
+                                                     'consumption_receipt' if route == broker.ARM else 'closer_receipt', 'solution_bound', 'verdict_shape')]
+                names += [f'{n}:kernel:derived_from_raw_reports']
+    return names
 
 
 class Rejection(AssertionError):
@@ -210,14 +303,18 @@ def audit_run(a, root, route, site, tools, policy_sha, summary, reviewed):
         if receipts[(stage, 'stage_started')]['command_file'] != f'stages/{stage}/command.json': problems.append(stage+': start receipt')
         clean = (process['exit_code'] == 0 and not process['resource_exhausted'] and not process['resource_violations'] and not process['monitor_error']
                  and not process['observation_error'] and process['workload_empty_after_cleanup'] is True)
-        if stage != 'search' and not clean: problems.append(stage+': not clean')
+        if stage != 'search' and not clean: problems.append(stage+': not clean')  # the search stage: `search:terminated_cleanly`
     a.require(not problems, f'{name}:commands:rebuilt_by_the_stage_function', '; '.join(problems))
     search = load(run/'stages/search/search.process.json')
-    failed = not (search['exit_code'] == 0 and not search['resource_exhausted'] and not search['resource_violations'] and not search['monitor_error'] and not search['observation_error'])
+    a.require(not search['resource_exhausted'] and search['resource_violations'] == [] and search['monitor_error'] is None and search['observation_error'] is None
+              and search['workload_empty_after_cleanup'] is True and isinstance(search['exit_code'], int) and (search['exit_code'] == 0 or not proved),
+              f'{name}:search:terminated_cleanly')  # revision 2 (finding 5): only the exit code may carry a refusal
+    failed = search['exit_code'] != 0
     again = broker.classify(run, route, failed)
     a.require(again['outcome'] == outcome['outcome'] or (proved and again['outcome'] == SUCCESS[route]), f'{name}:search:outcome_recomputed', f"{again['outcome']} vs {outcome['outcome']}")
     a.require({k: v for k, v in again.items() if k not in ('outcome', 'certificate')} == {k: outcome.get(k) for k in again if k not in ('outcome', 'certificate')},
               f'{name}:search:fields_recomputed')
+    observations_bound(a, name, run, route, again['outcome'], tools)
     downstream = ('evidence.json', 'certificate-verdict.json', 'solution.ndjson.gz', 'verdict.json', 'validation-input', 'validation-local.raw.json.gz', 'validation-whole.raw.json.gz')
     a.require(all((run/f).exists() == proved for f in downstream), f'{name}:search:downstream_exactly_when_proved')
     accepted = False
@@ -243,7 +340,10 @@ def audit_run(a, root, route, site, tools, policy_sha, summary, reviewed):
         try:
             with gzip.open(run/'solution.ndjson.gz', 'rb') as f: solution = f.read()
         except (OSError, EOFError, gzip.BadGzipFile): solution = None
-        a.require(solution is not None and sha(solution) == verdict['solution_sha256'], f'{name}:proof:solution_bound')  # the retained bytes the replays read
+        stdout = run/'stages/export/export.stdout'; export = load(run/'stages/export/export.process.json')
+        a.require(solution is not None and sha(solution) == verdict['solution_sha256'] == seal['ephemeral_sha256'].get('stages/export/export.stdout')
+                  and stdout.is_file() and stdout.read_bytes() == solution and len(solution) == export['output_bytes'] == receipts[('export', 'stage_finished')]['output_bytes']
+                  and all(('"str":"'+n.split('.')[-1]+'"}').encode() in solution for n in (task.local, task.whole)), f'{name}:proof:solution_bound')  # revision 2 (finding 4)
         accepted = kernel(a, name, run, task, route, verdict, receipts, frozen)
         a.require(verdict == {'schema_version': 'r6-deterministic-verdict-1', 'task_id': site, 'route': route, 'closer': outcome['closer'],
                               'certificate_validation': verdict['certificate_validation'], 'final_validation': verdict['final_validation'], 'axiom_delta': verdict['axiom_delta'],
@@ -280,6 +380,8 @@ def audit(root):
     for route in (broker.ARM, broker.REFERENCE):
         for site in primary:
             table.setdefault(route, {}).setdefault(audit_run(a, root, route, site, tools, policy_sha, summary, reviewed), []).append(site)
+    expected = expected_cases(primary, {(route, site): route_outcome for route, outcomes in table.items() for route_outcome, sites in outcomes.items() for site in sites})
+    a.require(sorted(a.cases) == sorted(expected), 'audit:case_population_complete', str(sorted(set(a.cases) ^ set(expected)))[:300])
     return {'accepted': True, 'case_count': len(a.cases), 'runs': len(runs), 'outcomes': table, 'policy_sha256': policy_sha}
 
 
