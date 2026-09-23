@@ -1,0 +1,34 @@
+{
+  "baseline": {
+    "accepted": true,
+    "case_count": 550
+  },
+  "operator_entry_scanned_false": {
+    "accepted": false,
+    "rejected_case": "operator_scan:report_bound",
+    "detail": "operator_scan:report_bound: 1 entries not cleanly scanned or with findings, e.g. ['runs/l069-draw1/accounting.json']"
+  },
+  "operator_entry_error_present": {
+    "accepted": false,
+    "rejected_case": "operator_scan:report_bound",
+    "detail": "operator_scan:report_bound: 1 entries not cleanly scanned or with findings, e.g. ['runs/l069-draw1/accounting.json']"
+  },
+  "operator_entry_finding_present": {
+    "accepted": false,
+    "rejected_case": "operator_scan:report_bound",
+    "detail": "operator_scan:report_bound: 1 entries not cleanly scanned or with findings, e.g. ['runs/l069-draw1/accounting.json']"
+  },
+  "gzip_magic_precondition": {
+    "suffix": ".bin",
+    "streams": [
+      "raw",
+      "gzip"
+    ],
+    "finding_count": 2,
+    "raw_has_findings": false
+  },
+  "gzip_without_gz_suffix": {
+    "accepted": true,
+    "case_count": 550
+  }
+}

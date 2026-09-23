@@ -1,0 +1,296 @@
+{
+  "baseline": {
+    "accepted": true,
+    "case_count": 478,
+    "runs": 30,
+    "outcomes": {
+      "site_cvc4_term_mode_v1": {
+        "proof": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "reconstruction_refused": [
+          "bracket-l158",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "witness_not_recovered": [
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      },
+      "site_cvc4_default_closer_v1": {
+        "closed_and_validated": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "witness_not_recovered": [
+          "bracket-l158",
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      }
+    },
+    "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb"
+  },
+  "refused_bad_certificate_independent_check": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "farkas_not_contradictory",
+      "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:1d73911829555f54c13f84d2106573af6c938b5b00f7efeee08d39e3b168de60"
+  },
+  "refused_bad_certificate": {
+    "accepted": true,
+    "case_count": 478,
+    "runs": 30,
+    "outcomes": {
+      "site_cvc4_term_mode_v1": {
+        "proof": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "reconstruction_refused": [
+          "bracket-l158",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "witness_not_recovered": [
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      },
+      "site_cvc4_default_closer_v1": {
+        "closed_and_validated": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "witness_not_recovered": [
+          "bracket-l158",
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      }
+    },
+    "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb"
+  },
+  "refused_wrong_closer": {
+    "accepted": true,
+    "case_count": 478,
+    "runs": 30,
+    "outcomes": {
+      "site_cvc4_term_mode_v1": {
+        "proof": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "reconstruction_refused": [
+          "bracket-l158",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "witness_not_recovered": [
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      },
+      "site_cvc4_default_closer_v1": {
+        "closed_and_validated": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "witness_not_recovered": [
+          "bracket-l158",
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      }
+    },
+    "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb"
+  },
+  "proof_verification_receipt_wrong": {
+    "accepted": true,
+    "case_count": 478,
+    "runs": 30,
+    "outcomes": {
+      "site_cvc4_term_mode_v1": {
+        "proof": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "reconstruction_refused": [
+          "bracket-l158",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "witness_not_recovered": [
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      },
+      "site_cvc4_default_closer_v1": {
+        "closed_and_validated": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "witness_not_recovered": [
+          "bracket-l158",
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      }
+    },
+    "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb"
+  },
+  "proof_search_exit_nonzero": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:search:outcome_recomputed",
+    "detail": "site_cvc4_term_mode_v1/bracket-l070:search:outcome_recomputed: reconstruction_refused vs proof"
+  },
+  "proof_solution_changed_coherently": {
+    "accepted": true,
+    "case_count": 478,
+    "runs": 30,
+    "outcomes": {
+      "site_cvc4_term_mode_v1": {
+        "proof": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "reconstruction_refused": [
+          "bracket-l158",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "witness_not_recovered": [
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      },
+      "site_cvc4_default_closer_v1": {
+        "closed_and_validated": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "witness_not_recovered": [
+          "bracket-l158",
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      }
+    },
+    "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb"
+  }
+}
