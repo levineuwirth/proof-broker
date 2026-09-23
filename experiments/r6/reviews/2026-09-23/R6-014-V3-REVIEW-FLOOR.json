@@ -1,0 +1,9 @@
+{
+  "reservation_floor_recovered": [
+    1,
+    2
+  ],
+  "terminal_floor_recovered": 3,
+  "consumed": 1,
+  "open_reservations": 0
+}

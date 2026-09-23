@@ -1,0 +1,10 @@
+{
+  "same_activation_rollback": {
+    "rejected": true,
+    "code": "cohort_ledger_rolled_back"
+  },
+  "family_relabel": {
+    "rejected": true,
+    "detail": "the classification does not reproduce the reviewed declaration map"
+  }
+}

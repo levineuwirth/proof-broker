@@ -1,0 +1,76 @@
+{
+  "locks": {
+    "cohort": {
+      "sha256": "aaf15c72fd51aa41f817bfa8dfe24c5e65a12a66ec5129874313fd981472f201",
+      "files": 8,
+      "mismatches": []
+    },
+    "deterministic": {
+      "sha256": "a080efa7af30d100a27452d4ab76f2c230567c5a60928f91ecc0cd1689114c49",
+      "files": 2,
+      "mismatches": []
+    },
+    "analysis": {
+      "sha256": "69d93ed747bf8b72af372bfa627ceb6313e98563780301945588b91a38cd6d43",
+      "files": 2,
+      "mismatches": []
+    }
+  },
+  "suites": {
+    "cohort": {
+      "sha256": "3617dcf7615e50604c5a390226506d88b627bd7674cfa8b6b8a94bbd2ee98167",
+      "checks": 48,
+      "exact_case_set": true,
+      "all_passed": true
+    },
+    "deterministic": {
+      "sha256": "d923a6313591e7424f7fa26c68bb9a50db7cc9998e6ef940ff0ba4911be80bba",
+      "checks": 8,
+      "exact_case_set": true,
+      "all_passed": true
+    },
+    "analysis": {
+      "sha256": "16d2caeef63cc6f5b9d8f7bda22a7ce415d5855b0e49273ff2c5853a3f8caa1a",
+      "checks": 19,
+      "exact_case_set": true,
+      "all_passed": true
+    }
+  },
+  "artifacts": {
+    "cohort": {
+      "runs": 16,
+      "events": 559,
+      "sealed_entries": 4178,
+      "mismatches": 0
+    },
+    "deterministic": {
+      "runs": 30,
+      "events": 717,
+      "sealed_entries": 1455,
+      "mismatches": 0
+    },
+    "live_fixture": {
+      "runs": 11,
+      "events": 510,
+      "sealed_entries": 3185,
+      "mismatches": 0
+    }
+  },
+  "recorded_audit_controls": {
+    "rehearsal": 101,
+    "live": 47,
+    "sha256": "f500ea817c5b286e1adb2c183de3f87f1ebd22752a61f3e6e9544b241cd2818f"
+  },
+  "deterministic_controls_record": {
+    "sha256": "5bb5386a8bed1fc6b6c7290795ead2dac6b35ddd78e35f623be925f6c9e3b626",
+    "controls": 32,
+    "exact_case_set": true
+  },
+  "production": {
+    "live_enabled": false,
+    "checkpoint_exists": false,
+    "activation_receipt_exists": false,
+    "progress_floor_exists": false,
+    "live_ledger_exists": false
+  }
+}

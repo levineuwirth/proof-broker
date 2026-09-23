@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "accepted": true,
+    "case_count": 550
+  },
+  "absolute": {
+    "accepted": true,
+    "case_count": 550,
+    "outside_file_read": true
+  },
+  "parent_traversal": {
+    "accepted": true,
+    "case_count": 550,
+    "outside_file_read": true
+  }
+}
