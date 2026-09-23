@@ -36,6 +36,10 @@ Revision 2 (R6-014 review, findings 5-7; lock `analysis-v2`):
   input is bounded by pricing all input uncached). The campaign ceiling exists only when every consumed slot is priced; otherwise the known
   subtotal and its coverage are reported. Money is exact in nano-USD, and a micro-USD ceiling rounds up;
 * proposal diversity (every returned vector) is reported apart from verified-witness diversity.
+
+Revision 3 (R6-014 revision 2 review, finding 6; lock `analysis-v3`): the site→declaration map, the independence unit that the family
+grouping and the `lift_cell` exposure sensitivity read, is bound to its reviewed value (`REVIEWED_FAMILIES`, the census declarations);
+the classification must reproduce it.
 """
 import argparse
 import json
@@ -44,7 +48,7 @@ from pathlib import Path
 
 import run as r6
 
-LOCK = r6.ROOT/'policies/analysis-v2.sha256.json'
+LOCK = r6.ROOT/'policies/analysis-v3.sha256.json'
 FILES = ('analysis_r6.py', 'test_analysis_r6.py')
 PRIMARY = 15
 NEGATIVE_CONTROL = 'bracket-l170'
@@ -55,6 +59,11 @@ REVIEWED = {'primary': ('bracket-l069', 'bracket-l070', 'bracket-l071', 'bracket
             'certificate_feasible': ('bracket-l069', 'bracket-l070', 'bracket-l071', 'bracket-l078', 'bracket-l096', 'bracket-l099', 'bracket-l166',
                                      'bracket-l175', 'bracket-l178', 'bracket-l204'),
             'negative_control': ('bracket-l170',), 'not_posed': ('bracket-l098', 'bracket-l101', 'bracket-l158', 'bracket-l180')}
+# Revision 3: the reviewed site -> declaration map (census declarations, R6-011), exact.
+REVIEWED_FAMILIES = {**{f'bracket-l{n}': 'Bracket.lift_cell' for n in ('069', '070', '071', '078')},
+                     **{f'bracket-l{n}': 'Bracket.threshold_unique' for n in ('096', '098', '099', '101')},
+                     **{f'bracket-l{n}': 'Bracket.cell_value_neutral' for n in ('158', '166', '170', '175', '178', '180')},
+                     'bracket-l204': 'Bracket.Row.s1_noninc'}
 EXPOSURE_SENSITIVITIES = {'excluding_l070': lambda site, family: site != 'bracket-l070',
                           'excluding_lift_cell': lambda site, family: family != 'Bracket.lift_cell'}
 LADDER = ('returned', 'verified', 'consumed', 'local', 'whole', 'axioms')
@@ -98,6 +107,7 @@ def populations(classification):
           'the classes do not partition the primary population')
     check(tuple(primary) == REVIEWED['primary'] and tuple(feasible) == REVIEWED['certificate_feasible'] and tuple(negative) == REVIEWED['negative_control']
           and tuple(unposed) == REVIEWED['not_posed'], 'the classification does not reproduce the reviewed membership')
+    check({s: results[s].get('family') for s in primary} == REVIEWED_FAMILIES, 'the classification does not reproduce the reviewed declaration map')
     return {'primary': primary, 'posed': posed, 'certificate_feasible': feasible, 'negative_control': negative,
             'closer_reachable': sorted(s for s in feasible if s not in CLOSER_UNREACHABLE), 'closer_unreachable': sorted(CLOSER_UNREACHABLE),
             'not_posed': sorted(set(primary)-set(posed)), 'family': {s: results[s]['family'] for s in primary},
@@ -238,7 +248,7 @@ def analyse(data, deterministic, classification, rates=None):
                                         'by_site': {s: r['outcome'] for s, r in sorted(det['site_cvc4_default_closer_v1'].items())},
                                         'closers': {s: r.get('closer') for s, r in sorted(det['site_cvc4_default_closer_v1'].items())}}}
     check(sorted(arms['deterministic']['by_site']) == pops['primary'], 'the deterministic arm does not cover the fifteen sites')
-    return {'schema_version': 'r6-analysis-2', 'populations': {k: v for k, v in pops.items() if k not in ('family', 'certificates')},
+    return {'schema_version': 'r6-analysis-3', 'populations': {k: v for k, v in pops.items() if k not in ('family', 'certificates')},
             'denominators': {'primary': len(pops['primary']), 'posed': len(pops['posed']), 'certificate_feasible': len(pops['certificate_feasible']),
                              'negative_control': len(pops['negative_control']), 'closer_reachable': len(pops['closer_reachable']), 'closer_unreachable': len(pops['closer_unreachable'])},
             'collection': {'authorized_slots': sum(authorized.values()), 'planned_slots': sum(planned.values()), 'collected_slots': len(keys),

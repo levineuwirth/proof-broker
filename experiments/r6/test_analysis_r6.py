@@ -6,7 +6,10 @@ operational pauses, and malformed or incomplete populations, each with exact exp
 Revision 2 (R6-014 review): the review's cases, each exact: all usage unreported and partially reported (never a zero ceiling), a
 fractional micro-USD cost (rounded up), denominator drift through the classification and schedules (refused), the negative control's raw
 consumer or kernel acceptance behind a verifier rejection (an integrity stop), contradictory observations on other slots (a pause), and
-proposal diversity reported apart from verified-witness diversity."""
+proposal diversity reported apart from verified-witness diversity.
+
+Revision 3 (R6-014 revision 2 review, finding 6): the review's family relabelling and a family swap between sites are refused, and the frozen
+declaration map equals the census declarations of the registered sites."""
 import argparse
 import copy
 from pathlib import Path
@@ -18,7 +21,7 @@ from test_proposals import Suite, require
 CASES = '''populations_exact all_success all_failure mixed_dispositions missing_and_unknown rescaled_and_duplicate_witnesses partial_collection
 costs_priced_at_frozen_rates negative_control_false_acceptance_stops operational_pause_rules malformed_inputs_refused deterministic_arm_tabled
 usage_unknown_is_never_zero fractional_micro_cost_rounds_up denominator_drift_refused negative_control_raw_acceptance_stops
-contradictory_observations_pause proposals_apart_from_verified_witnesses'''.split()
+contradictory_observations_pause proposals_apart_from_verified_witnesses family_map_bound'''.split()
 CLASSIFICATION = r6.read_json(r6.ROOT/'census-runs/representability-v4/representability.json')
 DETERMINISTIC = r6.read_json(r6.ROOT/'census-runs/deterministic-v1/deterministic.json')
 POPS = analysis.populations(CLASSIFICATION)
@@ -276,6 +279,25 @@ def controls(output):
         require(row['distinct_proposals'] == 1 and row['distinct_verified_witnesses'] == 0 and row['verified_matching_classification_certificate'] == 0, str(row))
         return {k: row[k] for k in ('distinct_proposals', 'distinct_verified_witnesses')}
     suite.case('proposals_apart_from_verified_witnesses', proposals)
+
+    def families():
+        import site_task
+        require(analysis.REVIEWED_FAMILIES == {s: site_task.get(s).family for s in site_task.primary()}, 'the frozen map is the census declarations')
+        out = {}
+        def refused(label, classification):
+            try: analysis.analyse(collection({f'{s}/1': realistic(s) for s in POPS['posed']}), DETERMINISTIC, classification, RATES)
+            except analysis.Malformed as error: out[label] = str(error); return
+            raise AssertionError(label+': accepted')
+        c = copy.deepcopy(CLASSIFICATION); next(r for r in c['results'] if r['site_id'] == 'bracket-l069')['family'] = 'Review.synthetic_family'
+        refused('family_relabelled', c)  # the review's probe
+        c = copy.deepcopy(CLASSIFICATION); rows = {r['site_id']: r for r in c['results']}
+        rows['bracket-l069']['family'], rows['bracket-l096']['family'] = rows['bracket-l096']['family'], rows['bracket-l069']['family']
+        refused('families_swapped', c)
+        r = run({f'{s}/1': realistic(s) for s in POPS['posed']})
+        require(sorted(r['families']) == sorted(set(analysis.REVIEWED_FAMILIES[s] for s in POPS['posed'])) and r['sensitivities']['excluding_lift_cell']['slots'] == 7)
+        out['excluding_lift_cell_slots'] = 7
+        return out
+    suite.case('family_map_bound', families)
     suite.finish()
 
 
