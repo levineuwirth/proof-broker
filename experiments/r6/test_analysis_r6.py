@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """R6-014 controls for the frozen analysis (`analysis_r6.py`) on canned inputs: all-success, all-failure, mixed, missing and unknown
 responses, rescaled and duplicate witnesses, a partial collection, costs, the negative control's false acceptance and integrity stop,
-operational pauses, and malformed or incomplete populations, each with exact expected tables. No live evidence exists or is read."""
+operational pauses, and malformed or incomplete populations, each with exact expected tables. No live evidence exists or is read.
+
+Revision 2 (R6-014 review): the review's cases, each exact: all usage unreported and partially reported (never a zero ceiling), a
+fractional micro-USD cost (rounded up), denominator drift through the classification and schedules (refused), the negative control's raw
+consumer or kernel acceptance behind a verifier rejection (an integrity stop), contradictory observations on other slots (a pause), and
+proposal diversity reported apart from verified-witness diversity."""
 import argparse
 import copy
 from pathlib import Path
@@ -11,7 +16,9 @@ import run as r6
 from test_proposals import Suite, require
 
 CASES = '''populations_exact all_success all_failure mixed_dispositions missing_and_unknown rescaled_and_duplicate_witnesses partial_collection
-costs_priced_at_frozen_rates negative_control_false_acceptance_stops operational_pause_rules malformed_inputs_refused deterministic_arm_tabled'''.split()
+costs_priced_at_frozen_rates negative_control_false_acceptance_stops operational_pause_rules malformed_inputs_refused deterministic_arm_tabled
+usage_unknown_is_never_zero fractional_micro_cost_rounds_up denominator_drift_refused negative_control_raw_acceptance_stops
+contradictory_observations_pause proposals_apart_from_verified_witnesses'''.split()
 CLASSIFICATION = r6.read_json(r6.ROOT/'census-runs/representability-v4/representability.json')
 DETERMINISTIC = r6.read_json(r6.ROOT/'census-runs/deterministic-v1/deterministic.json')
 POPS = analysis.populations(CLASSIFICATION)
@@ -113,7 +120,7 @@ def controls(output):
         slots = {f'{x}/1': realistic(x) for x in POPS['posed']}; slots[f'{site}/2'] = slot(site, 2, coefficients=certificate(site, 3))
         r = run(slots, {**BLOCK1, site: 2})
         row = r['arms']['learned']['by_site'][site]
-        require(row['distinct_witnesses'] == 1 and row['matches_classification_certificate'] == 2, str(row))
+        require(row['distinct_proposals'] == 1 and row['distinct_verified_witnesses'] == 1 and row['verified_matching_classification_certificate'] == 2, str(row))
         require(analysis.primitive(certificate(site, 3)) == analysis.primitive(certificate(site)) and analysis.primitive([{'hypothesis': 'a', 'coefficient': 'x'}]) is None)
         require(sorted(r['prefixes']) == ['draws_1_to_1', 'draws_1_to_2'] and r['prefixes']['draws_1_to_1']['slots'] == 11 and r['prefixes']['draws_1_to_2']['slots'] == 12)
         return row
@@ -129,8 +136,9 @@ def controls(output):
     def costs():
         r = run({f'{s}/1': realistic(s) for s in POPS['posed']}); c = r['costs']
         require(c['reserved_micro_usd'] == 11*SLOT_MONEY == 1126400 and c['authorized_micro_usd'] == 1126400)
-        require(c['provider_reported_tokens'] == {'input_tokens': 44000, 'output_tokens': 3300, 'cached_tokens': 11000})
-        require(c['priced_ceiling_micro_usd'] == ((44000-11000)*2500 + 11000*250 + 3300*15000)//1000, str(c))
+        require({f: v['known_total'] for f, v in c['usage_fields'].items()} == {'input_tokens': 44000, 'output_tokens': 3300, 'cached_tokens': 11000})
+        nano = (44000-11000)*2500 + 11000*250 + 3300*15000
+        require(c['complete'] is True and c['priced_ceiling_nano_usd'] == nano == 134750000 and c['priced_ceiling_micro_usd'] == 134750, str(c))
         return c
     suite.case('costs_priced_at_frozen_rates', costs)
 
@@ -170,6 +178,9 @@ def controls(output):
         d = base(); del d['slots']['bracket-l069/1']['kernel']['whole']; refused('missing_field', d)
         d = base(); d['schema_version'] = 'other'; refused('schema', d)
         d = base(); d['campaign']['authorized_schedule'] = {**BLOCK1, 'bracket-l069': 9}; refused('schedule_beyond_plan', d)
+        d = base(); d['slots']['bracket-l069/1']['usage']['input_tokens'] = -1; refused('usage_negative', d)
+        d = base(); d['slots']['bracket-l069/1']['usage']['output_tokens'] = True; refused('usage_boolean', d)
+        d = base(); d['slots']['bracket-l069/1']['usage']['cached_tokens'] = 5000; refused('cached_above_input', d)
         c = copy.deepcopy(CLASSIFICATION); c['results'] = c['results'][:-1]; refused('population_incomplete', base(), c)
         c = copy.deepcopy(CLASSIFICATION); c['classes']['posable_negative_control'] = []; refused('negative_control_missing', base(), c)
         return out
@@ -181,6 +192,90 @@ def controls(output):
         require(r['arms']['deterministic_reference']['status'] == 'reference, never pooled')
         return {'proofs': arm['proofs'], 'outcomes': arm['by_site']}
     suite.case('deterministic_arm_tabled', deterministic)
+
+    def unknown_usage():
+        out = {}
+        slots = {f'{s}/1': realistic(s) for s in POPS['posed']}
+        for v in slots.values(): v['usage'] = dict.fromkeys(('input_tokens', 'output_tokens', 'cached_tokens'))
+        c = run(slots)['costs']
+        require(c['priced_ceiling_nano_usd'] is None and c['priced_ceiling_micro_usd'] is None and c['complete'] is False and c['priced_slots'] == 0
+                and len(c['unpriced_slots']) == 11 and all(v == {'reported_slots': 0, 'unreported_slots': 11, 'known_total': 0} for v in c['usage_fields'].values()), str(c))
+        out['all_unreported'] = {k: c[k] for k in ('priced_ceiling_micro_usd', 'priced_slots', 'complete')}
+        slots = {f'{s}/1': realistic(s) for s in POPS['posed']}
+        slots['bracket-l069/1']['usage']['output_tokens'] = None; slots['bracket-l070/1']['usage']['cached_tokens'] = None
+        c = run(slots)['costs']
+        require(c['complete'] is False and c['priced_ceiling_micro_usd'] is None and c['unpriced_slots'] == ['bracket-l069/1'] and c['priced_slots'] == 10
+                and c['cached_unreported_bounded_as_uncached'] == ['bracket-l070/1'] and c['usage_fields']['output_tokens']['unreported_slots'] == 1
+                and c['known_priced_subtotal_nano_usd'] == 9*(3000*2500+1000*250+300*15000) + (4000*2500+300*15000), str(c))
+        out['partial'] = {k: c[k] for k in ('unpriced_slots', 'cached_unreported_bounded_as_uncached', 'known_priced_subtotal_nano_usd', 'complete')}
+        return out
+    suite.case('usage_unknown_is_never_zero', unknown_usage)
+
+    def fractional():
+        x = realistic('bracket-l069'); x['usage'] = {'input_tokens': 1, 'cached_tokens': 1, 'output_tokens': 0}
+        c = run({'bracket-l069/1': x})['costs']
+        require(c['priced_ceiling_nano_usd'] == 250 and c['priced_ceiling_micro_usd'] == 1 and c['complete'] is True, str(c))
+        return {k: c[k] for k in ('priced_ceiling_nano_usd', 'priced_ceiling_micro_usd')}
+    suite.case('fractional_micro_cost_rounds_up', fractional)
+
+    def drift():
+        out = {}
+        def refused(label, data, classification):
+            try: analysis.analyse(data, DETERMINISTIC, classification, RATES)
+            except analysis.Malformed as error: out[label] = str(error); return
+            raise AssertionError(label+': accepted')
+        # the review's mutation: l096 dropped from feasibility and, coherently, from the supplied schedules
+        slots = {f'{s}/1': realistic(s) for s in POPS['posed'] if s != 'bracket-l096'}
+        data = collection(slots, {s: 1 for s in POPS['posed'] if s != 'bracket-l096'}); data['campaign']['planned_schedule'] = {s: 8 for s in POPS['posed'] if s != 'bracket-l096'}
+        c = copy.deepcopy(CLASSIFICATION); c['classes']['posable_certificate'].remove('bracket-l096'); refused('feasible_site_dropped', data, c)
+        c = copy.deepcopy(CLASSIFICATION); c['classes']['posable_certificate'].remove('bracket-l096'); c['classes']['interface_refused'].append('bracket-l096')
+        refused('feasible_site_reclassified', data, c)
+        c = copy.deepcopy(CLASSIFICATION); c['classes']['interface_refused'].remove('bracket-l158'); c['classes']['posable_certificate'].append('bracket-l158')
+        refused('unposed_site_promoted', collection({f'{s}/1': realistic(s) for s in POPS['posed']}), c)
+        c = copy.deepcopy(CLASSIFICATION); c['results'].append(copy.deepcopy(c['results'][0])); c['results'].pop(1)
+        refused('duplicate_site', collection({f'{s}/1': realistic(s) for s in POPS['posed']}), c)
+        c = copy.deepcopy(CLASSIFICATION); c['classes']['posable_certificate'].append('bracket-l170')
+        refused('classes_overlap', collection({f'{s}/1': realistic(s) for s in POPS['posed']}), c)
+        # a subset schedule is legal and leaves the denominators unchanged
+        r = run({f'{s}/1': realistic(s) for s in POPS['posed'][:3]}, {s: 1 for s in POPS['posed'][:3]})
+        require(r['denominators'] == {'primary': 15, 'posed': 11, 'certificate_feasible': 10, 'negative_control': 1, 'closer_reachable': 6, 'closer_unreachable': 4})
+        out['subset_schedule_denominators'] = r['denominators']
+        return out
+    suite.case('denominator_drift_refused', drift)
+
+    def raw_negative():
+        out = {}
+        for label, change in (('consumer_true', {'reconstruction': {'attempted': True, 'closer': 'term_mode_nat', 'consumed': True, 'refusal': None}}),
+                              ('kernel_local_true', {'kernel': {'local': True, 'whole': None, 'axioms_clean': None}})):
+            slots = {f'{s}/1': realistic(s) for s in POPS['posed']}; key = f'{analysis.NEGATIVE_CONTROL}/1'; slots[key] = {**slots[key], **change}
+            r = run(slots)
+            require(slots[key]['verification']['accepted'] is False and r['per_slot'][key]['consumed'] is None, 'the ladder censors it')
+            require(r['integrity_stop'] is True and r['continue_permitted'] is False and r['negative_control']['false_certificate_acceptances'] == [key]
+                    and key in r['contradictory_observations'], label)
+            out[label] = {'integrity_stop': True, 'contradictions': r['contradictory_observations'][key]}
+        return out
+    suite.case('negative_control_raw_acceptance_stops', raw_negative)
+
+    def contradictions():
+        out = {}
+        slots = {f'{s}/1': realistic(s) for s in POPS['posed']}; slots['bracket-l069/1'] = slot('bracket-l069', verified=False)  # consumed and kernel observed past a rejection
+        r = run(slots)
+        require(r['contradictory_observations'] == {'bracket-l069/1': ['consumed', 'local', 'whole', 'axioms']} and 'contradictory_observations' in r['operational_pause']
+                and r['integrity_stop'] is False and r['continue_permitted'] is False, str(r['contradictory_observations']))
+        out['past_rejection'] = r['contradictory_observations']
+        slots = {f'{s}/1': realistic(s) for s in POPS['posed']}
+        slots['bracket-l070/1'] = slot('bracket-l070', disposition='release', response=None, verified=None, consumed=None, local=None, whole=None, axioms=None, attempts=1, usage=False)
+        r = run(slots)  # a released slot that records a returned witness
+        require(r['contradictory_observations'] == {'bracket-l070/1': ['returned']} and 'contradictory_observations' in r['operational_pause'], str(r['contradictory_observations']))
+        out['released_with_witness'] = r['contradictory_observations']
+        return out
+    suite.case('contradictory_observations_pause', contradictions)
+
+    def proposals():
+        r = run({f'{s}/1': realistic(s) for s in POPS['posed']}); row = r['arms']['learned']['by_site'][analysis.NEGATIVE_CONTROL]
+        require(row['distinct_proposals'] == 1 and row['distinct_verified_witnesses'] == 0 and row['verified_matching_classification_certificate'] == 0, str(row))
+        return {k: row[k] for k in ('distinct_proposals', 'distinct_verified_witnesses')}
+    suite.case('proposals_apart_from_verified_witnesses', proposals)
     suite.finish()
 
 
