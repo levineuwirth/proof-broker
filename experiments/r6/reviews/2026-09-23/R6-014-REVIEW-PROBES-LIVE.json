@@ -1,0 +1,41 @@
+{
+  "baseline": {
+    "accepted": true,
+    "case_count": 549
+  },
+  "production_policy_is_signed": {
+    "accepted": false,
+    "rejected_case": "eligibility:recomputed_fifteen_sites",
+    "detail": "eligibility:recomputed_fifteen_sites: policy confirmation or POSABLE differs from the recomputed eligibility"
+  },
+  "operator_entry_schema": {
+    "bytes": 1970,
+    "error": null,
+    "findings": [],
+    "path": "runs/l069-draw1/accounting.json",
+    "path_sha256": "9d93c9661bc98df7124e9e54035e0b96221936cee7073defa9938caf148a9fc7",
+    "root_index": 0,
+    "scanned": true,
+    "sha256": "615d2c1faeb5c52da40ba4b477c5c22eb11acf3ccac293e80101bc0620c4c4fb",
+    "streams": [
+      "raw"
+    ]
+  },
+  "operator_entry_scanned_false": {
+    "accepted": true,
+    "case_count": 549
+  },
+  "operator_entry_error_non_null": {
+    "accepted": true,
+    "case_count": 549
+  },
+  "operator_entry_finding_present": {
+    "accepted": true,
+    "case_count": 549
+  },
+  "distinct_admissible_capture": {
+    "production_sign_succeeded": true,
+    "signed_state_ok": false,
+    "same_source_bytes": true
+  }
+}
