@@ -12,6 +12,10 @@ repairs:
   (`publication.scan_file`: a raw stream always, a gzip stream exactly when the bytes begin `1f 8b`), never from the file name; each entry's
   file must exist at its recorded digest and size; the aggregate gzip stream count must agree.
 
+Revision 2 of this file (R6-014 revision 3 review, finding 2): an inventory path must be the scanner's own form — relative, normalized, no
+`.`/`..`/empty component — and name a regular file reached through no symlink (the scanner reports symlinks as irregular and never follows
+them) inside the declared scan root; anything else is rejected before any byte is read.
+
 The revision 2 docstring follows, unchanged.
 
 R6-014 revision 2 auditor for cohort v8, in two modes.
@@ -63,8 +67,10 @@ import gzip
 import hashlib
 import inspect
 import json
+import os
 from fractions import Fraction
 from pathlib import Path
+import stat
 import sys
 
 sys.dont_write_bytecode = True
@@ -1987,9 +1993,23 @@ def operator_scan(a, root, ledgers, expected, policy):
         if scan['evaluated_at_unix'] < datetime.fromisoformat(finished.replace('Z', '+00:00')).timestamp(): problems.append('scanned before the runs finished')
         entries = report['inventory']; paths = [e.get('path') for e in entries]
         if None in paths or len(paths) != len(set(paths)): problems.append('unnamed or duplicate inventory entries')
+        def contained(relative):  # revision 2: the declared boundary, checked before any read
+            if not isinstance(relative, str) or not relative or relative.startswith('/') or '\\' in relative or '\x00' in relative: return None
+            parts = relative.split('/')
+            if any(part in ('', '.', '..') for part in parts): return None
+            here = scan_root
+            try:
+                if stat.S_ISLNK(os.lstat(here).st_mode): return None
+                for part in parts:
+                    here = here/part; mode = os.lstat(here).st_mode
+                    if stat.S_ISLNK(mode): return None
+                if not stat.S_ISREG(mode): return None
+            except OSError: return None
+            real, root_real = os.path.realpath(here), os.path.realpath(scan_root)
+            return here if real.startswith(root_real+os.sep) else None
         def streams_from_bytes(entry):  # v9: the frozen scanner's rule (`publication.scan_file`), applied to the bytes the entry names
-            path = scan_root/entry['path']
-            if not path.is_file(): return None
+            path = contained(entry.get('path'))
+            if path is None: return None
             data = path.read_bytes()
             if sha(data) != entry.get('sha256') or len(data) != entry.get('bytes'): return None
             return ['raw', 'gzip'] if data[:2] == b'\x1f\x8b' else ['raw']

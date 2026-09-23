@@ -4,6 +4,10 @@ v9 and its fixture (`fixtures/r6-014-v3-live-revisions`), with the revision 2 re
 review's compressed `.bin` reported as raw-only, with the frozen scanner first shown to find its gzip disclosures; a non-run file changed
 after the scan; a miscounted gzip total.
 
+Revision 2 of this file (R6-014 revision 3 review, finding 2): an inventory entry for an outside sentinel by its absolute path, by
+`../`, and through a symlink inside the root, each with an authentic digest and size, must be rejected with zero reads of the sentinel;
+a non-normalized spelling of an inside file is rejected too.
+
 The revision 2 description follows.
 
 Controls for the R6-014 revision 2 cohort v8 auditor (`cohort_v8_audit.py`), in both modes; derived from the v7 controls (retained).
@@ -102,8 +106,32 @@ LIVE_EXPECTED = {
     'compressed_disclosure_bin_reported_raw': 'operator_scan:report_bound',
     'inventory_file_changed_after_scan': 'operator_scan:report_bound',
     'gzip_stream_total_miscounted': 'operator_scan:report_bound',
+    # revision 2 of this file: the declared scan boundary
+    'inventory_path_absolute': 'operator_scan:report_bound',
+    'inventory_path_parent_traversal': 'operator_scan:report_bound',
+    'inventory_path_symlink_escape': 'operator_scan:report_bound',
+    'inventory_path_not_normalized': 'operator_scan:report_bound',
 }
+ESCAPES = ('inventory_path_absolute', 'inventory_path_parent_traversal', 'inventory_path_symlink_escape')  # zero reads of the sentinel required
 PRECONDITIONS = {}
+SENTINEL = []
+
+
+def reads_of_sentinel(run):
+    """Run the audit recording every read of the sentinel (through pathlib or open)."""
+    import builtins, pathlib
+    reads = []; read_bytes, opened = pathlib.Path.read_bytes, builtins.open
+    def hit(path):
+        try: return SENTINEL and Path(path).resolve() == SENTINEL[0]
+        except (OSError, TypeError, ValueError): return False
+    def rb(self, *a, **k):
+        if hit(self): reads.append(str(self))
+        return read_bytes(self, *a, **k)
+    def op(file, *a, **k):
+        if isinstance(file, (str, Path)) and hit(file): reads.append(str(file))
+        return opened(file, *a, **k)
+    with patch.object(pathlib.Path, 'read_bytes', rb), patch.object(builtins, 'open', op): observed = run()
+    return observed, reads
 ACCEPTED_PROBES = ('production_policy_file_signed', 'production_policy_files_unread')  # must be accepted
 
 
@@ -246,6 +274,16 @@ def mutate_live(name, f):
         report_change(lambda v: (v['inventory'].append(entry), v.__setitem__('files_scanned', v['files_scanned']+1)))
     elif name == 'inventory_file_changed_after_scan':
         p = f/'captures/signing/model.html'; p.write_bytes(p.read_bytes()+b'\n')
+    elif name.startswith('inventory_path_'):
+        sentinel = f.parent/'outside-scan.txt'; sentinel.write_bytes(b'outside the declared scan root: synthetic control sentinel\n')
+        if name == 'inventory_path_absolute': path, target = str(sentinel), sentinel
+        elif name == 'inventory_path_parent_traversal': path, target = '../outside-scan.txt', sentinel
+        elif name == 'inventory_path_symlink_escape': (f/'escape.txt').symlink_to(sentinel); path, target = 'escape.txt', sentinel
+        else: path, target = 'captures/./signing/model.html', f/'captures/signing/model.html'
+        data = target.read_bytes(); SENTINEL[:] = [sentinel.resolve()]
+        entry = {'path': path, 'path_sha256': r6.hashlib.sha256(path.encode()).hexdigest(), 'sha256': r6.hashlib.sha256(data).hexdigest(), 'bytes': len(data),
+                 'streams': ['raw'], 'scanned': True, 'error': None, 'findings': [], 'root_index': 0}
+        report_change(lambda v: (v['inventory'].append(entry), v.__setitem__('files_scanned', v['files_scanned']+1)))
     elif name == 'gzip_stream_total_miscounted': report_change(lambda v: v.__setitem__('gzip_streams_scanned', v['gzip_streams_scanned']+1))
     elif name == 'ledger_revision_row_removed':
         campaign = J(runs/FIRST/'search-policy.json')['campaign_id']; book = f/'ledgers/campaigns'/campaign/'live'
@@ -315,9 +353,11 @@ def main():
         with tempfile.TemporaryDirectory(prefix='r6-014-live-controls-') as temp:
             f = live_paths(Path(temp)); baseline = run_live(f); assert baseline['accepted'] is True, baseline
             if name == 'baseline': live[name] = baseline; print('live', name, baseline, flush=True); continue
-            mutate_live(name, f); observed = run_live(f)
+            mutate_live(name, f)
+            if name in ESCAPES: observed, reads = reads_of_sentinel(lambda: run_live(f)); assert reads == [], (name, reads)
+            else: observed = run_live(f)
             assert observed['accepted'] is False and observed['rejected_case'] == LIVE_EXPECTED[name], (name, observed)
-            live[name] = {'rejected': True, 'rejected_case': observed['rejected_case']}; print('live', name, observed['rejected_case'], flush=True)
+            live[name] = {'rejected': True, 'rejected_case': observed['rejected_case'], **({'sentinel_reads': 0} if name in ESCAPES else {})}; print('live', name, observed['rejected_case'], flush=True)
     for name in ACCEPTED_PROBES:
         if args.only and name not in args.only: continue
         with tempfile.TemporaryDirectory(prefix='r6-014-live-probes-') as temp:

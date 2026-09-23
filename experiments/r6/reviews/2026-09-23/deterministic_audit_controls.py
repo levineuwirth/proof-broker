@@ -10,6 +10,10 @@ Revision 2 (R6-014 revision 2 review): the review's probes — a zero witness at
 (whose packet the independent checker is first shown to reject), a relabelled closer on a refused run, a verification observation carrying
 another certificate on a proof, a non-empty search workload, a proof exit code other than zero, and another site's export substituted
 for a proof's solution — each coherently re-chained and re-sealed.
+
+Revision 3 (R6-014 revision 3 review): every export stdout removed (the state of a clean checkout) must be accepted; under that same
+retained-only condition another site's substituted solution must still be rejected; the zero-witness control now also rewrites the nested
+certificate copies in `certificate_bound`, so that its only failure is the independent checker's.
 """
 import argparse
 import gzip
@@ -66,7 +70,10 @@ EXPECTED = {
     'search_workload_not_emptied_resealed': f'{PROOF}:search:terminated_cleanly',
     'proof_search_exit_nonzero_resealed': f'{PROOF}:search:terminated_cleanly',
     'solution_from_other_site_resealed': f'{PROOF}:proof:solution_bound',
+    # revision 3
+    'solution_from_other_site_stdout_absent_resealed': f'{PROOF}:proof:solution_bound',
 }
+ACCEPTED = ('export_stdout_absent',)  # must be accepted
 ZERO_WITNESS = [{'hypothesis': 'neg_goal', 'coefficient': '0'}]
 PRECONDITIONS = {}  # recorded positive preconditions of the controls that need one
 CONTROLS = ('baseline', *EXPECTED)
@@ -186,6 +193,8 @@ def mutate(name, root):
                 cert = row['payload'].get('data', {}).get('certificate')
                 if cert and cert.get('tier') == 1 and cert.get('format') == 'farkas':
                     cert['payload']['witness_data']['coefficients'] = ZERO_WITNESS; count += 1
+                if row['event'] == 'certificate_bound':  # revision 3: the nested copies too, so that only the checker can object
+                    for side in ('before', 'after'): row['payload']['data'][side]['payload']['witness_data']['coefficients'] = ZERO_WITNESS
             assert count >= 3
         rebind(root, REFUSED, change)
         rows = events.read(root/REFUSED/'events.ndjson'); data = {r['event']: r['payload']['data'] for r in rows if r['source'] == 'child_report'}
@@ -203,6 +212,15 @@ def mutate(name, root):
         if name == 'search_workload_not_emptied_resealed': process['workload_empty_after_cleanup'] = False
         else: process['exit_code'] = 7
         W(p, process); rebind(root, PROOF, lambda rows: receipt(rows, 'search', 'stage_finished').__setitem__('payload', process))
+    elif name in ('export_stdout_absent', 'solution_from_other_site_stdout_absent_resealed'):
+        for stdout in root.glob('*/*/stages/export/export.stdout'): stdout.unlink()  # a clean checkout: the ignored file is absent
+        if name == 'solution_from_other_site_stdout_absent_resealed':
+            import hashlib
+            with gzip.open(broker.RUNS/ARM/'bracket-l069/solution.ndjson.gz', 'rb') as f: other = f.read()
+            with gzip.open(root/PROOF/'solution.ndjson.gz', 'wb') as f: f.write(other)
+            verdict = J(root/PROOF/'verdict.json'); verdict['solution_sha256'] = hashlib.sha256(other).hexdigest(); W(root/PROOF/'verdict.json', verdict)
+            seal = J(root/PROOF/'seal.json'); ephemeral = seal['ephemeral_sha256']
+            rebind(root, PROOF); seal = J(root/PROOF/'seal.json'); seal['ephemeral_sha256'].update(ephemeral); W(root/PROOF/'seal.json', seal)  # the recorded digest kept
     elif name == 'solution_from_other_site_resealed':
         import hashlib
         with gzip.open(broker.RUNS/ARM/'bracket-l069/solution.ndjson.gz', 'rb') as f: other = f.read()
@@ -229,17 +247,17 @@ def main():
     TOOLS.append(tools)
     results = {}
     with patch.object(broker, 'tools_for', lambda packages: tools):
-        for name in CONTROLS:
+        for name in (*CONTROLS, *ACCEPTED):
             if args.only and name not in args.only and name != 'baseline': continue
             with tempfile.TemporaryDirectory(prefix='r6-014-det-controls-') as temp:
                 root = Path(temp)/'runs'; shutil.copytree(broker.RUNS, root)
                 if name != 'baseline': mutate(name, root)
                 observed = run_audit(root)
-                if name == 'baseline': assert observed['accepted'] is True, observed
+                if name in ('baseline', *ACCEPTED): assert observed['accepted'] is True, observed
                 else: assert observed['accepted'] is False and observed['rejected_case'] == EXPECTED[name], (name, observed)
                 results[name] = observed; print(name, observed.get('rejected_case') or observed, flush=True)
     if args.only: print(json.dumps({'trial': True, 'controls': len(results)})); return
-    assert tuple(results) == CONTROLS
+    assert tuple(results) == (*CONTROLS, *ACCEPTED)
     r6.write_json(args.output, {'passed': True, 'controls': len(results), 'results': results, 'baseline_cases': results['baseline']['case_count'], 'preconditions': PRECONDITIONS,
                                 'auditor_sha256': r6.sha(Path(__file__).with_name('deterministic_audit.py')), 'program_sha256': r6.sha(Path(__file__)),
                                 'scope': 'temporary copies; one relationship per mutation; coherent re-chaining and re-sealing where the relationship is sealed'})

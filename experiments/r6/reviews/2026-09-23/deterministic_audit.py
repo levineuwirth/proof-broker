@@ -33,6 +33,11 @@ Revision 2 (R6-014 revision 2 review):
 * finding 5 — every search stage terminated cleanly (no monitor, observation or resource failure, the workload empty after cleanup); only
   its exit code may carry a mathematical refusal, and a proof requires exit 0;
 * the complete per-outcome case population is computed and gated before acceptance (`audit:case_population_complete`).
+
+Revision 3 (R6-014 revision 3 review, finding 1): the export stdout is ignored by version control and survives only as its sealed digest.
+The solution join therefore rests on the retained bindings — the decompressed solution's digest equals the verdict's and the sealed export
+stdout digest, its size the export's recorded output and receipt, and it names the site's declarations — and compares the stdout bytes
+only when the file is present; the result reports for how many runs it was (`export_stdout_compared`).
 """
 import argparse
 import copy
@@ -66,6 +71,7 @@ PROVENANCE = (*broker.FILES, 'site_task.py', 'site_stage.py', 'site_supervise.py
 STAGES_REJECTED = ('capture-build', 'search')
 STAGES_PROVED = ('capture-build', 'search', 'certificate-check', 'export', 'validation-local', 'validation-whole')
 UNBOUND_CONFIG = 'sha256:'+'0'*64
+STDOUT_COMPARED = []  # revision 3: per proved run, whether the ephemeral export stdout was present to compare
 # Revision 2: the frozen observation grammar, (event, component) in order, by route and search outcome (as the pinned overlay emits them).
 _OPEN = [('reification_started', 'lean_bridge'), ('reification_finished', 'lean_bridge'), ('dispatch_started', 'lean_bridge')]
 _SOLVED = [('solver_started', 'sdk'), ('solver_finished', 'sdk')]
@@ -341,8 +347,9 @@ def audit_run(a, root, route, site, tools, policy_sha, summary, reviewed):
             with gzip.open(run/'solution.ndjson.gz', 'rb') as f: solution = f.read()
         except (OSError, EOFError, gzip.BadGzipFile): solution = None
         stdout = run/'stages/export/export.stdout'; export = load(run/'stages/export/export.process.json')
+        present = stdout.is_file(); STDOUT_COMPARED.append(present)  # revision 3: ignored by version control; compared only when present
         a.require(solution is not None and sha(solution) == verdict['solution_sha256'] == seal['ephemeral_sha256'].get('stages/export/export.stdout')
-                  and stdout.is_file() and stdout.read_bytes() == solution and len(solution) == export['output_bytes'] == receipts[('export', 'stage_finished')]['output_bytes']
+                  and (not present or stdout.read_bytes() == solution) and len(solution) == export['output_bytes'] == receipts[('export', 'stage_finished')]['output_bytes']
                   and all(('"str":"'+n.split('.')[-1]+'"}').encode() in solution for n in (task.local, task.whole)), f'{name}:proof:solution_bound')  # revision 2 (finding 4)
         accepted = kernel(a, name, run, task, route, verdict, receipts, frozen)
         a.require(verdict == {'schema_version': 'r6-deterministic-verdict-1', 'task_id': site, 'route': route, 'closer': outcome['closer'],
@@ -358,7 +365,7 @@ def audit_run(a, root, route, site, tools, policy_sha, summary, reviewed):
 
 
 def audit(root):
-    a = Audit(); root = Path(root)
+    a = Audit(); root = Path(root); STDOUT_COMPARED.clear()
     policy = broker.verify(); policy_sha = r6.sha(broker.POLICY)
     primary = list(site_task.primary())
     a.require(len(primary) == 15 and len(set(primary)) == 15 and policy['sites'] == primary, 'population:reviewed_fifteen_sites')
@@ -382,7 +389,9 @@ def audit(root):
             table.setdefault(route, {}).setdefault(audit_run(a, root, route, site, tools, policy_sha, summary, reviewed), []).append(site)
     expected = expected_cases(primary, {(route, site): route_outcome for route, outcomes in table.items() for route_outcome, sites in outcomes.items() for site in sites})
     a.require(sorted(a.cases) == sorted(expected), 'audit:case_population_complete', str(sorted(set(a.cases) ^ set(expected)))[:300])
-    return {'accepted': True, 'case_count': len(a.cases), 'runs': len(runs), 'outcomes': table, 'policy_sha256': policy_sha}
+    return {'accepted': True, 'case_count': len(a.cases), 'runs': len(runs), 'outcomes': table, 'policy_sha256': policy_sha,
+            'export_stdout_compared': {'proved_runs': len(STDOUT_COMPARED), 'stdout_present_and_compared': sum(STDOUT_COMPARED),
+                                       'qualification': 'the export stdout is not retained by version control; where absent, the solution is bound by the sealed digest and size'}}
 
 
 def main():
