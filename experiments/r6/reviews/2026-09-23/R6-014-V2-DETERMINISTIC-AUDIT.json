@@ -1,0 +1,60 @@
+{
+  "accepted": true,
+  "case_count": 478,
+  "runs": 30,
+  "outcomes": {
+    "site_cvc4_term_mode_v1": {
+      "proof": [
+        "bracket-l069",
+        "bracket-l070",
+        "bracket-l071",
+        "bracket-l078"
+      ],
+      "backend_not_invoked": [
+        "bracket-l096",
+        "bracket-l098",
+        "bracket-l099",
+        "bracket-l101"
+      ],
+      "reconstruction_refused": [
+        "bracket-l158",
+        "bracket-l166",
+        "bracket-l175",
+        "bracket-l178",
+        "bracket-l204"
+      ],
+      "witness_not_recovered": [
+        "bracket-l170",
+        "bracket-l180"
+      ]
+    },
+    "site_cvc4_default_closer_v1": {
+      "closed_and_validated": [
+        "bracket-l069",
+        "bracket-l070",
+        "bracket-l071",
+        "bracket-l078",
+        "bracket-l166",
+        "bracket-l175",
+        "bracket-l178",
+        "bracket-l204"
+      ],
+      "backend_not_invoked": [
+        "bracket-l096",
+        "bracket-l098",
+        "bracket-l099",
+        "bracket-l101"
+      ],
+      "witness_not_recovered": [
+        "bracket-l158",
+        "bracket-l170",
+        "bracket-l180"
+      ]
+    }
+  },
+  "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb",
+  "auditor_sha256": "d506f3759429387a554569bee4c29c5109e17de7d4acafa66da8174265c9c98a",
+  "model_calls": 0,
+  "credentials_read": 0,
+  "scope": "retained deterministic-arm evidence; the certificate check is re-executed, the kernel replays are derived from their raw reports; no episode is rerun"
+}
