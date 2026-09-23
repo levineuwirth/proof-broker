@@ -1,0 +1,40 @@
+{
+  "source_fragment": "UF",
+  "omitted": [
+    {
+      "name": "hf",
+      "reason": "Unsupported proposition in arithmetic projection"
+    },
+    {
+      "name": "h1",
+      "reason": "Unsupported arithmetic arity"
+    },
+    {
+      "name": "h2",
+      "reason": "Unsupported arithmetic arity"
+    },
+    {
+      "name": "h1_",
+      "reason": "Unsupported arithmetic arity"
+    },
+    {
+      "name": "h2_",
+      "reason": "Unsupported arithmetic arity"
+    },
+    {
+      "name": "hne",
+      "reason": "Unsupported proposition in arithmetic projection"
+    }
+  ],
+  "omitted_names": [
+    "hf",
+    "h1",
+    "h2",
+    "h1_",
+    "h2_",
+    "hne"
+  ],
+  "posed_fragment": "LIA",
+  "input_ir_sha256": "3775a5ab2f496bd0f82a2d07338dc1494e66a5d291daffab8bee5f39baf2927e",
+  "final_ir_sha256": "3775a5ab2f496bd0f82a2d07338dc1494e66a5d291daffab8bee5f39baf2927e"
+}

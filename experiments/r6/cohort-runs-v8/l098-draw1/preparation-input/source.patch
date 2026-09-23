@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import PreparationCapture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -95,7 +96,7 @@
+   rcases lt_or_gt_of_ne hne with hlt | hgt
+   · have hle : c ≤ c' - 1 := by omega
+     have := hf c (c' - 1) hle
+-    omega
++    r6_prepare "Bracket.threshold_unique.r6_site_l098" "bracket-l098"
+   · have hle : c' ≤ c - 1 := by omega
+     have := hf c' (c - 1) hle
+     omega

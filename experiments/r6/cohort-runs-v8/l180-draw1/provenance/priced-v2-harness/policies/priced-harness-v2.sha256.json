@@ -1,0 +1,11 @@
+{
+  "priced_audit_v2.py": "14df47a0f7ff7c70c47b6958a7ea090322da7a5860b2e27c6f2e5dc49b4694b9",
+  "priced_budget_v2.py": "f83d9353d986e62d76ef3966c55d971ba72b7520286bbf676f618ec4f4897721",
+  "priced_contract_v2.py": "045c71a33435f7b575a894981986f4053e8a053cac8d5fa8d0761bfb8978ebf2",
+  "priced_episode_v2.py": "c7c08db070b7e17b47bcbcb3499dc8237f1d1cc3eb4e8ddf2bfaed4f19479767",
+  "priced_https_v2.py": "10e459e3fa99475cf2bee9b4f95b481cec8dfd97912a909258ea69f80bf9e01f",
+  "priced_payload_v2.py": "3438298dbcd969900421ea8d3bc27d5df86c7b7af490c0c99eba53c29b8e57be",
+  "pricing_capture_v2.py": "181516665c9ed696f7f847ddb273b83ab2161dc3f61d8f178e3404a97fda1cc5",
+  "pricing_gate_v2.py": "19199a6a4c54fd5a24f3b5ccc44320dbe211ab2421278dd6f4d7afc10a4097eb",
+  "test_pricing_v2.py": "b242279dffc88dc489a538e082b38664f73e4995392445879cd560e36729c9d6"
+}
