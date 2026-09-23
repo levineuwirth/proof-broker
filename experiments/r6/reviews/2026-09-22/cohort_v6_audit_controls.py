@@ -19,6 +19,11 @@ rejected at its own case, and one control per new binding: the refused path's tr
 IR, a coherent relabeling of the refused closer, foreign inputs in the certificate-check, assembly, preparation, pipeline and replay
 commands, an altered export target, and a wrong historical kernel target in v4. Two earlier controls now reject at the new
 evidence-binding case, which runs before the closer-selection and consumption cases.
+
+Revision 3, after the revision 2 review (`reviews/2026-09-23/cohort_v6_v2_review_probes.py`): its three rejecting probes under their names,
+and one control per new binding: a changed helper on the proof path, a library pair removed in one run, a library pair added to every copy
+of one stage (so the first-observed block cannot be its own authority), and a challenge path inside the recorded root. The review's fourth
+probe (`replay_challenge_unverified_location`) is a path qualification: it stays accepted, and is recorded under `CHARACTERIZED`.
 """
 import argparse
 import importlib.util
@@ -151,7 +156,19 @@ EXPECTED = {
     'validation_foreign_solution': f'{NAT}:stages:commands_reconstructed',
     'export_target_altered': f'{NAT}:stages:commands_reconstructed',
     'history_v4_wrong_kernel_target': 'history_v4:kernel_reports_bound',
+    # revision 2 review: the three rejecting probes, by the reviewer's names
+    'refused_reconstruction_helper_changed': f'{REF}:reconstruction:sources_bound',
+    'refused_reconstruction_source_changed': f'{REF}:reconstruction:sources_bound',
+    'library_source_escapes_system_directory': 'l069-draw1:stages:commands_reconstructed',  # every copy altered; the first run audited rejects
+    # revision 2 review: one control per further binding
+    'proof_reconstruction_helper_changed': f'{LAST}:reconstruction:sources_bound',
+    'library_pair_removed_in_one_run': f'{LAST}:stages:commands_reconstructed',
+    'library_pair_added_to_every_assembly': 'l069-draw1:stages:commands_reconstructed',
+    'challenge_path_inside_recorded_root': f'{NAT}:stages:commands_reconstructed',
 }
+# Accepted by design: a qualification, not a binding (the temporary challenge's bytes were not retained).
+CHARACTERIZED = {'replay_challenge_unverified_location': 'both replay commands name one path of the driver pattern outside the recorded root; accepted, '
+                                                         'because the temporary copy was not retained and its content is a property of the pinned driver'}
 REVIEW_PROBES = ('refused_dispatch_certificate', 'refused_dispatch_final_ir', 'refused_verification_started_certificate',
                  'coherent_wrong_success_closer', 'refused_reconstruction_foreign_packet', 'historical_wrong_kernel_target')
 NOT_APPLICABLE = {'revision_row_removed': 'one revision: its only revision row is the activation, exercised by activation_row_removed',
@@ -543,6 +560,50 @@ def mutate(name, paths):
                 target = v['final_validation']['local']['targets'][0]; assert target['name'] != 'Unrelated.theorem'; target['name'] = 'Unrelated.theorem'
             rebind_verdict(run, rows, verdict)
         reseal_history(base/run_name, change)
+    # ---------------------------------------------------------------- revision 2 review
+    elif name in ('refused_reconstruction_helper_changed', 'proof_reconstruction_helper_changed'):
+        def change(run, rows):
+            p = run/'input/ProposalCapture.lean'; text = p.read_text(); old = 'evalTactic (← `(tactic| proof_broker_term [$adapter:ident]))'
+            assert text.count(old) == 1; p.write_text(text.replace(old, 'evalTactic (← `(tactic| omega))'))
+        refinalize(root/(REF if name.startswith('refused') else LAST), change)
+    elif name == 'refused_reconstruction_source_changed':
+        def change(run, rows):
+            p = run/'input/Frozen.lean'; other = root/NAT/'input/Frozen.lean'; assert p.read_bytes() != other.read_bytes(); p.write_bytes(other.read_bytes())
+        refinalize(root/REF, change)
+    elif name in ('library_source_escapes_system_directory', 'library_pair_added_to_every_assembly'):
+        stage, pair = (('reconstruct', ['--ro-bind', '/usr/lib/../../etc/hostname', '/usr/lib/review-extra-data']) if name.startswith('library_source')
+                       else ('assembly', ['--ro-bind', '/usr/lib/libz.so.1', '/usr/lib/libz.so.1']))
+        changed = 0
+        for run in sorted(root.iterdir()):
+            if not (run/'stages'/stage).is_dir(): continue
+            def change(run, rows):
+                def command(v):
+                    argv = v['argv']; i = len(audit.SANDBOX) + (12 if stage == 'reconstruct' else 0)  # after the toolchain block, inside the library block
+                    assert argv[i] == '--ro-bind' and argv[i+1].startswith('/usr/lib/'); argv[i:i] = pair
+                change_json(run, f'stages/{stage}/command.json', command)
+            refinalize(run, change); changed += 1
+        assert changed >= 4
+    elif name == 'library_pair_removed_in_one_run':
+        def change(run, rows):
+            def command(v):
+                argv = v['argv']; i = argv.index('--ro-bind', len(audit.SANDBOX)); assert argv[i+1].startswith('/usr/lib/'); del argv[i:i+3]
+            change_json(run, 'stages/certificate-check/command.json', command)
+        refinalize(root/LAST, change)
+    elif name == 'replay_challenge_unverified_location':  # characterized: must stay accepted
+        def change(run, rows):
+            for stage in ('validation-local', 'validation-whole'):
+                def command(v):
+                    argv = v['argv']; i = argv.index('/challenge.ndjson'); argv[i-1] = '/etc/r6-campaign-challenge-review/challenge.ndjson'
+                change_json(run, f'stages/{stage}/command.json', command)
+        refinalize(nat, change)
+    elif name == 'challenge_path_inside_recorded_root':
+        def change(run, rows):
+            for stage in ('validation-local', 'validation-whole'):
+                def command(v):
+                    argv = v['argv']; i = argv.index('/challenge.ndjson')
+                    argv[i-1] = v['run']+'/r6-campaign-challenge-inside/challenge.ndjson'
+                change_json(run, f'stages/{stage}/command.json', command)
+        refinalize(nat, change)
     else: raise AssertionError(name)
 
 
@@ -574,11 +635,22 @@ def main():
             assert observed['accepted'] is False and observed['rejected_case'] == EXPECTED[name], (name, observed)
             results[name] = {'rejected': True, 'rejected_case': observed['rejected_case']}
             print(name, observed['rejected_case'], flush=True)
+    characterized = {}
+    for name in CHARACTERIZED:
+        with tempfile.TemporaryDirectory(prefix='r6-013-controls-') as temp:
+            temp = Path(temp)
+            paths = {'runs': temp/'runs', 'ledgers': temp/'ledgers', 'representability': temp/'representability', 'v4': temp/'v4', 'v5': temp/'v5'}
+            shutil.copytree(ROOT/audit.RUNS, paths['runs']); shutil.copytree(ROOT/'ledgers/campaigns', paths['ledgers'])
+            shutil.copytree(ROOT/audit.REPRESENTABILITY, paths['representability'])
+            shutil.copytree(ROOT/audit.HISTORY_V4['runs'], paths['v4']); shutil.copytree(ROOT/audit.HISTORY_V5['runs'], paths['v5'])
+            mutate(name, paths); observed = run_audit(paths)
+            assert observed['accepted'] is True, (name, observed)  # the documented qualification: a path claim, not a content binding
+            characterized[name] = {'accepted': True, 'reason': CHARACTERIZED[name]}; print(name, 'accepted (characterized)', flush=True)
     if args.only:
         print(json.dumps({'trial': True, 'controls': len(results)})); return
     assert tuple(results) == CONTROLS and set(results) == {'baseline', *EXPECTED}, sorted(results)
     record = {'passed': True, 'controls': len(results), 'expected_controls': list(CONTROLS), 'results': results, 'not_applicable': NOT_APPLICABLE,
-              'review_probes': list(REVIEW_PROBES), 'baseline_cases': results['baseline']['case_count'],
+              'review_probes': list(REVIEW_PROBES), 'baseline_cases': results['baseline']['case_count'], 'characterized': characterized,
               'runs': audit.RUNS, 'revision': audit.REVISION, 'auditor_sha256': r6.sha(Path(__file__).with_name('cohort_v6_audit.py')),
               'program_sha256': r6.sha(Path(__file__)), 'live_model_calls': 0, 'credentials_read': 0,
               'scope': 'temporary copies; one relationship per mutation; exact control population'}

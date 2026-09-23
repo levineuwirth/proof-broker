@@ -31,6 +31,17 @@ Revision 2, after the R6-013 review (`reviews/2026-09-23/R6-013-REVIEW.md`, four
 3. `stages:commands_reconstructed`: every non-sender stage command is rebuilt from the stage code, the pinned tools and this run's own inputs
    (the host library closure is bounded to system libraries, equal across runs for the same stage), and compared exactly;
 4. historical kernel successes are bound to their retained raw replay reports (target, type, axioms, receipts, verdict), as the proof path is.
+
+Revision 3, after the revision 2 review (`reviews/2026-09-23/R6-013-V2-REVIEW.md`, two P2 findings and two qualifications):
+1. `reconstruction:sources_bound`, for every run that reaches reconstruction, before any refusal is attributed or the extension registry
+   is derived from imports: the reconstruction input's source, helper and patch are the permitted extraction for this site, byte for byte;
+2. the library block of every non-sender stage equals, pair by pair, a reviewed inventory anchored to the stage commands of the commit
+   that recorded the runs (`LIBRARY_INVENTORY`, pinned by digest), and every entry is lexically contained: a normalized absolute host
+   path under `/usr/lib/` and guest under `/usr/lib/` or `/usr/lib64/`, no traversal; cross-run equality remains a further check;
+3. the replay challenge is checked as a path claim only: both replays name one path of the driver's temporary naming pattern, outside
+   the recorded root. Its bytes were not retained; that the driver hashes the challenge before replay is a property of the pinned source;
+4. `stage_tools` invokes `run.build_tools`, which runs cached `lake build`s of the exporter and checker; the audit runs no episode and
+   no proof replay.
 """
 import argparse
 import copy
@@ -269,7 +280,8 @@ def expected_cases(expected):
             names += [f'{run}:transport:local_send_and_remote_receipt', f'{run}:grant:ordered_before_first_header_byte',
                       f'{run}:{kind}:response_bound', f'{run}:{kind}:attribution_passed_through']
         if kind in ('proof', 'reconstruction_refused'):
-            names += [f'{run}:certificate:verified_and_bound', f'{run}:reconstruction:preparation_ir_equal', f'{run}:reconstruction:evidence_bound',
+            names += [f'{run}:certificate:verified_and_bound', f'{run}:reconstruction:preparation_ir_equal', f'{run}:reconstruction:sources_bound',
+                      f'{run}:reconstruction:evidence_bound',
                       f'{run}:reconstruction:closer_selected']
         if kind == 'proof':
             names += [f'{run}:proof:certificate_consumed', f'{run}:proof:shared_checker', f'{run}:proof:original_declarations_validated', f'{run}:proof:export_recorded']
@@ -790,7 +802,8 @@ def stage_outcomes(a, run, name, kind, policy):
 
 def stage_tools():
     """The pinned tools every site stage used: the D1 toolchain and environment and the revision 2 bridge, as `consumption_overlay.setup`
-    assembles them, recomputed on this host without building anything."""
+    assembles them, recomputed on this host. `run.build_tools` runs cached `lake build`s of the exporter and checker (no episode, no proof
+    replay); the bridge paths are only named."""
     compiler, exporter, checker = r6.build_tools(task=r6.D1)
     mounts, lean_path, _ = r6.environment((ROOT.parents[1]/'lean-bridge/.lake/packages').resolve(), compiler, r6.D1)
     dest = consumption_overlay.DEST; native = dest/'bridge/.lake/build/lib/lean'
@@ -833,6 +846,43 @@ SANDBOX = ['bwrap', '--unshare-all', '--die-with-parent', '--new-session', '--ca
            '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
            '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/work', '--chdir', '/work']
 LIBRARY_BLOCKS = {}
+# The reviewed library inventory: every non-sender stage's (host, guest) library pairs, read from the stage commands of the commit that
+# recorded the v6 runs and compared there with the pinned binaries' dependency closure (reviews/2026-09-23/library_inventory.py).
+LIBRARY_INVENTORY = ROOT/'reviews/2026-09-23/R6-013-V3-LIBRARY-INVENTORY.json'
+LIBRARY_INVENTORY_SHA256 = '562ad153446968c19434449f3fec4ab34f58e9166fe7f2aad45cf4b228e1bead'
+
+
+def library_inventory():
+    data = LIBRARY_INVENTORY.read_bytes()
+    if sha(data) != LIBRARY_INVENTORY_SHA256: raise ValueError('library inventory differs from the reviewed one')
+    return {stage: [tuple(pair) for pair in pairs] for stage, pairs in json.loads(data)['stages'].items()}
+
+
+def contained(host, guest):
+    """Lexical containment only: normalized absolute paths, the host under /usr/lib/, the guest under /usr/lib/ or /usr/lib64/."""
+    import posixpath
+    normal = lambda x: x.startswith('/') and posixpath.normpath(x) == x and '/../' not in x+'/' and '/./' not in x+'/'
+    return normal(host) and normal(guest) and host.startswith('/usr/lib/') and guest.startswith(('/usr/lib/', '/usr/lib64/'))
+
+
+def split_command(argv, stage, spec, tools, recorded_root, challenge=None):
+    """The recorded command as (head equal, tail equal, library pairs) against the command `site_stage.stage` builds from `spec`."""
+    binary, args, mounts, compiled, env = spec
+    if challenge is not None: mounts = [(challenge, g) if h is None else (h, g) for h, g in mounts]
+    compiler = tools['compiler'] if compiled else None
+    head = list(SANDBOX)
+    if compiler:
+        head += ['--ro-bind', str(compiler/'lib'), '/toolchain/lib', '--ro-bind', str(compiler/'bin/lean'), '/toolchain/bin/lean',
+                 '--setenv', 'LEAN_SYSROOT', '/toolchain', '--setenv', 'LD_LIBRARY_PATH', '/toolchain/lib/lean:/toolchain/lib']
+    program = '/toolchain/bin/program' if compiler else '/runner/bin/program'
+    tail = [x for host, guest in mounts for x in ('--ro-bind', str(Path(host).resolve()), guest)]
+    tail += [x for k, v in env.items() for x in ('--setenv', k, v)]
+    tail += ['--ro-bind', str(binary), program, '--bind', str(recorded_root/'stages'/stage/'output'), '/out', program, *args]
+    middle = argv[len(head):len(argv)-len(tail)] if len(argv) >= len(head)+len(tail) else None
+    pairs = None
+    if middle is not None and len(middle) % 3 == 0 and all(middle[i] == '--ro-bind' for i in range(0, len(middle), 3)):
+        pairs = [(middle[i+1], middle[i+2]) for i in range(0, len(middle), 3)]
+    return argv[:len(head)] == head, argv[len(argv)-len(tail):] == tail, pairs
 
 
 def stage_commands(a, run, name, kind, task, tools, root):
@@ -840,33 +890,23 @@ def stage_commands(a, run, name, kind, task, tools, root):
     one host-dependent part, the shared-library closure, must be system libraries mounted at their own paths and equal for the same stage
     across runs; the challenge is the verified temporary copy, one file for both replays."""
     problems = []; recorded_root = Path(root+RUNS)/name; challenge = {}
-    specs = stage_specs(recorded_root, task, tools)
+    specs = stage_specs(recorded_root, task, tools); inventory = library_inventory()
     for stage in sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()):
         if stage == 'proposal-1': continue  # the sender: `command:reconstructed_from_pinned_runtime_and_layout`
         cmd = load(run/'stages'/stage/'command.json'); argv = cmd['argv']
         if stage not in specs or cmd['run'] != str(recorded_root) or cmd['stage'] != stage: problems.append(stage+': identity'); continue
-        binary, args, mounts, compiled, env = specs[stage]
-        if stage.startswith('validation-'):
+        source = None
+        if stage.startswith('validation-'):  # a path claim only: the temporary copy's bytes were not retained
             hits = [i for i, x in enumerate(argv) if x == '/challenge.ndjson' and argv[i-2] == '--ro-bind']
             source = Path(argv[hits[0]-1]) if len(hits) == 1 else None
             if source is None or source.name != 'challenge.ndjson' or not source.parent.name.startswith('r6-campaign-challenge-') or str(source).startswith(root):
-                problems.append(stage+': challenge'); continue
-            challenge[stage] = source; mounts = [(source, g) if h is None else (h, g) for h, g in mounts]
-        compiler = tools['compiler'] if compiled else None
-        head = list(SANDBOX)
-        if compiler:
-            head += ['--ro-bind', str(compiler/'lib'), '/toolchain/lib', '--ro-bind', str(compiler/'bin/lean'), '/toolchain/bin/lean',
-                     '--setenv', 'LEAN_SYSROOT', '/toolchain', '--setenv', 'LD_LIBRARY_PATH', '/toolchain/lib/lean:/toolchain/lib']
-        program = '/toolchain/bin/program' if compiler else '/runner/bin/program'
-        tail = [x for host, guest in mounts for x in ('--ro-bind', str(Path(host).resolve()), guest)]
-        tail += [x for k, v in env.items() for x in ('--setenv', k, v)]
-        tail += ['--ro-bind', str(binary), program, '--bind', str(recorded_root/'stages'/stage/'output'), '/out', program, *args]
-        libraries = argv[len(head):len(argv)-len(tail)]
-        well_formed = (argv[:len(head)] == head and argv[len(argv)-len(tail):] == tail and len(libraries) % 3 == 0
-                       and all(libraries[i] == '--ro-bind' and libraries[i+1].startswith('/usr/lib/') and libraries[i+2].startswith(('/usr/lib/', '/usr/lib64/'))
-                               for i in range(0, len(libraries), 3)))
-        if not well_formed: problems.append(stage+': command differs from its rebuilt form'); continue
-        if LIBRARY_BLOCKS.setdefault(stage, libraries) != libraries: problems.append(stage+': library closure differs across runs')
+                problems.append(stage+': challenge path'); continue
+            challenge[stage] = source
+        head_ok, tail_ok, pairs = split_command(argv, stage, specs[stage], tools, recorded_root, source)
+        if not (head_ok and tail_ok and pairs is not None): problems.append(stage+': command differs from its rebuilt form'); continue
+        if pairs != inventory.get(stage): problems.append(stage+': library pairs differ from the reviewed inventory')
+        if not all(contained(h, g) for h, g in pairs): problems.append(stage+': a library mount is not contained in the system library directories')
+        if LIBRARY_BLOCKS.setdefault(stage, pairs) != pairs: problems.append(stage+': library closure differs across runs')
     if len(set(challenge.values())) > 1: problems.append('the two replays read different challenge copies')
     a.require(not problems, f'{name}:stages:commands_reconstructed', '; '.join(problems))
 
@@ -1266,6 +1306,10 @@ def site_shared_checker(task, packet, verdict, rows, path, read, receipt):
     require(not problems, 'replay reports: '+', '.join(problems))
 
 
+def record_task(record):
+    return site_task.get(record['site_id'])
+
+
 def reconstruction_common(a, run, name, rows, sp, request_bytes, record, response, kind):
     """What proof and refused reconstruction share, each stage its own case: the generated witness verified and bound to the classification's
     exact certificate; the IR reconstruction reified equal to the prepared one (the guard passed); one closer selected, for this certificate."""
@@ -1286,8 +1330,19 @@ def reconstruction_common(a, run, name, rows, sp, request_bytes, record, respons
     reified, dispatched = observed['reification_finished']['ir'], observed['dispatch_started']['ir']
     a.require(merged_directives(reified) == evidence['input_ir'] == load(run/'input-ir.json') == load(run/'prepared.json')['input_ir'] == dispatched
               and GUARD.encode() not in log, f'{name}:reconstruction:preparation_ir_equal')
+    # the reconstruction's inputs are the permitted extraction for this site, before any refusal is attributed or the extension registry is
+    # read from imports (revision 3, review finding 1); neither a context output nor a receipt is required here
+    pristine = site_task.census.pristine().decode(); problems = []
+    for directory, helper, preparation in [('preparation-input', 'PreparationCapture', True), ('input', 'ProposalCapture', False)]:
+        source = site_task.instrumented(record_task(record), helper, 'r6_prepare' if preparation else 'r6_capture_proposal')
+        patch = ''.join(difflib.unified_diff(pristine.splitlines(True), source.splitlines(True), fromfile='Pristine.lean', tofile='Frozen.lean'))
+        root_ = run/directory
+        if sorted(p.name for p in root_.iterdir()) != ['Frozen.lean', f'{helper}.lean', 'source.patch']: problems.append(directory+': files')
+        elif not ((root_/'Frozen.lean').read_text() == source and (root_/f'{helper}.lean').read_text() == site_task.capture_source(record_task(record), preparation)
+                  and (root_/'source.patch').read_text() == patch): problems.append(directory+': contents')
+    a.require(not problems, f'{name}:reconstruction:sources_bound', ', '.join(problems))
     # every observation the bridge made is bound to this run's packet, on the refused path as on the proof path (review finding 1)
-    children = [r for r in rows if r['source'] == 'child_report']; cert = evidence['certificate']; problems = []
+    children = [r for r in rows if r['source'] == 'child_report']; cert = evidence['certificate']; problems = []  # evidence bindings
     start = next(r['sequence'] for r in rows if r['stage'] == 'reconstruct' and r['event'] == 'stage_started')
     finish = next(r['sequence'] for r in rows if r['stage'] == 'reconstruct' and r['event'] == 'stage_finished')
     if [r['event'] for r in children][:len(RECONSTRUCTED)] != list(RECONSTRUCTED): problems.append('observation sequence')
@@ -1707,7 +1762,10 @@ def audit(root, ledgers, representability=None, v4_root=None, v5_root=None):
                   eligibility=classes, population={n: list(v) for n, v in expected.items()}, carried_forward=CARRIED_FORWARD,
                   contract_sha256=contract_digest, entity_body_sha256={t: sha(next(iter(g.values()))) for t, g in bodies.items()}, identities=identities,
                   live_model_calls=0, credentials_read=0, program_sha256=sha(Path(__file__).read_bytes()),
-                  scope='audit over retained bytes, with the classification recomputed; no native execution, no inference')
+                  library_inventory_sha256=LIBRARY_INVENTORY_SHA256,
+                  challenge_claim='both replays name one temporary path of the driver pattern outside the recorded root; the bytes were not retained, '
+                                  'and the driver hashing the challenge before replay is a property of the pinned source, not a retained-byte check',
+                  scope='audit over retained bytes, with the classification recomputed; no native episode or proof replay; cached tool build invoked (run.build_tools)')
     return result
 
 
