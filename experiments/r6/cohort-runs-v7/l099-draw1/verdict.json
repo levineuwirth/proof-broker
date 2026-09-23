@@ -1,0 +1,84 @@
+{
+  "schema_version": "r6-cohort-proof-1",
+  "task_id": "bracket-l099",
+  "search_policy": "farkas_cohort_v7",
+  "mode": "rehearsal",
+  "manifest_sha256": "d9f7eeca3b964b8322efcf29f0e72671f799c30e78802239a7ee83ef2d8c30ae",
+  "challenge_sha256": "2ee48a260fc8389f8671bce0b51ef505ecf624dd9b19b2e476a6e81de6ad895a",
+  "request_sha256": "fb1cbeae50d2fb6feef13d94eeb7ef492f4e4535d8c34989bd4d6df31fe3127b",
+  "solution_sha256": "9f088eb39bf6c3a7f6cbb15ebc6bb48293e8155fb6fd702fe1fd3ae0324f7ebd",
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.threshold_unique.r6_site_l099",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "f389d12ac068b39bca8e460f8380fd2fab30fa47046dfc2fc7649d26d129ee85",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 1448,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.threshold_unique",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "c089bdc5b594dea92e4e757782b7eb9f3e121374d58deb54541413b73945bab0",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 1504,
+      "accepted": true
+    }
+  },
+  "axiom_delta": {
+    "Bracket.threshold_unique.r6_site_l099": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.threshold_unique": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "certificate_validation": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:af2c427e95d788ce91be9ce4d88aead4384eac45446b995f83365696cd5b4d51"
+  },
+  "witness_proposer": "canned_provider_response",
+  "certificate_assembler": "sdk_proposal_assembler_v1",
+  "consumer_route": "openai_responses_http_fixture_v1",
+  "certificate_verified": true,
+  "closer": "term_mode_int",
+  "certificate_consumed": true,
+  "derivation_replayed": false,
+  "residual_closer": "omega",
+  "proof_replayed": true,
+  "trust_tier": 1,
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true
+}

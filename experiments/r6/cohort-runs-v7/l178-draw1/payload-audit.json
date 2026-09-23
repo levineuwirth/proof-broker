@@ -1,0 +1,20 @@
+{
+  "sanitized_context_sha256": "92b0a8dfdaf30f48d82642d16bec4e03c1c3106bf5ed03becf9be71448d61bff",
+  "source_context_sha256": "4cc791b1c012a2ad1c3139d0fdf28b7dcb5c9c60d49c59c4de9d6bc368e534ce",
+  "context_projection_is_model_visible": false,
+  "context_policy": "farkas_rows_only_v1",
+  "let_facts_preserved": [
+    "hzh1",
+    "this",
+    "this"
+  ],
+  "reifier_omissions": [
+    {
+      "name": "cert",
+      "reason": "data local at an undeclarable type (TableCert Zmax v0)"
+    }
+  ],
+  "farkas_omissions": [
+    "hzh"
+  ]
+}

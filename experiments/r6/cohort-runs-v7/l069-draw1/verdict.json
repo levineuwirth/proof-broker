@@ -1,0 +1,86 @@
+{
+  "schema_version": "r6-cohort-proof-1",
+  "task_id": "bracket-l069",
+  "search_policy": "farkas_cohort_v7",
+  "mode": "rehearsal",
+  "manifest_sha256": "99521fe9eaff2fd4769db21c3781a13f3d4cc46bf5caef157fcb457719777904",
+  "challenge_sha256": "3bb654887d2c2ff79d4995d245ee30040ad32a6a11aa6c53e17107805c3ff0e8",
+  "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+  "solution_sha256": "6a73cd9e5d149f46a5120205e25fd0cb4a0bb55d121c8cbdf44e5a3c8644f056",
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell.r6_site_l069",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "67b7a32c8ce8f89397ffb9abe9e3c067afafb460a2243e0a692e7048c29beaf1",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3630,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3722,
+      "accepted": true
+    }
+  },
+  "axiom_delta": {
+    "Bracket.lift_cell.r6_site_l069": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "certificate_validation": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:292d565a27d998b59c047ab2ce9f341ddc15f2e64f17162075377423a47f6f81"
+  },
+  "witness_proposer": "canned_provider_response",
+  "certificate_assembler": "sdk_proposal_assembler_v1",
+  "consumer_route": "openai_responses_http_fixture_v1",
+  "certificate_verified": true,
+  "closer": "term_mode_nat",
+  "certificate_consumed": true,
+  "derivation_replayed": false,
+  "residual_closer": "omega",
+  "proof_replayed": true,
+  "trust_tier": 1,
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true
+}
