@@ -1,0 +1,76 @@
+{
+  "complete": true,
+  "expected_cases": [
+    "refused_dispatch_certificate",
+    "refused_dispatch_final_ir",
+    "refused_verification_started_certificate",
+    "coherent_wrong_success_closer",
+    "refused_reconstruction_foreign_packet",
+    "historical_wrong_kernel_target",
+    "refused_reconstruction_helper_changed",
+    "refused_reconstruction_source_changed",
+    "library_source_escapes_system_directory",
+    "replay_challenge_unverified_location"
+  ],
+  "results": {
+    "refused_dispatch_certificate": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound",
+      "detail": "l204-draw1:reconstruction:evidence_bound: dispatch evidence"
+    },
+    "refused_dispatch_final_ir": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound",
+      "detail": "l204-draw1:reconstruction:evidence_bound: dispatch evidence"
+    },
+    "refused_verification_started_certificate": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound",
+      "detail": "l204-draw1:reconstruction:evidence_bound: certificate at certificate_verification_started"
+    },
+    "coherent_wrong_success_closer": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l099-draw1:reconstruction:closer_selected",
+      "detail": "l099-draw1:reconstruction:closer_selected: derived term_mode_int, observed [{'certificate': {'backend': {'config_hash': 'sha256:eefae339cb7067f88802d768e2acb3444651da3037b90e3e74441567672c4487', 'name': 'r6_fixture_witness', 'version': '1'}, 'cert_version': '1.0', 'dispatch_context_hash': 'sha256:7265a8b3f83bd0854f3715cd9808331095f6c8d3d43dd"
+    },
+    "refused_reconstruction_foreign_packet": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l204-draw1:stages:commands_reconstructed",
+      "detail": "l204-draw1:stages:commands_reconstructed: reconstruct: command differs from its rebuilt form"
+    },
+    "historical_wrong_kernel_target": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "history_v5:qualified_kernel_successes",
+      "detail": "history_v5:qualified_kernel_successes: l096-draw1: local: report, verdict and receipt differ, l096-draw1"
+    },
+    "refused_reconstruction_helper_changed": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 655
+    },
+    "refused_reconstruction_source_changed": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 655
+    },
+    "library_source_escapes_system_directory": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 655
+    },
+    "replay_challenge_unverified_location": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 655
+    }
+  },
+  "auditor_sha256": "94e62a71aa6bd28c1f017454c01fd07d3945c06b4e0738ba8900fb80b017abfe",
+  "program_sha256": "ec7939d242c03028210a60378555a25ee24b7a8ef2030adf0385bb8da5ad0405",
+  "scope": "temporary copies; full 655-case audit before each mutation; auditor invokes build_tools; no episode, credential or provider execution"
+}

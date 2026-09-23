@@ -1,0 +1,104 @@
+{
+  "v4": {
+    "runs": 13,
+    "events": 447,
+    "sealed_entries": 3449,
+    "proofs": 4,
+    "certificate_accepted": 9
+  },
+  "v5": {
+    "runs": 16,
+    "events": 547,
+    "sealed_entries": 4158,
+    "proofs": 6,
+    "certificate_accepted": 10
+  },
+  "v6": {
+    "runs": 16,
+    "events": 559,
+    "sealed_entries": 4178,
+    "proofs": 6,
+    "certificate_accepted": 10
+  },
+  "proof_exports_v5_v6_identical": {
+    "l069-draw1": {
+      "compressed_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+      "export_sha256": "6a73cd9e5d149f46a5120205e25fd0cb4a0bb55d121c8cbdf44e5a3c8644f056",
+      "closer": "term_mode_nat"
+    },
+    "l070-draw1": {
+      "compressed_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+      "export_sha256": "4405d62eef4b30f935ec679100a5c976e137be0fc1da9dfd0a2a6993efc7afed",
+      "closer": "term_mode_nat"
+    },
+    "l071-draw1": {
+      "compressed_sha256": "f3274e63eaebff952573e8209d0d198ba02d060203f9a4302469d3d2dd667d3f",
+      "export_sha256": "03ae6c19f0e61fcf4cc65ad11fecf683fccf8b00b460564ae0cd0ef0495bc3a8",
+      "closer": "term_mode_nat"
+    },
+    "l078-draw1": {
+      "compressed_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+      "export_sha256": "fc0136e9847e58161e4fa48f08a3ec7a3663642cf1aa44964b820b92968ee213",
+      "closer": "term_mode_nat"
+    },
+    "l096-draw1": {
+      "compressed_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+      "export_sha256": "656ea4d6b79b5af7a059bc16e61b04afaf31c7851e623cf898235dfe856ed0a0",
+      "closer": "term_mode_int"
+    },
+    "l099-draw1": {
+      "compressed_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+      "export_sha256": "9f088eb39bf6c3a7f6cbb15ebc6bb48293e8155fb6fd702fe1fd3ae0324f7ebd",
+      "closer": "term_mode_int"
+    }
+  },
+  "preparation_v3_v4_identical": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "request_differing_fields_v2_v4": {
+    "bracket-l096": [
+      "/binding/final_ir_sha256",
+      "/binding/input_ir_sha256",
+      "/problem/rows/0/terms/1/variable",
+      "/problem/rows/1/terms/1/variable"
+    ],
+    "bracket-l099": [
+      "/binding/final_ir_sha256",
+      "/binding/input_ir_sha256",
+      "/problem/rows/0/terms/1/variable",
+      "/problem/rows/1/terms/1/variable"
+    ],
+    "bracket-l166": [
+      "/binding/final_ir_sha256",
+      "/binding/input_ir_sha256"
+    ],
+    "bracket-l170": [
+      "/binding/final_ir_sha256",
+      "/binding/input_ir_sha256"
+    ],
+    "bracket-l175": [
+      "/binding/final_ir_sha256",
+      "/binding/input_ir_sha256"
+    ],
+    "bracket-l204": [
+      "/binding/final_ir_sha256",
+      "/binding/input_ir_sha256"
+    ]
+  },
+  "program_sha256": "433975e501c308dbfd3c53196b8e22b0e1672ba54f7ae119ca6fcd7c069bb2c7",
+  "scope": "retained-byte recomputation; no native or provider execution"
+}

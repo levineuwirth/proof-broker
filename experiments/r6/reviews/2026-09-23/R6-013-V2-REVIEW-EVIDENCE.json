@@ -1,0 +1,20 @@
+{
+  "reviewed_commit": "59450aff",
+  "fresh_audit_cases": 655,
+  "recorded_controls_verified": 94,
+  "full_control_suite_rerun": false,
+  "original_probes_rerun_and_rejected": 6,
+  "new_probes_accepted": 4,
+  "blocking_findings": 2,
+  "cached_tool_build_invoked": true,
+  "native_episodes": 0,
+  "proof_replays": 0,
+  "provider_calls": 0,
+  "files_sha256": {
+    "cohort_v6_v2_review_probes.py": "ec7939d242c03028210a60378555a25ee24b7a8ef2030adf0385bb8da5ad0405",
+    "R6-013-V2-REVIEW.md": "49b5b3c40244956760122ffa8ba90cf5ff5d5aad633b0200d13ea6a859b41155",
+    "R6-013-V2-REVIEW-AUDIT.json": "6a1b57734ee090d14dae5383ac78b06931df2d1bd6ecc8cabb21b51bd6999911",
+    "R6-013-V2-REVIEW-PROBES.json": "ae52ceb66d3f32b6e9d3f1685eef6b4194ae37906c7c6f347496d60963e56223",
+    "R6-013-V2-REVIEW-RECOUNT.json": "3068115dbb65d4c91072a57c21e548e9edd398c6a642ae96d8d20fcf9679fa8d"
+  }
+}
