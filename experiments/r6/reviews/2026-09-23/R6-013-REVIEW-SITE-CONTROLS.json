@@ -1,0 +1,429 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "site_stage_differs_by_the_supervisor_line",
+    "supervisor_shim_runs_frozen_main",
+    "registry_admits_only_verified_primary_sites",
+    "registered_controls_unchanged",
+    "instrumentation_is_the_census_form_renamed",
+    "helpers_are_the_frozen_overlay_plus_listed_repair",
+    "site_environment_equals_d1",
+    "farkas_solver_exact",
+    "classification_recomputed_from_retained_runs",
+    "denominator_preserved",
+    "policy_c_admission",
+    "certificates_and_points_checked_against_retained_rows",
+    "line70_prepared_problem_is_the_d1_control",
+    "revision_one_retained_and_corrected",
+    "preparation_repair_is_the_pinned_tactic",
+    "differential_preparation_matches_reconstruction",
+    "revision_two_retained_and_compared",
+    "consumption_overlay_is_observation_only",
+    "setup_differs_by_the_build_line",
+    "revision_three_retained_and_reproduced"
+  ],
+  "check_count": 20,
+  "checks": [
+    {
+      "name": "site_stage_differs_by_the_supervisor_line",
+      "passed": true,
+      "detail": {
+        "changed_lines": 1
+      }
+    },
+    {
+      "name": "supervisor_shim_runs_frozen_main",
+      "passed": true,
+      "detail": {
+        "shim": "register verified primary sites, then the frozen supervise.main"
+      }
+    },
+    {
+      "name": "registry_admits_only_verified_primary_sites",
+      "passed": true,
+      "detail": {
+        "unknown": "rejected",
+        "tampered_manifest": "rejected",
+        "unbound_addendum": "rejected",
+        "changed_decision": "rejected",
+        "registered": 15
+      }
+    },
+    {
+      "name": "registered_controls_unchanged",
+      "passed": true,
+      "detail": {
+        "controls": [
+          "verinf-d1-70",
+          "c1-c8-2p18"
+        ],
+        "registry_file": "unchanged"
+      }
+    },
+    {
+      "name": "instrumentation_is_the_census_form_renamed",
+      "passed": true,
+      "detail": {
+        "sites": 15,
+        "helpers": 2,
+        "hunks": 2,
+        "retained_input_reproduced": "bracket-l098"
+      }
+    },
+    {
+      "name": "helpers_are_the_frozen_overlay_plus_listed_repair",
+      "passed": true,
+      "detail": {
+        "preparation": "frozen overlay plus the listed R6-013 repair (prefix and three hunks)",
+        "proposal": "frozen overlay, unchanged"
+      }
+    },
+    {
+      "name": "site_environment_equals_d1",
+      "passed": true,
+      "detail": {
+        "files": [
+          "upstream-lake-manifest.json",
+          "upstream-lakefile.toml",
+          "lean-toolchain",
+          "Pristine.lean",
+          "environment-inventory"
+        ],
+        "tampered": "rejected"
+      }
+    },
+    {
+      "name": "farkas_solver_exact",
+      "passed": true,
+      "detail": {
+        "d1_known_witness": "accepted",
+        "d1_found": {
+          "3": 2,
+          "18": 1
+        },
+        "feasible_point": {
+          "x": "0"
+        },
+        "equality_negative_multiplier": {
+          "0": -1,
+          "1": 1,
+          "2": 1
+        },
+        "shared_name_by_index": {
+          "0": 1,
+          "1": 1,
+          "2": 1
+        },
+        "shared_name_by_name": "refused"
+      }
+    },
+    {
+      "name": "policy_c_admission",
+      "passed": true,
+      "detail": {
+        "negation": "strictness and direction",
+        "frozen_projection_agrees": 5,
+        "refused": {
+          "sdk_omission_list_trusted": "policy_omissions_differ",
+          "omission_list_emptied": "policy_omissions_differ",
+          "row_removed": "policy_rows_differ",
+          "row_replaced": "policy_rows_differ",
+          "negation_direction_flipped": "policy_rows_differ",
+          "shared_name": "policy_ambiguous_reference",
+          "ambiguous_l178_as_emitted_before_the_repair": "policy_ambiguous_reference",
+          "second_neg_goal": "policy_ambiguous_reference",
+          "zero_coefficient": "policy_rows_differ"
+        }
+      }
+    },
+    {
+      "name": "classification_recomputed_from_retained_runs",
+      "passed": true,
+      "detail": {
+        "bracket-l069": "posable_certificate",
+        "bracket-l070": "posable_certificate",
+        "bracket-l071": "posable_certificate",
+        "bracket-l078": "posable_certificate",
+        "bracket-l096": "posable_certificate",
+        "bracket-l098": "interface_refused",
+        "bracket-l099": "posable_certificate",
+        "bracket-l101": "interface_refused",
+        "bracket-l158": "interface_refused",
+        "bracket-l166": "posable_certificate",
+        "bracket-l170": "posable_negative_control",
+        "bracket-l175": "posable_certificate",
+        "bracket-l178": "posable_certificate",
+        "bracket-l180": "interface_refused",
+        "bracket-l204": "posable_certificate"
+      }
+    },
+    {
+      "name": "denominator_preserved",
+      "passed": true,
+      "detail": {
+        "classes": {
+          "preparation_failed": 0,
+          "interface_refused": 4,
+          "ambiguous_reference": 0,
+          "policy_c_refused": 0,
+          "posable_negative_control": 1,
+          "posable_certificate": 10
+        },
+        "posable": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l096",
+          "bracket-l099",
+          "bracket-l166",
+          "bracket-l170",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "posable_added_since_r6_011": [
+          "bracket-l178"
+        ],
+        "posable_removed_since_r6_011": []
+      }
+    },
+    {
+      "name": "certificates_and_points_checked_against_retained_rows",
+      "passed": true,
+      "detail": {
+        "certificates_checked_by_index": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l096",
+          "bracket-l099",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "feasible_points_checked": [
+          "bracket-l170"
+        ]
+      }
+    },
+    {
+      "name": "line70_prepared_problem_is_the_d1_control",
+      "passed": true,
+      "detail": {
+        "prepared": "equal",
+        "input_ir": "equal",
+        "d1_run": "cohort-runs-v3/r1-d1-draw1"
+      }
+    },
+    {
+      "name": "revision_one_retained_and_corrected",
+      "passed": true,
+      "detail": {
+        "prepared_problems_equal": true,
+        "arithmetic_verdict_changed": [
+          "bracket-l178"
+        ]
+      }
+    },
+    {
+      "name": "preparation_repair_is_the_pinned_tactic",
+      "passed": true,
+      "detail": {
+        "definitions": [
+          "smtSymbolTailChar",
+          "smtReservedWords",
+          "smtSafeIdent",
+          "smtSanitizeIdent",
+          "renameLocalsForSmt",
+          "normalizeGoalForBroker",
+          "introLeadingNatForalls"
+        ],
+        "order": "normalize, binders, rename, buildIR",
+        "merge": "getD",
+        "reconstruction_helper": "unchanged"
+      }
+    },
+    {
+      "name": "differential_preparation_matches_reconstruction",
+      "passed": true,
+      "detail": {
+        "absent_directives": {
+          "repaired_passes_guard": true,
+          "tamper_rejected_by_guard": true,
+          "unrepaired_rejected_by_guard": true,
+          "renamed": {}
+        },
+        "existing_directives": {
+          "repaired_passes_guard": true,
+          "tamper_rejected_by_guard": true,
+          "unrepaired_rejected_by_guard": false,
+          "renamed": {}
+        },
+        "unsafe_name": {
+          "repaired_passes_guard": true,
+          "tamper_rejected_by_guard": true,
+          "unrepaired_rejected_by_guard": true,
+          "renamed": {
+            "c'": "c_"
+          }
+        },
+        "collision_with_safe_name": {
+          "repaired_passes_guard": true,
+          "tamper_rejected_by_guard": true,
+          "unrepaired_rejected_by_guard": true,
+          "renamed": {
+            "c'": "c__1"
+          }
+        },
+        "duplicate_this": {
+          "repaired_passes_guard": true,
+          "tamper_rejected_by_guard": true,
+          "unrepaired_rejected_by_guard": true,
+          "renamed": {
+            "this": "this_1"
+          }
+        },
+        "combined": {
+          "repaired_passes_guard": true,
+          "tamper_rejected_by_guard": true,
+          "unrepaired_rejected_by_guard": true,
+          "renamed": {
+            "c'": "c__1",
+            "this": "this_1"
+          }
+        }
+      }
+    },
+    {
+      "name": "revision_two_retained_and_compared",
+      "passed": true,
+      "detail": {
+        "unchanged": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "changed": {
+          "bracket-l096": {
+            "directives_before": null,
+            "renamed": [
+              {
+                "fvar_in_original": true,
+                "index": 4,
+                "original_name": "c'",
+                "search_name": "c_"
+              },
+              {
+                "fvar_in_original": true,
+                "index": 8,
+                "original_name": "h1'",
+                "search_name": "h1_"
+              },
+              {
+                "fvar_in_original": true,
+                "index": 9,
+                "original_name": "h2'",
+                "search_name": "h2_"
+              }
+            ],
+            "rows_equal": false
+          },
+          "bracket-l099": {
+            "directives_before": null,
+            "renamed": [
+              {
+                "fvar_in_original": true,
+                "index": 4,
+                "original_name": "c'",
+                "search_name": "c_"
+              },
+              {
+                "fvar_in_original": true,
+                "index": 8,
+                "original_name": "h1'",
+                "search_name": "h1_"
+              },
+              {
+                "fvar_in_original": true,
+                "index": 9,
+                "original_name": "h2'",
+                "search_name": "h2_"
+              }
+            ],
+            "rows_equal": false
+          },
+          "bracket-l166": {
+            "directives_before": null,
+            "renamed": [],
+            "rows_equal": true
+          },
+          "bracket-l170": {
+            "directives_before": null,
+            "renamed": [],
+            "rows_equal": true
+          },
+          "bracket-l175": {
+            "directives_before": null,
+            "renamed": [],
+            "rows_equal": true
+          },
+          "bracket-l178": {
+            "directives_before": null,
+            "renamed": [
+              {
+                "fvar_in_original": true,
+                "index": 15,
+                "original_name": "this",
+                "search_name": "this_1"
+              }
+            ],
+            "rows_equal": false
+          },
+          "bracket-l204": {
+            "directives_before": null,
+            "renamed": [],
+            "rows_equal": true
+          }
+        }
+      }
+    },
+    {
+      "name": "consumption_overlay_is_observation_only",
+      "passed": true,
+      "detail": {
+        "edits": 7,
+        "added_lines": 41,
+        "split_call_lines": 5,
+        "branches": {
+          "term_mode_nat": 1,
+          "term_mode_int": 2,
+          "term_mode_poly": 1,
+          "term_mode_case_split": 1,
+          "term_mode_ext": 1
+        }
+      }
+    },
+    {
+      "name": "setup_differs_by_the_build_line",
+      "passed": true,
+      "detail": {
+        "changed": [
+          "-    dest, sources, patch = overlay.build(compiler)",
+          "+    dest, sources, patch = build(compiler)"
+        ]
+      }
+    },
+    {
+      "name": "revision_three_retained_and_reproduced",
+      "passed": true,
+      "detail": {
+        "sites": 15,
+        "identical_to_revision_3": true
+      }
+    }
+  ]
+}
