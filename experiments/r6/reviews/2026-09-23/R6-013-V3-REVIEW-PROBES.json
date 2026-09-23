@@ -1,0 +1,85 @@
+{
+  "complete": true,
+  "expected_cases": [
+    "refused_reconstruction_helper_changed",
+    "refused_reconstruction_source_changed",
+    "library_source_escapes_system_directory",
+    "replay_challenge_unverified_location",
+    "proof_reconstruction_helper_changed",
+    "library_pair_removed_in_one_run",
+    "library_pair_added_to_every_assembly",
+    "challenge_path_inside_recorded_root"
+  ],
+  "results": {
+    "refused_reconstruction_helper_changed": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l204-draw1:reconstruction:sources_bound",
+      "detail": "l204-draw1:reconstruction:sources_bound: input: contents"
+    },
+    "refused_reconstruction_source_changed": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l204-draw1:reconstruction:sources_bound",
+      "detail": "l204-draw1:reconstruction:sources_bound: input: contents"
+    },
+    "library_source_escapes_system_directory": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l069-draw1:stages:commands_reconstructed",
+      "detail": "l069-draw1:stages:commands_reconstructed: reconstruct: library pairs differ from the reviewed inventory; reconstruct: a library mount is not contained in the system library directories"
+    },
+    "replay_challenge_unverified_location": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 665
+    },
+    "proof_reconstruction_helper_changed": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l099-draw1:reconstruction:sources_bound",
+      "detail": "l099-draw1:reconstruction:sources_bound: input: contents"
+    },
+    "library_pair_removed_in_one_run": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l099-draw1:stages:commands_reconstructed",
+      "detail": "l099-draw1:stages:commands_reconstructed: certificate-check: library pairs differ from the reviewed inventory; certificate-check: library closure differs across runs"
+    },
+    "library_pair_added_to_every_assembly": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l069-draw1:stages:commands_reconstructed",
+      "detail": "l069-draw1:stages:commands_reconstructed: assembly: library pairs differ from the reviewed inventory"
+    },
+    "challenge_path_inside_recorded_root": {
+      "unmutated_copy_accepted": true,
+      "accepted": false,
+      "rejected_case": "l070-draw1:stages:commands_reconstructed",
+      "detail": "l070-draw1:stages:commands_reconstructed: validation-local: challenge path; validation-whole: challenge path"
+    }
+  },
+  "inventory": {
+    "anchor_commit": "7a82fed30ca922d4594487ec5877ce3c07ddef74",
+    "inventory_sha256": "562ad153446968c19434449f3fec4ab34f58e9166fe7f2aad45cf4b228e1bead",
+    "commands_checked": 108,
+    "runs_per_stage": {
+      "assembly": 11,
+      "capture-build": 10,
+      "certificate-check": 11,
+      "export": 6,
+      "pipeline-prepare": 16,
+      "preparation-build": 16,
+      "preparation": 16,
+      "reconstruct": 10,
+      "validation-local": 6,
+      "validation-whole": 6
+    },
+    "changed_inventory_rejected": true
+  },
+  "program_sha256": "3f1b77746af6c249e982286e50caacf36bca576b2a45ff788fe8d0f8a09b716e",
+  "prior_probe_program_sha256": "ec7939d242c03028210a60378555a25ee24b7a8ef2030adf0385bb8da5ad0405",
+  "auditor_sha256": "e335d4cd33c06120f444e430adc41bebf7967570bc19769780de3d08b909e45f",
+  "control_program_sha256": "a0fad8e4d0c0bb0f61b5c52d9f89c20e85aadee5917d5419bae9d922e7f66d39",
+  "scope": "fresh copies; baseline 665 before every mutation; cached tool builds; no native episodes, proof replays, credentials or provider calls"
+}

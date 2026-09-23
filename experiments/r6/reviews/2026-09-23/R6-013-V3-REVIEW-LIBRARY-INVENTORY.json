@@ -1,0 +1,559 @@
+{
+ "schema_version": "r6-library-inventory-1",
+ "anchor_commit": "7a82fed30ca922d4594487ec5877ce3c07ddef74",
+ "source": "experiments/r6/cohort-runs-v6/*/stages/*/command.json at the anchor commit",
+ "stages": {
+  "assembly": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "capture-build": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "certificate-check": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "export": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "pipeline-prepare": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "preparation": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "preparation-build": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "reconstruct": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "validation-local": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "validation-whole": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ]
+ },
+ "runs_per_stage": {
+  "assembly": 11,
+  "capture-build": 10,
+  "certificate-check": 11,
+  "export": 6,
+  "pipeline-prepare": 16,
+  "preparation": 16,
+  "preparation-build": 16,
+  "reconstruct": 10,
+  "validation-local": 6,
+  "validation-whole": 6
+ },
+ "current_host_closure_equal": {
+  "assembly": true,
+  "capture-build": true,
+  "certificate-check": true,
+  "export": true,
+  "pipeline-prepare": true,
+  "preparation-build": true,
+  "preparation": true,
+  "reconstruct": true,
+  "validation-local": true,
+  "validation-whole": true
+ },
+ "current_host_closure": {
+  "assembly": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "capture-build": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "certificate-check": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "export": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "pipeline-prepare": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "preparation-build": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "preparation": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "reconstruct": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libgmp.so.10.5.0",
+    "/usr/lib/libgmp.so.10"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "validation-local": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ],
+  "validation-whole": [
+   [
+    "/usr/lib/libc.so.6",
+    "/usr/lib/libc.so.6"
+   ],
+   [
+    "/usr/lib/libdl.so.2",
+    "/usr/lib/libdl.so.2"
+   ],
+   [
+    "/usr/lib/libm.so.6",
+    "/usr/lib/libm.so.6"
+   ],
+   [
+    "/usr/lib/libpthread.so.0",
+    "/usr/lib/libpthread.so.0"
+   ],
+   [
+    "/usr/lib/librt.so.1",
+    "/usr/lib/librt.so.1"
+   ],
+   [
+    "/usr/lib/ld-linux-x86-64.so.2",
+    "/usr/lib64/ld-linux-x86-64.so.2"
+   ]
+  ]
+ },
+ "lexically_contained": {
+  "assembly": true,
+  "capture-build": true,
+  "certificate-check": true,
+  "export": true,
+  "pipeline-prepare": true,
+  "preparation-build": true,
+  "preparation": true,
+  "reconstruct": true,
+  "validation-local": true,
+  "validation-whole": true
+ },
+ "program_sha256": "6f7762ba6f68ba6051b117f872aa29c5a3c24380e2584f99f55730bdf5af1f65",
+ "scope": "committed command bytes; the closure comparison is an availability check on this host, not a historical attestation"
+}
