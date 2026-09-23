@@ -1,0 +1,18 @@
+[
+  "systemd-run",
+  "--user",
+  "--scope",
+  "--quiet",
+  "--unit=r6-b345d740293947cc983246278d8b6fff.scope",
+  "-p",
+  "Delegate=yes",
+  "-p",
+  "OOMPolicy=continue",
+  "-p",
+  "TasksMax=128",
+  "-p",
+  "RuntimeMaxSec=165",
+  "/usr/bin/python3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/fixtures/r6-014-live-shaped/runs/l078-draw1/stages/capture-build/command.json"
+]
