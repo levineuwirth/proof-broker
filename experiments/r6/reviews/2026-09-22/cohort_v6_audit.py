@@ -888,7 +888,8 @@ def split_command(argv, stage, spec, tools, recorded_root, challenge=None):
 def stage_commands(a, run, name, kind, task, tools, root):
     """Every non-sender stage's recorded command, rebuilt as `site_stage.stage` builds it from that stage's call and compared exactly. The
     one host-dependent part, the shared-library closure, must be system libraries mounted at their own paths and equal for the same stage
-    across runs; the challenge is the verified temporary copy, one file for both replays."""
+    across runs; the challenge is a path claim only: both replays name one path of the driver's temporary pattern outside the recorded
+    root, whose bytes were not retained."""
     problems = []; recorded_root = Path(root+RUNS)/name; challenge = {}
     specs = stage_specs(recorded_root, task, tools); inventory = library_inventory()
     for stage in sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()):
