@@ -1,0 +1,74 @@
+{
+  "schema_version": "r6-deterministic-verdict-1",
+  "task_id": "bracket-l178",
+  "route": "site_cvc4_default_closer_v1",
+  "closer": "gated_omega",
+  "certificate_validation": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:23faf4a8db75cdb88f98844b55e3142936a71b4fee05843b103bfde51b23ffbe"
+  },
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.cell_value_neutral.r6_site_l178",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "b257fa6fbfe9b36a6a7ca98392aae01479a01d69ecf1b3a4f9925d16168de480",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": false,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3700,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.cell_value_neutral",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "10b2a967a9e2880a3d3a27031b7699a9c5fab2900cc3b1d510b56c0fa2ab523e",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3735,
+      "accepted": true
+    }
+  },
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l178": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "c7cf9dafeb5aac4d0995b60ae6dd3f492999c2abcf94761d7d212323a3105821",
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true,
+  "model_calls": 0
+}

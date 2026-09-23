@@ -1,0 +1,71 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l078",
+  "route": "site_cvc4_default_closer_v1",
+  "outcome": "closed_and_validated",
+  "closer": "gated_omega",
+  "first_error": null,
+  "error_count": 0,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "broker_closer_returned"
+  ],
+  "axiom_delta_empty": true,
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 0.9760151710070204,
+        "cgroup_cpu_usec": 944872,
+        "cgroup_memory_peak_bytes": 182575104,
+        "exit_code": 0
+      },
+      "certificate-check": {
+        "wall_seconds": 0.03423585300333798,
+        "cgroup_cpu_usec": 11565,
+        "cgroup_memory_peak_bytes": 4403200,
+        "exit_code": 0
+      },
+      "export": {
+        "wall_seconds": 3.9005780830048025,
+        "cgroup_cpu_usec": 3831189,
+        "cgroup_memory_peak_bytes": 735670272,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 3.655374080990441,
+        "cgroup_cpu_usec": 3846035,
+        "cgroup_memory_peak_bytes": 744685568,
+        "exit_code": 0
+      },
+      "validation-local": {
+        "wall_seconds": 1.8999068080011057,
+        "cgroup_cpu_usec": 1867569,
+        "cgroup_memory_peak_bytes": 48398336,
+        "exit_code": 0
+      },
+      "validation-whole": {
+        "wall_seconds": 1.8295836159959435,
+        "cgroup_cpu_usec": 1796524,
+        "cgroup_memory_peak_bytes": 46931968,
+        "exit_code": 0
+      }
+    },
+    "wall_seconds": 12.296,
+    "cpu_seconds": 12.298,
+    "peak_memory_bytes": 744685568
+  },
+  "verdict_sha256": "e7a5511a8fb4b5601e974156d17771ac113142a52beaed2702adf15980a4f247"
+}

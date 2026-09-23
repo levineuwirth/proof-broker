@@ -1,0 +1,74 @@
+{
+  "schema_version": "r6-deterministic-verdict-1",
+  "task_id": "bracket-l070",
+  "route": "site_cvc4_default_closer_v1",
+  "closer": "gated_omega",
+  "certificate_validation": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:bf5062f62a8632073c86df0ac3503dbfea1da72d7fd3998db4d0b10ca6837e8f"
+  },
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell.r6_site_l070",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": false,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3693,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3712,
+      "accepted": true
+    }
+  },
+  "axiom_delta": {
+    "Bracket.lift_cell.r6_site_l070": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "52673a9b2d1af98b5d3d24b6423aaaf440e5ea0a30974e73bb1ed2e3f82cbc78",
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true,
+  "model_calls": 0
+}

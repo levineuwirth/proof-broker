@@ -1,0 +1,9 @@
+{
+  "schema_version": "r6-deterministic-run-1",
+  "route": "site_cvc4_term_mode_v1",
+  "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb",
+  "lock_sha256": "a080efa7af30d100a27452d4ab76f2c230567c5a60928f91ecc0cd1689114c49",
+  "task_id": "bracket-l180",
+  "manifest_sha256": "fb32560e4ada253f702f27e0f660c7af82c24e5e6426e09cb0eec1006654b8f2",
+  "model_calls": 0
+}

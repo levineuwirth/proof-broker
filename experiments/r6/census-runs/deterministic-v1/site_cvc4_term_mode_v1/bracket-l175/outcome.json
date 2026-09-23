@@ -1,0 +1,49 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l175",
+  "route": "site_cvc4_term_mode_v1",
+  "outcome": "reconstruction_refused",
+  "closer": "term_mode_nat",
+  "comparison_type": "ℤ",
+  "goal": "↑Zmax ≤ v",
+  "first_error": "/input/Frozen.lean:176:20: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got ↑Zmax ≤",
+  "error_count": 1,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "closer_selected"
+  ],
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 0.9393076989945257,
+        "cgroup_cpu_usec": 909860,
+        "cgroup_memory_peak_bytes": 184061952,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 3.369160175003344,
+        "cgroup_cpu_usec": 3524528,
+        "cgroup_memory_peak_bytes": 727420928,
+        "exit_code": 1
+      }
+    },
+    "wall_seconds": 4.308,
+    "cpu_seconds": 4.434,
+    "peak_memory_bytes": 727420928
+  },
+  "verdict_sha256": null
+}

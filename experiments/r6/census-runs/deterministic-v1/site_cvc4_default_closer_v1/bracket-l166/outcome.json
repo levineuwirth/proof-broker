@@ -1,0 +1,71 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l166",
+  "route": "site_cvc4_default_closer_v1",
+  "outcome": "closed_and_validated",
+  "closer": "gated_omega",
+  "first_error": null,
+  "error_count": 0,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "broker_closer_returned"
+  ],
+  "axiom_delta_empty": true,
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 0.985419885997544,
+        "cgroup_cpu_usec": 958785,
+        "cgroup_memory_peak_bytes": 181547008,
+        "exit_code": 0
+      },
+      "certificate-check": {
+        "wall_seconds": 0.039388420002069324,
+        "cgroup_cpu_usec": 11501,
+        "cgroup_memory_peak_bytes": 4673536,
+        "exit_code": 0
+      },
+      "export": {
+        "wall_seconds": 3.12810812999669,
+        "cgroup_cpu_usec": 3068096,
+        "cgroup_memory_peak_bytes": 735363072,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 3.7159377289935946,
+        "cgroup_cpu_usec": 3906859,
+        "cgroup_memory_peak_bytes": 733753344,
+        "exit_code": 0
+      },
+      "validation-local": {
+        "wall_seconds": 0.9497986280039186,
+        "cgroup_cpu_usec": 923984,
+        "cgroup_memory_peak_bytes": 41299968,
+        "exit_code": 0
+      },
+      "validation-whole": {
+        "wall_seconds": 1.4526855059957597,
+        "cgroup_cpu_usec": 1409091,
+        "cgroup_memory_peak_bytes": 44634112,
+        "exit_code": 0
+      }
+    },
+    "wall_seconds": 10.271,
+    "cpu_seconds": 10.278,
+    "peak_memory_bytes": 735363072
+  },
+  "verdict_sha256": "e6ca3167bb51784c24ab530fa5c13fa29e94e46c16e4e6e285c193a450f124c6"
+}

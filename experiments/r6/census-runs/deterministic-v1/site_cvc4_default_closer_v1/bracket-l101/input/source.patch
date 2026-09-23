@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import BrokerCapture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -98,7 +99,7 @@
+     omega
+   · have hle : c' ≤ c - 1 := by omega
+     have := hf c' (c - 1) hle
+-    omega
++    r6_capture_reference "Bracket.threshold_unique.r6_site_l101" "bracket-l101"
+ 
+ /-! ## Layer 2 — the ideal table and per-cell value-neutrality -/
+ 

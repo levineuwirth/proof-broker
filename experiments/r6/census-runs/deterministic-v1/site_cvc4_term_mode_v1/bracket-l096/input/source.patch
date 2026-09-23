@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import BrokerCapture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -93,7 +94,7 @@
+     (h1' : f c' ≤ T) (h2' : T < f (c' - 1)) : c = c' := by
+   by_contra hne
+   rcases lt_or_gt_of_ne hne with hlt | hgt
+-  · have hle : c ≤ c' - 1 := by omega
++  · have hle : c ≤ c' - 1 := by r6_capture_broker "Bracket.threshold_unique.r6_site_l096" "bracket-l096"
+     have := hf c (c' - 1) hle
+     omega
+   · have hle : c' ≤ c - 1 := by omega

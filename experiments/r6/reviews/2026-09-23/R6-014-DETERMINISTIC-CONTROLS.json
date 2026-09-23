@@ -1,0 +1,153 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "overlay_is_observation_only",
+    "helpers_change_one_tactic_line",
+    "reference_validation_changes_one_policy_line",
+    "policy_recomputes",
+    "classifier_reaches_each_outcome",
+    "runs_bound_to_frozen_policy",
+    "outcomes_and_costs_recomputed",
+    "proofs_recomputed"
+  ],
+  "check_count": 8,
+  "checks": [
+    {
+      "name": "overlay_is_observation_only",
+      "passed": true,
+      "detail": {
+        "edits": 8,
+        "added_lines": 42
+      }
+    },
+    {
+      "name": "helpers_change_one_tactic_line",
+      "passed": true,
+      "detail": {
+        "site_cvc4_term_mode_v1": "proof_broker_term",
+        "site_cvc4_default_closer_v1": "proof_broker"
+      }
+    },
+    {
+      "name": "reference_validation_changes_one_policy_line",
+      "passed": true,
+      "detail": {
+        "changed": [
+          "-def final_validation(run, challenge, solution, checker, expected, task):",
+          "+def reference_validation(run, challenge, solution, checker, expected, task):",
+          "-    for name, config in [('local', local_policy(task)), ('whole', r6.policy([task.whole], True,task=task))]:",
+          "+    for name, config in [('local', r6.policy([task.local], task=task)), ('whole', r6.policy([task.whole], True,task=task))]:"
+        ]
+      }
+    },
+    {
+      "name": "policy_recomputes",
+      "passed": true,
+      "detail": {
+        "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb",
+        "solver": "This is CVC4 version 1.8 [git HEAD 52479010]"
+      }
+    },
+    {
+      "name": "classifier_reaches_each_outcome",
+      "passed": true,
+      "detail": {
+        "search_resources_or_monitor": "search_resources_or_monitor",
+        "reification_failed": "reification_failed",
+        "not_dispatched": "not_dispatched",
+        "backend_not_invoked": "backend_not_invoked",
+        "solver_did_not_refute": "solver_did_not_refute",
+        "witness_not_recovered": "witness_not_recovered",
+        "certificate_not_verified": "certificate_not_verified",
+        "reconstruction_not_started": "reconstruction_not_started",
+        "reconstruction_refused": "reconstruction_refused",
+        "consumption_receipt_inconsistent": "consumption_receipt_inconsistent",
+        "consumed": "consumed",
+        "closed": "closed",
+        "closer_failed": "closer_failed"
+      }
+    },
+    {
+      "name": "runs_bound_to_frozen_policy",
+      "passed": true,
+      "detail": {
+        "runs": 30,
+        "sites": 15
+      }
+    },
+    {
+      "name": "outcomes_and_costs_recomputed",
+      "passed": true,
+      "detail": {
+        "site_cvc4_term_mode_v1": {
+          "proof": [
+            "bracket-l069",
+            "bracket-l070",
+            "bracket-l071",
+            "bracket-l078"
+          ],
+          "backend_not_invoked": [
+            "bracket-l096",
+            "bracket-l098",
+            "bracket-l099",
+            "bracket-l101"
+          ],
+          "reconstruction_refused": [
+            "bracket-l158",
+            "bracket-l166",
+            "bracket-l175",
+            "bracket-l178",
+            "bracket-l204"
+          ],
+          "witness_not_recovered": [
+            "bracket-l170",
+            "bracket-l180"
+          ]
+        },
+        "site_cvc4_default_closer_v1": {
+          "closed_and_validated": [
+            "bracket-l069",
+            "bracket-l070",
+            "bracket-l071",
+            "bracket-l078",
+            "bracket-l166",
+            "bracket-l175",
+            "bracket-l178",
+            "bracket-l204"
+          ],
+          "backend_not_invoked": [
+            "bracket-l096",
+            "bracket-l098",
+            "bracket-l099",
+            "bracket-l101"
+          ],
+          "witness_not_recovered": [
+            "bracket-l158",
+            "bracket-l170",
+            "bracket-l180"
+          ]
+        }
+      }
+    },
+    {
+      "name": "proofs_recomputed",
+      "passed": true,
+      "detail": {
+        "validated": [
+          "site_cvc4_term_mode_v1/bracket-l069",
+          "site_cvc4_term_mode_v1/bracket-l070",
+          "site_cvc4_term_mode_v1/bracket-l071",
+          "site_cvc4_term_mode_v1/bracket-l078",
+          "site_cvc4_default_closer_v1/bracket-l069",
+          "site_cvc4_default_closer_v1/bracket-l070",
+          "site_cvc4_default_closer_v1/bracket-l071",
+          "site_cvc4_default_closer_v1/bracket-l078",
+          "site_cvc4_default_closer_v1/bracket-l166",
+          "site_cvc4_default_closer_v1/bracket-l175",
+          "site_cvc4_default_closer_v1/bracket-l178",
+          "site_cvc4_default_closer_v1/bracket-l204"
+        ]
+      }
+    }
+  ]
+}

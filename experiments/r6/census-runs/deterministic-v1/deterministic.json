@@ -1,0 +1,1727 @@
+{
+  "schema_version": "r6-deterministic-summary-1",
+  "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb",
+  "lock_sha256": "a080efa7af30d100a27452d4ab76f2c230567c5a60928f91ecc0cd1689114c49",
+  "sites": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "results": {
+    "site_cvc4_term_mode_v1": {
+      "bracket-l069": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l069",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "proof",
+        "closer": "term_mode_nat",
+        "recovery_route": "bounded_enumeration",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected",
+          "residual_started",
+          "residual_finished",
+          "reconstruction_finished"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2455298590066377,
+              "cgroup_cpu_usec": 1231807,
+              "cgroup_memory_peak_bytes": 185044992,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.027104396009235643,
+              "cgroup_cpu_usec": 11497,
+              "cgroup_memory_peak_bytes": 4132864,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 4.035103987000184,
+              "cgroup_cpu_usec": 3968690,
+              "cgroup_memory_peak_bytes": 733245440,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.909983724995982,
+              "cgroup_cpu_usec": 5118020,
+              "cgroup_memory_peak_bytes": 734134272,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.757404873991618,
+              "cgroup_cpu_usec": 1726727,
+              "cgroup_memory_peak_bytes": 46886912,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.8108238330023596,
+              "cgroup_cpu_usec": 1771599,
+              "cgroup_memory_peak_bytes": 47587328,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 13.786,
+          "cpu_seconds": 13.828,
+          "peak_memory_bytes": 734134272
+        },
+        "verdict_sha256": "7edf0df258ca1a21a294aa221b7c1eccd663a54d27755fe3ebbefe98f65c33c0"
+      },
+      "bracket-l070": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l070",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "proof",
+        "closer": "term_mode_nat",
+        "recovery_route": "bounded_enumeration",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected",
+          "residual_started",
+          "residual_finished",
+          "reconstruction_finished"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.1273890070006019,
+              "cgroup_cpu_usec": 1104546,
+              "cgroup_memory_peak_bytes": 181739520,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.03970745900005568,
+              "cgroup_cpu_usec": 13033,
+              "cgroup_memory_peak_bytes": 4128768,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.8808236789918737,
+              "cgroup_cpu_usec": 3808571,
+              "cgroup_memory_peak_bytes": 734588928,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.681373569997959,
+              "cgroup_cpu_usec": 4895865,
+              "cgroup_memory_peak_bytes": 736980992,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.807863880007062,
+              "cgroup_cpu_usec": 1775997,
+              "cgroup_memory_peak_bytes": 50339840,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.8432941930077504,
+              "cgroup_cpu_usec": 1808127,
+              "cgroup_memory_peak_bytes": 47734784,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 13.38,
+          "cpu_seconds": 13.406,
+          "peak_memory_bytes": 736980992
+        },
+        "verdict_sha256": "dd4c3d24bc7f57ad5f4bdd290c68f1f14e297b35566fe1908312ce61ad9eb427"
+      },
+      "bracket-l071": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l071",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "proof",
+        "closer": "term_mode_nat",
+        "recovery_route": "bounded_enumeration",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected",
+          "residual_started",
+          "residual_finished",
+          "reconstruction_finished"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.260193882000749,
+              "cgroup_cpu_usec": 1234637,
+              "cgroup_memory_peak_bytes": 185044992,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.04356348099827301,
+              "cgroup_cpu_usec": 13059,
+              "cgroup_memory_peak_bytes": 4399104,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.8939994829997886,
+              "cgroup_cpu_usec": 3824090,
+              "cgroup_memory_peak_bytes": 733945856,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.668044014004408,
+              "cgroup_cpu_usec": 4811558,
+              "cgroup_memory_peak_bytes": 742850560,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.91869968699757,
+              "cgroup_cpu_usec": 1872162,
+              "cgroup_memory_peak_bytes": 49377280,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.8536456150031881,
+              "cgroup_cpu_usec": 1820683,
+              "cgroup_memory_peak_bytes": 47312896,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 13.638,
+          "cpu_seconds": 13.576,
+          "peak_memory_bytes": 742850560
+        },
+        "verdict_sha256": "765a5da472d107de85b1c9facb1e9f9152a033117f6a335ee2d66fd312277220"
+      },
+      "bracket-l078": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l078",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "proof",
+        "closer": "term_mode_nat",
+        "recovery_route": "bounded_enumeration",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected",
+          "residual_started",
+          "residual_finished",
+          "reconstruction_finished"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.0355835380032659,
+              "cgroup_cpu_usec": 1019903,
+              "cgroup_memory_peak_bytes": 181379072,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.03407377300027292,
+              "cgroup_cpu_usec": 13225,
+              "cgroup_memory_peak_bytes": 4677632,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.4268370200006757,
+              "cgroup_cpu_usec": 3369835,
+              "cgroup_memory_peak_bytes": 735965184,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.655580667007598,
+              "cgroup_cpu_usec": 3855068,
+              "cgroup_memory_peak_bytes": 740200448,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.7130486489913892,
+              "cgroup_cpu_usec": 1682889,
+              "cgroup_memory_peak_bytes": 43606016,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.5097906709997915,
+              "cgroup_cpu_usec": 1467940,
+              "cgroup_memory_peak_bytes": 42786816,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 11.375,
+          "cpu_seconds": 11.409,
+          "peak_memory_bytes": 740200448
+        },
+        "verdict_sha256": "b178a10eb3b83f0a8a16b20386aa7be8065e6b87a30de5bccaae8dd05b8184ef"
+      },
+      "bracket-l096": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l096",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:97:32: error: proof_broker_term: no adapter minted a cert",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.165483131990186,
+              "cgroup_cpu_usec": 1136909,
+              "cgroup_memory_peak_bytes": 184295424,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.39762197600794,
+              "cgroup_cpu_usec": 4623474,
+              "cgroup_memory_peak_bytes": 728719360,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.563,
+          "cpu_seconds": 5.76,
+          "peak_memory_bytes": 728719360
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l098": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l098",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:99:4: error: proof_broker_term: no adapter minted a cert",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.1858781190094305,
+              "cgroup_cpu_usec": 1171476,
+              "cgroup_memory_peak_bytes": 184897536,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.299618738994468,
+              "cgroup_cpu_usec": 4524083,
+              "cgroup_memory_peak_bytes": 735698944,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.485,
+          "cpu_seconds": 5.696,
+          "peak_memory_bytes": 735698944
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l099": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l099",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:100:32: error: proof_broker_term: no adapter minted a cert",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.1499131150048925,
+              "cgroup_cpu_usec": 1126368,
+              "cgroup_memory_peak_bytes": 183717888,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.123137461996521,
+              "cgroup_cpu_usec": 4317402,
+              "cgroup_memory_peak_bytes": 732749824,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.273,
+          "cpu_seconds": 5.444,
+          "peak_memory_bytes": 732749824
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l101": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l101",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:102:4: error: proof_broker_term: no adapter minted a cert",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.152065535003203,
+              "cgroup_cpu_usec": 1135912,
+              "cgroup_memory_peak_bytes": 183623680,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.5389053629915,
+              "cgroup_cpu_usec": 4751225,
+              "cgroup_memory_peak_bytes": 721051648,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.691,
+          "cpu_seconds": 5.887,
+          "peak_memory_bytes": 721051648
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l158": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l158",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "reconstruction_refused",
+        "closer": "term_mode_nat",
+        "comparison_type": "ℤ",
+        "goal": "z ≤ v",
+        "first_error": "/input/Frozen.lean:159:41: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got z ≤",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2082823529926827,
+              "cgroup_cpu_usec": 1178515,
+              "cgroup_memory_peak_bytes": 184971264,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.416109361991403,
+              "cgroup_cpu_usec": 4602008,
+              "cgroup_memory_peak_bytes": 720535552,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.624,
+          "cpu_seconds": 5.781,
+          "peak_memory_bytes": 720535552
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l166": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l166",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "reconstruction_refused",
+        "closer": "term_mode_nat",
+        "comparison_type": "ℤ",
+        "goal": "↑v0 ≤ z",
+        "first_error": "/input/Frozen.lean:167:31: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got ↑v0 ≤",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2820244410104351,
+              "cgroup_cpu_usec": 1230433,
+              "cgroup_memory_peak_bytes": 186159104,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.629498392998357,
+              "cgroup_cpu_usec": 4822232,
+              "cgroup_memory_peak_bytes": 725712896,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.912,
+          "cpu_seconds": 6.053,
+          "peak_memory_bytes": 725712896
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l170": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l170",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "witness_not_recovered",
+        "recovery": [
+          {
+            "route": "bounded_enumeration",
+            "ok": false,
+            "reason": "search_exhausted"
+          },
+          {
+            "route": "exact_support_bounded",
+            "ok": false,
+            "reason": "exact_search_exhausted"
+          }
+        ],
+        "certificate_tier": 0,
+        "first_error": "/input/Frozen.lean:171:32: error: proof_broker_term: cert was minted but verifier did not accept it (reason: ProofBroker.CertReason.tierCheckDeferred \"tier-0 soundness check not implemented (envelope verified)\"); term-mode requires a verified Tier 1 Farkas or Tier 2 case-split cert",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.9731397610012209,
+              "cgroup_cpu_usec": 942198,
+              "cgroup_memory_peak_bytes": 179765248,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.746725418997812,
+              "cgroup_cpu_usec": 3904185,
+              "cgroup_memory_peak_bytes": 727498752,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 4.72,
+          "cpu_seconds": 4.846,
+          "peak_memory_bytes": 727498752
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l175": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l175",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "reconstruction_refused",
+        "closer": "term_mode_nat",
+        "comparison_type": "ℤ",
+        "goal": "↑Zmax ≤ v",
+        "first_error": "/input/Frozen.lean:176:20: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got ↑Zmax ≤",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.9393076989945257,
+              "cgroup_cpu_usec": 909860,
+              "cgroup_memory_peak_bytes": 184061952,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.369160175003344,
+              "cgroup_cpu_usec": 3524528,
+              "cgroup_memory_peak_bytes": 727420928,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 4.308,
+          "cpu_seconds": 4.434,
+          "peak_memory_bytes": 727420928
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l178": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l178",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "reconstruction_refused",
+        "closer": "term_mode_nat",
+        "comparison_type": "ℤ",
+        "goal": "↑v0 ≤ v",
+        "first_error": "/input/Frozen.lean:179:6: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got ↑v0 ≤",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.9671423999971012,
+              "cgroup_cpu_usec": 936149,
+              "cgroup_memory_peak_bytes": 181559296,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.305735354006174,
+              "cgroup_cpu_usec": 3478164,
+              "cgroup_memory_peak_bytes": 726261760,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 4.273,
+          "cpu_seconds": 4.414,
+          "peak_memory_bytes": 726261760
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l180": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l180",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "witness_not_recovered",
+        "recovery": [
+          {
+            "route": "bounded_enumeration",
+            "ok": false,
+            "reason": "sparse_search_exhausted"
+          },
+          {
+            "route": "exact_support_bounded",
+            "ok": false,
+            "reason": "exact_search_exhausted"
+          }
+        ],
+        "certificate_tier": 0,
+        "first_error": "/input/Frozen.lean:181:32: error: proof_broker_term: cert was minted but verifier did not accept it (reason: ProofBroker.CertReason.tierCheckDeferred \"tier-0 soundness check not implemented (envelope verified)\"); term-mode requires a verified Tier 1 Farkas or Tier 2 case-split cert",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.9969848960026866,
+              "cgroup_cpu_usec": 980725,
+              "cgroup_memory_peak_bytes": 181956608,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.0926504469971405,
+              "cgroup_cpu_usec": 4228025,
+              "cgroup_memory_peak_bytes": 731062272,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.09,
+          "cpu_seconds": 5.209,
+          "peak_memory_bytes": 731062272
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l204": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l204",
+        "route": "site_cvc4_term_mode_v1",
+        "outcome": "reconstruction_refused",
+        "closer": "term_mode_nat",
+        "comparison_type": "ℤ",
+        "goal": "a - R.x i ≤ b - R.x i",
+        "first_error": "/input/Frozen.lean:205:52: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got a - R.x i ≤",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "closer_selected"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.1748136550013442,
+              "cgroup_cpu_usec": 1140464,
+              "cgroup_memory_peak_bytes": 183312384,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.370588022997254,
+              "cgroup_cpu_usec": 4570599,
+              "cgroup_memory_peak_bytes": 731508736,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.545,
+          "cpu_seconds": 5.711,
+          "peak_memory_bytes": 731508736
+        },
+        "verdict_sha256": null
+      }
+    },
+    "site_cvc4_default_closer_v1": {
+      "bracket-l069": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l069",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.1652344479953172,
+              "cgroup_cpu_usec": 1132944,
+              "cgroup_memory_peak_bytes": 182902784,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.0523028739989968,
+              "cgroup_cpu_usec": 16656,
+              "cgroup_memory_peak_bytes": 4689920,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.7519646779983304,
+              "cgroup_cpu_usec": 3697741,
+              "cgroup_memory_peak_bytes": 734515200,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 5.017513250000775,
+              "cgroup_cpu_usec": 5230211,
+              "cgroup_memory_peak_bytes": 735834112,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.8213400499953423,
+              "cgroup_cpu_usec": 1789597,
+              "cgroup_memory_peak_bytes": 47861760,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.7629715650109574,
+              "cgroup_cpu_usec": 1732810,
+              "cgroup_memory_peak_bytes": 47783936,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 13.571,
+          "cpu_seconds": 13.6,
+          "peak_memory_bytes": 735834112
+        },
+        "verdict_sha256": "0a3740de5fb31141f7874a1cbfa014e588c34968c99ed3c893fb02c0d00106e2"
+      },
+      "bracket-l070": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l070",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2739609369891696,
+              "cgroup_cpu_usec": 1249200,
+              "cgroup_memory_peak_bytes": 181350400,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.03520984201168176,
+              "cgroup_cpu_usec": 12788,
+              "cgroup_memory_peak_bytes": 4698112,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.998074864008231,
+              "cgroup_cpu_usec": 3935643,
+              "cgroup_memory_peak_bytes": 735469568,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.679181988001801,
+              "cgroup_cpu_usec": 4898711,
+              "cgroup_memory_peak_bytes": 741294080,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.7734481030056486,
+              "cgroup_cpu_usec": 1747177,
+              "cgroup_memory_peak_bytes": 46456832,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.7827124110044679,
+              "cgroup_cpu_usec": 1751572,
+              "cgroup_memory_peak_bytes": 47296512,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 13.543,
+          "cpu_seconds": 13.595,
+          "peak_memory_bytes": 741294080
+        },
+        "verdict_sha256": "4ff1dfc8fdff948f241b55bf00146511cf306b8b875035cc381b7553a00ae69c"
+      },
+      "bracket-l071": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l071",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.261149646990816,
+              "cgroup_cpu_usec": 1236153,
+              "cgroup_memory_peak_bytes": 185573376,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.0207152000075439,
+              "cgroup_cpu_usec": 8878,
+              "cgroup_memory_peak_bytes": 4644864,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.6015907600085484,
+              "cgroup_cpu_usec": 3517552,
+              "cgroup_memory_peak_bytes": 735682560,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.127906667010393,
+              "cgroup_cpu_usec": 4305020,
+              "cgroup_memory_peak_bytes": 741171200,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.708816509009921,
+              "cgroup_cpu_usec": 1679092,
+              "cgroup_memory_peak_bytes": 45785088,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.725953306988231,
+              "cgroup_cpu_usec": 1695504,
+              "cgroup_memory_peak_bytes": 44257280,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 12.446,
+          "cpu_seconds": 12.442,
+          "peak_memory_bytes": 741171200
+        },
+        "verdict_sha256": "83142b15c1d5ace19f9fcb49c0bac02ace9bb9f8f159231432d2c272b20b974e"
+      },
+      "bracket-l078": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l078",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.9760151710070204,
+              "cgroup_cpu_usec": 944872,
+              "cgroup_memory_peak_bytes": 182575104,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.03423585300333798,
+              "cgroup_cpu_usec": 11565,
+              "cgroup_memory_peak_bytes": 4403200,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.9005780830048025,
+              "cgroup_cpu_usec": 3831189,
+              "cgroup_memory_peak_bytes": 735670272,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.655374080990441,
+              "cgroup_cpu_usec": 3846035,
+              "cgroup_memory_peak_bytes": 744685568,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.8999068080011057,
+              "cgroup_cpu_usec": 1867569,
+              "cgroup_memory_peak_bytes": 48398336,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.8295836159959435,
+              "cgroup_cpu_usec": 1796524,
+              "cgroup_memory_peak_bytes": 46931968,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 12.296,
+          "cpu_seconds": 12.298,
+          "peak_memory_bytes": 744685568
+        },
+        "verdict_sha256": "e7a5511a8fb4b5601e974156d17771ac113142a52beaed2702adf15980a4f247"
+      },
+      "bracket-l096": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l096",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:97:32: error: proof_broker: no adapter could close the goal (1 attempt(s); first: ProofBroker.AttemptOutcome.skipped",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2433749620104209,
+              "cgroup_cpu_usec": 1216824,
+              "cgroup_memory_peak_bytes": 185450496,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.312188235999201,
+              "cgroup_cpu_usec": 4556134,
+              "cgroup_memory_peak_bytes": 732446720,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.556,
+          "cpu_seconds": 5.773,
+          "peak_memory_bytes": 732446720
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l098": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l098",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:99:4: error: proof_broker: no adapter could close the goal (1 attempt(s); first: ProofBroker.AttemptOutcome.skipped",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2244639269920299,
+              "cgroup_cpu_usec": 1207932,
+              "cgroup_memory_peak_bytes": 185450496,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.343458606992499,
+              "cgroup_cpu_usec": 4558590,
+              "cgroup_memory_peak_bytes": 720707584,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.568,
+          "cpu_seconds": 5.767,
+          "peak_memory_bytes": 720707584
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l099": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l099",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:100:32: error: proof_broker: no adapter could close the goal (1 attempt(s); first: ProofBroker.AttemptOutcome.skipped",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2594942069990793,
+              "cgroup_cpu_usec": 1229517,
+              "cgroup_memory_peak_bytes": 182398976,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.367088171013165,
+              "cgroup_cpu_usec": 4599229,
+              "cgroup_memory_peak_bytes": 730361856,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 5.627,
+          "cpu_seconds": 5.829,
+          "peak_memory_bytes": 730361856
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l101": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l101",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "backend_not_invoked",
+        "attempts": null,
+        "first_error": "/input/Frozen.lean:102:4: error: proof_broker: no adapter could close the goal (1 attempt(s); first: ProofBroker.AttemptOutcome.skipped",
+        "error_count": 1,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2658009470032994,
+              "cgroup_cpu_usec": 1252903,
+              "cgroup_memory_peak_bytes": 187211776,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.7441867440065835,
+              "cgroup_cpu_usec": 4964217,
+              "cgroup_memory_peak_bytes": 727396352,
+              "exit_code": 1
+            }
+          },
+          "wall_seconds": 6.01,
+          "cpu_seconds": 6.217,
+          "peak_memory_bytes": 727396352
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l158": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l158",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "witness_not_recovered",
+        "recovery": [
+          {
+            "route": "bounded_enumeration",
+            "ok": false,
+            "reason": "search_exhausted"
+          },
+          {
+            "route": "exact_support_bounded",
+            "ok": false,
+            "reason": "exact_search_exhausted"
+          }
+        ],
+        "certificate_tier": 0,
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2271412080008304,
+              "cgroup_cpu_usec": 1207004,
+              "cgroup_memory_peak_bytes": 183205888,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.884194797006785,
+              "cgroup_cpu_usec": 5084670,
+              "cgroup_memory_peak_bytes": 742879232,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 6.111,
+          "cpu_seconds": 6.292,
+          "peak_memory_bytes": 742879232
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l166": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l166",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.985419885997544,
+              "cgroup_cpu_usec": 958785,
+              "cgroup_memory_peak_bytes": 181547008,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.039388420002069324,
+              "cgroup_cpu_usec": 11501,
+              "cgroup_memory_peak_bytes": 4673536,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.12810812999669,
+              "cgroup_cpu_usec": 3068096,
+              "cgroup_memory_peak_bytes": 735363072,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.7159377289935946,
+              "cgroup_cpu_usec": 3906859,
+              "cgroup_memory_peak_bytes": 733753344,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 0.9497986280039186,
+              "cgroup_cpu_usec": 923984,
+              "cgroup_memory_peak_bytes": 41299968,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.4526855059957597,
+              "cgroup_cpu_usec": 1409091,
+              "cgroup_memory_peak_bytes": 44634112,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 10.271,
+          "cpu_seconds": 10.278,
+          "peak_memory_bytes": 735363072
+        },
+        "verdict_sha256": "e6ca3167bb51784c24ab530fa5c13fa29e94e46c16e4e6e285c193a450f124c6"
+      },
+      "bracket-l170": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l170",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "witness_not_recovered",
+        "recovery": [
+          {
+            "route": "bounded_enumeration",
+            "ok": false,
+            "reason": "search_exhausted"
+          },
+          {
+            "route": "exact_support_bounded",
+            "ok": false,
+            "reason": "exact_search_exhausted"
+          }
+        ],
+        "certificate_tier": 0,
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.977703904005466,
+              "cgroup_cpu_usec": 934332,
+              "cgroup_memory_peak_bytes": 183676928,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.017809761004173,
+              "cgroup_cpu_usec": 4207976,
+              "cgroup_memory_peak_bytes": 738078720,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 4.996,
+          "cpu_seconds": 5.142,
+          "peak_memory_bytes": 738078720
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l175": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l175",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.947016115009319,
+              "cgroup_cpu_usec": 922785,
+              "cgroup_memory_peak_bytes": 182755328,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.04388480499619618,
+              "cgroup_cpu_usec": 11714,
+              "cgroup_memory_peak_bytes": 4395008,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 2.9076082929968834,
+              "cgroup_cpu_usec": 2850257,
+              "cgroup_memory_peak_bytes": 735404032,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.5477615790005075,
+              "cgroup_cpu_usec": 3722299,
+              "cgroup_memory_peak_bytes": 738992128,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.0298866310040466,
+              "cgroup_cpu_usec": 998448,
+              "cgroup_memory_peak_bytes": 44556288,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.4649184310110286,
+              "cgroup_cpu_usec": 1430819,
+              "cgroup_memory_peak_bytes": 45010944,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 9.941,
+          "cpu_seconds": 9.936,
+          "peak_memory_bytes": 738992128
+        },
+        "verdict_sha256": "faf58a9899de0fd9de5e742d79c81bc6b5117ece843f625966ae9697ff2ebc16"
+      },
+      "bracket-l178": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l178",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 0.9526416160078952,
+              "cgroup_cpu_usec": 910722,
+              "cgroup_memory_peak_bytes": 182472704,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.041179640000336803,
+              "cgroup_cpu_usec": 11566,
+              "cgroup_memory_peak_bytes": 4669440,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 2.8055338240083074,
+              "cgroup_cpu_usec": 2736325,
+              "cgroup_memory_peak_bytes": 735752192,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 3.4631716400035657,
+              "cgroup_cpu_usec": 3685970,
+              "cgroup_memory_peak_bytes": 734584832,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.5131762139935745,
+              "cgroup_cpu_usec": 1479809,
+              "cgroup_memory_peak_bytes": 41533440,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.8030404400051339,
+              "cgroup_cpu_usec": 1764562,
+              "cgroup_memory_peak_bytes": 45400064,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 10.579,
+          "cpu_seconds": 10.589,
+          "peak_memory_bytes": 735752192
+        },
+        "verdict_sha256": "3b5b9172473f91edcf0dc55c8fea0915f6a503c6bfaba6777644509240c63819"
+      },
+      "bracket-l180": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l180",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "witness_not_recovered",
+        "recovery": [
+          {
+            "route": "bounded_enumeration",
+            "ok": false,
+            "reason": "sparse_search_exhausted"
+          },
+          {
+            "route": "exact_support_bounded",
+            "ok": false,
+            "reason": "exact_search_exhausted"
+          }
+        ],
+        "certificate_tier": 0,
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2915392360009719,
+              "cgroup_cpu_usec": 1267393,
+              "cgroup_memory_peak_bytes": 183226368,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.42853531500441,
+              "cgroup_cpu_usec": 4641278,
+              "cgroup_memory_peak_bytes": 741560320,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 5.72,
+          "cpu_seconds": 5.909,
+          "peak_memory_bytes": 741560320
+        },
+        "verdict_sha256": null
+      },
+      "bracket-l204": {
+        "schema_version": "r6-deterministic-outcome-1",
+        "task_id": "bracket-l204",
+        "route": "site_cvc4_default_closer_v1",
+        "outcome": "closed_and_validated",
+        "closer": "gated_omega",
+        "first_error": null,
+        "error_count": 0,
+        "observations": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "solver_started",
+          "solver_finished",
+          "recovery_started",
+          "recovery_finished",
+          "certificate_created",
+          "certificate_bound",
+          "selection_decided",
+          "dispatch_returned",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "broker_closer_returned"
+        ],
+        "axiom_delta_empty": true,
+        "resources": {
+          "stages": {
+            "capture-build": {
+              "wall_seconds": 1.2119934879883658,
+              "cgroup_cpu_usec": 1183877,
+              "cgroup_memory_peak_bytes": 183533568,
+              "exit_code": 0
+            },
+            "certificate-check": {
+              "wall_seconds": 0.04001704999245703,
+              "cgroup_cpu_usec": 13271,
+              "cgroup_memory_peak_bytes": 4673536,
+              "exit_code": 0
+            },
+            "export": {
+              "wall_seconds": 3.6464799610112095,
+              "cgroup_cpu_usec": 3582231,
+              "cgroup_memory_peak_bytes": 734609408,
+              "exit_code": 0
+            },
+            "search": {
+              "wall_seconds": 4.8285084209928755,
+              "cgroup_cpu_usec": 5053060,
+              "cgroup_memory_peak_bytes": 744734720,
+              "exit_code": 0
+            },
+            "validation-local": {
+              "wall_seconds": 1.2273510889936006,
+              "cgroup_cpu_usec": 1198273,
+              "cgroup_memory_peak_bytes": 40280064,
+              "exit_code": 0
+            },
+            "validation-whole": {
+              "wall_seconds": 1.36205891300051,
+              "cgroup_cpu_usec": 1331173,
+              "cgroup_memory_peak_bytes": 39886848,
+              "exit_code": 0
+            }
+          },
+          "wall_seconds": 12.316,
+          "cpu_seconds": 12.362,
+          "peak_memory_bytes": 744734720
+        },
+        "verdict_sha256": "c4251d2b8cb6d9fd9bcc956e1f198882214ad893b5f17985f794a025aa368438"
+      }
+    }
+  },
+  "program_sha256": "44de9b938a06178ea97daa7ad25b5382a809b5ff95b90785288e243684eb4976",
+  "scope": "credential-free native runs; outcomes from each run's own evidence; the reference route is never pooled with the arm"
+}

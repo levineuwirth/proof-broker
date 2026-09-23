@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import BrokerCapture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -172,7 +173,7 @@
+     have : (Zmax : ℤ) ≤ v := by
+       have : (Zmax : ℤ) * 1 ≤ (Zmax : ℤ) * zhigh := by
+         apply mul_le_mul_of_nonneg_left hzh1 (by positivity)
+-      simp at this; omega
++      simp at this; r6_capture_reference "Bracket.cell_value_neutral.r6_site_l175" "bracket-l175"
+     have hge : (v0 : ℤ) ≤ v := by
+       have : (v0 : ℤ) ≤ (Zmax : ℤ) := by exact_mod_cast cert.tail_le
+       omega
