@@ -1,0 +1,27 @@
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4287:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+baseline {'accepted': True, 'case_count': 539}
+refused_zero_witness_resealed site_cvc4_term_mode_v1/bracket-l166:search:observations_bound
+solution_from_other_site_stdout_absent_resealed site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound
+export_stdout_absent {'accepted': True, 'case_count': 539}
+{"trial": true, "controls": 4}
