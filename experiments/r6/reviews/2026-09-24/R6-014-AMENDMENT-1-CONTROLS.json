@@ -1,0 +1,277 @@
+{
+  "passed": true,
+  "baselines": {
+    "isolated_fixture": {
+      "case_count": 550,
+      "identical_to": "reviews/2026-09-23/R6-014-V4-LIVE-FIXTURE-AUDIT.json"
+    }
+  },
+  "shared": {
+    "shared_directory_accepted": {
+      "accepted": true,
+      "case_count": 550,
+      "unrelated_neighbours": 70
+    },
+    "shared_unrelated_lookalike_accepted": {
+      "accepted": true,
+      "case_count": 550,
+      "unrelated_neighbours": 70
+    },
+    "shared_floor_missing": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']",
+      "unrelated_neighbours": 70
+    },
+    "shared_checkpoint_missing": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']; FileNotFoundError: [Errno 2] No such file or directory: '/home/jeans/scratch/tmp/r6-014-amended-shared-m1s8k8jh/shared-policies/farkas-cohort-v9.checkpoint.json'",
+      "unrelated_neighbours": 70
+    },
+    "shared_unexpected_campaign_revision": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json', 'farkas-cohort-v9.r7.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']",
+      "unrelated_neighbours": 70
+    },
+    "shared_unexpected_policy_prefixed_file": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.json.bak', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']",
+      "unrelated_neighbours": 70
+    },
+    "shared_unexpected_lock_prefixed_file": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'cohort-harness-v9.sha256.json.orig', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']",
+      "unrelated_neighbours": 70
+    },
+    "shared_retained_revision_altered": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: revision 3: chain",
+      "unrelated_neighbours": 70
+    },
+    "shared_activation_receipt_altered": {
+      "accepted": false,
+      "rejected_case": "ledger:continuous_across_revisions",
+      "detail": "ledger:continuous_across_revisions: ['activation', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'authorization_revision', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'authorization_revision', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant']",
+      "unrelated_neighbours": 70
+    }
+  },
+  "live": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 550
+    },
+    "live_policy_unsigned": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "live_checkpoint_altered": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "live_checkpoint_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "live_run_outside_signed_schedule": {
+      "rejected": true,
+      "rejected_case": "population:within_authorized_schedule"
+    },
+    "live_unreviewed_outcome_fails_closed": {
+      "rejected": true,
+      "rejected_case": "population:derived_from_evidence"
+    },
+    "live_commitment_forged_in_receipt": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:commitment:bound_to_mounted_canary"
+    },
+    "live_exact_receipt_claimed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:credential_receipt:recorded"
+    },
+    "live_local_receiver_recorded": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:transport:local_send_and_remote_receipt"
+    },
+    "live_received_body_present": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "live_fixture_mount_in_sender": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_unshare_net_in_sender": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_unshared_network_recorded": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_credential_inside_tree": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_publication_acceptance_claimed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:terminal:commitments_bound"
+    },
+    "live_ledger_terminal_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "live_negative_control_accepted": {
+      "rejected": true,
+      "rejected_case": "l170-draw1:witness_rejected:recomputed_invalid_and_stopped"
+    },
+    "operator_receipt_missing": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_receipt_commitment_unbound": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_receipt_seal_stale": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_report_disclosure": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_scan_before_runs_finished": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_inventory_uncovered_file": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_commitment_domain_changed": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_scanned_false": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_error_present": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_finding_present": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_duplicated": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_gzip_stream_missing": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_files_scanned_miscounted": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "revision_retained_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_retained_altered": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_authority_rolled_back": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_outside_plan": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_pricing_admission_unbound": {
+      "rejected": true,
+      "rejected_case": "revision:runtime_pricing_ledger_publication_bound"
+    },
+    "revision_capture_substituted": {
+      "rejected": true,
+      "rejected_case": "revision:runtime_pricing_ledger_publication_bound"
+    },
+    "activation_receipt_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "activation_receipt_altered": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "ledger_revision_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "run_retained_policy_swapped": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "progress_floor_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "progress_floor_behind": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "compressed_disclosure_bin_reported_raw": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_file_changed_after_scan": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "gzip_stream_total_miscounted": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_absolute": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_parent_traversal": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_symlink_escape": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_not_normalized": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "production_policy_file_signed": {
+      "accepted": true,
+      "case_count": 550
+    },
+    "production_policy_files_unread": {
+      "accepted": true,
+      "case_count": 550
+    }
+  },
+  "shared_controls": 9,
+  "live_controls": 51,
+  "not_reexecuted": "the rehearsal-mode audit and its 101 controls: they presuppose the pre-signing tree; the amended predicate is live-only",
+  "amended_auditor_sha256": "b2d15640d8d8bc6be9f62482152d9ae16666b9a7f15aabc49a670f2784ca4623",
+  "frozen_auditor_sha256": "205b0999f3d0af28a0ee49631b3058e1d517cff529b7f15d54547f1a7a4f9655",
+  "program_sha256": "5656f4a32a5a314771c0a4220d54d5f432378247c43346cf7ef4a37f43dddc6d",
+  "collected_block_read": false,
+  "scope": "synthetic evidence only; the collected block 1 is not read by these controls"
+}
