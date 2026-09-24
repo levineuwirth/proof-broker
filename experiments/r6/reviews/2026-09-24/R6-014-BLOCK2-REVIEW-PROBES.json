@@ -1,0 +1,39 @@
+{
+  "resume_sealed_release": {
+    "status": "next_launch_attempted",
+    "launches": [
+      "l070-draw2"
+    ],
+    "stdout": "{\"run\": \"l069-draw2\", \"skipped\": \"already recorded\"}\n",
+    "scope": "production runner with synthetic records and mocked sender/ledger; no subprocess or credential read"
+  },
+  "returned_binding_failure": {
+    "status": "next_launch_attempted",
+    "launches": [
+      "l069-draw2",
+      "l070-draw2"
+    ],
+    "stdout": "{\"run\": \"l069-draw2\", \"exit\": 1, \"terminal\": \"send_grant\", \"send_outcome\": \"returned\", \"failure_category\": \"transport_binding_failure\", \"consumed\": 12, \"committed_micro_usd\": 1228800}\n",
+    "scope": "production runner with synthetic records and mocked sender/ledger; no subprocess or credential read"
+  },
+  "negative_control_acceptance": {
+    "status": "next_launch_attempted",
+    "launches": [
+      "l170-draw2",
+      "l069-draw2"
+    ],
+    "stdout": "{\"run\": \"l170-draw2\", \"exit\": 0, \"terminal\": \"send_grant\", \"send_outcome\": \"returned\", \"failure_category\": null, \"consumed\": 12, \"committed_micro_usd\": 1228800}\n",
+    "scope": "production runner with synthetic records and mocked sender/ledger; no subprocess or credential read"
+  },
+  "authorization_copy": {
+    "accepted": true,
+    "evaluated_at_unix": 1790258210.792174,
+    "revision": 2,
+    "transmission_limit": 88,
+    "money_limit": 9011200,
+    "consumed": 11,
+    "committed": 1126400,
+    "revision_sha256": "97bc7dc0e9768c58188a021d15d06999e9b622d8104b22440957afb14bf7f93a"
+  },
+  "production_authority_unchanged": true
+}
