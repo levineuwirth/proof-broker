@@ -1,0 +1,29 @@
+{
+  "reviewed_commit": "10c53c34",
+  "ast_only_helper_and_two_layout_statements_changed": true,
+  "original_evaluation_lock_verified": {
+    "import_closure": 45,
+    "records": 8,
+    "reviewed": 12
+  },
+  "all_preexisting_tracked_blobs_preserved_since": "6a361a3e",
+  "only_added_files": 5,
+  "tracked_working_tree_matches": true,
+  "recorded_controls": {
+    "shared": 9,
+    "live": 51,
+    "live_outcomes_match_frozen": true,
+    "source_hashes_match": true
+  },
+  "live_block_audit_run": false,
+  "analysis_run": false,
+  "fresh_synthetic_controls": {
+    "isolated_fixture_cases": 550,
+    "identical_frozen_case_population": true,
+    "shared_controls": 9,
+    "accepted": 2,
+    "rejected_at_expected_case": 7,
+    "exit_code": 0,
+    "log_sha256": "7e9259d379751671cec0d1b51817c7556bf7f3084edd054f1658aa91dc45d929"
+  }
+}
