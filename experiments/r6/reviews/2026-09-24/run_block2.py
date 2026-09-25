@@ -32,6 +32,12 @@ the transport authorization's slot and nonce, every stage's process record, and 
 frozen live shape (publication pending, not accepted) and be finished exactly when a proof is accepted with complete evidence. The seal must
 retain each record these receipts mirror.
 
+Revision 5 (block 2 runner revision 4 review: stage receipts were compared only for surviving process records). The whole event chain —
+supervisor receipts and child reports, in order — must equal the frozen sequence for its outcome, taken from the auditor frozen under
+`live-evaluation-v2` (its digest checked against the lock before use); the stages whose finish receipts that sequence names must be exactly
+the run's stage directories and process records; and each stage's finish receipt and process record must match one to one before their
+payloads are compared.
+
 The block 1 runner (`run_block1.py`) is retained as run; this revision is for block 2 only.
 """
 import argparse
@@ -42,9 +48,19 @@ import sys
 
 R6 = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(R6))
+import importlib.util
 import cohort_contract as contract
 import cohort_ledger as ledger
 import events
+
+# Revision 5: the frozen receipt sequences, from the auditor under live-evaluation-v2 (checked against the lock before use), live mode.
+AUDITOR = 'experiments/r6/reviews/2026-09-24/cohort_v9_audit_amended.py'
+if contract.r6.sha(R6.parents[1]/AUDITOR) != json.loads((R6/'policies/live-evaluation-v2.sha256.json').read_bytes())['reviewed'][AUDITOR]:
+    raise SystemExit('the auditor is not the one live-evaluation-v2 froze')
+_spec = importlib.util.spec_from_file_location('block2_frozen_sequences', R6.parents[1]/AUDITOR); _audit = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_audit); _audit.configure('live')
+SEQUENCE = {'proof': _audit.sequence('proof'), 'closer_refusal': _audit.sequence('reconstruction_refused'),
+            'witness_rejected': _audit.sequence('witness_rejected'), 'response_invalid': _audit.sequence('response_invalid')}
 
 RUNS = R6/'cohort-live-v9'
 ORDER = ('l069', 'l070', 'l071', 'l078', 'l096', 'l166', 'l170', 'l175', 'l178', 'l204', 'l099')
@@ -90,7 +106,7 @@ def seal_covers(run, problems):
     return rows
 
 
-def receipts_agree(run, one, permit, http, cert):
+def receipts_agree(run, one, supervisor, permit, http, cert):
     """Revision 4. Each receipt present exactly once and equal to the record (or the record's digest) it mirrors; a missing, duplicate or
     disagreeing receipt is reported. The assembly receipt is required exactly where a certificate record exists."""
     sha = contract.r6.sha; out = lambda *path: run.joinpath(*path); problems = []
@@ -112,8 +128,11 @@ def receipts_agree(run, one, permit, http, cert):
     if not (isinstance(reconciled, dict) and reconciled.get('ledger_sha256') == sha(out('ledger-after.ndjson'))): problems.append('reservation_reconciled does not bind the ledger snapshot')
     if not (isinstance(authorized, dict) and authorized.get('reservation_id') == permit.get('reservation_id') and authorized.get('slot') == {'task_id': permit.get('task_id'), 'draw': permit.get('draw')}
             and authorized.get('commitment_nonce') == http.get('commitment_nonce')): problems.append('live_transport_authorized is not this slot\'s')
-    for process in sorted(run.glob('stages/*/*.process.json')):
-        if one(process.parent.name, 'stage_finished') != load(process): problems.append(f'{process.parent.name} stage receipt disagrees with its process record')
+    processes = {p.parent.name: p for p in run.glob('stages/*/*.process.json')}
+    finished = {stage for (stage, event) in supervisor if event == 'stage_finished'}
+    for stage in sorted(set(processes) | finished):  # revision 5: one to one, then equal
+        if stage not in processes or one(stage, 'stage_finished') in (None, 'duplicate') or one(stage, 'stage_finished') != load(processes[stage]):
+            problems.append(f'{stage} stage receipt and process record do not match one to one')
     assembled = one('assembly', 'certificate_assembled')
     if cert is not None:
         if not (isinstance(assembled, dict) and out('validated-response.json').is_file() and assembled.get('response_sha256') == sha(out('validated-response.json'))
@@ -204,7 +223,7 @@ def gate(run, task_id, draw):
             and terminal_payload.get('publication_scan_sha256') == contract.r6.sha(run/'publication-scan.json')
             and all(terminal_payload.get(k) is summary.get(k) for k in shared)): reasons.append('terminal receipt does not agree with the summary and publication records')
     # 4a. revision 4: every receipt in the chain that mirrors a retained record, unique and equal to it
-    reasons.extend(receipts_agree(run, one, permit, http, cert))
+    reasons.extend(receipts_agree(run, one, supervisor, permit, http, cert))
     # 5. the outcome: receipts, records and summary in agreement for exactly one ordinary outcome
     if receipt == 'duplicate' or refused_receipt == 'duplicate' or (receipt is None) != (cert is None) or (receipt is not None and receipt != cert):
         reasons.append('verifier receipt and certificate record disagree')
@@ -236,6 +255,14 @@ def gate(run, task_id, draw):
             reasons.append('invalid-response receipts and records do not agree')
     else:
         outcome = None; reasons.append(f'an outcome this runner has not reviewed: {category}')
+    # 6. revision 5: the whole chain is the frozen sequence for its outcome, and its stages are exactly the run's stage records
+    if outcome in SEQUENCE:
+        expected = SEQUENCE[outcome]
+        if [(r['source'], r['stage'], r['event']) for r in rows] != expected: reasons.append(f'the receipt sequence is not the frozen sequence for {outcome}')
+        stages = sorted(st for (_, st, event) in expected if event == 'stage_finished')
+        directories = sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()) if (run/'stages').is_dir() else []
+        processes = sorted(p.parent.name for p in run.glob('stages/*/*.process.json'))
+        if not (stages == directories == processes): reasons.append(f'stage records {processes} and directories {directories} are not the sequence\'s stages {stages}')
     return ('continue' if not reasons and outcome in CONTINUABLE else 'pause'), outcome, reasons
 
 

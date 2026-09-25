@@ -15,6 +15,10 @@ changed records (as the driver writes them), so each case still changes one rela
 reporting a failed binding against a clean record, a terminal reporting failed publication against clean publication records) and each other
 mirrored receipt are isolated receipt-only controls. The positive cases carry the frozen live terminal (publication pending, not accepted).
 
+Revision 5 (block 2 runner revision 4 review). The review's two probes (the export's process record deleted and the run resealed; a
+stage-finish receipt with no process record) and two further one-to-one and sequence controls (a stage directory without receipts; two
+receipts reordered). The invalid-response fixture follows the frozen `response_invalid` sequence (no assembly, check or recovery receipts).
+
 Each case runs through the production `main()` twice, with the same expected decision:
 * **fresh** — the mocked sender materializes the case as the episode's result; the runner then gates it;
 * **restart** — the case already exists when the runner starts; the runner must gate it before any launch.
@@ -86,6 +90,11 @@ CASES = {  # name: (template site, expected decision)
     'stage_receipt_disagrees_pauses': ('l069', 'paused'),
     'transport_authorization_other_slot_pauses': ('l069', 'paused'),
     'assembly_receipt_disagrees_pauses': ('l069', 'paused'),
+    # revision 5: stage receipts one to one with stage records, and the whole chain the frozen sequence (the review's two first)
+    'stage_process_record_deleted_pauses': ('l069', 'paused'),
+    'stage_receipt_without_record_pauses': ('l069', 'paused'),
+    'stage_directory_without_receipts_pauses': ('l069', 'paused'),
+    'receipts_reordered_pauses': ('l069', 'paused'),
     'negative_control_certificate_record_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_verifier_receipt_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_summary_claims_proof_stops': ('l170', 'integrity_stop'),
@@ -140,7 +149,7 @@ def build(name, site, target):
     consumed = recon['kind'] in ('send_grant', 'unknown')
     # the one change
     if name == 'invalid_response_continues':
-        chain = [r for r in chain if r['stage'] not in ('assembly', 'certificate-check')]  # a response that failed validation reaches neither stage
+        chain = [r for r in chain if r['stage'] not in ('assembly', 'certificate-check') and r['event'] != 'recovery_finished']  # the frozen response_invalid sequence
         for stage in ('assembly', 'certificate-check'): shutil.rmtree(target/'stages'/stage)
         for f in ('certificate-verdict.json', 'validated-response.json', 'evidence.json'): (target/f).unlink(missing_ok=True)
         s = J(target/'credential-summary.json'); s['failure_category'] = 'response_schema'; W(target/'credential-summary.json', s)
@@ -197,6 +206,12 @@ def build(name, site, target):
         receipt = supervisor(chain, 'proposal-1', 'stage_finished'); receipt['payload'] = {**receipt['payload'], 'wall_seconds': receipt['payload']['wall_seconds']+1}
     elif name == 'transport_authorization_other_slot_pauses':
         receipt = supervisor(chain, 'proposal', 'live_transport_authorized'); receipt['payload'] = {**receipt['payload'], 'slot': {**receipt['payload']['slot'], 'draw': 3}}
+    elif name == 'stage_receipt_without_record_pauses':  # the review's probe: a finish receipt for a stage that left no process record
+        receipt = supervisor(chain, 'export', 'stage_finished'); chain.insert(chain.index(receipt)+1, {**json.loads(json.dumps(receipt)), 'stage': 'phantom'})
+    elif name == 'receipts_reordered_pauses':
+        a, b = supervisor(chain, 'proposal', 'https_observed'), supervisor(chain, 'proposal', 'transport_validated')
+        i, j = chain.index(a), chain.index(b); clock = ('receipt_monotonic_ns', 'receipt_utc')  # each position keeps its receipt time
+        chain[i], chain[j] = {**b, **{k: a[k] for k in clock if k in a}}, {**a, **{k: b[k] for k in clock if k in b}}
     elif name == 'assembly_receipt_disagrees_pauses':
         receipt = supervisor(chain, 'assembly', 'certificate_assembled'); receipt['payload'] = {**receipt['payload'], 'response_sha256': '0'*64}
     # the terminal receipt's digests refreshed (except where the terminal disagreement is the case), the chain re-hashed, the run resealed
@@ -214,6 +229,9 @@ def build(name, site, target):
     for i, r in enumerate(chain): r['sequence'] = i
     rechain(target, chain)
     if name == 'missing_evidence_pauses': (target/'transport-validation.json').unlink()
+    if name == 'stage_process_record_deleted_pauses': (target/'stages/export/export.process.json').unlink()  # the review's probe, then resealed
+    if name == 'stage_directory_without_receipts_pauses':
+        (target/'stages/phantom').mkdir(); shutil.copyfile(target/'stages/export/export.process.json', target/'stages/phantom/phantom.process.json')
     site_network.seal(target, J(target/'seal.json')['accepted'])
     seal = J(target/'seal.json')
     if name == 'empty_seal_inventory_pauses': seal['retained_sha256'] = {}; W(target/'seal.json', seal)
