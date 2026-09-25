@@ -1,0 +1,44 @@
+{
+  "transport_receipt_binding_false": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "terminal_publication_false": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  }
+}
