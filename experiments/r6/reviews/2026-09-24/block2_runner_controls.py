@@ -10,6 +10,11 @@ case then changes exactly one relationship. Added: the review's probes (a verifi
 summary claiming a proof, a proof whose verifier receipt rejects, a proof without its consumption receipt, an empty seal inventory, another
 slot's genuine reconciliation) and further controls for each relationship the gate now checks.
 
+Revision 4 (block 2 runner revision 3 review). The fixture builder also refreshes, after any record change, the receipts that mirror the
+changed records (as the driver writes them), so each case still changes one relationship; the review's two probes (a transport receipt
+reporting a failed binding against a clean record, a terminal reporting failed publication against clean publication records) and each other
+mirrored receipt are isolated receipt-only controls. The positive cases carry the frozen live terminal (publication pending, not accepted).
+
 Each case runs through the production `main()` twice, with the same expected decision:
 * **fresh** — the mocked sender materializes the case as the episode's result; the runner then gates it;
 * **restart** — the case already exists when the runner starts; the runner must gate it before any launch.
@@ -67,6 +72,20 @@ CASES = {  # name: (template site, expected decision)
     'ledger_row_mismatch_pauses': ('l069', 'paused'),
     'ledger_receipt_mismatch_pauses': ('l069', 'paused'),
     'unreviewed_outcome_pauses': ('l069', 'paused'),
+    # revision 4: receipt-only disagreements, each with its record unchanged (the review's two first)
+    'transport_receipt_disagrees_pauses': ('l069', 'paused'),
+    'terminal_publication_failed_pauses': ('l069', 'paused'),
+    'terminal_publication_not_pending_pauses': ('l069', 'paused'),
+    'terminal_accepted_claimed_pauses': ('l069', 'paused'),
+    'terminal_event_finished_on_refusal_pauses': ('l166', 'paused'),
+    'transport_receipt_missing_pauses': ('l069', 'paused'),
+    'transport_receipt_duplicated_pauses': ('l069', 'paused'),
+    'https_receipt_disagrees_pauses': ('l069', 'paused'),
+    'credential_receipt_disagrees_pauses': ('l069', 'paused'),
+    'reservation_receipt_disagrees_pauses': ('l069', 'paused'),
+    'stage_receipt_disagrees_pauses': ('l069', 'paused'),
+    'transport_authorization_other_slot_pauses': ('l069', 'paused'),
+    'assembly_receipt_disagrees_pauses': ('l069', 'paused'),
     'negative_control_certificate_record_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_verifier_receipt_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_summary_claims_proof_stops': ('l170', 'integrity_stop'),
@@ -117,11 +136,13 @@ def build(name, site, target):
     supervisor(chain, 'campaign-ledger', 'request_reserved')['payload'] = reservation
     supervisor(chain, 'campaign-ledger', 'reservation_reconciled')['payload'].update(row_hash=recon['row_hash'], kind=recon['kind'], send_outcome=recon.get('send_outcome'),
                                                                                      ledger_sha256=r6.sha(target/'ledger-after.ndjson'))
+    authorization = supervisor(chain, 'proposal', 'live_transport_authorized')['payload']; authorization['slot'] = {'task_id': task, 'draw': 2}
     consumed = recon['kind'] in ('send_grant', 'unknown')
     # the one change
     if name == 'invalid_response_continues':
-        chain = [r for r in chain if r['stage'] not in ('assembly', 'certificate-check')]
-        (target/'certificate-verdict.json').unlink()
+        chain = [r for r in chain if r['stage'] not in ('assembly', 'certificate-check')]  # a response that failed validation reaches neither stage
+        for stage in ('assembly', 'certificate-check'): shutil.rmtree(target/'stages'/stage)
+        for f in ('certificate-verdict.json', 'validated-response.json', 'evidence.json'): (target/f).unlink(missing_ok=True)
         s = J(target/'credential-summary.json'); s['failure_category'] = 'response_schema'; W(target/'credential-summary.json', s)
         v = J(target/'transport-validation.json'); v.update(failure_category='response_schema', failure_phase='proposal'); W(target/'transport-validation.json', v)
     elif name == 'returned_binding_failure_pauses':
@@ -146,7 +167,7 @@ def build(name, site, target):
         foreign = J(BLOCK1/'l099-draw1/campaign-reconciliation.json'); W(target/'campaign-reconciliation.json', foreign)
     elif name == 'ledger_receipt_mismatch_pauses': supervisor(chain, 'campaign-ledger', 'reservation_reconciled')['payload']['row_hash'] = '0'*64
     elif name == 'unreviewed_outcome_pauses':
-        s = J(target/'credential-summary.json'); s['failure_category'] = 'mystery'; W(target/'credential-summary.json', s)
+        s = J(target/'credential-summary.json'); s.update(failure_category='mystery', proof_accepted=False); W(target/'credential-summary.json', s)
     elif name == 'negative_control_certificate_record_accepts_stops':
         c = J(target/'certificate-verdict.json'); c['accepted'] = True; W(target/'certificate-verdict.json', c)
     elif name == 'negative_control_summary_claims_proof_stops':
@@ -155,11 +176,41 @@ def build(name, site, target):
     elif name == 'negative_control_consumer_reached_stops':
         at = chain.index(supervisor(chain, 'certificate-check', 'independent_certificate_verdict'))
         chain.insert(at+1, {**chain[at], 'stage': 'reconstruct', 'event': 'stage_started', 'payload': {'command_file': 'stages/reconstruct/command.json'}})
+    # revision 4: the receipts that mirror a changed record refreshed, as the driver writes them, then the receipt-only change
+    if (target/'transport-validation.json').exists(): supervisor(chain, 'proposal', 'transport_validated')['payload'] = J(target/'transport-validation.json')
+    supervisor(chain, 'episode', 'episode_started')['payload']['policy_sha256'] = r6.sha(target/'search-policy.json')
+    out = target/'stages/proposal-1/output'
+    supervisor(chain, 'proposal', 'https_observed')['payload'] = {'http_sha256': r6.sha(out/'http.json'), 'server_sha256': r6.sha(out/'server.json'),
+                                                                  'pricing_check_sha256': r6.sha(out/'pricing-check.json')}
+    if name == 'transport_receipt_disagrees_pauses':  # the review's probe: the receipt reports a failed request binding, the record a good one
+        receipt = supervisor(chain, 'proposal', 'transport_validated'); receipt['payload'] = json.loads(json.dumps(receipt['payload']))
+        receipt['payload']['response_request_binding']['accepted'] = False
+    elif name == 'transport_receipt_missing_pauses': chain.remove(supervisor(chain, 'proposal', 'transport_validated'))
+    elif name == 'transport_receipt_duplicated_pauses':
+        receipt = supervisor(chain, 'proposal', 'transport_validated'); chain.insert(chain.index(receipt)+1, json.loads(json.dumps(receipt)))
+    elif name == 'https_receipt_disagrees_pauses': supervisor(chain, 'proposal', 'https_observed')['payload']['http_sha256'] = '0'*64
+    elif name == 'credential_receipt_disagrees_pauses':
+        receipt = supervisor(chain, 'credential-receipt', 'credential_use_checked'); receipt['payload'] = {**receipt['payload'], 'credential_use_accepted': False}
+    elif name == 'reservation_receipt_disagrees_pauses':
+        receipt = supervisor(chain, 'campaign-ledger', 'request_reserved'); receipt['payload'] = {**receipt['payload'], 'message_utf8_bytes': receipt['payload']['message_utf8_bytes']+1}
+    elif name == 'stage_receipt_disagrees_pauses':
+        receipt = supervisor(chain, 'proposal-1', 'stage_finished'); receipt['payload'] = {**receipt['payload'], 'wall_seconds': receipt['payload']['wall_seconds']+1}
+    elif name == 'transport_authorization_other_slot_pauses':
+        receipt = supervisor(chain, 'proposal', 'live_transport_authorized'); receipt['payload'] = {**receipt['payload'], 'slot': {**receipt['payload']['slot'], 'draw': 3}}
+    elif name == 'assembly_receipt_disagrees_pauses':
+        receipt = supervisor(chain, 'assembly', 'certificate_assembled'); receipt['payload'] = {**receipt['payload'], 'response_sha256': '0'*64}
     # the terminal receipt's digests refreshed (except where the terminal disagreement is the case), the chain re-hashed, the run resealed
-    terminal = chain[-1]['payload']
+    terminal = chain[-1]['payload']; summary = J(target/'credential-summary.json')  # derived from the summary, as `finalize` derives it
+    terminal.update({k: bool(summary[k]) for k in ('proof_accepted', 'credential_use_accepted', 'ledger_reconciled', 'evidence_complete')})
+    chain[-1]['event'] = 'episode_finished' if (summary['proof_accepted'] and summary['failure_category'] is None and summary['evidence_complete']
+                                                 and summary['ledger_reconciled']) else 'episode_rejected'
     if name == 'terminal_disagrees_pauses': terminal['proof_accepted'] = False
-    else: terminal.update(summary_sha256=r6.sha(target/'credential-summary.json'), publication_final_sha256=r6.sha(target/'publication-final.json'),
-                          publication_scan_sha256=r6.sha(target/'publication-scan.json'))
+    elif name == 'terminal_publication_failed_pauses': terminal['publication_accepted'] = False  # the review's probe
+    elif name == 'terminal_publication_not_pending_pauses': terminal['publication_pending'] = False
+    elif name == 'terminal_accepted_claimed_pauses': terminal['accepted'] = True
+    elif name == 'terminal_event_finished_on_refusal_pauses': chain[-1]['event'] = 'episode_finished'
+    terminal.update(summary_sha256=r6.sha(target/'credential-summary.json'), publication_final_sha256=r6.sha(target/'publication-final.json'),
+                    publication_scan_sha256=r6.sha(target/'publication-scan.json'))
     for i, r in enumerate(chain): r['sequence'] = i
     rechain(target, chain)
     if name == 'missing_evidence_pauses': (target/'transport-validation.json').unlink()
@@ -168,7 +219,7 @@ def build(name, site, target):
     if name == 'empty_seal_inventory_pauses': seal['retained_sha256'] = {}; W(target/'seal.json', seal)
     elif name == 'seal_missing_summary_entry_pauses': del seal['retained_sha256']['credential-summary.json']; W(target/'seal.json', seal)
     elif name == 'seal_missing_events_entry_pauses': del seal['retained_sha256']['events.ndjson']; W(target/'seal.json', seal)
-    elif name == 'seal_digest_broken_pauses': p = target/'input-ir.json'; p.write_text(p.read_text()+'\n')
+    elif name == 'seal_digest_broken_pauses': p = target/'runtime.json'; p.write_text(p.read_text()+'\n')  # a sealed file no receipt mirrors
     elif name == 'unlisted_file_pauses': (target/'unlisted.json').write_text('{}\n')
     elif name == 'unsealed_run_pauses': (target/'seal.json').unlink()
     view = [dict(r) for r in rows]+([J(BLOCK1/'l099-draw1/campaign-reconciliation.json')] if name == 'foreign_reconciliation_pauses' else [])

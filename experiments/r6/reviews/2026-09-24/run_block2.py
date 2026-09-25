@@ -25,6 +25,13 @@ records by digest); the seal must retain every record the gate reads and list ev
 be this slot's (task, draw, episode, reservation), held once each and in order by the live ledger, bound by the chain's ledger receipts,
 and ending the run's own ledger snapshots.
 
+Revision 4 (block 2 runner revision 3 review: two P2 receipt-agreement gaps). Every supervisor receipt in the chain that mirrors a retained
+record is required once and compared with it (`receipts_agree`): transport validation, the HTTPS observation digests, the credential-use
+receipt, the reservation and its reconciled ledger digest, pricing admission, the live payload, the prepared problem, the episode's policy,
+the transport authorization's slot and nonce, every stage's process record, and the assembly receipt; the terminal receipt must have the
+frozen live shape (publication pending, not accepted) and be finished exactly when a proof is accepted with complete evidence. The seal must
+retain each record these receipts mirror.
+
 The block 1 runner (`run_block1.py`) is retained as run; this revision is for block 2 only.
 """
 import argparse
@@ -60,13 +67,19 @@ REQUIRED = ('events.ndjson', 'search-policy.json', 'campaign-permit.json', 'camp
             'transport-validation.json', 'stages/proposal-1/output/http.json', 'publication-final.json', 'publication-scan.json',
             'transport-ledger.ndjson', 'ledger-after.ndjson')
 OUTCOME_FILES = ('certificate-verdict.json', 'verdict.json', 'reconstruction-refusal.json')  # retained wherever present
+# Revision 4: the records the chain's receipts mirror, which the gate now compares, retained too (validated-response.json where assembled)
+RECEIPT_FILES = ('credential-receipt.json', 'reservation.json', 'host-pricing-admission.json', 'live-payload.json', 'prepared.json', 'input-ir.json',
+                 'payload-audit.json', 'stages/proposal-1/output/server.json', 'stages/proposal-1/output/pricing-check.json')
+TERMINAL_KEYS = ('accepted', 'proof_accepted', 'credential_use_accepted', 'publication_accepted', 'publication_pending', 'ledger_reconciled',
+                 'evidence_complete', 'summary_sha256', 'publication_scan_sha256', 'publication_final_sha256')
 
 
 def seal_covers(run, problems):
     """Revision 3: the seal's inventory covers every record the gate reads, lists every file in the run, and every retained digest holds."""
     seal = load(run/'seal.json'); retained, ephemeral = seal['retained_sha256'], seal['ephemeral_sha256']
     rows = events.read(run/'events.ndjson')
-    needed = [*REQUIRED, *(f for f in OUTCOME_FILES if (run/f).exists())]
+    needed = [*REQUIRED, *RECEIPT_FILES, *(f for f in OUTCOME_FILES if (run/f).exists()), *(['validated-response.json'] if (run/'validated-response.json').exists() else []),
+              *(str(p.relative_to(run)) for p in sorted((run/'stages').glob('*/*.process.json')))]
     missing = [f for f in needed if f not in retained]
     if missing: problems.append(f'seal does not retain {missing}')
     files = [str(p.relative_to(run)) for p in run.rglob('*') if p.is_file() and p.name != 'seal.json']
@@ -75,6 +88,38 @@ def seal_covers(run, problems):
     if not (seal['event_count'] == len(rows) and seal['last_event_hash'] == rows[-1]['event_hash']
             and all((run/k).is_file() and contract.r6.sha(run/k) == v for k, v in retained.items())): problems.append('seal digests or chain do not hold')
     return rows
+
+
+def receipts_agree(run, one, permit, http, cert):
+    """Revision 4. Each receipt present exactly once and equal to the record (or the record's digest) it mirrors; a missing, duplicate or
+    disagreeing receipt is reported. The assembly receipt is required exactly where a certificate record exists."""
+    sha = contract.r6.sha; out = lambda *path: run.joinpath(*path); problems = []
+    expected = {
+        ('proposal', 'transport_validated'): load(out('transport-validation.json')),
+        ('proposal', 'https_observed'): {'http_sha256': sha(out('stages/proposal-1/output/http.json')), 'server_sha256': sha(out('stages/proposal-1/output/server.json')),
+                                         'pricing_check_sha256': sha(out('stages/proposal-1/output/pricing-check.json'))},
+        ('credential-receipt', 'credential_use_checked'): load(out('credential-receipt.json')),
+        ('campaign-ledger', 'request_reserved'): load(out('reservation.json')),
+        ('pricing-admission', 'pricing_admitted'): {'admission_sha256': sha(out('host-pricing-admission.json'))},
+        ('live-payload', 'payload_validated'): load(out('live-payload.json')),
+        ('payload', 'prepared_problem'): {'prepared_sha256': sha(out('prepared.json')), 'input_ir_sha256': sha(out('input-ir.json')),
+                                          'payload_audit_sha256': sha(out('payload-audit.json'))}}
+    for key, value in expected.items():
+        got = one(*key)
+        if got != value: problems.append(f'{key[1]} receipt {"missing or duplicated" if got in (None, "duplicate") else "disagrees with its record"}')
+    started = one('episode', 'episode_started'); reconciled = one('campaign-ledger', 'reservation_reconciled'); authorized = one('proposal', 'live_transport_authorized')
+    if not (isinstance(started, dict) and started.get('policy_sha256') == sha(out('search-policy.json'))): problems.append('episode_started does not bind the search policy')
+    if not (isinstance(reconciled, dict) and reconciled.get('ledger_sha256') == sha(out('ledger-after.ndjson'))): problems.append('reservation_reconciled does not bind the ledger snapshot')
+    if not (isinstance(authorized, dict) and authorized.get('reservation_id') == permit.get('reservation_id') and authorized.get('slot') == {'task_id': permit.get('task_id'), 'draw': permit.get('draw')}
+            and authorized.get('commitment_nonce') == http.get('commitment_nonce')): problems.append('live_transport_authorized is not this slot\'s')
+    for process in sorted(run.glob('stages/*/*.process.json')):
+        if one(process.parent.name, 'stage_finished') != load(process): problems.append(f'{process.parent.name} stage receipt disagrees with its process record')
+    assembled = one('assembly', 'certificate_assembled')
+    if cert is not None:
+        if not (isinstance(assembled, dict) and out('validated-response.json').is_file() and assembled.get('response_sha256') == sha(out('validated-response.json'))
+                and 'sha256:'+str(assembled.get('certificate_sha256')) == cert.get('certificate_hash')): problems.append('certificate_assembled does not bind the response and certificate')
+    elif assembled is not None: problems.append('an assembly receipt without a certificate record')
+    return problems
 
 
 def gate(run, task_id, draw):
@@ -147,13 +192,19 @@ def gate(run, task_id, draw):
     if validation.get('failure_category') is not None and validation.get('failure_phase') != 'proposal':
         reasons.append(f"transport failure {validation.get('failure_category')} ({validation.get('failure_phase')})")
     if not (summary.get('evidence_complete') is True and summary.get('ledger_reconciled') is True): reasons.append('evidence incomplete or ledger not reconciled')
-    # 4. the terminal receipt binds the summary and publication records and agrees with them
+    # 4. the terminal receipt: the frozen live shape (`cohort_episode.finalize`, live: publication pending, not accepted), binding the summary and
+    #    publication records by digest and agreeing with the summary; finished exactly when a proof is accepted with complete evidence
     shared = ('proof_accepted', 'credential_use_accepted', 'evidence_complete', 'ledger_reconciled')
-    if not (terminal['source'] == 'supervisor' and terminal['event'] in ('episode_finished', 'episode_rejected')
+    finished_expected = summary.get('proof_accepted') is True and category is None and summary.get('evidence_complete') is True and summary.get('ledger_reconciled') is True
+    if not (terminal['source'] == 'supervisor' and terminal['event'] == ('episode_finished' if finished_expected else 'episode_rejected')
+            and sorted(terminal_payload) == sorted(TERMINAL_KEYS) and terminal_payload.get('accepted') is False
+            and terminal_payload.get('publication_pending') is True and terminal_payload.get('publication_accepted') is None
             and terminal_payload.get('summary_sha256') == contract.r6.sha(run/'credential-summary.json')
             and terminal_payload.get('publication_final_sha256') == contract.r6.sha(run/'publication-final.json')
             and terminal_payload.get('publication_scan_sha256') == contract.r6.sha(run/'publication-scan.json')
-            and all(terminal_payload.get(k) == summary.get(k) for k in shared)): reasons.append('terminal receipt does not agree with the summary and publication records')
+            and all(terminal_payload.get(k) is summary.get(k) for k in shared)): reasons.append('terminal receipt does not agree with the summary and publication records')
+    # 4a. revision 4: every receipt in the chain that mirrors a retained record, unique and equal to it
+    reasons.extend(receipts_agree(run, one, permit, http, cert))
     # 5. the outcome: receipts, records and summary in agreement for exactly one ordinary outcome
     if receipt == 'duplicate' or refused_receipt == 'duplicate' or (receipt is None) != (cert is None) or (receipt is not None and receipt != cert):
         reasons.append('verifier receipt and certificate record disagree')
