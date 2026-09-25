@@ -1,0 +1,214 @@
+{
+  "negative_raw_verifier_acceptance": {
+    "fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['verifier receipt']"
+      ]
+    },
+    "restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['verifier receipt']"
+      ]
+    }
+  },
+  "proof_raw_verifier_rejection": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "verifier receipt and certificate record disagree"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "verifier receipt and certificate record disagree"
+      ]
+    }
+  },
+  "negative_summary_acceptance": {
+    "fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['summary proof_accepted']"
+      ]
+    },
+    "restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['summary proof_accepted']"
+      ]
+    }
+  },
+  "missing_consumption_receipt": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proof receipts and records do not agree",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proof receipts and records do not agree",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    }
+  },
+  "foreign_ledger_task": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "permit or reconciliation is not this slot's",
+        "the run's own ledger snapshots do not end at its permit and reconciliation"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "permit or reconciliation is not this slot's",
+        "the run's own ledger snapshots do not end at its permit and reconciliation"
+      ]
+    }
+  },
+  "empty_seal_inventory": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['events.ndjson', 'search-policy.json', 'campaign-permit.json', 'campaign-reconciliation.json', 'credential-summary.json', 'transport-validation.json', 'stages/proposal-1/output/http.json', 'publication-final.json', 'publication-scan.json', 'transport-ledger.ndjson', 'ledger-after.ndjson', 'credential-receipt.json', 'reservation.json', 'host-pricing-admission.json', 'live-payload.json', 'prepared.json', 'input-ir.json', 'payload-audit.json', 'stages/proposal-1/output/server.json', 'stages/proposal-1/output/pricing-check.json', 'certificate-verdict.json', 'verdict.json', 'validated-response.json', 'stages/assembly/assembly.process.json', 'stages/capture-build/capture-build.process.json', 'stages/certificate-check/certificate-check.process.json', 'stages/export/export.process.json', 'stages/pipeline-prepare/pipeline-prepare.process.json', 'stages/preparation/preparation.process.json', 'stages/preparation-build/preparation-build.process.json', 'stages/proposal-1/proposal-1.process.json', 'stages/reconstruct/reconstruct.process.json', 'stages/validation-local/validation-local.process.json', 'stages/validation-whole/validation-whole.process.json']",
+        "seal does not list ['runtime.json', 'credential-canary.json', 'search-policy.json']"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['events.ndjson', 'search-policy.json', 'campaign-permit.json', 'campaign-reconciliation.json', 'credential-summary.json', 'transport-validation.json', 'stages/proposal-1/output/http.json', 'publication-final.json', 'publication-scan.json', 'transport-ledger.ndjson', 'ledger-after.ndjson', 'credential-receipt.json', 'reservation.json', 'host-pricing-admission.json', 'live-payload.json', 'prepared.json', 'input-ir.json', 'payload-audit.json', 'stages/proposal-1/output/server.json', 'stages/proposal-1/output/pricing-check.json', 'certificate-verdict.json', 'verdict.json', 'validated-response.json', 'stages/assembly/assembly.process.json', 'stages/capture-build/capture-build.process.json', 'stages/certificate-check/certificate-check.process.json', 'stages/export/export.process.json', 'stages/pipeline-prepare/pipeline-prepare.process.json', 'stages/preparation/preparation.process.json', 'stages/preparation-build/preparation-build.process.json', 'stages/proposal-1/proposal-1.process.json', 'stages/reconstruct/reconstruct.process.json', 'stages/validation-local/validation-local.process.json', 'stages/validation-whole/validation-whole.process.json']",
+        "seal does not list ['runtime.json', 'credential-canary.json', 'search-policy.json']"
+      ]
+    }
+  },
+  "authentic_ledger": {
+    "rows": 23,
+    "baselines": {
+      "l069": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l070": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l071": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l078": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l096": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l166": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l170": [
+        "continue",
+        "witness_rejected",
+        []
+      ],
+      "l175": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l178": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l204": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l099": [
+        "continue",
+        "proof",
+        []
+      ]
+    },
+    "foreign_reconciliation": {
+      "fresh": {
+        "result": "paused",
+        "launches": [
+          "l069-draw1"
+        ],
+        "decision": "{\"run\": \"l069-draw1\", \"fresh\": true, \"exit\": 0, \"decision\": \"pause\", \"outcome\": \"proof\", \"reasons\": [\"permit or reconciliation is not this slot's\", \"the run's own ledger snapshots do not end at its permit and reconciliation\", \"ledger receipts in the chain do not bind the permit and reconciliation\"], \"consumed\": 11, \"committed_micro_usd\": 1126400}"
+      },
+      "restart": {
+        "result": "paused",
+        "launches": [],
+        "decision": "{\"run\": \"l069-draw1\", \"fresh\": false, \"decision\": \"pause\", \"outcome\": \"proof\", \"reasons\": [\"permit or reconciliation is not this slot's\", \"the run's own ledger snapshots do not end at its permit and reconciliation\", \"ledger receipts in the chain do not bind the permit and reconciliation\"], \"consumed\": 11, \"committed_micro_usd\": 1126400}"
+      }
+    }
+  }
+}

@@ -1,0 +1,1099 @@
+{
+  "passed": true,
+  "cases": 50,
+  "records": 100,
+  "results": {
+    "proof_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "proof_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "closer_refusal_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l166-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "closer_refusal",
+      "reasons": []
+    },
+    "closer_refusal_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "closer_refusal",
+      "reasons": []
+    },
+    "negative_control_rejected_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "negative_control_rejected_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "invalid_response_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "response_invalid",
+      "reasons": []
+    },
+    "invalid_response_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "response_invalid",
+      "reasons": []
+    },
+    "sealed_release_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as release/None, not a returned send",
+        "ledger slot not consumed, or a reservation is open"
+      ]
+    },
+    "sealed_release_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as release/None, not a returned send",
+        "ledger slot not consumed, or a reservation is open"
+      ]
+    },
+    "unknown_send_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as unknown/unknown, not a returned send"
+      ]
+    },
+    "unknown_send_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as unknown/unknown, not a returned send"
+      ]
+    },
+    "returned_binding_failure_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport binding failure",
+        "transport failure transport_capture_failure (https_transport)"
+      ]
+    },
+    "returned_binding_failure_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport binding failure",
+        "transport failure transport_capture_failure (https_transport)"
+      ]
+    },
+    "provider_error_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "provider status 401"
+      ]
+    },
+    "provider_error_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "provider status 401"
+      ]
+    },
+    "publication_failure_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "publication scan failed"
+      ]
+    },
+    "publication_failure_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "publication scan failed"
+      ]
+    },
+    "proof_certificate_record_rejects_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "verifier receipt and certificate record disagree",
+        "proof receipts and records do not agree"
+      ]
+    },
+    "proof_certificate_record_rejects_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "verifier receipt and certificate record disagree",
+        "proof receipts and records do not agree"
+      ]
+    },
+    "proof_verifier_receipt_rejects_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "verifier receipt and certificate record disagree"
+      ]
+    },
+    "proof_verifier_receipt_rejects_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "verifier receipt and certificate record disagree"
+      ]
+    },
+    "proof_consumption_receipt_missing_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proof receipts and records do not agree",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "proof_consumption_receipt_missing_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proof receipts and records do not agree",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "proof_kernel_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proof receipts and records do not agree"
+      ]
+    },
+    "proof_kernel_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proof receipts and records do not agree"
+      ]
+    },
+    "refusal_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l166-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "closer_refusal",
+      "reasons": [
+        "refusal receipts and records do not agree"
+      ]
+    },
+    "refusal_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "closer_refusal",
+      "reasons": [
+        "refusal receipts and records do not agree"
+      ]
+    },
+    "terminal_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "missing_evidence_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "seal does not retain ['transport-validation.json']",
+        "evidence missing or unreadable: FileNotFoundError: [Errno 2] No such file or directory: '/home/jeans/scratch/tmp/block2-runner-paano2az/runs/l069-draw2/transport-validation.json'"
+      ]
+    },
+    "missing_evidence_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "seal does not retain ['transport-validation.json']",
+        "evidence missing or unreadable: FileNotFoundError: [Errno 2] No such file or directory: '/home/jeans/scratch/tmp/block2-runner-spkbcp2e/runs/l069-draw2/transport-validation.json'"
+      ]
+    },
+    "empty_seal_inventory_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['events.ndjson', 'search-policy.json', 'campaign-permit.json', 'campaign-reconciliation.json', 'credential-summary.json', 'transport-validation.json', 'stages/proposal-1/output/http.json', 'publication-final.json', 'publication-scan.json', 'transport-ledger.ndjson', 'ledger-after.ndjson', 'credential-receipt.json', 'reservation.json', 'host-pricing-admission.json', 'live-payload.json', 'prepared.json', 'input-ir.json', 'payload-audit.json', 'stages/proposal-1/output/server.json', 'stages/proposal-1/output/pricing-check.json', 'certificate-verdict.json', 'verdict.json', 'validated-response.json', 'stages/assembly/assembly.process.json', 'stages/capture-build/capture-build.process.json', 'stages/certificate-check/certificate-check.process.json', 'stages/export/export.process.json', 'stages/pipeline-prepare/pipeline-prepare.process.json', 'stages/preparation/preparation.process.json', 'stages/preparation-build/preparation-build.process.json', 'stages/proposal-1/proposal-1.process.json', 'stages/reconstruct/reconstruct.process.json', 'stages/validation-local/validation-local.process.json', 'stages/validation-whole/validation-whole.process.json']",
+        "seal does not list ['runtime.json', 'credential-canary.json', 'search-policy.json']"
+      ]
+    },
+    "empty_seal_inventory_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['events.ndjson', 'search-policy.json', 'campaign-permit.json', 'campaign-reconciliation.json', 'credential-summary.json', 'transport-validation.json', 'stages/proposal-1/output/http.json', 'publication-final.json', 'publication-scan.json', 'transport-ledger.ndjson', 'ledger-after.ndjson', 'credential-receipt.json', 'reservation.json', 'host-pricing-admission.json', 'live-payload.json', 'prepared.json', 'input-ir.json', 'payload-audit.json', 'stages/proposal-1/output/server.json', 'stages/proposal-1/output/pricing-check.json', 'certificate-verdict.json', 'verdict.json', 'validated-response.json', 'stages/assembly/assembly.process.json', 'stages/capture-build/capture-build.process.json', 'stages/certificate-check/certificate-check.process.json', 'stages/export/export.process.json', 'stages/pipeline-prepare/pipeline-prepare.process.json', 'stages/preparation/preparation.process.json', 'stages/preparation-build/preparation-build.process.json', 'stages/proposal-1/proposal-1.process.json', 'stages/reconstruct/reconstruct.process.json', 'stages/validation-local/validation-local.process.json', 'stages/validation-whole/validation-whole.process.json']",
+        "seal does not list ['runtime.json', 'credential-canary.json', 'search-policy.json']"
+      ]
+    },
+    "seal_missing_summary_entry_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['credential-summary.json']",
+        "seal does not list ['credential-summary.json']"
+      ]
+    },
+    "seal_missing_summary_entry_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['credential-summary.json']",
+        "seal does not list ['credential-summary.json']"
+      ]
+    },
+    "seal_missing_events_entry_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['events.ndjson']",
+        "seal does not list ['events.ndjson']"
+      ]
+    },
+    "seal_missing_events_entry_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not retain ['events.ndjson']",
+        "seal does not list ['events.ndjson']"
+      ]
+    },
+    "seal_digest_broken_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal digests or chain do not hold"
+      ]
+    },
+    "seal_digest_broken_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal digests or chain do not hold"
+      ]
+    },
+    "unlisted_file_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not list ['unlisted.json']"
+      ]
+    },
+    "unlisted_file_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal does not list ['unlisted.json']"
+      ]
+    },
+    "unsealed_run_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "unsealed: the episode was interrupted"
+      ]
+    },
+    "unsealed_run_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "unsealed: the episode was interrupted"
+      ]
+    },
+    "other_slot_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "run is not this slot"
+      ]
+    },
+    "other_slot_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "run is not this slot"
+      ]
+    },
+    "chain_of_another_run_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "event chain is not this run"
+      ]
+    },
+    "chain_of_another_run_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "event chain is not this run"
+      ]
+    },
+    "foreign_reconciliation_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "permit or reconciliation is not this slot's",
+        "the run's own ledger snapshots do not end at its permit and reconciliation",
+        "ledger receipts in the chain do not bind the permit and reconciliation"
+      ]
+    },
+    "foreign_reconciliation_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "permit or reconciliation is not this slot's",
+        "the run's own ledger snapshots do not end at its permit and reconciliation",
+        "ledger receipts in the chain do not bind the permit and reconciliation"
+      ]
+    },
+    "ledger_row_mismatch_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "the live ledger does not hold this permit and its reconciliation"
+      ]
+    },
+    "ledger_row_mismatch_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "the live ledger does not hold this permit and its reconciliation"
+      ]
+    },
+    "ledger_receipt_mismatch_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "ledger receipts in the chain do not bind the permit and reconciliation"
+      ]
+    },
+    "ledger_receipt_mismatch_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "ledger receipts in the chain do not bind the permit and reconciliation"
+      ]
+    },
+    "unreviewed_outcome_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "an outcome this runner has not reviewed: mystery"
+      ]
+    },
+    "unreviewed_outcome_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "an outcome this runner has not reviewed: mystery"
+      ]
+    },
+    "transport_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt disagrees with its record"
+      ]
+    },
+    "transport_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt disagrees with its record"
+      ]
+    },
+    "terminal_publication_failed_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_publication_failed_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_publication_not_pending_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_publication_not_pending_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_accepted_claimed_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_accepted_claimed_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "terminal_event_finished_on_refusal_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l166-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "closer_refusal",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records",
+        "refusal receipts and records do not agree",
+        "the receipt sequence is not the frozen sequence for closer_refusal"
+      ]
+    },
+    "terminal_event_finished_on_refusal_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "closer_refusal",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records",
+        "refusal receipts and records do not agree",
+        "the receipt sequence is not the frozen sequence for closer_refusal"
+      ]
+    },
+    "transport_receipt_missing_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt missing or duplicated",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "transport_receipt_missing_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt missing or duplicated",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "transport_receipt_duplicated_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt missing or duplicated",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "transport_receipt_duplicated_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt missing or duplicated",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "https_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "https_observed receipt disagrees with its record"
+      ]
+    },
+    "https_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "https_observed receipt disagrees with its record"
+      ]
+    },
+    "credential_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "credential_use_checked receipt disagrees with its record"
+      ]
+    },
+    "credential_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "credential_use_checked receipt disagrees with its record"
+      ]
+    },
+    "reservation_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "request_reserved receipt disagrees with its record"
+      ]
+    },
+    "reservation_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "request_reserved receipt disagrees with its record"
+      ]
+    },
+    "stage_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proposal-1 stage receipt and process record do not match one to one"
+      ]
+    },
+    "stage_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "proposal-1 stage receipt and process record do not match one to one"
+      ]
+    },
+    "transport_authorization_other_slot_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "live_transport_authorized is not this slot's"
+      ]
+    },
+    "transport_authorization_other_slot_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "live_transport_authorized is not this slot's"
+      ]
+    },
+    "assembly_receipt_disagrees_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "certificate_assembled does not bind the response and certificate"
+      ]
+    },
+    "assembly_receipt_disagrees_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "certificate_assembled does not bind the response and certificate"
+      ]
+    },
+    "stage_process_record_deleted_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "export stage receipt and process record do not match one to one",
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    },
+    "stage_process_record_deleted_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "export stage receipt and process record do not match one to one",
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    },
+    "stage_receipt_without_record_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "phantom stage receipt and process record do not match one to one",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "stage_receipt_without_record_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "phantom stage receipt and process record do not match one to one",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "stage_directory_without_receipts_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "phantom stage receipt and process record do not match one to one",
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'export', 'phantom', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'phantom', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    },
+    "stage_directory_without_receipts_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "phantom stage receipt and process record do not match one to one",
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'export', 'phantom', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'phantom', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    },
+    "receipts_reordered_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "receipts_reordered_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "negative_control_certificate_record_accepts_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['certificate record']"
+      ]
+    },
+    "negative_control_certificate_record_accepts_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['certificate record']"
+      ]
+    },
+    "negative_control_verifier_receipt_accepts_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['verifier receipt']"
+      ]
+    },
+    "negative_control_verifier_receipt_accepts_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['verifier receipt']"
+      ]
+    },
+    "negative_control_summary_claims_proof_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['summary proof_accepted', 'terminal proof_accepted']"
+      ]
+    },
+    "negative_control_summary_claims_proof_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['summary proof_accepted', 'terminal proof_accepted']"
+      ]
+    },
+    "negative_control_verdict_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['verdict record']"
+      ]
+    },
+    "negative_control_verdict_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['verdict record']"
+      ]
+    },
+    "negative_control_consumer_reached_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['consumer reached']"
+      ]
+    },
+    "negative_control_consumer_reached_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "acceptance on the negative control: ['consumer reached']"
+      ]
+    }
+  },
+  "block1_baselines": {
+    "l069": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l070": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l071": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l078": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l096": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l166": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l170": [
+      "continue",
+      "witness_rejected",
+      []
+    ],
+    "l175": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l178": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l204": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l099": [
+      "continue",
+      "proof",
+      []
+    ]
+  },
+  "runner_sha256": "a479747fa84fd1e8166b88b988aa2459f379db40b2a80e06837a7935c7f92122",
+  "program_sha256": "ca27fe819bd2946da9ae949206853ce9bce2962d608a059a9a4d3c79dfd78832",
+  "transmissions": 0,
+  "credentials_read": 0,
+  "scope": "synthetic copies of audited block 1 runs, consistent at every identity; mocked sender and ledger; continuation decisions only"
+}

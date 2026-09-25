@@ -1,0 +1,18 @@
+{
+  "reviewed_commit": "994bf8bc",
+  "runner_sha256": "a479747fa84fd1e8166b88b988aa2459f379db40b2a80e06837a7935c7f92122",
+  "controls": 100,
+  "exact_case_set_and_recorded_decisions": true,
+  "source_digests_match": true,
+  "block1_baselines": 11,
+  "prior_probes_all_stop_or_pause": {
+    "v2": 14,
+    "v3": 4,
+    "v4": 4
+  },
+  "production_revision": 1,
+  "authorized_slots": 11,
+  "new_authorizations": 0,
+  "provider_calls": 0,
+  "credentials_read": 0
+}
