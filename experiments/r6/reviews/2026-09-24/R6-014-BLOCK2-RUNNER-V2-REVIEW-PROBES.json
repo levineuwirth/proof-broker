@@ -1,0 +1,128 @@
+{
+  "negative_raw_verifier_acceptance": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    }
+  },
+  "proof_raw_verifier_rejection": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "negative_summary_acceptance": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    }
+  },
+  "missing_consumption_receipt": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "foreign_ledger_task": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "empty_seal_inventory": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  }
+}

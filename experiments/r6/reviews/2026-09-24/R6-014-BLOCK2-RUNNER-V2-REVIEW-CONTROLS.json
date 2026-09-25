@@ -1,0 +1,372 @@
+{
+  "passed": true,
+  "cases": 18,
+  "records": 36,
+  "results": {
+    "proof_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "proof_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "closer_refusal_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l166-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "closer_refusal",
+      "reasons": []
+    },
+    "closer_refusal_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "closer_refusal",
+      "reasons": []
+    },
+    "negative_control_rejected_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "negative_control_rejected_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "invalid_response_continues:fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "response_invalid",
+      "reasons": []
+    },
+    "invalid_response_continues:restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "response_invalid",
+      "reasons": []
+    },
+    "sealed_release_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as release/None, not a returned send",
+        "ledger slot not consumed, or a reservation is open"
+      ]
+    },
+    "sealed_release_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as release/None, not a returned send",
+        "ledger slot not consumed, or a reservation is open"
+      ]
+    },
+    "unknown_send_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as unknown/unknown, not a returned send"
+      ]
+    },
+    "unknown_send_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "slot ended as unknown/unknown, not a returned send"
+      ]
+    },
+    "returned_binding_failure_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport binding failure",
+        "transport failure transport_capture_failure (https_transport)"
+      ]
+    },
+    "returned_binding_failure_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport binding failure",
+        "transport failure transport_capture_failure (https_transport)"
+      ]
+    },
+    "provider_error_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "provider status 401"
+      ]
+    },
+    "provider_error_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "provider status 401"
+      ]
+    },
+    "publication_failure_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "publication scan failed"
+      ]
+    },
+    "publication_failure_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "publication scan failed"
+      ]
+    },
+    "contradictory_proof_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "contradictory records for a proof"
+      ]
+    },
+    "contradictory_proof_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "contradictory records for a proof"
+      ]
+    },
+    "missing_evidence_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "evidence missing or unreadable: FileNotFoundError: [Errno 2] No such file or directory: '/home/jeans/scratch/tmp/block2-runner-_7432li5/runs/l069-draw2/transport-validation.json'"
+      ]
+    },
+    "missing_evidence_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "evidence missing or unreadable: FileNotFoundError: [Errno 2] No such file or directory: '/home/jeans/scratch/tmp/block2-runner-jqiguy1r/runs/l069-draw2/transport-validation.json'"
+      ]
+    },
+    "broken_seal_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal or chain not intact"
+      ]
+    },
+    "broken_seal_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "seal or chain not intact"
+      ]
+    },
+    "unsealed_run_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "unsealed: the episode was interrupted"
+      ]
+    },
+    "unsealed_run_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "unsealed: the episode was interrupted"
+      ]
+    },
+    "other_slot_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "run is not this slot"
+      ]
+    },
+    "other_slot_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "run is not this slot"
+      ]
+    },
+    "ledger_row_mismatch_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "ledger terminal row does not match the run"
+      ]
+    },
+    "ledger_row_mismatch_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "ledger terminal row does not match the run"
+      ]
+    },
+    "unreviewed_outcome_pauses:fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "an outcome this runner has not reviewed: mystery"
+      ]
+    },
+    "unreviewed_outcome_pauses:restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": null,
+      "reasons": [
+        "an outcome this runner has not reviewed: mystery"
+      ]
+    },
+    "negative_control_certificate_accepted_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "a verifier or consumer acceptance on the negative control"
+      ]
+    },
+    "negative_control_certificate_accepted_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "a verifier or consumer acceptance on the negative control"
+      ]
+    },
+    "negative_control_verdict_stops:fresh": {
+      "observed": "integrity_stop",
+      "launches": [
+        "l170-draw2"
+      ],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "a verifier or consumer acceptance on the negative control"
+      ]
+    },
+    "negative_control_verdict_stops:restart": {
+      "observed": "integrity_stop",
+      "launches": [],
+      "decision": "integrity_stop",
+      "outcome": "negative_control_acceptance",
+      "reasons": [
+        "a verifier or consumer acceptance on the negative control"
+      ]
+    }
+  },
+  "runner_sha256": "eeabb9b26056de1480380b4b5fbfe6c66c2a39525de7fc3ac8c5faa11ed90dbe",
+  "program_sha256": "2ccc2be20eb590b25ebcae1d04f07f71978391feb62d3e2fcd9fd23fcb80deeb",
+  "transmissions": 0,
+  "credentials_read": 0,
+  "scope": "synthetic copies of audited block 1 runs; mocked sender and ledger; continuation decisions only"
+}
