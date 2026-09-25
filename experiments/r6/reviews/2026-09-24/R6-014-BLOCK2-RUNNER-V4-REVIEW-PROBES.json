@@ -1,0 +1,44 @@
+{
+  "export_process_missing": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "unmatched_stage_receipt": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  }
+}
