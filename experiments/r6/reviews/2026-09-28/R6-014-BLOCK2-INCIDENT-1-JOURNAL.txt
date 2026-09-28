@@ -1,0 +1,9 @@
+Sep 28 22:30:43 oneiros systemd[977]: Started tmux child pane 2079292 launched by process 3600.
+Sep 28 22:30:47 oneiros systemd[977]: Started tmux child pane 2079586 launched by process 3600.
+Sep 28 22:31:06 oneiros systemd[977]: Started [systemd-run] /usr/bin/python3 /home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py /home/jeans/Repos/research/proof-broker/experiments/r6/cohort-live-v9/l069-draw2/stages/preparation-build/command.json.
+Sep 28 22:31:09 oneiros systemd[977]: r6-f3b50b9e96dd48dc958b041fe5db049e.scope: Consumed 2.072s CPU time over 2.330s wall clock time, 470.3M memory peak.
+Sep 28 22:31:09 oneiros systemd[977]: Started [systemd-run] /usr/bin/python3 /home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py /home/jeans/Repos/research/proof-broker/experiments/r6/cohort-live-v9/l069-draw2/stages/preparation/command.json.
+Sep 28 22:31:13 oneiros systemd[977]: r6-91ff0918ac994ba9b0871120a28f2af8.scope: Killed unit cgroup '/user.slice/user-1000.slice/user@1000.service/app.slice/r6-91ff0918ac994ba9b0871120a28f2af8.scope' with SIGKILL on client request.
+Sep 28 22:31:13 oneiros systemd[977]: tmux-spawn-3eaa6f1d-e114-4d56-8883-a1dcaae2379d.scope: Consumed 11.713s CPU time over 25.724s wall clock time, 8.2G memory peak.
+Sep 28 22:31:13 oneiros systemd[977]: r6-91ff0918ac994ba9b0871120a28f2af8.scope: Consumed 3.459s CPU time over 4.161s wall clock time, 722.2M memory peak.
+Sep 28 22:31:16 oneiros systemd[977]: Started tmux child pane 2081111 launched by process 3600.
