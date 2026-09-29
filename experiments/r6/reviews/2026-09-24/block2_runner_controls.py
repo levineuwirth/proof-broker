@@ -19,6 +19,13 @@ Revision 5 (block 2 runner revision 4 review). The review's two probes (the expo
 stage-finish receipt with no process record) and two further one-to-one and sequence controls (a stage directory without receipts; two
 receipts reordered). The invalid-response fixture follows the frozen `response_invalid` sequence (no assembly, check or recovery receipts).
 
+Revision 6 (R6-014 amendment 2). The release cases use the SYNTHETIC release and retry of `fixtures/r6-014-v4-live-release` as templates,
+never the collected release: a verified release is retried as the slot's next attempt; a release followed by the sent retry continues to
+the next slot; at the pre-send limit the slot is exhausted and pauses; and each release relationship broken alone pauses (a header send, a
+grant, a category outside the connection phase, verified TLS, a non-zero exit, a record past the send, a ledger that does not hold it as
+this attempt, a sent retry whose slot does not show its prior releases). The existing cases' ledger state now carries the pre-send limit
+and the slot's released count.
+
 Each case runs through the production `main()` twice, with the same expected decision:
 * **fresh** — the mocked sender materializes the case as the episode's result; the runner then gates it;
 * **restart** — the case already exists when the runner starts; the runner must gate it before any launch.
@@ -46,6 +53,8 @@ import site_network
 
 spec = importlib.util.spec_from_file_location('block2_runner', HERE/'run_block2.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 BLOCK1 = R6/'cohort-live-v9'
+FIXTURE_V4 = R6/'fixtures/r6-014-v4-live-release/runs'  # revision 6: the SYNTHETIC release and its retry (amendment 2), never the collected release
+TEMPLATES = {'release': FIXTURE_V4/'l096-draw2', 'retry': FIXTURE_V4/'l096-draw2-attempt2'}
 J = lambda p: json.loads(Path(p).read_bytes()); W = lambda p, v: r6.write_json(p, v)
 CASES = {  # name: (template site, expected decision)
     'proof_continues': ('l069', 'continued'),
@@ -95,13 +104,27 @@ CASES = {  # name: (template site, expected decision)
     'stage_receipt_without_record_pauses': ('l069', 'paused'),
     'stage_directory_without_receipts_pauses': ('l069', 'paused'),
     'receipts_reordered_pauses': ('l069', 'paused'),
+    # revision 6: a verified pre-send release is retried as the next attempt; anything else about a release pauses
+    'release_is_retried': ('l096', 'retried'),
+    'release_then_sent_retry_continues': ('l096', 'continued'),
+    'release_exhausted_pauses': ('l096', 'paused'),
+    'release_with_header_send_pauses': ('l096', 'paused'),
+    'release_with_grant_pauses': ('l096', 'paused'),
+    'release_category_not_connection_phase_pauses': ('l096', 'paused'),
+    'release_tls_verified_pauses': ('l096', 'paused'),
+    'release_nonzero_exit_pauses': ('l096', 'paused'),
+    'release_records_past_send_pauses': ('l096', 'paused'),
+    'release_ledger_count_mismatch_pauses': ('l096', 'paused'),
+    'sent_retry_release_count_mismatch_pauses': ('l096', 'paused'),
     'negative_control_certificate_record_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_verifier_receipt_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_summary_claims_proof_stops': ('l170', 'integrity_stop'),
     'negative_control_verdict_stops': ('l170', 'integrity_stop'),
     'negative_control_consumer_reached_stops': ('l170', 'integrity_stop'),
 }
-NEXT = {'l069': 'l070', 'l166': 'l175', 'l170': 'l175'}
+NEXT = {'l069': 'l070', 'l166': 'l175', 'l170': 'l175', 'l096': 'l166'}
+RELEASE_CASES = {name for name in CASES if name.startswith('release_') or name.startswith('sent_retry_')}
+TWO_ATTEMPTS = ('release_then_sent_retry_continues', 'sent_retry_release_count_mismatch_pauses')  # a release, then a sent retry of the slot
 
 
 def rehash_ledger(rows, start):
@@ -126,7 +149,8 @@ def supervisor(rows, stage, event): return next(r for r in rows if r['source'] =
 
 def build(name, site, target):
     """The case at `target` (a consistent draw-2 retargeting of the audited draw-1 run, then one change) and its live-ledger view."""
-    shutil.copytree(BLOCK1/f'{site}-draw1', target); run_name = target.name; task = f'bracket-{site}'
+    template = TEMPLATES['retry'] if name == '_sent_retry' else TEMPLATES['release'] if name in RELEASE_CASES else BLOCK1/f'{site}-draw1'
+    shutil.copytree(template, target); run_name = target.name; task = f'bracket-{site}'
     sp = J(target/'search-policy.json'); sp['draw'] = 2; W(target/'search-policy.json', sp)
     # the slot identity: permit and reconciliation rows for draw 2 and this episode, the chain re-hashed from the permit
     rows = ledger.parse((target/'ledger-after.ndjson').read_bytes()); permit, recon = J(target/'campaign-permit.json'), J(target/'campaign-reconciliation.json')
@@ -154,6 +178,19 @@ def build(name, site, target):
         for f in ('certificate-verdict.json', 'validated-response.json', 'evidence.json'): (target/f).unlink(missing_ok=True)
         s = J(target/'credential-summary.json'); s['failure_category'] = 'response_schema'; W(target/'credential-summary.json', s)
         v = J(target/'transport-validation.json'); v.update(failure_category='response_schema', failure_phase='proposal'); W(target/'transport-validation.json', v)
+    elif name == 'release_with_header_send_pauses':
+        h = J(target/'stages/proposal-1/output/http.json'); h['header_sends_started'] = 1; W(target/'stages/proposal-1/output/http.json', h)
+    elif name == 'release_with_grant_pauses':
+        h = J(target/'stages/proposal-1/output/http.json'); h['grant_committed'] = True; W(target/'stages/proposal-1/output/http.json', h)
+    elif name == 'release_category_not_connection_phase_pauses':
+        for f in ('stages/proposal-1/output/http.json', 'transport-validation.json', 'credential-summary.json'):
+            v = J(target/f); v['failure_category'] = 'credential_format'; W(target/f, v)
+    elif name == 'release_tls_verified_pauses':
+        h = J(target/'stages/proposal-1/output/http.json'); h['tls'] = {'verified': True}; W(target/'stages/proposal-1/output/http.json', h)
+    elif name == 'release_nonzero_exit_pauses':
+        p = J(target/'stages/proposal-1/proposal-1.process.json'); p['exit_code'] = 1; W(target/'stages/proposal-1/proposal-1.process.json', p)
+        supervisor(chain, 'proposal-1', 'stage_finished')['payload'] = p  # its stage receipt, as the supervisor writes it
+    elif name == 'release_records_past_send_pauses': shutil.copyfile(BLOCK1/'l170-draw1/certificate-verdict.json', target/'certificate-verdict.json')
     elif name == 'returned_binding_failure_pauses':
         v = J(target/'transport-validation.json'); v['response_request_binding']['accepted'] = False
         v.update(failure_category='transport_capture_failure', failure_phase='https_transport'); W(target/'transport-validation.json', v)
@@ -241,8 +278,12 @@ def build(name, site, target):
     elif name == 'unlisted_file_pauses': (target/'unlisted.json').write_text('{}\n')
     elif name == 'unsealed_run_pauses': (target/'seal.json').unlink()
     view = [dict(r) for r in rows]+([J(BLOCK1/'l099-draw1/campaign-reconciliation.json')] if name == 'foreign_reconciliation_pauses' else [])
+    if name == 'release_ledger_count_mismatch_pauses':  # another release row for this slot ahead of this one: this is not attempt 1 on the ledger
+        view.insert(ti, {**view[ti], 'reservation_id': '0'*32, 'row_hash': '0'*64})
+    released = sum(r['kind'] == 'release' and r.get('task_id') == task and r.get('draw') == 2 for r in view)
     if name == 'ledger_row_mismatch_pauses': view[ti] = {**view[ti], 'reconciled_at_unix': view[ti]['reconciled_at_unix']+1}
-    state = {'open_reservations': [], 'transmissions_consumed': 12, 'committed_micro_usd': 1228800, 'slots': {f'{task}/2': {'consumed': consumed}}}
+    state = {'open_reservations': [], 'transmissions_consumed': 12, 'committed_micro_usd': 1228800, 'maximum_presend_attempts': 1 if name == 'release_exhausted_pauses' else 3,
+             'slots': {f'{task}/2': {'consumed': consumed, 'released': released}}}
     return view, state
 
 
@@ -252,20 +293,24 @@ class NextLaunch(Exception): pass
 def exercise(name, site, mode):
     with tempfile.TemporaryDirectory(prefix='block2-runner-') as temp:
         temp = Path(temp); runs = temp/'runs'; runs.mkdir(); target = runs/f'{site}-draw2'; staged = temp/'staged'/target.name
-        staged.parent.mkdir(); view = build(name, site, staged); launches = []
-        if mode == 'restart': shutil.copytree(staged, target)
+        staged.parent.mkdir(); view = build(name, site, staged); launches = []; stages = {target: staged}
+        if name in TWO_ATTEMPTS:  # revision 6: the slot's second attempt is the synthetic sent retry, whose ledger view includes the release
+            second = runs/f'{site}-draw2-attempt2'; staged2 = temp/'staged'/second.name; view = build('_sent_retry', site, staged2); stages[second] = staged2
+            if name == 'sent_retry_release_count_mismatch_pauses': view[1]['slots'][f'bracket-{site}/2']['released'] = 2
+        if mode == 'restart':
+            for live, source in stages.items(): shutil.copytree(source, live)
         def sender(argv, **kwargs):
             run = Path(argv[argv.index('--run-dir')+1]); launches.append(run.name)
-            if mode == 'fresh' and run == target: shutil.copytree(staged, target); return SimpleNamespace(returncode=0)
+            if mode == 'fresh' and run in stages: shutil.copytree(stages[run], run); return SimpleNamespace(returncode=0)
             raise NextLaunch()
         out = io.StringIO()
         with patch.object(m, 'RUNS', runs), patch.object(m, 'ORDER', (site, NEXT[site])), patch.object(m, 'DRAWS', (2,)), \
-             patch.object(m, 'ledger_snapshot', lambda: view), patch.object(m, 'subprocess', SimpleNamespace(run=sender)), \
+             patch.object(m, 'ledger_snapshot', lambda: view), patch.object(m, 'subprocess', SimpleNamespace(run=sender)), patch.object(m.time, 'sleep', lambda s: None), \
              patch.object(sys, 'argv', ['run_block2.py', '--credential-file', str(temp/'never-created')]), contextlib.redirect_stdout(out):
             try: m.main(); observed = 'completed'
-            except NextLaunch: observed = 'continued'
+            except NextLaunch: observed = 'retried' if launches and launches[-1] == f'{site}-draw2-attempt2' and name not in TWO_ATTEMPTS else 'continued'
             except SystemExit as e: observed = 'integrity_stop' if str(e).startswith('INTEGRITY STOP') else 'paused' if str(e).startswith('PAUSE') else str(e)
-        line = next((json.loads(l) for l in out.getvalue().splitlines() if l.startswith('{')), {})
+        lines = [json.loads(l) for l in out.getvalue().splitlines() if l.startswith('{')]; line = lines[-1] if lines else {}  # the decisive (last) gate line
         return {'observed': observed, 'launches': launches, 'decision': line.get('decision'), 'outcome': line.get('outcome'), 'reasons': line.get('reasons')}
 
 
@@ -278,10 +323,15 @@ def main():
     for name, (site, expected) in CASES.items():
         for mode in ('fresh', 'restart'):
             got = exercise(name, site, mode)
-            expected_launches = [f'{site}-draw2', f'{NEXT[site]}-draw2'] if (mode == 'fresh' and expected == 'continued') else \
-                                [f'{NEXT[site]}-draw2'] if expected == 'continued' else [f'{site}-draw2'] if mode == 'fresh' else []
+            first, retry, following = f'{site}-draw2', f'{site}-draw2-attempt2', f'{NEXT[site]}-draw2'
+            if name in TWO_ATTEMPTS:  # revision 6
+                expected_launches = ([first, retry] if mode == 'fresh' else []) + ([following] if expected == 'continued' else [])
+            elif expected == 'retried': expected_launches = [first, retry] if mode == 'fresh' else [retry]
+            else:
+                expected_launches = [first, following] if (mode == 'fresh' and expected == 'continued') else \
+                                    [following] if expected == 'continued' else [first] if mode == 'fresh' else []
             assert got['observed'] == expected and got['launches'] == expected_launches, (name, mode, got)
-            if expected == 'continued': assert got['reasons'] == [], (name, mode, got)
+            if expected in ('continued', 'retried'): assert got['reasons'] == [], (name, mode, got)
             results[f'{name}:{mode}'] = got; print(name, mode, got['observed'], got['outcome'], got['reasons'], flush=True)
     baselines = {site: list(m.gate(BLOCK1/f'{site}-draw1', f'bracket-{site}', 1)) for site in m.ORDER}  # the audited block 1 runs, read-only
     assert all(d[0] == 'continue' and d[2] == [] for d in baselines.values()), baselines

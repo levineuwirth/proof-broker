@@ -38,6 +38,14 @@ supervisor receipts and child reports, in order — must equal the frozen sequen
 the run's stage directories and process records; and each stage's finish receipt and process record must match one to one before their
 payloads are compared.
 
+Revision 6 (R6-014 amendment 2, after block 2 paused at l204 draw 6 on a pre-send connection failure). A verified pre-send release — the
+sender's connection-phase failure before its grant (one of `CONNECT_PHASE`), one connection attempt, no verified TLS, no grant, zero sends,
+no status, the handled exception, the ledger's release with established termination, the slot's k-th release on the ledger, nothing open,
+no record past the send, the frozen live release sequence — is decided `retry`: after `RETRY_DELAY_SECONDS`, the runner reserves the slot
+again as `<site>-draw<d>-attempt<k+1>`, within the frozen pre-send limit (the ledger's `maximum_presend_attempts`); at the limit the slot is
+exhausted and collection pauses. On restart every existing attempt is gated in order. A sent slot must show its prior releases as its
+`released` count. Everything else is revision 5's.
+
 The block 1 runner (`run_block1.py`) is retained as run; this revision is for block 2 only.
 """
 import argparse
@@ -45,6 +53,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 R6 = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(R6))
@@ -60,13 +69,21 @@ if contract.r6.sha(R6.parents[1]/AUDITOR) != json.loads((R6/'policies/live-evalu
 _spec = importlib.util.spec_from_file_location('block2_frozen_sequences', R6.parents[1]/AUDITOR); _audit = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_audit); _audit.configure('live')
 SEQUENCE = {'proof': _audit.sequence('proof'), 'closer_refusal': _audit.sequence('reconstruction_refused'),
-            'witness_rejected': _audit.sequence('witness_rejected'), 'response_invalid': _audit.sequence('response_invalid')}
+            'witness_rejected': _audit.sequence('witness_rejected'), 'response_invalid': _audit.sequence('response_invalid'),
+            'released': _audit.sequence('release')}  # revision 6: the frozen live release sequence (unchanged by amendment 2)
+
+
+def attempt_of(run):
+    """Revision 6: `<site>-draw<d>` is attempt 1; `<site>-draw<d>-attempt<k>` is attempt k."""
+    return int(run.name.rsplit('-attempt', 1)[1]) if '-attempt' in run.name else 1
 
 RUNS = R6/'cohort-live-v9'
 ORDER = ('l069', 'l070', 'l071', 'l078', 'l096', 'l166', 'l170', 'l175', 'l178', 'l204', 'l099')
 DRAWS = range(2, 9)
 NEGATIVE_CONTROL = 'bracket-l170'
 CONTINUABLE = ('proof', 'closer_refusal', 'witness_rejected', 'response_invalid')
+CONNECT_PHASE = ('tls_certificate_verification', 'tls_protocol_failure', 'transport_timeout', 'transport_connection_failure')  # cohort_https.handoff, before the grant
+RETRY_DELAY_SECONDS = 60  # revision 6: a released slot is retried after this pause, riding out a brief network interruption
 
 
 def ledger_snapshot():
@@ -191,14 +208,19 @@ def gate(run, task_id, draw):
             and isinstance(reconciled, dict) and reconciled.get('reservation_id') == reconciliation.get('reservation_id')
             and reconciled.get('row_hash') == reconciliation.get('row_hash') and reconciled.get('kind') == reconciliation.get('kind')):
         reasons.append('ledger receipts in the chain do not bind the permit and reconciliation')
-    if not (reconciliation.get('kind') == 'send_grant' and reconciliation.get('send_outcome') == 'returned'):
+    released = reconciliation.get('kind') == 'release'; attempt = attempt_of(run); limit = None  # revision 6
+    if not released and not (reconciliation.get('kind') == 'send_grant' and reconciliation.get('send_outcome') == 'returned'):
         reasons.append(f"slot ended as {reconciliation.get('kind')}/{reconciliation.get('send_outcome')}, not a returned send")
     try:
         ledger_rows, s = ledger_snapshot()
         at = [i for i, r in enumerate(ledger_rows) if r == permit]; end = [i for i, r in enumerate(ledger_rows) if r == reconciliation]
-        slot = s['slots'].get(f'{task_id}/{draw}') or {}
+        slot = s['slots'].get(f'{task_id}/{draw}') or {}; limit = s['maximum_presend_attempts']
         if not (len(at) == 1 and len(end) == 1 and at[0] < end[0]): reasons.append('the live ledger does not hold this permit and its reconciliation')
-        if not slot.get('consumed') or s['open_reservations']: reasons.append('ledger slot not consumed, or a reservation is open')
+        elif released:  # revision 6: this is the slot's k-th release on the ledger, and nothing is open
+            prior = [r for r in ledger_rows[:end[0]+1] if r['kind'] == 'release' and r.get('task_id') == task_id and r.get('draw') == draw]
+            if len(prior) != attempt or s['open_reservations']: reasons.append(f'the ledger does not hold this release as attempt {attempt}, or a reservation is open')
+        elif not slot.get('consumed') or s['open_reservations'] or slot.get('released') != attempt-1:
+            reasons.append('ledger slot not consumed after its releases, or a reservation is open')
     except (ledger.Failure, OSError, ValueError, KeyError) as error:
         reasons.append(f'ledger unreadable: {error}')
     # 3. publication (the run's own synthetic-canary scan; the operator scan is pending, not failed), provider and transport
@@ -206,10 +228,22 @@ def gate(run, task_id, draw):
     status = http.get('http_status'); category = summary.get('failure_category')
     bindings = (validation.get('outbound_envelope', {}).get('accepted') is True and validation.get('local_send_consistency', {}).get('accepted') is True
                 and validation.get('response_request_binding', {}).get('accepted') is True)
-    if status != 200 or summary.get('credential_use_accepted') is not True: reasons.append(f'provider status {status}')
-    if not bindings: reasons.append('transport binding failure')
-    if validation.get('failure_category') is not None and validation.get('failure_phase') != 'proposal':
-        reasons.append(f"transport failure {validation.get('failure_category')} ({validation.get('failure_phase')})")
+    if released:  # revision 6: the sender's connection-phase failure before its grant, nothing sent (the amendment 2 auditor's `live_release`)
+        process = load(run/'stages/proposal-1/proposal-1.process.json'); stderr = (run/'stages/proposal-1/proposal-1.stderr').read_text()
+        tls = http.get('tls')
+        if not (http.get('failure_category') in CONNECT_PHASE and category == validation.get('failure_category') == http.get('failure_category')
+                and summary.get('failure_phase') == validation.get('failure_phase') == 'https_transport' and validation.get('send_outcome') == http.get('send_outcome') == 'not_started'
+                and http.get('connection_attempts') == 1 and (tls is None or tls.get('verified') is not True) and http.get('grant_committed') is False and not http.get('grant_id')
+                and http.get('header_sends_started') == 0 and http.get('body_sends_started') == 0 and status is None and http.get('response_sha256') is None
+                and process.get('exit_code') == 0 and stderr == '' and summary.get('credential_use_accepted') is False
+                and reconciliation.get('reason') == 'pre_send_failure_with_established_termination' and reconciliation.get('termination_established') is True
+                and reconciliation.get('launched') is True and reconciliation.get('send_outcome') is None):
+            reasons.append('not a pre-send release: the connection-phase failure, zero sends or the release reconciliation does not hold')
+    else:
+        if status != 200 or summary.get('credential_use_accepted') is not True: reasons.append(f'provider status {status}')
+        if not bindings: reasons.append('transport binding failure')
+        if validation.get('failure_category') is not None and validation.get('failure_phase') != 'proposal':
+            reasons.append(f"transport failure {validation.get('failure_category')} ({validation.get('failure_phase')})")
     if not (summary.get('evidence_complete') is True and summary.get('ledger_reconciled') is True): reasons.append('evidence incomplete or ledger not reconciled')
     # 4. the terminal receipt: the frozen live shape (`cohort_episode.finalize`, live: publication pending, not accepted), binding the summary and
     #    publication records by digest and agreeing with the summary; finished exactly when a proof is accepted with complete evidence
@@ -229,7 +263,11 @@ def gate(run, task_id, draw):
         reasons.append('verifier receipt and certificate record disagree')
     finished = [r['payload']['data'] for r in child if r['event'] == 'reconstruction_finished']
     proof_receipt = supervisor.get(('episode', 'proof_validated'), [])
-    if category is None and summary.get('proof_accepted') is True:
+    if released:  # revision 6: a release reaches no certificate, consumer, kernel or proof record
+        outcome = 'released'
+        if not (cert is None and receipt is None and verdict is None and refusal is None and not reconstruct_reached and not kernels and not proof_receipt
+                and summary.get('proof_accepted') is False and not (run/'response.json').exists()): reasons.append('release records are not empty past the send')
+    elif category is None and summary.get('proof_accepted') is True:
         outcome = 'proof'
         if not (cert and cert.get('accepted') is True and verdict and verdict.get('local_obligation_closed') is True and verdict.get('whole_declaration_validated') is True
                 and len(finished) == 1 and finished[0].get('certificate_consumed') is True and refusal is None and refused_receipt is None
@@ -263,6 +301,9 @@ def gate(run, task_id, draw):
         directories = sorted(p.name for p in (run/'stages').iterdir() if p.is_dir()) if (run/'stages').is_dir() else []
         processes = sorted(p.parent.name for p in run.glob('stages/*/*.process.json'))
         if not (stages == directories == processes): reasons.append(f'stage records {processes} and directories {directories} are not the sequence\'s stages {stages}')
+    if outcome == 'released':  # revision 6: retry within the frozen pre-send limit; at the limit the slot is exhausted and collection pauses
+        if not reasons and limit is not None and attempt >= limit: reasons.append(f'pre-send attempts exhausted ({attempt} of {limit})')
+        return ('retry' if not reasons else 'pause'), outcome, reasons
     return ('continue' if not reasons and outcome in CONTINUABLE else 'pause'), outcome, reasons
 
 
@@ -272,19 +313,24 @@ def main():
     args = parser.parse_args()
     RUNS.mkdir(exist_ok=True)
     for draw, site in [(d, s) for d in DRAWS for s in ORDER]:
-        task_id, run = f'bracket-{site}', RUNS/f'{site}-draw{draw}'
-        fresh = not run.exists()
-        if fresh:
+        task_id, attempt = f'bracket-{site}', 1
+        while True:  # revision 6: a verified pre-send release is retried as the slot's next attempt directory
+            run = RUNS/(f'{site}-draw{draw}' if attempt == 1 else f'{site}-draw{draw}-attempt{attempt}')
+            fresh = not run.exists()
+            if fresh:
+                _, s = ledger_snapshot()
+                if s['open_reservations']: raise SystemExit(f'PAUSE: an open reservation exists before {run.name}: {s["open_reservations"]}')
+                if attempt > 1: time.sleep(RETRY_DELAY_SECONDS)
+                result = subprocess.run([sys.executable, str(R6/'cohort_episode.py'), '--mode', 'live', '--task', task_id, '--draw', str(draw),
+                                         '--run-dir', str(run), '--credential-file', str(args.credential_file)], cwd=R6)
+            decision, outcome, reasons = gate(run, task_id, draw)
             _, s = ledger_snapshot()
-            if s['open_reservations']: raise SystemExit(f'PAUSE: an open reservation exists before {run.name}: {s["open_reservations"]}')
-            result = subprocess.run([sys.executable, str(R6/'cohort_episode.py'), '--mode', 'live', '--task', task_id, '--draw', str(draw),
-                                     '--run-dir', str(run), '--credential-file', str(args.credential_file)], cwd=R6)
-        decision, outcome, reasons = gate(run, task_id, draw)
-        _, s = ledger_snapshot()
-        print(json.dumps({'run': run.name, 'fresh': fresh, **({'exit': result.returncode} if fresh else {}), 'decision': decision, 'outcome': outcome,
-                          'reasons': reasons, 'consumed': s['transmissions_consumed'], 'committed_micro_usd': s['committed_micro_usd']}), flush=True)
-        if decision == 'integrity_stop': raise SystemExit(f'INTEGRITY STOP at {run.name}: {reasons}; collection stops, the block needs review')
-        if decision != 'continue': raise SystemExit(f'PAUSE at {run.name}: {reasons}; stop and review (a restart re-applies this decision)')
+            print(json.dumps({'run': run.name, 'fresh': fresh, **({'exit': result.returncode} if fresh else {}), 'decision': decision, 'outcome': outcome,
+                              'reasons': reasons, 'consumed': s['transmissions_consumed'], 'committed_micro_usd': s['committed_micro_usd']}), flush=True)
+            if decision == 'integrity_stop': raise SystemExit(f'INTEGRITY STOP at {run.name}: {reasons}; collection stops, the block needs review')
+            if decision == 'retry': attempt += 1; continue
+            if decision != 'continue': raise SystemExit(f'PAUSE at {run.name}: {reasons}; stop and review (a restart re-applies this decision)')
+            break
     print(json.dumps({'block_2': 'complete', 'runs': len(ORDER)*len(DRAWS), 'next': 'the operator disclosure scan over all 88 runs, then the frozen evaluation'}), flush=True)
 
 
