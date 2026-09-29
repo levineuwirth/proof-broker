@@ -1,0 +1,4375 @@
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5090,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "caf49101a3e04e40b0a7b6f66b11f025",
+   "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+   "arguments_sha256": "745e10ce13669bb572a667e6c798f6a53ea1432c15f9e3750b775ba5d4988105",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "cf96747265382322edd7511e3ecf6bbd4956820acbed9d95f1c07256711dec4e",
+   "ledger_row_hash": "0563ebe8b194d2535db0942904e08df8a9fd27c1ad392fc07157d67b29ce7091",
+   "ledger_sha256": "a023ae96bff1d5654279850b798f6914ed3f56d75dc7098b84387b56b5e17bac"
+  },
+  "reservation_id": "caf49101a3e04e40b0a7b6f66b11f025",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1488,
+   "output_tokens": 518,
+   "total_tokens": 2006,
+   "cached_tokens": 0,
+   "reasoning_tokens": 426
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 11490,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01149,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l069-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 12, "committed_micro_usd": 1228800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5206,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "b06a58b9e5fd4e33ba8a82676c349fe1",
+   "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+   "arguments_sha256": "50e6c9244b0f79049ede5e358c33879cac244a6b4b54d74dbe60936abd83691f",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "a1299ccad1c3a393c8df1c3bcd8fe2e215b5633a2e24ac2976ae911ca4c8078c",
+   "ledger_row_hash": "5fe991efa82989cc27cceddd954cdd98b0a25e936895a4f9f5be0925a25ae1f4",
+   "ledger_sha256": "faa78acd8b9f1b9a37e7e6d2d5fab373e25e9131e95028c8cef9b4fbdf5a5bc8"
+  },
+  "reservation_id": "b06a58b9e5fd4e33ba8a82676c349fe1",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1527,
+   "output_tokens": 504,
+   "total_tokens": 2031,
+   "cached_tokens": 0,
+   "reasoning_tokens": 421
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 11378,
+  "live": true,
+  "live_usage_ceiling_usd": 0.011378,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l070-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 13, "committed_micro_usd": 1331200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5371,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "eceaa8753b6c45d4bce8c33d3cb20c60",
+   "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+   "arguments_sha256": "2edc52001e56df5dfff2950057839c9d39e8d7cf8aaa2a5aae4815162e49f328",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "346404e6b3a8c9cf9f0955bf2293539dc44e8701157abedfd532ec9f55dbd5ae",
+   "ledger_row_hash": "1b73be0d79f4215e5f3dd1339e4d3cb698d2e7968e2cccfbedf7cd0399db7599",
+   "ledger_sha256": "5418b69a7ab2c2f263e71e26695a7ddd89dc75d8ef439f17f7daf30254c52568"
+  },
+  "reservation_id": "eceaa8753b6c45d4bce8c33d3cb20c60",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1569,
+   "output_tokens": 609,
+   "total_tokens": 2178,
+   "cached_tokens": 0,
+   "reasoning_tokens": 516
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 13058,
+  "live": true,
+  "live_usage_ceiling_usd": 0.013058,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l071-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 14, "committed_micro_usd": 1433600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5444,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "c03ae1ef7672465a981159076a7e325c",
+   "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+   "arguments_sha256": "95d3185d248c1356f07132961f35dcee38283df3afe9ffd7d33a309a50957df8",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "bcf79921babdfa513c23b22e06c9414507c599c489c0497a4f32428e8451acbe",
+   "ledger_row_hash": "53ef7643b51524ffebcfbb7cdb0fb8352af01b5608a41a2c46bcb682acff9262",
+   "ledger_sha256": "07c0fdbd32e5342983c2e6f6db0a47b24a58c68d88fa1cb0e0cbf7e37262d12d"
+  },
+  "reservation_id": "c03ae1ef7672465a981159076a7e325c",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1584,
+   "output_tokens": 894,
+   "total_tokens": 2478,
+   "cached_tokens": 0,
+   "reasoning_tokens": 798
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 17370,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01737,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l078-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 15, "committed_micro_usd": 1536000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "f210f25a4d56484f860d10ff3dee801d",
+   "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+   "arguments_sha256": "744e94fd71b25b5564c8e772e057b17d2211abfab7eb8eec7d602639802d2456",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "5fe74c999915863f7068176eec6cbcc8b943b5ef3572e7ac9312740233968361",
+   "ledger_row_hash": "c620a49414526a4e04138438803650ba0cf529e46632e658f0ccac2f9de926ee",
+   "ledger_sha256": "f2ab950b3c7e64214c7caa453722ff98bff0df8d2c8bf6904d5a7c31d90bef35"
+  },
+  "reservation_id": "f210f25a4d56484f860d10ff3dee801d",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 893,
+   "output_tokens": 207,
+   "total_tokens": 1100,
+   "cached_tokens": 0,
+   "reasoning_tokens": 125
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5338,
+  "live": true,
+  "live_usage_ceiling_usd": 0.005338,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l096-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 16, "committed_micro_usd": 1638400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3888,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "c4c968c9192441178b443536a4e70471",
+   "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+   "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "11bfd0939228ff9fa5176816067d93dc1af1f5205c37efdee417e08a6dbe5ba0",
+   "ledger_row_hash": "23e503116dd02a0c494fa3c11385e10e10c897d3dddf9a33c437288188be0021",
+   "ledger_sha256": "3b8b68420e45910c9efbc8262902787f6ad745ae96e787744af4e35c194df12f"
+  },
+  "reservation_id": "c4c968c9192441178b443536a4e70471",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1096,
+   "output_tokens": 351,
+   "total_tokens": 1447,
+   "cached_tokens": 0,
+   "reasoning_tokens": 272
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 8005,
+  "live": true,
+  "live_usage_ceiling_usd": 0.008005,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l166-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 17, "committed_micro_usd": 1740800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "certificate_verification",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3882,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "fb40505dd92a4ad7b30e6afd3d312c54",
+   "request_sha256": "9cbad03ace75b3575c0ebc10e58b5ce22ace4cfe61157b53774492c838fd75f8",
+   "arguments_sha256": "4e4409a1dbd29d741bfedd815b4b99dd13727aa1031bc21ae4529519f9a14663",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ed868b1bb881184a8187c3c5104e8699ad4b1524e4cbaaaf4357d4c43b6a51a6",
+   "ledger_row_hash": "1fe5076dc55eb7610e7f36cc3260b42fd1e7176e5703a5cf6181c10d17149016",
+   "ledger_sha256": "571dd2bc07694a9efcb649ed918e07b583415c54bc2c83ceb2e5483585c6a1ea"
+  },
+  "reservation_id": "fb40505dd92a4ad7b30e6afd3d312c54",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1109,
+   "output_tokens": 1066,
+   "total_tokens": 2175,
+   "cached_tokens": 0,
+   "reasoning_tokens": 986
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 18763,
+  "live": true,
+  "live_usage_ceiling_usd": 0.018763,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l170-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "witness_rejected", "reasons": [], "consumed": 18, "committed_micro_usd": 1843200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4155,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "e9add843daec4898bbddeaec7d8e4d66",
+   "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+   "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ca557dbf9838edb3d18d9556fdb63525147e38e39287aa172d31083f7a40a4d0",
+   "ledger_row_hash": "2beb5cd440982c4e053f9a66339de3707d568fd6ec25913630454be46f82d6ee",
+   "ledger_sha256": "7ec10be516b45cd91d31941e5b6535edb3a9615f3d294d6b3e3123cff2e9d045"
+  },
+  "reservation_id": "e9add843daec4898bbddeaec7d8e4d66",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1182,
+   "output_tokens": 724,
+   "total_tokens": 1906,
+   "cached_tokens": 0,
+   "reasoning_tokens": 625
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 13815,
+  "live": true,
+  "live_usage_ceiling_usd": 0.013815,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l175-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 19, "committed_micro_usd": 1945600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4277,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "f52f80c0d60c4519ad25c647994aca2f",
+   "request_sha256": "e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674",
+   "arguments_sha256": "278cbb520cc49a5d39c8cfe6dc086b1bc549b9dc153768c63a5789759ea2bed6",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "d1d266c8b806a1625f0a87a0fc4e49cb85bc8f5de0496cb1c12db3f4e0f8921b",
+   "ledger_row_hash": "c57bd7f86663695bd3ef734edc7fcd4c070d2a7093ab849d074f7aa4f74acc4d",
+   "ledger_sha256": "14d7e3224492870a10e23bf561208b1edefff40fb3aae9bef6b8a1f6039bd48e"
+  },
+  "reservation_id": "f52f80c0d60c4519ad25c647994aca2f",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1235,
+   "output_tokens": 378,
+   "total_tokens": 1613,
+   "cached_tokens": 0,
+   "reasoning_tokens": 293
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 8758,
+  "live": true,
+  "live_usage_ceiling_usd": 0.008758,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l178-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 20, "committed_micro_usd": 2048000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3462,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "9302de7eb8dc469fab118b02b9fbc6a9",
+   "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+   "arguments_sha256": "89fbb6205fba2d3f826e3dbb016e46866a1d0581ad5df6843c4cf901dcabfeed",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "f8dc9ecced7ee51f9f8775aecb75eee19e1099da76fb4fb60e968d5f7deb2b4a",
+   "ledger_row_hash": "de8bcce9af63b3fbae1e8a309401077fad8fc15277e9e576eec096061a0f87de",
+   "ledger_sha256": "14f144476bd66b25cf07d4d1295041ed06cfe2d4d902c85f27f7098e178e80bf"
+  },
+  "reservation_id": "9302de7eb8dc469fab118b02b9fbc6a9",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 979,
+   "output_tokens": 233,
+   "total_tokens": 1212,
+   "cached_tokens": 0,
+   "reasoning_tokens": 157
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5943,
+  "live": true,
+  "live_usage_ceiling_usd": 0.005943,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l204-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 21, "committed_micro_usd": 2150400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "34a35b6c1bd747078819676621c82143",
+   "request_sha256": "fb1cbeae50d2fb6feef13d94eeb7ef492f4e4535d8c34989bd4d6df31fe3127b",
+   "arguments_sha256": "af6941d64edcd63ef14bb212f85c571ce6c44a726038f7f6100bd2088d600408",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "b8ac0499b1be244df96c55d04039b56a6ba4c6a0bf4efd9a09be76ac41bfa14d",
+   "ledger_row_hash": "aa98cc74c7ca898a1ccff32dde9910c5d084ea847c0523700ab420bb8995daa2",
+   "ledger_sha256": "f92cfded68eef4dca921fa2c1baa8e8ec248ac8753c46ece6a7582ac2858ad54"
+  },
+  "reservation_id": "34a35b6c1bd747078819676621c82143",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 898,
+   "output_tokens": 168,
+   "total_tokens": 1066,
+   "cached_tokens": 0,
+   "reasoning_tokens": 85
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 4765,
+  "live": true,
+  "live_usage_ceiling_usd": 0.004765,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l099-draw2", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 22, "committed_micro_usd": 2252800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5090,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "e392a9ca92d74a4ca3660883835c3eda",
+   "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+   "arguments_sha256": "745e10ce13669bb572a667e6c798f6a53ea1432c15f9e3750b775ba5d4988105",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "659580aca38444980217e55bc71e76c16159f97ac8984f0f0ea5e4201850da06",
+   "ledger_row_hash": "8012fff18641eb44a8bd38e554318be05753d295e5f4291ca276775722af996c",
+   "ledger_sha256": "d19262a739002171b95f9c3c1d69ec5463fb740a8f71839ce244e39dceefbaf0"
+  },
+  "reservation_id": "e392a9ca92d74a4ca3660883835c3eda",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1488,
+   "output_tokens": 520,
+   "total_tokens": 2008,
+   "cached_tokens": 0,
+   "reasoning_tokens": 428
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 11520,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01152,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l069-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 23, "committed_micro_usd": 2355200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5206,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "aa35efe9ff7d44928a046f4bbdef828a",
+   "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+   "arguments_sha256": "50e6c9244b0f79049ede5e358c33879cac244a6b4b54d74dbe60936abd83691f",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "768e9c3aa10384f1a08a07c18b04d768c1eb8c72a16d0765ff7a41715df5ccff",
+   "ledger_row_hash": "b27583ddecfcefe39095f9015de4281c0924e2d1aaae57e7fb886adee6c63f15",
+   "ledger_sha256": "b7c5124554f8fc4f9d135af7b7aabaeb89f55c35779dabfa546fcb67b4d02a56"
+  },
+  "reservation_id": "aa35efe9ff7d44928a046f4bbdef828a",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1527,
+   "output_tokens": 482,
+   "total_tokens": 2009,
+   "cached_tokens": 0,
+   "reasoning_tokens": 383
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 11048,
+  "live": true,
+  "live_usage_ceiling_usd": 0.011048,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l070-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 24, "committed_micro_usd": 2457600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5371,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "6fc7eb7f10a444b09046e50f7836ae1c",
+   "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+   "arguments_sha256": "2edc52001e56df5dfff2950057839c9d39e8d7cf8aaa2a5aae4815162e49f328",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "98646625767a459ff003b34145362ee310eaabd3933c56abe4f5bf5c4ce3d518",
+   "ledger_row_hash": "52cbc92b8563c9ab26de752b0ebade195444e4a61c7561394f736352453c31bc",
+   "ledger_sha256": "2c571dd64ed7c772346636098903e57e51451b823cc63b28aeb00fcbfe871ca5"
+  },
+  "reservation_id": "6fc7eb7f10a444b09046e50f7836ae1c",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1569,
+   "output_tokens": 606,
+   "total_tokens": 2175,
+   "cached_tokens": 0,
+   "reasoning_tokens": 513
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 13013,
+  "live": true,
+  "live_usage_ceiling_usd": 0.013013,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l071-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 25, "committed_micro_usd": 2560000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5444,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "4631593c8c714fd89eba8f3acdb67520",
+   "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+   "arguments_sha256": "95d3185d248c1356f07132961f35dcee38283df3afe9ffd7d33a309a50957df8",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "18c5607dfae0d9f3527ffe74910e290f4ca3d46a783571d3bbdec982a8e28efa",
+   "ledger_row_hash": "54e3b3fba43bedb0a5577e14f08351c54bcc144bd2f139c69ef042855c21c89e",
+   "ledger_sha256": "cb46e12b2356eaf93b27af0f3bc97f0fed5353a3898314d963428ba9bb71fa76"
+  },
+  "reservation_id": "4631593c8c714fd89eba8f3acdb67520",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1584,
+   "output_tokens": 612,
+   "total_tokens": 2196,
+   "cached_tokens": 0,
+   "reasoning_tokens": 516
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 13140,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01314,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l078-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 26, "committed_micro_usd": 2662400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "c07ea839952e4f4ba9483d4ec91d57ef",
+   "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+   "arguments_sha256": "744e94fd71b25b5564c8e772e057b17d2211abfab7eb8eec7d602639802d2456",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "edff5d11a91cc31e3f27cdd382e420682fe25fb49d5c0eb0ea5b0e923274b102",
+   "ledger_row_hash": "5bbe1621985eda99529627f88900ecadd9eb392a920b6076c41c32dd55065781",
+   "ledger_sha256": "d7ed57706f8e7fb30b516790a79ccd5d7b9862a5960a511784635d2f653d65e4"
+  },
+  "reservation_id": "c07ea839952e4f4ba9483d4ec91d57ef",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 893,
+   "output_tokens": 197,
+   "total_tokens": 1090,
+   "cached_tokens": 0,
+   "reasoning_tokens": 115
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5188,
+  "live": true,
+  "live_usage_ceiling_usd": 0.005188,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l096-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 27, "committed_micro_usd": 2764800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3888,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "cb956e9608f643668e503b9fc96f146a",
+   "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+   "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "5b441b1bbf0323f71331d865eb174664bf55b80855b677a7f2c1ab5a201217ab",
+   "ledger_row_hash": "4d33bfe5ad37ef6b9c8fc429931a76587610ace40c893485278cff3c5cc61e08",
+   "ledger_sha256": "99a35d6b81bc1863442a72e459a09391c3c2d0e2d78bd5684c00f8bd65ae9001"
+  },
+  "reservation_id": "cb956e9608f643668e503b9fc96f146a",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1096,
+   "output_tokens": 349,
+   "total_tokens": 1445,
+   "cached_tokens": 0,
+   "reasoning_tokens": 270
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 7975,
+  "live": true,
+  "live_usage_ceiling_usd": 0.007975,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l166-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 28, "committed_micro_usd": 2867200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "certificate_verification",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3882,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "dacaac04889449918850a340f13607db",
+   "request_sha256": "9cbad03ace75b3575c0ebc10e58b5ce22ace4cfe61157b53774492c838fd75f8",
+   "arguments_sha256": "4e4409a1dbd29d741bfedd815b4b99dd13727aa1031bc21ae4529519f9a14663",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "b67a215444f35abb69cdb0d6a53387663ddddbd467fe1c63d49e8707389eef19",
+   "ledger_row_hash": "025f37138aef10d3bc3ff2dab2b48b7c6c829abb453c2e5df977d514f1e64352",
+   "ledger_sha256": "710fd076ebcc3c0f253b0aa7421e3232f4888b7324b546dbe3ed76a4cef90966"
+  },
+  "reservation_id": "dacaac04889449918850a340f13607db",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1109,
+   "output_tokens": 1082,
+   "total_tokens": 2191,
+   "cached_tokens": 0,
+   "reasoning_tokens": 1002
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 19003,
+  "live": true,
+  "live_usage_ceiling_usd": 0.019003,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l170-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "witness_rejected", "reasons": [], "consumed": 29, "committed_micro_usd": 2969600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4155,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "c92a344781bd4d8fb3308fc123e28570",
+   "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+   "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "3fdd8210ccbffdf19f7e62b0ed843ab75dc7a4e0b990c8c04870de5fd2728c58",
+   "ledger_row_hash": "a42965e328e0890fbe1e44e2b3b02852feb9f5983b2aa77afbc03273cfb53633",
+   "ledger_sha256": "4e012800c7588b9c9dfd8e6ffb4724036477680378d3f717758a8118158d36c6"
+  },
+  "reservation_id": "c92a344781bd4d8fb3308fc123e28570",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1182,
+   "output_tokens": 615,
+   "total_tokens": 1797,
+   "cached_tokens": 0,
+   "reasoning_tokens": 516
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12180,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01218,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l175-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 30, "committed_micro_usd": 3072000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4277,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "9ece68e756444c5b9e4d2fb2c49b5f05",
+   "request_sha256": "e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674",
+   "arguments_sha256": "278cbb520cc49a5d39c8cfe6dc086b1bc549b9dc153768c63a5789759ea2bed6",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "a5e2cbc96062d2f37abfadecd74c6275a7f93d07e23ced7608b6b8d36629fdc4",
+   "ledger_row_hash": "2c3dc96d9bdcdd5781177152a21a5f5ed99eb33951b5a74821c923c0e7499bc4",
+   "ledger_sha256": "b3c8b8685ef0d86353f96f1585632048b75622ba036684786016580c9f9c55ac"
+  },
+  "reservation_id": "9ece68e756444c5b9e4d2fb2c49b5f05",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1235,
+   "output_tokens": 411,
+   "total_tokens": 1646,
+   "cached_tokens": 0,
+   "reasoning_tokens": 326
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 9253,
+  "live": true,
+  "live_usage_ceiling_usd": 0.009253,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l178-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 31, "committed_micro_usd": 3174400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3462,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "87d3eedb8dbe45d88be28adbcd61e0df",
+   "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+   "arguments_sha256": "89fbb6205fba2d3f826e3dbb016e46866a1d0581ad5df6843c4cf901dcabfeed",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "f4c036012b945be6c02cb772143e7f63ca3833cd52ff61f9fc6867d135a0bc4c",
+   "ledger_row_hash": "f049edef322cc7513c36cd562fd57f0f4c1150519418ed24e00901ef3acdb024",
+   "ledger_sha256": "94b14f243cb6ce08db5ac24dd929b5334ef9c50c3c4e9d3aab64fea7ea1b4d5d"
+  },
+  "reservation_id": "87d3eedb8dbe45d88be28adbcd61e0df",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 979,
+   "output_tokens": 206,
+   "total_tokens": 1185,
+   "cached_tokens": 0,
+   "reasoning_tokens": 130
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5538,
+  "live": true,
+  "live_usage_ceiling_usd": 0.005538,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l204-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 32, "committed_micro_usd": 3276800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "f852142c71f24f539d1a863aee90f913",
+   "request_sha256": "fb1cbeae50d2fb6feef13d94eeb7ef492f4e4535d8c34989bd4d6df31fe3127b",
+   "arguments_sha256": "af6941d64edcd63ef14bb212f85c571ce6c44a726038f7f6100bd2088d600408",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "444b127c4965e6347da3572a6f46ce81bc903e675e86ddd5da38b4fa5ac5613e",
+   "ledger_row_hash": "95a831849e31c90f47351ea0e089fcb736ad6888ddcce9c265115a21f296f95e",
+   "ledger_sha256": "e09c3c5d2213d9e40b57b8793f11747f97ada963343a51b41b863303236bea94"
+  },
+  "reservation_id": "f852142c71f24f539d1a863aee90f913",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 898,
+   "output_tokens": 181,
+   "total_tokens": 1079,
+   "cached_tokens": 0,
+   "reasoning_tokens": 98
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 4960,
+  "live": true,
+  "live_usage_ceiling_usd": 0.00496,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l099-draw3", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 33, "committed_micro_usd": 3379200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5090,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "633a46a9857d4c6f9d6fbe45ced21af0",
+   "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+   "arguments_sha256": "745e10ce13669bb572a667e6c798f6a53ea1432c15f9e3750b775ba5d4988105",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "0592d725803b99998bfbe2cc3c0d96d675fc21896ee9ebcabdd0deb5b3b24d28",
+   "ledger_row_hash": "8fcc4e341903bcb0b7bd8ec8d36bf07d3187380eacea7ef06cf4b4e0bf10e907",
+   "ledger_sha256": "4d9e9ccbf4d550353c233168748df74468ac67901fb1e48358dc384b23883a01"
+  },
+  "reservation_id": "633a46a9857d4c6f9d6fbe45ced21af0",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1488,
+   "output_tokens": 649,
+   "total_tokens": 2137,
+   "cached_tokens": 0,
+   "reasoning_tokens": 557
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 13455,
+  "live": true,
+  "live_usage_ceiling_usd": 0.013455,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l069-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 34, "committed_micro_usd": 3481600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5206,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "1854ccd1207542a8a957abf3e360ce00",
+   "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+   "arguments_sha256": "50e6c9244b0f79049ede5e358c33879cac244a6b4b54d74dbe60936abd83691f",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "9eb3170f95898fc8d82484ad3a30e0ba184f8b839613ed7b8ae1a073fee2a753",
+   "ledger_row_hash": "89994645cea3d0cb4e0c3ccff366e4702906c9e1311515c2c4a7fd4287c5a19d",
+   "ledger_sha256": "289ed26766b49d981187acba8ebfb26b0a4291817fbae94239a2eef6babc300f"
+  },
+  "reservation_id": "1854ccd1207542a8a957abf3e360ce00",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1527,
+   "output_tokens": 585,
+   "total_tokens": 2112,
+   "cached_tokens": 0,
+   "reasoning_tokens": 501
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12593,
+  "live": true,
+  "live_usage_ceiling_usd": 0.012593,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l070-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 35, "committed_micro_usd": 3584000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5371,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "b41d87d0cc3a4b52be08f8110ab5fa72",
+   "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+   "arguments_sha256": "2edc52001e56df5dfff2950057839c9d39e8d7cf8aaa2a5aae4815162e49f328",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "e4d067a6bc6d264886e0fa2bd84aa61fec9451db06429d97bed179bfda051081",
+   "ledger_row_hash": "913c1bfa29e8a1e9878be1d3561099ec2a4fccbc83195ccc4d10d8778c6e20a9",
+   "ledger_sha256": "0e2475b75d0a905222547e6dde9d663b6d5a70fe54e3f0d222a94a95a67774b4"
+  },
+  "reservation_id": "b41d87d0cc3a4b52be08f8110ab5fa72",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1569,
+   "output_tokens": 823,
+   "total_tokens": 2392,
+   "cached_tokens": 0,
+   "reasoning_tokens": 721
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 16268,
+  "live": true,
+  "live_usage_ceiling_usd": 0.016268,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l071-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 36, "committed_micro_usd": 3686400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5444,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "5d910c01276549ad9ad20c835a6e732d",
+   "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+   "arguments_sha256": "95d3185d248c1356f07132961f35dcee38283df3afe9ffd7d33a309a50957df8",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "6128bd113027236160b58732d523aefb4f2edbe731f77c0d7b4f0b045b6b4592",
+   "ledger_row_hash": "2e9a058ef103688e36c2ef40eb529efe473567210bf6ed8a858903ba21e7f360",
+   "ledger_sha256": "85ead6d7cb21e0e9a31c99df60d7755e4f5dc049562a8b2fa605d03ca38681d8"
+  },
+  "reservation_id": "5d910c01276549ad9ad20c835a6e732d",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1584,
+   "output_tokens": 793,
+   "total_tokens": 2377,
+   "cached_tokens": 0,
+   "reasoning_tokens": 697
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 15855,
+  "live": true,
+  "live_usage_ceiling_usd": 0.015855,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l078-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 37, "committed_micro_usd": 3788800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "0a6f2c32740b49328ff46117a557d5f1",
+   "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+   "arguments_sha256": "744e94fd71b25b5564c8e772e057b17d2211abfab7eb8eec7d602639802d2456",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ad1c48883e52ebe32e1c1698e335db9ee0b08d5d0ede337d4f827b0a3a170a82",
+   "ledger_row_hash": "5d478f3b9f3dec177efd6179e15328c88690bf5fcc59a0234a21365856c2a68c",
+   "ledger_sha256": "74868b51a1614841577fc994100c46dab8728d07811c5496fc141976d4678fc1"
+  },
+  "reservation_id": "0a6f2c32740b49328ff46117a557d5f1",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 893,
+   "output_tokens": 163,
+   "total_tokens": 1056,
+   "cached_tokens": 0,
+   "reasoning_tokens": 81
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 4678,
+  "live": true,
+  "live_usage_ceiling_usd": 0.004678,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l096-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 38, "committed_micro_usd": 3891200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3888,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "a3be837a8e4a40f2b4cb42cac99cd6e2",
+   "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+   "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "43da4916da42939e9f28ed0194ba3f8245cce14064a6706e4c12a71a4364d2a5",
+   "ledger_row_hash": "d041f99e94316dd2a3fe06d6dae2e98ee3eb7de6e438c29d01e5b79e02e0c559",
+   "ledger_sha256": "e5376bd3a09aabeb65685302716cb3e35d859340b799e076ee51361ed6ab792e"
+  },
+  "reservation_id": "a3be837a8e4a40f2b4cb42cac99cd6e2",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1096,
+   "output_tokens": 359,
+   "total_tokens": 1455,
+   "cached_tokens": 0,
+   "reasoning_tokens": 280
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 8125,
+  "live": true,
+  "live_usage_ceiling_usd": 0.008125,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l166-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 39, "committed_micro_usd": 3993600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "certificate_verification",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3882,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "a318daf49f9f47a0a1b83f9e513c9321",
+   "request_sha256": "9cbad03ace75b3575c0ebc10e58b5ce22ace4cfe61157b53774492c838fd75f8",
+   "arguments_sha256": "4e4409a1dbd29d741bfedd815b4b99dd13727aa1031bc21ae4529519f9a14663",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ab133eaa5b0c6ad72ba6d8cfde50d36ab53c407d9612dc4ff6d84d885c803581",
+   "ledger_row_hash": "df88ab4bd6be3646fadf9de37395d57ba097f380e1a3ab61485582d634b530ed",
+   "ledger_sha256": "21676ced4620dddbdec89908d2b36903aafa9a7e52f6858c5665df2dd06b96b2"
+  },
+  "reservation_id": "a318daf49f9f47a0a1b83f9e513c9321",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1109,
+   "output_tokens": 1215,
+   "total_tokens": 2324,
+   "cached_tokens": 0,
+   "reasoning_tokens": 1135
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 20998,
+  "live": true,
+  "live_usage_ceiling_usd": 0.020998,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l170-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "witness_rejected", "reasons": [], "consumed": 40, "committed_micro_usd": 4096000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4155,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "546189d78854435390cd284f39141044",
+   "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+   "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "a4e7a0bef893f1b8f0d71e600cdb00c9fc5cc8dbc3a00d838f14a27deb861c9f",
+   "ledger_row_hash": "e578c06d0007a5024ec113439d531906b95bc5a5651fa876610ffa4d7c64c492",
+   "ledger_sha256": "c4e31e13765d92c86c36f8623a41ed17cbdf845e44f5fb7c242857db67b2bebe"
+  },
+  "reservation_id": "546189d78854435390cd284f39141044",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1182,
+   "output_tokens": 615,
+   "total_tokens": 1797,
+   "cached_tokens": 0,
+   "reasoning_tokens": 516
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12180,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01218,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l175-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 41, "committed_micro_usd": 4198400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4277,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "92ea0dd110634b01868314a5cb17e6b2",
+   "request_sha256": "e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674",
+   "arguments_sha256": "278cbb520cc49a5d39c8cfe6dc086b1bc549b9dc153768c63a5789759ea2bed6",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "84790bafe950b09e44d42c374d7ff2409c7f97b7ee882a21ef436af2c24ce704",
+   "ledger_row_hash": "46e00716d11e3c55394868b63746750c35760992046c0c6da7498a79fa37113b",
+   "ledger_sha256": "03eddfe907a276b671d00856a768242f3fb3d53ec1a1ab502e697f91f6e8fa15"
+  },
+  "reservation_id": "92ea0dd110634b01868314a5cb17e6b2",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1235,
+   "output_tokens": 448,
+   "total_tokens": 1683,
+   "cached_tokens": 0,
+   "reasoning_tokens": 363
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 9808,
+  "live": true,
+  "live_usage_ceiling_usd": 0.009808,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l178-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 42, "committed_micro_usd": 4300800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3462,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "14f6bdd342f34a89854eb909d5fd1ce0",
+   "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+   "arguments_sha256": "89fbb6205fba2d3f826e3dbb016e46866a1d0581ad5df6843c4cf901dcabfeed",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "d5cdd1e455f2d568b205163e1be6d199d61e5ca317aa39ffca5cdaed4b623b30",
+   "ledger_row_hash": "f68d6ac0e3c369b61d0cd7e537fda7e4e7b4c03a85ac48a0b0521e1f5dd49397",
+   "ledger_sha256": "44087f505e9d2891c76e558a975d34f66673c472a3e328e234260228d1ba345f"
+  },
+  "reservation_id": "14f6bdd342f34a89854eb909d5fd1ce0",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 979,
+   "output_tokens": 236,
+   "total_tokens": 1215,
+   "cached_tokens": 0,
+   "reasoning_tokens": 160
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5988,
+  "live": true,
+  "live_usage_ceiling_usd": 0.005988,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l204-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 43, "committed_micro_usd": 4403200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "e85c7d95ca7b4bb7b19e6c7381afe3fe",
+   "request_sha256": "fb1cbeae50d2fb6feef13d94eeb7ef492f4e4535d8c34989bd4d6df31fe3127b",
+   "arguments_sha256": "af6941d64edcd63ef14bb212f85c571ce6c44a726038f7f6100bd2088d600408",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ee08277eac8429b6f20f87711353406a140a36a3d161b7f5453e9d2392a33da9",
+   "ledger_row_hash": "496c11e3aca4b3995ad1bb6e8018dd0b2da6b67180c2c1759eadc8712140a776",
+   "ledger_sha256": "636057bd2b964b6b0243d224d21bfa0167af80615ac0d52e4d060fb64746ef4a"
+  },
+  "reservation_id": "e85c7d95ca7b4bb7b19e6c7381afe3fe",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 898,
+   "output_tokens": 191,
+   "total_tokens": 1089,
+   "cached_tokens": 0,
+   "reasoning_tokens": 108
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5110,
+  "live": true,
+  "live_usage_ceiling_usd": 0.00511,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l099-draw4", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 44, "committed_micro_usd": 4505600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5090,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "62c00a1d4e0240888c79bbacc5de161c",
+   "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+   "arguments_sha256": "745e10ce13669bb572a667e6c798f6a53ea1432c15f9e3750b775ba5d4988105",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "a393b3d133a09e1c88677010b31fbd82b3f76f485ec69ff6e185cf6a4e96ab32",
+   "ledger_row_hash": "b70ffb86c2d1d0324533cf348ab2f891742b09e5f4cef96f6d1b7f9f12411550",
+   "ledger_sha256": "2698fa64a7eba0e950b80479f28e42b54277918ab917c695618567879d7c982d"
+  },
+  "reservation_id": "62c00a1d4e0240888c79bbacc5de161c",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1488,
+   "output_tokens": 550,
+   "total_tokens": 2038,
+   "cached_tokens": 0,
+   "reasoning_tokens": 458
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 11970,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01197,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l069-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 45, "committed_micro_usd": 4608000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5206,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "d4a354e6d2794bdeaa6bf790002fcd20",
+   "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+   "arguments_sha256": "50e6c9244b0f79049ede5e358c33879cac244a6b4b54d74dbe60936abd83691f",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "3878ec951c8d54870501583680a8453861d65a081e92b14abf4dfd9462db1f5b",
+   "ledger_row_hash": "596c16163b3a8863c74d114b2777e1b8b406f231319a071a2c9f2ac43808ea36",
+   "ledger_sha256": "784c4045dc11fe2476b47b8045d98b4f6c051a6659573a8289424f69c6bed5fe"
+  },
+  "reservation_id": "d4a354e6d2794bdeaa6bf790002fcd20",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1527,
+   "output_tokens": 689,
+   "total_tokens": 2216,
+   "cached_tokens": 0,
+   "reasoning_tokens": 578
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 14153,
+  "live": true,
+  "live_usage_ceiling_usd": 0.014153,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l070-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 46, "committed_micro_usd": 4710400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5371,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "5bd86fed97394343b8135c38e6fa96b5",
+   "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+   "arguments_sha256": "2edc52001e56df5dfff2950057839c9d39e8d7cf8aaa2a5aae4815162e49f328",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ae83bc334e374ca4b783f950443887931606c460b935929d006ba1075dfe8d4b",
+   "ledger_row_hash": "5e9bc0f5e6db6108c7448c6f26438cf19216b9dc8630bf6ecbfa40b083eb51aa",
+   "ledger_sha256": "ca159e005586d5df2c568b9e1af08d04ca343eccfcfb058e795e693f0e25668f"
+  },
+  "reservation_id": "5bd86fed97394343b8135c38e6fa96b5",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1569,
+   "output_tokens": 602,
+   "total_tokens": 2171,
+   "cached_tokens": 0,
+   "reasoning_tokens": 509
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12953,
+  "live": true,
+  "live_usage_ceiling_usd": 0.012953,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l071-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 47, "committed_micro_usd": 4812800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5444,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "41eff23162b24873be1869db081504a0",
+   "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+   "arguments_sha256": "95d3185d248c1356f07132961f35dcee38283df3afe9ffd7d33a309a50957df8",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "8f67ad1eb8523d0cb536cc4c3f73dd6a2b33ea8a1b65db4b9ac6a15e6e8e0364",
+   "ledger_row_hash": "70fce3053af6ae42c71bcc2ed11b667905a1e93aa58a416b38f2b83a18b9cba0",
+   "ledger_sha256": "1438360356ea61ac7bc408d6ff706ff15c159d995aeabb58bc7a211ef3af7513"
+  },
+  "reservation_id": "41eff23162b24873be1869db081504a0",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1584,
+   "output_tokens": 680,
+   "total_tokens": 2264,
+   "cached_tokens": 0,
+   "reasoning_tokens": 584
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 14160,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01416,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l078-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 48, "committed_micro_usd": 4915200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "dbdcb57f9a7b42fea292ff861c7a7213",
+   "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+   "arguments_sha256": "744e94fd71b25b5564c8e772e057b17d2211abfab7eb8eec7d602639802d2456",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "dc9e52cf8c3b1486458c928766cc5a95b1754509ec83cce9f1bd9667fd96f1ba",
+   "ledger_row_hash": "1cb1646c0ab2eb2d330b26a1bc7fedcf1c1c30bd76499daf56b6e832a2b44ac8",
+   "ledger_sha256": "267750ea3c33d1d87fbbf8a37150d975cb8baec1c15ad1af0c1007307f4169e0"
+  },
+  "reservation_id": "dbdcb57f9a7b42fea292ff861c7a7213",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 893,
+   "output_tokens": 184,
+   "total_tokens": 1077,
+   "cached_tokens": 0,
+   "reasoning_tokens": 102
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 4993,
+  "live": true,
+  "live_usage_ceiling_usd": 0.004993,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l096-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 49, "committed_micro_usd": 5017600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3888,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "a12c8bd7b5984727b0de7d47b8fab5b5",
+   "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+   "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "9f88798c97390855f2da4751b2b7bbd5bdb45e7e88c1162dafc51768bd84c3b6",
+   "ledger_row_hash": "2405414264720739d6a94fb162681733a75a8beb2c5005af8e811536fef35b85",
+   "ledger_sha256": "47feee0ccb7714fceb0b4633a21b5a6a825639d501e2375faf971c5126182110"
+  },
+  "reservation_id": "a12c8bd7b5984727b0de7d47b8fab5b5",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1096,
+   "output_tokens": 335,
+   "total_tokens": 1431,
+   "cached_tokens": 0,
+   "reasoning_tokens": 256
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 7765,
+  "live": true,
+  "live_usage_ceiling_usd": 0.007765,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l166-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 50, "committed_micro_usd": 5120000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "certificate_verification",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3882,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "e685759f8bc54604b445ebb9b5f39b64",
+   "request_sha256": "9cbad03ace75b3575c0ebc10e58b5ce22ace4cfe61157b53774492c838fd75f8",
+   "arguments_sha256": "4e4409a1dbd29d741bfedd815b4b99dd13727aa1031bc21ae4529519f9a14663",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "93fda914bf85d5f6ab2ead71e6cae4ae3d9ee31570671c8f5880155d995c0b85",
+   "ledger_row_hash": "1ef7e6fadcb688c1ac89d411eea70ce9b4def82a5386008ce1521407e8532dd5",
+   "ledger_sha256": "4a4282c046a28568aece0f0d811cb8861ee18b042a95b9a5573f5b84f5f586ff"
+  },
+  "reservation_id": "e685759f8bc54604b445ebb9b5f39b64",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1109,
+   "output_tokens": 823,
+   "total_tokens": 1932,
+   "cached_tokens": 0,
+   "reasoning_tokens": 743
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 15118,
+  "live": true,
+  "live_usage_ceiling_usd": 0.015118,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l170-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "witness_rejected", "reasons": [], "consumed": 51, "committed_micro_usd": 5222400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4155,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "b4502724823c4ea49f53587c274a0280",
+   "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+   "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "3a8039b507b87f3850401a3c928f33fea90002748c47761d507d13b9ed45ed75",
+   "ledger_row_hash": "d7e1dd709bae5464f268990350e86bc488ed1ee77f64327144b1c97645412d23",
+   "ledger_sha256": "d012fd67b7e4f45178251e360d25a5222a990d589c8734e5a56fd8d737ddf7ef"
+  },
+  "reservation_id": "b4502724823c4ea49f53587c274a0280",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1182,
+   "output_tokens": 615,
+   "total_tokens": 1797,
+   "cached_tokens": 0,
+   "reasoning_tokens": 516
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12180,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01218,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l175-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 52, "committed_micro_usd": 5324800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4277,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "1a7fb973c8ca4bc69e2280c2e0a184db",
+   "request_sha256": "e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674",
+   "arguments_sha256": "278cbb520cc49a5d39c8cfe6dc086b1bc549b9dc153768c63a5789759ea2bed6",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "6aad27f8257278050f6fcacf643c894bca775c98d892bd0485af16633749b909",
+   "ledger_row_hash": "ea88282c895b859cce65b7928334da9b1d0ad17a8824d48752977687134437cc",
+   "ledger_sha256": "37d4746f2e2fa4aa35746c442e13ac67118e2b7b8971dbd404f0c77b206a3330"
+  },
+  "reservation_id": "1a7fb973c8ca4bc69e2280c2e0a184db",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1235,
+   "output_tokens": 412,
+   "total_tokens": 1647,
+   "cached_tokens": 0,
+   "reasoning_tokens": 327
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 9268,
+  "live": true,
+  "live_usage_ceiling_usd": 0.009268,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l178-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 53, "committed_micro_usd": 5427200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3462,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "207cb6c09dd54ec8bf10471ac8c46245",
+   "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+   "arguments_sha256": "89fbb6205fba2d3f826e3dbb016e46866a1d0581ad5df6843c4cf901dcabfeed",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "e29a71aff3f86921d8af5851aa397e71a719564ccd545dd859f592da67c6af3d",
+   "ledger_row_hash": "caed1adb15628232ccbaa55bb9f68a68f0ac002fcde8b1cb2ef055428ded1341",
+   "ledger_sha256": "b852449123b3a76df906e3312184b23ec1bf73bc13becab8a8368d02d3053445"
+  },
+  "reservation_id": "207cb6c09dd54ec8bf10471ac8c46245",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 979,
+   "output_tokens": 211,
+   "total_tokens": 1190,
+   "cached_tokens": 0,
+   "reasoning_tokens": 135
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 5613,
+  "live": true,
+  "live_usage_ceiling_usd": 0.005613,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l204-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 54, "committed_micro_usd": 5529600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "aefe71d8fdb643609a17920ab12ad743",
+   "request_sha256": "fb1cbeae50d2fb6feef13d94eeb7ef492f4e4535d8c34989bd4d6df31fe3127b",
+   "arguments_sha256": "af6941d64edcd63ef14bb212f85c571ce6c44a726038f7f6100bd2088d600408",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "5da19f52dbc0441dc81e32b518d000cf17cd468ceea365a3df8d77e284130398",
+   "ledger_row_hash": "1dab42a0672edaae3967ec5afd3fb95869253c28e27bbf559b77b5de25d83e13",
+   "ledger_sha256": "cb91fcd474400f8e380ebed2ce4797efc8ac94c0860d07933221cb6d1650aa20"
+  },
+  "reservation_id": "aefe71d8fdb643609a17920ab12ad743",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 898,
+   "output_tokens": 161,
+   "total_tokens": 1059,
+   "cached_tokens": 0,
+   "reasoning_tokens": 78
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 4660,
+  "live": true,
+  "live_usage_ceiling_usd": 0.00466,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l099-draw5", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 55, "committed_micro_usd": 5632000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5090,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "90f73d22225c41de9439d349a9453f52",
+   "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+   "arguments_sha256": "745e10ce13669bb572a667e6c798f6a53ea1432c15f9e3750b775ba5d4988105",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "0e39c93addd7bb2aee5e1aeb9d52975785f60636811c53120823e62765dcb21f",
+   "ledger_row_hash": "a14737fc66670cc875de93a3baacc1c3aa40f289f0903495905d3006cded21a5",
+   "ledger_sha256": "69c651f33deb93b3cfa0648b3cf1b43d1c7c56e434b392a9c4ae63ce451fbfaa"
+  },
+  "reservation_id": "90f73d22225c41de9439d349a9453f52",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1488,
+   "output_tokens": 456,
+   "total_tokens": 1944,
+   "cached_tokens": 0,
+   "reasoning_tokens": 364
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 10560,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01056,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l069-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 56, "committed_micro_usd": 5734400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5206,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "555eeb5f80a142edb84dafd1db07f897",
+   "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+   "arguments_sha256": "50e6c9244b0f79049ede5e358c33879cac244a6b4b54d74dbe60936abd83691f",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "937b0740e4302e9d5d68797a90b7a0e71a901a133260ce7cfcb0d32df0999e69",
+   "ledger_row_hash": "582df20bf407defeeed82a8eef319acff3cce47c6bc1eff2c9c145bf4aaea85a",
+   "ledger_sha256": "1f77c0817ac30cc2a4d0c40b2e7136731c3d77d13cc698b1d1028549e6571006"
+  },
+  "reservation_id": "555eeb5f80a142edb84dafd1db07f897",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1527,
+   "output_tokens": 714,
+   "total_tokens": 2241,
+   "cached_tokens": 0,
+   "reasoning_tokens": 631
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 14528,
+  "live": true,
+  "live_usage_ceiling_usd": 0.014528,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l070-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 57, "committed_micro_usd": 5836800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5371,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "7f22553828a14066a2eedf55b0d39c06",
+   "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+   "arguments_sha256": "2edc52001e56df5dfff2950057839c9d39e8d7cf8aaa2a5aae4815162e49f328",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "61e636ee0343c3df52519fd0f33aae5988301333d37df0c2f7950ea0dd6f2c9a",
+   "ledger_row_hash": "e9c88d4707b70340cda0909ee86ad8b02ef2f8d8a08e6fd9707585d799d0b401",
+   "ledger_sha256": "474b9659bf7a465c02ccd3437b8540244d55d0e6e2fd46eed70f638253a00804"
+  },
+  "reservation_id": "7f22553828a14066a2eedf55b0d39c06",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1569,
+   "output_tokens": 922,
+   "total_tokens": 2491,
+   "cached_tokens": 0,
+   "reasoning_tokens": 829
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 17753,
+  "live": true,
+  "live_usage_ceiling_usd": 0.017753,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l071-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 58, "committed_micro_usd": 5939200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 5444,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "bf62c354b1f64882822f8dcf7135152b",
+   "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+   "arguments_sha256": "95d3185d248c1356f07132961f35dcee38283df3afe9ffd7d33a309a50957df8",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "631a436da6ff93c1db1bc16adbdbe9ce8e8ff1818fbb159b5b3f4f9963298c89",
+   "ledger_row_hash": "261395ac6965bbea1d3d51ea3d0090431b087df69adf924c22702ebb19a966a6",
+   "ledger_sha256": "7d73a760feb7aa2b778322b592a9b08dfa0c6ba15abb0953b2df6a524aacdc12"
+  },
+  "reservation_id": "bf62c354b1f64882822f8dcf7135152b",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1584,
+   "output_tokens": 599,
+   "total_tokens": 2183,
+   "cached_tokens": 0,
+   "reasoning_tokens": 503
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12945,
+  "live": true,
+  "live_usage_ceiling_usd": 0.012945,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l078-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 59, "committed_micro_usd": 6041600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": true,
+ "failure_category": null,
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3153,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "73a97e3dc94848a6aa6eec79f4d2a298",
+   "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+   "arguments_sha256": "744e94fd71b25b5564c8e772e057b17d2211abfab7eb8eec7d602639802d2456",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "0e3d2dc3487f266ce3237c27208457892d85fa40d31a6e40aab9a05b3a44d8e3",
+   "ledger_row_hash": "0244ecc0c9cb10a4894e6e0b41ea1340d6074d34f1f5c803a2fbbe6c52f338a6",
+   "ledger_sha256": "59f16c3b8b63784c295d80ee64e84a25c9fafa72a36ca8ba81225bd6233fc723"
+  },
+  "reservation_id": "73a97e3dc94848a6aa6eec79f4d2a298",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 893,
+   "output_tokens": 181,
+   "total_tokens": 1074,
+   "cached_tokens": 0,
+   "reasoning_tokens": 99
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 4948,
+  "live": true,
+  "live_usage_ceiling_usd": 0.004948,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l096-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "proof", "reasons": [], "consumed": 60, "committed_micro_usd": 6144000}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3888,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "f2d1b9efde8d446fb99545ae273d22da",
+   "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+   "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "8244e2eec6f54ce579942374e38421c116722df39ceaeac84cfe57cf4e17fa1d",
+   "ledger_row_hash": "253a7a33f4e0881e4701facd700f250a4b69a66def60877dc0d6b082123e938d",
+   "ledger_sha256": "7b2d65da17b7bf36306f48e6ebeedc03ceadce03aa48a7f1017708231a0c3a1c"
+  },
+  "reservation_id": "f2d1b9efde8d446fb99545ae273d22da",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1096,
+   "output_tokens": 333,
+   "total_tokens": 1429,
+   "cached_tokens": 0,
+   "reasoning_tokens": 254
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 7735,
+  "live": true,
+  "live_usage_ceiling_usd": 0.007735,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l166-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 61, "committed_micro_usd": 6246400}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "certificate_verification",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3882,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "6b2f46305b6d4f608752461c3e9a43e3",
+   "request_sha256": "9cbad03ace75b3575c0ebc10e58b5ce22ace4cfe61157b53774492c838fd75f8",
+   "arguments_sha256": "4e4409a1dbd29d741bfedd815b4b99dd13727aa1031bc21ae4529519f9a14663",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "0db085d4f1946e2dd31ffa33f124e47ffb0a1340ad5da03a4247f12e78c2f235",
+   "ledger_row_hash": "c6c1e03a86f857233cf2e6546a76754de195845adfb698ab531e5559a28cea5d",
+   "ledger_sha256": "e92a335ea14288866c78aa934a79eb7b3519a27c4a75a569e6b3665ea54f6b2d"
+  },
+  "reservation_id": "6b2f46305b6d4f608752461c3e9a43e3",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1109,
+   "output_tokens": 1074,
+   "total_tokens": 2183,
+   "cached_tokens": 0,
+   "reasoning_tokens": 994
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 18883,
+  "live": true,
+  "live_usage_ceiling_usd": 0.018883,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l170-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "witness_rejected", "reasons": [], "consumed": 62, "committed_micro_usd": 6348800}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4155,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "ffb94e95ad68431db3a99803a43ef66b",
+   "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+   "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "1ca7ce348cd3eec44b0999b4d805c53afaab436b98617a2f9f928c1a1ad4eba6",
+   "ledger_row_hash": "2142c3141fcdd1f01497fe851bb3f32358aace06fc32304529a6d3485c5305b4",
+   "ledger_sha256": "8fdb9d9fa5555cfd9f3cb93a71a30b420b822288631c6714dcebc15d24244bd4"
+  },
+  "reservation_id": "ffb94e95ad68431db3a99803a43ef66b",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1182,
+   "output_tokens": 615,
+   "total_tokens": 1797,
+   "cached_tokens": 0,
+   "reasoning_tokens": 516
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 12180,
+  "live": true,
+  "live_usage_ceiling_usd": 0.01218,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l175-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 63, "committed_micro_usd": 6451200}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "reconstruction_refused",
+ "credential_use_accepted": true,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 4277,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "3ea0713e13714774be490b0a00f290c7",
+   "request_sha256": "e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674",
+   "arguments_sha256": "278cbb520cc49a5d39c8cfe6dc086b1bc549b9dc153768c63a5789759ea2bed6",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "ab45f6d2002311053e18ed1fa87ccd2f5a666e82094e29206fd522783af36918",
+   "ledger_row_hash": "0dd361201700c13e214ef602c838694b9df7e9e1720e7ce3d1b9299c51af2f9a",
+   "ledger_sha256": "350d4eeeb6bb18b53c08f47fade8b94aa659c85ef97b402977f8a1639083d4aa"
+  },
+  "reservation_id": "3ea0713e13714774be490b0a00f290c7",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 1,
+  "transmissions_observed": 1,
+  "transmissions_returned": 1,
+  "grant_committed": true,
+  "send_outcome": "returned",
+  "ledger_outcome": "send_grant",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 1,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "provider_reported",
+   "cost_usd": null,
+   "input_tokens": 1235,
+   "output_tokens": 450,
+   "total_tokens": 1685,
+   "cached_tokens": 0,
+   "reasoning_tokens": 365
+  },
+  "usage_status": "provider_reported",
+  "priced_usage_ceiling_micro_usd": 9838,
+  "live": true,
+  "live_usage_ceiling_usd": 0.009838,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l178-draw6", "fresh": true, "exit": 0, "decision": "continue", "outcome": "closer_refusal", "reasons": [], "consumed": 64, "committed_micro_usd": 6553600}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4305:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+{
+ "accepted": false,
+ "mode": "live",
+ "proof_accepted": false,
+ "failure_category": "transport_connection_failure",
+ "credential_use_accepted": false,
+ "publication_accepted": null,
+ "publication_pending": true,
+ "ledger_reconciled": true,
+ "evidence_complete": true,
+ "accounting": {
+  "attempts_reserved": 1,
+  "reservation_state": "reserved",
+  "reservation": {
+   "reserved_micro_usd": 102400,
+   "message_utf8_bytes": 3462,
+   "input_tokens_reserved": 16384,
+   "output_tokens_reserved": 4096,
+   "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+   "billing_guarantee": false,
+   "reservation_id": "416521e6ceea43678598ead49c6317c7",
+   "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+   "arguments_sha256": "89fbb6205fba2d3f826e3dbb016e46866a1d0581ad5df6843c4cf901dcabfeed",
+   "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+   "pricing_admission_sha256": "fb3d685e8858c44bf014095768e8368b47a8ec30aea8920d74341657b2697405",
+   "ledger_row_hash": "214cc9333263e0cc0f9bdf7e15c75ff47facbced3be2f8a0e75ad07843df04c3",
+   "ledger_sha256": "0a05910629fafd3bd46b55f142f404a3e60ba687fbe5a14b23797feb8a391dd1"
+  },
+  "reservation_id": "416521e6ceea43678598ead49c6317c7",
+  "transport_record_observed": true,
+  "connection_attempts": 1,
+  "headers_started": 0,
+  "transmissions_observed": 0,
+  "transmissions_returned": 0,
+  "grant_committed": false,
+  "send_outcome": "not_started",
+  "ledger_outcome": "release",
+  "ledger_reconciled": true,
+  "reconciliation_evidence_complete": true,
+  "evidence_complete": true,
+  "allowance_consumed": 0,
+  "endpoint_receipts": 0,
+  "usage": {
+   "status": "unreported",
+   "cost_usd": null,
+   "input_tokens": null,
+   "output_tokens": null,
+   "total_tokens": null,
+   "cached_tokens": null,
+   "reasoning_tokens": null
+  },
+  "usage_status": "unreported",
+  "priced_usage_ceiling_micro_usd": null,
+  "live": true,
+  "live_usage_ceiling_usd": null,
+  "scope": "one authorized provider transmission; the ceiling prices reported usage and is not a bill; allowance_consumed is the authoritative disposition (null when unknown), transmissions_observed the sender's own count or null when unobserved"
+ }
+}
+{"run": "l204-draw6", "fresh": true, "exit": 0, "decision": "pause", "outcome": null, "reasons": ["slot ended as release/None, not a returned send", "ledger slot not consumed, or a reservation is open", "provider status None", "transport binding failure", "transport failure transport_connection_failure (https_transport)", "an outcome this runner has not reviewed: transport_connection_failure"], "consumed": 64, "committed_micro_usd": 6553600}
+PAUSE at l204-draw6: ['slot ended as release/None, not a returned send', 'ledger slot not consumed, or a reservation is open', 'provider status None', 'transport binding failure', 'transport failure transport_connection_failure (https_transport)', 'an outcome this runner has not reviewed: transport_connection_failure']; stop and review (a restart re-applies this decision)

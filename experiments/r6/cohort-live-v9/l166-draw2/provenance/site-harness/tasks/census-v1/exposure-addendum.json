@@ -1,0 +1,344 @@
+{
+  "census_id": "bracket-c07e03c9",
+  "census_sha256": "7b09ffd5bd42d01bc4b93a78e6462d30764cb3d0e06f868aa27f8443c848b54c",
+  "classes": {
+    "none_recorded": "no recorded experiment posed or showed it; not unseen mathematics, not an uncontaminated task",
+    "prior_direct_target": "the site obligation was the target of a recorded provider transmission",
+    "prior_input_premise_formula": "a hypothesis sent in a recorded request has exactly this site's captured target as its type; shown as a premise, not posed as a goal",
+    "prior_target_family": "same containing declaration as a prior target; related, not shown"
+  },
+  "decision": "retain_complete_fifteen_site_primary_population",
+  "decision_sha256": "107e59ef6dd255a6088aee91d9136b218748089849e7612ddd431fa4686a6bb6",
+  "membership_sha256": "1c086c277ba27502d6d0bea01b12cb6f4fa80a284ef92ac0832f6984dedcddd3",
+  "primary": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "prior_transmissions": [
+    {
+      "direct_task": "verinf-d1-70",
+      "generated_response_witness": {
+        "coefficients": [
+          {
+            "coefficient": "1",
+            "hypothesis": "hwidth"
+          },
+          {
+            "coefficient": "32769",
+            "hypothesis": "neg_goal"
+          }
+        ]
+      },
+      "instruction_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+      "outbound_sha256": "e4cadc6ad1d9dfb70aa9ab8300499fbe5987dba9ea7f4ce3b522c0c8364efccf",
+      "reference_witness_supplied": false,
+      "request_sha256": "e449c34f90e125be3fd8d3d630221893bb749a1078927c9da6f02029ef51e3f7",
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "run": "pilot-runs/live-2"
+    },
+    {
+      "direct_task": "verinf-d1-70",
+      "generated_response_witness": {
+        "coefficients": [
+          {
+            "coefficient": "2",
+            "hypothesis": "hZ"
+          },
+          {
+            "coefficient": "1",
+            "hypothesis": "neg_goal"
+          }
+        ]
+      },
+      "instruction_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+      "outbound_sha256": "15dc23848e3e89351997c300c3b9df6a8b140841844171ac964620ba96be186a",
+      "reference_witness_supplied": false,
+      "request_sha256": "f66f82db9e0d596484b7b273b2a858bc1b90b9c42e98c11bbb9d640d3af34e49",
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "run": "campaign-runs-v7/live-1"
+    }
+  ],
+  "program_sha256": "b609b4312306c50b9618c54c6a09114937841e57e94ceeb2094a56faef89f9ce",
+  "reporting": {
+    "family_summaries": "report every site and each of the four families; families are clusters, not independent samples",
+    "prior_live_samples": "exploratory history only; do not pool with new contract-bound cohort draws",
+    "sensitivity_sets": {
+      "omit_prior_direct_target": [
+        "bracket-l069",
+        "bracket-l071",
+        "bracket-l078",
+        "bracket-l096",
+        "bracket-l098",
+        "bracket-l099",
+        "bracket-l101",
+        "bracket-l158",
+        "bracket-l166",
+        "bracket-l170",
+        "bracket-l175",
+        "bracket-l178",
+        "bracket-l180",
+        "bracket-l204"
+      ],
+      "omit_prior_target_family": [
+        "bracket-l096",
+        "bracket-l098",
+        "bracket-l099",
+        "bracket-l101",
+        "bracket-l158",
+        "bracket-l166",
+        "bracket-l170",
+        "bracket-l175",
+        "bracket-l178",
+        "bracket-l180",
+        "bracket-l204"
+      ]
+    },
+    "symmetric_pairs": "keep both branches; do not present paired sites or repeated draws as independent mathematical samples",
+    "uncontaminated_claim": "none; no subset supports it"
+  },
+  "schema_version": "r6-census-exposure-1",
+  "sites": {
+    "bracket-l069": {
+      "class": "prior_input_premise_formula",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [
+        {
+          "captured_hypothesis_type": "x.val + z.val < 2 ^ 24 + 2 * Zmax",
+          "outbound_sha256": "e4cadc6ad1d9dfb70aa9ab8300499fbe5987dba9ea7f4ce3b522c0c8364efccf",
+          "row": {
+            "constant": "-16777215",
+            "name": "hzsum",
+            "relation": "le",
+            "terms": [
+              {
+                "coefficient": "-2",
+                "variable": "Zmax"
+              },
+              {
+                "coefficient": "1",
+                "variable": "_pb_atom_0"
+              },
+              {
+                "coefficient": "1",
+                "variable": "_pb_atom_1"
+              }
+            ]
+          },
+          "row_name": "hzsum",
+          "run": "pilot-runs/live-2"
+        },
+        {
+          "captured_hypothesis_type": "x.val + z.val < 2 ^ 24 + 2 * Zmax",
+          "outbound_sha256": "15dc23848e3e89351997c300c3b9df6a8b140841844171ac964620ba96be186a",
+          "row": {
+            "constant": "-16777215",
+            "name": "hzsum",
+            "relation": "le",
+            "terms": [
+              {
+                "coefficient": "-2",
+                "variable": "Zmax"
+              },
+              {
+                "coefficient": "1",
+                "variable": "_pb_atom_0"
+              },
+              {
+                "coefficient": "1",
+                "variable": "_pb_atom_1"
+              }
+            ]
+          },
+          "row_name": "hzsum",
+          "run": "campaign-runs-v7/live-1"
+        }
+      ],
+      "prior_target_family": true
+    },
+    "bracket-l070": {
+      "class": "prior_direct_target",
+      "direct_runs": [
+        "pilot-runs/live-2",
+        "campaign-runs-v7/live-1"
+      ],
+      "prior_direct_target": true,
+      "prior_input_premise": [],
+      "prior_target_family": true
+    },
+    "bracket-l071": {
+      "class": "prior_target_family",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": true
+    },
+    "bracket-l078": {
+      "class": "prior_target_family",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": true
+    },
+    "bracket-l096": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l098": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l099": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l101": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l158": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l166": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l170": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l175": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l178": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l180": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    },
+    "bracket-l204": {
+      "class": "none_recorded",
+      "direct_runs": [],
+      "prior_direct_target": false,
+      "prior_input_premise": [],
+      "prior_target_family": false
+    }
+  },
+  "strata": {
+    "prior_direct_target": [
+      "bracket-l070"
+    ],
+    "prior_input_premise_formula": [
+      "bracket-l069"
+    ],
+    "prior_target_family": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078"
+    ],
+    "refutation_targets": [
+      "bracket-l098",
+      "bracket-l101"
+    ],
+    "symmetric_target_pairs": [
+      [
+        "bracket-l096",
+        "bracket-l099"
+      ],
+      [
+        "bracket-l098",
+        "bracket-l101"
+      ]
+    ]
+  },
+  "supersedes_reading_of": "census.json sites[].exposure (retained unchanged; its model_visible_in wording overstated what was shown)",
+  "witness_note": "no request supplied a witness; the pilot returned hwidth + 32769*neg_goal and the later live run 2*hZ + neg_goal: generated responses, not reference answers"
+}

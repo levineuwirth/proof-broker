@@ -1,0 +1,19 @@
+{
+  "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+  "witness": {
+    "coefficients": [
+      {
+        "hypothesis": "hwidth",
+        "coefficient": "1"
+      },
+      {
+        "hypothesis": "neg_goal",
+        "coefficient": "1"
+      },
+      {
+        "hypothesis": "_pb_nonneg_Zmax",
+        "coefficient": "65536"
+      }
+    ]
+  }
+}

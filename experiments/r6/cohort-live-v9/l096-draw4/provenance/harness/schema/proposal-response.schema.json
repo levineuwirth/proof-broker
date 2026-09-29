@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_sha256",
+    "witness"
+  ],
+  "properties": {
+    "request_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "witness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coefficients"
+      ],
+      "properties": {
+        "coefficients": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "hypothesis",
+              "coefficient"
+            ],
+            "properties": {
+              "hypothesis": {
+                "type": "string",
+                "minLength": 1
+              },
+              "coefficient": {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]*)$",
+                "maxLength": 128
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

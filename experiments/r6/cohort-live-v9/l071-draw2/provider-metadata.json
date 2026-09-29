@@ -1,0 +1,15 @@
+{
+  "response_id": "resp_06c041262607e9d5016abaf21d5cc887d1a9f4ac529ede7159",
+  "reported_model": "gpt-5.4-2026-03-05",
+  "reported_service_tier": "default",
+  "usage": {
+    "status": "provider_reported",
+    "cost_usd": null,
+    "input_tokens": 1569,
+    "output_tokens": 609,
+    "total_tokens": 2178,
+    "cached_tokens": 0,
+    "reasoning_tokens": 516
+  },
+  "scope": "canned provider-reported fields; no model revision or computation attestation"
+}

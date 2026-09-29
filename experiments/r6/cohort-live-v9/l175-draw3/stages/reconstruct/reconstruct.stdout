@@ -1,0 +1,2 @@
+/input/Frozen.lean:176:20: error: proof_broker_term: non-False ℕ goal must have shape (_ ≤ _) / (_ < _) / (_ ≥ _) / (_ > _); got ↑Zmax ≤
+  v. Equality goals are pre-split via Nat.le_antisymm.
