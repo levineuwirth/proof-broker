@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""R6-014 amendment 2: SYNTHETIC source episodes for a pre-send release and its retry, before any auditor reads the collected release.
+"""R6-014 amendment 2: SYNTHETIC source episodes for the amendment's live-shaped fixture, including a pre-send release and its retry,
+before any auditor reads the collected release.
 
-Two canned rehearsal episodes of the unmodified cohort driver (`cohort_episode.execute`, mode `rehearsal`), for one slot (l096, draw 2), on
-an **isolated** copy of the frozen disabled v9 policy (its checkpoint bytes) with its own rehearsal ledger under
-`fixtures/r6-014-v4-release-sources/`; the production policy, lock and campaign ledgers are never touched:
+Canned rehearsal episodes of the unmodified cohort driver (`cohort_episode.execute`, mode `rehearsal`) on an **isolated** copy of the frozen
+disabled v9 policy (its checkpoint bytes) with its own rehearsal ledger under `fixtures/r6-014-v4-sources/`; the production policy, lock
+and campaign ledgers are never touched. All sources share one admitted capture, so the fixture needs no pricing reversal: the eleven posed
+sites at draw 1 (the v9 rehearsal order), then one slot (l096, draw 2) twice:
 
 1. `l096-draw2` — the loopback TLS fixture is materialized with its reviewed `untrusted_ca` case (R6-005), so the sender's own TLS
    handshake fails before any header byte: a genuine connection-phase failure of the unmodified sender, which the ledger reconciles as a
@@ -34,7 +36,8 @@ import live_tls_fixture
 import run as r6
 import site_task
 
-OUT = R6/'fixtures/r6-014-v4-release-sources'
+OUT = R6/'fixtures/r6-014-v4-sources'
+DRAW1 = ('l069', 'l070', 'l071', 'l078', 'l096', 'l166', 'l170', 'l175', 'l178', 'l204', 'l099')
 SLOT = ('bracket-l096', 2)
 
 
@@ -54,6 +57,8 @@ def main():
         contract.revise(R6/'sources/pricing-approved-campaign-6', 'isolated synthetic sources: pricing refresh to the admitted capture 6')
         c = contract.config(); assert c['live_enabled'] is False and c['revision'] == 2
         packages = R6.parents[1]/'lean-bridge/.lake/packages'; task = site_task.get(SLOT[0])
+        for site in DRAW1:
+            run = OUT/'runs'/f'{site}-draw1'; run.mkdir(); results[run.name] = driver.execute(run, site_task.get('bracket-'+site), 1, 'rehearsal', packages, None)
         original = live_tls_fixture.materialize
         def untrusted(run, case): return original(run, 'untrusted_ca')
         with patch.object(driver.live_tls_fixture, 'materialize', untrusted):

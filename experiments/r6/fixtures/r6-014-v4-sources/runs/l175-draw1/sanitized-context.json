@@ -1,0 +1,95 @@
+{
+  "target": "↑Zmax ≤ v",
+  "hypotheses": [
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 1,
+      "name": "Zmax",
+      "type": "ℕ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 2,
+      "name": "v0",
+      "type": "ℕ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 3,
+      "name": "cert",
+      "type": "TableCert Zmax v0"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 4,
+      "name": "v",
+      "type": "ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 5,
+      "name": "z",
+      "type": "ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 6,
+      "name": "zhigh",
+      "type": "ℤ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 7,
+      "name": "hv",
+      "type": "0 ≤ v"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 8,
+      "name": "hrec",
+      "type": "v = z + ↑Zmax * zhigh"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 9,
+      "name": "hz0",
+      "type": "0 ≤ z"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 10,
+      "name": "hz",
+      "type": "z < 2 * ↑Zmax"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 11,
+      "name": "hzh0",
+      "type": "0 ≤ zhigh"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 12,
+      "name": "hZpos",
+      "type": "0 < Zmax"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 13,
+      "name": "hzh",
+      "type": "¬zhigh = 0"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 14,
+      "name": "hzh1",
+      "type": "1 ≤ zhigh"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 16,
+      "name": "this",
+      "type": "↑Zmax ≤ ↑Zmax * zhigh"
+    }
+  ]
+}
