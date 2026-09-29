@@ -28,7 +28,8 @@ Records:
   - one pre-send release (l204 draw 6, attempt 1), retried once; its slot is `sent_with_response` with one pre-send attempt;
   - no unknown sends and no exhausted slots; not partial.
 - **Money:**
-  - reserved: 9,011,200 µUSD, which equals the authorization;
+  - committed, net: 9,011,200 µUSD, which equals the authorization. The 89 reservation rows total 9,113,600 µUSD gross; the one
+    release returned 102,400 µUSD, and nothing is open;
   - provider-reported usage: 108,480 input tokens, 44,886 output tokens and 0 cached;
   - priced at the frozen rates, that usage gives a ceiling of **944,490 µUSD**. That is an estimate, not a bill.
 - **Continuation:** no integrity stop and no operational pause. The authorization is spent in full; nothing further is authorized.
@@ -63,6 +64,10 @@ closer-unreachable.
 - **By family:** `lift_cell` 32 of 32, `threshold_unique` 16 of 16, `cell_value_neutral` 0 of 32 (refused or the negative control),
   `Row.s1_noninc` 0 of 8 (refused).
 - **Draw prefixes:** whole-validated grows by exactly six per draw, 6 at draw 1 through 48 at draw 8.
+
+**Reading.** Eight draws changed witness diversity (l070, l071) but never expanded proof coverage: the 48 whole-validated slots are the
+same six obligations at every draw, in two declaration families (`lift_cell`, `threshold_unique`). The learned arm's gain over the
+deterministic arm remains l096 and l099, where that arm never reached its backend. The two post-collection amendments qualify the result.
 
 ## Beside the deterministic arm
 
