@@ -1,0 +1,1 @@
+{"requests":[{"authorization_present":true,"authorization_sha256":"5e30d65779c5289fc9601aa4304ae6916eeafb64cdc2a867a96cba75f2f48118","body_sha256":"5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8","complete":true,"content_type":"application/json","declared_bytes":6042,"method":"POST","observed_bytes":6042,"path":"/v1/responses"}]}

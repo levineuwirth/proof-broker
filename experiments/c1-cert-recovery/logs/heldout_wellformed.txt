@@ -1,0 +1,6 @@
+H1_hyp_succ_form | EXIT=0 | 
+H2_coef_2p36 | EXIT=0 | 
+H3_two_large_coefs | EXIT=0 | 
+H4_mixed_small_large | EXIT=0 | 
+H5_false_2p19 | EXIT=1 | heldout/H5_false_2p19.omega.lean:22:2: error: omega could not prove the goal:
+H6_other_limb_width | EXIT=0 | 

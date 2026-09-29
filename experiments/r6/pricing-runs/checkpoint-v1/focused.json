@@ -1,0 +1,312 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "sources_locked",
+    "dated_model_fields",
+    "cache_surcharge_zero_not_free",
+    "nano_rounding_up",
+    "source_policy_admission",
+    "fresh_capture_new_receipt",
+    "wire_encoding_distinct",
+    "missing_source_before_ledger",
+    "stale_source_before_ledger",
+    "forged_source_extract",
+    "source_bytes_changed",
+    "semantic_source_changed",
+    "model_alias_rejected",
+    "exact_message_binding",
+    "missing_permit_before_connect",
+    "forged_permit_before_connect",
+    "wrong_amount_before_connect",
+    "expired_permit",
+    "durable_attempt_limit",
+    "campaign_attempt_limit",
+    "monetary_limit",
+    "input_limit",
+    "unknown_usage_not_zero",
+    "tls_primitives_reused",
+    "no_live_cli",
+    "duplicate_json_rejected",
+    "missing_case",
+    "duplicate_case"
+  ],
+  "check_count": 28,
+  "checks": [
+    {
+      "name": "sources_locked",
+      "passed": true,
+      "detail": {
+        "policy_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2"
+      }
+    },
+    {
+      "name": "dated_model_fields",
+      "passed": true,
+      "detail": {
+        "requested_id": "gpt-5.4-2026-03-05",
+        "inference_attested": false
+      }
+    },
+    {
+      "name": "cache_surcharge_zero_not_free",
+      "passed": true,
+      "detail": {
+        "additional_write_charge": 0,
+        "write_input_charge_nano_usd_per_token": 2500
+      }
+    },
+    {
+      "name": "nano_rounding_up",
+      "passed": true,
+      "detail": {
+        "one_input_token_micro_usd": 3,
+        "two_input_tokens_micro_usd": 5,
+        "reservation_micro_usd": 102400
+      }
+    },
+    {
+      "name": "source_policy_admission",
+      "passed": true,
+      "detail": {
+        "schema_version": "r6-pricing-admission-1",
+        "accepted": true,
+        "policy_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+        "request_sha256": "80e04cb5ee73f1599069af11241703e5e6f58305f35f9a4905d459fd6421136b",
+        "arguments_sha256": "a0631687e481206c38a14f4d0f706191cb1da0f4003c9a380664895cacc5d1e6",
+        "body_sha256": "394c4d36c91c8f5d9d47e2459ff4764ef8b9cb4d06b53d25ced28a93efb26f57",
+        "sources": {
+          "model": {
+            "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819",
+            "extract_sha256": "daa16b1f391816eba87b9daa7af57c1f4980cacc615c77ddd3bd1f0493ab0ee2",
+            "receipt_sha256": "76dc28f11506cd6dae068fc016da2e69144a48fc90a5b4afb7f08535c3c7fa11"
+          },
+          "caching": {
+            "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af",
+            "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+            "receipt_sha256": "facce4f91640c60a5fa87beedd4579eee54214ba6b634bfd6a2b0dc266432154"
+          }
+        },
+        "nano_usd_per_token": {
+          "input": 2500,
+          "cached_input": 250,
+          "output": 15000,
+          "cache_write": 2500
+        },
+        "reserved_micro_usd": 102400,
+        "message_utf8_bytes": 5203,
+        "evaluated_at_unix": 1788989035.6781368,
+        "billing_guarantee": false,
+        "evidence_scope": "local retained-source, clock and request consistency; no remote pricing or inference attestation"
+      }
+    },
+    {
+      "name": "fresh_capture_new_receipt",
+      "passed": true,
+      "detail": {
+        "changed_capture_identity": true,
+        "same_approved_content_admitted": true,
+        "scope": "synthetic receipt timestamps; not an actual refetch"
+      }
+    },
+    {
+      "name": "wire_encoding_distinct",
+      "passed": true,
+      "detail": {
+        "non_ascii_precondition": true,
+        "body_binding_matches_frozen_encoder": true,
+        "body_bytes": 6093,
+        "canonical_utf8_bytes": 6082
+      }
+    },
+    {
+      "name": "missing_source_before_ledger",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_source_population",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "stale_source_before_ledger",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_capture_stale",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "forged_source_extract",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_extract_binding",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "source_bytes_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_raw_drift_model",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "semantic_source_changed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_semantic_drift_model",
+        "unmutated_copy_passes": true,
+        "ledger_created": false
+      }
+    },
+    {
+      "name": "model_alias_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_request_options"
+      }
+    },
+    {
+      "name": "exact_message_binding",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_request_body_binding"
+      }
+    },
+    {
+      "name": "missing_permit_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_permit_passes": true,
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "failure_code": "pricing_permit_missing"
+      }
+    },
+    {
+      "name": "forged_permit_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_permit_passes": true,
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "failure_code": "pricing_permit_binding"
+      }
+    },
+    {
+      "name": "wrong_amount_before_connect",
+      "passed": true,
+      "detail": {
+        "unmutated_permit_passes": true,
+        "connection_calls": 0,
+        "credential_reads": 0,
+        "failure_code": "pricing_reservation_amount"
+      }
+    },
+    {
+      "name": "expired_permit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "pricing_permit_stale"
+      }
+    },
+    {
+      "name": "durable_attempt_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Request budget exhausted",
+        "ledger_unchanged": true
+      }
+    },
+    {
+      "name": "campaign_attempt_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "campaign_request_budget",
+        "ledger_unchanged": true
+      }
+    },
+    {
+      "name": "monetary_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Monetary reservation exhausted"
+      }
+    },
+    {
+      "name": "input_limit",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Messages exceed frozen byte admission"
+      }
+    },
+    {
+      "name": "unknown_usage_not_zero",
+      "passed": true,
+      "detail": {
+        "status": "unreported",
+        "cost_usd": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "cached_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "name": "tls_primitives_reused",
+      "passed": true,
+      "detail": {
+        "frozen_transport_sha256": "81af8d122159f63e1f20adacdbb8e135e2526e07a8e7df0665afb5c99d3e083c"
+      }
+    },
+    {
+      "name": "no_live_cli",
+      "passed": true,
+      "detail": {
+        "live_enabled": false,
+        "real_calls": 0
+      }
+    },
+    {
+      "name": "duplicate_json_rejected",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate_json_key"
+      }
+    },
+    {
+      "name": "missing_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "missing/extra cases: {'duplicate_case'}"
+      }
+    },
+    {
+      "name": "duplicate_case",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "duplicate case"
+      }
+    }
+  ]
+}

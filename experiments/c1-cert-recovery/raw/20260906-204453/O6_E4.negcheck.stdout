@@ -1,0 +1,211 @@
+{
+  "case": "O6_E4",
+  "ir_source": "ir/O6_E4.json",
+  "adapters": {
+    "z3": { "outcome": "cert", "tier": 1, "format": "farkas" },
+    "cvc5": { "outcome": "cert", "tier": 0, "format": "oracle" },
+    "cvc4": { "outcome": "cert", "tier": 0, "format": "oracle" }
+  },
+  "false_goal_check": {
+    "asserted": false,
+    "expectation": "not asserted for this case"
+  },
+  "corrupted_certificate": {
+    "status": "checked",
+    "genuine_cert_from": "z3",
+    "genuine_witness": {
+      "coefficients": [
+        { "hypothesis": "hsplit", "coefficient": "-1" },
+        { "hypothesis": "hBG", "coefficient": "68719476736" },
+        { "hypothesis": "hg1l", "coefficient": "262144" },
+        { "hypothesis": "neg_goal", "coefficient": "262144" },
+        { "hypothesis": "hG2w", "coefficient": "1" }
+      ]
+    },
+    "baseline_farkas_verify": "VERIFIED",
+    "baseline_cert_verify": "verified_farkas",
+    "mutation_target": {
+      "hypothesis": "hBG",
+      "coefficient": "68719476736",
+      "class": "has_variables",
+      "compiled": "Le(B + -_pb_atom_0 + 1)"
+    },
+    "witness_entry_classes": [
+      {
+        "hypothesis": "hsplit",
+        "coefficient": "-1",
+        "class": "has_variables",
+        "compiled": "Eq(-68719476736*_pb_atom_0 + _pb_atom_1)"
+      },
+      {
+        "hypothesis": "hBG",
+        "coefficient": "68719476736",
+        "class": "has_variables",
+        "compiled": "Le(B + -_pb_atom_0 + 1)"
+      },
+      {
+        "hypothesis": "hg1l",
+        "coefficient": "262144",
+        "class": "has_variables",
+        "compiled": "Le(g1l + -262143)"
+      },
+      {
+        "hypothesis": "neg_goal",
+        "coefficient": "262144",
+        "class": "has_variables",
+        "compiled": "Le(-262144*B + -g1l + 18446744069414584321)"
+      },
+      {
+        "hypothesis": "hG2w",
+        "coefficient": "1",
+        "class": "has_variables",
+        "compiled": "Le(_pb_atom_1 + -4611686018427387904)"
+      }
+    ],
+    "witness_mutations": [
+      {
+        "mutation": "coefficient_doubled",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hBG", "coefficient": "137438953472" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_off_by_one",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hBG", "coefficient": "68719476735" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_negated",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hBG", "coefficient": "-68719476736" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "negative_coefficient",
+        "cert_verify": "farkas_negative_coefficient",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_zeroed",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hBG", "coefficient": "0" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "hypothesis_renamed",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            {
+              "hypothesis": "no_such_hypothesis",
+              "coefficient": "68719476736"
+            },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "unknown_hypothesis",
+        "cert_verify": "farkas_unknown_hypothesis",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "term_dropped",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "not_contradictory",
+        "cert_verify": "farkas_not_contradictory",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "empty_witness",
+        "witness": { "coefficients": [] },
+        "expected": "rejected",
+        "farkas_verify": "malformed_witness",
+        "cert_verify": "farkas_malformed_witness",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      },
+      {
+        "mutation": "coefficient_garbage",
+        "witness": {
+          "coefficients": [
+            { "hypothesis": "hsplit", "coefficient": "-1" },
+            { "hypothesis": "hBG", "coefficient": "not-a-number" },
+            { "hypothesis": "hg1l", "coefficient": "262144" },
+            { "hypothesis": "neg_goal", "coefficient": "262144" },
+            { "hypothesis": "hG2w", "coefficient": "1" }
+          ]
+        },
+        "expected": "rejected",
+        "farkas_verify": "bad_coefficient",
+        "cert_verify": "farkas_bad_coefficient",
+        "agrees_with_oracle": true,
+        "kind": "invalid_mutation"
+      }
+    ],
+    "envelope_mutations": [
+      {
+        "mutation": "dispatch_context_hash_replaced",
+        "cert_verify": "hash_mismatch",
+        "rejected": true
+      },
+      {
+        "mutation": "rewrite_trace_hash_replaced",
+        "cert_verify": "hash_mismatch",
+        "rejected": true
+      }
+    ]
+  },
+  "gate": { "ok": true, "violations": [] }
+}

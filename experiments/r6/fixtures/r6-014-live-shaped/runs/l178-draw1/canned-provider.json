@@ -1,0 +1,4 @@
+{
+  "status": 200,
+  "body": "{\"error\":null,\"id\":\"r6_canned_response\",\"incomplete_details\":null,\"model\":\"gpt-5.4-2026-03-05\",\"object\":\"response\",\"output\":[{\"content\":[{\"annotations\":[],\"text\":\"{\\\"request_sha256\\\":\\\"e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674\\\",\\\"witness\\\":{\\\"coefficients\\\":[{\\\"coefficient\\\":\\\"1\\\",\\\"hypothesis\\\":\\\"this_1\\\"},{\\\"coefficient\\\":\\\"1\\\",\\\"hypothesis\\\":\\\"this\\\"},{\\\"coefficient\\\":\\\"1\\\",\\\"hypothesis\\\":\\\"neg_goal\\\"}]}}\\n\",\"type\":\"output_text\"}],\"id\":\"r6_message\",\"role\":\"assistant\",\"status\":\"completed\",\"type\":\"message\"}],\"service_tier\":\"default\",\"status\":\"completed\",\"usage\":{\"input_tokens\":11,\"input_tokens_details\":{\"cached_tokens\":2},\"output_tokens\":7,\"output_tokens_details\":{\"reasoning_tokens\":3},\"total_tokens\":18}}\n"
+}

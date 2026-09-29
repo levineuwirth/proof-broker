@@ -1,0 +1,16 @@
+{
+  "schema_version": "r6-publication-final-1",
+  "report_sha256": "cc5eb820f163fa1e532c4b98299db82c462116e12b9d6ff5dcef3f734b2b25f5",
+  "report_bytes": 114356,
+  "report_findings": 0,
+  "report_clean": true,
+  "canary_nonce_sha256": "16893061865ae224ce124e977967fd932d41ac9a544dee8b485af08e31d30bad",
+  "finalization_order": [
+    "artifacts",
+    "scan",
+    "scan_report",
+    "report_scan",
+    "terminal_event",
+    "seal"
+  ]
+}

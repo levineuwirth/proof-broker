@@ -1,0 +1,333 @@
+{
+  "runs": {
+    "rehearsal-1": {
+      "kind": "host",
+      "policy_sha256": "913b4081e02916c46d00c49719f69b1d7b2f4bac277aeb69036c4b1e8bc85bf9",
+      "source_lock_sha256": "d8a5fc119d4ecff74ca04d0c8001c9809ada026a96b15677c7ca86332f4dfa5e",
+      "receipt": {
+        "recorded_exact_receipt": false,
+        "audited_meaning": "digest-matched canary receipt at the loopback fixture"
+      }
+    },
+    "rehearsal-2": {
+      "kind": "actor",
+      "policy_sha256": "225945dac1718ae06cc59c7f865f3ec6302720e184dce67a01bb560424bc72da",
+      "source_lock_sha256": "fca9239407bb9cb1fa687e716de4acba81d973742dc0752e9d1004bab887ff06",
+      "accounting": {
+        "transmissions_started": 0,
+        "transmissions_returned": 0,
+        "priced_usage_ceiling_micro_usd": null,
+        "usage_status": "unreported"
+      },
+      "receipt": {
+        "recorded_exact_receipt": false,
+        "audited_meaning": "digest-matched canary receipt at the loopback fixture"
+      }
+    },
+    "rehearsal-3": {
+      "kind": "actor",
+      "policy_sha256": "79c0a4e32da0836cfd79af9314df27a2e7d4ce20ec06bd591063ae2d81e0318a",
+      "source_lock_sha256": "9f37cd4eaf60ad479dff86a37603e6678a8f6eccc1bad8973a826f114bb95387",
+      "accounting": {
+        "transmissions_started": 0,
+        "transmissions_returned": 0,
+        "priced_usage_ceiling_micro_usd": null,
+        "usage_status": "unreported"
+      },
+      "receipt": {
+        "recorded_exact_receipt": false,
+        "audited_meaning": "digest-matched canary receipt at the loopback fixture"
+      }
+    },
+    "rehearsal-4": {
+      "kind": "proof",
+      "policy_sha256": "632f63c7c3696c0fa71a11fd06ad47c7a38a524c0eb87b2fc574bca5f34b69bc",
+      "source_lock_sha256": "bf5d637bc5639fcc7619d5819c1d4f4c01ecda641e822f18a3df8151c151e0d9",
+      "accounting": {
+        "transmissions_started": 1,
+        "transmissions_returned": 1,
+        "priced_usage_ceiling_micro_usd": 133,
+        "usage_status": "provider_reported"
+      },
+      "receipt": {
+        "recorded_exact_receipt": true,
+        "audited_meaning": "digest-matched canary receipt at the loopback fixture"
+      },
+      "proof": {
+        "witness": {
+          "coefficients": [
+            {
+              "coefficient": "8",
+              "hypothesis": "hZ"
+            },
+            {
+              "coefficient": "4",
+              "hypothesis": "neg_goal"
+            },
+            {
+              "coefficient": "4",
+              "hypothesis": "hnum"
+            }
+          ]
+        },
+        "residual_terms": {},
+        "positive_constant": "4",
+        "output_text_parts": 2,
+        "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+        "provider_reported": {
+          "model": "gpt-5.4-2026-03-05",
+          "status": "completed",
+          "id": "r6_canned_response",
+          "service_tier": "default"
+        },
+        "attribution": {
+          "recovery_started": [
+            "canned_provider_response",
+            "responses_live_pilot_v1"
+          ],
+          "certificate_assembled": [
+            "canned_provider_response",
+            null
+          ],
+          "recovery_finished": [
+            "canned_provider_response",
+            "openai_responses_http_fixture_v1"
+          ]
+        }
+      }
+    },
+    "live-1": {
+      "kind": "unsealed",
+      "policy_sha256": "833035eb0d34b103aed7aad5f32cb519963b48d34040d2afb14e0739e36fa0ea",
+      "source_lock_sha256": "bf5d637bc5639fcc7619d5819c1d4f4c01ecda641e822f18a3df8151c151e0d9"
+    },
+    "live-2": {
+      "kind": "proof",
+      "policy_sha256": "833035eb0d34b103aed7aad5f32cb519963b48d34040d2afb14e0739e36fa0ea",
+      "source_lock_sha256": "bf5d637bc5639fcc7619d5819c1d4f4c01ecda641e822f18a3df8151c151e0d9",
+      "accounting": {
+        "transmissions_started": 1,
+        "transmissions_returned": 1,
+        "priced_usage_ceiling_micro_usd": 12403,
+        "usage_status": "provider_reported"
+      },
+      "receipt": {
+        "recorded_exact_receipt": true,
+        "audited_meaning": "non-401 provider status; not exact-credential receipt"
+      },
+      "proof": {
+        "witness": {
+          "coefficients": [
+            {
+              "hypothesis": "hwidth",
+              "coefficient": "1"
+            },
+            {
+              "hypothesis": "neg_goal",
+              "coefficient": "32769"
+            }
+          ]
+        },
+        "residual_terms": {},
+        "positive_constant": "604462909666027343249410",
+        "output_text_parts": 1,
+        "proof_export_sha256": "862f16b9d9efc5de246fc8aa8aa2278bfff5590fbc70dd6b8d42ab993ab25c27",
+        "provider_reported": {
+          "model": "gpt-5.4-2026-03-05",
+          "status": "completed",
+          "id": "resp_0b2a975277654315016aa686551a2087d183d6f8213a28c136",
+          "service_tier": "default"
+        },
+        "attribution": {
+          "recovery_started": [
+            "live_model_response",
+            "responses_live_pilot_v1"
+          ],
+          "certificate_assembled": [
+            "canned_provider_response",
+            null
+          ],
+          "recovery_finished": [
+            "canned_provider_response",
+            "openai_responses_http_fixture_v1"
+          ]
+        }
+      }
+    }
+  },
+  "campaign": {
+    "signed_policy_sha256": "833035eb0d34b103aed7aad5f32cb519963b48d34040d2afb14e0739e36fa0ea",
+    "maximum_attempts": 1,
+    "ceiling_micro_usd": 102400,
+    "transmissions_started": {
+      "live-1": 0,
+      "live-2": 1
+    },
+    "reservations_micro_usd": {
+      "live-1": 102400,
+      "live-2": 102400
+    },
+    "reserved_total_micro_usd": 204800,
+    "reserved_total_exceeds_ceiling": true,
+    "guard_scope": "per-run-directory ledger; the ceiling bounded each directory, not the authorization (documented defect)"
+  },
+  "live-1_inventory": {
+    "files_compared": 193,
+    "mode": "full_historical"
+  },
+  "operator_scan": {
+    "supplied": true,
+    "files_scanned": 43108,
+    "pilot_files_present": 1329,
+    "scanned_bytes_bound_to_tree": true,
+    "scanned_but_absent": [],
+    "scope": "operator assertion with digest commitment; the secret-dependent search is not repeated here"
+  },
+  "accepted": true,
+  "cases": {
+    "population:exactly_six_runs": true,
+    "population:no_stray_entries": true,
+    "modules:bound_to_live_retained_copies": true,
+    "task:manifest_bound": true,
+    "rehearsal-1:versions:policy_lock_sources_bound": true,
+    "rehearsal-1:versions:runtime_bound": true,
+    "rehearsal-1:chain:valid": true,
+    "rehearsal-1:chain:expected_sequence": true,
+    "rehearsal-1:request:regenerated": true,
+    "rehearsal-1:request:arguments_regenerated": true,
+    "rehearsal-1:pricing:host_admission_rederived": true,
+    "rehearsal-1:seal:retained_hashes": true,
+    "rehearsal-1:seal:chain_bound": true,
+    "rehearsal-1:seal:outcome_recorded": true,
+    "rehearsal-1:credential_receipt:recorded": true,
+    "rehearsal-2:versions:policy_lock_sources_bound": true,
+    "rehearsal-2:versions:runtime_bound": true,
+    "rehearsal-2:chain:valid": true,
+    "rehearsal-2:chain:expected_sequence": true,
+    "rehearsal-2:request:regenerated": true,
+    "rehearsal-2:request:arguments_regenerated": true,
+    "rehearsal-2:pricing:host_admission_rederived": true,
+    "rehearsal-2:seal:retained_hashes": true,
+    "rehearsal-2:seal:chain_bound": true,
+    "rehearsal-2:seal:outcome_recorded": true,
+    "rehearsal-2:ledger:consistent": true,
+    "rehearsal-2:pricing:actor_admission_rederived": true,
+    "rehearsal-2:transport:record_consistent": true,
+    "rehearsal-2:transport:local_send_equals_serialized": true,
+    "rehearsal-2:transport:endpoint_and_ca_bound": true,
+    "rehearsal-2:transport:failure_recorded": true,
+    "rehearsal-2:interpretation:reproduced": true,
+    "rehearsal-2:accounting:recomputed": true,
+    "rehearsal-2:credential_receipt:recorded": true,
+    "rehearsal-3:versions:policy_lock_sources_bound": true,
+    "rehearsal-3:versions:runtime_bound": true,
+    "rehearsal-3:chain:valid": true,
+    "rehearsal-3:chain:expected_sequence": true,
+    "rehearsal-3:request:regenerated": true,
+    "rehearsal-3:request:arguments_regenerated": true,
+    "rehearsal-3:pricing:host_admission_rederived": true,
+    "rehearsal-3:seal:retained_hashes": true,
+    "rehearsal-3:seal:chain_bound": true,
+    "rehearsal-3:seal:outcome_recorded": true,
+    "rehearsal-3:ledger:consistent": true,
+    "rehearsal-3:pricing:actor_admission_rederived": true,
+    "rehearsal-3:transport:record_consistent": true,
+    "rehearsal-3:transport:local_send_equals_serialized": true,
+    "rehearsal-3:transport:endpoint_and_ca_bound": true,
+    "rehearsal-3:transport:failure_recorded": true,
+    "rehearsal-3:interpretation:reproduced": true,
+    "rehearsal-3:accounting:recomputed": true,
+    "rehearsal-3:credential_receipt:recorded": true,
+    "rehearsal-4:versions:policy_lock_sources_bound": true,
+    "rehearsal-4:versions:runtime_bound": true,
+    "rehearsal-4:chain:valid": true,
+    "rehearsal-4:chain:expected_sequence": true,
+    "rehearsal-4:request:regenerated": true,
+    "rehearsal-4:request:arguments_regenerated": true,
+    "rehearsal-4:pricing:host_admission_rederived": true,
+    "rehearsal-4:seal:retained_hashes": true,
+    "rehearsal-4:seal:chain_bound": true,
+    "rehearsal-4:seal:outcome_recorded": true,
+    "rehearsal-4:ledger:consistent": true,
+    "rehearsal-4:pricing:actor_admission_rederived": true,
+    "rehearsal-4:transport:record_consistent": true,
+    "rehearsal-4:transport:local_send_equals_serialized": true,
+    "rehearsal-4:transport:endpoint_and_ca_bound": true,
+    "rehearsal-4:transport:remote_receipt": true,
+    "rehearsal-4:interpretation:reproduced": true,
+    "rehearsal-4:accounting:recomputed": true,
+    "rehearsal-4:credential_receipt:recorded": true,
+    "rehearsal-4:proof:response_bound": true,
+    "rehearsal-4:proof:witness_contradiction": true,
+    "rehearsal-4:proof:certificate_bound": true,
+    "rehearsal-4:proof:attribution_audited": true,
+    "rehearsal-4:proof:shared_checker": true,
+    "rehearsal-4:proof:export_expected": true,
+    "rehearsal-4:provider:reported_fields": true,
+    "live-1:versions:policy_lock_sources_bound": true,
+    "live-1:versions:runtime_bound": true,
+    "live-1:chain:valid": true,
+    "live-1:chain:expected_sequence": true,
+    "live-1:request:regenerated": true,
+    "live-1:request:arguments_regenerated": true,
+    "live-1:pricing:host_admission_rederived": true,
+    "live-1:unsealed:no_terminal_event": true,
+    "live-1:unsealed:no_connection": true,
+    "live-1:unsealed:stderr_names_credential_format": true,
+    "live-1:ledger:consistent": true,
+    "live-1:pricing:actor_admission_rederived": true,
+    "live-1:live:duplicate_receipts_audited": true,
+    "live-2:versions:policy_lock_sources_bound": true,
+    "live-2:versions:runtime_bound": true,
+    "live-2:chain:valid": true,
+    "live-2:chain:expected_sequence": true,
+    "live-2:request:regenerated": true,
+    "live-2:request:arguments_regenerated": true,
+    "live-2:pricing:host_admission_rederived": true,
+    "live-2:seal:retained_hashes": true,
+    "live-2:seal:chain_bound": true,
+    "live-2:seal:outcome_recorded": true,
+    "live-2:ledger:consistent": true,
+    "live-2:pricing:actor_admission_rederived": true,
+    "live-2:transport:record_consistent": true,
+    "live-2:transport:local_send_equals_serialized": true,
+    "live-2:transport:endpoint_and_ca_bound": true,
+    "live-2:transport:remote_receipt": true,
+    "live-2:live:tls_verified_before_send": true,
+    "live-2:live:duplicate_receipts_audited": true,
+    "live-2:interpretation:reproduced": true,
+    "live-2:accounting:recomputed": true,
+    "live-2:credential_receipt:recorded": true,
+    "live-2:proof:response_bound": true,
+    "live-2:proof:witness_contradiction": true,
+    "live-2:proof:certificate_bound": true,
+    "live-2:proof:attribution_audited": true,
+    "live-2:proof:shared_checker": true,
+    "live-2:proof:export_expected": true,
+    "live-2:provider:reported_fields": true,
+    "campaign:one_transmission_under_signed_authorization": true,
+    "campaign:reservations_recorded": true,
+    "live-1:inventory_bound": true,
+    "operator_scan:consistent": true
+  },
+  "case_count": 124,
+  "module_sha256": {
+    "credential": "a501d8ff28eea7536b04afc360c5b081310ec9b51fa7a4dd13675ff7f32b7163",
+    "envelope_proof_audit": "ccd9b82881167affc17a6104c713c574207e1181d2093bb46d2c73600eeb3644",
+    "episode": "c85914f79944c4eb28e1f711af14895f950491c6070ab1a221c41c49228cb05d",
+    "events": "875332d592bc98059a002f4124a045d4a7b278260a63013c431634d882d925af",
+    "payload": "ac1f594e6be800728b07cceb154b672046a70f1b0c57cf3cb625e6a06254b473",
+    "pilot_budget": "129517581a90ad195c1ca0bbfff7bd1749bef7616b59824393fee416960baa71",
+    "pilot_contract": "5dbb0bd71081f5fc884ae8c0fa82b448d39e16959328d4a4fefea14ab6949113",
+    "priced_payload_v2": "3438298dbcd969900421ea8d3bc27d5df86c7b7af490c0c99eba53c29b8e57be",
+    "pricing_gate_v2": "19199a6a4c54fd5a24f3b5ccc44320dbe211ab2421278dd6f4d7afc10a4097eb",
+    "provider_payload": "caa57b356dda9218085e741e2e806d590d8b6cbf4d94ff9f7044149d14b8c6e1",
+    "run": "8623dac7ac68f416b95ee91391c7019192655843fa9454865c9959314a3c77a4"
+  },
+  "task_manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "retained_only": false,
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "program_sha256": "313c1b26457631469aa2de4d56320cdfbb9f48f9e235f4f04980a98c3b92cb2a",
+  "scope": "historical audit over retained bytes; no native execution, verifier run or inference"
+}

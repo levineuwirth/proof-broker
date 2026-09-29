@@ -8,7 +8,12 @@
     * Returns [Search_exhausted] on a satisfiable IR.
     * Returns [No_compilable_inputs] when no hypothesis (and no
       neg_goal) compiles to a Farkas-amenable form.
-    * Pinned bound: [bound = 0] never finds anything. *)
+    * Pinned bound: [bound = 0] never finds anything.
+
+    EXACT RECOVERY (R6 checkpoint 2) — the additive stage that solves for the
+    multipliers instead of enumerating them. Its own group below covers what
+    it finds, what it refuses, and that it changes nothing the enumerating
+    search already did. *)
 
 open Proof_broker
 
@@ -502,6 +507,209 @@ let test_streaming_preserves_witness () =
       {|{"coefficients":[{"hypothesis":"h1","coefficient":"1"},{"hypothesis":"h3","coefficient":"1"},{"hypothesis":"neg_goal","coefficient":"1"}]}|}
       (Yojson.Safe.to_string witness)
 
+
+(* ===================================================================== *)
+(* Exact recovery                                                        *)
+(* ===================================================================== *)
+
+let num v : Ir.shell_term = Num_lit { value = v; ty = "Int" }
+let rnum v : Ir.shell_term = Num_lit { value = v; ty = "Real" }
+let v n : Ir.shell_term = Var { name = n }
+let le a b : Ir.shell_term = App { symbol = "LE.le"; type_args = []; args = [ a; b ] }
+let lt a b : Ir.shell_term = App { symbol = "LT.lt"; type_args = []; args = [ a; b ] }
+let mul a b : Ir.shell_term = App { symbol = "HMul.hMul"; type_args = []; args = [ a; b ] }
+let add a b : Ir.shell_term = App { symbol = "HAdd.hAdd"; type_args = []; args = [ a; b ] }
+let hyp name shell : Ir.hypothesis = { name; shell }
+let fv ?(ty = "Int") n : Ir.free_var = { name = n; ty }
+
+let expect_ok what r =
+  match r with
+  | Ok w -> w
+  | Error e ->
+    Alcotest.fail (Printf.sprintf "%s: expected a witness, got %s (%s)"
+                     what (Farkas_search.kind_of_error e)
+                     (Farkas_search.detail_of_error e))
+
+let expect_error_kind what kind r =
+  match r with
+  | Ok w ->
+    Alcotest.fail (Printf.sprintf "%s: expected %s, got a witness %s"
+                     what kind (Yojson.Safe.to_string w))
+  | Error e ->
+    Alcotest.(check string) (what ^ ": error kind") kind
+      (Farkas_search.kind_of_error e)
+
+(* The RMSNorm carry-stage shape, minimized: `262144 * x < P` under
+   `x < 2^42`. The witness needs a multiplier of 262144, five orders of
+   magnitude above the enumeration bound, so only exact recovery reaches it —
+   this is the obligation the whole R6 line of work is about. *)
+let big_multiplier_ir () =
+  mk_ir
+    ~free_vars:[ fv "x" ]
+    ~hypotheses:[
+      hyp "hhi" (le (v "x") (num "4398046511103"));
+      hyp "hnn" (le (num "0") (v "x"));
+    ]
+    (le (mul (num "262144") (v "x")) (num "18446744069414584320"))
+
+let test_exact_finds_large_multiplier () =
+  let ir = big_multiplier_ir () in
+  expect_error_kind "bounded enumeration" "search_exhausted"
+    (Farkas_search.try_close ir);
+  let w = expect_ok "exact recovery" (Farkas_search.try_close_exact ir) in
+  (match Farkas.verify ir w with
+   | Farkas.Verified -> ()
+   | other ->
+     Alcotest.fail (Printf.sprintf "witness did not verify: %s"
+                      (match other with
+                       | Farkas.Not_contradictory { residual } ->
+                         "not_contradictory " ^ residual
+                       | _ -> "other")));
+  (* and the multiplier really is the large one, not something the
+     enumeration could have guessed *)
+  let s = Yojson.Safe.to_string w in
+  Alcotest.(check bool) "witness carries the 262144 multiplier" true
+    (let re = Str.regexp_string "262144" in
+     try ignore (Str.search_forward re s 0); true with Not_found -> false)
+
+(* A witness that needs a NEGATIVE multiplier on an equality: `2x = 1` with
+   `0 <= x <= 0`. Exercises the +/- column split; a split that dropped the
+   negative half would find nothing here. *)
+let test_exact_negative_equality_multiplier () =
+  let ir = mk_ir
+    ~logic:lra_logic
+    ~free_vars:[ fv ~ty:"Real" "x" ]
+    ~hypotheses:[
+      hyp "hle" (le (v "x") (rnum "0"));
+      hyp "hge" (le (rnum "0") (v "x"));
+      hyp "heq" (Eq { ty = "Real"; left = mul (rnum "2") (v "x");
+                      right = rnum "1" });
+    ]
+    (Const { name = "False" })
+  in
+  let w = expect_ok "exact recovery" (Farkas_search.try_close_exact ir) in
+  Alcotest.(check bool) "witness verifies" true
+    (Farkas.verify ir w = Farkas.Verified);
+  Alcotest.(check bool) "a negative coefficient is present" true
+    (let s = Yojson.Safe.to_string w in
+     let re = Str.regexp_string "\"-" in
+     try ignore (Str.search_forward re s 0); true with Not_found -> false)
+
+(* LRA's OTHER acceptance rule: a zero constant residual is contradictory when
+   a STRICT input carries a positive multiplier. A positive-constant-only
+   implementation would regress this. *)
+let test_exact_lra_strict_zero_residual () =
+  let ir = mk_ir
+    ~logic:lra_logic
+    ~free_vars:[ fv ~ty:"Real" "x" ]
+    ~hypotheses:[
+      hyp "hlt" (lt (v "x") (rnum "0"));
+      hyp "hge" (le (rnum "0") (v "x"));
+    ]
+    (Const { name = "False" })
+  in
+  let w = expect_ok "exact recovery" (Farkas_search.try_close_exact ir) in
+  Alcotest.(check bool) "witness verifies" true
+    (Farkas.verify ir w = Farkas.Verified)
+
+(* Refusal boundary 1: support. A chain forces every one of six inputs into
+   the witness, above [max_exact_support]. *)
+let test_exact_refuses_above_support_bound () =
+  let chain = mk_ir
+    ~free_vars:(List.init 5 (fun i -> fv (Printf.sprintf "x%d" i)))
+    ~hypotheses:[
+      hyp "h1" (le (v "x0") (v "x1"));
+      hyp "h2" (le (v "x1") (v "x2"));
+      hyp "h3" (le (v "x2") (v "x3"));
+      hyp "h4" (le (v "x3") (v "x4"));
+      hyp "h5" (le (mul (num "7") (v "x4")) (num "6"));
+      hyp "h6" (le (num "1") (v "x0"));
+    ]
+    (Const { name = "False" })
+  in
+  expect_error_kind "exact recovery" "exact_search_exhausted"
+    (Farkas_search.try_close_exact chain)
+
+(* Refusal boundary 2: the size of the support space. 48 columns is the first
+   count above [max_exact_supports]; 47 is admitted. Also the regression for
+   the overflow that made [support_count] return a NEGATIVE number, which then
+   passed the admission check and let the search run uncapped. *)
+let test_support_count_saturates_without_overflow () =
+  List.iter (fun n ->
+    let c = Farkas_search.support_count n in
+    Alcotest.(check bool)
+      (Printf.sprintf "support_count %d is non-negative" n) true (c >= 0);
+    Alcotest.(check bool)
+      (Printf.sprintf "support_count %d saturates" n) true
+      (c <= Farkas_search.max_exact_supports + 1))
+    [ 0; 1; 4; 47; 48; 1_000; 80_000; 1_000_000; max_int / 2 ];
+  Alcotest.(check bool) "47 columns is admitted" true
+    (Farkas_search.support_count 47 <= Farkas_search.max_exact_supports);
+  Alcotest.(check bool) "48 columns is refused" true
+    (Farkas_search.support_count 48 > Farkas_search.max_exact_supports)
+
+let test_exact_refuses_above_space_cap () =
+  let n = 60 in
+  let ir = mk_ir
+    ~free_vars:(List.init n (fun i -> fv (Printf.sprintf "x%d" i)))
+    ~hypotheses:(List.init n (fun i ->
+      hyp (Printf.sprintf "h%d" i)
+        (le (num (string_of_int (- i))) (v (Printf.sprintf "x%d" i)))))
+    (Const { name = "False" })
+  in
+  expect_error_kind "exact recovery" "exact_search_space_exceeded"
+    (Farkas_search.try_close_exact ir)
+
+(* Refusal boundary 3: WORK. Under the space cap but with wide rows — each
+   form a sum of 40 variables — so the per-support matrices are large. The
+   support cap alone does not bound this; [max_exact_work] does. *)
+let test_exact_refuses_above_work_cap () =
+  let width = 40 in
+  let body =
+    let rec go j acc =
+      if j >= width then acc
+      else go (j + 1) (add acc (v (Printf.sprintf "x%d" j)))
+    in
+    go 1 (v "x0")
+  in
+  let n = 40 in
+  let ir = mk_ir
+    ~free_vars:(List.init width (fun i -> fv (Printf.sprintf "x%d" i)))
+    ~hypotheses:(List.init n (fun i ->
+      hyp (Printf.sprintf "h%d" i) (le (num (string_of_int (- i))) body)))
+    (Const { name = "False" })
+  in
+  Alcotest.(check bool) "the space cap alone admits this IR" true
+    (Farkas_search.support_count n <= Farkas_search.max_exact_supports);
+  let t0 = Unix.gettimeofday () in
+  expect_error_kind "exact recovery" "exact_search_work_exceeded"
+    (Farkas_search.try_close_exact ir);
+  let ms = (Unix.gettimeofday () -. t0) *. 1000. in
+  Alcotest.(check bool)
+    (Printf.sprintf "refusal is prompt (%.0f ms)" ms) true (ms < 3000.)
+
+(* Additivity: where the enumerating search succeeds, [try_close_then_exact]
+   returns ITS witness, byte for byte. This is the property that makes the
+   change safe — no witness the old code produced can change. *)
+let test_then_exact_preserves_enumerated_witness () =
+  List.iter (fun (name, ir) ->
+    match Farkas_search.try_close ir with
+    | Error e ->
+      Alcotest.fail (Printf.sprintf "%s: enumeration should close this (%s)"
+                       name (Farkas_search.kind_of_error e))
+    | Ok w ->
+      let w' = expect_ok name (Farkas_search.try_close_then_exact ir) in
+      Alcotest.(check string) (name ^ ": witness unchanged")
+        (Yojson.Safe.to_string w) (Yojson.Safe.to_string w'))
+    [ "example1", example1_like_ir () ]
+
+(* And where it fails, the exact stage is reached. *)
+let test_then_exact_falls_through_to_exact () =
+  let ir = big_multiplier_ir () in
+  let w = expect_ok "then_exact" (Farkas_search.try_close_then_exact ir) in
+  Alcotest.(check bool) "witness verifies" true
+    (Farkas.verify ir w = Farkas.Verified)
+
 let () =
   Alcotest.run "farkas_search" [
     "close", [
@@ -531,5 +739,25 @@ let () =
         `Quick test_streaming_order_matches_cartesian;
       Alcotest.test_case "streaming preserves the first-hit witness"
         `Quick test_streaming_preserves_witness;
+    ];
+    "exact", [
+      Alcotest.test_case "finds a witness the enumeration cannot reach"
+        `Quick test_exact_finds_large_multiplier;
+      Alcotest.test_case "negative multiplier on an equality"
+        `Quick test_exact_negative_equality_multiplier;
+      Alcotest.test_case "LRA strict, zero constant residual"
+        `Quick test_exact_lra_strict_zero_residual;
+      Alcotest.test_case "refuses above the support bound"
+        `Quick test_exact_refuses_above_support_bound;
+      Alcotest.test_case "support_count saturates, never overflows"
+        `Quick test_support_count_saturates_without_overflow;
+      Alcotest.test_case "refuses above the support-space cap"
+        `Quick test_exact_refuses_above_space_cap;
+      Alcotest.test_case "refuses above the work cap, promptly"
+        `Quick test_exact_refuses_above_work_cap;
+      Alcotest.test_case "then_exact keeps the enumerated witness"
+        `Quick test_then_exact_preserves_enumerated_witness;
+      Alcotest.test_case "then_exact reaches the exact stage"
+        `Quick test_then_exact_falls_through_to_exact;
     ];
   ]

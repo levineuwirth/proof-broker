@@ -1,0 +1,34 @@
+{
+  "schema_version": "r6-014-capture-admission-1",
+  "capture": "sources/pricing-approved-campaign-4",
+  "tool": "pricing_capture_v2.py",
+  "sources": {
+    "model": {
+      "raw_sha256": "0e88bcc51004a2360062cb9eea8f737a6bd789d38e3e069f50045093f2109aae",
+      "extract_sha256": "90fba6364cc9ddde98f38c9022cc8ff5e1176050ed7cf217e2d644895876a344",
+      "finished_unix": 1790239754.199559
+    },
+    "caching": {
+      "raw_sha256": "40f28bcd3a579769a43e117ab357d0b41a492613c80c535135c11c8d61b24503",
+      "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+      "finished_unix": 1790239754.50756
+    }
+  },
+  "admission_review": {
+    "rates_identical_to_previous": true,
+    "semantic_fields_identical": true,
+    "differing_extract_fields": {
+      "model": [
+        "snapshot_section"
+      ],
+      "caching": []
+    },
+    "model_extract_identical_to_previous": false,
+    "caching_extract_identical_to_previous": true
+  },
+  "maximum_source_age_seconds": 86400,
+  "admissible_until_unix": 1790326154.199559,
+  "sandbox_signature": "production freeze/sign on isolated temporary policy and ledgers at the real time, with the recorded scope values: accepted",
+  "scope": "public documentation pages fetched without credentials; admission by the production review; not a signature and not a price guarantee",
+  "admissible_until_utc": "2026-09-25T08:49:14.199559+00:00"
+}

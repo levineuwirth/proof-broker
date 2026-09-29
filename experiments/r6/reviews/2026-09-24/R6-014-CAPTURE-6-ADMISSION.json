@@ -1,0 +1,43 @@
+{
+  "schema_version": "r6-014-capture-admission-1",
+  "capture": "sources/pricing-approved-campaign-6",
+  "tool": "pricing_capture_v2.py",
+  "sources": {
+    "model": {
+      "raw_sha256": "677b33adc8fd55d44c82dd8be31ab7707fa0821f6f7c1d2535d28689f84b4bfe",
+      "extract_sha256": "90fba6364cc9ddde98f38c9022cc8ff5e1176050ed7cf217e2d644895876a344",
+      "finished_unix": 1790626417.806683
+    },
+    "caching": {
+      "raw_sha256": "bb9b6dfc8015dd0120cbaab8585cc8072931ac39f0c77b1d083854bd4fa744d0",
+      "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+      "finished_unix": 1790626419.893311
+    }
+  },
+  "admission_review": {
+    "rates_identical_to_previous": true,
+    "semantic_fields_identical": true,
+    "differing_extract_fields": {
+      "model": [
+        "snapshot_section"
+      ],
+      "caching": []
+    },
+    "model_extract_identical_to_previous": false,
+    "caching_extract_identical_to_previous": true
+  },
+  "freshness_checked_at_unix": 1790626437.9136856,
+  "maximum_source_age_seconds": 86400,
+  "admissible_until_unix": 1790712817.806683,
+  "admissible_until_utc": "2026-09-29T20:13:37.806683+00:00",
+  "sandbox_revision": {
+    "revision": 3,
+    "same_authority_schedule_money": true,
+    "transmissions": 88,
+    "consumed_preserved": 11,
+    "committed_preserved": 1126400,
+    "production_unchanged": true
+  },
+  "reason": "pricing refresh: capture 6 replaces the expired capture 5 (block 2 collection deferred by the operator)",
+  "scope": "public documentation pages fetched without credentials; admission by the production review; sandbox revise on copies of the production authority; not a revision"
+}

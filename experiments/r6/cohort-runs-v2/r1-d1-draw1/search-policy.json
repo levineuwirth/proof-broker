@@ -1,0 +1,15 @@
+{
+  "name": "farkas_cohort_v2",
+  "mode": "rehearsal",
+  "task_id": "verinf-d1-70",
+  "draw": 1,
+  "config_sha256": "a36f3b51a94f00d6a7a067cd26fe9a979b36776ab6e6b16bbf39dc88b01c0328",
+  "contract_sha256": "84d9289abf8c6c0df3cb3282e5c46826450ee6645a54981e76a91c228c43fe90",
+  "campaign_id": "d6d6644d4f924e1aae9a3c5b44fd3d86",
+  "revision": 1,
+  "source_lock_sha256": "51cd98fc3f30fa551e041bb449d963c2bbacf3c60b9dce82afaacee85571bc4b",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "ledger_path": "ledgers/campaigns/d6d6644d4f924e1aae9a3c5b44fd3d86/rehearsal/ledger.ndjson",
+  "ledger_slots": "ledgers/campaigns/d6d6644d4f924e1aae9a3c5b44fd3d86/rehearsal/slots",
+  "ledger_scope": "rehearsal ledger; never funds a transmission"
+}

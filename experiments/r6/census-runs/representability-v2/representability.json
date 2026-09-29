@@ -1,0 +1,1122 @@
+{
+  "schema_version": "r6-representability-2",
+  "population": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "denominator": 15,
+  "classes": {
+    "preparation_failed": [],
+    "interface_refused": [
+      "bracket-l098",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l180"
+    ],
+    "ambiguous_reference": [
+      "bracket-l178"
+    ],
+    "policy_c_refused": [],
+    "posable_negative_control": [
+      "bracket-l170"
+    ],
+    "posable_certificate": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l166",
+      "bracket-l175",
+      "bracket-l204"
+    ]
+  },
+  "results": [
+    {
+      "site_id": "bracket-l069",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_input_premise_formula",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 18,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hx",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "hz",
+          "coefficient": "1"
+        },
+        {
+          "index": 17,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 3,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "616720887114cc45cbf3e43a318a85e50f4db1b85b7fca4c410bbfd3b20f3aa8",
+        "final_ir_sha256": "363a738900721affb5ded032d4a4f9d346542d3a095e8298c5756fed28e4ed11"
+      },
+      "seconds": 7.4
+    },
+    {
+      "site_id": "bracket-l070",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_direct_target",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 19,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 3,
+          "name": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "index": 18,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "0b52df9dcf87fd0ecade553e9512af0975b0f507a265b668169231fc746f7558",
+        "final_ir_sha256": "7a57f310cbc5dce20a2e56fdb6bb5bce4e16935bdaaf348a6a900fbfbb32d794"
+      },
+      "seconds": 7.1
+    },
+    {
+      "site_id": "bracket-l071",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_target_family",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 20,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "hle",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hx",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "hz",
+          "coefficient": "1"
+        },
+        {
+          "index": 3,
+          "name": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "index": 19,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "840dabdaf23cc0fb43a02cd2fb9755b6243f63baec5b61814eefbad9d07af297",
+        "final_ir_sha256": "647529381623d1c3e9cceee7dcb290bfb0577bbfeb9bbf5fc666ce45f9913412"
+      },
+      "seconds": 7.1
+    },
+    {
+      "site_id": "bracket-l078",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_target_family",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 20,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hxz",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "_pb_nonneg_atom_6",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5",
+        "_pb_atom_6"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hx",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "hz",
+          "coefficient": "1"
+        },
+        {
+          "index": 6,
+          "name": "hprod_le",
+          "coefficient": "1"
+        },
+        {
+          "index": 19,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hprod_le",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "ebdfdfb086199f109144ed4fc552f09df7f66c267ae3237bbbedfb82fc2c5cae",
+        "final_ir_sha256": "848afd081f857d5d817ca68bd7e602a732e84a47958e5497ca989fa013f8b3f6"
+      },
+      "seconds": 7.3
+    },
+    {
+      "site_id": "bracket-l096",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "UF",
+      "row_count": 2,
+      "row_names": [
+        "hlt",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "c",
+        "c'"
+      ],
+      "reifier_data_locals": [],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hf",
+        "h1",
+        "h2",
+        "h1'",
+        "h2'",
+        "hne"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "not_lia",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "UF",
+        "omitted": [
+          {
+            "name": "hf",
+            "reason": "Unsupported proposition in arithmetic projection"
+          },
+          {
+            "name": "h1",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h1'",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2'",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "hne",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hf",
+          "h1",
+          "h2",
+          "h1'",
+          "h2'",
+          "hne"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "9ae711eb55a34b9e009996552e3e15a71c472f9f04f727014a1b7382a4909d73",
+        "final_ir_sha256": "9ae711eb55a34b9e009996552e3e15a71c472f9f04f727014a1b7382a4909d73"
+      },
+      "seconds": 7.2
+    },
+    {
+      "site_id": "bracket-l098",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v2/bracket-l098/stages/pipeline-prepare",
+      "seconds": 7.3
+    },
+    {
+      "site_id": "bracket-l099",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "UF",
+      "row_count": 2,
+      "row_names": [
+        "hgt",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "c",
+        "c'"
+      ],
+      "reifier_data_locals": [],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hf",
+        "h1",
+        "h2",
+        "h1'",
+        "h2'",
+        "hne"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "not_lia",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hgt",
+          "coefficient": "1"
+        },
+        {
+          "index": 1,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hgt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "UF",
+        "omitted": [
+          {
+            "name": "hf",
+            "reason": "Unsupported proposition in arithmetic projection"
+          },
+          {
+            "name": "h1",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h1'",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "h2'",
+            "reason": "Unsupported arithmetic arity"
+          },
+          {
+            "name": "hne",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hf",
+          "h1",
+          "h2",
+          "h1'",
+          "h2'",
+          "hne"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "3c5903da01e546965d74574cd1c4da2c5735941a420494c9d2b748e7a1730846",
+        "final_ir_sha256": "3c5903da01e546965d74574cd1c4da2c5735941a420494c9d2b748e7a1730846"
+      },
+      "seconds": 7.3
+    },
+    {
+      "site_id": "bracket-l101",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v2/bracket-l101/stages/pipeline-prepare",
+      "seconds": 7.3
+    },
+    {
+      "site_id": "bracket-l158",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v2/bracket-l158/stages/pipeline-prepare",
+      "seconds": 7.2
+    },
+    {
+      "site_id": "bracket-l166",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 10,
+      "row_names": [
+        "hz0",
+        "hz",
+        "hZpos",
+        "hzh0",
+        "hv",
+        "hrec",
+        "hlt",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "v0",
+        "z"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "projection_unsupported",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 6,
+          "name": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "index": 9,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "af237ce0e7fa0f4615426e8c8ee923c24077a90c5f0408b5f65310728c314d47",
+        "final_ir_sha256": "af237ce0e7fa0f4615426e8c8ee923c24077a90c5f0408b5f65310728c314d47"
+      },
+      "seconds": 7.2
+    },
+    {
+      "site_id": "bracket-l170",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_negative_control",
+      "fragment": "LIA",
+      "row_count": 9,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "farkas_omissions",
+      "arithmetic_certificate": false,
+      "feasible_point": {
+        "Zmax": "1",
+        "_pb_iatom_0": "-1",
+        "v": "0",
+        "v0": "0",
+        "z": "1",
+        "zhigh": "0"
+      },
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [
+          {
+            "name": "hzh",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hzh"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "54571a6841d4f06e2b920b3858dbd8a1465e17e1cd1ffb89c148b2707c3f8dab",
+        "final_ir_sha256": "54571a6841d4f06e2b920b3858dbd8a1465e17e1cd1ffb89c148b2707c3f8dab"
+      },
+      "seconds": 7.3
+    },
+    {
+      "site_id": "bracket-l175",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 11,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "hzh1",
+        "this",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "farkas_omissions",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 1,
+          "name": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "index": 2,
+          "name": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "index": 7,
+          "name": "this",
+          "coefficient": "1"
+        },
+        {
+          "index": 10,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [
+          {
+            "name": "hzh",
+            "reason": "Unsupported proposition in arithmetic projection"
+          }
+        ],
+        "omitted_names": [
+          "hzh"
+        ],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "fe73ebd12553ea73cf5298f3a4f0d2e2411159808ff2fb123220951c688c49e7",
+        "final_ir_sha256": "fe73ebd12553ea73cf5298f3a4f0d2e2411159808ff2fb123220951c688c49e7"
+      },
+      "seconds": 7.3
+    },
+    {
+      "site_id": "bracket-l178",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "ambiguous_reference",
+      "fragment": "LIA",
+      "row_count": 12,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "hzh1",
+        "this",
+        "this",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "names_unique": false,
+      "duplicate_names": [
+        "this"
+      ],
+      "frozen_policy_class": "farkas_omissions",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 7,
+          "name": "this",
+          "coefficient": "1"
+        },
+        {
+          "index": 8,
+          "name": "this",
+          "coefficient": "1"
+        },
+        {
+          "index": 11,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 3,
+      "certificate_uses_neg_goal": true,
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "policy_ambiguous_reference",
+      "policy_c_detail": "policy_ambiguous_reference: this",
+      "seconds": 6.8
+    },
+    {
+      "site_id": "bracket-l180",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v2/bracket-l180/stages/pipeline-prepare",
+      "seconds": 7.1
+    },
+    {
+      "site_id": "bracket-l204",
+      "family": "Bracket.Row.s1_noninc",
+      "exposure_class": "none_recorded",
+      "class": "posable_certificate",
+      "fragment": "LIA",
+      "row_count": 5,
+      "row_names": [
+        "hab",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "_pb_nonneg_n",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "a",
+        "b",
+        "n",
+        "v0"
+      ],
+      "reifier_data_locals": [
+        "R",
+        "i"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "a._@._internal.0.Frozen.2507035005._hygCtx._hyg.39",
+          "reason": "proposition outside the reifiable fragment (i ∈ Finset.univ)"
+        }
+      ],
+      "farkas_omissions": [],
+      "names_unique": true,
+      "duplicate_names": [],
+      "frozen_policy_class": "admissible",
+      "arithmetic_certificate": true,
+      "certificate_rows": [
+        {
+          "index": 0,
+          "name": "hab",
+          "coefficient": "1"
+        },
+        {
+          "index": 4,
+          "name": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+      "policy_c": "posable",
+      "policy_c_evidence": {
+        "source_fragment": "LIA",
+        "omitted": [],
+        "omitted_names": [],
+        "posed_fragment": "LIA",
+        "input_ir_sha256": "8a202c88da0f62bbf66707031002b70d58bcdb8e5f0e82fccbe1df738eae19f9",
+        "final_ir_sha256": "8a202c88da0f62bbf66707031002b70d58bcdb8e5f0e82fccbe1df738eae19f9"
+      },
+      "seconds": 7.2
+    }
+  ],
+  "runs_sha256": {
+    "bracket-l069": "2a6a40fbba4cfcbc3b415c8ce2d8da68bfc0d3415819d2841a45287dab4210af",
+    "bracket-l070": "1634c6810878b8a1fe162f6a85b3545adedbdda1ad69e50884463fa1db88135c",
+    "bracket-l071": "f80d3eb5579865f3dbbea95080238f940015e8a82f689fc50b3a9f780ac6744b",
+    "bracket-l078": "babcedb57d26d1a82902f45e0d46ed2030eaed79860beffecf178b716ff187a9",
+    "bracket-l096": "9521ef5b05bf4dd6e1439475ec1ad1acbba8715c165d07f2ffc0bbaa1e541ee9",
+    "bracket-l098": "460bd8177d77b39878fb283828a3af67461d02963c78a05cae5d2a7151da14c6",
+    "bracket-l099": "bc65502d5f0636024306fa15f5b471c5550e7a201f4acee8b9b6d6acb70817f2",
+    "bracket-l101": "7e9a0cb0e687e4f688612f387af572e15c60bec8d89e63d767cfeb7eaae295f7",
+    "bracket-l158": "7e04f2e816e415a1187f17c6869a4fe2f3a986e329680539da83f16fcb8a37e0",
+    "bracket-l166": "670ad767939732e810ca6f28aef94a86b10d52a99ee3df0a81a011129aa5922c",
+    "bracket-l170": "0235610c9be0adcda3970618c97a0b66a1341ce843b8966fa26d9e26b859cacc",
+    "bracket-l175": "4c0910ac5847f54e1b46edd5c89a86497110fe7bdcd261d044b6125bdc778031",
+    "bracket-l178": "d85bdef809ddfca37b8e44b4465f82652e438034bdf9e6e9295a183429f5b6ec",
+    "bracket-l180": "ce7db23b6289a1162afd4ae102726f641fc05af05270f8d407fd7bcd8417715c",
+    "bracket-l204": "bfcbf8707abf2c822a219199bce4390d1ba5916d484bf8772a6438913559594e"
+  },
+  "site_lock_sha256": "362952d848ea0a98dfc0dc71b0a477c4137aae3fd4b9c6b8706f236e4697a847",
+  "site_task_sha256": "56e1fc90608a833d580c7ef92f66a149cbc36c76835c0ff418a1741f8aeddd1c",
+  "program_sha256": "ea668749dd93db8170043cfa5e8d50c03fba96a0fa0b4f1757d12626cb6ae761",
+  "scope": "the frozen IR and Farkas interface on every reviewed site; no proposal, no deterministic search, no provider call"
+}

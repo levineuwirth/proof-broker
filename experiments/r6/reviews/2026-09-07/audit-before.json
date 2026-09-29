@@ -1,0 +1,42 @@
+[
+  {
+    "case": "wrong_recovery_branch",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "negative_certificate_verdict",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "missing_kernel_targets",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "wrong_solution_hash",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "resource_error_in_verdict",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "missing_independent_check_event",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "changed_source",
+    "audit_accepted": true,
+    "error": null
+  },
+  {
+    "case": "missing_recovery_start",
+    "audit_accepted": true,
+    "error": null
+  }
+]

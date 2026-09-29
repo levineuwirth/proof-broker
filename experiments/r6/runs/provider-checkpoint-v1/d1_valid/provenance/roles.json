@@ -1,0 +1,10 @@
+{
+  "python": "/usr/bin/python3.14",
+  "runtime_path": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/provider-runtime/b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935/stdlib",
+  "actor_source": "/home/jeans/Repos/research/proof-broker/experiments/r6/provider_http.py",
+  "unused_legacy_responder": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/fixture",
+  "assembler": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/proposal_driver.exe",
+  "verifier": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/verify_certificate.exe",
+  "checker": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/checker/.lake/build/bin/r6-replay",
+  "downstream_setup": "frozen proposal_episode.setup; legacy request policy not executed"
+}

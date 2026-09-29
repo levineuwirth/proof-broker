@@ -1,0 +1,67 @@
+{
+  "changed": [],
+  "committed": false,
+  "completed": true,
+  "disposition": "review findings remain; keep v4 disabled",
+  "git_diff_check_clean": true,
+  "git_head": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+  "missing": [],
+  "new_lean_replays": 0,
+  "new_native_episodes": 0,
+  "new_review_probes": 12,
+  "policy_signed": false,
+  "preserved_files": 35536,
+  "provider_calls": 0,
+  "pushed": false,
+  "real_credentials_read": 0,
+  "review_artifact_count_including_this_index": 12,
+  "review_files_excluding_this_index": {
+    "R6-008-V4-REVIEW-AUDIT-CONTROLS.json": {
+      "bytes": 6392,
+      "sha256": "5b7bf68a06f66972b5ad39b5c01576a3f93dbc41a27e416bed60487933ead178"
+    },
+    "R6-008-V4-REVIEW-AUDIT.json": {
+      "bytes": 4799,
+      "sha256": "5ecdfdb3ff9500e0e9a78bf1113ea4408838c7460a591d56bf92bea43d7ef10f"
+    },
+    "R6-008-V4-REVIEW-BEFORE.json.gz": {
+      "bytes": 1007123,
+      "sha256": "ab04f6108d63769a8c6674ce926280e4259940b5b689d7ae8b1558206cf5e39c"
+    },
+    "R6-008-V4-REVIEW-FOCUSED.json": {
+      "bytes": 20584,
+      "sha256": "e5866dc17255cad08cfa41846ac39b913aea0ca49174c5bec95c02aa15ef26a6"
+    },
+    "R6-008-V4-REVIEW-OPERATOR-CONTROLS.json": {
+      "bytes": 2835,
+      "sha256": "246cebda5fc08d794c5921d813724c2494118e60789e1871746fe72da0ddd32e"
+    },
+    "R6-008-V4-REVIEW-PILOT-AUDIT.json": {
+      "bytes": 13618,
+      "sha256": "74bc7693bd15ee80bcb258b9173cbdc668c1e735226ea4b16104aec5be3bfac4"
+    },
+    "R6-008-V4-REVIEW-PROBES.json": {
+      "bytes": 15636,
+      "sha256": "80a50708f79825ac16e6f1e8d11da5bbbaba78e2f4eb0d28572631f7f481f0ea"
+    },
+    "R6-008-V4-REVIEW-RECOUNT.json": {
+      "bytes": 4085,
+      "sha256": "e7c3eaca277b465c3f2a5cde2f41541a54d427c37a1795a368ff575cd226dc88"
+    },
+    "R6-008-V4-REVIEW.md": {
+      "bytes": 11819,
+      "sha256": "f0a162ee310f07fdc5a27dc8befb616490425b6d350d95a3642447c0d9a2b19b"
+    },
+    "campaign_v4_review_probes.py": {
+      "bytes": 16710,
+      "sha256": "68a976da1087283ffdb7dde068de2bc9f858c675a09d99079227790ce538ad30"
+    },
+    "campaign_v4_review_recount.py": {
+      "bytes": 10089,
+      "sha256": "f837cc07e3634cebe1345dc907b101bfd8c8944c1fb40cda825cb8f18a4cf332"
+    }
+  },
+  "scope": "Existing results rechecked; review-only artifacts added. This index does not approve the policy or attest compilation/inference.",
+  "source_syntax_and_whitespace_checked": true,
+  "tracked_status_unchanged": true
+}

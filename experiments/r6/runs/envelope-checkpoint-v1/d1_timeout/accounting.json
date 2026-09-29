@@ -1,0 +1,14 @@
+{
+  "attempts_reserved": 1,
+  "transmissions_observed": 1,
+  "reported_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_usd": null,
+    "status": "unreported"
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+}

@@ -1,0 +1,9 @@
+{
+  "accepted": false,
+  "stage": "certificate_verification",
+  "reason": {
+    "kind": "farkas_not_contradictory",
+    "detail": "weighted sum is -786431*_pb_atom_0 + 55340227810197241860, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+  },
+  "certificate_hash": "sha256:6ddb08962a162c582b2fa3971670bdeab73249749ce2cd4227c4d2605f4ec83c"
+}

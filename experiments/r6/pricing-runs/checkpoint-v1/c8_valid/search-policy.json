@@ -1,0 +1,9 @@
+{
+  "name": "responses_priced_https_canned_v1",
+  "task_id": "c1-c8-2p18",
+  "case": "valid",
+  "config_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+  "source_lock_sha256": "71fda7eb6d7c2b40dce1b14b73613216c6bc91ad39ab662a90f418e86e5d1bbb",
+  "manifest_sha256": "b517153f5b2dd878ba724ecc172d38deceb5475f58a0b871daebdcee29852e97",
+  "pricing_origin_sha256": "d4a867711460c296132a26e71612b3533befc5a2d28d3e7cf68476ef6d7ab942"
+}

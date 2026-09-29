@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/P2_operand_order.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/P2_operand_order.dump.lean:18:2: warning: 'pb_dump_ir"ir/P2_operand_order.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.0094ms
+	elaboration 2.98ms
+	fix level params 0.0102ms
+	instantiate metavars 0.0162ms
+	interpretation 0.108ms
+	linting 16.5ms
+	module linting 0.0014ms
+	overlappingInstancesLinter 0.921ms
+	parsing 0.29ms
+	process pre-definitions 0.105ms
+	share common exprs 0.0355ms
+	tactic execution 19.7ms
+	tacticAnalysis 3.48ms
+	type checking 7.58ms
+	typeclass inference 9.57ms
+PEAK_RSS_BYTES=681226240
+EXIT=0 WALL=4.3s CAP=8G

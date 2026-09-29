@@ -1,0 +1,225 @@
+{
+  "passed": true,
+  "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+  "source_lock_sha256": "e849da261b95210a864c39a2dbf47ae32ea86383cf56ef4e5552df7649112911",
+  "public_gate_record_sha256": "05f99326b0c0a4a73c706825b1dd8cd7db3518fd24a2c0026e7aeb1846a21931",
+  "suite_counts": {
+    "focused.json": 25,
+    "native.json": 26,
+    "audits.json": 30
+  },
+  "content_checks": 81,
+  "gate_checks": 15,
+  "total_checks": 96,
+  "preflight_program_sha256": "6bc0ecd61bef0c0c46c95a00e6df5b2ce13d32f911b61d66be4a29020abfd137",
+  "event_hashes_recomputed": 518,
+  "sealed_hashes_recomputed": 3960,
+  "episodes": {
+    "d1_valid": {
+      "events": 48,
+      "sealed": 209,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "c8_valid": {
+      "events": 48,
+      "sealed": 209,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "c8_invalid_witness": {
+      "events": 24,
+      "sealed": 165,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_untrusted_ca": {
+      "events": 17,
+      "sealed": 143,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": true
+    },
+    "d1_wrong_hostname": {
+      "events": 17,
+      "sealed": 143,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": true
+    },
+    "d1_expired_certificate": {
+      "events": 17,
+      "sealed": 143,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": true
+    },
+    "d1_redirect": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_http429": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_http503": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_missing_credential": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_wrong_credential": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_reflected_canary": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_wrong_echo": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_invalid_witness": {
+      "events": 24,
+      "sealed": 165,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_malformed": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_altered_prompt": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_omitted_prompt": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_altered_prefix": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_altered_body": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_altered_options": {
+      "events": 17,
+      "sealed": 147,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_wrong_model": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_wrong_service_tier": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_incomplete": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_output_budget": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_input_budget": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    },
+    "d1_truncated_response": {
+      "events": 17,
+      "sealed": 146,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false
+    }
+  },
+  "preservation": {
+    "checked_files": 12242,
+    "inventory_sha256": "32b4840cc4a4d4914420c5b853d8609312f324a9e2dc74e803c7569d65725484",
+    "git_base": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+    "scope": "pre-work Git-selected bytes, including closed uncommitted R6-004"
+  },
+  "retention_inputs": {
+    "files": 4034,
+    "apparent_bytes": 34462996,
+    "distinct_blobs": 1004,
+    "unique_bytes": 8919429,
+    "inventory_sha256": "3a69a5eb429b3e464daa06f33c93e3ab6c99189bac79a3a277b774bd308efdf1",
+    "scope": "Git-selected R6-005 additions before this output; record excluded to avoid self-reference"
+  },
+  "publication": {
+    "files_scanned": 4100,
+    "canaries": 26,
+    "expected_reflection_matches": 2,
+    "unexpected_matches": 0,
+    "new_non_run_artifacts_scanned": true
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "independent artifact recount and publication scan; no new native execution or inference attestation"
+}

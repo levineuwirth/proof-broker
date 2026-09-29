@@ -1,0 +1,28 @@
+{
+  "reviewed_commit": "74fbb16f",
+  "verdict": "approved_at_recorded_canned_scope",
+  "blocking_findings": 0,
+  "documentation_remnants": 1,
+  "fresh_audit_cases": 665,
+  "recorded_controls_verified": 101,
+  "full_control_suite_rerun": false,
+  "fresh_mutation_probes": {
+    "rejected": 7,
+    "characterized_accepted": 1
+  },
+  "independent_git_commands_checked": 108,
+  "library_inventory_regeneration_byte_identical": true,
+  "cached_tool_build_invoked": true,
+  "native_episodes": 0,
+  "proof_replays": 0,
+  "provider_calls": 0,
+  "live_authorization": false,
+  "files_sha256": {
+    "cohort_v6_v3_review.py": "3f1b77746af6c249e982286e50caacf36bca576b2a45ff788fe8d0f8a09b716e",
+    "R6-013-V3-REVIEW.md": "bb12e263028a0a744f7da6e82ed23d7241ff34a55e74d35511c8b38aea3451ee",
+    "R6-013-V3-REVIEW-AUDIT.json": "227055da4b3712d3956726bcdbfa4cb99d0a692829f1d4528cc028e8eb58e84e",
+    "R6-013-V3-REVIEW-PROBES.json": "c06748bb756acdb3ba5c590b96157ed2606bfb6bd3f3dd9f419277bac0f175d1",
+    "R6-013-V3-REVIEW-RECOUNT.json": "3068115dbb65d4c91072a57c21e548e9edd398c6a642ae96d8d20fcf9679fa8d",
+    "R6-013-V3-REVIEW-LIBRARY-INVENTORY.json": "562ad153446968c19434449f3fec4ab34f58e9166fe7f2aad45cf4b228e1bead"
+  }
+}

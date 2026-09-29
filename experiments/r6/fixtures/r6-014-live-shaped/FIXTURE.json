@@ -1,0 +1,66 @@
+{
+  "schema_version": "r6-live-shaped-fixture-1",
+  "synthetic": true,
+  "source_runs": "cohort-runs-v7",
+  "runs": [
+    {
+      "run": "l069-draw1",
+      "kind": "send_grant",
+      "reservation_id": "48eb4a0d89564b38b9680e76c4ac050b"
+    },
+    {
+      "run": "l070-draw1",
+      "kind": "send_grant",
+      "reservation_id": "0516307fc9b644fca805dbdaa0289313"
+    },
+    {
+      "run": "l071-draw1",
+      "kind": "send_grant",
+      "reservation_id": "a037463b255747348233346c367f0c2e"
+    },
+    {
+      "run": "l078-draw1",
+      "kind": "send_grant",
+      "reservation_id": "20a7ae590c354d27bad7358fcb65d9ca"
+    },
+    {
+      "run": "l096-draw1",
+      "kind": "send_grant",
+      "reservation_id": "73eb35bad7334e1ea18a28f692bfa891"
+    },
+    {
+      "run": "l166-draw1",
+      "kind": "send_grant",
+      "reservation_id": "eb55bd0e81404299be53b45564ad5bf9"
+    },
+    {
+      "run": "l170-draw1",
+      "kind": "send_grant",
+      "reservation_id": "a40f910061d645e690f781c73ccb3ec2"
+    },
+    {
+      "run": "l175-draw1",
+      "kind": "send_grant",
+      "reservation_id": "ad8c66d4ac0d46de8d5cd15ece2ae695"
+    },
+    {
+      "run": "l178-draw1",
+      "kind": "send_grant",
+      "reservation_id": "92bac09f74d24d7f8d297f986d2a8981"
+    },
+    {
+      "run": "l204-draw1",
+      "kind": "send_grant",
+      "reservation_id": "5ccdb1b497b44b1b8497793097c4a351"
+    },
+    {
+      "run": "l099-draw1",
+      "kind": "send_grant",
+      "reservation_id": "adfd9aca7d9e416eb8c1d9584568cd13"
+    }
+  ],
+  "test_policy_sha256": "10bd16e5229d193ed41af511f1a6674cf649f2e858c3e86fd267acc857d5bf98",
+  "operator_credential": "credential.derive(OPERATOR_NONCE); synthetic, never a real credential",
+  "program_sha256": "6d89db6f4d705c68144a7ffb4fbe9e2b7211b352c70533f48f8ac4531f7ce213",
+  "scope": "no provider was contacted; no real credential; nothing here authorizes or funds a transmission"
+}

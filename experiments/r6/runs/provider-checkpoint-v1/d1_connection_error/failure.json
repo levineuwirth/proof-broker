@@ -1,0 +1,12 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "proposal-1",
+  "failure_phase": "proposal",
+  "failure_category": "transport_failure",
+  "error": "HTTP adapter: transport_failure",
+  "evidence": null,
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

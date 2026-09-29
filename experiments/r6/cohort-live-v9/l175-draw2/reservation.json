@@ -1,0 +1,15 @@
+{
+  "reserved_micro_usd": 102400,
+  "message_utf8_bytes": 4155,
+  "input_tokens_reserved": 16384,
+  "output_tokens_reserved": 4096,
+  "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+  "billing_guarantee": false,
+  "reservation_id": "e9add843daec4898bbddeaec7d8e4d66",
+  "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+  "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+  "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+  "pricing_admission_sha256": "ca557dbf9838edb3d18d9556fdb63525147e38e39287aa172d31083f7a40a4d0",
+  "ledger_row_hash": "2beb5cd440982c4e053f9a66339de3707d568fd6ec25913630454be46f82d6ee",
+  "ledger_sha256": "7ec10be516b45cd91d31941e5b6535edb3a9615f3d294d6b3e3123cff2e9d045"
+}

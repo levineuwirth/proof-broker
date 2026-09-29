@@ -1,0 +1,346 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "populations_exact",
+    "all_success",
+    "all_failure",
+    "mixed_dispositions",
+    "missing_and_unknown",
+    "rescaled_and_duplicate_witnesses",
+    "partial_collection",
+    "costs_priced_at_frozen_rates",
+    "negative_control_false_acceptance_stops",
+    "operational_pause_rules",
+    "malformed_inputs_refused",
+    "deterministic_arm_tabled",
+    "usage_unknown_is_never_zero",
+    "fractional_micro_cost_rounds_up",
+    "denominator_drift_refused",
+    "negative_control_raw_acceptance_stops",
+    "contradictory_observations_pause",
+    "proposals_apart_from_verified_witnesses"
+  ],
+  "check_count": 18,
+  "checks": [
+    {
+      "name": "populations_exact",
+      "passed": true,
+      "detail": {
+        "primary": 15,
+        "posed": 11,
+        "certificate_feasible": 10,
+        "negative_control": 1,
+        "closer_reachable": 6,
+        "closer_unreachable": 4
+      }
+    },
+    {
+      "name": "all_success",
+      "passed": true,
+      "detail": {
+        "whole_validated": 6
+      }
+    },
+    {
+      "name": "all_failure",
+      "passed": true,
+      "detail": {
+        "returned": 0
+      }
+    },
+    {
+      "name": "mixed_dispositions",
+      "passed": true,
+      "detail": {
+        "sent_with_response": 9,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 1,
+        "exhausted": 1,
+        "refused_before_reservation": 0
+      }
+    },
+    {
+      "name": "missing_and_unknown",
+      "passed": true,
+      "detail": {
+        "unknown": 1,
+        "unobserved_local": 6
+      }
+    },
+    {
+      "name": "rescaled_and_duplicate_witnesses",
+      "passed": true,
+      "detail": {
+        "slots": 2,
+        "dispositions": {
+          "sent_with_response": 2,
+          "unknown_or_partial_send": 0,
+          "pre_send_released": 0,
+          "exhausted": 0,
+          "refused_before_reservation": 0
+        },
+        "stages_over_sent": {
+          "returned": {
+            "true": 2,
+            "false": 0,
+            "unobserved": 0
+          },
+          "verified": {
+            "true": 2,
+            "false": 0,
+            "unobserved": 0
+          },
+          "consumed": {
+            "true": 2,
+            "false": 0,
+            "unobserved": 0
+          },
+          "local": {
+            "true": 2,
+            "false": 0,
+            "unobserved": 0
+          },
+          "whole": {
+            "true": 2,
+            "false": 0,
+            "unobserved": 0
+          },
+          "axioms": {
+            "true": 2,
+            "false": 0,
+            "unobserved": 0
+          }
+        },
+        "sent": 2,
+        "distinct_proposals": 1,
+        "distinct_verified_witnesses": 1,
+        "verified_matching_classification_certificate": 2,
+        "family": "Bracket.lift_cell"
+      }
+    },
+    {
+      "name": "partial_collection",
+      "passed": true,
+      "detail": {
+        "authorized_slots": 11,
+        "planned_slots": 88,
+        "collected_slots": 5,
+        "authorized_not_collected": [
+          "bracket-l099/1",
+          "bracket-l166/1",
+          "bracket-l170/1",
+          "bracket-l175/1",
+          "bracket-l178/1",
+          "bracket-l204/1"
+        ],
+        "partial": true,
+        "planned_beyond_authorization": 77,
+        "note": "planned draws are neither evidence nor permission"
+      }
+    },
+    {
+      "name": "costs_priced_at_frozen_rates",
+      "passed": true,
+      "detail": {
+        "reserved_micro_usd": 1126400,
+        "authorized_micro_usd": 1126400,
+        "usage_fields": {
+          "input_tokens": {
+            "reported_slots": 11,
+            "unreported_slots": 0,
+            "known_total": 44000
+          },
+          "output_tokens": {
+            "reported_slots": 11,
+            "unreported_slots": 0,
+            "known_total": 3300
+          },
+          "cached_tokens": {
+            "reported_slots": 11,
+            "unreported_slots": 0,
+            "known_total": 11000
+          }
+        },
+        "consumed_slots": 11,
+        "priced_slots": 11,
+        "unpriced_slots": [],
+        "known_priced_subtotal_nano_usd": 134750000,
+        "priced_ceiling_nano_usd": 134750000,
+        "priced_ceiling_micro_usd": 134750,
+        "cached_unreported_bounded_as_uncached": [],
+        "complete": true,
+        "scope": "reservations and provider-reported usage at frozen rates; not a bill"
+      }
+    },
+    {
+      "name": "negative_control_false_acceptance_stops",
+      "passed": true,
+      "detail": {
+        "slots": 1,
+        "false_certificate_acceptances": [
+          "bracket-l170/1"
+        ],
+        "definition": "a verifier or consumer acceptance of a Farkas contradiction for the satisfiable emitted rows, read from the raw observations"
+      }
+    },
+    {
+      "name": "operational_pause_rules",
+      "passed": true,
+      "detail": {
+        "audit_rejected": [
+          "audit_rejected"
+        ],
+        "publication_failed": [
+          "publication_failed"
+        ],
+        "transport_binding_failure": [
+          "transport_binding_failure"
+        ],
+        "money": [
+          "money_above_authorized"
+        ]
+      }
+    },
+    {
+      "name": "malformed_inputs_refused",
+      "passed": true,
+      "detail": {
+        "outside_schedule": "bracket-l069/2: outside the authorized schedule",
+        "site_not_posed": "bracket-l098/1: outside the authorized schedule",
+        "transmission_count": "transmission count differs",
+        "ledger_consumption": "ledger consumption differs from the slot records",
+        "committed_money": "committed money differs from the consumed reservations",
+        "missing_field": "bracket-l069/1: kernel fields",
+        "schema": "input schema",
+        "schedule_beyond_plan": "authorized schedule exceeds the plan",
+        "usage_negative": "bracket-l069/1: usage input_tokens",
+        "usage_boolean": "bracket-l069/1: usage output_tokens",
+        "cached_above_input": "bracket-l069/1: cached input exceeds input",
+        "population_incomplete": "primary population is 14, not 15",
+        "negative_control_missing": "the negative control is not l170"
+      }
+    },
+    {
+      "name": "deterministic_arm_tabled",
+      "passed": true,
+      "detail": {
+        "proofs": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "outcomes": {
+          "bracket-l069": "proof",
+          "bracket-l070": "proof",
+          "bracket-l071": "proof",
+          "bracket-l078": "proof",
+          "bracket-l096": "backend_not_invoked",
+          "bracket-l098": "backend_not_invoked",
+          "bracket-l099": "backend_not_invoked",
+          "bracket-l101": "backend_not_invoked",
+          "bracket-l158": "reconstruction_refused",
+          "bracket-l166": "reconstruction_refused",
+          "bracket-l170": "witness_not_recovered",
+          "bracket-l175": "reconstruction_refused",
+          "bracket-l178": "reconstruction_refused",
+          "bracket-l180": "witness_not_recovered",
+          "bracket-l204": "reconstruction_refused"
+        }
+      }
+    },
+    {
+      "name": "usage_unknown_is_never_zero",
+      "passed": true,
+      "detail": {
+        "all_unreported": {
+          "priced_ceiling_micro_usd": null,
+          "priced_slots": 0,
+          "complete": false
+        },
+        "partial": {
+          "unpriced_slots": [
+            "bracket-l069/1"
+          ],
+          "cached_unreported_bounded_as_uncached": [
+            "bracket-l070/1"
+          ],
+          "known_priced_subtotal_nano_usd": 124750000,
+          "complete": false
+        }
+      }
+    },
+    {
+      "name": "fractional_micro_cost_rounds_up",
+      "passed": true,
+      "detail": {
+        "priced_ceiling_nano_usd": 250,
+        "priced_ceiling_micro_usd": 1
+      }
+    },
+    {
+      "name": "denominator_drift_refused",
+      "passed": true,
+      "detail": {
+        "feasible_site_dropped": "the classes do not partition the primary population",
+        "feasible_site_reclassified": "the classification does not reproduce the reviewed membership",
+        "unposed_site_promoted": "the classification does not reproduce the reviewed membership",
+        "duplicate_site": "duplicate site in the classification",
+        "classes_overlap": "the classes do not partition the primary population",
+        "subset_schedule_denominators": {
+          "primary": 15,
+          "posed": 11,
+          "certificate_feasible": 10,
+          "negative_control": 1,
+          "closer_reachable": 6,
+          "closer_unreachable": 4
+        }
+      }
+    },
+    {
+      "name": "negative_control_raw_acceptance_stops",
+      "passed": true,
+      "detail": {
+        "consumer_true": {
+          "integrity_stop": true,
+          "contradictions": [
+            "consumed"
+          ]
+        },
+        "kernel_local_true": {
+          "integrity_stop": true,
+          "contradictions": [
+            "local"
+          ]
+        }
+      }
+    },
+    {
+      "name": "contradictory_observations_pause",
+      "passed": true,
+      "detail": {
+        "past_rejection": {
+          "bracket-l069/1": [
+            "consumed",
+            "local",
+            "whole",
+            "axioms"
+          ]
+        },
+        "released_with_witness": {
+          "bracket-l070/1": [
+            "returned"
+          ]
+        }
+      }
+    },
+    {
+      "name": "proposals_apart_from_verified_witnesses",
+      "passed": true,
+      "detail": {
+        "distinct_proposals": 1,
+        "distinct_verified_witnesses": 0
+      }
+    }
+  ]
+}

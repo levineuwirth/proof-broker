@@ -1,0 +1,50 @@
+{
+  "export_process_missing": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "export stage receipt and process record do not match one to one",
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "export stage receipt and process record do not match one to one",
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    }
+  },
+  "unmatched_stage_receipt": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "unexpected-stage stage receipt and process record do not match one to one",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "unexpected-stage stage receipt and process record do not match one to one",
+        "the receipt sequence is not the frozen sequence for proof"
+      ]
+    }
+  }
+}

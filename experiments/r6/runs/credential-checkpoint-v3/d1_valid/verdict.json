@@ -1,0 +1,397 @@
+{
+  "schema_version": "r6-credential-episode-3",
+  "search_policy": "credential_http_fixture_v3",
+  "task_id": "verinf-d1-70",
+  "proof_accepted": true,
+  "search_succeeded": true,
+  "certificate_type": "farkas",
+  "trust_tier": 1,
+  "witness_proposer": "canned_provider_response",
+  "certificate_assembler": "sdk_proposal_assembler_v1",
+  "recovery_route": "credential_http_fixture_v3",
+  "certificate_verified": true,
+  "certificate_consumed": true,
+  "derivation_replayed": false,
+  "residual_closer": "omega",
+  "proof_replayed": true,
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true,
+  "axiom_delta": {
+    "Bracket.lift_cell.r6_d1_70": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "local_proof_required_reference": "ProofBroker.TermMode.farkasContradictN",
+  "accounting": {
+    "attempts_reserved": 1,
+    "client_connection_attempts": 1,
+    "body_sends_started": 1,
+    "body_sends_returned": 1,
+    "transmissions_observed": 1,
+    "reported_usage": {
+      "status": "provider_reported",
+      "cost_usd": null,
+      "input_tokens": 11,
+      "output_tokens": 7,
+      "total_tokens": 18,
+      "cached_tokens": 2,
+      "reasoning_tokens": 3
+    },
+    "live_model_calls": 0,
+    "live_model_cost_usd": 0,
+    "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+  },
+  "transport_validation": {
+    "outbound_envelope": {
+      "accepted": true,
+      "category": null,
+      "mismatches": [],
+      "captured_body_sha256": "5af46993392e0946d7ae8c7b8650e0443de5c6816aef47755f7f9bcc639f0ab8",
+      "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+      "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+      "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+      "observation": "local_server_received"
+    },
+    "capture_consistency": {
+      "checked": true,
+      "accepted": true
+    },
+    "provider_response": {
+      "accepted": true,
+      "failure_category": null
+    },
+    "response_request_binding": {
+      "checked": true,
+      "accepted": true,
+      "scope": "response_request_association",
+      "expected_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+      "received_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42"
+    },
+    "response_validated": true,
+    "response_failure_category": null,
+    "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+  },
+  "solution_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+  "challenge_sha256": "3864871a7878c096dc9fac19de410e1c56cda10000493a31f020d4d14cb4de55",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+  "response_sha256": "bb9e38d062d79c6c0cb0baf7955a2372b4815d9bbc520d42f16e3c6901cb4157",
+  "canary_nonce": "869bf15978364128ce15d96618bc131169288f6b82f13a13c24143d5ede873ce",
+  "credential_receipt_sha256": "0823db9b875147a7d9c691caa913edf8696bdfa961285d2ba9da403085502a75",
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell.r6_d1_70",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3702,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3721,
+      "accepted": true
+    }
+  },
+  "certificate_validation": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:3882f19a1cd5355a43cbda54d02a8e5954d16edd175607a731fc98eae4e78667"
+  },
+  "resources": {
+    "assembly": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.020575614005792886,
+      "execution_wall_seconds": 0.020278548006899655,
+      "cgroup_cpu_usec": 10021,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4378624,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "capture-build": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 1.29987861297559,
+      "execution_wall_seconds": 1.2992994389787782,
+      "cgroup_cpu_usec": 1279511,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 185896960,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "certificate-check": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.02009636099683121,
+      "execution_wall_seconds": 0.019795477972365916,
+      "cgroup_cpu_usec": 10137,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4644864,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "export": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 2.9958287740009837,
+      "execution_wall_seconds": 2.9951670830196235,
+      "cgroup_cpu_usec": 2942321,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 733360128,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 10778141,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "pipeline-prepare": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.029048102005617693,
+      "execution_wall_seconds": 0.028551505994983017,
+      "cgroup_cpu_usec": 9975,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4636672,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "preparation": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 5.357485516986344,
+      "execution_wall_seconds": 5.35693864498171,
+      "cgroup_cpu_usec": 5585352,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 673644544,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 242,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "preparation-build": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 1.5329322580073494,
+      "execution_wall_seconds": 1.5324343389947899,
+      "cgroup_cpu_usec": 1520423,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 168058880,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "proposal-1": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.3229515890125185,
+      "execution_wall_seconds": 0.32225426999502815,
+      "cgroup_cpu_usec": 310255,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 22265856,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "reconstruct": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 4.0348668150254525,
+      "execution_wall_seconds": 4.024334962014109,
+      "cgroup_cpu_usec": 4172995,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 717832192,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 36892,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "validation-local": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 1.4990829850139562,
+      "execution_wall_seconds": 1.4985123969963752,
+      "cgroup_cpu_usec": 1471629,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 45015040,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "validation-whole": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 1.4310185209906194,
+      "execution_wall_seconds": 1.4305241990077775,
+      "cgroup_cpu_usec": 1411988,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 43536384,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  "evidence_receipt_claim": "local HTTP fixture, credential-channel receipt and proof checks; no remote receipt, TLS, compilation or inference attestation"
+}

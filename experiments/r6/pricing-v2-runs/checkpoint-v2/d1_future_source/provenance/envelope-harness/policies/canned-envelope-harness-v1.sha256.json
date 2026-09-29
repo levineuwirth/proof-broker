@@ -1,0 +1,12 @@
+{
+  "envelope_contract.py": "003501ede4f6b7344402aa440206ec28a8f0fb2bb514b26b62a1481a83caa043",
+  "envelope_payload.py": "e8ad82f6ad261a537ba78015abf2cc764b775496cb0fa5be98683424f1187dad",
+  "envelope_episode.py": "9d3385df7251ee2c88bc77189039b1e48893eb73933f3acb72b5fa7636b82204",
+  "envelope_audit.py": "14d60b14061cff1020f9833b9222db8f7db8d72221a74c672efa855c73c727f6",
+  "envelope_proof_audit.py": "ccd9b82881167affc17a6104c713c574207e1181d2093bb46d2c73600eeb3644",
+  "test_envelopes.py": "ea4da21c65659d0306cc2f362c239b43157132a539459c89f91e5e248d0d3785",
+  "validate/envelope_receiver.c": "c113477bc66f3f6609a7872daae1ae4daece495bd6a74cc14e9d9f6fd2771900",
+  "schema/envelope-request.schema.json": "ad8eb1b09a63a2f6d5f91726790345c877a348f500bde139491ac7319d60deff",
+  "schema/envelope-verdict.schema.json": "dc6c83e24a6738a09e6a341c7650ca735564ecc5243d41e4acba38f410986391",
+  "prompts/farkas-rows-v1.txt": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4"
+}

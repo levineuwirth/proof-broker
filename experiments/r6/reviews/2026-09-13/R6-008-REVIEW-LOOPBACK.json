@@ -1,0 +1,29 @@
+{
+ "loopback_permit_replay": {
+  "maximum_transmissions": 1,
+  "shared_ledger_consumed": 1,
+  "same_permit": true,
+  "total_receiver_requests": 2,
+  "instances": [
+   {
+    "instance": 1,
+    "http_status": 200,
+    "body_sends_started": 1,
+    "receiver_requests": 1,
+    "grant_id": "629e3372688d44a5910da939ad763351"
+   },
+   {
+    "instance": 2,
+    "http_status": 200,
+    "body_sends_started": 1,
+    "receiver_requests": 1,
+    "grant_id": "22fb5ab143c9488abeaece618cf5f764"
+   }
+  ]
+ },
+ "provider_calls": 0,
+ "real_credentials_read": 0,
+ "program_sha256": "6b3fda89518f0229cb800e2648a4dacd9fe95fb53eb84964eacda1f439378703",
+ "reviewed_policy_sha256": "d63a6680d591201b43332134be4f53c3a5a91ce683bb80b04ebc4d6739188e0b",
+ "reviewed_source_lock_sha256": "077aa0e1a82866d69ebaf71294a2338dfe78b6b9f8d96e2b6cfb38845d1309a2"
+}

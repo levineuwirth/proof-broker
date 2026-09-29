@@ -1,0 +1,114 @@
+{
+  "consumer": {
+    "certificate_assembler": "sdk_proposal_assembler_v1",
+    "certificate_backend": "r6_fixture_witness",
+    "future_live_attribution": "must be versioned before a real proposer; this canned driver truthfully stamps canned_provider_response",
+    "implementation": "provider_episode.consume",
+    "route_receipt": "openai_responses_http_fixture_v1",
+    "witness_proposer": "canned_provider_response"
+  },
+  "consumer_policy_sha256": "eefae339cb7067f88802d768e2acb3444651da3037b90e3e74441567672c4487",
+  "credential": {
+    "channel": "private mode-0600 file, read-only /credential, outside publication tree, removed in finally",
+    "header_logged": false,
+    "read_environment": false,
+    "synthetic_only": true
+  },
+  "endpoint": {
+    "host": "api.openai.com",
+    "path": "/v1/responses",
+    "port": 443,
+    "scheme": "https"
+  },
+  "limits": {
+    "attempts_per_episode": 1,
+    "automatic_retries": 0,
+    "campaign_attempts": 2,
+    "input_tokens_reserved": 16384,
+    "io_timeout_seconds": 30,
+    "maximum_request_bytes": 32768,
+    "maximum_response_bytes": 262144,
+    "message_utf8_bytes": 12288,
+    "output_tokens": 4096,
+    "redirects": 0,
+    "request_cpu_seconds": 5,
+    "request_memory_bytes": 402653184,
+    "request_output_bytes": 4194304,
+    "request_wall_seconds": 60,
+    "total_micro_usd": 5000000
+  },
+  "live_enabled": false,
+  "model": {
+    "allowed_response_ids": [
+      "gpt-5.6-sol"
+    ],
+    "model_computation_attested": false,
+    "requested_id": "gpt-5.6-sol",
+    "revision_status": "provider model ID only; no dated immutable snapshot established in inspected documentation"
+  },
+  "name": "responses_https_canned_v1",
+  "previous_policy_sha256": "e6e037d11b206326b064653ea3648db7cf8a0533880b78990738a783230bd39f",
+  "pricing": {
+    "currency": "USD",
+    "observed_on": "2026-09-09",
+    "per_million_tokens": {
+      "cache_write": "5.00",
+      "cached_input": "0.40",
+      "input": "4.00",
+      "output": "20.00"
+    },
+    "refresh_before_live": true,
+    "reservation_micro_usd_per_token": {
+      "input": 5,
+      "output": 20
+    },
+    "scope": "conditional reservation under the frozen rates and input-byte-plus-framing assumption; not a provider billing limit",
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.6-sol"
+  },
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "provider": {
+    "api": "Responses",
+    "api_revision": "unversioned /v1 interface; documentation observed 2026-09-09",
+    "name": "OpenAI",
+    "remote_availability_tested": false
+  },
+  "request": {
+    "background": false,
+    "max_output_tokens": 4096,
+    "model": "gpt-5.6-sol",
+    "parallel_tool_calls": false,
+    "reasoning": {
+      "effort": "medium"
+    },
+    "service_tier": "default",
+    "store": false,
+    "stream": false,
+    "tool_choice": "none",
+    "tools": [],
+    "truncation": "disabled"
+  },
+  "runtime_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+  "sampling": {
+    "reasoning_effort": "medium",
+    "seed": "not requested; no reproducibility claim",
+    "temperature": "omitted; provider default, not claimed deterministic",
+    "top_p": "omitted; provider default"
+  },
+  "schema_version": "r6-live-policy-1",
+  "scope": "local HTTPS and client entity-body handoff, synthetic receipt, independent proof replay; no real provider receipt, billing, inference, model-input or compilation attestation",
+  "selection_status": "agent-selected default for canned control configuration after optional clarification; changing it before a live pilot requires a new policy version; no spending authorization",
+  "tls": {
+    "alpn": [
+      "http/1.1"
+    ],
+    "check_hostname": true,
+    "fixture_ca_scope": "fresh synthetic root, explicitly injected; same verification code",
+    "live_ca_bundle_path": "/etc/ssl/certs/ca-certificates.crt",
+    "live_ca_bundle_sha256": "8c97794a899a32666593979dc7adfaec8bda2b420eb092ff0d987e44ad0bf6ea",
+    "live_ca_scope": "candidate host public roots, not exercised by the synthetic fixture",
+    "minimum_version": "TLSv1_2",
+    "proxy_environment": "ignored",
+    "redirect_policy": "reject without following",
+    "verify_mode": "CERT_REQUIRED"
+  }
+}

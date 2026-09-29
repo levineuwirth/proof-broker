@@ -1,0 +1,194 @@
+{
+  "input_ir": {
+    "context": {
+      "free_vars": [
+        {
+          "name": "x",
+          "type": "Nat"
+        }
+      ],
+      "hypotheses": [
+        {
+          "name": "hK",
+          "shell": {
+            "left": {
+              "args": [],
+              "node": "App",
+              "symbol": "R6Diff.K",
+              "type_args": []
+            },
+            "node": "Eq",
+            "right": {
+              "node": "NumLit",
+              "type": "Int",
+              "value": "7"
+            },
+            "type": "Int"
+          }
+        },
+        {
+          "name": "hx",
+          "shell": {
+            "args": [
+              {
+                "args": [
+                  {
+                    "name": "x",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": []
+              },
+              {
+                "args": [],
+                "node": "App",
+                "symbol": "R6Diff.K",
+                "type_args": []
+              }
+            ],
+            "node": "App",
+            "symbol": "LT.lt",
+            "type_args": []
+          }
+        },
+        {
+          "name": "_pb_nonneg_x",
+          "shell": {
+            "args": [
+              {
+                "node": "NumLit",
+                "type": "Int",
+                "value": "0"
+              },
+              {
+                "args": [
+                  {
+                    "name": "x",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": []
+              }
+            ],
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": []
+          }
+        }
+      ],
+      "type_vars": []
+    },
+    "definitional_metadata": {
+      "R6Diff.K": {
+        "abstract_signature": "Int",
+        "concept_tag": "numeral_definition",
+        "definitional_equation": {
+          "left": {
+            "args": [],
+            "node": "App",
+            "symbol": "R6Diff.K",
+            "type_args": []
+          },
+          "node": "Eq",
+          "right": {
+            "node": "NumLit",
+            "type": "Int",
+            "value": "7"
+          },
+          "type": "Int"
+        },
+        "kind": "defined_function"
+      }
+    },
+    "goal": {
+      "shell": {
+        "args": [
+          {
+            "args": [
+              {
+                "name": "x",
+                "node": "Var"
+              }
+            ],
+            "node": "App",
+            "symbol": "Int.ofNat",
+            "type_args": []
+          },
+          {
+            "node": "NumLit",
+            "type": "Int",
+            "value": "8"
+          }
+        ],
+        "node": "App",
+        "symbol": "LT.lt",
+        "type_args": []
+      }
+    },
+    "ir_version": "1.0",
+    "library_provenance": {
+      "Int.natCast_nonneg": {
+        "content_hash": "sha256:74e3e6efa91cd98b13e1a0e560694a16aebf20c9b692b3e372b4a8bb9fe4edbd",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Order",
+        "version": "4.32.0"
+      },
+      "Int.ofNat_inj": {
+        "content_hash": "sha256:f7480039da059eed1b3a2f89105fc91d0b0b9ab9c3ae4b0775e56337426865e5",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Lemmas",
+        "version": "4.32.0"
+      },
+      "Int.ofNat_le": {
+        "content_hash": "sha256:95d406cb64c71fd2f63e26173b1e8605f2e84a7c9085d0b4545e46156f84cbd2",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Order",
+        "version": "4.32.0"
+      },
+      "Int.ofNat_lt": {
+        "content_hash": "sha256:0afe9efc53c5f88048e0589b01439319ec80236b3a35e6f7718bb15707117155",
+        "library": "lean-core",
+        "module_path": "Init.Data.Int.Order",
+        "version": "4.32.0"
+      },
+      "R6Diff.K": {
+        "content_hash": "sha256:7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451",
+        "library": "user",
+        "version": "4.32.0"
+      }
+    },
+    "logic_classification": {
+      "decidable_theory": null,
+      "features_used": [
+        "equality_at_first_order_type"
+      ],
+      "first_order_fragment": "LIA",
+      "order": "first_order"
+    },
+    "source_system": {
+      "name": "lean",
+      "version": "0.0"
+    },
+    "tier": "structural",
+    "type_metadata": {
+      "Nat": {
+        "kind": "primitive",
+        "name": "Nat",
+        "theory_tags": [
+          "embeds_into:Int_for_universal_LIA",
+          "embedding_witness:Int.ofNat_le",
+          "embedding_witness:Int.ofNat_lt",
+          "embedding_witness:Int.ofNat_inj",
+          "embedding_witness:Int.natCast_nonneg"
+        ]
+      }
+    }
+  },
+  "certificate": {},
+  "final_ir": {},
+  "trace": {}
+}

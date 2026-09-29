@@ -1,0 +1,12 @@
+{
+  "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+  "policy_sha256": "d7dbb092dd4f7854ccd208a8f58e38bdcb2cc47762bd9cf49a548ed1bd75583e",
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "arguments_sha256": "3cad3e7aa5de38bd644a3e46510a35bdf3eb37685d0ae19d0e9b02974852d199",
+  "messages_sha256": "537eaf9c674b711191ab4057c48b4375be3dd84b7f25f4afe5223b8f3941fe1b",
+  "prepared_sha256": "b9cd94c17356a8096a5460b7da9e2aa486e5d29f01e5126b11dfbdd4519c23c1",
+  "policy_c_evidence_sha256": "102bda180f19c151ee457724c7febeda0084c1ccb9ca5c05255da61d9347a54b",
+  "payload_audit_sha256": "ce76ba8b60b8554042dd3102189ba5cd76f6fb2bb5cbe7afaad61aaa39e61044",
+  "inner_binding": "request contract_sha256 is the scientific contract; no policy digest is model-visible"
+}

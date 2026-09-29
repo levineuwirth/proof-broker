@@ -1,0 +1,16 @@
+{
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288",
+    "received_request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288"
+  },
+  "outbound_envelope": {
+    "accepted": false,
+    "failure_category": "outbound_envelope_binding",
+    "error": "Serialized messages differ from the frozen prompt and exact request bytes"
+  },
+  "response_validated": true,
+  "response_failure_category": null
+}

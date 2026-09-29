@@ -1,0 +1,15 @@
+((set-logic QF_LIA)
+(proof
+(let (($x60 (>= v 70368744161281)))
+(let ((@x63 (rewrite (= (not (<= 18446744069414584321 (* 262144 v))) (not $x60)))))
+(let ((@x55 (rewrite (= (< (* 262144 v) 18446744069414584321) (not (<= 18446744069414584321 (* 262144 v)))))))
+(let ((@x65 (monotonicity (trans @x55 @x63 (= (< (* 262144 v) 18446744069414584321) (not $x60))) (= (not (< (* 262144 v) 18446744069414584321)) (not (not $x60))))))
+(let ((@x69 (trans @x65 (rewrite (= (not (not $x60)) $x60)) (= (not (< (* 262144 v) 18446744069414584321)) $x60))))
+(let ((@x70 (mp (asserted (not (< (* 262144 v) 18446744069414584321))) @x69 $x60)))
+(let (($x34 (>= v 4398046511104)))
+(let (($x33 (not $x34)))
+(let ((@x37 (rewrite (= (not (<= 4398046511104 v)) $x33))))
+(let (($x28 (not (<= 4398046511104 v))))
+(let ((@x74 (mp (mp (asserted (< v 4398046511104)) (rewrite (= (< v 4398046511104) $x28)) $x28) (rewrite (= $x28 $x28)) $x28)))
+(unit-resolution ((_ th-lemma arith farkas 1 1) (or $x34 (not $x60))) (mp @x74 @x37 $x33) (mp @x70 (rewrite (= $x60 $x60)) $x60) false))))))))))))))
+

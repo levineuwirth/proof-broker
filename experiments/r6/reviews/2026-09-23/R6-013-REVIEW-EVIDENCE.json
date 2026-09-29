@@ -1,0 +1,26 @@
+{
+  "reviewed_commit": "24332120",
+  "native_runs": 0,
+  "provider_calls": 0,
+  "original_audit_cases": 628,
+  "existing_controls": {
+    "total": 77,
+    "accepted_baselines": 1,
+    "rejected_mutations": 76
+  },
+  "additional_review_probes": {
+    "total": 6,
+    "unexpectedly_accepted": 6
+  },
+  "fresh_site_controls": 20,
+  "review_files_sha256": {
+    "R6-013-REVIEW-AUDIT.json": "4ba607f6ad224f965cc8b47a6612319fe49ef4a33079f93049b169f95d317a20",
+    "R6-013-REVIEW-CONTROLS.json": "8bbe087c67245ee92350abbb8129afb8ee4d7b237155102bef5eed688644e2b1",
+    "R6-013-REVIEW-PROBES.json": "a29eebd1cd16fedd78e4e0363d18bf4d1e61974f7a61b95a2d984054f152f619",
+    "R6-013-REVIEW-RECOUNT-REPRODUCIBLE.json": "3068115dbb65d4c91072a57c21e548e9edd398c6a642ae96d8d20fcf9679fa8d",
+    "R6-013-REVIEW-RECOUNT.json": "83125d3c23b61b1fa1f41d19c413178b3bdb08bc10893ad107351ec4d4adb65a",
+    "R6-013-REVIEW-SITE-CONTROLS.json": "999ab834dbc887e022ccb1cd5e418ea01ca96cb34fb3bd896d049b0b76745a50",
+    "cohort_v6_review_probes.py": "1602b2107227ceb7e5dff1d7b89e66801064aa1cd52e7235a81057b7ca389d2b",
+    "cohort_v6_review_recount.py": "433975e501c308dbfd3c53196b8e22b0e1672ba54f7ae119ca6fcd7c069bb2c7"
+  }
+}

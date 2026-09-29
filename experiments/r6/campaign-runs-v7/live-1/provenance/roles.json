@@ -1,0 +1,13 @@
+{
+  "python": "/usr/bin/python3.14",
+  "runtime_path": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/campaign-runtime/7e32ccee50b1476d867c4526bd40f5549bcf3bd17e040ce0313c02ac04e60231/stdlib",
+  "actor_source": "/home/jeans/Repos/research/proof-broker/experiments/r6/campaign_https.py",
+  "network_stage": "/home/jeans/Repos/research/proof-broker/experiments/r6/campaign_network.py",
+  "ledger_module": "/home/jeans/Repos/research/proof-broker/experiments/r6/campaign_ledger.py",
+  "ledger_directory": "/home/jeans/Repos/research/proof-broker/experiments/r6/ledgers",
+  "assembler": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/proposal_driver.exe",
+  "verifier": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/verify_certificate.exe",
+  "checker": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/checker/.lake/build/bin/r6-replay",
+  "runtime_pin": "campaign-runtime-v1",
+  "downstream_setup": "frozen proposal_episode.setup"
+}

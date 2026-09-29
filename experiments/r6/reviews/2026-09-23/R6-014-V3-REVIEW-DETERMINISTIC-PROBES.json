@@ -1,0 +1,94 @@
+{
+  "baseline": {
+    "accepted": true,
+    "case_count": 539,
+    "runs": 30,
+    "outcomes": {
+      "site_cvc4_term_mode_v1": {
+        "proof": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "reconstruction_refused": [
+          "bracket-l158",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "witness_not_recovered": [
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      },
+      "site_cvc4_default_closer_v1": {
+        "closed_and_validated": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l178",
+          "bracket-l204"
+        ],
+        "backend_not_invoked": [
+          "bracket-l096",
+          "bracket-l098",
+          "bracket-l099",
+          "bracket-l101"
+        ],
+        "witness_not_recovered": [
+          "bracket-l158",
+          "bracket-l170",
+          "bracket-l180"
+        ]
+      }
+    },
+    "policy_sha256": "6ae3070e98cd19cea68e50d29ab22a32b68ef284f9f7500b4906aaeec8bf37fb"
+  },
+  "ephemeral_stdout_absent": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound",
+    "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound",
+    "retained_solution_present": true
+  },
+  "local_type_zeroed_resealed": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports",
+    "detail": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports: local: raw report, verdict and receipt differ"
+  },
+  "refused_zero_witness_resealed": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound",
+    "detail": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound: certificate_bound; claimed verification not reproduced by the checker"
+  },
+  "refused_closer_relabelled_resealed": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound",
+    "detail": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound: closer term_mode_int, pinned term_mode_nat"
+  },
+  "verification_observation_certificate_altered_resealed": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:search:observations_bound",
+    "detail": "site_cvc4_term_mode_v1/bracket-l070:search:observations_bound: certificate at certificate_verification_finished"
+  },
+  "search_workload_not_emptied_resealed": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:search:terminated_cleanly",
+    "detail": "site_cvc4_term_mode_v1/bracket-l070:search:terminated_cleanly"
+  },
+  "solution_from_other_site_resealed": {
+    "accepted": false,
+    "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound",
+    "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound"
+  }
+}

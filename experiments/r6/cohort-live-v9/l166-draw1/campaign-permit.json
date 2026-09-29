@@ -1,0 +1,93 @@
+{
+  "kind": "reservation",
+  "reservation_id": "c104ddd0308f44cfb3eedb44388c03a5",
+  "attempt_id": "fe1a20395bd3544914336d0d6890e51f73865782016710b97f3d617926735e18",
+  "episode_id": "l166-draw1",
+  "task_id": "bracket-l166",
+  "draw": 1,
+  "slot_attempt": 1,
+  "policy_sha256": "8972bd55c136c86f87fde19092f5090f71266764e730c4f61e495ab54f885b8c",
+  "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+  "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "task_manifest_sha256": "d07ac9cdd15187789a500e4eb09fc2531ecc118073098413de486fea2821bf8a",
+  "challenge_sha256": "68313490337206f9eddb24c684bbce93d4d716da9a904b2269f9e8fb9c635ccf",
+  "reserved_micro_usd": 102400,
+  "reservation": {
+    "reserved_micro_usd": 102400,
+    "message_utf8_bytes": 3888,
+    "input_tokens_reserved": 16384,
+    "output_tokens_reserved": 4096,
+    "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+    "billing_guarantee": false
+  },
+  "pricing_admission": {
+    "schema_version": "r6-pricing-admission-3",
+    "accepted": true,
+    "policy_sha256": "8972bd55c136c86f87fde19092f5090f71266764e730c4f61e495ab54f885b8c",
+    "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+    "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+    "arguments_sha256": "c457025ea57497e5fe8c7aa8529141fce740dd3a715173f26110eafaa9f7e223",
+    "body_sha256": "d78f12415685ece2460636cf80d1cf288ac7b0df61ff86290daa0438bee43b04",
+    "message_utf8_bytes": 3888,
+    "sources": {
+      "model": {
+        "raw_sha256": "0e88bcc51004a2360062cb9eea8f737a6bd789d38e3e069f50045093f2109aae",
+        "extract_sha256": "90fba6364cc9ddde98f38c9022cc8ff5e1176050ed7cf217e2d644895876a344",
+        "receipt_sha256": "5c09fc27c9dbbcb44f91d60210b27335bdf79b4429cdbc30ec849a27fbad4dc8"
+      },
+      "caching": {
+        "raw_sha256": "40f28bcd3a579769a43e117ab357d0b41a492613c80c535135c11c8d61b24503",
+        "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+        "receipt_sha256": "f2b403c10d41120cede7fe2e650c39e222f6fb00cbccbc0fc69ba0f4842e1029"
+      }
+    },
+    "nano_usd_per_token": {
+      "input": 2500,
+      "cached_input": 250,
+      "output": 15000,
+      "cache_write": 2500
+    },
+    "reserved_micro_usd": 102400,
+    "applicability": {
+      "source_conditions": {
+        "long_context": {
+          "input_tokens_threshold": 272000,
+          "comparison": "greater_than",
+          "input_multiplier": "2",
+          "output_multiplier": "1.5",
+          "scope": "full_session",
+          "service_tiers": [
+            "standard",
+            "batch",
+            "flex"
+          ]
+        },
+        "regional_processing": {
+          "uplift_percent": 10,
+          "scope": "regional_processing_endpoints"
+        }
+      },
+      "input_tokens_reserved": 16384,
+      "input_tokens_upper_bound_exclusive": 272000,
+      "endpoint": {
+        "host": "api.openai.com",
+        "path": "/v1/responses",
+        "port": 443,
+        "scheme": "https"
+      },
+      "long_context_surcharge_applicable": false,
+      "regional_surcharge_applicable": false,
+      "session_scope": "one_stateless_request",
+      "scope": "local policy/input applicability under the existing token-bound assumption; not billing attestation"
+    },
+    "evaluated_at_unix": 1790240645.8996227,
+    "billing_guarantee": false,
+    "evidence_scope": "envelope recomputed from the request under the contract; local retained-source, clock and request consistency; no remote pricing or inference attestation"
+  },
+  "reserved_at_unix": 1790240646,
+  "domain": "r6-cohort-ledger-1",
+  "sequence": 11,
+  "previous_hash": "aca1e231d684757232fe91d720da1cb33ba2a5fc97e31bf290d9744b774f53a7",
+  "row_hash": "68e3f9affed268b341936c5c397a579e49c65985073011101d7f4f2a1e6abcbe"
+}

@@ -1,0 +1,5 @@
+{
+  "stage": "axiom_policy",
+  "error": "Illegal axiom detected: 'sorryAx'",
+  "accepted": false
+}

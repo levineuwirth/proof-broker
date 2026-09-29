@@ -1,0 +1,12 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "provider-response",
+  "failure_phase": "proposal",
+  "failure_category": "provider_decode",
+  "error": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+  "evidence": null,
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

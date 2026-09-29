@@ -1,0 +1,105 @@
+{
+  "ir_version": "1.0",
+  "source_system": { "name": "lean", "version": "0.0" },
+  "tier": "structural",
+  "logic_classification": {
+    "order": "first_order",
+    "features_used": [],
+    "first_order_fragment": "LIA",
+    "decidable_theory": null
+  },
+  "goal": {
+    "shell": {
+      "node": "App",
+      "symbol": "LE.le",
+      "type_args": [],
+      "args": [
+        { "node": "Var", "name": "x0" },
+        { "node": "NumLit", "value": "0", "type": "Int" }
+      ]
+    }
+  },
+  "context": {
+    "type_vars": [],
+    "free_vars": [
+      { "name": "x0", "type": "Int" },
+      { "name": "x1", "type": "Int" },
+      { "name": "x2", "type": "Int" },
+      { "name": "x3", "type": "Int" },
+      { "name": "x4", "type": "Int" },
+      { "name": "x5", "type": "Int" }
+    ],
+    "hypotheses": [
+      {
+        "name": "h1",
+        "shell": {
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x0" }, { "node": "Var", "name": "x1" }
+          ]
+        }
+      },
+      {
+        "name": "h2",
+        "shell": {
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x1" }, { "node": "Var", "name": "x2" }
+          ]
+        }
+      },
+      {
+        "name": "h3",
+        "shell": {
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x2" }, { "node": "Var", "name": "x3" }
+          ]
+        }
+      },
+      {
+        "name": "h4",
+        "shell": {
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x3" }, { "node": "Var", "name": "x4" }
+          ]
+        }
+      },
+      {
+        "name": "h5",
+        "shell": {
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x4" }, { "node": "Var", "name": "x5" }
+          ]
+        }
+      },
+      {
+        "name": "h6",
+        "shell": {
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": [],
+          "args": [
+            { "node": "Var", "name": "x5" },
+            { "node": "NumLit", "value": "0", "type": "Int" }
+          ]
+        }
+      }
+    ]
+  },
+  "type_metadata": {},
+  "definitional_metadata": {},
+  "library_provenance": {}
+}

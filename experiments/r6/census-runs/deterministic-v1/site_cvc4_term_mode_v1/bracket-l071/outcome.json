@@ -1,0 +1,76 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l071",
+  "route": "site_cvc4_term_mode_v1",
+  "outcome": "proof",
+  "closer": "term_mode_nat",
+  "recovery_route": "bounded_enumeration",
+  "first_error": null,
+  "error_count": 0,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "closer_selected",
+    "residual_started",
+    "residual_finished",
+    "reconstruction_finished"
+  ],
+  "axiom_delta_empty": true,
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 1.260193882000749,
+        "cgroup_cpu_usec": 1234637,
+        "cgroup_memory_peak_bytes": 185044992,
+        "exit_code": 0
+      },
+      "certificate-check": {
+        "wall_seconds": 0.04356348099827301,
+        "cgroup_cpu_usec": 13059,
+        "cgroup_memory_peak_bytes": 4399104,
+        "exit_code": 0
+      },
+      "export": {
+        "wall_seconds": 3.8939994829997886,
+        "cgroup_cpu_usec": 3824090,
+        "cgroup_memory_peak_bytes": 733945856,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 4.668044014004408,
+        "cgroup_cpu_usec": 4811558,
+        "cgroup_memory_peak_bytes": 742850560,
+        "exit_code": 0
+      },
+      "validation-local": {
+        "wall_seconds": 1.91869968699757,
+        "cgroup_cpu_usec": 1872162,
+        "cgroup_memory_peak_bytes": 49377280,
+        "exit_code": 0
+      },
+      "validation-whole": {
+        "wall_seconds": 1.8536456150031881,
+        "cgroup_cpu_usec": 1820683,
+        "cgroup_memory_peak_bytes": 47312896,
+        "exit_code": 0
+      }
+    },
+    "wall_seconds": 13.638,
+    "cpu_seconds": 13.576,
+    "peak_memory_bytes": 742850560
+  },
+  "verdict_sha256": "765a5da472d107de85b1c9facb1e9f9152a033117f6a335ee2d66fd312277220"
+}

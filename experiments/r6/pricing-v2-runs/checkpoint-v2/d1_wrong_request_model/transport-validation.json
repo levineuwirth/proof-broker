@@ -1,0 +1,40 @@
+{
+  "outbound_envelope": {
+    "accepted": false,
+    "category": "outbound_envelope_binding",
+    "mismatches": [
+      {
+        "component": "request_options",
+        "expected": {
+          "present": true,
+          "type": "dict",
+          "bytes": 244,
+          "sha256": "f9220de549221621a5787ee7865deb00650f55d953e3ae48ea649b820fbe70cf"
+        },
+        "observed": {
+          "present": true,
+          "type": "dict",
+          "bytes": 233,
+          "sha256": "d331ee64b4dae1dfa46511571c7414a96bebb2d2581c8c725c6058cb89e90d91"
+        }
+      }
+    ],
+    "captured_body_sha256": "f9092fb736ced2b034770167e434e73471822dbead377ef32547d81fddfcab95",
+    "request_sha256": "9058dadcf45abb410dd5c60356de8b1af213bf09222fd83240d777b2b8ac3154",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "policy_sha256": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d",
+    "evidence_scope": "local serialized entity-body consistency; no remote-input or inference attestation"
+  },
+  "body_consistency": {
+    "checked": false,
+    "accepted": null
+  },
+  "response_request_binding": {
+    "checked": false,
+    "accepted": null,
+    "scope": "response_request_association"
+  },
+  "certificate_verified": null,
+  "failure_category": "pricing_admission",
+  "failure_phase": "pricing_admission"
+}

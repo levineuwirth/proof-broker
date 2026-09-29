@@ -1,0 +1,8 @@
+{
+  "pilot_contract.py": "5dbb0bd71081f5fc884ae8c0fa82b448d39e16959328d4a4fefea14ab6949113",
+  "pilot_https.py": "168171eb541795a257cae07f7d842f91814a62d6a9588dc774cca4f91ae6b30a",
+  "pilot_network.py": "ddde1277ce8a3e2318d70d5b402527bfad5ba1b8297277ddadf0d3d7f8795d17",
+  "pilot_budget.py": "129517581a90ad195c1ca0bbfff7bd1749bef7616b59824393fee416960baa71",
+  "pilot_episode.py": "f818e52be09a771ab06a560c2fa31810671b396a1b22e4dd8bbe249e4c09fadd",
+  "test_pilot.py": "f96e655fccd993d0c39aa9f8bbf4aed32ca4f11e91117eb144906f3d7ac71a25"
+}

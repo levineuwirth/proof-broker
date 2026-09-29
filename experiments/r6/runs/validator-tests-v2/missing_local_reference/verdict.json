@@ -1,0 +1,5 @@
+{
+  "stage": "local_proof_binding",
+  "error": "Container does not reference local proof: Bracket.lift_cell.r6_d1_70",
+  "accepted": false
+}

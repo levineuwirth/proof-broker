@@ -1,0 +1,71 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l069",
+  "route": "site_cvc4_default_closer_v1",
+  "outcome": "closed_and_validated",
+  "closer": "gated_omega",
+  "first_error": null,
+  "error_count": 0,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "broker_closer_returned"
+  ],
+  "axiom_delta_empty": true,
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 1.1652344479953172,
+        "cgroup_cpu_usec": 1132944,
+        "cgroup_memory_peak_bytes": 182902784,
+        "exit_code": 0
+      },
+      "certificate-check": {
+        "wall_seconds": 0.0523028739989968,
+        "cgroup_cpu_usec": 16656,
+        "cgroup_memory_peak_bytes": 4689920,
+        "exit_code": 0
+      },
+      "export": {
+        "wall_seconds": 3.7519646779983304,
+        "cgroup_cpu_usec": 3697741,
+        "cgroup_memory_peak_bytes": 734515200,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 5.017513250000775,
+        "cgroup_cpu_usec": 5230211,
+        "cgroup_memory_peak_bytes": 735834112,
+        "exit_code": 0
+      },
+      "validation-local": {
+        "wall_seconds": 1.8213400499953423,
+        "cgroup_cpu_usec": 1789597,
+        "cgroup_memory_peak_bytes": 47861760,
+        "exit_code": 0
+      },
+      "validation-whole": {
+        "wall_seconds": 1.7629715650109574,
+        "cgroup_cpu_usec": 1732810,
+        "cgroup_memory_peak_bytes": 47783936,
+        "exit_code": 0
+      }
+    },
+    "wall_seconds": 13.571,
+    "cpu_seconds": 13.6,
+    "peak_memory_bytes": 735834112
+  },
+  "verdict_sha256": "0a3740de5fb31141f7874a1cbfa014e588c34968c99ed3c893fb02c0d00106e2"
+}

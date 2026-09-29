@@ -1,0 +1,167 @@
+{
+  "site_id": "bracket-l175",
+  "family": "Bracket.cell_value_neutral",
+  "exposure_class": "none_recorded",
+  "class": "posable_certificate",
+  "fragment": "LIA",
+  "row_count": 11,
+  "row_names": [
+    "hv",
+    "hrec",
+    "hz0",
+    "hz",
+    "hzh0",
+    "hZpos",
+    "hzh1",
+    "this",
+    "_pb_nonneg_Zmax",
+    "_pb_nonneg_v0",
+    "neg_goal"
+  ],
+  "neg_goal_rows": 1,
+  "variables": [
+    "Zmax",
+    "_pb_iatom_0",
+    "v",
+    "v0",
+    "z",
+    "zhigh"
+  ],
+  "reifier_data_locals": [
+    "cert"
+  ],
+  "reifier_dropped_propositions": [],
+  "farkas_omissions": [
+    "hzh"
+  ],
+  "names_unique": true,
+  "duplicate_names": [],
+  "frozen_policy_class": "farkas_omissions",
+  "arithmetic_certificate": true,
+  "certificate_rows": [
+    {
+      "index": 1,
+      "name": "hrec",
+      "coefficient": "-1"
+    },
+    {
+      "index": 2,
+      "name": "hz0",
+      "coefficient": "1"
+    },
+    {
+      "index": 7,
+      "name": "this",
+      "coefficient": "1"
+    },
+    {
+      "index": 10,
+      "name": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "certificate_support": 4,
+  "certificate_uses_neg_goal": true,
+  "certificate": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-1"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+  "policy_c": "posable",
+  "policy_c_evidence": {
+    "source_fragment": "LIA",
+    "omitted": [
+      {
+        "name": "hzh",
+        "reason": "Unsupported proposition in arithmetic projection"
+      }
+    ],
+    "omitted_names": [
+      "hzh"
+    ],
+    "posed_fragment": "LIA",
+    "input_ir_sha256": "22cb44d17ca7a23570da9f051c6306981010bcc8f7baf9439cda773fd73f372f",
+    "final_ir_sha256": "22cb44d17ca7a23570da9f051c6306981010bcc8f7baf9439cda773fd73f372f"
+  },
+  "search_context_renamed": [],
+  "search_context_entries": 15,
+  "revision_2_comparison": {
+    "prepared_before": true,
+    "prepared_after": true,
+    "input_ir_equal": false,
+    "final_ir_equal": false,
+    "rows_equal": true,
+    "user_directives_before": null,
+    "user_directives_after": {
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    },
+    "row_names_before": [
+      "hv",
+      "hrec",
+      "hz0",
+      "hz",
+      "hzh0",
+      "hZpos",
+      "hzh1",
+      "this",
+      "_pb_nonneg_Zmax",
+      "_pb_nonneg_v0",
+      "neg_goal"
+    ],
+    "row_names_after": [
+      "hv",
+      "hrec",
+      "hz0",
+      "hz",
+      "hzh0",
+      "hZpos",
+      "hzh1",
+      "this",
+      "_pb_nonneg_Zmax",
+      "_pb_nonneg_v0",
+      "neg_goal"
+    ],
+    "variables_before": [
+      "Zmax",
+      "_pb_iatom_0",
+      "v",
+      "v0",
+      "z",
+      "zhigh"
+    ],
+    "variables_after": [
+      "Zmax",
+      "_pb_iatom_0",
+      "v",
+      "v0",
+      "z",
+      "zhigh"
+    ],
+    "rows_equal_modulo_names": true
+  },
+  "revision_3_identical": {
+    "input-ir.json": true,
+    "prepared.json": true,
+    "stages/preparation/output/reification.json": true,
+    "stages/preparation/output/context.json": true,
+    "stages/pipeline-prepare/pipeline-prepare.stderr": true
+  },
+  "seconds": 6.4
+}

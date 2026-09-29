@@ -1,0 +1,31 @@
+sat
+(
+  (define-fun L6 () Int
+    1)
+  (define-fun A0 () Int
+    1)
+  (define-fun A2 () Int
+    1)
+  (define-fun A4 () Int
+    1)
+  (define-fun A3 () Int
+    1)
+  (define-fun A6 () Int
+    1)
+  (define-fun A1 () Int
+    1)
+  (define-fun A5 () Int
+    1)
+  (define-fun L5 () Int
+    1)
+  (define-fun L1 () Int
+    1)
+  (define-fun L3 () Int
+    1)
+  (define-fun L2 () Int
+    1)
+  (define-fun L0 () Int
+    1)
+  (define-fun L4 () Int
+    1)
+)

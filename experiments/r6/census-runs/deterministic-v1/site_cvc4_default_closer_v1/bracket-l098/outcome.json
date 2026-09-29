@@ -1,0 +1,35 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l098",
+  "route": "site_cvc4_default_closer_v1",
+  "outcome": "backend_not_invoked",
+  "attempts": null,
+  "first_error": "/input/Frozen.lean:99:4: error: proof_broker: no adapter could close the goal (1 attempt(s); first: ProofBroker.AttemptOutcome.skipped",
+  "error_count": 1,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received"
+  ],
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 1.2244639269920299,
+        "cgroup_cpu_usec": 1207932,
+        "cgroup_memory_peak_bytes": 185450496,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 4.343458606992499,
+        "cgroup_cpu_usec": 4558590,
+        "cgroup_memory_peak_bytes": 720707584,
+        "exit_code": 1
+      }
+    },
+    "wall_seconds": 5.568,
+    "cpu_seconds": 5.767,
+    "peak_memory_bytes": 720707584
+  },
+  "verdict_sha256": null
+}

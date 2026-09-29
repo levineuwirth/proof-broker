@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.invalid/experiments/r6/verdict-1",
+  "title": "R6 saved-proof verdict, not a search event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "search_policy",
+    "accepted",
+    "local_obligation_closed",
+    "whole_declaration_validated",
+    "challenge_sha256",
+    "solution_sha256",
+    "proof_exporter_sha256",
+    "replay_binary_sha256",
+    "manifest_sha256",
+    "runtime_sha256",
+    "harness_sources_sha256",
+    "axiom_delta",
+    "final_validation"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "result": {
+      "type": "object",
+      "required": [
+        "accepted",
+        "stage"
+      ],
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "stage": {
+          "enum": [
+            "isolation",
+            "policy",
+            "export_parse",
+            "challenge_match",
+            "axiom_policy",
+            "local_proof_binding",
+            "kernel_replay",
+            "validation_process",
+            "complete"
+          ]
+        },
+        "error": {
+          "type": "string"
+        },
+        "kernel_version": {
+          "const": "4.32.2"
+        },
+        "checked_declarations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "local_proof_binding_checked": {
+          "type": "boolean"
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "declaration_exists",
+              "statement_and_dependencies_match",
+              "kernel_accepted",
+              "axioms",
+              "type_sha256",
+              "type_hash_format"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "accepted": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "kernel_version",
+              "checked_declarations",
+              "targets"
+            ],
+            "properties": {
+              "stage": {
+                "const": "complete"
+              }
+            }
+          },
+          "else": {
+            "required": [
+              "error"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "task_id": {
+      "enum": [
+        "verinf-d1-70",
+        "c1-c8-2p18"
+      ]
+    },
+    "search_policy": {
+      "enum": [
+        "human_omega",
+        "saved_export"
+      ]
+    },
+    "accepted": {
+      "type": "boolean"
+    },
+    "local_obligation_closed": {
+      "type": "boolean"
+    },
+    "whole_declaration_validated": {
+      "type": "boolean"
+    },
+    "challenge_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "solution_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "proof_exporter_sha256": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "replay_binary_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "manifest_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "runtime_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "harness_sources_sha256": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "axiom_delta": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "added",
+          "removed"
+        ],
+        "properties": {
+          "added": {
+            "$ref": "#/$defs/names"
+          },
+          "removed": {
+            "$ref": "#/$defs/names"
+          }
+        }
+      }
+    },
+    "final_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local",
+        "whole"
+      ],
+      "properties": {
+        "local": {
+          "$ref": "#/$defs/result"
+        },
+        "whole": {
+          "$ref": "#/$defs/result"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "accepted": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "local_obligation_closed": {
+            "const": true
+          },
+          "whole_declaration_validated": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "local_obligation_closed": {
+            "const": true
+          },
+          "whole_declaration_validated": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "accepted": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}

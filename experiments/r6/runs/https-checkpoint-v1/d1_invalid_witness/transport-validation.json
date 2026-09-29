@@ -1,0 +1,26 @@
+{
+  "outbound_envelope": {
+    "accepted": true,
+    "category": null,
+    "mismatches": [],
+    "captured_body_sha256": "0974efed361dc4a5a0e4500234c4de64777524b5625e552e8932d094d68b3ded",
+    "request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707",
+    "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+    "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+    "evidence_scope": "local serialized entity-body consistency; no remote-input or inference attestation"
+  },
+  "body_consistency": {
+    "checked": true,
+    "accepted": true
+  },
+  "response_request_binding": {
+    "checked": true,
+    "accepted": true,
+    "scope": "response_request_association",
+    "expected_request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707",
+    "received_request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707"
+  },
+  "certificate_verified": null,
+  "failure_category": null,
+  "failure_phase": null
+}

@@ -1,0 +1,11 @@
+{
+  "usage": {
+    "status": "provider_reported",
+    "cost_usd": null,
+    "input_tokens": 11,
+    "output_tokens": 7,
+    "total_tokens": 18,
+    "cached_tokens": 2,
+    "reasoning_tokens": 3
+  }
+}

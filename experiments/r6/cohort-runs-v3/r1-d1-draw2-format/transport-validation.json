@@ -1,0 +1,30 @@
+{
+  "outbound_envelope": {
+    "accepted": true,
+    "category": null,
+    "mismatches": [],
+    "captured_body_sha256": "e684c1167a4eb9eed768114fcb242d71bf3996c3521cf8216090d961670ba8a5",
+    "request_sha256": "462938f3d5be9f463de23f5d4750489234e6c9b7cfaaecdae910890df9af32d8",
+    "contract_sha256": "84d9289abf8c6c0df3cb3282e5c46826450ee6645a54981e76a91c228c43fe90",
+    "evidence_scope": "serialized entity-body consistency against the contract rendering; no remote-input or inference attestation"
+  },
+  "local_send_consistency": {
+    "checked": false,
+    "accepted": null,
+    "scope": "the bytes handed to HTTPSConnection.send equal the admitted serialized body; not a remote-input attestation"
+  },
+  "remote_receipt": {
+    "checked": false,
+    "accepted": null,
+    "scope": "local canned TLS receiver"
+  },
+  "response_request_binding": {
+    "checked": false,
+    "accepted": null,
+    "scope": "response_request_association"
+  },
+  "certificate_verified": null,
+  "send_outcome": "not_started",
+  "failure_category": "credential_format",
+  "failure_phase": "credential_delivery"
+}

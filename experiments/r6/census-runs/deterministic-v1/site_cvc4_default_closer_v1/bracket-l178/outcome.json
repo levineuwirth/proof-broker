@@ -1,0 +1,71 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l178",
+  "route": "site_cvc4_default_closer_v1",
+  "outcome": "closed_and_validated",
+  "closer": "gated_omega",
+  "first_error": null,
+  "error_count": 0,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "broker_closer_returned"
+  ],
+  "axiom_delta_empty": true,
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 0.9526416160078952,
+        "cgroup_cpu_usec": 910722,
+        "cgroup_memory_peak_bytes": 182472704,
+        "exit_code": 0
+      },
+      "certificate-check": {
+        "wall_seconds": 0.041179640000336803,
+        "cgroup_cpu_usec": 11566,
+        "cgroup_memory_peak_bytes": 4669440,
+        "exit_code": 0
+      },
+      "export": {
+        "wall_seconds": 2.8055338240083074,
+        "cgroup_cpu_usec": 2736325,
+        "cgroup_memory_peak_bytes": 735752192,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 3.4631716400035657,
+        "cgroup_cpu_usec": 3685970,
+        "cgroup_memory_peak_bytes": 734584832,
+        "exit_code": 0
+      },
+      "validation-local": {
+        "wall_seconds": 1.5131762139935745,
+        "cgroup_cpu_usec": 1479809,
+        "cgroup_memory_peak_bytes": 41533440,
+        "exit_code": 0
+      },
+      "validation-whole": {
+        "wall_seconds": 1.8030404400051339,
+        "cgroup_cpu_usec": 1764562,
+        "cgroup_memory_peak_bytes": 45400064,
+        "exit_code": 0
+      }
+    },
+    "wall_seconds": 10.579,
+    "cpu_seconds": 10.589,
+    "peak_memory_bytes": 735752192
+  },
+  "verdict_sha256": "3b5b9172473f91edcf0dc55c8fea0915f6a503c6bfaba6777644509240c63819"
+}

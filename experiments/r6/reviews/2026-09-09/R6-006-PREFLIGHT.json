@@ -1,0 +1,198 @@
+{
+  "passed": true,
+  "policy_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+  "source_lock_sha256": "71fda7eb6d7c2b40dce1b14b73613216c6bc91ad39ab662a90f418e86e5d1bbb",
+  "public_gate_record_sha256": "c48ffff22cfec1e9b4040895d276ecfc5b9fdda3a56d9bfbe7793fdab3dbdc26",
+  "suite_counts": {
+    "focused.json": 28,
+    "native.json": 17,
+    "audits.json": 32
+  },
+  "content_checks": 77,
+  "gate_checks": 15,
+  "total_checks": 92,
+  "price_basis": {
+    "model": "gpt-5.4-2026-03-05",
+    "nano_usd_per_token": {
+      "cache_write": 2500,
+      "cached_input": 250,
+      "input": 2500,
+      "output": 15000
+    },
+    "sources": {
+      "caching": {
+        "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+        "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af"
+      },
+      "model": {
+        "extract_sha256": "daa16b1f391816eba87b9daa7af57c1f4980cacc615c77ddd3bd1f0493ab0ee2",
+        "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819"
+      }
+    }
+  },
+  "preflight_program_sha256": "f23e3ca2b32552d293fab96250ed918e30d3befce10e931a93eb4143184bc45a",
+  "event_hashes_recomputed": 377,
+  "sealed_hashes_recomputed": 3178,
+  "episodes": {
+    "d1_valid": {
+      "events": 49,
+      "sealed": 244,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_invalid_witness": {
+      "events": 25,
+      "sealed": 200,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_missing_permit": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_forged_admission": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_wrong_reservation": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_changed_request": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_raw_source_changed": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_semantic_source_changed": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_stale_source": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_future_source": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_host_stale_source": {
+      "events": 13,
+      "sealed": 148,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": false
+    },
+    "d1_wrong_request_model": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_http503": {
+      "events": 18,
+      "sealed": 181,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_untrusted_ca": {
+      "events": 18,
+      "sealed": 178,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": true,
+      "transport_stage_present": true
+    },
+    "d1_reflected_canary": {
+      "events": 18,
+      "sealed": 181,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "c8_valid": {
+      "events": 49,
+      "sealed": 244,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "c8_invalid_witness": {
+      "events": 25,
+      "sealed": 200,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    }
+  },
+  "preservation": {
+    "checked_files": 16292,
+    "inventory_sha256": "7203c7be2bc8f68c6472bb7cc6e810f758d8adf5adc7e078958b47ee9b60d6b9",
+    "git_base": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+    "scope": "pre-work Git-selected bytes, including closed uncommitted R6-004/005 and closeouts"
+  },
+  "retention_inputs": {
+    "files": 3243,
+    "apparent_bytes": 85385195,
+    "distinct_blobs": 807,
+    "unique_bytes": 11017752,
+    "inventory_sha256": "ba45501c5ee470fb3a3e23e87e878327b706d2207701d4db207b716d3efe88a7",
+    "scope": "Git-selected R6-006 additions before this output; record excluded to avoid self-reference"
+  },
+  "publication": {
+    "files_scanned": 3291,
+    "canaries": 17,
+    "expected_reflection_matches": 2,
+    "unexpected_matches": 0,
+    "new_non_run_artifacts_scanned": true
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "independent artifact recount and publication scan; no new native execution or inference attestation"
+}

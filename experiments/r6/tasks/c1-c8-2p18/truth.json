@@ -1,0 +1,9 @@
+{
+  "method": "integer upper bound from g_hi.val < 2^42",
+  "maximum_lhs": 1152921504606584832,
+  "rhs": 18446744069414584321,
+  "strict_margin": 17293822564807999489,
+  "true": true,
+  "zero_witness_satisfies_hypotheses": true,
+  "qualification": "arithmetic derivation, subsequently checked by the frozen Lean human proof"
+}

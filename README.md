@@ -198,6 +198,7 @@ The roadmap's original Phase 0–6 numbering is kept for the history in
 | R3 | specialization + lifting: ℕ→ℤ, polymorphic α, definitional unfolding inverted in the lifted term | Phase 2.1–2.3, 2.7 (metadata, lifting) |
 | R4 | external demo: `by proof_broker` on a downstream Lake project's ℕ/ℤ LIA and UFLIA obligations | Phase 3 exit criterion applied externally |
 | R5 | spec v1.1 delta, roadmap v1.1, docs consolidation | Phase 1 → v1.1 checkpoint (never written), Phase 5/6 double meaning resolved |
+| R6 | learned search behind the fixed acceptance boundary: an audited live cohort on VerInf's census obligations ([synthesis](experiments/r6/R6-SYNTHESIS.md)) | — |
 | shipped | Phases 0 (foundations), 1 (skeleton), 2.8 (capability matching), 3 (breadth: Vampire and the LLM adapter + replay closer on both bridges; concurrent dispatch on Lean only — the Rocq bridge dispatches sequentially through `Dispatch.run`, decide-list), 4 (Rocq probe: the shell calculus survived a second home system; the metadata half of the IR was never probed — R3), 5 (term-mode parity), 6 (cross-platform CI matrix + signing scaffold) | see `delta.md §2`, `RETROSPECTIVES/` |
 
 ## Layout
@@ -210,6 +211,9 @@ The roadmap's original Phase 0–6 numbering is kept for the history in
   kinds)
 - `examples/` — hand-written reference IR documents for the spec §12
   worked examples; canonical fixtures for downstream components
+- `experiments/r6/` — R6: untrusted learned Farkas-witness proposal behind the broker's fixed
+  acceptance boundary, from the deterministic protocol (R6-000) to an audited 88-slot live cohort
+  (R6-014); start at [the synthesis](experiments/r6/R6-SYNTHESIS.md)
 - `sdk/` — OCaml shared library: IR rewriter, certificate verifier
   (envelope, Farkas, per-step Alethe re-check = the Tier-3 mint gate,
   TSTP provenance), dispatcher (Thread-based concurrent driver),

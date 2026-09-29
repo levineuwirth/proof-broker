@@ -1,0 +1,102 @@
+{
+  "id": "resp_03f3fc8ec8fbc1d5016abaf6ec7aec87d1b943a23335fe21d0",
+  "object": "response",
+  "created_at": 1790637804,
+  "status": "completed",
+  "access_programs": null,
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1790637811,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": 4096,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-2026-03-05",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_03f3fc8ec8fbc1d5016abaf6ed523487d19321aa0f31919942",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABquvbzvu4RZ-PL3XZJLHpUOfH1kh3QqYaXsK9X6zqfP6x9UcV01wL7tc5IPhHop_kU4JmM_O3vC4Kf_THx3ADVxeKgaIlHuY8zy8Gr7x-0apDlp98bubVLQD8bjTWCMFCKH2vBf87ehklcP5FNjEpEt0v3E7oWwVkB6_FKgb1OKRormKFv2KeGEa6DdZPKDFfKmYkH_IWnoMFGpIqAVl8ZvFuf0IKSHN7p3D5PJLuko-FAq1_bfOsHu54XzaZJNe3hwVXmRV7h07daPY4xX8hg-YYXTNjIFouxevJewmSI7jb2TBh1zaTQWw9gWnhLamwJWj3cdK0zl9Jpy7yRi-YupuCq3PlOFDGiIs51O6GnlJb7koBapUZE_Ztg0KZOwYo8_YLb3wtG6XZIV2sL7GdSupdgbq1DQp_x4HEAVGPHJpyXLTZC9Oposm3vxsYwmoke3feve42h6gSlqEkIi-ZeKYoEIuh0wULOaxI-kfsfl0aU3rNneLCktk7Xoxs--1s1w_dJPuPI46-pmKmsuM2htOO8UEzU_iBZBhhT_qG3jqsLPKfMMACs72ypd7WjOL-4yl3WOhrdYMLj6hCVdl8or5kv64RlX9d9vE-NH3sioy7K-GtWpIwYixvo04ve94ApVusQDZAuyU0_Rzl34ZtSttz_ocJWsfL-Vt_EieKbI9bu1ABZ-ZZlLXwM9X2bUQAt9uU760viN3ysVDhlgE-yzkQh5t6BBiPgWQldcGGY-KE9AXx5KagvE9BCaGKGPPiDNt3to_ToEENZhy2ggSbsiqRbzXDCkI3vZzTHmpqp4ahFwsWe5hi_MtmruM5KtHZBdpLFrO-MZRq-1hSG7kOo5T9EwaYrAYdTzsy0khwhKzsxL7S4jzMGGTIibUel6-7H40cj9LpgC3VEU4a5adY2plVjRwSA8VVBMMF-ow4iJX7eIHdzHSlHXSTAVUBnmft-T_9CbqTWJEZ5PcLphgwcpXArfSI5De4ci-btQhGoXl_8PJMpPGxttpGZMmU3dlyIPlHcErurIh1ow5v6z6zMUhQ1IdIP45jvi6Ua-ETT2dbxqJVj7LPiQHkogMZgF0u3T68ssEkUJcRZ0IN1Wmc3Dww101bLLVMSdptd1Unc5Tvz9i__XwwOxAidAWVt-Dhd-nlqVx70Am9P8CPTl5uIx245JK2I9rViIvzn4llFK6Na4s5XOryOEXjg6IHQEitnQu_qufnLgNuTaWtmJWZMZ1SJiLyVARvBSEMyZPGbxoI7go9J8Z1h0HAzSHHJqwDAwSTVVIRLWwGbs8AiWTdcKow0H9D6HTMq2Xiu3r3209MwuaR4xljOZsVWCT3vwmZZb3rdjRX_tYdF61jO2MKGbS65aboveth-apK9Q0OQLF4zanqv_YhR0RRii9_sN1Ny1Osv8huXRBoFxdh2B1suOSmvvos0cK8dJVaM-5-txsn-SVFFAPrLniLbzkrnCpfB_vukihV3BPBBVPEXkRxuLP-exbMBk6PPkhZ2wvGLUN3PeDcfSNzi51uV_mpUz2gN6OtghiF2YaPtfDd6blpIhxv6E3qvBeL8--YXaPEh6UzoVArTM444mo9B5Sa0R12qMqscFkj8a0rdpYAl-wosrLzcb2XgHxjvZ-JrksI2grElEIBTQeNGcm7eXUNUIuufzCVOt7LDlMQ6QgXt7fnmTcypPmHQsnYA-Fq_KFU7JAes2wZXQXduVpSdE7_-mMiNZujQlW8AC4JnkEj2BHfJC_yiYsAcw-NErTb80ljd4VwQ5I_HWjDUum_Hfju4Vp99SMwkPh74H7QFE7TMHUjvEJ8N4pV_EjpBA-SqPHElKPbjm1ez1cN7FgZ1S77VlpwJvhjuicGCIUN5D6MekeSkCjexQqd3GY4jyISKCk7LqCT2sx3ZkfkNRImU4T6vRo9qfAGlIT-IQhXNotGptbyIiQx4qGFHEw63YC3N_NbScP4f5hs98JPx7jUPMS2waSqpxZpzC8r3ojgJ0hkJrZiQbxGOGmBbdp3YkRkaaG0ljNG534rBCpNYK0bl79P46c0b-803oFoyQtwuPHCArFWezCK9LPQvtxWXBK3TkmwhbPxFDpKnFnm6_slM8sMQ5HPfRB6rwnyiVsvKxUAQqNSXC2sBSQF102rIAqDnro5NoJYt98RGOUAVF0gLKeA1hCoTOY5XRAkRV1bdHgWiBliUL5aflIFyQk-AdbEWwhw4Rne8fGGKFfIfQid3nuiYuyVCx9DRUC3HFEPCabstKxN4IBQeyUfC9oubql2cW8fYil6mgBXYbJgzLki2P1GEp6SQWDgoG2jVLcBjQX_AkmcFkUsKOF0xJGgwSFnvTQKwFcFXLf33o7uqLF8oYj9P7kahUfFVYHuOGgkbWrbugfrUeqieegKAZbSBW0YNtUkFA3x5Hjc_ovhlBfi6mdVi7B_KcX-_ZH3ZLUlIaO1wPxPKCCh4p66UAE_c9zQFzHXkfkyycpSJ_sgu9hE391hmfcr1YwP81Yh5EY-KFsu9POGN8iU7GK4dFPhUff3njNb1k7K2jH9PmzPnIbb7LHkzD2cAZBf_XT2QagxsWe52CyktQCPMAMDDLXhVxJQthpXLEk4nU5ac4t5zuA-dDARfARBLb_s9lS1SpEiv5W-IVVet9RQfYPuYY3vZy8SQYU0I-wPDK4x_8NC_zDVOgim-uSGact98pQ0GkHmane7Ret4K3N2DwrzNqEBg9uPdLgmBWU88D1TaPUDKA41C9FmnPR8WInGvUI2nJihYBfcHMa3x9Unvu9-fEY33u82FdO_8SYtm6L-yBB3KA_Fqnu98N7Ff90wwZgZk0iPaQvl1laYWsUp7NDS4m9UPnHVOs48hY0-R0KC25r6a_uYbCz1u5nJNaM6HRCx7giIDmDazuIJVj5_Phbdwq71MVHG07gOVKZGhbJXS_1v6bOhZn3mDtsZbC4XOBWdLp_ISM7soH7Bl7zNpFiwyIL1C9impZ2taUMt-gcp5NYM4ijE_Ebvn82rOYR6f6KpXf_zMX7vCoflIzE41ZIZFrXWvJviWCLrvl_MOsv7v-DoBWkoDe09qF7d0d8v5z11Wd16tYStX9BIEjOpqmDHAZsz5LolBIfdBru2BHbGsQJHpOiSyhsBZIqwc7wfKZ3iwZjxvviWtLgcJvGHPkA==",
+      "summary": []
+    },
+    {
+      "id": "msg_03f3fc8ec8fbc1d5016abaf6f2e51c87d1b536f63ec74f6c10",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "{\"request_sha256\":\"b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13\",\"witness\":{\"coefficients\":[{\"hypothesis\":\"hzsum\",\"coefficient\":\"1\"},{\"hypothesis\":\"hle\",\"coefficient\":\"1\"},{\"hypothesis\":\"neg_goal\",\"coefficient\":\"1\"}]}}"
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": false,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "medium",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "none",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 1569,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 602,
+    "output_tokens_details": {
+      "reasoning_tokens": 509
+    },
+    "total_tokens": 2171
+  },
+  "user": null,
+  "metadata": {}
+}

@@ -1,0 +1,223 @@
+{
+  "capture_identities": [
+    "d4a867711460c296132a26e71612b3533befc5a2d28d3e7cf68476ef6d7ab942"
+  ],
+  "captured_sources": {
+    "caching": {
+      "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+      "raw_bytes": 712212,
+      "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af",
+      "receipt_sha256": "facce4f91640c60a5fa87beedd4579eee54214ba6b634bfd6a2b0dc266432154"
+    },
+    "model": {
+      "extract_sha256": "daa16b1f391816eba87b9daa7af57c1f4980cacc615c77ddd3bd1f0493ab0ee2",
+      "raw_bytes": 419092,
+      "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819",
+      "receipt_sha256": "76dc28f11506cd6dae068fc016da2e69144a48fc90a5b4afb7f08535c3c7fa11"
+    }
+  },
+  "counts": {
+    "actor_pricing_acceptances": 7,
+    "actor_pricing_rejections": 9,
+    "body_sends": 6,
+    "connection_attempts": 7,
+    "endpoint_receipts": 6,
+    "episodes": 17,
+    "host_pricing_rejections": 1,
+    "proofs_accepted": 2,
+    "reservations": 16
+  },
+  "distinct_enrolled_captures": 1,
+  "episodes": {
+    "c8_invalid_witness": {
+      "actor_admitted": true,
+      "body_sends": 1,
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "reservations": 1
+    },
+    "c8_valid": {
+      "actor_admitted": true,
+      "axiom_delta": {
+        "R6.C8.coefficient_bound": {
+          "added": [],
+          "removed": []
+        },
+        "R6.C8.coefficient_bound.r6_c8": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "body_sends": 1,
+      "byte_identical_to_r6_003": true,
+      "checked_declarations": {
+        "local": 1470,
+        "whole": 1471
+      },
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "proof_bytes": 4032429,
+      "proof_sha256": "67e53933b2185f0c65dc628a9e7d770d8e71638731fe7f4f20deb99cb53a68ae",
+      "reservations": 1,
+      "type_hashes": {
+        "local": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2",
+        "whole": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2"
+      }
+    },
+    "d1_changed_request": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_request_body_binding",
+      "reservations": 1
+    },
+    "d1_forged_admission": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_permit_binding",
+      "reservations": 1
+    },
+    "d1_future_source": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_capture_in_future",
+      "reservations": 1
+    },
+    "d1_host_stale_source": {
+      "actor_admitted": null,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": false,
+      "pricing_failure_code": "pricing_capture_stale",
+      "reservations": 0
+    },
+    "d1_http503": {
+      "actor_admitted": true,
+      "body_sends": 1,
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "reservations": 1
+    },
+    "d1_invalid_witness": {
+      "actor_admitted": true,
+      "body_sends": 1,
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "reservations": 1
+    },
+    "d1_missing_permit": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_permit_missing",
+      "reservations": 1
+    },
+    "d1_raw_source_changed": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_raw_drift_model",
+      "reservations": 1
+    },
+    "d1_reflected_canary": {
+      "actor_admitted": true,
+      "body_sends": 1,
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "reservations": 1
+    },
+    "d1_semantic_source_changed": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_semantic_drift_model",
+      "reservations": 1
+    },
+    "d1_stale_source": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_capture_stale",
+      "reservations": 1
+    },
+    "d1_untrusted_ca": {
+      "actor_admitted": true,
+      "body_sends": 0,
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "reservations": 1
+    },
+    "d1_valid": {
+      "actor_admitted": true,
+      "axiom_delta": {
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "body_sends": 1,
+      "byte_identical_to_r6_003": true,
+      "checked_declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "connection_attempts": 1,
+      "host_admitted": true,
+      "pricing_failure_code": null,
+      "proof_bytes": 10778141,
+      "proof_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "reservations": 1,
+      "type_hashes": {
+        "local": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+        "whole": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe"
+      }
+    },
+    "d1_wrong_request_model": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_request_options",
+      "reservations": 1
+    },
+    "d1_wrong_reservation": {
+      "actor_admitted": false,
+      "body_sends": 0,
+      "connection_attempts": 0,
+      "host_admitted": true,
+      "pricing_failure_code": "pricing_reservation_amount",
+      "reservations": 1
+    }
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "nano_usd_per_token": {
+    "cache_write": 2500,
+    "cached_input": 250,
+    "input": 2500,
+    "output": 15000
+  },
+  "passed": true,
+  "program_sha256": "b01597654d4b7d99b298868dc3a245f6da411ea566e84d41ed405632eb08bbbd",
+  "reservation_micro_usd": 102400,
+  "scope": "re-derived recorded boundary counts and bytewise proof comparison, separate from conformance-case counts; no new native replay or inference attestation"
+}

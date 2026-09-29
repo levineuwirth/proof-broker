@@ -1,0 +1,139 @@
+{
+  "schema_version": "r6-review-membership-decision-1",
+  "reviewed_commit": "51dd7ab",
+  "decision": "retain_complete_fifteen_site_primary_population",
+  "execution_readiness": "pending_census_artifact_auditor_and_exposure_addendum",
+  "membership_proposal_sha256": "1c086c277ba27502d6d0bea01b12cb6f4fa80a284ef92ac0832f6984dedcddd3",
+  "census_sha256": "7b09ffd5bd42d01bc4b93a78e6462d30764cb3d0e06f868aa27f8443c848b54c",
+  "primary": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "manifests_sha256": {
+    "bracket-l069": "99521fe9eaff2fd4769db21c3781a13f3d4cc46bf5caef157fcb457719777904",
+    "bracket-l070": "6a6e8817ee3f7c1ec30c475086abc356aedab912b04f1c1e0a8eab4cebd62308",
+    "bracket-l071": "30aca308306819d54ba750f9aa3a75c3108cbbad4e3deead25e5e3693b542cdb",
+    "bracket-l078": "723210a567a1d5d9bdde7283beb0d117ab0b14cad561851f5751ff115dd680c1",
+    "bracket-l096": "7279beb0b042e934d7185176f9c6e49a2d4ef9a84c2de85907d04711717cc2be",
+    "bracket-l098": "8127836d65de51434b623dce20cb9f07103890e0ac5e4a955c444beb16ac9fbb",
+    "bracket-l099": "d9f7eeca3b964b8322efcf29f0e72671f799c30e78802239a7ee83ef2d8c30ae",
+    "bracket-l101": "ee40bbfcf8050a91d5bd761771b43b6e71f8679c3d23e0e027836679255d147b",
+    "bracket-l158": "8e29e2c4cb6532dedead211a6e8125985e5bcf200cea13958a3dbb890dbb537c",
+    "bracket-l166": "d07ac9cdd15187789a500e4eb09fc2531ecc118073098413de486fea2821bf8a",
+    "bracket-l170": "be81bd3f293d0a460ca5f0d5be3ffb3d33a7b91edd5cff0f8205b6958c5c9374",
+    "bracket-l175": "eff06b10a2b0b8d636ab2fd43eb6855daa88ebf7d647148f9e900d2138a97724",
+    "bracket-l178": "9d8394955cf8c1a65fa161b46f9efb8c1e777e9a6be493f19f0e5378c811435c",
+    "bracket-l180": "fb32560e4ada253f702f27e0f660c7af82c24e5e6426e09cb0eec1006654b8f2",
+    "bracket-l204": "1610766effb8d238b62e0c647788ea0a86610b5178e45c728a4848246b5f45fa"
+  },
+  "families": {
+    "Bracket.Row.s1_noninc": [
+      "bracket-l204"
+    ],
+    "Bracket.cell_value_neutral": [
+      "bracket-l158",
+      "bracket-l166",
+      "bracket-l170",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l180"
+    ],
+    "Bracket.lift_cell": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078"
+    ],
+    "Bracket.threshold_unique": [
+      "bracket-l096",
+      "bracket-l098",
+      "bracket-l099",
+      "bracket-l101"
+    ]
+  },
+  "strata": {
+    "prior_direct_target": [
+      "bracket-l070"
+    ],
+    "prior_input_premise_formula": [
+      "bracket-l069"
+    ],
+    "prior_target_family": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078"
+    ],
+    "refutation_targets": [
+      "bracket-l098",
+      "bracket-l101"
+    ],
+    "symmetric_target_pairs": [
+      [
+        "bracket-l096",
+        "bracket-l099"
+      ],
+      [
+        "bracket-l098",
+        "bracket-l101"
+      ]
+    ]
+  },
+  "reporting": {
+    "main_population": "all fifteen fixed local obligations; operational census, not an untouched held-out capability set",
+    "family_reporting": "site results and four family summaries; families are clusters, not established independent samples",
+    "sensitivity_sets": {
+      "omit_prior_direct_target": [
+        "bracket-l069",
+        "bracket-l071",
+        "bracket-l078",
+        "bracket-l096",
+        "bracket-l098",
+        "bracket-l099",
+        "bracket-l101",
+        "bracket-l158",
+        "bracket-l166",
+        "bracket-l170",
+        "bracket-l175",
+        "bracket-l178",
+        "bracket-l180",
+        "bracket-l204"
+      ],
+      "omit_prior_target_family": [
+        "bracket-l096",
+        "bracket-l098",
+        "bracket-l099",
+        "bracket-l101",
+        "bracket-l158",
+        "bracket-l166",
+        "bracket-l170",
+        "bracket-l175",
+        "bracket-l178",
+        "bracket-l180",
+        "bracket-l204"
+      ]
+    },
+    "as_task_false_meaning": "not previously used as a target in the recorded experiments, not unseen or uncontaminated",
+    "prior_live_samples": "exploratory history only; do not pool with new contract-bound cohort draws"
+  },
+  "constraints": [
+    "Freeze the execution approval receipt before either experimental arm.",
+    "Do not remove sites after seeing deterministic success; record unsupported theory or reification loss separately.",
+    "Same model-visible input contract and context rules for all repeated draws of each site.",
+    "Source contexts and human proofs remain evaluator reference artifacts; learned-arm payload stays IR-only."
+  ],
+  "live_model_calls_authorized": 0
+}

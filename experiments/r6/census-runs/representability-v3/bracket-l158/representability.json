@@ -1,0 +1,23 @@
+{
+  "site_id": "bracket-l158",
+  "family": "Bracket.cell_value_neutral",
+  "exposure_class": "none_recorded",
+  "class": "interface_refused",
+  "reason": {
+    "stage": "pipeline-prepare",
+    "exit_code": 1,
+    "resource_exhausted": null,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_head": "",
+    "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+    "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+  },
+  "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v3/bracket-l158/stages/pipeline-prepare",
+  "search_context_renamed": [],
+  "search_context_entries": 11,
+  "revision_2_comparison": {
+    "prepared_before": false,
+    "prepared_after": false
+  },
+  "seconds": 6.8
+}

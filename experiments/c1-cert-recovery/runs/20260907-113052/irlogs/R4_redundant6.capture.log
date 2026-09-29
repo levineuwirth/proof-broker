@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/R4_redundant6.json | hypotheses=15 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/R4_redundant6.dump.lean:21:2: warning: 'pb_dump_ir"ir/R4_redundant6.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00718ms
+	elaboration 4.23ms
+	fix level params 0.013ms
+	instantiate metavars 0.019ms
+	interpretation 0.105ms
+	linting 16.6ms
+	module linting 0.000972ms
+	overlappingInstancesLinter 0.577ms
+	parsing 0.349ms
+	process pre-definitions 0.122ms
+	share common exprs 0.0489ms
+	tactic execution 12.8ms
+	tacticAnalysis 2.4ms
+	type checking 7.54ms
+	typeclass inference 9.92ms
+PEAK_RSS_BYTES=687865856
+EXIT=0 WALL=4.1s CAP=8G

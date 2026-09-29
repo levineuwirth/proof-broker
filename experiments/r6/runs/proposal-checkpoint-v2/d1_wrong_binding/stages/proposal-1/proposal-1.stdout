@@ -1,0 +1,13 @@
+{"request_sha256":"0000000000000000000000000000000000000000000000000000000000000000","witness":{
+  "coefficients": [
+    {
+      "hypothesis": "hZ",
+      "coefficient": "4"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "2"
+    }
+  ]
+}
+}

@@ -1,0 +1,36 @@
+{
+  "attempts_reserved": 1,
+  "reservation": {
+    "attempt": 1,
+    "reserved_micro_usd": 163840,
+    "spent_plus_reserved_micro_usd": 163840,
+    "message_utf8_bytes": 5203,
+    "input_tokens_reserved": 16384,
+    "output_tokens_reserved": 4096,
+    "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+    "billing_guarantee": false,
+    "request_sha256": "b58aba4dddee42c6008e814fedf873c61ed3ff1ea23959abf231d7e804afd707",
+    "arguments_sha256": "adc168e8044aea9963e3657b45f2df6080e3bc9d7f801f122be91c395da917d0",
+    "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4"
+  },
+  "connection_attempts": 1,
+  "headers_started": 0,
+  "bodies_started": 0,
+  "bodies_returned": 0,
+  "endpoint_receipts": 0,
+  "usage": {
+    "status": "unreported",
+    "cost_usd": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cached_tokens": null,
+    "reasoning_tokens": null
+  },
+  "usage_status": "unreported",
+  "priced_usage_ceiling_micro_usd": null,
+  "reservation_released": false,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "independent simulated episode reservation; synthetic usage or unknown, no billing observation"
+}

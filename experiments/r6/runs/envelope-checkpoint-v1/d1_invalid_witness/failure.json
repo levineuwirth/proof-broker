@@ -1,0 +1,20 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "canned_envelope_v1",
+  "failure_stage": "certificate-check",
+  "failure_phase": "certificate_verification",
+  "failure_category": "certificate_verification",
+  "error": "Farkas witness was not verified",
+  "evidence": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "farkas_not_contradictory",
+      "detail": "weighted sum is -5*Zmax + 55340232208193355782, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:c0f213be4218bc1e95292226afc6653cf5dc71ea3cf3479f1fb5acd96f3b9281"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

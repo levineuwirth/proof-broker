@@ -1,0 +1,24 @@
+runs/20260906-204453/lean/B2_false_2p22.omega.lean:22:2: error: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  0 ≤ a ≤ 4398046511103
+  a ≥ 4398046510081
+where
+ a := ↑g_hi.val
+cumulative profiling times:
+	attribute application 0.00652ms
+	elaboration 2.5ms
+	fix level params 0.0161ms
+	instantiate metavars 0.00885ms
+	interpretation 0.00297ms
+	linting 15.3ms
+	module linting 0.00104ms
+	overlappingInstancesLinter 0.855ms
+	parsing 0.228ms
+	process pre-definitions 0.185ms
+	share common exprs 0.0493ms
+	tactic execution 0.677ms
+	tacticAnalysis 1.57ms
+	type checking 0.15ms
+	typeclass inference 3.74ms
+PEAK_RSS_BYTES=683581440
+EXIT=1 WALL=4.3s CAP=8G

@@ -1,0 +1,8 @@
+; DIAGNOSTIC ONLY — this executable is part of the checkpoint-1 campaign, not
+; of the SDK. It links `proof_broker` read-only: it calls the library's own
+; functions in the order the adapters call them and reports what each one
+; returned. It changes nothing in sdk/ and is not referenced by any SDK
+; target, test or CI job.
+(executables
+ (names diag negcheck exact_budget)
+ (libraries proof_broker yojson unix zarith str))

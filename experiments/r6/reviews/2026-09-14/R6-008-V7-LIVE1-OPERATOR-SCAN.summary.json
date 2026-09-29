@@ -1,0 +1,63 @@
+{
+ "accepted": true,
+ "decompression_limit_bytes": 67108864,
+ "disclosures": [],
+ "encoded_forms": [
+  "utf-8",
+  "utf-8-lower",
+  "utf-8-upper",
+  "base64",
+  "hex",
+  "utf-16-le",
+  "utf-16-be"
+ ],
+ "files_scanned": 49391,
+ "full_report_bytes": 19545851,
+ "full_report_sha256": "4884bcb26cf493eb30f83b126056c52c4d7698a8d071b0b58c6918e2cb6e29a1",
+ "gzip_streams_scanned": 379,
+ "incompletely_scanned": [],
+ "inventory_entries": 49391,
+ "inventory_sha256": "d6a6e9e5c7ed5b119c2082fc818dea1ae047cdf8a76e95987674d06dfc5f5a01",
+ "irregular_entries": [],
+ "note": "full report retained locally, not committed; this summary binds it by digest",
+ "operator_scan": {
+  "commitment_domain": "r6-campaign-credential-commitment-1",
+  "credential_value_retained": false,
+  "evaluated_at_unix": 1789383271,
+  "run_receipts": [
+   {
+    "commitment_bound": true,
+    "commitment_nonce": "c9ab7d7dc515a735247037b770444cb1d5904b3de9686feb96c8d1a4544c5fe7",
+    "commitment_record_sealed": true,
+    "covered_by_scan": true,
+    "files": 284,
+    "http_sha256": "c5a2f5b2d442a4b7297ae3a42bc1fc2f2a30220f858e01d1a65e40dd6f25dd86",
+    "read_failures": 0,
+    "recorded_commitment_sha256": "61072a91de4ee9208a17396f01d14abdc92986a08539cb9cda356b70f540a681",
+    "run": {
+     "name": "live-1",
+     "name_sha256": "b76bcdde9d20f2551ea1a43fa5c104f5c5779fcf7ab86e891fd8265a29b34789"
+    },
+    "seal_sha256": "daabe9d33a99a64f8fa17e41ad06311d1a03b715b29a0a255d38d2897da68330",
+    "sealed_and_intact": true
+   }
+  ],
+  "scope": "frozen publication.scan with the operator credential as canary; prints counts and digests only"
+ },
+ "per_root_accepted": [
+  true
+ ],
+ "representations": [
+  "token",
+  "authorization"
+ ],
+ "roots": [
+  {
+   "name": "/home/jeans/Repos/research/proof-broker/experiments/r6",
+   "name_sha256": "4424369deaba634c8a22560bc84ecd517ef677ddf95221de74abe58cd71629bb"
+  }
+ ],
+ "schema_version": "r6-publication-scan-2",
+ "scope": "declared representations and encoded forms over the walked inventory; symlinks and non-regular entries are rejected, not followed; not a proof of protection against every transformation or partial disclosure",
+ "unreadable_directories": []
+}

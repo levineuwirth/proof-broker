@@ -1,0 +1,48 @@
+{
+  "complete": true,
+  "expected_cases": [
+    "refused_dispatch_certificate",
+    "refused_dispatch_final_ir",
+    "refused_verification_started_certificate",
+    "coherent_wrong_success_closer",
+    "refused_reconstruction_foreign_packet",
+    "historical_wrong_kernel_target"
+  ],
+  "results": {
+    "refused_dispatch_certificate": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 628
+    },
+    "refused_dispatch_final_ir": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 628
+    },
+    "refused_verification_started_certificate": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 628
+    },
+    "coherent_wrong_success_closer": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 628
+    },
+    "refused_reconstruction_foreign_packet": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 628
+    },
+    "historical_wrong_kernel_target": {
+      "unmutated_copy_accepted": true,
+      "accepted": true,
+      "case_count": 628
+    }
+  },
+  "auditor_sha256": "fcc699e9c8a3fbd98b1798387bf90aa0c6430e423d8a33283802401f9eb34b4c",
+  "program_sha256": "1602b2107227ceb7e5dff1d7b89e66801064aa1cd52e7235a81057b7ca389d2b",
+  "native_runs": 0,
+  "provider_calls": 0,
+  "scope": "coherent changes on fresh copies; full 628-case audit before and after; production finalizer/sealer"
+}

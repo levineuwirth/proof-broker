@@ -1,0 +1,27 @@
+{
+  "duplicate_process": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'export', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "stage records ['assembly', 'capture-build', 'certificate-check', 'export', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] and directories ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole'] are not the sequence's stages ['assembly', 'capture-build', 'certificate-check', 'export', 'pipeline-prepare', 'preparation', 'preparation-build', 'proposal-1', 'reconstruct', 'validation-local', 'validation-whole']"
+      ]
+    }
+  },
+  "wrong_auditor_digest": "the auditor is not the one live-evaluation-v2 froze",
+  "provider_calls": 0,
+  "credentials_read": 0
+}

@@ -1,0 +1,586 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_valid",
+    "d1_invalid_witness",
+    "d1_missing_permit",
+    "d1_forged_admission",
+    "d1_wrong_reservation",
+    "d1_changed_request",
+    "d1_raw_source_changed",
+    "d1_semantic_source_changed",
+    "d1_stale_source",
+    "d1_future_source",
+    "d1_host_stale_source",
+    "d1_wrong_request_model",
+    "d1_http503",
+    "d1_untrusted_ca",
+    "d1_reflected_canary",
+    "c8_valid",
+    "c8_invalid_witness"
+  ],
+  "check_count": 17,
+  "checks": [
+    {
+      "name": "d1_valid",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "valid",
+        "seal_sha256": "0c7650258c043804ab4d2689241eb9390cf657a26a9962db53e7d1682c6748b3",
+        "process_log_sha256": "50d26833608ea094034f3fccc6a9d9c0bf9755816ad93b4688e388a5a7e6a8cb",
+        "observations": {
+          "accepted": true,
+          "proof_accepted": true,
+          "credential_receipt_accepted": true,
+          "publication_accepted": true,
+          "summary_sha256": "5c4d4a6a18a14055c62d6f955598e88a7ee49b8e50ece0e1123383ec1441d6b2",
+          "publication_scan_sha256": "4aa03f49641f42026478e40f99a8aa73d4956063a037676516881d478f7e1aa8",
+          "publication_final_sha256": "6a2adf5e43d7653af886d2e4ffad15d7f88324d0e44f55d2f4b245ad54daf1e9",
+          "failure_category": null,
+          "coverage": {
+            "recomputed": 250,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 250
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 1,
+          "event_count": 49,
+          "sealed_files": 244,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_invalid_witness",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "invalid_witness",
+        "seal_sha256": "493afd0484b4ae661838f208881d9aacfe39f44127a9b19c38f3595b87c5976b",
+        "process_log_sha256": "5fc3d909a2e9a0141fb4b5eb6b66a744665576e17d98a26cf28e36c552538194",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": true,
+          "publication_accepted": true,
+          "summary_sha256": "f406b8abefe54de484e3e1e39cc884d06f0f0a126d2f585f7e115939a6d92d5d",
+          "publication_scan_sha256": "69cc12b38f2ad3f3a4a93b873ad21f914887079929d1d47ed961648c9d525c63",
+          "publication_final_sha256": "138b963a22b98eb59868feb291491d76b67d9b2c0d419619f69c1b9e64156d97",
+          "failure_category": "certificate_verification",
+          "coverage": {
+            "recomputed": 201,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 201
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 1,
+          "event_count": 25,
+          "sealed_files": 200,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_missing_permit",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "missing_permit",
+        "seal_sha256": "3f62e7a448dd2bf06e7523fe8581d9fbabb83b0f3fe9765cb92380c1c54a683e",
+        "process_log_sha256": "878dd66abf22c148c187e42410be979fbeb5d5b2cb2c9696e6dc5572b1ec5956",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "257e4e593ff05326de9fbc4acf55441ee0bb101d0014ff84292e9874ebaf3c3d",
+          "publication_scan_sha256": "fad42b354e70b610a48d1eaf59369d4642cac526333f44d412d79451af0db57c",
+          "publication_final_sha256": "45b707dd74aca33058a5de6bbeeccad3989caba4d416978e937dd897c07c32fb",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_forged_admission",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "forged_admission",
+        "seal_sha256": "5466731d25b850c2f9e903f631245e895a322af458d5deb03200c284e5c3cac4",
+        "process_log_sha256": "ef2e1995c6e212580ab5f108efa03c59ade4d9e9245a1f2ef36752f6fa5c20b6",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "070c6e018e952d4a72493c0c4787437ee38d555788876f99ef06ea9ec4a630e1",
+          "publication_scan_sha256": "193a321156c18a48d25a9c47a96a973cee88abd8467f98b3c8f734c4eb56bdc6",
+          "publication_final_sha256": "fb832fe6b49b39c95699bb15385f67cb609634a53d3fdbe81ccdb0270818bca0",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_wrong_reservation",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "wrong_reservation",
+        "seal_sha256": "1246e517aa50f307a9af9653d88b2f8d03f043dad9229826288e2311b9d89b86",
+        "process_log_sha256": "88bb3eb15f34f61e7fbec772a805f0043282f185216fb678bb6c7d2373c6b9a6",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "3f9917e952c266eee409c6dfa52998cc287c34c6d871903f0052e05cd3bc96c0",
+          "publication_scan_sha256": "dcaa0c1743b568a9530a510a64eaa4b059d7d153612878ecf9f5630910fc81f9",
+          "publication_final_sha256": "042fa1c019c0de55b850bc96439fa8949f8e81d3f9bbbc14e33e7c833333c55d",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_changed_request",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "changed_request",
+        "seal_sha256": "0fddb352414451cd9c5ef0aef9603d40b26e21d898db587ecd7e938c15647c53",
+        "process_log_sha256": "3fc8b15a28e7110b7e28974d874fa1d873138f94cf8f4de0a9011e7aa444cb92",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "55af1a1d7122f01db9f76fa5385b3fe45581b234c45e9398465cc587a7a87d1b",
+          "publication_scan_sha256": "64ef417903a44c7093fb33d6e98e4ef86692abf9b2555a47581e07ee04367346",
+          "publication_final_sha256": "cd8db950d2fcc6fa959297b14759c95a0c3d271fa730b87864e29c5b04903ca8",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_raw_source_changed",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "raw_source_changed",
+        "seal_sha256": "b72f77286dd078f53a657d37ca624c6ac322d7ede59d916a23156de0981fb4e7",
+        "process_log_sha256": "04c793bdec8b9e5ff377d480a499eedacbe4adde4f7f1073fb5a6a2f7c0fc0d5",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "c86cb9583008a7e2d1efe88a5df2fb5499f6acbafc4994e38c196fdf193bb2a7",
+          "publication_scan_sha256": "02aef4dc5a69e5cdee1c3cf964a1487f7929d98dc89999ea261513cfe02099f5",
+          "publication_final_sha256": "e7c1e358d3145ed8a297a58caf1fe5c51f14a384c48c539b9bcff35872d0349d",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_semantic_source_changed",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "semantic_source_changed",
+        "seal_sha256": "885e4cd567435f09367494f72ae28abbb58f9d752bb276f1761082ba5090dbd3",
+        "process_log_sha256": "69809ff90d914cc440d76fc070417a7599836d753546c0904f44e3368ccb699f",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "5a199ff21b4c795ef9c9dc80ca8b1975c5ca132f3e692df73e75410341a6c7b7",
+          "publication_scan_sha256": "845277a0238818aaf20156c363be0c5e08a032570c4fc6e1d65a7763acf684d3",
+          "publication_final_sha256": "e8b077bad4387de5c956765aa839ea10b510d644d126bd6c2f63bee817638e93",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_stale_source",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "stale_source",
+        "seal_sha256": "9fc4b75f1a13a2d2ae62286cb06ebea37cf971fd22f84fd8ee058a4f6ca5a149",
+        "process_log_sha256": "25857389152c7c13da7c3e6ced8297ba18b3845f1701929c72909ee5abdb39e5",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "22d125e06c2f765dddbe0bfe38f5e35d0f0f88f0f5067cddb8c3aa07f28aebea",
+          "publication_scan_sha256": "f4cf4d8a46512e66363a70a17668de8a0a44e0e6a94d5ba52ba3ed8c6e5307c9",
+          "publication_final_sha256": "09a8ebaf687c7c9c216f9254ebe6152f7859faffb60afbfa07adf74219b9787d",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_future_source",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "future_source",
+        "seal_sha256": "f41db1b7703c472ad80ba358dc637371c282ba2d4559ab8077c41d8204d3c04e",
+        "process_log_sha256": "7bafffa89a1bebdbfd13710d53a1b560567516bb9ef5160fe13ee785870b30ad",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "78ed682a8308872ac5aa0fa033e40ca966bdd25253022ca81cb0db6cbff1ec10",
+          "publication_scan_sha256": "bfef2dc16d528c3186d44c95010f2a3d656c40e42496f415f3de088ea3cb6ac1",
+          "publication_final_sha256": "b7ed3ca9aa304a7e8e0875f07ca481ec443c625c0ede10d091b85b5234575011",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_host_stale_source",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "host_stale_source",
+        "seal_sha256": "bb49f4c25a0c047a15675e5bd4dfcaf5f300e9581801861a4c64730c549e4679",
+        "process_log_sha256": "d6129bf5fb5eabdb84da33dfa88a4327ef97525e6256f598b644df5457b72c9a",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "ae28c5b39fb8696996ecc894db51337b45b432246ed1f465b21a4605519cd1a9",
+          "publication_scan_sha256": "296a1c42f7d4593ec97435d0607390f850c3d1a9a7aec8a9ca67000a1f7e3121",
+          "publication_final_sha256": "d32eafe98b780faf56a3a5db0630fc87ed175eef1e36fc6196486d24437c02fe",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 148,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 148
+          },
+          "pricing_host_accepted": false,
+          "pricing_actor_accepted": null,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 13,
+          "sealed_files": 148,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_wrong_request_model",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "wrong_request_model",
+        "seal_sha256": "f2b6b7e050c06fa66a5ac37f4d5262af14de99c40253e59e0adb164b080a1c86",
+        "process_log_sha256": "75bf8dab03cd59befd3ce843fa8b15248a7325e623f9b06432e9bf089edec431",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "be59302c316299716975ce4f3f3702c8169dc23c8b974678c23c17af3aab6b82",
+          "publication_scan_sha256": "49c595221d580530e27873d52eb38c39cd01522e2ac271c9167f58be939bd9ad",
+          "publication_final_sha256": "09ca9089ba411e1913cf605a8c1d789bec41774dcaa2137167e56b0e5bf9204b",
+          "failure_category": "pricing_admission",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": false,
+          "connection_attempts": 0,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_http503",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "http503",
+        "seal_sha256": "7186a312c2fa6611840cdf6f2c592e4b3983dfe7531a9fa4d43930b417ee995d",
+        "process_log_sha256": "95916c14034e32cd265d7ee0dbf967d07b3c3ec3382053d29e252367a3278bca",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": true,
+          "publication_accepted": true,
+          "summary_sha256": "d32595ec512845d9692c35687ecad9c1ae16c70cd492fa7415cc666590feaffc",
+          "publication_scan_sha256": "cb3445d257c7604a32bde72443564ab3dbad90a495eded149a89edfc039bb992",
+          "publication_final_sha256": "a011e4bc8d43249e51d1de2cb620ccfc3b05936cdf86f23d933b2ae75124470e",
+          "failure_category": "provider_http_error",
+          "coverage": {
+            "recomputed": 181,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 181
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 1,
+          "event_count": 18,
+          "sealed_files": 181,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_untrusted_ca",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "untrusted_ca",
+        "seal_sha256": "d52ca8b3abe76287e5831f90479481ed415527530f3b41e10240b34437382efc",
+        "process_log_sha256": "155850016ca75f777131ee2bccc8e660c119e79cf1835b60b55163c4353faf1a",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": false,
+          "publication_accepted": true,
+          "summary_sha256": "c6d855408d40d7e0641edd806cbe113707a368245b6d8f474a06a42edc791f50",
+          "publication_scan_sha256": "b56e4d65b9f6bdc417253b400dea7354f985a4e2569c39289c430df023267294",
+          "publication_final_sha256": "f06b9d6b8d054343de71e049101eeea02a498e81db61a2aa5a55779f92e2aa1f",
+          "failure_category": "tls_certificate_verification",
+          "coverage": {
+            "recomputed": 178,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 178
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 0,
+          "event_count": 18,
+          "sealed_files": 178,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "d1_reflected_canary",
+      "passed": true,
+      "detail": {
+        "task_id": "verinf-d1-70",
+        "case": "reflected_canary",
+        "seal_sha256": "0afa4e1dfdd84c5c9623eef03cf75aa33623d99a72c53e3da752f49079dc22a7",
+        "process_log_sha256": "a6dc4b2c898df16662bb40c986d878e08d8b693e6f36424d8b39bb56dbac531b",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": true,
+          "publication_accepted": false,
+          "summary_sha256": "8684acc4081a77f966d2d3dbc41827279cf4e700b6f8747652cc28d2cf63fa7f",
+          "publication_scan_sha256": "b54109d6a04d19a41bc1f56ffc4b8611736f25cde3942d65078c951f1735e003",
+          "publication_final_sha256": "91b30e3e86d47e7bbe179311a0552c91915f29346a6253a26bfd39a95cbcc663",
+          "failure_category": "provider_http_error",
+          "coverage": {
+            "recomputed": 181,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 181
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 1,
+          "event_count": 18,
+          "sealed_files": 181,
+          "disclosures": 2,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "c8_valid",
+      "passed": true,
+      "detail": {
+        "task_id": "c1-c8-2p18",
+        "case": "valid",
+        "seal_sha256": "ea5adc15a79f2b36f697fa5428d2968587854a5f1c0425471d8b94db2f3aa3e5",
+        "process_log_sha256": "e32aab550e01c1089e736eeff08bf6f66ee2dd01121fe79c7f1c315da894247a",
+        "observations": {
+          "accepted": true,
+          "proof_accepted": true,
+          "credential_receipt_accepted": true,
+          "publication_accepted": true,
+          "summary_sha256": "87f24527bb4189ec8b222e20c95b2583a49b454a03bc63e0b53ca0a9945080e3",
+          "publication_scan_sha256": "86db05a24042f719a184bd0326162b02190395f2f786482d66bab570855825b2",
+          "publication_final_sha256": "dccd11f2fc3f7cb064c28fa569a247ad52ddb9176d5cfccc44132d0edc00bf71",
+          "failure_category": null,
+          "coverage": {
+            "recomputed": 250,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 250
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 1,
+          "event_count": 49,
+          "sealed_files": 244,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    },
+    {
+      "name": "c8_invalid_witness",
+      "passed": true,
+      "detail": {
+        "task_id": "c1-c8-2p18",
+        "case": "invalid_witness",
+        "seal_sha256": "fe26cd466bbaa570d97153686f91aeee3234b76b6ac8a7450fe2983a5ef41f6a",
+        "process_log_sha256": "7e3e8f87a1c1f29be16e0ec649de78776643d09cd6fd6990aeee50564a5029e4",
+        "observations": {
+          "accepted": false,
+          "proof_accepted": false,
+          "credential_receipt_accepted": true,
+          "publication_accepted": true,
+          "summary_sha256": "6d97a0829dd892323cceb76c9b05fb450800b3a379570736d98b8847e3860d5b",
+          "publication_scan_sha256": "5cb2d13f58d897a6a4b832c5992ed4bbbb2d2d072f4e1ec178bc52441d32f43e",
+          "publication_final_sha256": "257589711a5fe9f01140c3323fb4ef6e90ec7656b05209de5539ed3c1a4f6174",
+          "failure_category": "certificate_verification",
+          "coverage": {
+            "recomputed": 201,
+            "recorded_not_recomputed": 0,
+            "files_scanned": 201
+          },
+          "pricing_host_accepted": true,
+          "pricing_actor_accepted": true,
+          "connection_attempts": 1,
+          "body_sends": 1,
+          "event_count": 25,
+          "sealed_files": 200,
+          "disclosures": 0,
+          "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+        }
+      }
+    }
+  ]
+}

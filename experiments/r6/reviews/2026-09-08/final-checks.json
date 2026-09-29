@@ -1,0 +1,52 @@
+{
+  "passed": true,
+  "preserved_files": 3244,
+  "changed_or_missing": [],
+  "original_snapshot_files": 3243,
+  "supplemental_files": 1,
+  "preservation_snapshot_sha256": "f995d92a0a51329e0f8a2c89d893ce416f953a3cb48a9d6a90d5fafb1f3249d9",
+  "preservation_supplement_sha256": "dde3fc8a8bcfd654cfc9b2bea99c8ada52b7aa6a1645104c12c0e740fcfd870b",
+  "preservation_exclusions": [
+    "tasks/c1-c8-2p18/NOTICE.md (explicitly amended)",
+    "__pycache__ entries (regenerable bytecode)"
+  ],
+  "python_compile": "passed",
+  "explicit_task_call_sites_bound": 84,
+  "test_reports": {
+    "further-review-v3": {
+      "passed": true,
+      "cases": 26,
+      "artifacts": 25,
+      "tests_sha256": "692f4bab108e0579e4b01892659a25d9f2c56fd9d05e4f32a75f4a48f1350b3b",
+      "provenance_matches_current_sources": true
+    },
+    "task-initialization-v1": {
+      "passed": true,
+      "cases": 20,
+      "artifacts": 33,
+      "tests_sha256": "2b1de77d2cd50b916ee5cafe2f06f6bf553d9d6a42319ed08f35a1b945abd740",
+      "provenance_matches_current_sources": true
+    }
+  },
+  "publication_reports_checked": 188,
+  "required_publication_paths": 1772,
+  "ignored_required_paths": [],
+  "documentation_links": "passed",
+  "git_diff_check": "passed",
+  "publication_selection": {
+    "files": 2118,
+    "apparent_bytes": 110530254,
+    "unique_contents": 1001,
+    "unique_content_bytes": 38430227,
+    "excludes": [
+      "reviews/2026-09-08/final-checks.json"
+    ],
+    "qualification": "uncompressed content bytes, not Git pack, disk, or transfer size"
+  },
+  "kernel_reexecuted": false,
+  "golden_episode_reexecuted": false,
+  "conformance_reexecuted": false,
+  "completion_mutations_reexecuted": false,
+  "native_positive_stages_reexecuted": 2,
+  "compilation_or_inference_attestation": false
+}

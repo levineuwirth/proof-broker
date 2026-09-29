@@ -1,0 +1,749 @@
+{
+  "schema_version": "r6-representability-1",
+  "population": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "denominator": 15,
+  "classes": {
+    "preparation_failed": [],
+    "interface_refused": [
+      "bracket-l098",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l180"
+    ],
+    "not_lia": [
+      "bracket-l096",
+      "bracket-l099"
+    ],
+    "farkas_omissions": [
+      "bracket-l170",
+      "bracket-l175",
+      "bracket-l178"
+    ],
+    "projection_unsupported": [
+      "bracket-l166"
+    ],
+    "projection_mismatch": [],
+    "no_rational_certificate": [],
+    "rational_certificate": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l204"
+    ]
+  },
+  "results": [
+    {
+      "site_id": "bracket-l069",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_input_premise_formula",
+      "class": "rational_certificate",
+      "fragment": "LIA",
+      "row_count": 18,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 3,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.7
+    },
+    {
+      "site_id": "bracket-l070",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_direct_target",
+      "class": "rational_certificate",
+      "fragment": "LIA",
+      "row_count": 19,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.5
+    },
+    {
+      "site_id": "bracket-l071",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_target_family",
+      "class": "rational_certificate",
+      "fragment": "LIA",
+      "row_count": 20,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hzsum",
+        "hle",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hZ",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.3
+    },
+    {
+      "site_id": "bracket-l078",
+      "family": "Bracket.lift_cell",
+      "exposure_class": "prior_target_family",
+      "class": "rational_certificate",
+      "fragment": "LIA",
+      "row_count": 20,
+      "row_names": [
+        "hx",
+        "hz",
+        "hzh",
+        "hZ",
+        "hwidth",
+        "hZval",
+        "hprod_le",
+        "hbound",
+        "hmul",
+        "hnum",
+        "hxz",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_atom_0",
+        "_pb_nonneg_atom_1",
+        "_pb_nonneg_atom_2",
+        "_pb_nonneg_atom_3",
+        "_pb_nonneg_atom_4",
+        "_pb_nonneg_atom_5",
+        "_pb_nonneg_atom_6",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_atom_0",
+        "_pb_atom_1",
+        "_pb_atom_2",
+        "_pb_atom_3",
+        "_pb_atom_4",
+        "_pb_atom_5",
+        "_pb_atom_6"
+      ],
+      "reifier_data_locals": [
+        "c",
+        "x",
+        "z",
+        "zhigh"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "hrec",
+          "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+        }
+      ],
+      "farkas_omissions": [],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hx",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hprod_le",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.4
+    },
+    {
+      "site_id": "bracket-l096",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "not_lia",
+      "fragment": "UF",
+      "row_count": 2,
+      "row_names": [
+        "hlt",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "c",
+        "c'"
+      ],
+      "reifier_data_locals": [],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hf",
+        "h1",
+        "h2",
+        "h1'",
+        "h2'",
+        "hne"
+      ],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.6
+    },
+    {
+      "site_id": "bracket-l098",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v1/bracket-l098/stages/pipeline-prepare",
+      "seconds": 6.9
+    },
+    {
+      "site_id": "bracket-l099",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "not_lia",
+      "fragment": "UF",
+      "row_count": 2,
+      "row_names": [
+        "hgt",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "c",
+        "c'"
+      ],
+      "reifier_data_locals": [],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hf",
+        "h1",
+        "h2",
+        "h1'",
+        "h2'",
+        "hne"
+      ],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hgt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 7.1
+    },
+    {
+      "site_id": "bracket-l101",
+      "family": "Bracket.threshold_unique",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v1/bracket-l101/stages/pipeline-prepare",
+      "seconds": 6.8
+    },
+    {
+      "site_id": "bracket-l158",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v1/bracket-l158/stages/pipeline-prepare",
+      "seconds": 7.0
+    },
+    {
+      "site_id": "bracket-l166",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "projection_unsupported",
+      "detail": "Unsupported proposition in arithmetic projection",
+      "fragment": "LIA",
+      "row_count": 10,
+      "row_names": [
+        "hz0",
+        "hz",
+        "hZpos",
+        "hzh0",
+        "hv",
+        "hrec",
+        "hlt",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "v0",
+        "z"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.5
+    },
+    {
+      "site_id": "bracket-l170",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "farkas_omissions",
+      "fragment": "LIA",
+      "row_count": 9,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "sdk_rows_rational_certificate": false,
+      "seconds": 7.1
+    },
+    {
+      "site_id": "bracket-l175",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "farkas_omissions",
+      "fragment": "LIA",
+      "row_count": 11,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "hzh1",
+        "this",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 4,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 7.1
+    },
+    {
+      "site_id": "bracket-l178",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "farkas_omissions",
+      "fragment": "LIA",
+      "row_count": 12,
+      "row_names": [
+        "hv",
+        "hrec",
+        "hz0",
+        "hz",
+        "hzh0",
+        "hZpos",
+        "hzh1",
+        "this",
+        "this",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "_pb_iatom_0",
+        "v",
+        "v0",
+        "z",
+        "zhigh"
+      ],
+      "reifier_data_locals": [
+        "cert"
+      ],
+      "reifier_dropped_propositions": [],
+      "farkas_omissions": [
+        "hzh"
+      ],
+      "sdk_rows_rational_certificate": false,
+      "seconds": 7.0
+    },
+    {
+      "site_id": "bracket-l180",
+      "family": "Bracket.cell_value_neutral",
+      "exposure_class": "none_recorded",
+      "class": "interface_refused",
+      "reason": {
+        "stage": "pipeline-prepare",
+        "exit_code": 1,
+        "resource_exhausted": null,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_head": "",
+        "stderr_sha256": "cf4d7cc11cf580803b1373675863994f1037e63d8eed44ae3657f3528252cd7b",
+        "stderr_head": "Failure(\"negated goal is outside the Farkas fragment\")\n"
+      },
+      "error": "StageFailure: pipeline-prepare: stage failed; see /home/jeans/Repos/research/proof-broker/experiments/r6/census-runs/representability-v1/bracket-l180/stages/pipeline-prepare",
+      "seconds": 6.9
+    },
+    {
+      "site_id": "bracket-l204",
+      "family": "Bracket.Row.s1_noninc",
+      "exposure_class": "none_recorded",
+      "class": "rational_certificate",
+      "fragment": "LIA",
+      "row_count": 5,
+      "row_names": [
+        "hab",
+        "_pb_nonneg_Zmax",
+        "_pb_nonneg_v0",
+        "_pb_nonneg_n",
+        "neg_goal"
+      ],
+      "neg_goal_rows": 1,
+      "variables": [
+        "Zmax",
+        "a",
+        "b",
+        "n",
+        "v0"
+      ],
+      "reifier_data_locals": [
+        "R",
+        "i"
+      ],
+      "reifier_dropped_propositions": [
+        {
+          "name": "a._@._internal.0.Frozen.2507035005._hygCtx._hyg.39",
+          "reason": "proposition outside the reifiable fragment (i ∈ Finset.univ)"
+        }
+      ],
+      "farkas_omissions": [],
+      "sdk_rows_rational_certificate": true,
+      "certificate": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "certificate_support": 2,
+      "certificate_uses_neg_goal": true,
+      "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+      "seconds": 6.8
+    }
+  ],
+  "runs_sha256": {
+    "bracket-l069": "87076d8ae0a10508c2b76e7e3ce7d8c054dd9ede05145f8dc6fafdebee05c96e",
+    "bracket-l070": "1146dd13c643872515b7aea4a2e8f74bd7985e9762d9deecc7218de656a39084",
+    "bracket-l071": "9229aea11e4e4a9449c8eae796e61966c8764c568ff923dfb8f390fa3f3229d7",
+    "bracket-l078": "daa898231fba2c036fcbe772c6fb6ccff790fd971b35f315f06c07cc0b407901",
+    "bracket-l096": "dd0ea40592f52384fb41a3ba89f12d5c134afbf4624beb72d8d69628582f0293",
+    "bracket-l098": "7ec3725d75f50ee5d6dd7b5a772dd339aad1dd0d36c742fd7ba8a794fa3efb2a",
+    "bracket-l099": "9209d3d760198d6ea87517edaf5000be307a4c99f9b860466f635785eb55e27a",
+    "bracket-l101": "b8b3c22207cd1ebd8908769b8267e872596540cf0e776b475bf81217048af8e0",
+    "bracket-l158": "895fe0cbaf802026730a3def1394efdba7864f39eb3ad8f6826bc59ef9dce42a",
+    "bracket-l166": "defe9ac40b4867651d397a28ed066b2f5b26d98fe6d6f4c991c5e5e6570165c0",
+    "bracket-l170": "37d46d03b53148a79a187fa04cb4d0440cc8f1f30a84556c2bf5bbf43598d9c6",
+    "bracket-l175": "df3aabc18d0c2e65e3234b332b7b715eb33de211546d1a02bf416c93d7647197",
+    "bracket-l178": "97458cb3292477d851935c420e39a848cdbee62bbee3d4645e49a99586d60128",
+    "bracket-l180": "305d0eb0416c404430aba1cd7f226fb5461af4c183dcf6277dcc70e0164dc942",
+    "bracket-l204": "1a8a4cf6454600a3d3c45f839a0ec155d180ea97bc0aa0a6111c46096b0b6bf2"
+  },
+  "site_lock_sha256": "560663f223d14fb557ab64c2896ea1da3b589c24d94c3f4e865332d9a090d71d",
+  "site_task_sha256": "cafef11869cf48d45e3af177476732ab6f0b9b3b005c313890ba9b9acb94f2f6",
+  "program_sha256": "5ce2d736507ba5ca521e48f5608ecc614a35a26ea915d589fa37d6710ae63719",
+  "scope": "the frozen IR and Farkas interface on every reviewed site; no proposal, no deterministic search, no provider call"
+}

@@ -1,0 +1,454 @@
+#!/usr/bin/env python3
+"""R6-004 exact-name-gated credential, publication and retained-audit controls."""
+import argparse
+import copy
+import gzip
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+from unittest import mock
+
+import credential
+import credential_audit as auditor
+import credential_contract as contract
+import credential_episode as harness
+import credential_http
+import envelope_audit
+import episode
+import events
+import instrument
+import provider_audit
+import publication
+import run as r6
+from test_proposals import Suite, assert_complete, rejected, require
+from test_task_identity import rehash
+
+UNIT_CASES = '''canary_derivation_frozen canary_nonce_validated canary_record_omits_value
+delivery_outside_artifact_tree delivery_value_absent_from_command
+encoded_forms_declared scan_detects_each_form scan_detects_gzip_member
+scan_decompression_limit scan_unreadable_rejects scan_findings_omit_value
+scan_inventory_independent scan_missing_target_rejected
+final_record_structurally_safe finalization_order_declared
+receipt_requires_exact_value receipt_expectation_derived
+source_lock_guard missing_case_rejected duplicate_case_rejected'''.split()
+NATIVE_CASES = ['d1_valid', 'd1_http503', 'd1_missing_credential', 'd1_wrong_credential', 'd1_reflected_canary']
+AUDIT_CASES = '''d1_retained_only reflected_canary_audited
+injected_log_leak injected_metadata_leak injected_gzip_leak
+missing_scanner omitted_scan_target forged_passing_report forged_receipt_digest
+legacy_broker_v1 legacy_broker_v2 legacy_broker_v3 legacy_c8_v1
+legacy_d1_fixture legacy_c8_fixture
+legacy_d1_envelope legacy_c8_envelope legacy_alternate_envelope
+legacy_d1_provider legacy_c8_provider legacy_alternate_provider
+prior_artifacts_preserved'''.split()
+
+
+def units(root):
+    suite = Suite(root/'credential-units.json', UNIT_CASES)
+    seed = credential.nonce()
+    canary = credential.derive(seed)
+
+    def derivation():
+        require(credential.derive(seed) == canary and canary.startswith(credential.TAG))
+        require(credential.derive(credential.nonce()) != canary, 'derivation ignores its nonce')
+        require(canary == credential.TAG+r6.hashlib.sha256((credential.DOMAIN+':'+seed).encode()).hexdigest())
+        return {'derivation': credential.DOMAIN, 'tag': credential.TAG, 'canary_sha256': r6.hashlib.sha256(canary.encode()).hexdigest()}
+    suite.case('canary_derivation_frozen', derivation)
+    suite.case('canary_nonce_validated', lambda: [rejected(lambda v=v: credential.derive(v), 'nonce')
+                                                  for v in ['', 'zz', seed.upper(), seed[:-1], None]] and 'rejected')
+
+    def record_shape():
+        value = credential.record(seed)
+        blob = json.dumps(value)
+        require(canary not in blob and credential.header(canary) not in blob, 'record retains the value')
+        require(value['nonce'] == seed and value['value_retained'] is False)
+        require(value['authorization_sha256'] == credential.commitment(canary))
+        return value
+    suite.case('canary_record_omits_value', record_shape)
+
+    def delivery():
+        with credential.delivery(seed) as (value, path):
+            require(value == canary and credential.read(path) == credential.header(canary))
+            require(not path.is_relative_to(r6.ROOT), 'credential materialized inside the artifact tree')
+            require(oct(path.stat().st_mode)[-3:] == '600', 'credential file is not private')
+            kept = path
+        require(not kept.exists() and not kept.parent.exists(), 'credential survived the episode')
+        return {'mode': '600', 'outside_artifact_tree': True, 'removed_after_use': True}
+    suite.case('delivery_outside_artifact_tree', delivery)
+
+    def absent_from_command():
+        # The guest path is an argument; the value only ever crosses a mount.
+        source = (r6.ROOT/'credential_episode.py').read_text()
+        require("'--credential-file', contract.GUEST_CREDENTIAL" in source, 'adapter receives a path, not a value')
+        require('--setenv' not in (r6.ROOT/'credential_http.py').read_text())
+        argv = ['--credential-file', contract.GUEST_CREDENTIAL, '--case', 'valid']
+        environment = {'PATH': '/no-programs', 'LEAN_ABORT_ON_PANIC': '1'}
+        joined = '\x00'.join(argv)+'\x00'+'\x00'.join(f'{k}={v}' for k, v in environment.items())
+        require(canary not in joined and credential.header(canary) not in joined)
+        return {'argv_carries': 'guest path only', 'environment_carries': sorted(environment)}
+    suite.case('delivery_value_absent_from_command', absent_from_command)
+
+    forms = publication.forms(canary)
+    suite.case('encoded_forms_declared', lambda: require(len(forms) == 7 and all(forms.values())
+        and sorted(forms) == ['base64', 'hex', 'utf-16-be', 'utf-16-le', 'utf-8', 'utf-8-lower', 'utf-8-upper']) or sorted(forms))
+
+    def each_form():
+        detected = {}
+        with tempfile.TemporaryDirectory(prefix='r6-scan-forms-') as directory:
+            root = Path(directory)
+            for name, pattern in forms.items():
+                (root/name).write_bytes(b'prefix '+pattern+b' suffix')
+            report = publication.scan([root], canary, seed)
+            for hit in report['disclosures']:
+                detected.setdefault(hit['path'], set()).add(hit['form'])
+            require(report['accepted'] is False and set(detected) == set(forms), 'a declared form was missed')
+            for name in forms:
+                require(name in detected[name], 'form '+name+' undetected in its own file')
+        return {'forms_detected': sorted(detected), 'disclosures': len(report['disclosures'])}
+    suite.case('scan_detects_each_form', each_form)
+
+    def gzip_member():
+        with tempfile.TemporaryDirectory(prefix='r6-scan-gzip-') as directory:
+            root = Path(directory)
+            with gzip.open(root/'artifact.ndjson.gz', 'wb') as handle:
+                handle.write(b'{"note":"'+canary.encode()+b'"}\n')
+            require(canary.encode() not in (root/'artifact.ndjson.gz').read_bytes(), 'compression precondition absent')
+            report = publication.scan([root], canary, seed)
+            hits = [h for h in report['disclosures'] if h['stream'] == 'gzip']
+            require(report['accepted'] is False and len(hits) == 1 and report['gzip_streams_scanned'] == 1)
+        return {'gzip_streams_scanned': 1, 'raw_stream_clean': True, 'findings': hits}
+    suite.case('scan_detects_gzip_member', gzip_member)
+
+    def limit():
+        with tempfile.TemporaryDirectory(prefix='r6-scan-limit-') as directory:
+            root = Path(directory)
+            with gzip.open(root/'large.gz', 'wb') as handle:
+                handle.write(b'0'*4096)
+            report = publication.scan([root], canary, seed, limit=1024)
+            require(report['accepted'] is False and report['incompletely_scanned'] == ['large.gz'])
+            entry = report['inventory'][0]
+            require(entry['error'] == 'decompression_limit_exceeded' and entry['scanned'] is False)
+        return {'limit_bytes': 1024, 'incompletely_scanned': ['large.gz']}
+    suite.case('scan_decompression_limit', limit)
+
+    def unreadable():
+        with tempfile.TemporaryDirectory(prefix='r6-scan-unreadable-') as directory:
+            root = Path(directory)
+            target = root/'locked.json'
+            target.write_bytes(b'{}')
+            os.chmod(target, 0o000)
+            try:
+                if os.access(target, os.R_OK):
+                    return {'skipped': 'privileged reader can read a mode-000 file', 'enforced': False}
+                report = publication.scan([root], canary, seed)
+                require(report['accepted'] is False and report['incompletely_scanned'] == ['locked.json'])
+                require(report['inventory'][0]['error'].startswith('unreadable'))
+            finally:
+                os.chmod(target, 0o600)
+        return {'incompletely_scanned': ['locked.json'], 'enforced': True}
+    suite.case('scan_unreadable_rejects', unreadable)
+
+    def omit_value():
+        with tempfile.TemporaryDirectory(prefix='r6-scan-quiet-') as directory:
+            root = Path(directory)
+            (root/'leak.log').write_bytes(b'authorization '+canary.encode())
+            report = publication.scan([root], canary, seed)
+            blob = json.dumps(report)
+            require(report['accepted'] is False and report['disclosures'])
+            require(canary not in blob and canary.lower() not in blob.lower(), 'report re-emits the detected value')
+            require(all(set(h) == {'path', 'stream', 'form', 'offset'} for h in report['disclosures']))
+        return {'findings_record': ['path', 'stream', 'form', 'offset'], 'value_reemitted': False}
+    suite.case('scan_findings_omit_value', omit_value)
+
+    def independent():
+        with tempfile.TemporaryDirectory(prefix='r6-scan-walk-') as directory:
+            root = Path(directory)
+            (root/'nested').mkdir()
+            for name in ['a.json', 'nested/b.log', 'nested/c.gz']:
+                (root/name).write_bytes(b'clean')
+            walked = [str(p.relative_to(root)) for p, _ in publication.inventory([root])]
+            require(sorted(walked) == ['a.json', 'nested/b.log', 'nested/c.gz'], 'walk missed a file')
+            report = publication.scan([root], canary, seed)
+            require([e['path'] for e in report['inventory']] == walked and report['accepted'])
+        return {'walked': walked, 'source': 'filesystem walk; no reported target list'}
+    suite.case('scan_inventory_independent', independent)
+    suite.case('scan_missing_target_rejected',
+               lambda: rejected(lambda: publication.scan([r6.ROOT/'no-such-target'], canary, seed), 'missing'))
+
+    def structural():
+        require(publication.safe_record({'a': '0'*64, 'b': 1, 'c': True, 'd': None, 'e': ['0'*64]}))
+        for unsafe in [{'a': 'free text'}, {'a': canary}, {'a': 1.5}, {'a': {'b': 'x'}}]:
+            require(not publication.safe_record(unsafe), 'unrestricted value accepted')
+        with tempfile.TemporaryDirectory(prefix='r6-final-') as directory:
+            report = Path(directory)/'publication-scan.json'
+            report.write_bytes(b'{"disclosures":[]}')
+            value = publication.final_record(report, canary, seed)
+            require(value['report_clean'] is True and value['report_findings'] == 0)
+            report.write_bytes(b'{"leak":"'+canary.encode()+b'"}')
+            dirty = publication.final_record(report, canary, seed)
+            require(dirty['report_clean'] is False and dirty['report_findings'] == 1)
+            require(canary not in json.dumps(dirty), 'terminal record re-emits the value')
+        return {'safe_shapes': ['sha256', 'int', 'bool', 'null'], 'report_scanned_separately': True}
+    suite.case('final_record_structurally_safe', structural)
+
+    def order():
+        require(publication.FINALIZATION == ('artifacts', 'scan', 'scan_report', 'report_scan', 'terminal_event', 'seal'))
+        source = (r6.ROOT/'credential_episode.py').read_text()
+        body = source[source.index('def finalize('):source.index('def seal(')]
+        positions = [body.index(marker) for marker in
+                     ['publication.scan(', "'publication-scan.json'", 'publication.final_record(',
+                      "'publication-final.json'", 'events.append(', 'seal(run']]
+        require(positions == sorted(positions), 'finalization writes are out of declared order')
+        require('safe_record(payload)' in body, 'terminal receipt is not shape-restricted')
+        return {'order': list(publication.FINALIZATION), 'post_scan_writes': 'digests, counts and booleans only'}
+    suite.case('finalization_order_declared', order)
+
+    def exact_receipt():
+        expected = credential.commitment(canary)
+        for header, ok in [(credential.header(canary), True), (credential_http.WRONG, False),
+                           (credential.header(canary)+' ', False), (None, False)]:
+            observed = None if header is None else r6.hashlib.sha256(header.encode()).hexdigest()
+            require((observed == expected) is ok, 'receipt comparison is not exact')
+        require(credential_http.authorization('missing_credential', canary) is None)
+        require(credential_http.authorization('wrong_credential', canary) == credential_http.WRONG)
+        require(credential_http.authorization('valid', credential.header(canary)) == credential.header(canary))
+        return {'presence_bit_sufficient': False, 'declared_wrong_value': credential_http.WRONG}
+    suite.case('receipt_requires_exact_value', exact_receipt)
+
+    def derived_expectation():
+        # The expectation comes from the nonce, never from the audited record.
+        record = credential.record(seed)
+        forged = {**record, 'authorization_sha256': '0'*64}
+        require(credential.commitment(credential.derive(record['nonce'])) == record['authorization_sha256'])
+        require(credential.commitment(credential.derive(forged['nonce'])) != forged['authorization_sha256'])
+        return {'source': 'retained nonce and frozen generator'}
+    suite.case('receipt_expectation_derived', derived_expectation)
+
+    def lock_guard():
+        original = r6.sha
+        def changed(path): return '0'*64 if Path(path) == r6.ROOT/'credential_http.py' else original(path)
+        with mock.patch.object(r6, 'sha', side_effect=changed):
+            return rejected(contract.verify_sources, 'frozen source revision')
+    suite.case('source_lock_guard', lock_guard)
+    suite.case('missing_case_rejected', lambda: rejected(lambda: assert_complete(['a'], ['a', 'b']), 'missing'))
+    suite.case('duplicate_case_rejected', lambda: rejected(lambda: assert_complete(['a', 'a'], ['a']), 'duplicate'))
+    suite.finish()
+
+
+def native(root):
+    suite = Suite(root/'credential-native.json', NATIVE_CASES)
+    expected = {'valid': (True, True, True, None),
+                'http503': (False, True, True, 'provider_http_error'),
+                'missing_credential': (False, False, True, 'credential_receipt_failure'),
+                'wrong_credential': (False, False, True, 'credential_receipt_failure'),
+                'reflected_canary': (False, True, False, 'provider_http_error')}
+    for name in NATIVE_CASES:
+        control, case = name.split('_', 1)
+        task = r6.D1 if control == 'd1' else r6.C8
+
+        def test(name=name, case=case, task=task):
+            target = root/name
+            command = [sys.executable, str(r6.ROOT/'credential_episode.py'), 'run', '--task', task.id,
+                       '--case', case, '--run-dir', str(target)]
+            if contract.CONFIG.parent != r6.ROOT/'policies':
+                command += ['--development-policy-dir', str(contract.CONFIG.parent)]
+            with (root/(name+'.log')).open('w') as log:
+                subprocess.run(command, stdout=log, stderr=subprocess.STDOUT)
+            require((target/'seal.json').exists(), name+' produced no sealed episode; see its log')
+            result = auditor.audit(target, task)
+            accept, receipt_ok, publish_ok, category = expected[case]
+            require((result['accepted'], result['credential_receipt_accepted'],
+                     result['publication_accepted']) == (accept, receipt_ok, publish_ok), str(result))
+            require(result['failure_category'] == category, str(result))
+            scan = r6.read_json(target/'publication-scan.json')
+            if case == 'reflected_canary':
+                # The disclosure must arrive through the retained response bytes.
+                paths = {h['path'] for h in scan['disclosures']}
+                require('stages/proposal-1/output/provider-response.json' in paths, 'reflection precondition absent')
+                require(result['proof_accepted'] is False and (target/'verdict.json').exists() is False)
+            else:
+                require(scan['disclosures'] == [] and scan['incompletely_scanned'] == [])
+            if case == 'valid':
+                verdict = r6.read_json(target/'verdict.json')
+                require(all(not d['added'] and not d['removed'] for d in verdict['axiom_delta'].values()))
+            # The outer process log is publication surface too.
+            outer = publication.scan([root/(name+'.log')], credential.derive(
+                r6.read_json(target/'credential-canary.json')['nonce']), r6.read_json(target/'credential-canary.json')['nonce'])
+            require(outer['accepted'], 'the episode log discloses the canary')
+            return {'accepted': result['accepted'], 'credential_receipt_accepted': result['credential_receipt_accepted'],
+                    'publication_accepted': result['publication_accepted'], 'failure_category': category,
+                    'files_scanned': result['files_scanned'], 'disclosures': len(scan['disclosures']),
+                    'outer_log_clean': True, 'seal_sha256': r6.sha(target/'seal.json')}
+        suite.case(name, test)
+    suite.finish()
+
+
+def retained_copy(source, destination):
+    seal = r6.read_json(source/'seal.json')
+    for name in ['seal.json', *seal['retained_sha256']]:
+        p = destination/name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source/name, p)
+
+
+def reseal(root, accepted):
+    rows = events.read(root/'events.ndjson')
+    (root/'events.ndjson').write_bytes(rehash(rows))
+    harness.seal(root, accepted)
+
+
+def audits(root):
+    suite = Suite(root/'credential-audits.json', AUDIT_CASES)
+
+    def standalone(name, task, accepted):
+        with tempfile.TemporaryDirectory(prefix='r6-credential-publication-') as directory:
+            copied = Path(directory)
+            retained_copy(root/name, copied)
+            result = auditor.audit(copied, task)
+            require(result['accepted'] is accepted, str(result))
+            return {'accepted': result['accepted'], 'publication_accepted': result['publication_accepted'],
+                    'retained_files': len(r6.read_json(copied/'seal.json')['retained_sha256'])}
+    suite.case('d1_retained_only', lambda: standalone('d1_valid', r6.D1, True))
+
+    def reflected():
+        result = standalone('d1_reflected_canary', r6.D1, False)
+        require(result['publication_accepted'] is False)
+        return {**result, 'scope': 'sealed evidence preserved through a publication rejection'}
+    suite.case('reflected_canary_audited', reflected)
+
+    def mutate(name, change, contains, *, source='d1_valid', accepted=False):
+        def test():
+            with tempfile.TemporaryDirectory(prefix='r6-credential-mutation-') as directory:
+                copied = Path(directory)
+                retained_copy(root/source, copied)
+                before = {str(p.relative_to(copied)): r6.sha(p) for p in copied.rglob('*') if p.is_file()}
+                change(copied)
+                after = {str(p.relative_to(copied)): r6.sha(p) for p in copied.rglob('*') if p.is_file()}
+                require(before != after, 'corruption matched nothing')
+                reseal(copied, accepted)
+                result = rejected(lambda: auditor.audit(copied, r6.D1), contains)
+                return {**result, 'coherently_resealed': True,
+                        'changed_artifacts': sorted(k for k in before.keys() | after.keys() if before.get(k) != after.get(k))}
+
+        suite.case(name, test)
+
+    def canary_of(copied):
+        return credential.derive(r6.read_json(copied/'credential-canary.json')['nonce'])
+
+    def inject_log(copied):
+        target = copied/'stages/proposal-1/supervisor.stderr'
+        require(target.exists(), 'no ordinary log to taint')
+        target.write_bytes(target.read_bytes()+b'\nAuthorization: '+credential.header(canary_of(copied)).encode()+b'\n')
+    mutate('injected_log_leak', inject_log, 'recorded findings differ')
+
+    def inject_metadata(copied):
+        value = r6.read_json(copied/'provider-metadata.json')
+        value['identity_scope'] = {'nested': {'header': credential.header(canary_of(copied))}}
+        r6.write_json(copied/'provider-metadata.json', value)
+    mutate('injected_metadata_leak', inject_metadata, 'recorded findings differ')
+
+    def inject_gzip(copied):
+        target = copied/'solution.ndjson.gz'
+        require(target.exists(), 'no compressed artifact to taint')
+        plain = gzip.decompress(target.read_bytes())
+        with gzip.open(target, 'wb') as handle:
+            handle.write(plain+b'{"leak":"'+canary_of(copied).encode()+b'"}\n')
+    mutate('injected_gzip_leak', inject_gzip, 'recorded findings differ')
+
+    mutate('missing_scanner', lambda c: (c/'publication-scan.json').unlink(), 'not retained')
+
+    def omit_target(copied):
+        report = r6.read_json(copied/'publication-scan.json')
+        dropped = next(e for e in report['inventory'] if e['path'] == 'accounting.json')
+        report['inventory'].remove(dropped)
+        report['files_scanned'] -= 1
+        r6.write_json(copied/'publication-scan.json', report)
+    mutate('omitted_scan_target', omit_target, 'omits a publication target')
+
+    def forge_report(copied):
+        # A report that claims clean while its own inventory still shows the hit.
+        report = r6.read_json(copied/'publication-scan.json')
+        require(report['disclosures'], 'forgery precondition absent: no genuine disclosure')
+        require(any(e['findings'] for e in report['inventory']), 'no inventory finding to contradict')
+        report['disclosures'] = []
+        report['accepted'] = True
+        r6.write_json(copied/'publication-scan.json', report)
+    mutate('forged_passing_report', forge_report, 'reported disclosures differ', source='d1_reflected_canary')
+
+    def forge_receipt(copied):
+        value = r6.read_json(copied/'credential-receipt.json')
+        value['expected_authorization_sha256'] = value['observed_authorization_sha256'] = '0'*64
+        r6.write_json(copied/'credential-receipt.json', value)
+    mutate('forged_receipt_digest', forge_receipt, 'credential receipt differs')
+
+    for name, source, task in [('legacy_broker_v1', 'golden-broker-v1', r6.D1),
+            ('legacy_broker_v2', 'golden-broker-v2', r6.D1), ('legacy_broker_v3', 'golden-broker-v3', r6.D1),
+            ('legacy_c8_v1', 'golden-c8-v1', r6.C8),
+            ('legacy_d1_fixture', 'proposal-checkpoint-v2/d1_valid', r6.D1),
+            ('legacy_c8_fixture', 'proposal-checkpoint-v2/c8_valid', r6.C8),
+            ('legacy_d1_envelope', 'envelope-checkpoint-v1/d1_valid', r6.D1),
+            ('legacy_c8_envelope', 'envelope-checkpoint-v1/c8_valid', r6.C8),
+            ('legacy_alternate_envelope', 'envelope-checkpoint-v1/d1_alternate_encoding', r6.D1),
+            ('legacy_d1_provider', 'provider-checkpoint-v1/d1_valid', r6.D1),
+            ('legacy_c8_provider', 'provider-checkpoint-v1/c8_valid', r6.C8),
+            ('legacy_alternate_provider', 'provider-checkpoint-v1/d1_alternate_encoding', r6.D1)]:
+        def historical(source=source, task=task):
+            check = (provider_audit.audit if source.startswith('provider-')
+                     else envelope_audit.audit if source.startswith('envelope-') else episode.audit)
+            return {'accepted': check(r6.ROOT/'runs'/source, task)['accepted']}
+        suite.case(name, historical)
+
+    def preservation():
+        values = r6.read_json(root/'prior-artifacts.sha256.json')
+        require(all((instrument.REPO/p).is_file() and r6.sha(instrument.REPO/p) == h for p, h in values.items()),
+                'a pre-existing artifact changed')
+        return {'checked_files': len(values), 'changed': 0, 'missing': 0, 'git_base': BASE}
+    suite.case('prior_artifacts_preserved', preservation)
+    suite.finish()
+
+
+BASE = 'ac0f50f'
+
+
+def snapshot(root):
+    records = {}
+    paths = r6.command(['git', '-C', instrument.REPO, 'ls-tree', '-r', '--name-only', BASE,
+        'experiments/r6/tasks', 'experiments/r6/runs', 'experiments/r6/policies', 'experiments/r6/schema',
+        'experiments/r6/prompts', 'experiments/c1-cert-recovery']).splitlines()
+    for path in paths:
+        content = subprocess.check_output(['git', '-C', str(instrument.REPO), 'show', BASE+':'+path])
+        records[path] = r6.hashlib.sha256(content).hexdigest()
+    r6.write_json(root/'prior-artifacts.sha256.json', records)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--run-dir', type=Path, required=True)
+    parser.add_argument('--units-only', action='store_true')
+    parser.add_argument('--development-policy-dir', type=Path)
+    args = parser.parse_args()
+    if args.development_policy_dir: contract.development(args.development_policy_dir)
+    root = args.run_dir.resolve()
+    root.mkdir(parents=True, exist_ok=False)
+    r6.write_json(root/'checkpoint.json', {'passed': False})
+    units(root)
+    if args.units_only:
+        return
+    snapshot(root)
+    native(root)
+    audits(root)
+    r6.write_json(root/'checkpoint.json', {'passed': True, 'live_model_calls': 0,
+        'scope': 'synthetic canary over an isolated local HTTP fixture; no real credential, TLS, '
+                 'remote receipt, compilation or inference attestation',
+        'canary_derivation': credential.DOMAIN, 'policy_sha256': r6.sha(contract.CONFIG),
+        'source_lock_sha256': r6.sha(contract.LOCK),
+        'publication_encoded_forms': sorted(publication.forms('x')),
+        'suites': {name: {'sha256': r6.sha(root/name), 'count': r6.read_json(root/name)['check_count']}
+                   for name in ['credential-units.json', 'credential-native.json', 'credential-audits.json']}})
+
+
+if __name__ == '__main__':
+    main()

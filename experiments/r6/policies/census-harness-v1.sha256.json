@@ -1,0 +1,7 @@
+{
+  "census.py": "9b521af3da614bbc8fa9059d6a2e920ccdcea8455e0c59d0675ef761a2f96fc4",
+  "site_freeze.py": "1374bcfee81ad945c9c0163f816e3f7aa00fae51833d7863ee32f953caa2af39",
+  "test_census.py": "3210d9f91c01349d7cc984c28d3592b99778125b3f5bb9eaa250c4cd875a1efa",
+  "capture/CaptureSite.lean": "d2f5dfd1c2a2f5a590fca8d0ec65998703f665a361d325c54cd9ae90e2d598d5",
+  "schema/task-site.schema.json": "8348b20e22ad23ed6e415f3f054e76106b033ca45a2f6297a7eedebf244589ed"
+}

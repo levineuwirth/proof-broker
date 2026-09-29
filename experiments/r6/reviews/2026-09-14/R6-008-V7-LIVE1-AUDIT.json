@@ -1,0 +1,87 @@
+{
+  "accepted_with_operator_scan": true,
+  "cases": {
+    "live:versions:signed_policy_and_lock_bound": true,
+    "live:ledger:activation_serves_authorization": true,
+    "live:chain:valid": true,
+    "live:chain:expected_sequence": true,
+    "live:request:regenerated": true,
+    "live:pricing:host_admission_rederived": true,
+    "live:pricing:actor_check_rederived": true,
+    "live:ledger:permit_and_reconciliation_bound": true,
+    "live:ledger:disposition_derived": true,
+    "live:slot:authoritative_matches_retained": true,
+    "live:mounts:authority_and_network_bound": true,
+    "live:receipts:single_pair_bound_to_process": true,
+    "live:transport:record_consistent": true,
+    "live:transport:local_send_checked_remote_unobservable": true,
+    "live:grant:ordered_before_first_header_byte": true,
+    "live:credential_use:recorded_not_exact_receipt": true,
+    "live:interpretation:reproduced": true,
+    "live:accounting:recomputed": true,
+    "live:proof:response_bound": true,
+    "live:proof:witness_contradiction": true,
+    "live:proof:certificate_bound": true,
+    "live:proof:attribution_live": true,
+    "live:proof:shared_checker": true,
+    "live:proof:export_recorded": true,
+    "live:provider:reported_fields": true,
+    "live:seal:retained_hashes": true,
+    "live:publication:structural_scan_recomputed": true,
+    "live:terminal:pending_and_commitments_bound": true,
+    "live:summary:bound_to_audited_records": true,
+    "live:seal:chain_and_outcome": true,
+    "live:operator_scan:bound_to_commitment_and_seal": true,
+    "live:campaign:one_transmission_under_signed_authorization": true
+  },
+  "case_count": 32,
+  "witness": {
+    "coefficients": [
+      {
+        "hypothesis": "hZ",
+        "coefficient": "2"
+      },
+      {
+        "hypothesis": "neg_goal",
+        "coefficient": "1"
+      }
+    ]
+  },
+  "positive_constant": "18446744069397676034",
+  "proof_export_sha256": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+  "export_identity": "deterministic golden export (2·hZ + neg_goal)",
+  "provider_reported": {
+    "model": "gpt-5.4-2026-03-05",
+    "status": "completed",
+    "id": "resp_0b61b5e1dec93e55016aa7d006bd7487d1b2b2189593aacd36",
+    "service_tier": "default",
+    "usage": {
+      "input_tokens": 1525,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 855,
+      "output_tokens_details": {
+        "reasoning_tokens": 771
+      },
+      "total_tokens": 2380
+    }
+  },
+  "priced_ceiling_micro_usd": 16638,
+  "grant_durable_before_header_ns": 440127,
+  "live_ledger": {
+    "purpose": "live",
+    "reservations": 1,
+    "transmissions_consumed": 1,
+    "open_reservations": [],
+    "committed_micro_usd": 102400
+  },
+  "operator_scan_report_sha256": "4884bcb26cf493eb30f83b126056c52c4d7698a8d071b0b58c6918e2cb6e29a1",
+  "policy_sha256": "7e16462d13a4fc3e29590c54d10508abf88982564abbc800678604352914f039",
+  "source_lock_sha256": "50e42fbc1b221fc1f1b8ae58ddb779d25645a4781420b049f1c4fa2ebffeee56",
+  "program_sha256": "fe322809477edc572f5e12ce424ba3377ab089fbb268eacd49560200c549a7d4",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "historical audit of one signed transmission over retained bytes; no native execution, verifier run or inference; provider fields are provider claims"
+}

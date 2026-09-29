@@ -1,0 +1,5 @@
+Exception ignored in ssl servername callback while calling set SNI callback (result=(None, None)):
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/ssl.py", line 1372, in do_handshake
+    self._sslobj.do_handshake()
+TypeError: 'tuple' object cannot be interpreted as an integer

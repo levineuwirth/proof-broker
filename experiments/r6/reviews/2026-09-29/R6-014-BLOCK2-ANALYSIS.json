@@ -1,0 +1,4114 @@
+{
+  "schema_version": "r6-analysis-3",
+  "populations": {
+    "primary": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l098",
+      "bracket-l099",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l166",
+      "bracket-l170",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l180",
+      "bracket-l204"
+    ],
+    "posed": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l166",
+      "bracket-l170",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l204"
+    ],
+    "certificate_feasible": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l166",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l204"
+    ],
+    "negative_control": [
+      "bracket-l170"
+    ],
+    "closer_reachable": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l099"
+    ],
+    "closer_unreachable": [
+      "bracket-l166",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l204"
+    ],
+    "not_posed": [
+      "bracket-l098",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l180"
+    ]
+  },
+  "denominators": {
+    "primary": 15,
+    "posed": 11,
+    "certificate_feasible": 10,
+    "negative_control": 1,
+    "closer_reachable": 6,
+    "closer_unreachable": 4
+  },
+  "collection": {
+    "authorized_slots": 88,
+    "planned_slots": 88,
+    "collected_slots": 88,
+    "authorized_not_collected": [],
+    "partial": false,
+    "planned_beyond_authorization": 0,
+    "note": "planned draws are neither evidence nor permission"
+  },
+  "arms": {
+    "learned": {
+      "slots": {
+        "slots": 88,
+        "dispositions": {
+          "sent_with_response": 88,
+          "unknown_or_partial_send": 0,
+          "pre_send_released": 0,
+          "exhausted": 0,
+          "refused_before_reservation": 0
+        },
+        "stages_over_sent": {
+          "returned": {
+            "true": 88,
+            "false": 0,
+            "unobserved": 0
+          },
+          "verified": {
+            "true": 80,
+            "false": 8,
+            "unobserved": 0
+          },
+          "consumed": {
+            "true": 48,
+            "false": 32,
+            "unobserved": 8
+          },
+          "local": {
+            "true": 48,
+            "false": 0,
+            "unobserved": 40
+          },
+          "whole": {
+            "true": 48,
+            "false": 0,
+            "unobserved": 40
+          },
+          "axioms": {
+            "true": 48,
+            "false": 0,
+            "unobserved": 40
+          }
+        },
+        "sent": 88
+      },
+      "by_site": {
+        "bracket-l069": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "whole": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "axioms": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.lift_cell"
+        },
+        "bracket-l070": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "whole": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "axioms": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 4,
+          "distinct_verified_witnesses": 4,
+          "verified_matching_classification_certificate": 3,
+          "family": "Bracket.lift_cell"
+        },
+        "bracket-l071": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "whole": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "axioms": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 2,
+          "distinct_verified_witnesses": 2,
+          "verified_matching_classification_certificate": 0,
+          "family": "Bracket.lift_cell"
+        },
+        "bracket-l078": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "whole": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "axioms": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.lift_cell"
+        },
+        "bracket-l096": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "whole": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "axioms": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.threshold_unique"
+        },
+        "bracket-l099": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "whole": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "axioms": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.threshold_unique"
+        },
+        "bracket-l166": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 0,
+              "false": 8,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "whole": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "axioms": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.cell_value_neutral"
+        },
+        "bracket-l170": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 0,
+              "false": 8,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "local": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "whole": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "axioms": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 0,
+          "verified_matching_classification_certificate": 0,
+          "family": "Bracket.cell_value_neutral"
+        },
+        "bracket-l175": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 0,
+              "false": 8,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "whole": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "axioms": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.cell_value_neutral"
+        },
+        "bracket-l178": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 0,
+              "false": 8,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "whole": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "axioms": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.cell_value_neutral"
+        },
+        "bracket-l204": {
+          "slots": 8,
+          "dispositions": {
+            "sent_with_response": 8,
+            "unknown_or_partial_send": 0,
+            "pre_send_released": 0,
+            "exhausted": 0,
+            "refused_before_reservation": 0
+          },
+          "stages_over_sent": {
+            "returned": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "verified": {
+              "true": 8,
+              "false": 0,
+              "unobserved": 0
+            },
+            "consumed": {
+              "true": 0,
+              "false": 8,
+              "unobserved": 0
+            },
+            "local": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "whole": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            },
+            "axioms": {
+              "true": 0,
+              "false": 0,
+              "unobserved": 8
+            }
+          },
+          "sent": 8,
+          "distinct_proposals": 1,
+          "distinct_verified_witnesses": 1,
+          "verified_matching_classification_certificate": 8,
+          "family": "Bracket.Row.s1_noninc"
+        }
+      }
+    },
+    "deterministic": {
+      "route": "site_cvc4_term_mode_v1",
+      "by_site": {
+        "bracket-l069": "proof",
+        "bracket-l070": "proof",
+        "bracket-l071": "proof",
+        "bracket-l078": "proof",
+        "bracket-l096": "backend_not_invoked",
+        "bracket-l098": "backend_not_invoked",
+        "bracket-l099": "backend_not_invoked",
+        "bracket-l101": "backend_not_invoked",
+        "bracket-l158": "reconstruction_refused",
+        "bracket-l166": "reconstruction_refused",
+        "bracket-l170": "witness_not_recovered",
+        "bracket-l175": "reconstruction_refused",
+        "bracket-l178": "reconstruction_refused",
+        "bracket-l180": "witness_not_recovered",
+        "bracket-l204": "reconstruction_refused"
+      },
+      "proofs": [
+        "bracket-l069",
+        "bracket-l070",
+        "bracket-l071",
+        "bracket-l078"
+      ],
+      "cost_cpu_seconds": 111.454
+    },
+    "deterministic_reference": {
+      "route": "site_cvc4_default_closer_v1",
+      "status": "reference, never pooled",
+      "by_site": {
+        "bracket-l069": "closed_and_validated",
+        "bracket-l070": "closed_and_validated",
+        "bracket-l071": "closed_and_validated",
+        "bracket-l078": "closed_and_validated",
+        "bracket-l096": "backend_not_invoked",
+        "bracket-l098": "backend_not_invoked",
+        "bracket-l099": "backend_not_invoked",
+        "bracket-l101": "backend_not_invoked",
+        "bracket-l158": "witness_not_recovered",
+        "bracket-l166": "closed_and_validated",
+        "bracket-l170": "witness_not_recovered",
+        "bracket-l175": "closed_and_validated",
+        "bracket-l178": "closed_and_validated",
+        "bracket-l180": "witness_not_recovered",
+        "bracket-l204": "closed_and_validated"
+      },
+      "closers": {
+        "bracket-l069": "gated_omega",
+        "bracket-l070": "gated_omega",
+        "bracket-l071": "gated_omega",
+        "bracket-l078": "gated_omega",
+        "bracket-l096": null,
+        "bracket-l098": null,
+        "bracket-l099": null,
+        "bracket-l101": null,
+        "bracket-l158": null,
+        "bracket-l166": "gated_omega",
+        "bracket-l170": null,
+        "bracket-l175": "gated_omega",
+        "bracket-l178": "gated_omega",
+        "bracket-l180": null,
+        "bracket-l204": "gated_omega"
+      }
+    }
+  },
+  "strata": {
+    "posed": {
+      "slots": 88,
+      "dispositions": {
+        "sent_with_response": 88,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 88,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 80,
+          "false": 8,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 48,
+          "false": 32,
+          "unobserved": 8
+        },
+        "local": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 40
+        },
+        "whole": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 40
+        },
+        "axioms": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 40
+        }
+      },
+      "sent": 88
+    },
+    "certificate_feasible": {
+      "slots": 80,
+      "dispositions": {
+        "sent_with_response": 80,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 80,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 80,
+          "false": 0,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 48,
+          "false": 32,
+          "unobserved": 0
+        },
+        "local": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 32
+        },
+        "whole": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 32
+        },
+        "axioms": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 32
+        }
+      },
+      "sent": 80
+    },
+    "negative_control": {
+      "slots": 8,
+      "dispositions": {
+        "sent_with_response": 8,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 8,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 0,
+          "false": 8,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        },
+        "local": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        },
+        "whole": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        },
+        "axioms": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        }
+      },
+      "sent": 8
+    },
+    "closer_reachable": {
+      "slots": 48,
+      "dispositions": {
+        "sent_with_response": 48,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 0
+        },
+        "local": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 0
+        },
+        "whole": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 0
+        },
+        "axioms": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 0
+        }
+      },
+      "sent": 48
+    },
+    "closer_unreachable": {
+      "slots": 32,
+      "dispositions": {
+        "sent_with_response": 32,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 0,
+          "false": 32,
+          "unobserved": 0
+        },
+        "local": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 32
+        },
+        "whole": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 32
+        },
+        "axioms": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 32
+        }
+      },
+      "sent": 32
+    }
+  },
+  "sensitivities": {
+    "excluding_l070": {
+      "slots": 80,
+      "dispositions": {
+        "sent_with_response": 80,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 80,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 72,
+          "false": 8,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 40,
+          "false": 32,
+          "unobserved": 8
+        },
+        "local": {
+          "true": 40,
+          "false": 0,
+          "unobserved": 40
+        },
+        "whole": {
+          "true": 40,
+          "false": 0,
+          "unobserved": 40
+        },
+        "axioms": {
+          "true": 40,
+          "false": 0,
+          "unobserved": 40
+        }
+      },
+      "sent": 80
+    },
+    "excluding_lift_cell": {
+      "slots": 56,
+      "dispositions": {
+        "sent_with_response": 56,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 56,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 48,
+          "false": 8,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 16,
+          "false": 32,
+          "unobserved": 8
+        },
+        "local": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 40
+        },
+        "whole": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 40
+        },
+        "axioms": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 40
+        }
+      },
+      "sent": 56
+    }
+  },
+  "families": {
+    "Bracket.Row.s1_noninc": {
+      "slots": 8,
+      "dispositions": {
+        "sent_with_response": 8,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 8,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 8,
+          "false": 0,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 0,
+          "false": 8,
+          "unobserved": 0
+        },
+        "local": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        },
+        "whole": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        },
+        "axioms": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 8
+        }
+      },
+      "sent": 8
+    },
+    "Bracket.cell_value_neutral": {
+      "slots": 32,
+      "dispositions": {
+        "sent_with_response": 32,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 24,
+          "false": 8,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 0,
+          "false": 24,
+          "unobserved": 8
+        },
+        "local": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 32
+        },
+        "whole": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 32
+        },
+        "axioms": {
+          "true": 0,
+          "false": 0,
+          "unobserved": 32
+        }
+      },
+      "sent": 32
+    },
+    "Bracket.lift_cell": {
+      "slots": 32,
+      "dispositions": {
+        "sent_with_response": 32,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "local": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "whole": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        },
+        "axioms": {
+          "true": 32,
+          "false": 0,
+          "unobserved": 0
+        }
+      },
+      "sent": 32
+    },
+    "Bracket.threshold_unique": {
+      "slots": 16,
+      "dispositions": {
+        "sent_with_response": 16,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 0
+        },
+        "local": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 0
+        },
+        "whole": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 0
+        },
+        "axioms": {
+          "true": 16,
+          "false": 0,
+          "unobserved": 0
+        }
+      },
+      "sent": 16
+    }
+  },
+  "prefixes": {
+    "draws_1_to_1": {
+      "slots": 11,
+      "dispositions": {
+        "sent_with_response": 11,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 11,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 10,
+          "false": 1,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 6,
+          "false": 4,
+          "unobserved": 1
+        },
+        "local": {
+          "true": 6,
+          "false": 0,
+          "unobserved": 5
+        },
+        "whole": {
+          "true": 6,
+          "false": 0,
+          "unobserved": 5
+        },
+        "axioms": {
+          "true": 6,
+          "false": 0,
+          "unobserved": 5
+        }
+      },
+      "sent": 11
+    },
+    "draws_1_to_2": {
+      "slots": 22,
+      "dispositions": {
+        "sent_with_response": 22,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 22,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 20,
+          "false": 2,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 12,
+          "false": 8,
+          "unobserved": 2
+        },
+        "local": {
+          "true": 12,
+          "false": 0,
+          "unobserved": 10
+        },
+        "whole": {
+          "true": 12,
+          "false": 0,
+          "unobserved": 10
+        },
+        "axioms": {
+          "true": 12,
+          "false": 0,
+          "unobserved": 10
+        }
+      },
+      "sent": 22
+    },
+    "draws_1_to_3": {
+      "slots": 33,
+      "dispositions": {
+        "sent_with_response": 33,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 33,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 30,
+          "false": 3,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 18,
+          "false": 12,
+          "unobserved": 3
+        },
+        "local": {
+          "true": 18,
+          "false": 0,
+          "unobserved": 15
+        },
+        "whole": {
+          "true": 18,
+          "false": 0,
+          "unobserved": 15
+        },
+        "axioms": {
+          "true": 18,
+          "false": 0,
+          "unobserved": 15
+        }
+      },
+      "sent": 33
+    },
+    "draws_1_to_4": {
+      "slots": 44,
+      "dispositions": {
+        "sent_with_response": 44,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 44,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 40,
+          "false": 4,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 24,
+          "false": 16,
+          "unobserved": 4
+        },
+        "local": {
+          "true": 24,
+          "false": 0,
+          "unobserved": 20
+        },
+        "whole": {
+          "true": 24,
+          "false": 0,
+          "unobserved": 20
+        },
+        "axioms": {
+          "true": 24,
+          "false": 0,
+          "unobserved": 20
+        }
+      },
+      "sent": 44
+    },
+    "draws_1_to_5": {
+      "slots": 55,
+      "dispositions": {
+        "sent_with_response": 55,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 55,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 50,
+          "false": 5,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 30,
+          "false": 20,
+          "unobserved": 5
+        },
+        "local": {
+          "true": 30,
+          "false": 0,
+          "unobserved": 25
+        },
+        "whole": {
+          "true": 30,
+          "false": 0,
+          "unobserved": 25
+        },
+        "axioms": {
+          "true": 30,
+          "false": 0,
+          "unobserved": 25
+        }
+      },
+      "sent": 55
+    },
+    "draws_1_to_6": {
+      "slots": 66,
+      "dispositions": {
+        "sent_with_response": 66,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 66,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 60,
+          "false": 6,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 36,
+          "false": 24,
+          "unobserved": 6
+        },
+        "local": {
+          "true": 36,
+          "false": 0,
+          "unobserved": 30
+        },
+        "whole": {
+          "true": 36,
+          "false": 0,
+          "unobserved": 30
+        },
+        "axioms": {
+          "true": 36,
+          "false": 0,
+          "unobserved": 30
+        }
+      },
+      "sent": 66
+    },
+    "draws_1_to_7": {
+      "slots": 77,
+      "dispositions": {
+        "sent_with_response": 77,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 77,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 70,
+          "false": 7,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 42,
+          "false": 28,
+          "unobserved": 7
+        },
+        "local": {
+          "true": 42,
+          "false": 0,
+          "unobserved": 35
+        },
+        "whole": {
+          "true": 42,
+          "false": 0,
+          "unobserved": 35
+        },
+        "axioms": {
+          "true": 42,
+          "false": 0,
+          "unobserved": 35
+        }
+      },
+      "sent": 77
+    },
+    "draws_1_to_8": {
+      "slots": 88,
+      "dispositions": {
+        "sent_with_response": 88,
+        "unknown_or_partial_send": 0,
+        "pre_send_released": 0,
+        "exhausted": 0,
+        "refused_before_reservation": 0
+      },
+      "stages_over_sent": {
+        "returned": {
+          "true": 88,
+          "false": 0,
+          "unobserved": 0
+        },
+        "verified": {
+          "true": 80,
+          "false": 8,
+          "unobserved": 0
+        },
+        "consumed": {
+          "true": 48,
+          "false": 32,
+          "unobserved": 8
+        },
+        "local": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 40
+        },
+        "whole": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 40
+        },
+        "axioms": {
+          "true": 48,
+          "false": 0,
+          "unobserved": 40
+        }
+      },
+      "sent": 88
+    }
+  },
+  "negative_control": {
+    "slots": 8,
+    "false_certificate_acceptances": [],
+    "definition": "a verifier or consumer acceptance of a Farkas contradiction for the satisfiable emitted rows, read from the raw observations"
+  },
+  "contradictory_observations": {},
+  "integrity_stop": false,
+  "operational_pause": [],
+  "continue_permitted": true,
+  "costs": {
+    "reserved_micro_usd": 9011200,
+    "authorized_micro_usd": 9011200,
+    "usage_fields": {
+      "input_tokens": {
+        "reported_slots": 88,
+        "unreported_slots": 0,
+        "known_total": 108480
+      },
+      "output_tokens": {
+        "reported_slots": 88,
+        "unreported_slots": 0,
+        "known_total": 44886
+      },
+      "cached_tokens": {
+        "reported_slots": 88,
+        "unreported_slots": 0,
+        "known_total": 0
+      }
+    },
+    "consumed_slots": 88,
+    "priced_slots": 88,
+    "unpriced_slots": [],
+    "known_priced_subtotal_nano_usd": 944490000,
+    "priced_ceiling_nano_usd": 944490000,
+    "priced_ceiling_micro_usd": 944490,
+    "cached_unreported_bounded_as_uncached": [],
+    "complete": true,
+    "scope": "reservations and provider-reported usage at frozen rates; not a bill"
+  },
+  "per_slot": {
+    "bracket-l069/1": {
+      "site": "bracket-l069",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/2": {
+      "site": "bracket-l069",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/3": {
+      "site": "bracket-l069",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/4": {
+      "site": "bracket-l069",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/5": {
+      "site": "bracket-l069",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/6": {
+      "site": "bracket-l069",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/7": {
+      "site": "bracket-l069",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l069/8": {
+      "site": "bracket-l069",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/1": {
+      "site": "bracket-l070",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hwidth",
+          1
+        ],
+        [
+          "neg_goal",
+          32769
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/2": {
+      "site": "bracket-l070",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hZ",
+          2
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/3": {
+      "site": "bracket-l070",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "_pb_nonneg_Zmax",
+          65536
+        ],
+        [
+          "hwidth",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/4": {
+      "site": "bracket-l070",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hwidth",
+          1
+        ],
+        [
+          "neg_goal",
+          32769
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/5": {
+      "site": "bracket-l070",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "_pb_nonneg_atom_4",
+          1
+        ],
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hwidth",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/6": {
+      "site": "bracket-l070",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hZ",
+          2
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/7": {
+      "site": "bracket-l070",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hZ",
+          2
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l070/8": {
+      "site": "bracket-l070",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hwidth",
+          1
+        ],
+        [
+          "neg_goal",
+          32769
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/1": {
+      "site": "bracket-l071",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/2": {
+      "site": "bracket-l071",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/3": {
+      "site": "bracket-l071",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/4": {
+      "site": "bracket-l071",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/5": {
+      "site": "bracket-l071",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/6": {
+      "site": "bracket-l071",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/7": {
+      "site": "bracket-l071",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l071/8": {
+      "site": "bracket-l071",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hle",
+          1
+        ],
+        [
+          "hzsum",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/1": {
+      "site": "bracket-l078",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/2": {
+      "site": "bracket-l078",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/3": {
+      "site": "bracket-l078",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/4": {
+      "site": "bracket-l078",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/5": {
+      "site": "bracket-l078",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/6": {
+      "site": "bracket-l078",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/7": {
+      "site": "bracket-l078",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l078/8": {
+      "site": "bracket-l078",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hprod_le",
+          1
+        ],
+        [
+          "hx",
+          1
+        ],
+        [
+          "hz",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": null
+    },
+    "bracket-l096/1": {
+      "site": "bracket-l096",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/2": {
+      "site": "bracket-l096",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/3": {
+      "site": "bracket-l096",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/4": {
+      "site": "bracket-l096",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/5": {
+      "site": "bracket-l096",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/6": {
+      "site": "bracket-l096",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/7": {
+      "site": "bracket-l096",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l096/8": {
+      "site": "bracket-l096",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/1": {
+      "site": "bracket-l099",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/2": {
+      "site": "bracket-l099",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/3": {
+      "site": "bracket-l099",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/4": {
+      "site": "bracket-l099",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/5": {
+      "site": "bracket-l099",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/6": {
+      "site": "bracket-l099",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/7": {
+      "site": "bracket-l099",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l099/8": {
+      "site": "bracket-l099",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": true,
+      "local": true,
+      "whole": true,
+      "axioms": true,
+      "witness_primitive": [
+        [
+          "hgt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_int",
+      "refusal": null
+    },
+    "bracket-l166/1": {
+      "site": "bracket-l166",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/2": {
+      "site": "bracket-l166",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/3": {
+      "site": "bracket-l166",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/4": {
+      "site": "bracket-l166",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/5": {
+      "site": "bracket-l166",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/6": {
+      "site": "bracket-l166",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/7": {
+      "site": "bracket-l166",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l166/8": {
+      "site": "bracket-l166",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hlt",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l170/1": {
+      "site": "bracket-l170",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/2": {
+      "site": "bracket-l170",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/3": {
+      "site": "bracket-l170",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/4": {
+      "site": "bracket-l170",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/5": {
+      "site": "bracket-l170",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/6": {
+      "site": "bracket-l170",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/7": {
+      "site": "bracket-l170",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l170/8": {
+      "site": "bracket-l170",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": false,
+      "consumed": null,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hzh0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": null,
+      "refusal": null
+    },
+    "bracket-l175/1": {
+      "site": "bracket-l175",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/2": {
+      "site": "bracket-l175",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/3": {
+      "site": "bracket-l175",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/4": {
+      "site": "bracket-l175",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/5": {
+      "site": "bracket-l175",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/6": {
+      "site": "bracket-l175",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/7": {
+      "site": "bracket-l175",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l175/8": {
+      "site": "bracket-l175",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hrec",
+          -1
+        ],
+        [
+          "hz0",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/1": {
+      "site": "bracket-l178",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/2": {
+      "site": "bracket-l178",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/3": {
+      "site": "bracket-l178",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/4": {
+      "site": "bracket-l178",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/5": {
+      "site": "bracket-l178",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/6": {
+      "site": "bracket-l178",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/7": {
+      "site": "bracket-l178",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l178/8": {
+      "site": "bracket-l178",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "neg_goal",
+          1
+        ],
+        [
+          "this",
+          1
+        ],
+        [
+          "this_1",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/1": {
+      "site": "bracket-l204",
+      "draw": 1,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/2": {
+      "site": "bracket-l204",
+      "draw": 2,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/3": {
+      "site": "bracket-l204",
+      "draw": 3,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/4": {
+      "site": "bracket-l204",
+      "draw": 4,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/5": {
+      "site": "bracket-l204",
+      "draw": 5,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/6": {
+      "site": "bracket-l204",
+      "draw": 6,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/7": {
+      "site": "bracket-l204",
+      "draw": 7,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    },
+    "bracket-l204/8": {
+      "site": "bracket-l204",
+      "draw": 8,
+      "disposition": "sent_with_response",
+      "returned": true,
+      "verified": true,
+      "consumed": false,
+      "local": null,
+      "whole": null,
+      "axioms": null,
+      "witness_primitive": [
+        [
+          "hab",
+          1
+        ],
+        [
+          "neg_goal",
+          1
+        ]
+      ],
+      "contradictions": [],
+      "audit_accepted": true,
+      "publication": "accepted",
+      "closer": "term_mode_nat",
+      "refusal": "nat_closer_int_goal"
+    }
+  },
+  "program_sha256": "9feb22265298922599b62adb09c558c23e653c0bbcbb73894092ed44241fbcf3",
+  "input_sha256": "867edcdbe5d140a872b9010c355ebd8880ae479ef6bf387550866a6ca80623c8"
+}

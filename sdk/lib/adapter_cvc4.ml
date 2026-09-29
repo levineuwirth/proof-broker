@@ -245,12 +245,14 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
           match parse_response stdout, code with
           | Unsat, _ ->
             (* Try our internal Farkas closer to upgrade Tier 0 to
-               Tier 1. cvc4 has no proof-trace path, so this is the
+               Tier 1: the bounded enumeration, then exact
+               support-bounded recovery where that came up empty.
+               cvc4 has no proof-trace path, so this is the
                only way for cvc4 to mint a soundness-checkable cert.
                The closer runs after cvc4's [unsat] verdict so the
                backend attestation reflects what actually executed. *)
             let cert =
-              match Farkas_search.try_close ir with
+              match Farkas_search.try_close_then_exact ir with
               | Ok witness ->
                 mint_farkas_cert
                   ~adapter_version:version

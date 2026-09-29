@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "PROTOCOL.md_local_links": {
+      "count": 11,
+      "broken": []
+    },
+    "reviews/2026-09-07/REVIEW.md_local_links": {
+      "count": 25,
+      "broken": []
+    },
+    "untracked_source_whitespace": {
+      "files": 16,
+      "problems": []
+    },
+    "preservation": {
+      "files": 747,
+      "changed": []
+    },
+    "golden-broker-v2": {
+      "retained_hashes": 72,
+      "changed": []
+    },
+    "broker-conformance-v3": {
+      "retained_hashes": 224,
+      "changed": []
+    },
+    "further-review-v1": {
+      "retained_hashes": 21,
+      "changed": []
+    }
+  },
+  "qualification": "Checks of saved artifacts and current files; no additional native execution or compilation attestation."
+}

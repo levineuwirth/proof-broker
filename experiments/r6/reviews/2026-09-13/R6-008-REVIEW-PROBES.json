@@ -1,0 +1,138 @@
+{
+ "termination": {
+  "terminated": {
+   "kind": "release",
+   "transmissions_consumed": 0
+  },
+  "workload_still_alive": {
+   "kind": "release",
+   "transmissions_consumed": 0
+  },
+  "empty_record": {
+   "kind": "release",
+   "transmissions_consumed": 0
+  }
+ },
+ "concurrent_grant": {
+  "first": {
+   "accepted": true,
+   "grant_id": "63119c49f6a343299b00cc5965187ae5"
+  },
+  "second": {
+   "accepted": true,
+   "grant_id": "a6bb3652a452414a9444ba8ba503da20"
+  },
+  "retained_grant_id": "a6bb3652a452414a9444ba8ba503da20"
+ },
+ "authorization_substitution": {
+  "live_authorization_transmissions": 1,
+  "ledger_activation_transmissions": 64,
+  "ledger_activation_approver": "rehearsal",
+  "authorization_checked": true,
+  "permit_verified": true,
+  "pricing_admitted": true,
+  "credential_boundary_reached": true,
+  "credential_reads": 0,
+  "connections": 0,
+  "failure_category": "credential_format"
+ },
+ "stale_permit": {
+  "shared_consumed": 1,
+  "stale_snapshot_accepted": true,
+  "snapshot_consumed": 0
+ },
+ "interrupted_record": {
+  "exception": {
+   "type": "JSONDecodeError",
+   "message": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+  },
+  "seal_exists": false,
+  "terminal_events": [],
+  "reservation_open": true,
+  "grant_exists": true,
+  "connections": 0
+ },
+ "audit_mutations": {
+  "source_lock_rebound": {
+   "accepted": true,
+   "case_count": 56
+  },
+  "publication_scan_rejected": {
+   "accepted": true,
+   "case_count": 56
+  },
+  "disclosure_overridden_by_terminal": {
+   "accepted": true,
+   "case_count": 56
+  },
+  "false_terminal_summary_digest": {
+   "accepted": true,
+   "case_count": 56
+  }
+ },
+ "operator_coverage": {
+  "exit_code": 0,
+  "scan_accepted": true,
+  "files_scanned": 0,
+  "commitment_bound": true,
+  "seal_sha256": null,
+  "bound_run_inside_scan_roots": false,
+  "synthetic_disclosure_outside_scan": true,
+  "real_credentials_read": 0
+ },
+ "operator_single_relationships": {
+  "unscanned_run": {
+   "unmutated": {
+    "exit_code": 0,
+    "scan_accepted": true,
+    "files_scanned": 3,
+    "commitment_bound": true,
+    "seal_sha256": "73c3d1a73727af5a98a6b8def4ad7fb8cc30a7e67410099d1df0df1efe750fce"
+   },
+   "mutated": {
+    "exit_code": 0,
+    "scan_accepted": true,
+    "files_scanned": 0,
+    "commitment_bound": true,
+    "seal_sha256": "73c3d1a73727af5a98a6b8def4ad7fb8cc30a7e67410099d1df0df1efe750fce"
+   }
+  },
+  "missing_seal": {
+   "unmutated": {
+    "exit_code": 0,
+    "scan_accepted": true,
+    "files_scanned": 3,
+    "commitment_bound": true,
+    "seal_sha256": "5f87a57f46ce443f90a3353e70ee62e8d6fa1a7f295651269d783de80de6294b"
+   },
+   "mutated": {
+    "exit_code": 0,
+    "scan_accepted": true,
+    "files_scanned": 2,
+    "commitment_bound": true,
+    "seal_sha256": null
+   }
+  },
+  "sealed_http_changed": {
+   "unmutated": {
+    "exit_code": 0,
+    "scan_accepted": true,
+    "files_scanned": 3,
+    "commitment_bound": true,
+    "seal_sha256": "88bb77dad2909f1c3fc501102cc6bc143523bffba99c976bcac6533dafd0b772"
+   },
+   "mutated": {
+    "exit_code": 0,
+    "scan_accepted": true,
+    "files_scanned": 3,
+    "commitment_bound": true,
+    "seal_sha256": "88bb77dad2909f1c3fc501102cc6bc143523bffba99c976bcac6533dafd0b772"
+   }
+  }
+ },
+ "provider_calls": 0,
+ "real_credentials_read": 0,
+ "program_sha256": "6b3fda89518f0229cb800e2648a4dacd9fe95fb53eb84964eacda1f439378703",
+ "reviewed_policy_sha256": "d63a6680d591201b43332134be4f53c3a5a91ce683bb80b04ebc4d6739188e0b",
+ "reviewed_source_lock_sha256": "077aa0e1a82866d69ebaf71294a2338dfe78b6b9f8d96e2b6cfb38845d1309a2"
+}

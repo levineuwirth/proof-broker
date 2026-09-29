@@ -1,0 +1,19 @@
+{
+  "attempts_reserved": 1,
+  "client_connection_attempts": 1,
+  "body_sends_started": 1,
+  "body_sends_returned": 1,
+  "transmissions_observed": 1,
+  "reported_usage": {
+    "status": "unreported",
+    "cost_usd": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cached_tokens": null,
+    "reasoning_tokens": null
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+}

@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import BrokerCapture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -75,7 +76,7 @@
+     have hlt : (x + z).val + ((Zmax : ZMod P) * zhigh).val < P := by
+       rw [hxz, hmul]
+       calc x.val + z.val + Zmax * zhigh.val
+-          < 2^24 + 2 * Zmax + Zmax * 2^16 := by omega
++          < 2^24 + 2 * Zmax + Zmax * 2^16 := by r6_capture_broker "Bracket.lift_cell.r6_site_l078" "bracket-l078"
+         _ < P := hwidth
+     rw [val_add_lt hlt, hxz, hmul]
+   have hnat : c.val = x.val + z.val + Zmax * zhigh.val := by rw [hrec]; exact hsum_full

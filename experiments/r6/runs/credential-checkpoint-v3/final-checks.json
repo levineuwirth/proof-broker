@@ -1,0 +1,281 @@
+{
+  "passed": true,
+  "scope": "artifact recomputation and a complete publication-bundle scan after the native suite; no additional execution, credential experiment, TLS, remote receipt, compilation or inference attestation",
+  "recount_utc": "2026-09-09T15:16:46.236286+00:00",
+  "base_commit": "ac0f50f",
+  "suites": {
+    "credential-units.json": {
+      "sha256": "29f6848c0d4cba44facf34bfab991cb8b57ba1d4c6dbd7fea8ff3254cf2d5210",
+      "count": 26,
+      "frozen_case_set": true,
+      "duplicates": 0
+    },
+    "credential-native.json": {
+      "sha256": "204c7169144881df2bf0bffb8af0667af6459849ac11299c85dc359e31b509e6",
+      "count": 5,
+      "frozen_case_set": true,
+      "duplicates": 0
+    },
+    "credential-audits.json": {
+      "sha256": "42d2799427b6c40b6c183a81b28e5dc27256707dece94c31d80dc086c397c000",
+      "count": 30,
+      "frozen_case_set": true,
+      "duplicates": 0
+    }
+  },
+  "total_checks": 67,
+  "episodes": {
+    "d1_valid": {
+      "accepted": true,
+      "proof_accepted": true,
+      "outer_log_clean": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "failure_category": null,
+      "recorded_disclosures": 0,
+      "events": 47,
+      "sealed_files": 187,
+      "seal_sha256": "136b71805ed5e1aed0a1b4cf50f0a3bef40d49ace70b9185bf05dcc934ee05d2",
+      "scan_coverage": {
+        "recomputed": 193,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 193
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_http503": {
+      "accepted": false,
+      "proof_accepted": false,
+      "outer_log_clean": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "failure_category": "provider_http_error",
+      "recorded_disclosures": 0,
+      "events": 16,
+      "sealed_files": 124,
+      "seal_sha256": "af1e2c02bb4e6560f26ed2173aefdc1fb146025ab3e785db782c3cb8cd433db1",
+      "scan_coverage": {
+        "recomputed": 124,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 124
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_missing_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "outer_log_clean": true,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "failure_category": "credential_receipt_failure",
+      "recorded_disclosures": 0,
+      "events": 16,
+      "sealed_files": 125,
+      "seal_sha256": "635bef1a633c24c3b99479e4a3d4679b627b43046d92176ab68d836711427bdd",
+      "scan_coverage": {
+        "recomputed": 125,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 125
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_wrong_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "outer_log_clean": true,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "failure_category": "credential_receipt_failure",
+      "recorded_disclosures": 0,
+      "events": 16,
+      "sealed_files": 125,
+      "seal_sha256": "f3296208f6de95d85375e5773a4b8652eafd7ade4e539590d8da8f79ebab7dc7",
+      "scan_coverage": {
+        "recomputed": 125,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 125
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_reflected_canary": {
+      "accepted": false,
+      "proof_accepted": false,
+      "outer_log_clean": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": false,
+      "failure_category": "provider_http_error",
+      "recorded_disclosures": 2,
+      "events": 16,
+      "sealed_files": 124,
+      "seal_sha256": "19f9d3364b0073234058d3ebbd65521538465ccd7c317b0f4ab8e65c40ed2e68",
+      "scan_coverage": {
+        "recomputed": 124,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 124
+      },
+      "canary_reconstructed_from_nonce": true
+    }
+  },
+  "episode_population": [
+    "d1_http503",
+    "d1_missing_credential",
+    "d1_reflected_canary",
+    "d1_valid",
+    "d1_wrong_credential"
+  ],
+  "episode_population_matches_frozen_cases": true,
+  "process_logs_present": 5,
+  "event_hashes_recomputed": 111,
+  "sealed_entries_checked": 685,
+  "canary_derivation": "r6-004-synthetic-canary-v1",
+  "canaries_scanned": 5,
+  "bundle_roots": [
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/runs/credential-checkpoint-v3",
+      "name_sha256": "b047cd3fdcecdcdf77e4305a48943c5255e794f0b89e88957b4c4a2485136c40"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/R6-004.md",
+      "name_sha256": "a4815163134d3b840f16d1abdd3638d71c434377ecd989a69d592b6ec4319234"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/reviews/2026-09-09",
+      "name_sha256": "58a543c050b6565ff10b032811ce3398d85a57ae7a08a86e8a98290e2c40abce"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/policies/credential-http-v3.json",
+      "name_sha256": "647f62c6dbbd8beeac8f195cb8d0cfccb533a021ae47f437aef183e4a1365df1"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/policies/credential-harness-v3.sha256.json",
+      "name_sha256": "2bb9bd82d707ce4d8f8a2347cfb1647cc3a898ab9da4a5a350e511fa6d78d9c8"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/credential.py",
+      "name_sha256": "2d5137157955581ce25bc7e072fdee15e5df8a1daca72ea7ff78185ea75cb608"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/publication.py",
+      "name_sha256": "215f27d59ef60bd783f4f4b813621d52111fa15ba193ba40b25f5113e0291b12"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_contract.py",
+      "name_sha256": "72fe87d80d09acbf8157aa51a17c2f93fc052280d56065b514b7e21fb9034c67"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_http.py",
+      "name_sha256": "1d206cc22609eb9601f5e233b2101bfa00959c48c30323813d94b8425fde2ba9"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_episode.py",
+      "name_sha256": "2de9cbcc2bb116e2dfef5c75f62f98c1cba6cf90049cc61506cd386bfeb2570c"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_audit.py",
+      "name_sha256": "1efc54dca30b689559c5f08bd34b994cf0cfc09a695bc02164a85cfc05ccfb1d"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/test_credentials.py",
+      "name_sha256": "808c8e545a961f642dd25de394a5d28ca923b7e4f117f1033875243bf5fe1d66"
+    },
+    {
+      "name": "/home/jeans/Repos/research/proof-broker/experiments/r6/schema/credential-verdict.schema.json",
+      "name_sha256": "6461bb8e48515c61ede5df05a37654a409f61af10512899a916bcc9fa7da47e2"
+    }
+  ],
+  "bundle_files_scanned": 751,
+  "bundle_gzip_streams_scanned": 3,
+  "disclosures_expected_synthetic": 2,
+  "disclosures_expected_detail": [
+    {
+      "path": "d1_reflected_canary/stages/proposal-1/output/provider-response.json",
+      "path_sha256": "47e0e55ad3a284c4de927def3ad96b7a57b7e5e926456a596817b1f5872c5c11",
+      "stream": "raw",
+      "representation": "4:authorization",
+      "form": "utf-8",
+      "offset": 52,
+      "episode": "d1_reflected_canary"
+    },
+    {
+      "path": "d1_reflected_canary/stages/proposal-1/output/provider-response.json",
+      "path_sha256": "47e0e55ad3a284c4de927def3ad96b7a57b7e5e926456a596817b1f5872c5c11",
+      "stream": "raw",
+      "representation": "4:token",
+      "form": "utf-8",
+      "offset": 59,
+      "episode": "d1_reflected_canary"
+    }
+  ],
+  "disclosures_unexpected": 0,
+  "disclosures_in_publication_accepted_episodes": 0,
+  "disclosure_population_note": "the reflected control deliberately retains its synthetic canary as research evidence; the bundle is not clean, and no blanket zero is claimed for it",
+  "publication_representations": [
+    "token",
+    "authorization"
+  ],
+  "publication_encoded_forms": [
+    "utf-8",
+    "utf-8-lower",
+    "utf-8-upper",
+    "base64",
+    "hex",
+    "utf-16-le",
+    "utf-16-be"
+  ],
+  "publication_decompression_limit_bytes": 67108864,
+  "finalization_order": [
+    "artifacts",
+    "scan",
+    "scan_report",
+    "report_scan",
+    "terminal_event",
+    "seal"
+  ],
+  "prior_files_checked": 9986,
+  "prior_changed_or_missing": [],
+  "preservation": {
+    "files": 9986,
+    "membership_source": "git ls-tree at ac0f50f",
+    "values_source": "git cat-file at ac0f50f",
+    "changed_or_missing": 0
+  },
+  "checkpoint_declarations": {
+    "canary_derivation": "r6-004-synthetic-canary-v1",
+    "publication_representations": [
+      "token",
+      "authorization"
+    ],
+    "publication_encoded_forms": [
+      "utf-8",
+      "utf-8-lower",
+      "utf-8-upper",
+      "base64",
+      "hex",
+      "utf-16-le",
+      "utf-16-be"
+    ],
+    "live_model_calls": 0,
+    "scope": "synthetic canary over an isolated local HTTP fixture; no real credential, TLS, remote receipt, compilation or inference attestation"
+  },
+  "policy_sha256": "e6e037d11b206326b064653ea3648db7cf8a0533880b78990738a783230bd39f",
+  "source_lock_sha256": "846ffd8beb6e41457c31d557189c026d807ae1e9d662a782e02417fb8caf379b",
+  "runtime_lock_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "declared_cases": [
+    "valid",
+    "http503",
+    "missing_credential",
+    "wrong_credential",
+    "reflected_canary"
+  ],
+  "python_compile_exit": 0,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "real_credentials_used": 0,
+  "gate_suite": {
+    "sha256": "c444e18fa59ea2d8ca6f9738d469c6d98ef13fd28f0fa8d790b7e6089826c8c4",
+    "count": 6,
+    "frozen_case_set": true,
+    "scope": "validated at publication; the probes call recount against a checkpoint that predates their own results, so recount cannot validate this suite"
+  }
+}

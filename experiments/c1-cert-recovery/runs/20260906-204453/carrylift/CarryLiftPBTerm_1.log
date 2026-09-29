@@ -1,0 +1,3405 @@
+parsing took 0.0183ms
+parsing took 1.06ms
+parsing took 0.382ms
+parsing took 0.474ms
+overlappingInstancesLinter took 0.0962ms
+tacticAnalysis took 0.657ms
+linting took 4.35ms
+elaboration took 0.246ms
+overlappingInstancesLinter took 0.121ms
+tacticAnalysis took 0.54ms
+linting took 3.88ms
+attribute application took 0.00467ms
+typeclass inference of HAdd took 0.27ms
+typeclass inference of HAdd took 0.143ms
+typeclass inference of LT took 0.0308ms
+typeclass inference of HAdd took 1.18ms
+typeclass inference of HAdd took 0.788ms
+typeclass inference of HAdd took 0.00394ms
+typeclass inference of HAdd took 0.0335ms
+instantiate metavars took 0.00427ms
+instantiate metavars took 0.00025ms
+let-to-have transformation took 0.00689ms
+attribute application took 0.00169ms
+attribute application took 0.000501ms
+elaboration took 2.5ms
+typeclass inference of NeZero took 0.219ms
+typeclass inference of NeZero took 0.0893ms
+typeclass inference of NeZero took 0.0345ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.932ms
+tactic execution of Lean.Parser.Tactic.exact took 0.106ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0802ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0122ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0377ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00549ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00461ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00771ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00581ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00407ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00389ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00476ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00697ms
+tactic execution of Lean.Parser.Tactic.first took 0.00613ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00763ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00305ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00357ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00314ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0152ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0167ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00736ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00941ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0299ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0128ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.022ms
+instantiate metavars took 0.00462ms
+instantiate metavars took 0.000241ms
+instantiate metavars took 0.00012ms
+instantiate metavars took 0.00013ms
+instantiate metavars took 0.0001ms
+share common exprs took 0.0543ms
+fix level params took 0.0108ms
+let-to-have transformation took 0.00295ms
+attribute application took 0.0015ms
+attribute application took 0.000731ms
+process pre-definitions took 0.133ms
+elaboration took 0.357ms
+type checking took 0.396ms
+overlappingInstancesLinter took 0.353ms
+tacticAnalysis took 0.711ms
+linting took 3.54ms
+attribute application took 0.00172ms
+typeclass inference of HMul took 0.19ms
+typeclass inference of HMul took 0.133ms
+typeclass inference of LT took 0.0272ms
+typeclass inference of HMul took 0.914ms
+typeclass inference of HMul took 0.872ms
+typeclass inference of HMul took 0.00429ms
+typeclass inference of HMul took 0.034ms
+instantiate metavars took 0.00333ms
+instantiate metavars took 0.0002ms
+let-to-have transformation took 0.00329ms
+attribute application took 0.00114ms
+attribute application took 0.000641ms
+elaboration took 1.2ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.431ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0954ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0808ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.00831ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0314ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00379ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00272ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00409ms
+tactic execution of Leparsing took 2.11ms
+an.Parser.Tactic.tacticSeq1Indented took 0.00305ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00245ms
+tactic execution of Lean.Parser.Tactic.paren took 0.0025ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00326ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00271ms
+tactic execution of Lean.Parser.Tactic.first took 0.00405ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00483ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00278ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00249ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00279ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0103ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0105ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00248ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00287ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.00657ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00365ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00544ms
+instantiate metavars took 0.00431ms
+instantiate metavars took 0.00019ms
+instantiate metavars took 0.000131ms
+instantiate metavars took 0.00011ms
+instantiate metavars took 0.00012ms
+share common exprs took 0.0467ms
+fix level params took 0.00824ms
+let-to-have transformation took 0.00262ms
+attribute application took 0.0014ms
+attribute application took 0.000661ms
+process pre-definitions took 0.0722ms
+elaboration took 0.158ms
+type checking took 0.427ms
+overlappingInstancesLinter took 0.126ms
+tacticAnalysis took 0.534ms
+linting took 3.11ms
+attribute application took 0.00141ms
+typeclass inference of OfNat took 0.123ms
+typeclass inference of OfNat took 0.0518ms
+typeclass inference of OfNat took 0.0482ms
+typeclass inference of HPow took 0.392ms
+typeclass inference of LT took 0.026ms
+typeclass inference of OfNat took 0.0503ms
+typeclass inference of OfNat took 1.01ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0951ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00468ms
+typeclass inference of HPow took 2.15ms
+typeclass inference of OfNat took 0.0751ms
+typeclass inference of OfNat took 0.0395ms
+typeclass inference of HPow took 0.036ms
+typeclass inference of OfNat took 0.00349ms
+instantiate metavars took 0.00399ms
+instantiate metavars took 0.00021ms
+let-to-have transformation took 0.00591ms
+attribute application took 0.00134ms
+attribute application took 0.000511ms
+elaboration took 1.18ms
+typeclass inference of OfNat took 1.26ms
+typeclass inference of OfNat took 0.104ms
+typeclass inference of OfNat took 0.046ms
+typeclass inference of HPow took 0.31ms
+typeclass inference of CoeT took 1.13ms
+typeclass inference of OfNat took 0.0566ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.06ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00809ms
+typeclass inference of HPow took 2.36ms
+tactic execution of Lean.Parser.Tactic.refine took 1.31ms
+congr simp thm took 0.0372ms
+congr simp thm took 0.0401ms
+congr simp thm took 0.019ms
+congr simp thm took 0.000631ms
+typeclass inference of NatCast took 0.122ms
+typeclass inference of NatCast took 0.0445ms
+typeclass inference of FunLike took 1.42ms
+typeclass inference of One took 0.619ms
+typeclass inference of SMul took 0.498ms
+typeclass inference of SMul took 0.751ms
+typeclass inference of IsSMulApply took 0.0424ms
+congr simp thm took 0.0398ms
+congr simp thm took 0.00042ms
+typeclass inference of Semiring took 0.658ms
+congr simp thm took 0.000942ms
+congr simp thm took 0.0004ms
+typeclass inference of Nat.AtLeastTwo took 0.168ms
+congr simp thm took 0.000731ms
+congr simp thm took 0.000511ms
+simp took 1.69ms
+simp took 0.00527ms
+tactic execution of Lean.Parser.Tactic.pushCast took 0.0797ms
+tactic execution of Lean.Parser.Tactic.exact took 0.136ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0868ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.506ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0549ms
+tactic executparsing took 1.89ms
+ion of Lean.Parser.Tactic.tacticSeq1Indented took 0.0165ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.004ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00473ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00698ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00545ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00455ms
+tactic execution of Lean.Parser.Tactic.case took 0.0725ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0207ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00628ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0121ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0241ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.187ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0982ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0874ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0285ms
+tactic execution of Lean.Parser.Tactic.applyRfl took 0.0186ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0347ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00547ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00379ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00592ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00327ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00266ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00306ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00316ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00302ms
+tactic execution of Lean.Parser.Tactic.skip took 0.00335ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00335ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0035ms
+tactic execution of Lean.Parser.Tactic.first took 0.00741ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00697ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0029ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0025ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00287ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.013ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0101ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00499ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00479ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0348ms
+tactic execution of Lean.Parser.Tactic.exact took 0.193ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0202ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0157ms
+instantiate metavars took 0.0144ms
+instantiate metavars took 0.00031ms
+instantiate metavars took 0.000161ms
+instantiate metavars took 0.00016ms
+instantiate metavars took 0.00011ms
+share common exprs took 0.0776ms
+fix level params took 0.015ms
+let-to-have transformation took 0.00625ms
+attribute application took 0.00252ms
+attribute application took 0.000682ms
+process pre-definitions took 0.147ms
+elaboration took 0.371ms
+type checking took 1.34ms
+overlappingInstancesLinter took 0.176ms
+tacticAnalysis took 0.821ms
+linting took 4.61ms
+attribute application took 0.00282ms
+typeclass inference of OfNat took 0.064ms
+typeclass inference of OfNat took 0.0401ms
+typeclass inference of HSub took 1.03ms
+typeclass inference of HMul took 1.08ms
+typeclass inference of HMul took 0.965ms
+typeclass inference of HSub took 1.2ms
+typeclass inference of OfNat took 0.791ms
+typeclass inference of OfNat took 0.108ms
+typeclass inference of OfNat took 0.0417ms
+typeclass inference of OfNat took 0.0423ms
+typeclass inference of OfNat took 0.0336ms
+typeclass inference of OfNat took 0.0305ms
+typeclass inference of HSub took 0.00461ms
+typeclass inference of HSub took 0.00241ms
+typeclass inference of HMul took 0.00229ms
+typeclass inference of HSub took 0.0356ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0514ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00457ms
+typeclass inference of HPow took 2.01ms
+typeclaparsing took 0.958ms
+parsing took 0.0843ms
+parsing took 0.0455ms
+ss inference of HMul took 0.0372ms
+typeclass inference of HSub took 0.0284ms
+typeclass inference of OfNat took 0.853ms
+typeclass inference of OfNat took 0.00392ms
+typeclass inference of OfNat took 0.0688ms
+typeclass inference of OfNat took 0.0403ms
+typeclass inference of HPow took 0.258ms
+typeclass inference of LE took 0.0318ms
+typeclass inference of OfNat took 0.0397ms
+typeclass inference of OfNat took 0.0651ms
+typeclass inference of OfNat took 0.0421ms
+typeclass inference of HPow took 0.0451ms
+typeclass inference of LT took 0.0319ms
+typeclass inference of OfNat took 0.00284ms
+typeclass inference of OfNat took 0.0699ms
+typeclass inference of OfNat took 0.0661ms
+typeclass inference of HPow took 0.0427ms
+typeclass inference of LT took 0.00305ms
+typeclass inference of OfNat took 0.00269ms
+typeclass inference of OfNat took 0.059ms
+typeclass inference of OfNat took 0.0399ms
+typeclass inference of HPow took 0.034ms
+typeclass inference of LT took 0.00274ms
+typeclass inference of OfNat took 0.00234ms
+typeclass inference of OfNat took 0.0611ms
+typeclass inference of OfNat took 0.0495ms
+typeclass inference of HAdd took 0.141ms
+typeclass inference of HAdd took 0.14ms
+typeclass inference of OfNat took 0.0439ms
+typeclass inference of OfNat took 0.0393ms
+typeclass inference of HPow took 0.0344ms
+typeclass inference of LT took 0.00285ms
+typeclass inference of OfNat took 0.00262ms
+typeclass inference of OfNat took 0.0698ms
+typeclass inference of OfNat took 0.0624ms
+typeclass inference of HAdd took 0.0057ms
+typeclass inference of HAdd took 0.0436ms
+typeclass inference of OfNat took 0.0718ms
+typeclass inference of OfNat took 0.0489ms
+typeclass inference of HPow took 0.0382ms
+typeclass inference of LT took 0.00301ms
+typeclass inference of OfNat took 0.00277ms
+typeclass inference of OfNat took 0.0605ms
+typeclass inference of OfNat took 0.0527ms
+typeclass inference of HMul took 0.147ms
+typeclass inference of HAdd took 0.00383ms
+typeclass inference of HMul took 0.00228ms
+typeclass inference of HMul took 0.143ms
+typeclass inference of HPow took 0.0314ms
+typeclass inference of HMul took 0.0286ms
+typeclass inference of HAdd took 0.0294ms
+typeclass inference of OfNat took 0.00279ms
+instantiate metavars took 0.0441ms
+instantiate metavars took 0.000331ms
+let-to-have transformation took 0.0207ms
+attribute application took 0.00128ms
+attribute application took 0.000651ms
+elaboration took 5.16ms
+typeclass inference of HMul took 1.29ms
+typeclass inference of HMul took 0.862ms
+tactic execution of Lean.Parser.Tactic.refine took 0.707ms
+typeclass inference of Add took 0.83ms
+typeclass inference of AddRightCancelSemigroup took 0.722ms
+typeclass inference of IsRightCancelAdd took 3.43ms
+typeclass inference of AddGroup took 0.532ms
+typeclass inference of CommSemiring took 0.447ms
+typeclass inference of CommRing took 0.0472ms
+typeclass inference of Semifield took 0.319ms
+typeclass inference of Field took 0.301ms
+typeclass inference of Field took 0.00258ms
+typeclass inference of Field took 0.0023ms
+typeclass inference of Field took 0.00265ms
+typeclass inference of Field took 0.00144ms
+typeclass inference of Field took 0.00126ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00105ms
+typeclass inference of Field took 0.00106ms
+typeclass inference of Field took 0.001ms
+typeclass inference of Field took 0.00101ms
+typeclass inference of Field took 0.00105ms
+typeclass inference of Field took 0.00211ms
+typeclass inference of Field took 0.0012ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00953ms
+typeclass inference of Field took 0.00469ms
+typeclass inference of Field took 0.00482ms
+typeclass inference of Field took 0.00298ms
+typeclass inference of Field took 0.00278ms
+typeclass inference of Field took 0.00859ms
+typeclass inference of Field took 0.00413ms
+typeclass inference of Field took 0.00324ms
+typeclass inference of Field took 0.00243ms
+typeclass inference of Field took 0.00186ms
+typeclass inference of Field took 0.0015ms
+typeclass inference of Field took 0.00132ms
+typeclass inference of Field took 0.00282ms
+typeclass inference of Field took 0.00201ms
+typeclass inference of Field took 0.00172ms
+typeclass inference of Semiring took 1.04ms
+typeclass inference of RCLike took 0.0113ms
+typeclass inference of RCLike took 0.00179ms
+typeclass inference of RCLike took 0.00147ms
+typeclass inference of RCLike took 0.00244ms
+typeclass inference of RCLike took 0.00157ms
+typeclass inference of RCLike took 0.00123ms
+typeclass inference of RCLike took 0.00113ms
+typeclass inference of RCLike took 0.00113ms
+typeclass inference of RCLike took 0.00113ms
+typeclass inference of RCLike took 0.00112ms
+typeclass inference of RCLike took 0.00111ms
+typeclass inference of RCLike took 0.00108ms
+typeclass inference of RCLike took 0.00188ms
+typeclass inference of RCLike took 0.00217ms
+typeclass inference of RCLike took 0.00122ms
+typeclass inference of RCLike took 0.00113ms
+typeclass inference of RCLike took 0.00124ms
+typeclass inference of RCLike took 0.0011ms
+typeclass inference of RCLike took 0.00114ms
+typeclass inference of RCLike took 0.00106ms
+typeclass inference of RCLike took 0.00203ms
+typeclass inference of RCLike took 0.0012ms
+typeclass inference of RCLike took 0.00121ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00109ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.0011ms
+typeclass inference of RCLike took 0.00161ms
+typeclass inference of RCLike took 0.00146ms
+typeclass inference of RCLike took 0.00111ms
+typeclass inference of Semiring took 0.0108ms
+typeclass inference of NonAssocRing took 0.215ms
+typeclass inference of Field took 0.00354ms
+typeclass inference of Field took 0.00233ms
+typeclass inference of Field took 0.00229ms
+typeclass inference of Field took 0.00134ms
+typeclass inference of Field took 0.00125ms
+typeclass inference of Field took 0.00125ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.0013ms
+typeclass inference of Field took 0.0023ms
+typeclass inference of Field took 0.00236ms
+typeclass inference of Field took 0.0019ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Field took 0.00202ms
+typeclass inference of Field took 0.00116ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00706ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Field took 0.00101ms
+typeclass inference of Field took 0.00106ms
+typeclass inference of Field took 0.00191ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00132ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00105ms
+typeclass inference of Field took 0.00181ms
+typeclass inference of Field took 0.00109ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.00105ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00204ms
+typeclass inference of Field took 0.00129ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.0012ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Field took 0.00173ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00251ms
+typeclass inference of Field took 0.00119ms
+typeclass inference of Field took 0.00194ms
+typeclass inference of Field took 0.00267ms
+typeclass inference of Field took 0.00234ms
+typeclass inference of Field took 0.00264ms
+typeclass inference of Field took 0.00165ms
+typeclass inference of Field took 0.00192ms
+typeclass inference of Field took 0.00131ms
+typeclass inference of Field took 0.00143ms
+typeclass inference of Field took 0.00184ms
+typeclass inference of Field took 0.00118ms
+typeclass inference of Field took 0.00148ms
+typeclass inference of Field took 0.00222ms
+typeclass inference of Field took 0.0149ms
+typeclass inference of Field took 0.00178ms
+typeclass inference of Field took 0.00215ms
+typeclass inference of Field took 0.00125ms
+typeclass inference of Field took 0.0015ms
+typeclass inference of Field took 0.00239ms
+typeclass inference of Field took 0.00233ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.00139ms
+typeclass inference of Field took 0.0016ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00125ms
+typeclass inference of Semiring took 0.00627ms
+typeclass inference of CharZero took 22.7ms
+norm_num took 0.264ms
+norm_num took 0.00846ms
+typeclass inference of AddMonoidWithOne took 0.83ms
+norm_num took 1.04ms
+norm_num took 0.00905ms
+norm_num took 0.00534ms
+norm_num took 0.00262ms
+norm_num took 0.00255ms
+typeclass inference of AddMonoidWithOne took 0.00568ms
+norm_num took 0.351ms
+ring took 4.59ms
+tactic execution of Mathlib.Tactic.LinearCombination.linearCombination took 3.96ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0147ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.012ms
+tactic execution of Lean.Parser.Tactic.paren took 0.0105ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0146ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0119ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00934ms
+tactic execution of Lean.Parser.Tactic.case took 0.136ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0398ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0125ms
+tactic execution of Lean.Parser.Tactic.focus took 0.037ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0465ms
+typeclass inference of OfNat took 0.143ms
+typeclass inference of OfNat took 0.0612ms
+typeclass inference of HAdd took 1.21ms
+typeclass inference of HMul took 0.85ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0565ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00466ms
+typeclass inference of HPow took 2.21ms
+typeclass inference of HMul took 0.901ms
+typeclass inference of HAdd took 1.03ms
+typeclass inference of OfNat took 1.05ms
+tactic execution of Lean.Parser.Tactic.refine took 0.856ms
+typeclass inference of Add took 0.784ms
+typeclass inference of AddRightCancelSemigroup took 0.735ms
+typeclass inference of IsRightCancelAdd took 3.02ms
+typeclass inference of AddGroup took 0.662ms
+typeclass inference of CommSemiring took 0.57ms
+typeclass inference of CommRing took 0.0423ms
+typeclass inference of Semifield took 0.309ms
+typeclass inference of Field took 0.302ms
+typeclass inference of Field took 0.00221ms
+typeclass inference of Field took 0.00181ms
+typeclass inference of Field took 0.00242ms
+typeclass inference of Field took 0.00133ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00123ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00106ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.0022ms
+typeclass inference of Field took 0.00116ms
+typeclass inference of Field took 0.00118ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00116ms
+typeclass inference of Field took 0.00133ms
+typeclass inference of Field took 0.00106ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00218ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.00117ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.0012ms
+typeclass inference of Field took 0.00123ms
+typeclass inference of Field took 0.00205ms
+typeclass inference of Field took 0.00143ms
+typeclass inference of Field took 0.00119ms
+typeclass inference of Semiring took 0.667ms
+typeclass inference of RCLike took 0.0146ms
+typeclass inference of RCLike took 0.00194ms
+typeclass inference of RCLike took 0.00158ms
+typeclass inference of RCLike took 0.00304ms
+typeclass inference of RCLike took 0.00133ms
+typeclass inference of RCLike took 0.00333ms
+typeclass inference of RCLike took 0.00126ms
+typeclass inference of RCLike took 0.00131ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00134ms
+typeclass inference of RCLike took 0.00108ms
+typeclass inference of RCLike took 0.00247ms
+typeclass inference of RCLike took 0.00115ms
+typeclass inference of RCLike took 0.00139ms
+typeclass inference of RCLike took 0.00138ms
+typeclass inference of RCLike took 0.00111ms
+typeclass inference of RCLike took 0.00111ms
+typeclass inference of RCLike took 0.0011ms
+typeclass inference of RCLike took 0.00105ms
+typeclass inference of RCLike took 0.00176ms
+typeclass inference of RCLike took 0.00149ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00132ms
+typeclass inference of RCLike took 0.00143ms
+typeclass inference of RCLike took 0.00115ms
+typeclass inference of RCLike took 0.00108ms
+typeclass inference of RCLike took 0.00244ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00117ms
+typeclass inference of Semiring took 0.00696ms
+typeclass inference of NonAssocRing took 0.235ms
+typeclass inference of Field took 0.00334ms
+typeclass inference of Field took 0.00204ms
+typeclass inference of Field took 0.00241ms
+typeclass inference of Field took 0.00147ms
+typeclass inference of Field took 0.00134ms
+typeclass inference of Field took 0.00117ms
+typeclass inference of Field took 0.00119ms
+typeclass inference of Field took 0.00128ms
+typeclass inference of Field took 0.00129ms
+typeclass inference of Field took 0.00174ms
+typeclass inference of Field took 0.00138ms
+typeclass inference of Field took 0.00141ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00241ms
+typeclass inference of Field took 0.00119ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.00101ms
+typeclass inference of Field took 0.0012ms
+typeclass inference of Field took 0.00238ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.00103ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Field took 0.000992ms
+typeclass inference of Field took 0.00164ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00105ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00103ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00224ms
+typeclass inference of Field took 0.00251ms
+typeclass inference of Field took 0.00116ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00178ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00109ms
+typeclass inference of Field took 0.00173ms
+typeclass inference of Field took 0.0018ms
+typeclass inference of Field took 0.00127ms
+typeclass inference of Field took 0.0018ms
+typeclass inference of Field took 0.00165ms
+typeclass inference of Field took 0.00146ms
+typeclass inference of Field took 0.00183ms
+typeclass inference of Field took 0.00217ms
+typeclass inference of Field took 0.00186ms
+typeclass inference of Field took 0.00122ms
+typeclass inference of Field took 0.00181ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.00136ms
+typeclass inference of Field took 0.00275ms
+typeclass inference of Field took 0.00315ms
+typeclass inference of Field took 0.00136ms
+typeclass inference of Field took 0.00134ms
+typeclass inference of Field took 0.00142ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00497ms
+typeclass inference of Field took 0.00218ms
+typeclass inference of Field took 0.00159ms
+typeclass inference of Field took 0.00135ms
+typeclass inference of Field took 0.00358ms
+typeclass inference of Field took 0.0104ms
+typeclass inference of Field took 0.00159ms
+typeclass inference of Semiring took 0.0183ms
+typeclass inference of CharZero took 23.6ms
+norm_num took 0.0547ms
+typeclass inference of AddMonoidWithOne took 0.823ms
+norm_num took 0.918ms
+norm_num took 0.0152ms
+typeclass inference of AddMonoidWithOne took 0.00542ms
+norm_num took 0.239ms
+norm_num took 0.00579ms
+norm_num took 0.00576ms
+norm_num took 0.0057ms
+norm_num took 0.00248ms
+typeclass inference of AddMonoidWithOne took 0.00439ms
+norm_num took 0.132ms
+norm_num took 0.00456ms
+norm_num took 0.00404ms
+typeclass inference of AddMonoidWithOne took 0.00656ms
+norm_num took 0.254ms
+ring took 2.97ms
+tactic execution of Mathlib.Tactic.LinearCombination.linearCombination took 1.59ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00668ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00519ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00545ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00794ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00564ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0052ms
+tactic execution of Lean.Parser.Tactic.case took 0.0824ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0209ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00662ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0135ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0413ms
+typeclass inference of OfNat took 0.136ms
+typeclass inference of OfNat took 0.0482ms
+typeclass inference of OfNat took 0.0447ms
+typeclass inference of HPow took 0.321ms
+typeclass inference of LT took 0.0316ms
+typeclass inference of OfNat took 0.0396ms
+typeclass inference of Preorder took 0.159ms
+typeclass inference of Preorder took 0.0694ms
+typeclass inference of Preorder took 0.0647ms
+typeclass inference of AddMonoidWithOne took 0.0452ms
+norm_num took 0.206ms
+typeclass inference of AddMonoidWithOne took 0.00479ms
+norm_num took 0.0533ms
+typeclass inference of LT took 0.0291ms
+typeclass inference of Semiring took 0.0287ms
+typeclass inference of PartialOrder took 0.031ms
+typeclass inference of CommSemiring took 0.0288ms
+typeclass inference of IsOrderedRing took 0.951ms
+typeclass inference of CharZero took 0.0428ms
+norm_num took 0.207ms
+tactic execution of Mathlib.Tactic.normNum took 0.426ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0065ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00831ms
+tactic execution of Lean.Parser.Tactic.refine took 3.12ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.00714ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0105ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00325ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00349ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00438ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00413ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00685ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.00854ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.734ms
+typeclass inference of OfNat took 1.53ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.074ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00759ms
+typeclass inference of HPow took 2.78ms
+typeclass inference of OfNat took 0.139ms
+typeclass inference of OfNat took 0.0677ms
+typeclass inference of HPow took 0.297ms
+typeclass inference of OfNat took 0.0441ms
+tactic execution of Lean.Parser.Tactic.refine took 1.08ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.00977ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0182ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00452ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00455ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00556ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00461ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00741ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.00931ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0169ms
+typeclass inference of OfNat took 0.095ms
+typeclass inference of OfNat took 0.0546ms
+typeclass inference of OfNat took 0.0451ms
+typeclass inference of HMul took 0.163ms
+typeclass inference of HPow took 0.0381ms
+typeclass inference of HMul took 0.147ms
+typeclass inference of LT took 0.0292ms
+typeclass inference of OfNat took 0.00331ms
+tactic execution of Lean.Parser.Tactic.refine took 0.581ms
+typeclass inference of OfNat took 0.0801ms
+typeclass inference of OfNat took 0.0549ms
+typeclass inference of OfNat took 0.0563ms
+typeclass inference of OfNat took 0.106ms
+typeclass inference of OfNat took 0.0692ms
+typeclass inference of OfNat took 0.0429ms
+typeclass inference of OfNat took 0.043ms
+typeclass inference of HMul took 0.00493ms
+typeclass inference of HMul took 0.00343ms
+typeclass inference of HPow took 0.0505ms
+typeclass inference of HMul took 0.0447ms
+typeclass inference of HPow took 0.0544ms
+typeclass inference of HPow took 0.0377ms
+typeclass inference of HMul took 0.0378ms
+typeclass inference of LT took 0.00503ms
+typeclass inference of OfNat took 0.00348ms
+typeclass inference of OfNat took 0.0022ms
+typeclass inference of OfNat took 0.00262ms
+typeclass inference of OfNat took 0.101ms
+typeclass inference of OfNat took 0.144ms
+typeclass inference of HAdd took 0.274ms
+typeclass inference of HAdd took 0.165ms
+typeclass inference of OfNat took 0.0656ms
+typeclass inference of HPow took 0.0376ms
+typeclass inference of OfNat took 0.00436ms
+typeclass inference of Trans took 0.324ms
+typeclass inference of LT took 0.00475ms
+typeclass inference of Trans took 0.189ms
+typeclass inference of LE took 0.337ms
+typeclass inference of LE took 0.108ms
+typeclass inference of Zero took 0.161ms
+typeclass inference of PartialOrder took 0.092ms
+typeclass inference of Ring took 1.32ms
+typeclass inference of AddMonoidWithOne took 0.106ms
+norm_num took 0.57ms
+typeclass inference of Semiring took 0.15ms
+typeclass inference of PartialOrder took 0.0169ms
+typeclass inference of CommSemiring took 0.0698ms
+typeclass inference of IsOrderedRing took 1.63ms
+typeclass inference of Nontrivial took 0.0662ms
+typeclass inference of Semiring took 0.00487ms
+typeclass inference of IsStrictOrderedRing took 0.0415ms
+tactic execution of Mathlib.Tactic.Positivity.positivity took 2.33ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0189ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.036ms
+typeclass inference of Monoid took 0.359ms
+typeclass inference of Monoid took 0.243ms
+typeclass inference of Monoid took 0.0373ms
+typeclass inference of Monoid took 0.0359ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.925ms
+tactic execution of Lean.Parser.Tactic.exact took 0.191ms
+tactic execution of Lean.Parser.Tactic.exact took 0.09ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.158ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0463ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00784ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00544ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00679ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00649ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00417ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00414ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00476ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00881ms
+tactic execution of Lean.Parser.Tactic.first took 0.00709ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00913ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00332ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00277ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00352ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0194ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00985ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00347ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00473ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0144ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00644ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0162ms
+tactic execution of Lean.calcTactic took 5.41ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00888ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0059ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00616ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00797ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00622ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00642ms
+tactic execution of Lean.Parser.Tactic.case took 0.0651ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0148ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00529ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00959ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.174ms
+typeclass inference of OfNat took 1ms
+typeclass inference of HMul took 0.956ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0519ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00505ms
+typeclass inference of HPow took 2.12ms
+typeclass inference of HMul took 0.901ms
+typeclass inference of OfNat took 0.117ms
+typeclass inference of OfNat took 0.0505ms
+typeclass inference of HMul took 0.139ms
+typeclass inference of HPow took 0.262ms
+typeclass inference of HMul took 0.148ms
+typeclass inference of OfNat took 0.0412ms
+tactic execution of Lean.Parser.Tactic.refine took 1.06ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.146ms
+tactic execution of Lean.Parser.Tactic.exact took 0.125ms
+tactic execution of Lean.Parser.Tactic.exact took 0.103ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0124ms
+tactic execution of Lean.Parser.Tactic.applyRfl took 0.0252ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0481ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.011ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0044ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00626ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00536ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0036ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00442ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00375ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00339ms
+tactic execution of Lean.Parser.Tactic.skip took 0.0037ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00369ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00359ms
+tactic execution of Lean.Parser.Tactic.first took 0.00771ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.0075ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00419ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00308ms
+tactic execution of Lean.Parser.Tactic.paren took 0.0035ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0125ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0128ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00358ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00413ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.00727ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0449ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00867ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0073ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 1.54ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0886ms
+tactic execution of Lean.Parser.Tactic.exact took 0.121ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.00959ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0284ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00348ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00272ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00275ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00279ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00262ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00261ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00288ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00246ms
+tactic execution of Lean.Parser.Tactic.first took 0.00309ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00469ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00288ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00255ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00289ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0122ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0107ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00361ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00334ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.00944ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0034ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00272ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00267ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00563ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00437ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00358ms
+tactic execution of Lean.Parser.Tactic.case took 0.106ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.014ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00378ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00734ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0273ms
+typeclass inference of OfNat took 0.113ms
+typeclass inference of OfNat took 0.0646ms
+typeclass inference of OfNat took 0.0458ms
+typeclass inference of HAdd took 0.181ms
+typeclass inference of HMul took 0.175ms
+typeclass inference of HPow took 0.302ms
+typeclass inference of HMul took 0.166ms
+typeclass inference of HAdd took 0.154ms
+typeclass inference of LT took 0.0392ms
+typeclass inference of OfNat took 0.0408ms
+tactic execution of Lean.Parser.Tactic.refine took 0.906ms
+typeclass inference of OfNat took 0.0742ms
+typeclass inference of OfNat took 0.0602ms
+typeclass inference of OfNat took 0.0583ms
+typeclass inference of OfNat took 0.0372ms
+typeclass inference of OfNat took 0.0496ms
+typeclass inference of OfNat took 0.0527ms
+typeclass inference of OfNat took 0.0438ms
+typeclass inference of OfNat took 0.0341ms
+typeclass inference of OfNat took 0.0318ms
+typeclass inference of OfNat took 0.0318ms
+typeclass inference of HAdd took 0.00395ms
+typeclass inference of HMul took 0.00272ms
+typeclass inference of HMul took 0.00253ms
+typeclass inference of HPow took 0.0366ms
+typeclass inference of HMul took 0.0361ms
+typeclass inference of HPow took 0.034ms
+typeclass inference of HAdd took 0.0298ms
+typeclass inference of HPow took 0.0321ms
+typeclass inference of HPow took 0.0315ms
+typeclass inference of HMul took 0.0274ms
+typeclass inference of LE took 0.0357ms
+typeclass inference of OfNat took 0.00361ms
+typeclass inference of OfNat took 0.00228ms
+typeclass inference of OfNat took 0.00182ms
+typeclass inference of OfNat took 0.00156ms
+tactic execution of Lean.Parser.Tactic.refine took 1.1ms
+typeclass inference of OfNat took 0.0832ms
+typeclass inference of OfNat took 0.0655ms
+typeclass inference of OfNat took 0.0532ms
+typeclass inference of OfNat took 0.0448ms
+typeclass inference of OfNat took 0.0355ms
+typeclass inference of HAdd took 0.004ms
+typeclass inference of HAdd took 0.0356ms
+typeclass inference of HPow took 0.0306ms
+typeclass inference of LE took 0.00276ms
+typeclass inference of OfNat took 0.0435ms
+typeclass inference of OfNat took 0.00276ms
+tactic execution of Lean.Parser.Tactic.refine took 0.707ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.00596ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0134ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00396ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00389ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00538ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0048ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00606ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.00803ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.00982ms
+typeclass inference of OfNat took 0.0663ms
+typeclass inference of OfNat took 0.0653ms
+typeclass inference of OfNat took 0.0598ms
+typeclass inference of OfNat took 0.0391ms
+typeclass inference of OfNat took 0.0489ms
+typeclass inference of OfNat took 0.0566ms
+typeclass inference of OfNat took 0.0385ms
+typeclass inference of OfNat took 0.0336ms
+typeclass inference of OfNat took 0.0318ms
+typeclass inference of OfNat took 0.032ms
+typeclass inference of HAdd took 0.00392ms
+typeclass inference of HMul took 0.00887ms
+typeclass inference of HMul took 0.00275ms
+typeclass inference of HAdd took 0.00209ms
+typeclass inference of HPow took 0.0356ms
+typeclass inference of HMul took 0.0319ms
+typeclass inference of HPow took 0.0351ms
+typeclass inference of HAdd took 0.0381ms
+typeclass inference of HPow took 0.0346ms
+typeclass inference of HAdd took 0.0293ms
+typeclass inference of HMul took 0.0277ms
+typeclass inference of OfNat took 0.00326ms
+typeclass inference of OfNat took 0.00207ms
+typeclass inference of OfNat took 0.00188ms
+typeclass inference of OfNat took 0.00172ms
+typeclass inference of OfNat took 0.0612ms
+typeclass inference of OfNat took 0.0526ms
+typeclass inference of OfNat took 0.0565ms
+typeclass inference of OfNat took 0.0363ms
+typeclass inference of HMul took 0.00359ms
+typeclass inference of HPow took 0.0331ms
+typeclass inference of HPow took 0.0417ms
+typeclass inference of HMul took 0.0315ms
+typeclass inference of LE took 0.00297ms
+typeclass inference of OfNat took 0.00284ms
+typeclass inference of OfNat took 0.00211ms
+typeclass inference of Trans took 0.294ms
+typeclass inference of CommSemiring took 0.0419ms
+typeclass inference of CommRing took 0.61ms
+typeclass inference of Semifield took 0.288ms
+typeclass inference of CharZero took 1.07ms
+typeclass inference of AddMonoidWithOne took 0.0437ms
+norm_num took 0.282ms
+norm_num took 0.0256ms
+norm_num took 0.00656ms
+typeclass inference of AddMonoidWithOne took 0.0102ms
+norm_num took 0.0941ms
+norm_num took 0.00427ms
+typeclass inference of AddMonoidWithOne took 0.00387ms
+norm_num took 0.0848ms
+norm_num took 0.00434ms
+norm_num took 0.0051ms
+typeclass inference of AddMonoidWithOne took 0.00396ms
+norm_num took 0.0826ms
+ring took 2.07ms
+tactic execution of Mathlib.Tactic.Ring.ring1 took 0.559ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00876ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00511ms
+tactic execution of Lean.Parser.Tactic.first took 0.0108ms
+tactic execution of Mathlib.Tactic.RingNF.ring took 0.202ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00599ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0085ms
+tactic execution of Lean.calcTactic took 3.52ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0128ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00452ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00474ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00696ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00612ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00514ms
+tactic execution of Lean.Parser.Tactic.case took 0.0552ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0149ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00456ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00632ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0162ms
+typeclass inference of OfNat took 0.117ms
+typeclass inference of OfNat took 0.0593ms
+typeclass inference of OfNat took 0.0452ms
+typeclass inference of OfNat took 0.0385ms
+typeclass inference of OfNat took 0.0509ms
+typeclass inference of OfNat took 0.0526ms
+typeclass inference of OfNat took 0.0359ms
+typeclass inference of OfNat took 0.0336ms
+typeclass inference of HAdd took 0.162ms
+typeclass inference of HAdd took 0.148ms
+typeclass inference of OfNat took 0.0534ms
+typeclass inference of OfNat took 0.0395ms
+typeclass inference of OfNat took 0.0366ms
+typeclass inference of HPow took 0.115ms
+typeclass inference of HPow took 0.102ms
+typeclass inference of HMul took 0.106ms
+typeclass inference of HPow took 0.0575ms
+typeclass inference of OfNat took 0.0619ms
+typeclass inference of OfNat took 0.0442ms
+typeclass inference of OfNat took 0.0434ms
+typeclass inference of HPow took 0.0564ms
+typeclass inference of HPow took 0.059ms
+typeclass inference of HMul took 0.0507ms
+typeclass inference of HPow took 0.0481ms
+typeclass inference of OfNat took 0.0451ms
+typeclass inference of OfNat took 0.036ms
+typeclass inference of OfNat took 0.0328ms
+typeclass inference of HPow took 0.0482ms
+typeclass inference of HPow took 0.063ms
+typeclass inference of HMul took 0.0501ms
+typeclass inference of HPow took 0.0442ms
+typeclass inference of OfNat took 0.0495ms
+typeclass inference of OfNat took 0.0359ms
+typeclass inference of OfNat took 0.035ms
+typeclass inference of HPow took 0.0478ms
+typeclass inference of HPow took 0.0445ms
+typeclass inference of HMul took 0.0492ms
+typeclass inference of HPow took 0.0454ms
+typeclass inference of Pow took 0.297ms
+typeclass inference of NPow took 0.352ms
+typeclass inference of HomogeneousPow took 0.0152ms
+typeclass inference of NatPow took 0.0387ms
+typeclass inference of Pow took 0.177ms
+typeclass inference of NPow took 0.147ms
+typeclass inference of HomogeneousPow took 0.00204ms
+typeclass inference of NatPow took 0.0306ms
+typeclass inference of Mul took 0.293ms
+typeclass inference of Pow took 0.109ms
+typeclass inference of NPow took 0.141ms
+typeclass inference of HomogeneousPow took 0.00215ms
+typeclass inference of NatPow took 0.0293ms
+typeclass inference of OfNat took 0.0931ms
+typeclass inference of OfNat took 0.0399ms
+typeclass inference of HPow took 0.315ms
+typeclass inference of HPow took 0.0703ms
+typeclass inference of HMul took 0.0678ms
+typeclass inference of HPow took 0.0519ms
+typeclass inference of OfNat took 0.0654ms
+typeclass inference of OfNat took 0.0558ms
+typeclass inference of HPow took 0.0577ms
+typeclass inference of HMul took 0.0589ms
+typeclass inference of HPow took 0.051ms
+typeclass inference of OfNat took 0.0422ms
+typeclass inference of OfNat took 0.0434ms
+typeclass inference of HPow took 0.0496ms
+typeclass inference of HMul took 0.0551ms
+typeclass inference of HPow took 0.0481ms
+typeclass inference of Pow took 0.14ms
+typeclass inference of NPow took 0.18ms
+typeclass inference of HomogeneousPow took 0.00308ms
+typeclass inference of NatPow took 0.0324ms
+typeclass inference of Mul took 0.0416ms
+typeclass inference of OfNat took 0.0599ms
+typeclass inference of OfNat took 0.0409ms
+typeclass inference of HPow took 0.0723ms
+typeclass inference of HPow took 0.051ms
+typeclass inference of OfNat took 0.0423ms
+typeclass inference of OfNat took 0.0366ms
+typeclass inference of HPow took 0.0491ms
+typeclass inference of HPow took 0.0474ms
+typeclass inference of Pow took 0.15ms
+typeclass inference of OfNat took 0.0487ms
+typeclass inference of OfNat took 0.0523ms
+typeclass inference of HPow took 0.0599ms
+typeclass inference of OfNat took 0.0404ms
+typeclass inference of HPow took 0.0487ms
+typeclass inference of OfNat took 0.0383ms
+typeclass inference of HPow took 0.0471ms
+typeclass inference of Pow took 0.00411ms
+typeclass inference of OfNat took 0.00362ms
+tactic execution of Lean.Parser.Tactic.refine took 2.53ms
+typeclass inference of Monoid took 0.511ms
+typeclass inference of Monoid took 0.141ms
+typeclass inference of Monoid took 0.0495ms
+typeclass inference of Monoid took 0.0286ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.939ms
+tactic execution of Lean.Parser.Tactic.exact took 0.171ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0995ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.168ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.059ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0211ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00497ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00801ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00645ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00473ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00457ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00758ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00489ms
+tactic execution of Lean.Parser.Tactic.first took 0.00747ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.014ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00467ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00409ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00449ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0353ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0315ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00599ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00751ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0195ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00822ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00592ms
+tactic execution of Lean.Parser.Tactic.paren took 0.0066ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00866ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00694ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00696ms
+tactic execution of Lean.Parser.Tactic.case took 0.168ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0299ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00577ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0104ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0313ms
+typeclass inference of Decidable took 0.266ms
+typeclass inference of LE took 0.0416ms
+typeclass inference of LE took 0.00666ms
+typeclass inference of LE took 0.00422ms
+typeclass inference of LE took 0.00719ms
+typeclass inference of Decidable took 0.161ms
+typeclass inference of Decidable took 0.00356ms
+instantiate metavars took 0.00144ms
+tactic execution of Lean.Parser.Tactic.omega took 8.27ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.027ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00624ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00529ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00669ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00564ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00536ms
+tactic execution of Lean.Parser.Tactic.case took 0.0783ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0146ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00437ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00738ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0375ms
+typeclass inference of OfNat took 1.21ms
+typeclass inference of HAdd took 1.2ms
+typeclass inference of HMul took 1ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.058ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00562ms
+typeclass inference of HPow took 2.21ms
+typeclass inference of HMul took 0.967ms
+typeclass inference of HAdd took 0.938ms
+typeclass inference of OfNat took 0.153ms
+typeclass inference of OfNat took 0.0547ms
+typeclass inference of HAdd took 0.163ms
+typeclass inference of HMul took 0.141ms
+typeclass inference of HPow took 0.302ms
+typeclass inference of HMul took 0.157ms
+typeclass inference of HAdd took 0.164ms
+typeclass inference of OfNat took 0.0469ms
+tactic execution of Lean.Parser.Tactic.refine took 1.71ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.175ms
+tactic execution of Lean.Parser.Tactic.exact took 0.123ms
+tactic execution of Lean.Parser.Tactic.exact took 0.112ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0111ms
+tactic execution of Lean.Parser.Tactic.applyRfl took 0.0289ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0463ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00657ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00429ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00799ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00502ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00406ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00434ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00465ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00424ms
+tactic execution of Lean.Parser.Tactic.skip took 0.00375ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00399ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00357ms
+tactic execution of Lean.Parser.Tactic.first took 0.0085ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.0103ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00363ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00281ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00339ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0107ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.014ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00373ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00474ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0103ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0506ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00936ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.014ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 3.17ms
+tactic execution of Lean.Parser.Tactic.exact took 0.112ms
+tactic execution of Lean.Parser.Tactic.exact took 0.122ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0164ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0491ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00488ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00407ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00509ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00496ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00337ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00345ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00432ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00285ms
+tactic execution of Lean.Parser.Tactic.first took 0.00414ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00714ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00388ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00285ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00305ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0158ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0164ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00786ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00524ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.016ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00709ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00726ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00688ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00921ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0116ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00746ms
+tactic execution of Lean.Parser.Tactic.case took 0.344ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0232ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00872ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0132ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0439ms
+typeclass inference of HMul took 0.342ms
+typeclass inference of HMul took 0.184ms
+typeclass inference of LT took 0.0324ms
+tactic execution of Lean.Parser.Tactic.refine took 0.669ms
+typeclass inference of OfNat took 0.132ms
+typeclass inference of OfNat took 0.0626ms
+typeclass inference of HMul took 0.00454ms
+typeclass inference of HMul took 0.00242ms
+typeclass inference of HMul took 0.0373ms
+typeclass inference of HPow took 0.387ms
+typeclass inference of HMul took 0.0346ms
+typeclass inference of LE took 0.0357ms
+typeclass inference of OfNat took 0.0503ms
+typeclass inference of OfNat took 0.0713ms
+typeclass inference of OfNat took 0.0578ms
+typeclass inference of OfNat took 0.049ms
+typeclass inference of OfNat took 0.0366ms
+typeclass inference of HMul took 0.00428ms
+typeclass inference of HPow took 0.0357ms
+typeclass inference of HPow took 0.0361ms
+typeclass inference of HMul took 0.0365ms
+typeclass inference of LT took 0.00391ms
+typeclass inference of OfNat took 0.00281ms
+typeclass inference of OfNat took 0.00198ms
+typeclass inference of Trans took 0.214ms
+typeclass inference of OfNat took 0.0656ms
+typeclass inference of OfNat took 0.0522ms
+typeclass inference of HAdd took 0.21ms
+typeclass inference of HAdd took 0.175ms
+typeclass inference of OfNat took 0.0492ms
+typeclass inference of HPow took 0.0372ms
+typeclass inference of OfNat took 0.00355ms
+typeclass inference of Trans took 0.217ms
+typeclass inference of LT took 0.00434ms
+typeclass inference of Trans took 0.191ms
+typeclass inference of LE took 0.232ms
+typeclass inference of LE took 0.0785ms
+typeclass inference of Zero took 0.131ms
+typeclass inference of PartialOrder took 0.0507ms
+typeclass inference of Ring took 1.12ms
+typeclass inference of AddMonoidWithOne took 0.0387ms
+norm_num took 0.303ms
+typeclass inference of Semiring took 0.0363ms
+typeclass inference of PartialOrder took 0.00332ms
+typeclass inference of CommSemiring took 0.028ms
+typeclass inference of IsOrderedRing took 1.01ms
+typeclass inference of Nontrivial took 0.0553ms
+typeclass inference of Semiring took 0.00303ms
+typeclass inference of IsStrictOrderedRing took 0.0341ms
+tactic execution of Mathlib.Tactic.Positivity.positivity took 1.17ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00963ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0169ms
+typeclass inference of Monoid took 0.351ms
+typeclass inference of Monoid took 0.0933ms
+typeclass inference of Monoid took 0.0424ms
+typeclass inference of Monoid took 0.0342ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.76ms
+tactic execution of Lean.Parser.Tactic.exact took 0.126ms
+tactic execution of Lean.Parser.Tactic.exact took 0.099ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.144ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0523ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00664ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00502ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00864ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00584ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00509ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00485ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00536ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00452ms
+tactic execution of Lean.Parser.Tactic.first took 0.0103ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.0144ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00693ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00431ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00588ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0318ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0159ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00402ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00507ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0197ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0113ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0215ms
+tactic execution of Lean.calcTactic took 8.3ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00681ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00497ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00442ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00605ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00526ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0102ms
+tactic execution of Lean.Parser.Tactic.case took 0.0436ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0172ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00578ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00927ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0432ms
+typeclass inference of HMul took 1.23ms
+typeclass inference of HMul took 1.97ms
+typeclass inference of HMul took 0.167ms
+typeclass inference of HMul took 0.16ms
+tactic execution of Lean.Parser.Tactic.refine took 1.37ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.0104ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0187ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00639ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00715ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00864ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00703ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0104ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.0115ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0232ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.971ms
+tactic execution of Lean.Parser.Tactic.exact took 0.136ms
+tactic execution of Lean.Parser.Tactic.exact took 0.103ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0201ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0643ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00858ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00742ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.012ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00709ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00635ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00562ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00783ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00641ms
+tactic execution of Lean.Parser.Tactic.first took 0.0118ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.0143ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00378ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00425ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00665ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0269ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0149ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00399ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00438ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0565ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.111ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0321ms
+instantiate metavars took 0.606ms
+instantiate metavars took 0.000952ms
+instantiate metavars took 0.000161ms
+instantiate metavars took 0.000161ms
+instantiate metavars took 0.00015ms
+share common exprs took 2.26ms
+fix level params took 0.0993ms
+let-to-have transformation took 0.0106ms
+attribute application took 0.00371ms
+attribute application took 0.000841ms
+process pre-definitions took 1.75ms
+elaboration took 3.42ms
+type checking took 25.1ms
+type checking took 7.01ms
+overlappingInstancesLinter took 0.546ms
+tacticAnalysis took 5.58ms
+linting took 18.4ms
+attribute application took 0.00234ms
+typeclass inference of OfNat took 0.105ms
+typeclass inference of OfNat took 0.0384ms
+typeclass inference of HSub took 0.896ms
+typeclass inference of HMul took 0.871ms
+typeclass inference of HMul took 0.765ms
+typeclass inference of HSub took 0.66ms
+typeclass inference of OfNat took 0.827ms
+typeclass inference of OfNat took 0.0761ms
+typeclass inference of OfNat took 0.0428ms
+typeclass inference of OfNat took 0.0386ms
+typeclass inference of OfNat took 0.0318ms
+typeclass inference of OfNat took 0.0418ms
+typeclass inference of OfNat took 0.0325ms
+typeclass inference of OfNat took 0.0283ms
+typeclass inference of OfNat took 0.0292ms
+typeclass inference of HSub took 0.00441ms
+typeclass inference of HSub took 0.00244ms
+typeclass inference of HMul took 0.00216ms
+typeclass inference of HSub took 0.0343ms
+typeclass inference of HPow took 0.157ms
+typeclass inference of HMul took 0.0603ms
+typeclass inference of HSub took 0.047ms
+typeclass inference of OfNat took 0.959ms
+typeclass inference of OfNat took 0.0544ms
+typeclass inference of OfNat took 0.00405ms
+typeclass inference of HPow took 0.12ms
+typeclass inference of HMul took 0.055ms
+typeclass inference of HSub took 0.0457ms
+typeclass inference of OfNat took 0.0492ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of HMul took 0.0509ms
+typeclass inference of HSub took 0.0433ms
+typeclass inference of OfNat took 0.0556ms
+typeclass inference of OfNat took 0.0422ms
+typeclass inference of OfNat took 0.0343ms
+typeclass inference of OfNat took 0.0305ms
+typeclass inference of HPow took 0.133ms
+typeclass inference of LE took 0.0307ms
+typeclass inference of OfNat took 0.0368ms
+typeclass inference of OfNat took 0.0529ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of OfNat took 0.0646ms
+typeclass inference of HPow took 0.143ms
+typeclass inference of OfNat took 0.0552ms
+typeclass inference of OfNat took 0.0425ms
+typeclass inference of OfNat took 0.0337ms
+typeclass inference of OfNat took 0.0322ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of LT took 0.0286ms
+typeclass inference of OfNat took 0.00313ms
+typeclass inference of OfNat took 0.0558ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of OfNat took 0.0396ms
+typeclass inference of HPow took 0.107ms
+typeclass inference of OfNat took 0.0547ms
+typeclass inference of OfNat took 0.0425ms
+typeclass inference of OfNat took 0.046ms
+typeclass inference of OfNat took 0.0311ms
+typeclass inference of HPow took 0.135ms
+typeclass inference of LT took 0.00337ms
+typeclass inference of OfNat took 0.00278ms
+typeclass inference of OfNat took 0.0494ms
+typeclass inference of HPow took 0.125ms
+typeclass inference of OfNat took 0.0387ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of OfNat took 0.0601ms
+typeclass inference of OfNat took 0.0425ms
+typeclass inference of OfNat took 0.0466ms
+typeclass inference of OfNat took 0.0306ms
+typeclass inference of HPow took 0.161ms
+typeclass inference of LT took 0.004ms
+typeclass inference of OfNat took 0.00343ms
+typeclass inference of OfNat took 0.0638ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of OfNat took 0.0382ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of OfNat took 0.055ms
+typeclass inference of OfNat took 0.0433ms
+typeclass inference of OfNat took 0.0458ms
+typeclass inference of OfNat took 0.0377ms
+typeclass inference of HMul took 0.128ms
+typeclass inference of HAdd took 0.145ms
+typeclass inference of HMul took 0.00309ms
+typeclass inference of HMul took 0.142ms
+typeclass inference of HPow took 0.161ms
+typeclass inference of HMul took 0.055ms
+typeclass inference of HAdd took 0.0493ms
+typeclass inference of OfNat took 0.00364ms
+typeclass inference of OfNat took 0.0555ms
+typeclass inference of HPow took 0.3ms
+typeclass inference of HMul took 0.173ms
+typeclass inference of HAdd took 0.126ms
+typeclass inference of OfNat took 0.121ms
+typeclass inference of HPow took 0.369ms
+typeclass inference of HMul took 0.0611ms
+typeclass inference of HAdd took 0.0477ms
+typeclass inference of OfNat took 0.0501ms
+typeclass inference of HPow took 0.128ms
+typeclass inference of HMul took 0.0547ms
+typeclass inference of HSub took 0.052ms
+typeclass inference of OfNat took 0.0497ms
+typeclass inference of HPow took 0.121ms
+typeclass inference of OfNat took 0.0413ms
+typeclass inference of HPow took 0.121ms
+typeclass inference of OfNat took 0.0538ms
+typeclass inference of HPow took 0.145ms
+typeclass inference of OfNat took 0.0435ms
+typeclass inference of HPow took 0.132ms
+typeclass inference of OfNat took 0.115ms
+typeclass inference of HPow took 0.147ms
+typeclass inference of HMul took 0.058ms
+typeclass inference of HAdd took 0.0493ms
+typeclass inference of OfNat took 0.0471ms
+typeclass inference of HPow took 0.122ms
+typeclass inference of HMul took 0.0546ms
+typeclass inference of HSub took 0.0549ms
+typeclass inference of OfNat took 0.0587ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of OfNat took 0.0495ms
+typeclass inference of HPow took 0.111ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.055ms
+typeclass inference of HPow took 0.126ms
+typeclass inference of OfNat took 0.0396ms
+typeclass inference of HPow took 0.188ms
+typeclass inference of HMul took 0.0538ms
+typeclass inference of HAdd took 0.0758ms
+typeclass inference of Pow took 0.0431ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0664ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00457ms
+typeclass inference of NPow took 2.04ms
+typeclass inference of OfNat took 0.0438ms
+typeclass inference of HMul took 0.041ms
+typeclass inference of HSub took 0.00562ms
+typeclass inference of OfNat took 0.0489ms
+typeclass inference of HPow took 0.134ms
+typeclass inference of OfNat took 0.0415ms
+typeclass inference of HPow took 0.111ms
+typeclass inference of OfNat took 0.0382ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of OfNat took 0.0386ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of OfNat took 0.037ms
+typeclass inference of HPow took 0.107ms
+typeclass inference of HMul took 0.0679ms
+typeclass inference of HAdd took 0.0458ms
+typeclass inference of OfNat took 0.0394ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0374ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.036ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of OfNat took 0.0377ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of HMul took 0.0525ms
+typeclass inference of HAdd took 0.0455ms
+typeclass inference of OfNat took 0.038ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of OfNat took 0.0652ms
+typeclass inference of HPow took 0.146ms
+typeclass inference of OfNat took 0.0372ms
+typeclass inference of HPow took 0.107ms
+typeclass inference of OfNat took 0.0385ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of OfNat took 0.0379ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of HMul took 0.0506ms
+typeclass inference of HAdd took 0.0463ms
+typeclass inference of Pow took 0.0375ms
+typeclass inference of NPow took 0.0866ms
+typeclass inference of OfNat took 0.0373ms
+typeclass inference of OfNat took 0.0466ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of OfNat took 0.0391ms
+typeclass inference of HPow took 0.144ms
+typeclass inference of OfNat took 0.049ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.0382ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0508ms
+typeclass inference of HAdd took 0.047ms
+typeclass inference of OfNat took 0.0409ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0381ms
+typeclass inference of HPow took 0.103ms
+typeclass inference of OfNat took 0.0361ms
+typeclass inference of HPow took 0.103ms
+typeclass inference of OfNat took 0.0485ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of HMul took 0.0519ms
+typeclass inference of HAdd took 0.0459ms
+typeclass inference of OfNat took 0.0411ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0367ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of OfNat took 0.0365ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0368ms
+typeclass inference of HPow took 0.103ms
+typeclass inference of HMul took 0.05ms
+typeclass inference of HAdd took 0.0459ms
+typeclass inference of Pow took 0.0492ms
+typeclass inference of NPow took 0.00353ms
+typeclass inference of OfNat took 0.00282ms
+typeclass inference of OfNat took 0.0433ms
+typeclass inference of HPow took 0.11ms
+typeclass inference of OfNat took 0.037ms
+typeclass inference of HPow took 0.107ms
+typeclass inference of OfNat took 0.0365ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of HMul took 0.0496ms
+typeclass inference of HAdd took 0.0443ms
+typeclass inference of OfNat took 0.0393ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.064ms
+typeclass inference of HPow took 0.125ms
+typeclass inference of OfNat took 0.0526ms
+typeclass inference of HPow took 0.128ms
+typeclass inference of HMul took 0.0497ms
+typeclass inference of HAdd took 0.045ms
+typeclass inference of OfNat took 0.039ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0367ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0362ms
+typeclass inference of HPow took 0.117ms
+typeclass inference of HMul took 0.05ms
+typeclass inference of HAdd took 0.0464ms
+typeclass inference of Pow took 0.0388ms
+typeclass inference of NPow took 0.0031ms
+typeclass inference of OfNat took 0.00943ms
+typeclass inference of OfNat took 0.0433ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.0369ms
+typeclass inference of HPow took 0.107ms
+typeclass inference of HMul took 0.0497ms
+typeclass inference of HAdd took 0.0534ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0379ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of HMul took 0.0496ms
+typeclass inference of HAdd took 0.0452ms
+typeclass inference of OfNat took 0.0378ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of OfNat took 0.0403ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0504ms
+typeclass inference of HAdd took 0.0454ms
+typeclass inference of Pow took 0.0496ms
+typeclass inference of NPow took 0.00387ms
+typeclass inference of OfNat took 0.00274ms
+typeclass inference of OfNat took 0.0522ms
+typeclass inference of HPow took 0.136ms
+typeclass inference of HMul took 0.0511ms
+typeclass inference of HAdd took 0.0451ms
+typeclass inference of OfNat took 0.0419ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0488ms
+typeclass inference of HAdd took 0.143ms
+typeclass inference of OfNat took 0.147ms
+typeclass inference of HPow took 0.327ms
+typeclass inference of HMul took 0.135ms
+typeclass inference of HAdd took 0.0592ms
+typeclass inference of Pow took 0.0391ms
+typeclass inference of NPow took 0.00344ms
+typeclass inference of OfNat took 0.00314ms
+typeclass inference of HMul took 0.0457ms
+typeclass inference of HAdd took 0.00384ms
+instantiate metavars took 0.0275ms
+instantiate metavars took 0.00022ms
+let-to-have transformation took 0.0182ms
+attribute application took 0.00926ms
+attribute application took 0.00126ms
+elaboration took 6.64ms
+proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1360 fragment=LIA hyps=9 dispatch_ms=22 verify_ms=0 wall_ms=36
+corpus/carrylift/CarryLiftPBTerm.lean:123:42: error: proof_broker_term: cert was minted but verifier did not accept it (reason: ProofBroker.CertReason.tierCheckDeferred "tier-0 soundness check not implemented (envelope verified)"); term-mode requires a verified Tier 1 Farkas or Tier 2 case-split cert
+proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=z3 tier=1 format=farkas cert_bytes=1880 fragment=LIA hyps=15 dispatch_ms=464 verify_ms=1 wall_ms=500
+proof_broker report: tactic=proof_broker_term closer=tparsing took 0.0759ms
+parsing took 0.00161ms
+erm_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1702 fragment=LIA hyps=20 dispatch_ms=13 verify_ms=1 wall_ms=32
+typeclass inference of OfNat took 0.157ms
+typeclass inference of OfNat took 0.0567ms
+typeclass inference of OfNat took 0.0829ms
+tactic execution of Lean.Parser.Tactic.refine took 0.653ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.00774ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0199ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00882ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00946ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0121ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00997ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0216ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.0173ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.036ms
+typeclass inference of HMul took 1.12ms
+typeclass inference of HMul took 0.986ms
+tactic execution of Lean.Parser.Tactic.refine took 0.448ms
+typeclass inference of Add took 0.879ms
+typeclass inference of AddRightCancelSemigroup took 0.788ms
+typeclass inference of IsRightCancelAdd took 3.91ms
+typeclass inference of AddGroup took 1.52ms
+typeclass inference of CommSemiring took 0.906ms
+typeclass inference of CommRing took 0.0407ms
+typeclass inference of Semifield took 0.314ms
+typeclass inference of Field took 0.4ms
+typeclass inference of Field took 0.00278ms
+typeclass inference of Field took 0.00231ms
+typeclass inference of Field took 0.0033ms
+typeclass inference of Field took 0.00174ms
+typeclass inference of Field took 0.0016ms
+typeclass inference of Field took 0.00144ms
+typeclass inference of Field took 0.00168ms
+typeclass inference of Field took 0.00426ms
+typeclass inference of Field took 0.0017ms
+typeclass inference of Field took 0.0012ms
+typeclass inference of Field took 0.00117ms
+typeclass inference of Field took 0.0025ms
+typeclass inference of Field took 0.00195ms
+typeclass inference of Field took 0.00287ms
+typeclass inference of Field took 0.00275ms
+typeclass inference of Field took 0.00238ms
+typeclass inference of Field took 0.00234ms
+typeclass inference of Field took 0.0037ms
+typeclass inference of Field took 0.00359ms
+typeclass inference of Field took 0.00286ms
+typeclass inference of Field took 0.00156ms
+typeclass inference of Field took 0.0022ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00208ms
+typeclass inference of Field took 0.00123ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Semiring took 0.735ms
+typeclass inference of RCLike took 0.0113ms
+typeclass inference of RCLike took 0.00178ms
+typeclass inference of RCLike took 0.00171ms
+typeclass inference of RCLike took 0.00265ms
+typeclass inference of RCLike took 0.00138ms
+typeclass inference of RCLike took 0.00123ms
+typeclass inference of RCLike took 0.00119ms
+typeclass inference of RCLike took 0.00115ms
+typeclass inference of RCLike took 0.00114ms
+typeclass inference of RCLike took 0.00113ms
+typeclass inference of RCLike took 0.00107ms
+typeclass inference of RCLike took 0.00105ms
+typeclass inference of RCLike took 0.00214ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00123ms
+typeclass inference of RCLike took 0.00111ms
+typeclass inference of RCLike took 0.00117ms
+typeclass inference of RCLike took 0.00113ms
+typeclass inference of RCLike took 0.00107ms
+typeclass inference of RCLike took 0.00209ms
+typeclass inference of RCLike took 0.00179ms
+typeclass inference of RCLike took 0.00112ms
+typeclass inference of RCLike took 0.00136ms
+typeclass inference of RCLike took 0.00116ms
+typeclass inference of RCLike took 0.00112ms
+typeclass inference of RCLike took 0.00115ms
+typeclass inference of RCLike took 0.00119ms
+typeclass inference of RCLike took 0.00154ms
+typeclass inference of RCLike took 0.00114ms
+typeclass inference of RCLike took 0.00112ms
+typeclass inference of Semiring took 0.00466ms
+typeclass inference of NonAssocRing took 0.179ms
+typeclass inference of Field took 0.00284ms
+typeclass inference of Field took 0.00872ms
+typeclass inference of Field took 0.00666ms
+typeclass inference of Field took 0.00338ms
+typeclass inference of Field took 0.00335ms
+typeclass inference of Field took 0.00265ms
+typeclass inference of Field took 0.00111ms
+typeclass inference of Field took 0.00105ms
+typeclass inference of Field took 0.00126ms
+typeclass inference of Field took 0.00178ms
+typeclass inference of Field took 0.00129ms
+typeclass inference of Field took 0.00139ms
+typeclass inference of Field took 0.00109ms
+typeclass inference of Field took 0.00262ms
+typeclass inference of Field took 0.00127ms
+typeclass inference of Field took 0.00141ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00112ms
+typeclass inference of Field took 0.00122ms
+typeclass inference of Field took 0.00106ms
+typeclass inference of Field took 0.00149ms
+typeclass inference of Field took 0.00119ms
+typeclass inference of Field took 0.007ms
+typeclass inference of Field took 0.00424ms
+typeclass inference of Field took 0.00202ms
+typeclass inference of Field took 0.00152ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.00107ms
+typeclass inference of Field took 0.00154ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00225ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.00117ms
+typeclass inference of Field took 0.0011ms
+typeclass inference of Field took 0.00109ms
+typeclass inference of Field took 0.00109ms
+typeclass inference of Field took 0.00102ms
+typeclass inference of Field took 0.00205ms
+typeclass inference of Field took 0.00135ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.00304ms
+typeclass inference of Field took 0.00117ms
+typeclass inference of Field took 0.00441ms
+typeclass inference of Field took 0.00151ms
+typeclass inference of Field took 0.00122ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00181ms
+typeclass inference of Field took 0.00115ms
+typeclass inference of Field took 0.00109ms
+typeclass inference of Field took 0.00274ms
+typeclass inference of Field took 0.00124ms
+typeclass inference of Field took 0.00346ms
+typeclass inference of Field took 0.00159ms
+typeclass inference of Field took 0.00224ms
+typeclass inference of Field took 0.00137ms
+typeclass inference of Field took 0.00122ms
+typeclass inference of Field took 0.00859ms
+typeclass inference of Field took 0.00118ms
+typeclass inference of Field took 0.00122ms
+typeclass inference of Field took 0.00132ms
+typeclass inference of Field took 0.00265ms
+typeclass inference of Field took 0.00138ms
+typeclass inference of Field took 0.00121ms
+typeclass inference of Field took 0.00123ms
+typeclass inference of Field took 0.00113ms
+typeclass inference of Field took 0.00223ms
+typeclass inference of Field took 0.00169ms
+typeclass inference of Field took 0.00124ms
+typeclass inference of Field took 0.00108ms
+typeclass inference of Field took 0.00157ms
+typeclass inference of Field took 0.00129ms
+typeclass inference of Field took 0.00114ms
+typeclass inference of Semiring took 0.00794ms
+typeclass inference of CharZero took 23.7ms
+norm_num took 0.0408ms
+norm_num took 0.00505ms
+typeclass inference of AddMonoidWithOne took 0.824ms
+norm_num took 0.48ms
+norm_num took 0.00634ms
+norm_num took 0.00447ms
+norm_num took 0.00381ms
+norm_num took 0.0032ms
+typeclass inference of AddMonoidWithOne took 0.0046ms
+norm_num took 0.466ms
+ring took 2.83ms
+tactic execution of Mathlib.Tactic.LinearCombination.linearCombination took 3.89ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0187ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0124ms
+tactic execution of Lean.Parser.Tactic.paren took 0.0137ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0192ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.015ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0119ms
+tactic execution of Lean.Parser.Tactic.case took 0.123ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0258ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0123ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0154ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0274ms
+typeclass inference of OfNat took 0.211ms
+typeclass inference of OfNat took 0.0684ms
+typeclass inference of OfNat took 0.0556ms
+typeclass inference of OfNat took 0.0395ms
+typeclass inference of HAdd took 1.14ms
+typeclass inference of HMul took 0.00447ms
+typeclass inference of HPow took 0.213ms
+typeclass inference of HMul took 0.0888ms
+typeclass inference of HAdd took 0.0566ms
+typeclass inference of OfNat took 1.37ms
+typeclass inference of OfNat took 0.318ms
+typeclass inference of HPow took 0.243ms
+typeclass inference of HMul took 0.111ms
+typeclass inference of HAdd took 0.0664ms
+typeclass inference of OfNat took 0.0631ms
+typeclass inference of HPow took 0.149ms
+typeclass inference of HMul took 0.0691ms
+typeclass inference of HAdd took 0.0527ms
+typeclass inference of OfNat took 0.0539ms
+typeclass inference of HPow took 0.137ms
+typeclass inference of HMul took 0.0574ms
+typeclass inference of HAdd took 0.0478ms
+typeclass inference of OfNat took 0.0463ms
+typeclass inference of HPow took 0.18ms
+typeclass inference of HMul took 0.143ms
+typeclass inference of HAdd took 0.0757ms
+typeclass inference of Pow took 0.0602ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.145ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00673ms
+typeclass inference of NPow took 3.29ms
+typeclass inference of OfNat took 0.0517ms
+typeclass inference of HMul took 0.0469ms
+typeclass inference of HAdd took 0.00351ms
+tactic execution of Lean.Parser.Tactic.refine took 1.23ms
+typeclass inference of Add took 0.00505ms
+typeclass inference of IsRightCancelAdd took 0.0471ms
+typeclass inference of AddGroup took 0.00661ms
+typeclass inference of CommSemiring took 0.0108ms
+typeclass inference of CommRing took 0.00319ms
+typeclass inference of Semifield took 0.000992ms
+typeclass inference of CharZero took 0.00366ms
+norm_num took 0.0472ms
+typeclass inference of AddMonoidWithOne took 0.0047ms
+norm_num took 0.161ms
+norm_num took 0.0052ms
+typeclass inference of AddMonoidWithOne took 0.00433ms
+norm_num took 0.116ms
+typeclass inference of AddMonoidWithOne took 0.0376ms
+norm_num took 0.0979ms
+norm_num took 0.00541ms
+norm_num took 0.00426ms
+norm_num took 0.00227ms
+typeclass inference of AddMonoidWithOne took 0.00338ms
+norm_num took 0.113ms
+typeclass inference of AddMonoidWithOne took 0.00368ms
+norm_num took 0.072ms
+norm_num took 0.00448ms
+typeclass inference of AddMonoidWithOne took 0.00338ms
+norm_num took 0.136ms
+ring took 1.58ms
+tactic execution of Mathlib.Tactic.LinearCombination.linearCombination took 1.32ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00529ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00371ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00422ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00688ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00535ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00423ms
+tactic execution of Lean.Parser.Tactic.case took 0.0334ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0168ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00518ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0107ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.114ms
+typeclass inference of OfNat took 0.0532ms
+typeclass inference of OfNat took 0.0735ms
+typeclass inference of OfNat took 0.0426ms
+typeclass inference of OfNat took 0.0456ms
+typeclass inference of HPow took 0.167ms
+typeclass inference of LT took 0.0284ms
+typeclass inference of OfNat took 0.0562ms
+typeclass inference of HPow took 0.131ms
+typeclass inference of OfNat took 0.0451ms
+typeclass inference of HPow took 0.117ms
+typeclass inference of OfNat took 0.0418ms
+typeclass inference of HPow took 0.125ms
+typeclass inference of Pow took 0.0413ms
+typeclass inference of NPow took 0.093ms
+typeclass inference of OfNat took 0.00382ms
+tactic execution of Lean.Parser.Tactic.refine took 0.601ms
+interpretation of term_=_ took 0.00257ms
+interpretation of term_-_ took 0.00142ms
+interpretation of term_*_ took 0.000892ms
+interpretation of term_=_ took 0.000491ms
+interpretation of term_-_ took 0.000421ms
+interpretation of term_*_ took 0.000411ms
+interpretation of term_=_ took 0.00156ms
+interpretation of term_-_ took 0.000611ms
+interpretation of term_*_ took 0.000491ms
+interpretation of term_^_ took 0.00116ms
+interpretation of term_-_ took 0.000431ms
+interpretation of term_=_ took 0.000431ms
+interpretation of term_-_ took 0.000421ms
+interpretation of term_*_ took 0.000381ms
+interpretation of term_^_ took 0.00041ms
+interpretation of term_-_ took 0.000401ms
+interpretation of term_=_ took 0.0014ms
+interpretation of term_*_ took 0.000551ms
+interpretation of term_=_ took 0.000431ms
+interpretation of term_*_ took 0.000401ms
+interpretation of term_=_ took 0.00141ms
+interpretation of term_+_ took 0.00107ms
+interpretation of term_*_ took 0.00046ms
+interpretation of term_^_ took 0.000491ms
+interpretation of term_=_ took 0.000461ms
+interpretation of term_+_ took 0.000391ms
+interpretation of term_*_ took 0.000371ms
+interpretation of term_^_ took 0.0004ms
+typeclass inference of UsesSetNotationForOrder took 0.0213ms
+typeclass inference of UsesSetNotationForOrder took 0.0117ms
+interpretation of term_↔_ took 0.00166ms
+interpretation of term_≤_ took 0.000612ms
+interpretation of term_≤_ took 0.000531ms
+interpretation of coeNotation took 0.00117ms
+interpretation of coeNotation took 0.000371ms
+interpretation of termℕ took 0.00714ms
+interpretation of term_↔_ took 0.000561ms
+interpretation of term_≤_ took 0.000451ms
+interpretation of term_≤_ took 0.000481ms
+interpretation of coeNotation took 0.000361ms
+interpretation of coeNotation took 0.000391ms
+interpretation of termℕ took 0.00339ms
+typeclass inference of UsesSetNotationForOrder took 0.0221ms
+typeclass inference of UsesSetNotationForOrder took 0.0141ms
+interpretation of term_↔_ took 0.00211ms
+interpretation of term_<_ took 0.000942ms
+interpretation of term_<_ took 0.000481ms
+interpretation of coeNotation took 0.00134ms
+interpretation of coeNotation took 0.000361ms
+interpretation of termℕ took 0.00676ms
+interpretation of term_↔_ took 0.000551ms
+interpretation of term_<_ took 0.000441ms
+interpretation of term_<_ took 0.000491ms
+interpretation of coeNotation took 0.00038ms
+interpretation of coeNotation took 0.000341ms
+interpretation of termℕ took 0.0034ms
+interpretation of term_↔_ took 0.00138ms
+interpretation of term_=_ took 0.00106ms
+interpretation of term_=_ took 0.000401ms
+interpretation of coeNotation took 0.000371ms
+interpretation of coeNotation took 0.000321ms
+interpretation of termℕ took 0.00429ms
+interpretation of term_↔_ took 0.000491ms
+interpretation of term_=_ took 0.00038ms
+interpretation of term_=_ took 0.000461ms
+interpretation of coeNotation took 0.000331ms
+interpretation of coeNotation took 0.00034ms
+interpretation of termℕ took 0.00295ms
+typeclass inference of UsesSetNotationForOrder took 0.0158ms
+interpretation of term_≤_ took 0.00113ms
+interpretation of coeNotation took 0.000461ms
+interpretation of termℕ took 0.00428ms
+interpretation of term_≤_ took 0.000521ms
+interpretation of coeNotation took 0.000361ms
+interpretation of termℕ took 0.0031ms
+typeclass inference of LE took 0.0491ms
+typeclass inference of HSub took 0.212ms
+typeclass inference of LE took 0.0303ms
+typeclass inference of Decidable took 0.154ms
+typeclass inference of Decidable took 0.0127ms
+typeclass inference of HSub took 0.0428ms
+typeclass inference of LE took 0.00389ms
+typeclass inference of Decidable took 0.16ms
+typeclass inference of Decidable took 0.0154ms
+typeclass inference of HMul took 0.243ms
+typeclass inference of HMul took 0.0442ms
+typeclass inference of HAdd took 0.196ms
+typeclass inference of LT took 0.0338ms
+typeclass inference of Decidable took 0.284ms
+typeclass inference of LE took 0.0341ms
+typeclass inference of Decidable took 0.127ms
+typeclass inference of Decidable took 0.00368ms
+instantiate metavars took 0.0012ms
+tactic execution of Lean.Parser.Tactic.omega took 1.21ms
+tactic execution of ProofBroker.Tactic.proofBrokerTerm took 33.3ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00637ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00435ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00393ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00571ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00443ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00476ms
+tactic execution of Lean.Parser.Tactic.case took 0.0577ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0125ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00559ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00708ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.826ms
+typeclass inference of OfNat took 1.16ms
+typeclass inference of OfNat took 0.0744ms
+typeclass inference of OfNat took 0.0439ms
+typeclass inference of HPow took 0.21ms
+typeclass inference of OfNat took 0.108ms
+typeclass inference of HPow took 0.141ms
+typeclass inference of OfNat took 0.0755ms
+typeclass inference of OfNat took 0.0611ms
+typeclass inference of OfNat took 0.0509ms
+typeclass inference of HPow took 0.143ms
+typeclass inference of OfNat took 0.048ms
+typeclass inference of OfNat took 0.0404ms
+typeclass inference of HPow took 0.155ms
+typeclass inference of OfNat took 0.0519ms
+typeclass inference of HPow took 0.133ms
+typeclass inference of OfNat took 0.0449ms
+typeclass inference of OfNat took 0.0567ms
+typeclass inference of HPow took 0.141ms
+typeclass inference of OfNat took 0.0477ms
+typeclass inference of HPow took 0.131ms
+typeclass inference of OfNat took 0.0849ms
+typeclass inference of HPow took 0.121ms
+typeclass inference of OfNat took 0.0428ms
+typeclass inference of HPow took 0.115ms
+typeclass inference of OfNat took 0.0394ms
+typeclass inference of HPow took 0.111ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HPow took 0.118ms
+typeclass inference of OfNat took 0.039ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of Pow took 0.0399ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0514ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00532ms
+typeclass inference of NPow took 1.95ms
+typeclass inference of OfNat took 0.0413ms
+typeclass inference of OfNat took 0.0467ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of OfNat took 0.042ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of OfNat took 0.0386ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of Pow took 0.0476ms
+typeclass inference of NPow took 0.0865ms
+typeclass inference of OfNat took 0.00366ms
+tactic execution of Lean.Parser.Tactic.refine took 1.41ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.00486ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0137ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00424ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00387ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00454ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00388ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00654ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.0089ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0157ms
+typeclass inference of OfNat took 0.0648ms
+typeclass inference of OfNat took 0.0469ms
+typeclass inference of OfNat took 0.0484ms
+typeclass inference of OfNat took 0.0353ms
+typeclass inference of OfNat took 0.0498ms
+typeclass inference of OfNat took 0.0338ms
+typeclass inference of HMul took 0.145ms
+typeclass inference of HPow took 0.143ms
+typeclass inference of HMul took 0.0609ms
+typeclass inference of LT took 0.0608ms
+typeclass inference of OfNat took 0.00395ms
+typeclass inference of OfNat took 0.0653ms
+typeclass inference of HPow took 0.143ms
+typeclass inference of HMul took 0.0793ms
+typeclass inference of OfNat took 0.0735ms
+typeclass inference of HPow took 0.14ms
+typeclass inference of HMul took 0.0602ms
+typeclass inference of OfNat took 0.0494ms
+typeclass inference of HPow took 0.129ms
+typeclass inference of HMul took 0.0587ms
+typeclass inference of OfNat took 0.047ms
+typeclass inference of HPow took 0.126ms
+typeclass inference of HMul took 0.0589ms
+typeclass inference of Pow took 0.0458ms
+typeclass inference of NPow took 0.00326ms
+typeclass inference of OfNat took 0.00321ms
+typeclass inference of HMul took 0.0033ms
+tactic execution of Lean.Parser.Tactic.refine took 0.755ms
+interpretation of term_=_ took 0.00321ms
+interpretation of term_-_ took 0.00115ms
+interpretation of term_*_ took 0.000852ms
+interpretation of term_=_ took 0.000501ms
+interpretation of term_-_ took 0.000501ms
+interpretation of term_*_ took 0.000421ms
+interpretation of term_=_ took 0.00296ms
+interpretation of term_-_ took 0.000621ms
+interpretation of term_*_ took 0.000501ms
+interpretation of term_^_ took 0.001ms
+interpretation of term_-_ took 0.000431ms
+interpretation of term_=_ took 0.000431ms
+interpretation of term_-_ took 0.000421ms
+interpretation of term_*_ took 0.000421ms
+interpretation of term_^_ took 0.00039ms
+interpretation of term_-_ took 0.0004ms
+interpretation of term_=_ took 0.00149ms
+interpretation of term_*_ took 0.000561ms
+interpretation of term_=_ took 0.000441ms
+interpretation of term_*_ took 0.000441ms
+interpretation of term_=_ took 0.00148ms
+interpretation of term_+_ took 0.00131ms
+interpretation of term_*_ took 0.000491ms
+interpretation of term_^_ took 0.000561ms
+interpretation of term_=_ took 0.000471ms
+interpretation of term_+_ took 0.000451ms
+interpretation of term_*_ took 0.000471ms
+interpretation of term_^_ took 0.000421ms
+typeclass inference of UsesSetNotationForOrder took 0.0204ms
+typeclass inference of UsesSetNotationForOrder took 0.0109ms
+interpretation of term_↔_ took 0.00165ms
+interpretation of term_≤_ took 0.000842ms
+interpretation of term_≤_ took 0.000521ms
+interpretation of coeNotation took 0.000992ms
+interpretation of coeNotation took 0.000471ms
+interpretation of termℕ took 0.00713ms
+interpretation of term_↔_ took 0.000631ms
+interpretation of term_≤_ took 0.000481ms
+interpretation of term_≤_ took 0.000481ms
+interpretation of coeNotation took 0.000391ms
+interpretation of coeNotation took 0.000401ms
+interpretation of termℕ took 0.00386ms
+typeclass inference of UsesSetNotationForOrder took 0.0186ms
+typeclass inference of UsesSetNotationForOrder took 0.0113ms
+interpretation of term_↔_ took 0.0015ms
+interpretation of term_<_ took 0.00102ms
+interpretation of term_<_ took 0.000431ms
+interpretation of coeNotation took 0.000631ms
+interpretation of coeNotation took 0.000341ms
+interpretation of termℕ took 0.0049ms
+interpretation of term_↔_ took 0.000611ms
+interpretation of term_<_ took 0.000711ms
+interpretation of term_<_ took 0.000471ms
+interpretation of coeNotation took 0.000351ms
+interpretation of coeNotation took 0.000612ms
+interpretation of termℕ took 0.00384ms
+interpretation of term_↔_ took 0.00306ms
+interpretation of term_=_ took 0.00186ms
+interpretation of term_=_ took 0.00118ms
+interpretation of coeNotation took 0.00131ms
+interpretation of coeNotation took 0.000952ms
+interpretation of termℕ took 0.0119ms
+interpretation of term_↔_ took 0.00185ms
+interpretation of term_=_ took 0.000952ms
+interpretation of term_=_ took 0.000952ms
+interpretation of coeNotation took 0.000722ms
+interpretation of coeNotation took 0.000842ms
+interpretation of termℕ took 0.00789ms
+typeclass inference of UsesSetNotationForOrder took 0.0175ms
+interpretation of term_≤_ took 0.00143ms
+interpretation of coeNotation took 0.00144ms
+interpretation of termℕ took 0.00491ms
+interpretation of term_≤_ took 0.000581ms
+interpretation of coeNotation took 0.000792ms
+interpretation of termℕ took 0.0036ms
+interpretation of term_^_ took 0.00282ms
+interpretation of term_^_ took 0.000641ms
+tactic execution of ProofBroker.Tactic.proofBrokerTerm took 236ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0221ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00735ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00646ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00922ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00764ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00588ms
+tactic execution of Lean.Parser.Tactic.case took 0.0514ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0141ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00517ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00669ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0575ms
+typeclass inference of OfNat took 0.0116ms
+typeclass inference of OfNat took 0.147ms
+typeclass inference of OfNat took 0.0483ms
+typeclass inference of HMul took 1.08ms
+typeclass inference of HPow took 0.188ms
+typeclass inference of HMul took 0.0696ms
+typeclass inference of OfNat took 0.0665ms
+typeclass inference of HPow took 0.129ms
+typeclass inference of HMul took 0.0589ms
+typeclass inference of OfNat took 0.0551ms
+typeclass inference of OfNat took 0.0433ms
+typeclass inference of OfNat took 0.0493ms
+typeclass inference of HPow took 0.139ms
+typeclass inference of HMul took 0.0621ms
+typeclass inference of OfNat took 0.042ms
+typeclass inference of OfNat took 0.0337ms
+typeclass inference of HMul took 0.00533ms
+typeclass inference of HPow took 0.181ms
+typeclass inference of HMul took 0.0642ms
+typeclass inference of OfNat took 0.048ms
+typeclass inference of HPow took 0.12ms
+typeclass inference of HMul took 0.0769ms
+typeclass inference of OfNat took 0.0107ms
+typeclass inference of OfNat took 0.0782ms
+typeclass inference of HPow took 0.128ms
+typeclass inference of HMul took 0.0536ms
+typeclass inference of OfNat took 0.0433ms
+typeclass inference of HPow took 0.115ms
+typeclass inference of HMul took 0.0687ms
+typeclass inference of OfNat took 0.0412ms
+typeclass inference of HPow took 0.126ms
+typeclass inference of HMul took 0.0497ms
+typeclass inference of OfNat took 0.0419ms
+typeclass inference of HPow took 0.117ms
+typeclass inference of HMul took 0.0863ms
+typeclass inference of OfNat took 0.0619ms
+typeclass inference of HPow took 0.126ms
+typeclass inference of HMul took 0.0502ms
+typeclass inference of OfNat took 0.0412ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of HMul took 0.0639ms
+typeclass inference of OfNat took 0.0401ms
+typeclass inference of HPow took 0.12ms
+typeclass inference of HMul took 0.0545ms
+typeclass inference of Pow took 0.0447ms
+typeclass inference of NPow took 0.00562ms
+typeclass inference of OfNat took 0.00437ms
+typeclass inference of HMul took 0.00334ms
+typeclass inference of OfNat took 0.0458ms
+typeclass inference of HPow took 0.128ms
+typeclass inference of HMul took 0.0563ms
+typeclass inference of OfNat took 0.0439ms
+typeclass inference of HPow took 0.122ms
+typeclass inference of HMul took 0.0524ms
+typeclass inference of OfNat took 0.0411ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of HMul took 0.0515ms
+typeclass inference of Pow took 0.0446ms
+typeclass inference of NPow took 0.00488ms
+typeclass inference of OfNat took 0.00333ms
+typeclass inference of HMul took 0.00517ms
+tactic execution of Lean.Parser.Tactic.refine took 1.84ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.216ms
+tactic execution of Lean.Parser.Tactic.exact took 0.157ms
+tactic execution of Lean.Parser.Tactic.exact took 0.153ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0111ms
+tactic execution of Lean.Parser.Tactic.applyRfl took 0.0273ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0551ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00731ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0059ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00895ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00574ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00539ms
+tactic execution of Lean.Parser.Tactic.paren took 0.0053ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00786ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00986ms
+tactic execution of Lean.Parser.Tactic.skip took 0.00328ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00352ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00393ms
+tactic execution of Lean.Parser.Tactic.first took 0.0101ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00893ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00941ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00277ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00343ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0131ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0298ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00434ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00504ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0133ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0563ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0112ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0144ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 2.59ms
+tactic execution of Lean.Parser.Tactic.exact took 0.151ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0831ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0103ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0312ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00445ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00291ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00294ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00314ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00255ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00239ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00317ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0028ms
+tactic execution of Lean.Parser.Tactic.first took 0.00373ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.0058ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00291ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00278ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00291ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.015ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0175ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00769ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00669ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0259ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00641ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00397ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00682ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0113ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00771ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00753ms
+tactic execution of Lean.Parser.Tactic.case took 0.166ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0277ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00619ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0101ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.225ms
+typeclass inference of OfNat took 0.149ms
+typeclass inference of OfNat took 0.0539ms
+typeclass inference of OfNat took 0.0641ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of OfNat took 0.0466ms
+typeclass inference of OfNat took 0.0369ms
+typeclass inference of HAdd took 0.189ms
+typeclass inference of HMul took 0.151ms
+typeclass inference of HPow took 0.172ms
+typeclass inference of HMul took 0.0641ms
+typeclass inference of HAdd took 0.0568ms
+typeclass inference of LT took 0.0322ms
+typeclass inference of OfNat took 0.0467ms
+typeclass inference of OfNat took 0.0756ms
+typeclass inference of HPow took 0.163ms
+typeclass inference of HMul took 0.0561ms
+typeclass inference of HAdd took 0.0491ms
+typeclass inference of OfNat took 0.0461ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of HMul took 0.0518ms
+typeclass inference of HAdd took 0.0476ms
+typeclass inference of OfNat took 0.0426ms
+typeclass inference of HPow took 0.128ms
+typeclass inference of HMul took 0.0529ms
+typeclass inference of HAdd took 0.0621ms
+typeclass inference of OfNat took 0.0417ms
+typeclass inference of HPow took 0.115ms
+typeclass inference of HMul took 0.0512ms
+typeclass inference of HAdd took 0.0471ms
+typeclass inference of Pow took 0.0438ms
+typeclass inference of NPow took 0.108ms
+typeclass inference of OfNat took 0.0385ms
+typeclass inference of HMul took 0.145ms
+typeclass inference of HAdd took 0.00374ms
+tactic execution of Lean.Parser.Tactic.refine took 1.17ms
+interpretation of term_=_ took 0.00342ms
+interpretation of term_-_ took 0.00161ms
+interpretation of term_*_ took 0.00113ms
+interpretation of term_=_ took 0.000691ms
+interpretation of term_-_ took 0.000661ms
+interpretation of term_*_ took 0.000531ms
+interpretation of term_=_ took 0.00158ms
+interpretation of term_-_ took 0.000722ms
+interpretation of term_*_ took 0.000501ms
+interpretation of term_^_ took 0.00119ms
+interpretation of term_-_ took 0.000441ms
+interpretation of term_=_ took 0.000471ms
+interpretation of term_-_ took 0.000401ms
+interpretation of term_*_ took 0.000451ms
+interpretation of term_^_ took 0.000401ms
+interpretation of term_-_ took 0.000411ms
+interpretation of term_=_ took 0.00144ms
+interpretation of term_*_ took 0.000561ms
+interpretation of term_=_ took 0.000451ms
+interpretation of term_*_ took 0.000411ms
+interpretation of term_=_ took 0.00139ms
+interpretation of term_+_ took 0.0019ms
+interpretation of term_*_ took 0.000461ms
+interpretation of term_^_ took 0.000541ms
+interpretation of term_=_ took 0.000471ms
+interpretation of term_+_ took 0.000471ms
+interpretation of term_*_ took 0.00039ms
+interpretation of term_^_ took 0.000451ms
+typeclass inference of UsesSetNotationForOrder took 0.0217ms
+typeclass inference of UsesSetNotationForOrder took 0.0111ms
+interpretation of term_↔_ took 0.00158ms
+interpretation of term_≤_ took 0.000822ms
+interpretation of term_≤_ took 0.00044ms
+interpretation of coeNotation took 0.00116ms
+interpretation of coeNotation took 0.00038ms
+interpretation of termℕ took 0.00809ms
+interpretation of term_↔_ took 0.000591ms
+interpretation of term_≤_ took 0.000471ms
+interpretation of term_≤_ took 0.000501ms
+interpretation of coeNotation took 0.000361ms
+interpretation of coeNotation took 0.000401ms
+interpretation of termℕ took 0.00337ms
+typeclass inference of UsesSetNotationForOrder took 0.0199ms
+typeclass inference of UsesSetNotationForOrder took 0.016ms
+interpretation of term_↔_ took 0.00116ms
+interpretation of term_<_ took 0.00125ms
+interpretation of term_<_ took 0.000461ms
+interpretation of coeNotation took 0.00365ms
+interpretation of coeNotation took 0.000361ms
+interpretation of termℕ took 0.00859ms
+interpretation of term_↔_ took 0.000571ms
+interpretation of term_<_ took 0.00114ms
+interpretation of term_<_ took 0.00049ms
+interpretation of coeNotation took 0.00041ms
+interpretation of coeNotation took 0.000431ms
+interpretation of termℕ took 0.00348ms
+interpretation of term_↔_ took 0.000921ms
+interpretation of term_=_ took 0.000591ms
+interpretation of term_=_ took 0.000431ms
+interpretation of coeNotation took 0.000381ms
+interpretation of coeNotation took 0.00035ms
+interpretation of termℕ took 0.00378ms
+interpretation of term_↔_ took 0.000461ms
+interpretation of term_=_ took 0.000441ms
+interpretation of term_=_ took 0.000471ms
+interpretation of coeNotation took 0.000321ms
+interpretation of coeNotation took 0.00036ms
+interpretation of termℕ took 0.00314ms
+typeclass inference of UsesSetNotationForOrder took 0.0236ms
+interpretation of term_≤_ took 0.00111ms
+interpretation of coeNotation took 0.000461ms
+interpretation of termℕ took 0.00389ms
+interpretation of term_≤_ took 0.000521ms
+interpretation of coeNotation took 0.000361ms
+interpretation of termℕ took 0.00279ms
+interpretation of term_^_ took 0.00276ms
+interpretation of term_^_ took 0.000711ms
+interpretation of term_*_ took 0.00224ms
+interpretation of term_^_ took 0.000711ms
+interpretation of term_*_ took 0.000501ms
+interpretation of term_^_ took 0.00046ms
+typeclass inference of LE took 0.121ms
+typeclass inference of HAdd took 0.283ms
+typeclass inference of HSub took 0.209ms
+typeclass inference of LE took 0.0313ms
+typeclass inference of Decidable took 0.151ms
+typeclass inference of Decidable took 0.0117ms
+typeclass inference of HSub took 0.0494ms
+typeclass inference of LE took 0.00361ms
+typeclass inference of Decidable took 0.0162ms
+typeclass inference of Decidable took 0.01ms
+typeclass inference of HAdd took 0.0388ms
+typeclass inference of HSub took 0.0368ms
+typeclass inference of LE took 0.00321ms
+typeclass inference of Decidable took 0.0947ms
+typeclass inference of Decidable took 0.0103ms
+typeclass inference of HMul took 0.31ms
+typeclass inference of HMul took 0.036ms
+typeclass inference of HMul took 0.0334ms
+typeclass inference of HAdd took 0.0367ms
+typeclass inference of HAdd took 0.034ms
+typeclass inference of LT took 0.0368ms
+typeclass inference of Decidable took 0.534ms
+typeclass inference of Decidable took 7.32ms
+typeclass inference of Decidable took 0.0105ms
+typeclass inference of Decidable took 4.5ms
+typeclass inference of Decidable took 0.00787ms
+typeclass inference of Decidable took 4.28ms
+typeclass inference of Decidable took 0.00524ms
+typeclass inference of Decidable took 0.0034ms
+typeclass inference of Decidable took 0.00272ms
+typeclass inference of LE took 0.00491ms
+typeclass inference of Decidable took 0.119ms
+typeclass inference of Decidable took 0.00331ms
+instantiate metavars took 0.00145ms
+tactic execution of Lean.Parser.Tactic.omega took 5.09ms
+tactic execution of ProofBroker.Tactic.proofBrokerTerm took 476ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00957ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00588ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00607ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00779ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00626ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00554ms
+tactic execution of Lean.Parser.Tactic.case took 0.0615ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0177ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00497ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00898ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.031ms
+typeclass inference of OfNat took 1.01ms
+typeclass inference of OfNat took 0.124ms
+typeclass inference of OfNat took 0.0476ms
+typeclass inference of HAdd took 1.01ms
+typeclass inference of HMul took 0.908ms
+typeclass inference of HPow took 0.167ms
+typeclass inference of HMul took 0.0645ms
+typeclass inference of HAdd took 0.0567ms
+typeclass inference of OfNat took 0.0641ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of HMul took 0.062ms
+typeclass inference of HAdd took 0.065ms
+typeclass inference of OfNat took 0.0677ms
+typeclass inference of OfNat took 0.0509ms
+typeclass inference of OfNat took 0.0489ms
+typeclass inference of HPow took 0.16ms
+typeclass inference of HMul took 0.121ms
+typeclass inference of HAdd took 0.0587ms
+typeclass inference of OfNat took 0.0441ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HAdd took 0.163ms
+typeclass inference of HMul took 0.139ms
+typeclass inference of HPow took 0.193ms
+typeclass inference of HMul took 0.0589ms
+typeclass inference of HAdd took 0.0887ms
+typeclass inference of OfNat took 0.0726ms
+typeclass inference of HPow took 0.149ms
+typeclass inference of HMul took 0.0678ms
+typeclass inference of HAdd took 0.0562ms
+typeclass inference of OfNat took 0.0507ms
+typeclass inference of OfNat took 0.0632ms
+typeclass inference of HPow took 0.161ms
+typeclass inference of HMul took 0.0568ms
+typeclass inference of HAdd took 0.0498ms
+typeclass inference of OfNat took 0.0452ms
+typeclass inference of HPow took 0.126ms
+typeclass inference of HMul took 0.0802ms
+typeclass inference of HAdd took 0.0593ms
+typeclass inference of OfNat took 0.045ms
+typeclass inference of HPow took 0.123ms
+typeclass inference of HMul took 0.0525ms
+typeclass inference of HAdd took 0.0472ms
+typeclass inference of OfNat took 0.0434ms
+typeclass inference of HPow took 0.121ms
+typeclass inference of HMul took 0.0566ms
+typeclass inference of HAdd took 0.0491ms
+typeclass inference of OfNat took 0.04ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of HMul took 0.0511ms
+typeclass inference of HAdd took 0.0458ms
+typeclass inference of OfNat took 0.0401ms
+typeclass inference of HPow took 0.122ms
+typeclass inference of HMul took 0.0839ms
+typeclass inference of HAdd took 0.0481ms
+typeclass inference of OfNat took 0.0407ms
+typeclass inference of HPow took 0.111ms
+typeclass inference of HMul took 0.0511ms
+typeclass inference of HAdd took 0.0468ms
+typeclass inference of Pow took 0.045ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.057ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00487ms
+typeclass inference of NPow took 2.09ms
+typeclass inference of OfNat took 0.0437ms
+typeclass inference of HMul took 0.896ms
+typeclass inference of HAdd took 0.00385ms
+typeclass inference of OfNat took 0.0529ms
+typeclass inference of HPow took 0.133ms
+typeclass inference of HMul took 0.0643ms
+typeclass inference of HAdd took 0.0563ms
+typeclass inference of OfNat took 0.0473ms
+typeclass inference of HPow took 0.122ms
+typeclass inference of HMul took 0.0534ms
+typeclass inference of HAdd took 0.0487ms
+typeclass inference of OfNat took 0.0438ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of HMul took 0.0534ms
+typeclass inference of HAdd took 0.0696ms
+typeclass inference of Pow took 0.0411ms
+typeclass inference of NPow took 0.0922ms
+typeclass inference of OfNat took 0.00357ms
+typeclass inference of HMul took 0.155ms
+typeclass inference of HAdd took 0.00335ms
+tactic execution of Lean.Parser.Tactic.refine took 2.25ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.152ms
+tactic execution of Lean.Parser.Tactic.exact took 0.126ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0966ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0103ms
+tactic execution of Lean.Parser.Tactic.applyRfl took 0.0417ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0521ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00624ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00424ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00721ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00543ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00429ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00424ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00351ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00416ms
+tactic execution of Lean.Parser.Tactic.skip took 0.00334ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00339ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00344ms
+tactic execution of Lean.Parser.Tactic.first took 0.009ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00878ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0049ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00312ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00318ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00917ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0119ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00337ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00334ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.00693ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0481ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00809ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00704ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 2.46ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0877ms
+tactic execution of Lean.Parser.Tactic.exact took 0.0801ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0108ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.0364ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00347ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00253ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00288ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00272ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0023ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00235ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00271ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00235ms
+tactic execution of Lean.Parser.Tactic.first took 0.00276ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00438ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00271ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00247ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00307ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.0123ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0112ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00368ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00334ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.015ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0034ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00268ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00335ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00572ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00469ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00424ms
+tactic execution of Lean.Parser.Tactic.case took 0.14ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0175ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00592ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00944ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0446ms
+typeclass inference of OfNat took 0.0833ms
+typeclass inference of OfNat took 0.0487ms
+typeclass inference of OfNat took 0.0557ms
+typeclass inference of OfNat took 0.045ms
+typeclass inference of OfNat took 0.0384ms
+typeclass inference of OfNat took 0.0336ms
+typeclass inference of OfNat took 0.033ms
+typeclass inference of OfNat took 0.0314ms
+typeclass inference of HMul took 0.148ms
+typeclass inference of HMul took 0.00389ms
+typeclass inference of HMul took 0.154ms
+typeclass inference of HPow took 0.156ms
+typeclass inference of HPow took 0.14ms
+typeclass inference of HMul took 0.0682ms
+typeclass inference of LT took 0.0293ms
+typeclass inference of OfNat took 0.0409ms
+typeclass inference of OfNat took 0.0515ms
+typeclass inference of OfNat took 0.00321ms
+typeclass inference of OfNat took 0.0435ms
+typeclass inference of HPow took 0.131ms
+typeclass inference of HPow took 0.118ms
+typeclass inference of HMul took 0.0507ms
+typeclass inference of OfNat took 0.0417ms
+typeclass inference of OfNat took 0.0347ms
+typeclass inference of HPow took 0.113ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of HMul took 0.0486ms
+typeclass inference of OfNat took 0.042ms
+typeclass inference of OfNat took 0.0343ms
+typeclass inference of HPow took 0.113ms
+typeclass inference of HPow took 0.111ms
+typeclass inference of HMul took 0.0552ms
+typeclass inference of OfNat took 0.0424ms
+typeclass inference of OfNat took 0.0334ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of HPow took 0.11ms
+typeclass inference of HMul took 0.047ms
+typeclass inference of Pow took 0.0405ms
+typeclass inference of NPow took 0.117ms
+typeclass inference of OfNat took 0.0547ms
+typeclass inference of OfNat took 0.0485ms
+typeclass inference of HPow took 0.123ms
+typeclass inference of HMul took 0.0583ms
+typeclass inference of OfNat took 0.0432ms
+typeclass inference of HPow took 0.139ms
+typeclass inference of HMul took 0.0653ms
+typeclass inference of OfNat took 0.0635ms
+typeclass inference of HPow took 0.121ms
+typeclass inference of HMul took 0.0647ms
+typeclass inference of Pow took 0.0448ms
+typeclass inference of NPow took 0.00338ms
+typeclass inference of OfNat took 0.0398ms
+typeclass inference of HMul took 0.00276ms
+typeclass inference of OfNat took 0.0624ms
+typeclass inference of OfNat took 0.0491ms
+typeclass inference of OfNat took 0.0504ms
+typeclass inference of OfNat took 0.0357ms
+typeclass inference of HMul took 0.00413ms
+typeclass inference of HMul took 0.00495ms
+typeclass inference of HMul took 0.0452ms
+typeclass inference of HPow took 0.361ms
+typeclass inference of HMul took 0.152ms
+typeclass inference of LE took 0.0616ms
+typeclass inference of OfNat took 0.00517ms
+typeclass inference of OfNat took 0.0752ms
+typeclass inference of HPow took 0.141ms
+typeclass inference of HMul took 0.0776ms
+typeclass inference of OfNat took 0.0436ms
+typeclass inference of HPow took 0.131ms
+typeclass inference of HMul took 0.0547ms
+typeclass inference of OfNat took 0.0629ms
+typeclass inference of OfNat took 0.0465ms
+typeclass inference of OfNat took 0.054ms
+typeclass inference of OfNat took 0.0444ms
+typeclass inference of OfNat took 0.0354ms
+typeclass inference of OfNat took 0.0429ms
+typeclass inference of OfNat took 0.0335ms
+typeclass inference of OfNat took 0.0306ms
+typeclass inference of HMul took 0.00395ms
+typeclass inference of HPow took 0.146ms
+typeclass inference of HPow took 0.134ms
+typeclass inference of HMul took 0.0596ms
+typeclass inference of LT took 0.00341ms
+typeclass inference of OfNat took 0.00321ms
+typeclass inference of OfNat took 0.0615ms
+typeclass inference of OfNat took 0.0043ms
+typeclass inference of OfNat took 0.0611ms
+typeclass inference of HPow took 0.141ms
+typeclass inference of HPow took 0.124ms
+typeclass inference of HMul took 0.0496ms
+typeclass inference of OfNat took 0.0414ms
+typeclass inference of OfNat took 0.0344ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of HMul took 0.047ms
+typeclass inference of OfNat took 0.0051ms
+typeclass inference of HPow took 0.266ms
+typeclass inference of HMul took 0.00297ms
+typeclass inference of OfNat took 0.00226ms
+typeclass inference of OfNat took 0.00175ms
+typeclass inference of HPow took 0.00179ms
+typeclass inference of HPow took 0.0014ms
+typeclass inference of HMul took 0.0017ms
+typeclass inference of Trans took 0.202ms
+typeclass inference of LE took 0.344ms
+typeclass inference of LE took 0.0737ms
+typeclass inference of Zero took 0.16ms
+typeclass inference of PartialOrder took 0.0697ms
+typeclass inference of Ring took 0.998ms
+typeclass inference of AddMonoidWithOne took 0.0387ms
+norm_num took 0.271ms
+typeclass inference of Semiring took 0.0365ms
+typeclass inference of PartialOrder took 0.003ms
+typeclass inference of CommSemiring took 0.0329ms
+typeclass inference of IsOrderedRing took 0.95ms
+typeclass inference of Nontrivial took 0.0452ms
+typeclass inference of Semiring took 0.00287ms
+typeclass inference of IsStrictOrderedRing took 0.0301ms
+tactic execution of Mathlib.Tactic.Positivity.positivity took 1.52ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00908ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0246ms
+tactic execution of Lean.Parser.Tactic.refine took 6.67ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.00793ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0112ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00386ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00425ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00482ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0039ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00658ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.00775ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.027ms
+typeclass inference of HMul took 0.162ms
+typeclass inference of HMul took 0.151ms
+typeclass inference of LT took 0.0522ms
+tactic execution of Lean.Parser.Tactic.refine took 0.505ms
+interpretation of term_=_ took 0.00554ms
+interpretation of term_-_ took 0.00222ms
+interpretation of term_*_ took 0.00138ms
+interpretation of term_=_ took 0.000491ms
+interpretation of term_-_ took 0.000491ms
+interpretation of term_*_ took 0.000421ms
+interpretation of term_=_ took 0.00155ms
+interpretation of term_-_ took 0.000651ms
+interpretation of term_*_ took 0.000501ms
+interpretation of term_^_ took 0.00185ms
+interpretation of term_-_ took 0.000501ms
+interpretation of term_=_ took 0.000441ms
+interpretation of term_-_ took 0.000411ms
+interpretation of term_*_ took 0.000411ms
+interpretation of term_^_ took 0.00042ms
+interpretation of term_-_ took 0.000441ms
+interpretation of term_=_ took 0.00147ms
+interpretation of term_*_ took 0.000551ms
+interpretation of term_=_ took 0.000461ms
+interpretation of term_*_ took 0.000431ms
+interpretation of term_=_ took 0.00143ms
+interpretation of term_+_ took 0.00257ms
+interpretation of term_*_ took 0.000521ms
+interpretation of term_^_ took 0.000481ms
+interpretation of term_=_ took 0.000431ms
+interpretation of term_+_ took 0.000411ms
+interpretation of term_*_ took 0.00038ms
+interpretation of term_^_ took 0.000421ms
+typeclass inference of UsesSetNotationForOrder took 0.0388ms
+typeclass inference of UsesSetNotationForOrder took 0.0145ms
+interpretation of term_↔_ took 0.00213ms
+interpretation of term_≤_ took 0.00117ms
+interpretation of term_≤_ took 0.000441ms
+interpretation of coeNotation took 0.00173ms
+interpretation of coeNotation took 0.00035ms
+interpretation of termℕ took 0.0109ms
+interpretation of term_↔_ took 0.000632ms
+interpretation of term_≤_ took 0.000481ms
+interpretation of term_≤_ took 0.000511ms
+interpretation of coeNotation took 0.000401ms
+interpretation of coeNotation took 0.00039ms
+interpretation of termℕ took 0.00371ms
+typeclass inference of UsesSetNotationForOrder took 0.0535ms
+typeclass inference of UsesSetNotationForOrder took 0.014ms
+interpretation of term_↔_ took 0.00241ms
+interpretation of term_<_ took 0.00164ms
+interpretation of term_<_ took 0.000651ms
+interpretation of coeNotation took 0.00137ms
+interpretation of coeNotation took 0.000371ms
+interpretation of termℕ took 0.00799ms
+interpretation of term_↔_ took 0.000732ms
+interpretation of term_<_ took 0.000421ms
+interpretation of term_<_ took 0.00044ms
+interpretation of coeNotation took 0.000521ms
+interpretation of coeNotation took 0.000401ms
+interpretation of termℕ took 0.0045ms
+interpretation of term_↔_ took 0.000992ms
+interpretation of term_=_ took 0.00106ms
+interpretation of term_=_ took 0.000421ms
+interpretation of coeNotation took 0.000441ms
+interpretation of coeNotation took 0.000331ms
+interpretation of termℕ took 0.00425ms
+interpretation of term_↔_ took 0.00049ms
+interpretation of term_=_ took 0.000411ms
+interpretation of term_=_ took 0.000431ms
+interpretation of coeNotation took 0.00031ms
+interpretation of coeNotation took 0.000401ms
+interpretation of termℕ took 0.00295ms
+typeclass inference of UsesSetNotationForOrder took 0.0186ms
+interpretation of term_≤_ took 0.00105ms
+interpretation of coeNotation took 0.00044ms
+interpretation of termℕ took 0.00375ms
+interpretation of term_≤_ took 0.000501ms
+interpretation of coeNotation took 0.00035ms
+interpretation of termℕ took 0.00284ms
+interpretation of term_*_ took 0.00214ms
+interpretation of term_*_ took 0.000551ms
+interpretation of term_^_ took 0.00199ms
+interpretation of term_^_ took 0.000551ms
+interpretation of term_*_ took 0.00188ms
+interpretation of term_^_ took 0.000581ms
+interpretation of term_*_ took 0.000521ms
+interpretation of term_^_ took 0.00047ms
+interpretation of term_+_ took 0.00221ms
+interpretation of term_*_ took 0.000571ms
+interpretation of term_^_ took 0.000441ms
+interpretation of term_+_ took 0.000501ms
+interpretation of term_*_ took 0.00039ms
+interpretation of term_^_ took 0.000431ms
+typeclass inference of LE took 0.0881ms
+typeclass inference of HAdd took 0.232ms
+typeclass inference of HSub took 0.181ms
+typeclass inference of LE took 0.0289ms
+typeclass inference of Decidable took 0.13ms
+typeclass inference of Decidable took 0.0124ms
+typeclass inference of HSub took 0.0435ms
+typeclass inference of LE took 0.00351ms
+typeclass inference of Decidable took 0.0164ms
+typeclass inference of Decidable took 0.0108ms
+typeclass inference of HMul took 0.188ms
+typeclass inference of HMul took 0.0373ms
+typeclass inference of HAdd took 0.0399ms
+typeclass inference of LT took 0.0323ms
+typeclass inference of Decidable took 0.34ms
+typeclass inference of LE took 0.00484ms
+typeclass inference of LE took 0.00376ms
+typeclass inference of LE took 0.00397ms
+typeclass inference of Decidable took 0.147ms
+typeclass inference of Decidable took 0.0035ms
+instantiate metavars took 0.00119ms
+tactic execution of Lean.Parser.Tactic.omega took 3.52ms
+tactic execution of ProofBroker.Tactic.proofBrokerTerm took 27.4ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00832ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00521ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00568ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.00709ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00512ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00506ms
+tactic execution of Lean.Parser.Tactic.case took 0.0322ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0125ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00455ms
+tactic execution of Lean.Parser.Tactic.focus took 0.00865ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0237ms
+typeclass inference of HMul took 1.25ms
+typeclass inference of HMul took 1.12ms
+typeclass inference of HMul took 0.151ms
+typeclass inference of HMul took 0.157ms
+tactic execution of Lean.Parser.Tactic.refine took 1.12ms
+tactic execution of Lean.Parser.Tactic.rotateRight took 0.0089ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0152ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00439ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00496ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00553ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00475ms
+tactic execution of Lean.Parser.Tactic.focus took 0.0092ms
+tactic execution of Lean.Parser.Tactic.tacticRefine_lift_ took 0.0095ms
+tactic execution of Lean.Parser.Tactic.tacticHave__ took 0.0224ms
+tactic execution of Lean.Parser.Tactic.rewriteSeq took 0.759ms
+tactic execution of Lean.Parser.Tactic.exact took 0.113ms
+tactic execution of Lean.Parser.Tactic.exact took 0.101ms
+tactic execution of Lean.Parser.Tactic.eqRefl took 0.0166ms
+tactic execution of Lean.Parser.Tactic.tacticRfl took 0.041ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00435ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00347ms
+tactic execution of Lean.Parser.Tactic.withReducible took 0.00768ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0031ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00287ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00244ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00306ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00249ms
+tactic execution of Lean.Parser.Tactic.first took 0.00589ms
+tactic execution of Lean.Parser.Tactic.tacticTry_ took 0.00797ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.00295ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00269ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00312ms
+tactic execution of Lean.Parser.Tactic.withAnnotateState took 0.022ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0115ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.00377ms
+tactic execution of Lean.Parser.Tactic.paren took 0.00441ms
+tactic execution of Lean.Parser.Tactic.rwSeq took 0.0574ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0958ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0383ms
+instantiate metavars took 0.357ms
+instantiate metavars took 0.000401ms
+instantiate metavars took 0.00028ms
+instantiate metavars took 0.00014ms
+instantiate metavars took 0.00011ms
+share common exprs took 2.04ms
+fix level params took 0.0937ms
+let-to-have transformation took 0.0103ms
+attribute application took 0.00314ms
+attribute application took 0.000832ms
+process pre-definitions took 1.02ms
+elaboration took 1.48ms
+type checking took 2.27ms
+type checking took 8.36ms
+type checking took 7.74ms
+type checking took 6.11ms
+overlappingInstancesLinter took 0.281ms
+linting took 2.51ms
+attribute application took 0.00198ms
+typeclass inference of OfNat took 0.0829ms
+typeclass inference of OfNat took 0.0407ms
+typeclass inference of HSub took 0.876ms
+typeclass inference of HMul took 1.11ms
+typeclass inference of HMul took 0.809ms
+typeclass inference of HSub took 0.735ms
+typeclass inference of OfNat took 0.924ms
+typeclass inference of OfNat took 0.134ms
+typeclass inference of OfNat took 0.0471ms
+typeclass inference of OfNat took 0.0434ms
+typeclass inference of OfNat took 0.0323ms
+typeclass inference of OfNat took 0.0411ms
+typeclass inference of OfNat took 0.033ms
+typeclass inference of OfNat took 0.0284ms
+typeclass inference of OfNat took 0.0297ms
+typeclass inference of HSub took 0.0054ms
+typeclass inference of HSub took 0.00279ms
+typeclass inference of HMul took 0.00471ms
+typeclass inference of HSub took 0.038ms
+typeclass inference of HPow took 0.327ms
+typeclass inference of HMul took 0.0682ms
+typeclass inference of HSub took 0.0554ms
+typeclass inference of OfNat took 1.13ms
+typeclass inference of OfNat took 0.0817ms
+typeclass inference of OfNat took 0.00402ms
+typeclass inference of HPow took 0.172ms
+typeclass inference of HMul took 0.0656ms
+typeclass inference of HSub took 0.0492ms
+typeclass inference of OfNat took 0.0509ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of HMul took 0.0538ms
+typeclass inference of HSub took 0.0454ms
+typeclass inference of OfNat took 0.0653ms
+typeclass inference of OfNat took 0.0909ms
+typeclass inference of OfNat took 0.106ms
+typeclass inference of OfNat took 0.0821ms
+typeclass inference of HPow took 0.199ms
+typeclass inference of LE took 0.051ms
+typeclass inference of OfNat took 0.039ms
+typeclass inference of OfNat took 0.0494ms
+typeclass inference of HPow took 0.12ms
+typeclass inference of OfNat took 0.0395ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0572ms
+typeclass inference of OfNat took 0.0423ms
+typeclass inference of OfNat took 0.0335ms
+typeclass inference of OfNat took 0.0309ms
+typeclass inference of HPow took 0.177ms
+typeclass inference of LT took 0.0346ms
+typeclass inference of OfNat took 0.00436ms
+typeclass inference of OfNat took 0.0491ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of OfNat took 0.0389ms
+typeclass inference of HPow took 0.156ms
+typeclass inference of OfNat took 0.0547ms
+typeclass inference of OfNat took 0.0425ms
+typeclass inference of OfNat took 0.0356ms
+typeclass inference of OfNat took 0.0328ms
+typeclass inference of HPow took 0.133ms
+typeclass inference of LT took 0.00344ms
+typeclass inference of OfNat took 0.00291ms
+typeclass inference of OfNat took 0.0486ms
+typeclass inference of HPow took 0.124ms
+typeclass inference of OfNat took 0.0567ms
+typeclass inference of HPow took 0.135ms
+typeclass inference of OfNat took 0.0552ms
+typeclass inference of OfNat took 0.0432ms
+typeclass inference of OfNat took 0.0357ms
+typeclass inference of OfNat took 0.0316ms
+typeclass inference of HPow took 0.177ms
+typeclass inference of LT took 0.00348ms
+typeclass inference of OfNat took 0.00287ms
+typeclass inference of OfNat took 0.0541ms
+typeclass inference of HPow took 0.134ms
+typeclass inference of OfNat took 0.0385ms
+typeclass inference of HPow took 0.123ms
+typeclass inference of OfNat took 0.0605ms
+typeclass inference of OfNat took 0.0437ms
+typeclass inference of OfNat took 0.0496ms
+typeclass inference of OfNat took 0.0359ms
+typeclass inference of HMul took 0.146ms
+typeclass inference of HAdd took 0.17ms
+typeclass inference of HMul took 0.00324ms
+typeclass inference of HMul took 0.145ms
+typeclass inference of HPow took 0.144ms
+typeclass inference of HMul took 0.0933ms
+typeclass inference of HAdd took 0.0721ms
+typeclass inference of OfNat took 0.00475ms
+typeclass inference of OfNat took 0.0717ms
+typeclass inference of HPow took 0.127ms
+typeclass inference of HMul took 0.0529ms
+typeclass inference of HAdd took 0.0485ms
+typeclass inference of OfNat took 0.0423ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of HMul took 0.0497ms
+typeclass inference of HAdd took 0.0453ms
+typeclass inference of OfNat took 0.044ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of HMul took 0.0526ms
+typeclass inference of HSub took 0.0515ms
+typeclass inference of OfNat took 0.0409ms
+typeclass inference of HPow took 0.11ms
+typeclass inference of OfNat took 0.0398ms
+typeclass inference of HPow took 0.123ms
+typeclass inference of OfNat took 0.0399ms
+typeclass inference of HPow took 0.11ms
+typeclass inference of OfNat took 0.0379ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of OfNat took 0.0379ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0566ms
+typeclass inference of HAdd took 0.0466ms
+typeclass inference of OfNat took 0.0389ms
+typeclass inference of HPow took 0.124ms
+typeclass inference of HMul took 0.0515ms
+typeclass inference of HSub took 0.0466ms
+typeclass inference of OfNat took 0.0384ms
+typeclass inference of HPow took 0.114ms
+typeclass inference of OfNat took 0.0372ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.0433ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.0374ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0548ms
+typeclass inference of HPow took 0.11ms
+typeclass inference of HMul took 0.0543ms
+typeclass inference of HAdd took 0.0458ms
+typeclass inference of Pow took 0.0549ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.0548ms
+typeclass inference of CategoryTheory.CartesianMonoidalCategory took 0.00486ms
+typeclass inference of NPow took 1.99ms
+typeclass inference of OfNat took 0.0444ms
+typeclass inference of HMul took 0.0431ms
+typeclass inference of HSub took 0.00601ms
+typeclass inference of OfNat took 0.0697ms
+typeclass inference of HPow took 0.142ms
+typeclass inference of OfNat took 0.0429ms
+typeclass inference of HPow took 0.117ms
+typeclass inference of OfNat took 0.0395ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of OfNat took 0.0399ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of OfNat took 0.0419ms
+typeclass inference of HPow took 0.117ms
+typeclass inference of HMul took 0.0577ms
+typeclass inference of HAdd took 0.0515ms
+typeclass inference of OfNat took 0.0409ms
+typeclass inference of HPow took 0.113ms
+typeclass inference of OfNat took 0.0394ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.0368ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of OfNat took 0.0374ms
+typeclass inference of HPow took 0.112ms
+typeclass inference of HMul took 0.0527ms
+typeclass inference of HAdd took 0.0476ms
+typeclass inference of OfNat took 0.0394ms
+typeclass inference of HPow took 0.108ms
+typeclass inference of OfNat took 0.0376ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.037ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.037ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.0374ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0601ms
+typeclass inference of HAdd took 0.0483ms
+typeclass inference of Pow took 0.0386ms
+typeclass inference of NPow took 0.108ms
+typeclass inference of OfNat took 0.0549ms
+typeclass inference of OfNat took 0.0568ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of OfNat took 0.0392ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0375ms
+typeclass inference of HPow took 0.107ms
+typeclass inference of OfNat took 0.0384ms
+typeclass inference of HPow took 0.116ms
+typeclass inference of HMul took 0.0521ms
+typeclass inference of HAdd took 0.0468ms
+typeclass inference of OfNat took 0.0398ms
+typeclass inference of HPow took 0.12ms
+typeclass inference of OfNat took 0.0377ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.0387ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.0382ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0496ms
+typeclass inference of HAdd took 0.0473ms
+typeclass inference of OfNat took 0.0388ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.0385ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0372ms
+typeclass inference of HPow took 0.104ms
+typeclass inference of OfNat took 0.0612ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of HMul took 0.0509ms
+typeclass inference of HAdd took 0.0455ms
+typeclass inference of Pow took 0.0382ms
+typeclass inference of NPow took 0.00324ms
+typeclass inference of OfNat took 0.0027ms
+typeclass inference of OfNat took 0.0424ms
+typeclass inference of HPow took 0.14ms
+typeclass inference of OfNat took 0.0593ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of OfNat took 0.0369ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of HMul took 0.0499ms
+typeclass inference of HAdd took 0.0478ms
+typeclass inference of OfNat took 0.0389ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of OfNat took 0.0372ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.0368ms
+typeclass inference of HPow took 0.106ms
+typeclass inference of HMul took 0.0563ms
+typeclass inference of HAdd took 0.0634ms
+typeclass inference of OfNat took 0.0399ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of OfNat took 0.0621ms
+typeclass inference of HPow took 0.115ms
+typeclass inference of OfNat took 0.0363ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of HMul took 0.0506ms
+typeclass inference of HAdd took 0.046ms
+typeclass inference of Pow took 0.0384ms
+typeclass inference of NPow took 0.00315ms
+typeclass inference of OfNat took 0.00262ms
+typeclass inference of OfNat took 0.0426ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of OfNat took 0.0429ms
+typeclass inference of HPow took 0.128ms
+typeclass inference of HMul took 0.0785ms
+typeclass inference of HAdd took 0.0582ms
+typeclass inference of OfNat took 0.0415ms
+typeclass inference of HPow took 0.134ms
+typeclass inference of OfNat took 0.0377ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of HMul took 0.05ms
+typeclass inference of HAdd took 0.0455ms
+typeclass inference of OfNat took 0.0395ms
+typeclass inference of HPow took 0.105ms
+typeclass inference of OfNat took 0.0374ms
+typeclass inference of HPow took 0.119ms
+typeclass inference of HMul took 0.0498ms
+typeclass inference of HAdd took 0.0453ms
+typeclass inference of Pow took 0.0396ms
+typeclass inference of NPow took 0.00318ms
+typeclass inference of OfNat took 0.00283ms
+typeclass inference of OfNat took 0.0414ms
+typeclass inference of HPow took 0.125ms
+typeclass inference of HMul took 0.0783ms
+typeclass inference of HAdd took 0.0638ms
+typeclass inference of OfNat took 0.0406ms
+typeclass inference of HPow took 0.109ms
+typeclass inference of HMul took 0.0638ms
+typeclass inference of HAdd took 0.0465ms
+typeclass inference of OfNat took 0.0444ms
+typeclass inference of HPow took 0.125ms
+typeclass inference of HMul took 0.0554ms
+typeclass inference of HAdd took 0.0466ms
+typeclass inference of Pow took 0.0401ms
+typeclass inference of NPow took 0.00321ms
+typeclass inference of OfNat took 0.00261ms
+typeclass inference of HMul took 0.0506ms
+typeclass inference of HAdd took 0.0073ms
+instantiate metavars took 0.0528ms
+instantiate metavars took 0.000221ms
+typeclass inference of AddMonoidWithOne took 0.0754ms
+norm_num took 0.429ms
+typeclass inference of AddMonoidWithOne took 0.00507ms
+norm_num took 0.0516ms
+norm_num took 0.447ms
+typeclass inference of Semiring took 0.0517ms
+typeclass inference of AddMonoidWithOne took 0.00272ms
+norm_num took 0.0566ms
+norm_num took 0.8ms
+norm_num took 0.0431ms
+norm_num took 0.374ms
+congr simp thm took 0.0472ms
+norm_num took 0.0096ms
+norm_num took 0.00598ms
+typeclass inference of AddMonoidWithOne took 0.00736ms
+norm_num took 0.126ms
+typeclass inference of AddMonoidWithOne took 0.00491ms
+norm_num took 0.0649ms
+norm_num took 0.144ms
+typeclass inference of Semiring took 0.00327ms
+typeclass inference of AddMonoidWithOne took 0.0021ms
+norm_num took 0.0418ms
+norm_num took 0.151ms
+norm_num took 0.00416ms
+typeclass inference of Preorder took 0.256ms
+typeclass inference of Preorder took 0.0509ms
+typeclass inference of AddMonoidWithOne took 0.00476ms
+norm_num took 0.108ms
+typeclass inference of AddMonoidWithOne took 0.00293ms
+norm_num took 0.0454ms
+typeclass inference of LT took 0.0381ms
+typeclass inference of Semiring took 0.00311ms
+typeclass inference of PartialOrder took 0.0522ms
+typeclass inference of CommSemiring took 0.0403ms
+typeclass inference of IsOrderedRing took 1.46ms
+typeclass inference of CharZero took 0.053ms
+norm_num took 0.399ms
+tactic execution of Mathlib.Tactic.normNum took 2.66ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0224ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0302ms
+typeclass inference of AddMonoidWithOne took 0.0413ms
+norm_num took 0.106ms
+typeclass inference of AddMonoidWithOne took 0.00357ms
+norm_num took 0.0432ms
+norm_num took 0.185ms
+typeclass inference of Semiring took 0.0358ms
+typeclass inference of AddMonoidWithOne took 0.00244ms
+norm_num took 0.0487ms
+norm_num took 0.315ms
+norm_num took 0.012ms
+norm_num took 0.107ms
+congr simp thm took 0.00472ms
+norm_num took 0.00398ms
+norm_num took 0.00234ms
+typeclass inference of AddMonoidWithOne took 0.00534ms
+norm_num took 0.0882ms
+typeclass inference of AddMonoidWithOne took 0.00313ms
+norm_num took 0.0372ms
+norm_num took 0.0901ms
+typeclass inference of Semiring took 0.00279ms
+typeclass inference of AddMonoidWithOne took 0.00203ms
+norm_num took 0.0401ms
+norm_num took 0.124ms
+norm_num took 0.004ms
+typeclass inference of Preorder took 0.29ms
+typeclass inference of Preorder took 0.0637ms
+typeclass inference of AddMonoidWithOne took 0.00513ms
+norm_num took 0.111ms
+typeclass inference of AddMonoidWithOne took 0.00351ms
+norm_num took 0.0483ms
+typeclass inference of LT took 0.0323ms
+typeclass inference of Semiring took 0.00209ms
+typeclass inference of PartialOrder took 0.0371ms
+typeclass inference of CommSemiring took 0.026ms
+typeclass inference of IsOrderedRing took 1.32ms
+typeclass inference of CharZero took 0.0569ms
+norm_num took 0.192ms
+tactic execution of Mathlib.Tactic.normNum took 1.33ms
+tactic execution of Lean.Parser.Tactic.tacticSeq1Indented took 0.0148ms
+tactic execution of Lean.Parser.Tactic.tacticSeq took 0.0284ms
+instantiate metavars took 0.00894ms
+instantiate metavars took 0.000552ms
+instantiate metavars took 0.000161ms
+instantiate metavars took 0.000111ms
+instantiate metavars took 0.00011ms
+share common exprs took 0.314ms
+fix level params took 0.0461ms
+attribute application took 0.0134ms
+attribute application took 0.000722ms
+process pre-definitions took 1.76ms
+elaboration took 10ms
+type checking took 2.45ms
+overlappingInstancesLinter took 0.19ms
+tacticAnalysis took 0.957ms
+linting took 4.34ms
+elaboration took 0.183ms
+overlappingInstancesLinter took 0.0391ms
+tacticAnalysis took 0.208ms
+linting took 1.49ms
+'RmsNorm.carry_stage_lift' depends on axioms: [propext, Classical.choice, Quot.sound]
+elaboration took 896ms
+overlappingInstancesLinter took 0.0514ms
+tacticAnalysis took 0.315ms
+linting took 2.13ms
+'RmsNorm.carry_stage_lift_production' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+elaboration took 2.24ms
+overlappingInstancesLinter took 0.0243ms
+tacticAnalysis took 0.0946ms
+linting took 1.23ms
+elaboration took 0.0384ms
+overlappingInstancesLinter took 0.0238ms
+tacticAnalysis took 0.158ms
+linting took 0.974ms
+module linting took 0.00159ms
+cumulative profiling times:
+	attribute application 0.0599ms
+	congr simp thm 0.19ms
+	elaboration 932ms
+	fix level params 0.272ms
+	instantiate metavars 1.14ms
+	interpretation 0.346ms
+	let-to-have transformation 0.0862ms
+	linting 54.9ms
+	module linting 0.00121ms
+	norm_num 12.1ms
+	overlappingInstancesLinter 2.15ms
+	parsing 7.12ms
+	process pre-definitions 4.88ms
+	ring 14ms
+	share common exprs 4.79ms
+	simp 1.69ms
+	tactic execution 897ms
+	tacticAnalysis 11.3ms
+	type checking 61.2ms
+	typeclass inference 318ms
+PEAK_RSS_BYTES=759222272
+EXIT=1 WALL=5.1s CAP=8G

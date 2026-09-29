@@ -1,0 +1,94 @@
+[
+  {
+    "case": "below_budget_at_eof",
+    "monitor_exit_code": 0,
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.00912419099768158,
+      "execution_wall_seconds": 0.008811938001599628,
+      "cgroup_cpu_usec": 7000,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4096,
+      "memory_events": {
+        "oom_kill": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "resource_limit_events": []
+  },
+  {
+    "case": "at_budget_at_eof",
+    "monitor_exit_code": 0,
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.008757615003560204,
+      "execution_wall_seconds": 0.008499364004819654,
+      "cgroup_cpu_usec": 8000,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4096,
+      "memory_events": {
+        "oom_kill": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "resource_limit_events": []
+  },
+  {
+    "case": "over_budget_at_eof",
+    "monitor_exit_code": 1,
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.016883208001672756,
+      "execution_wall_seconds": 0.00849880299938377,
+      "cgroup_cpu_usec": 9000,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 4096,
+      "memory_events": {
+        "oom_kill": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "resource_limit_events": [
+      {
+        "detection": "final_accounting",
+        "resource": "cpu_time"
+      }
+    ]
+  },
+  {
+    "case": "archived_over_budget_at_eof",
+    "monitor_exit_code": 0,
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.00980390399490716,
+      "cgroup_cpu_usec": 9000,
+      "cgroup_memory_peak_bytes": 4096,
+      "memory_events": {
+        "oom_kill": 0
+      },
+      "monitor_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "resource_limit_events": []
+  }
+]

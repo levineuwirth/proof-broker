@@ -1,0 +1,9 @@
+{
+  "name": "responses_priced_https_canned_v1",
+  "task_id": "verinf-d1-70",
+  "case": "host_stale_source",
+  "config_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+  "source_lock_sha256": "71fda7eb6d7c2b40dce1b14b73613216c6bc91ad39ab662a90f418e86e5d1bbb",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "pricing_origin_sha256": "d4a867711460c296132a26e71612b3533befc5a2d28d3e7cf68476ef6d7ab942"
+}

@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "controls": 16,
+  "named_cases": 56,
+  "results": {
+    "unmutated_copy_accepted": {
+      "accepted": true,
+      "case_count": 56
+    },
+    "predicate_controls": {
+      "grant_out_of_order": "rehearsal-3:grant:ordered_before_first_header_byte",
+      "commitment_mismatch": "rehearsal-3:commitment:bound_to_mounted_canary",
+      "receipt_disagrees_with_process": "rehearsal-3:receipts:single_pair_bound_to_process"
+    },
+    "run_added": {
+      "rejected": true,
+      "rejected_case": "population:exactly_three_runs"
+    },
+    "failure_run_unsealed": {
+      "rejected": true,
+      "rejected_case": "rehearsal-1:seal:retained_hashes"
+    },
+    "retained_policy_live_enabled": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:versions:policy_lock_sources_bound"
+    },
+    "duplicate_receipt_added": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:chain:expected_sequence"
+    },
+    "attribution_retrofitted": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:proof:attribution_passed_through"
+    },
+    "outbound_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:transport:local_send_and_remote_receipt"
+    },
+    "invalid_proof_export": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:proof:shared_checker"
+    },
+    "shared_ledger_truncated": {
+      "rejected": true,
+      "rejected_case": "shared_ledger:rows_present_and_consistent"
+    },
+    "shared_ledger_missing_reconciliation": {
+      "rejected": true,
+      "rejected_case": "shared_ledger:rows_present_and_consistent"
+    },
+    "grant_file_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:permit_and_reconciliation_bound"
+    },
+    "http_record_altered": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:permit_and_reconciliation_bound"
+    },
+    "reservation_rebound": {
+      "rejected": true,
+      "rejected_case": "rehearsal-3:ledger:permit_and_reconciliation_bound"
+    }
+  },
+  "auditor_sha256": "b32fef4eac8815583df96c7f650463375281efcee05c0f9a37fead49fb9099ae",
+  "program_sha256": "c0e674ceea1e040723ed204ca4bff20de191c65589658843dea728606a36bccf",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies of runs and ledgers; one relationship per mutation"
+}

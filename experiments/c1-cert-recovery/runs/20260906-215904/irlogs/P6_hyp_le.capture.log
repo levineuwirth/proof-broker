@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/P6_hyp_le.json | hypotheses=2 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P); hhi — proposition outside the reifiable fragment (g_hi.val ≤ 2 ^ 42 - 1)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/P6_hyp_le.dump.lean:18:2: warning: 'pb_dump_ir"ir/P6_hyp_le.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00971ms
+	elaboration 4.11ms
+	fix level params 0.0119ms
+	instantiate metavars 0.0185ms
+	interpretation 0.088ms
+	linting 16.7ms
+	module linting 0.00103ms
+	overlappingInstancesLinter 0.59ms
+	parsing 0.459ms
+	process pre-definitions 0.143ms
+	share common exprs 0.0458ms
+	tactic execution 9.59ms
+	tacticAnalysis 3.11ms
+	type checking 6.94ms
+	typeclass inference 9.51ms
+PEAK_RSS_BYTES=687292416
+EXIT=0 WALL=4.4s CAP=8G

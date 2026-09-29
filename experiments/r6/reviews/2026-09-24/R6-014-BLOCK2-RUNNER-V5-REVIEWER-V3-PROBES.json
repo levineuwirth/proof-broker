@@ -1,0 +1,46 @@
+{
+  "transport_receipt_binding_false": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt disagrees with its record"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "transport_validated receipt disagrees with its record"
+      ]
+    }
+  },
+  "terminal_publication_false": {
+    "fresh": {
+      "observed": "paused",
+      "launches": [
+        "l069-draw2"
+      ],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    },
+    "restart": {
+      "observed": "paused",
+      "launches": [],
+      "decision": "pause",
+      "outcome": "proof",
+      "reasons": [
+        "terminal receipt does not agree with the summary and publication records"
+      ]
+    }
+  }
+}

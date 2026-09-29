@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "controls": 9,
+  "results": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 53
+    },
+    "instruction_altered_in_one_run": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw3:envelope:recomputed_from_contract"
+    },
+    "policy_digest_in_request": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw3:request:regenerated_under_contract"
+    },
+    "arguments_option_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw3:envelope:recomputed_from_contract"
+    },
+    "revision_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "slot_marker_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "retained_contract_altered": {
+      "rejected": true,
+      "rejected_case": "r1-d1-draw1:versions:policy_revision_contract_campaign_bound"
+    },
+    "run_added": {
+      "rejected": true,
+      "rejected_case": "population:exactly_expected_runs"
+    },
+    "grant_reordered_predicate": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw3:grant:ordered_before_first_header_byte"
+    }
+  },
+  "auditor_sha256": "432f90525a7510d0ef5e28a7846eeb43f27f6b95a7f12a216e4d6f09ea3d2cd3",
+  "program_sha256": "26d762708e6e5d181e00e09c910c7455878ab3e61e0979a96ce6a55dfa34fadd",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies; one relationship per mutation"
+}

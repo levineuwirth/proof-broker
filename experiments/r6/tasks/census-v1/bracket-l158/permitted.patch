@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import Capture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -155,7 +156,7 @@
+   · -- t = 0, y1 = TA z, and z = v
+     subst hzh
+     simp only [if_true]
+-    have hzv : z = v := by simp at hrec; omega
++    have hzv : z = v := by simp at hrec; r6_capture_human "Bracket.cell_value_neutral.r6_site_l158" "bracket-l158"
+     subst hzv
+     -- output = TA z = g z ; need z < v0 or z ≥ v0 handled by g
+     unfold g

@@ -1,0 +1,18 @@
+# Block 2 runner revision 3 — review
+
+Reviewed `ba300752` on 2026-09-25. **The three revision 2 findings are repaired. Two P2 receipt-agreement gaps remain; keep activation and transmission pending.**
+
+I reran the supplied 33 cases in both modes: all 66 pass, with the recorded decisions and launch counts and matching source digests. I also reran the prior reviewer probes through the recording wrapper. Both negative-control acceptances now produce integrity stops; the other old mutations pause, including the foreign reconciliation against the genuine ledger. All eleven block 1 baselines continue, both in the supplied suite and in the genuine-ledger probe. The shared gate now enforces the repaired checks equally after a fresh episode and on restart.
+
+1. **P2 — The transport receipt is not compared with the transport record** (`run_block2.py`, transport checks in `gate`). The gate checks the three acceptance fields in `transport-validation.json`, but ignores the corresponding supervisor `transport_validated` receipt. On an otherwise positive fixture, I changed only that receipt's `response_request_binding.accepted` from true to false, rechained the events and resealed the run. Both fresh and restart paths returned `continue / proof` with no reasons and attempted the next slot. This is an explicit binding disagreement, one of the predeclared pause conditions. Require the transport receipt to be unique and equal to the transport-validation record; missing, duplicate or disagreeing receipts must pause. Add an isolated receipt-only control so the existing false-file control cannot mask the missing join.
+
+2. **P2 — Terminal publication state is omitted from the agreement check** (`run_block2.py`, terminal receipt check in `gate`). The four `shared` fields and the publication-file digests are checked, but the terminal's `publication_accepted` and `publication_pending` are not. I changed only `publication_accepted` from null to false on a clean live fixture, rechained and resealed. Both paths again continued with no reasons. The terminal now explicitly reports failed publication while the publication files are clean. Enforce the frozen live terminal shape, including pending publication (`publication_pending: true`, `publication_accepted: null`) and the corresponding terminal acceptance field. A known failure or contradiction must pause; pending operator publication remains normal. Test these fields separately, retaining the positive pending-publication control.
+
+These are missing agreements between already retained records. They require neither a new scientific acceptance rule nor a change to frozen collection/evaluation sources. The receipt hashes remain valid in the probes; the intentionally disagreeing semantic fields are the issue.
+
+Evidence:
+- `R6-014-BLOCK2-RUNNER-V3-REVIEW-CONTROLS.json`: fresh supplied 66-control run.
+- `R6-014-BLOCK2-RUNNER-V3-REVIEW-OLD-PROBES.json`: fresh prior-review probe outcomes and genuine-ledger baselines.
+- `R6-014-BLOCK2-RUNNER-V3-REVIEW-PROBES.json` and `block2_runner_v3_review_probes.py --output <fresh-path>`: the two new receipt-only mutations in both modes, four unexpected continuations.
+
+All runner experiments use synthetic copies and mocked sender/ledger boundaries; they stop at the attempted next launch. No real sender subprocess, credential read or transmission occurred. Production remains revision 1 with eleven authorized slots. `live-evaluation-v2` still verifies all 69 files at `96ce9f6d…`. Block 1's accepted results remain unchanged. Capture 4 is expired; the already identified fresh-capture/addendum step remains necessary after runner approval.

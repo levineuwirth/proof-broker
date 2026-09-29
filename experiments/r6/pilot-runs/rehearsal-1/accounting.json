@@ -1,0 +1,23 @@
+{
+  "attempts_reserved": 0,
+  "reservation": null,
+  "connection_attempts": 0,
+  "headers_started": 0,
+  "bodies_started": 0,
+  "bodies_returned": 0,
+  "endpoint_receipts": 0,
+  "usage": {
+    "status": "unreported",
+    "cost_usd": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cached_tokens": null,
+    "reasoning_tokens": null
+  },
+  "usage_status": "unreported",
+  "priced_usage_ceiling_micro_usd": null,
+  "live_model_calls": 0,
+  "live_model_cost_usd": null,
+  "scope": "host pricing rejection before ledger or transport"
+}

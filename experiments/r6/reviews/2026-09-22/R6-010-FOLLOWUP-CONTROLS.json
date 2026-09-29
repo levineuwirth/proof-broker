@@ -1,0 +1,93 @@
+{
+  "passed": true,
+  "controls": 16,
+  "expected_controls": [
+    "baseline",
+    "wrong_challenge_export",
+    "false_local_type",
+    "missing_required_artifact_binding",
+    "helper_added_logic",
+    "freeze_site_removed",
+    "extra_file_in_census",
+    "extra_file_in_site",
+    "retained_normalized_type_altered_coherently",
+    "baseline_export_substituted",
+    "captured_context_altered_coherently",
+    "instrumented_source_altered",
+    "stage_exit_nonzero",
+    "membership_site_dropped",
+    "exposure_premise_dropped",
+    "audit_case_removed"
+  ],
+  "results": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 127
+    },
+    "wrong_challenge_export": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:challenge_export_bound"
+    },
+    "false_local_type": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:replays_derived_from_raw_reports"
+    },
+    "missing_required_artifact_binding": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:inventory_exact"
+    },
+    "helper_added_logic": {
+      "rejected": true,
+      "rejected_case": "helper:exact_transformation"
+    },
+    "freeze_site_removed": {
+      "rejected": true,
+      "rejected_case": "population:exact_freeze_directory"
+    },
+    "extra_file_in_census": {
+      "rejected": true,
+      "rejected_case": "population:exact_census_directory"
+    },
+    "extra_file_in_site": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:inventory_exact"
+    },
+    "retained_normalized_type_altered_coherently": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:replays_derived_from_raw_reports"
+    },
+    "baseline_export_substituted": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:baseline_bound"
+    },
+    "captured_context_altered_coherently": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:capture_inputs_and_context"
+    },
+    "instrumented_source_altered": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:capture_inputs_and_context"
+    },
+    "stage_exit_nonzero": {
+      "rejected": true,
+      "rejected_case": "bracket-l069:stages_returned"
+    },
+    "membership_site_dropped": {
+      "rejected": true,
+      "rejected_case": "membership:bound_to_census_and_decision"
+    },
+    "exposure_premise_dropped": {
+      "rejected": true,
+      "rejected_case": "exposure:addendum_recomputed"
+    },
+    "audit_case_removed": {
+      "rejected": true,
+      "rejected_case": "cases:population"
+    }
+  },
+  "auditor_sha256": "1aaa7a1ea549b802c0e24dcf24c8757c16717dbfac578d0c55967c4fb4da67c0",
+  "program_sha256": "92c38cf8c2d573a70ce81e3f7114442b37275f0e3cbfa26afee867794e4652ed",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies; one relationship per mutation; exact control population"
+}

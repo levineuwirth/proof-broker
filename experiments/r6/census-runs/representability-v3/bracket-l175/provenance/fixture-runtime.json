@@ -1,0 +1,12 @@
+[
+  {
+    "host": "/usr/lib/libc.so.6",
+    "guest": "/usr/lib/libc.so.6",
+    "sha256": "e221b10fee9ee4776d8f0f1701253bc06817f7a4dbe6c5292487277d0bf8ffff"
+  },
+  {
+    "host": "/usr/lib/ld-linux-x86-64.so.2",
+    "guest": "/usr/lib64/ld-linux-x86-64.so.2",
+    "sha256": "d011113b7054c641c8ca064f58bcc23804fd2654a3dff2444dad06ddeda61bfb"
+  }
+]

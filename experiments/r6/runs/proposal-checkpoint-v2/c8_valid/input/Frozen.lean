@@ -1,0 +1,16 @@
+import Mathlib
+import ProposalCapture
+
+/- Synthetic recovery control derived from C1 C8_coef_2p18.
+   The original generated file, definition of P, and derivation are retained
+   alongside this file. This wrapper is not a new downstream obligation. -/
+namespace R6.C8
+
+def P : ℕ := 18446744069414584321
+
+theorem coefficient_bound (g_hi : ZMod P) (hhi : g_hi.val < 2^42)
+    (hP : P = 18446744069414584321) : 2^18 * g_hi.val < P := by
+  have hlt : 2^18 * g_hi.val < P := by r6_capture_proposal
+  exact hlt
+
+end R6.C8

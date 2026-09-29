@@ -1,0 +1,546 @@
+{
+  "schema_version": "r6-census-1",
+  "census_id": "bracket-c07e03c9",
+  "upstream": {
+    "repository": "https://github.com/JamesPetrie/VerInf.git",
+    "commit": "c07e03c94884e9084ffaf7a7294fc0907672f6c2",
+    "commit_date": "2026-07-21T22:25:27Z",
+    "source_file": "lean/BracketSpike/BracketSpike/Bracket.lean"
+  },
+  "pristine_sha256": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+  "token": "omega",
+  "site_count": 15,
+  "families": {
+    "Bracket.lift_cell": [
+      69,
+      70,
+      71,
+      78
+    ],
+    "Bracket.threshold_unique": [
+      96,
+      98,
+      99,
+      101
+    ],
+    "Bracket.cell_value_neutral": [
+      158,
+      166,
+      170,
+      175,
+      178,
+      180
+    ],
+    "Bracket.Row.s1_noninc": [
+      204
+    ]
+  },
+  "sites": [
+    {
+      "line": 69,
+      "column": 55,
+      "byte_span": {
+        "start": 3284,
+        "end_exclusive": 3289
+      },
+      "declaration": "Bracket.lift_cell",
+      "declaration_keyword": "lemma",
+      "form": "named_have",
+      "line_text": "    have hzsum : x.val + z.val < 2^24 + 2 * Zmax := by omega",
+      "site_id": "bracket-l069",
+      "saved_local_declaration": "Bracket.lift_cell.r6_site_l069",
+      "family": "Bracket.lift_cell",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 70,
+      "column": 45,
+      "byte_span": {
+        "start": 3339,
+        "end_exclusive": 3344
+      },
+      "declaration": "Bracket.lift_cell",
+      "declaration_keyword": "lemma",
+      "form": "named_have",
+      "line_text": "    have hle : (2:ℕ)^24 + 2 * Zmax ≤ P := by omega",
+      "site_id": "bracket-l070",
+      "saved_local_declaration": "Bracket.lift_cell.r6_site_l070",
+      "family": "Bracket.lift_cell",
+      "exposure": {
+        "exposed": true,
+        "as_task": "verinf-d1-70",
+        "model_visible_in": [
+          "R6-007 live-2 (pilot-runs/live-2)",
+          "R6-008 v7 live-1 (campaign-runs-v7/live-1)"
+        ],
+        "scope": "the obligation, its rows and the deterministic first-hit witness were model-visible; the analysis must stratify on this"
+      }
+    },
+    {
+      "line": 71,
+      "column": 4,
+      "byte_span": {
+        "start": 3349,
+        "end_exclusive": 3354
+      },
+      "declaration": "Bracket.lift_cell",
+      "declaration_keyword": "lemma",
+      "form": "bare_goal",
+      "line_text": "    omega",
+      "site_id": "bracket-l071",
+      "saved_local_declaration": "Bracket.lift_cell.r6_site_l071",
+      "family": "Bracket.lift_cell",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 78,
+      "column": 48,
+      "byte_span": {
+        "start": 3673,
+        "end_exclusive": 3678
+      },
+      "declaration": "Bracket.lift_cell",
+      "declaration_keyword": "lemma",
+      "form": "term_by",
+      "line_text": "          < 2^24 + 2 * Zmax + Zmax * 2^16 := by omega",
+      "site_id": "bracket-l078",
+      "saved_local_declaration": "Bracket.lift_cell.r6_site_l078",
+      "family": "Bracket.lift_cell",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 96,
+      "column": 32,
+      "byte_span": {
+        "start": 4533,
+        "end_exclusive": 4538
+      },
+      "declaration": "Bracket.threshold_unique",
+      "declaration_keyword": "lemma",
+      "form": "named_have",
+      "line_text": "  · have hle : c ≤ c' - 1 := by omega",
+      "site_id": "bracket-l096",
+      "saved_local_declaration": "Bracket.threshold_unique.r6_site_l096",
+      "family": "Bracket.threshold_unique",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 98,
+      "column": 4,
+      "byte_span": {
+        "start": 4573,
+        "end_exclusive": 4578
+      },
+      "declaration": "Bracket.threshold_unique",
+      "declaration_keyword": "lemma",
+      "form": "bare_goal",
+      "line_text": "    omega",
+      "site_id": "bracket-l098",
+      "saved_local_declaration": "Bracket.threshold_unique.r6_site_l098",
+      "family": "Bracket.threshold_unique",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 99,
+      "column": 32,
+      "byte_span": {
+        "start": 4614,
+        "end_exclusive": 4619
+      },
+      "declaration": "Bracket.threshold_unique",
+      "declaration_keyword": "lemma",
+      "form": "named_have",
+      "line_text": "  · have hle : c' ≤ c - 1 := by omega",
+      "site_id": "bracket-l099",
+      "saved_local_declaration": "Bracket.threshold_unique.r6_site_l099",
+      "family": "Bracket.threshold_unique",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 101,
+      "column": 4,
+      "byte_span": {
+        "start": 4654,
+        "end_exclusive": 4659
+      },
+      "declaration": "Bracket.threshold_unique",
+      "declaration_keyword": "lemma",
+      "form": "bare_goal",
+      "line_text": "    omega",
+      "site_id": "bracket-l101",
+      "saved_local_declaration": "Bracket.threshold_unique.r6_site_l101",
+      "family": "Bracket.threshold_unique",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 158,
+      "column": 41,
+      "byte_span": {
+        "start": 7420,
+        "end_exclusive": 7425
+      },
+      "declaration": "Bracket.cell_value_neutral",
+      "declaration_keyword": "lemma",
+      "form": "have_post_simp",
+      "line_text": "    have hzv : z = v := by simp at hrec; omega",
+      "site_id": "bracket-l158",
+      "saved_local_declaration": "Bracket.cell_value_neutral.r6_site_l158",
+      "family": "Bracket.cell_value_neutral",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 166,
+      "column": 31,
+      "byte_span": {
+        "start": 7672,
+        "end_exclusive": 7677
+      },
+      "declaration": "Bracket.cell_value_neutral",
+      "declaration_keyword": "lemma",
+      "form": "inline_term",
+      "line_text": "      rw [cert.zero_tail z (by omega)]",
+      "site_id": "bracket-l166",
+      "saved_local_declaration": "Bracket.cell_value_neutral.r6_site_l166",
+      "family": "Bracket.cell_value_neutral",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 170,
+      "column": 32,
+      "byte_span": {
+        "start": 7808,
+        "end_exclusive": 7813
+      },
+      "declaration": "Bracket.cell_value_neutral",
+      "declaration_keyword": "lemma",
+      "form": "named_have",
+      "line_text": "    have hzh1 : 1 ≤ zhigh := by omega",
+      "site_id": "bracket-l170",
+      "saved_local_declaration": "Bracket.cell_value_neutral.r6_site_l170",
+      "family": "Bracket.cell_value_neutral",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 175,
+      "column": 20,
+      "byte_span": {
+        "start": 8035,
+        "end_exclusive": 8040
+      },
+      "declaration": "Bracket.cell_value_neutral",
+      "declaration_keyword": "lemma",
+      "form": "post_simp",
+      "line_text": "      simp at this; omega",
+      "site_id": "bracket-l175",
+      "saved_local_declaration": "Bracket.cell_value_neutral.r6_site_l175",
+      "family": "Bracket.cell_value_neutral",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 178,
+      "column": 6,
+      "byte_span": {
+        "start": 8160,
+        "end_exclusive": 8165
+      },
+      "declaration": "Bracket.cell_value_neutral",
+      "declaration_keyword": "lemma",
+      "form": "bare_goal",
+      "line_text": "      omega",
+      "site_id": "bracket-l178",
+      "saved_local_declaration": "Bracket.cell_value_neutral.r6_site_l178",
+      "family": "Bracket.cell_value_neutral",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 180,
+      "column": 32,
+      "byte_span": {
+        "start": 8214,
+        "end_exclusive": 8219
+      },
+      "declaration": "Bracket.cell_value_neutral",
+      "declaration_keyword": "lemma",
+      "form": "anonymous_have",
+      "line_text": "    have : ¬ v < (v0 : ℤ) := by omega",
+      "site_id": "bracket-l180",
+      "saved_local_declaration": "Bracket.cell_value_neutral.r6_site_l180",
+      "family": "Bracket.cell_value_neutral",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    },
+    {
+      "line": 204,
+      "column": 52,
+      "byte_span": {
+        "start": 9157,
+        "end_exclusive": 9162
+      },
+      "declaration": "Bracket.Row.s1_noninc",
+      "declaration_keyword": "lemma",
+      "form": "inline_term",
+      "line_text": "  exact g_noninc R.cert (a - R.x i) (b - R.x i) (by omega)",
+      "site_id": "bracket-l204",
+      "saved_local_declaration": "Bracket.Row.s1_noninc.r6_site_l204",
+      "family": "Bracket.Row.s1_noninc",
+      "exposure": {
+        "exposed": false,
+        "as_task": null,
+        "model_visible_in": []
+      }
+    }
+  ],
+  "scope": "textual omega sites of one file at one commit; a site is not an admitted or independent task until its capture and freeze succeed",
+  "frozen_at": "2026-09-14T20:31:25.332419+00:00",
+  "results": [
+    {
+      "site_id": "bracket-l069",
+      "status": "admitted",
+      "challenge_sha256": "3bb654887d2c2ff79d4995d245ee30040ad32a6a11aa6c53e17107805c3ff0e8",
+      "captured_target": "x.val + z.val < 2 ^ 24 + 2 * Zmax",
+      "telescope_entries": 17,
+      "local_type_sha256": "67b7a32c8ce8f89397ffb9abe9e3c067afafb460a2243e0a692e7048c29beaf1",
+      "seconds": 12.1
+    },
+    {
+      "site_id": "bracket-l070",
+      "status": "admitted",
+      "challenge_sha256": "55c8c4db001ad9f81352b119dbb57c8eb487a1f5a1937e5cc4782fae943da385",
+      "captured_target": "2 ^ 24 + 2 * Zmax ≤ P",
+      "telescope_entries": 18,
+      "local_type_sha256": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+      "seconds": 12.2
+    },
+    {
+      "site_id": "bracket-l071",
+      "status": "admitted",
+      "challenge_sha256": "59d7e8207de791a3a26b9e795acda623094a4b35ece165ed6fe24091b5aa62c0",
+      "captured_target": "x.val + z.val < P",
+      "telescope_entries": 19,
+      "local_type_sha256": "dea13e9070c2addd2ef108efddd9eda631063805ec9c5c10cefd20aa6bd30540",
+      "seconds": 12.2
+    },
+    {
+      "site_id": "bracket-l078",
+      "status": "admitted",
+      "challenge_sha256": "961669ce65b8c3cd11e241b805e202b9333a82ab53bd743fdd6cbf85bad7371d",
+      "captured_target": "x.val + z.val + Zmax * zhigh.val < 2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16",
+      "telescope_entries": 18,
+      "local_type_sha256": "25424ffbca9b716d15efe010df98b1d890965a3910d4fd061dce04d29ce24b7e",
+      "seconds": 12.2
+    },
+    {
+      "site_id": "bracket-l096",
+      "status": "admitted",
+      "challenge_sha256": "e6ba6c0cc62dca63d5e77f744750ecb4a22ec75eddd3c89c209ac5b571611aec",
+      "captured_target": "c ≤ c' - 1",
+      "telescope_entries": 12,
+      "local_type_sha256": "77080ac770b9b32d0310a7a229b19644046faec81234c139fb44088d109cd317",
+      "seconds": 9.5
+    },
+    {
+      "site_id": "bracket-l098",
+      "status": "admitted",
+      "challenge_sha256": "9d68b06eb031edd1035ece6989225f6915a0501bf49f6095231a7583c6337ab4",
+      "captured_target": "False",
+      "telescope_entries": 14,
+      "local_type_sha256": "42a156f643e014c9572cd17f9cefe34fb1948da30584c2acc698d6da3f73a71b",
+      "seconds": 9.5
+    },
+    {
+      "site_id": "bracket-l099",
+      "status": "admitted",
+      "challenge_sha256": "2ee48a260fc8389f8671bce0b51ef505ecf624dd9b19b2e476a6e81de6ad895a",
+      "captured_target": "c' ≤ c - 1",
+      "telescope_entries": 12,
+      "local_type_sha256": "f389d12ac068b39bca8e460f8380fd2fab30fa47046dfc2fc7649d26d129ee85",
+      "seconds": 9.4
+    },
+    {
+      "site_id": "bracket-l101",
+      "status": "admitted",
+      "challenge_sha256": "c8568dd92bbd28ff786e0eba9d3a1f78c4becfe98b2863e9a86ccecde6f30eb6",
+      "captured_target": "False",
+      "telescope_entries": 14,
+      "local_type_sha256": "64249a8ebdc283822b88a77436e50c92fab02a5f922728e37ddf04383cd682c1",
+      "seconds": 9.5
+    },
+    {
+      "site_id": "bracket-l158",
+      "status": "admitted",
+      "challenge_sha256": "c118ee69a55f367bcf2cc04f46cb4d929ea20361aa8465350d1ff2ef187d2af5",
+      "captured_target": "z = v",
+      "telescope_entries": 12,
+      "local_type_sha256": "65c2ce3d7a16de9eb43f99aadca4149bac44e82d316383715ecab58faa2fa22f",
+      "seconds": 11.8
+    },
+    {
+      "site_id": "bracket-l166",
+      "status": "admitted",
+      "challenge_sha256": "68313490337206f9eddb24c684bbce93d4d716da9a904b2269f9e8fb9c635ccf",
+      "captured_target": "↑v0 ≤ z",
+      "telescope_entries": 12,
+      "local_type_sha256": "8c67a2da0861d74e3adec73ff6606133430988cad47d8ebd62a3770235fb8745",
+      "seconds": 11.9
+    },
+    {
+      "site_id": "bracket-l170",
+      "status": "admitted",
+      "challenge_sha256": "1cf945ba0c89f7126e4f8e06ca50b14d4d182292882c945f60a0ff179c733c3a",
+      "captured_target": "1 ≤ zhigh",
+      "telescope_entries": 14,
+      "local_type_sha256": "a0c8144f1ed7cbde0a26d609a3df6f85d1d1bd06f3d4caad0f7107cd7ae5619c",
+      "seconds": 11.9
+    },
+    {
+      "site_id": "bracket-l175",
+      "status": "admitted",
+      "challenge_sha256": "6d4092dc6864172a10f9a4d1384a9a0be243cb50ed670b73524e812211be3d01",
+      "captured_target": "↑Zmax ≤ v",
+      "telescope_entries": 16,
+      "local_type_sha256": "6551b9f0d97396593791a6eca2cd351aa61476fcf19cceb2fc3acbd189a753c6",
+      "seconds": 11.8
+    },
+    {
+      "site_id": "bracket-l178",
+      "status": "admitted",
+      "challenge_sha256": "f383fed06cc7fef2990c07b51b8d9423ad9b3e2aea1a2a2a04a7fe45a6a03f52",
+      "captured_target": "↑v0 ≤ v",
+      "telescope_entries": 17,
+      "local_type_sha256": "b257fa6fbfe9b36a6a7ca98392aae01479a01d69ecf1b3a4f9925d16168de480",
+      "seconds": 11.7
+    },
+    {
+      "site_id": "bracket-l180",
+      "status": "admitted",
+      "challenge_sha256": "cc7975c347ac76f07ecd45fe9427d8c0e72ca49d616a90f122434b24925bceb8",
+      "captured_target": "¬v < ↑v0",
+      "telescope_entries": 17,
+      "local_type_sha256": "42ed61de73cd3d1937d606a23075e1aa853fb2707d70853e7299ec327a09a6c2",
+      "seconds": 12.0
+    },
+    {
+      "site_id": "bracket-l204",
+      "status": "admitted",
+      "challenge_sha256": "179676c11970641ec3f286e87dcd4e0d61bab0c5415321244b077c38ebf8b02a",
+      "captured_target": "a - R.x i ≤ b - R.x i",
+      "telescope_entries": 10,
+      "local_type_sha256": "f414d8e4e81fdf0def3b65b4b1a67d1283ee0707d270afa3c4d1af61f6999938",
+      "seconds": 11.1
+    }
+  ],
+  "admitted": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l098",
+    "bracket-l099",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l178",
+    "bracket-l180",
+    "bracket-l204"
+  ],
+  "excluded": [],
+  "capture_sha256": "d2f5dfd1c2a2f5a590fca8d0ec65998703f665a361d325c54cd9ae90e2d598d5",
+  "schema_sha256": "8348b20e22ad23ed6e415f3f054e76106b033ca45a2f6297a7eedebf244589ed",
+  "census_module_sha256": "9b521af3da614bbc8fa9059d6a2e920ccdcea8455e0c59d0675ef761a2f96fc4",
+  "site_freeze_sha256": "1b945df7e3372f4897319b07738ec0d9bca4b5d43ac01e55f0c9c3cc031520a0",
+  "runtime": {
+    "bubblewrap_version": "bubblewrap 0.12.0",
+    "bubblewrap_sha256": "7c44fa8e7326e62e81ab3f70ff682bfc0eb3b447b39cf9fbb779a31948364762",
+    "os": [
+      "Linux",
+      "oneiros",
+      "7.2.4-arch1-2",
+      "#1 SMP PREEMPT_DYNAMIC Tue, 08 Sep 2026 10:22:31 +0000",
+      "x86_64"
+    ],
+    "python": "3.14.7 (main, Aug 10 2026, 07:46:56) [GCC 16.1.1 20260728]",
+    "validator_libraries_sha256": {
+      "/usr/lib/libc.so.6": "e221b10fee9ee4776d8f0f1701253bc06817f7a4dbe6c5292487277d0bf8ffff",
+      "/usr/lib/libdl.so.2": "9b3812e7f6b766e2d0a1d9eeca1a58c1272392859e8b04f708b2f86b2256d03c",
+      "/usr/lib/libm.so.6": "965106704753eefe8c31ae7da6daba3ead3d18c52b19b5fcc41178bcc4aa999d",
+      "/usr/lib/libpthread.so.0": "839b91403f89fa4c6888d50deb2b59cd0612f8cfe3d57dd9d6314832b4cb31ab",
+      "/usr/lib/librt.so.1": "e06e12b8a78494908d08376838c380fb3817bfd7d54f6a86ef050016f7ade5f8",
+      "/usr/lib64/ld-linux-x86-64.so.2": "d011113b7054c641c8ca064f58bcc23804fd2654a3dff2444dad06ddeda61bfb"
+    },
+    "repository_head": "74ea7d22a3b14625f641cf0294e4f393d418fd6d"
+  },
+  "shared_artifacts_sha256": {
+    "Pristine.lean": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+    "pristine.sha256": "6d493f8458447c429222359481a43f3b774fed7114bc88e967a07c840c7f26c7",
+    "upstream-lake-manifest.json": "a403bdda3993346837d7dbfba9e8637d35bc8d0bb032e16d2e40f78b37e6b9a5",
+    "upstream-lakefile.toml": "7d9b9a8d00ebba9ff6a1ff344aa6a3a097c0fce3041bae6c4050cdd924af5250",
+    "lean-toolchain": "2773c517aa90b66ea8a2c52bddddf84393157797f8341be0df45294fff7fd32e",
+    "environment-inventory.json.gz": "fe59473e2305722e932a711f57f24648d310ebd8d70d73e254e19ffb6b185aa3"
+  },
+  "baselines_sha256": {
+    "Bracket.lift_cell": "f4c8c4230b3f1fc0a2485d94fd5b65c782696c056b42fb4045cc2578daca3f1d",
+    "Bracket.threshold_unique": "5c718ea484f3882fbbf140bba8c1d9ea87208bcd6c6ba8e6c4d4edfebd18de54",
+    "Bracket.cell_value_neutral": "45571bcfb69ecb649eb16efb680fde24925ca29002b1719c7cd62836260dc0c1",
+    "Bracket.Row.s1_noninc": "f136767aeaba3af9e21c24b66ce54b68399732b70e64e073b42ff346ccefef71"
+  },
+  "baseline_exports_sha256": {
+    "Bracket.lift_cell": "0223b3fba084e240d7cb460e1f0f08355237e667d3875fc2c626a4651cc7c8d5",
+    "Bracket.threshold_unique": "005f58f87cbd655ceda0bd037dfbf5766fc886541d78e13b5f97de2a20b91dd4",
+    "Bracket.cell_value_neutral": "4047880a0df9cb0ee549a7240df1c3f6508082655e75f56ec3a73394a7432296",
+    "Bracket.Row.s1_noninc": "2721e8ef5f9db2e7152ef25031d32df9710ac7119be933b7911e509f72c8dcdd"
+  }
+}

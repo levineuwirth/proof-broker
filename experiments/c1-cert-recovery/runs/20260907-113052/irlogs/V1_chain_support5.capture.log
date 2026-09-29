@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/V1_chain_support5.json | hypotheses=4 fragment=LIA | skipped_locals=[] | nat_atoms=[] | numeral_defs=[]
+ir/V1_chain_support5.dump.lean:19:2: warning: 'pb_dump_ir"ir/V1_chain_support5.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00712ms
+	elaboration 2.41ms
+	fix level params 0.00718ms
+	instantiate metavars 0.0116ms
+	interpretation 0.0495ms
+	linting 17.9ms
+	module linting 0.00119ms
+	overlappingInstancesLinter 0.571ms
+	parsing 0.274ms
+	process pre-definitions 0.0838ms
+	share common exprs 0.02ms
+	tactic execution 4.32ms
+	tacticAnalysis 1.72ms
+	type checking 7.52ms
+	typeclass inference 0.713ms
+PEAK_RSS_BYTES=689000448
+EXIT=0 WALL=4.1s CAP=8G

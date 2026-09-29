@@ -1,0 +1,8 @@
+{
+  "spent_slot_baseline_refused": true,
+  "lost_directory_resign_refused": true,
+  "activation_receipt_unchanged": true,
+  "live_permitted_after_snapshot_rollback": true,
+  "consumed_after_rollback": 0,
+  "same_slot_reserved_again": true
+}

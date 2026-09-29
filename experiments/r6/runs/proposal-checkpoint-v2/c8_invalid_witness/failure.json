@@ -1,0 +1,10 @@
+{
+  "accepted": false,
+  "task_id": "c1-c8-2p18",
+  "search_policy": "fixture_farkas_v1",
+  "failure_stage": "certificate-check",
+  "failure_category": "certificate_verification",
+  "error": "{\"accepted\": false, \"stage\": \"certificate_verification\", \"reason\": {\"kind\": \"farkas_not_contradictory\", \"detail\": \"weighted sum is -524287*_pb_atom_0 + 36893483740782657539, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)\"}, \"certificate_hash\": \"sha256:53b5a4323220f075171c7e38f2ddab102e2410ecee23fcf9f9c97359834e1ba8\"}",
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

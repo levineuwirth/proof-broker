@@ -1,0 +1,202 @@
+{
+  "passed": true,
+  "scope": "artifact recomputation and a complete publication-bundle scan after the native suite; no additional execution, credential experiment, TLS, remote receipt, compilation or inference attestation",
+  "recount_utc": "2026-09-09T13:47:16.572278+00:00",
+  "base_commit": "ac0f50f",
+  "suites": {
+    "credential-units.json": {
+      "sha256": "fa706618f713bea873722ec934aa7a71f0c762dc45f5fe6c07fcb5c405bf98ba",
+      "count": 25,
+      "exact_case_set": true,
+      "duplicates": 0
+    },
+    "credential-native.json": {
+      "sha256": "fe27e6cac875a989acec92aa231ff0a75d82fe12602e75648ed61476577f1b87",
+      "count": 5,
+      "exact_case_set": true,
+      "duplicates": 0
+    },
+    "credential-audits.json": {
+      "sha256": "12a43146488c88cde55d55ba4bbc8d3510ee9641f56b70d4c1a4cf61a1a0a41b",
+      "count": 32,
+      "exact_case_set": true,
+      "duplicates": 0
+    }
+  },
+  "total_checks": 62,
+  "episodes": {
+    "d1_valid": {
+      "accepted": true,
+      "proof_accepted": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "recorded_disclosures": 0,
+      "events": 47,
+      "sealed_files": 187,
+      "seal_sha256": "49c12046d88eae4aab332e6affd36dd8cca0f549fcdf562507728fd1c667ce8e",
+      "scan_coverage": {
+        "recomputed": 193,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 193
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_http503": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "recorded_disclosures": 0,
+      "events": 16,
+      "sealed_files": 124,
+      "seal_sha256": "1799c5d54c1b77d572421f32ff448d8cf9453ff29a647edc438bd14f41d4dbb9",
+      "scan_coverage": {
+        "recomputed": 124,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 124
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_missing_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "recorded_disclosures": 0,
+      "events": 16,
+      "sealed_files": 125,
+      "seal_sha256": "826f808870c0c29d57a5d6c45380bb7f1795b8d1b41bfc943eafa8d4237be532",
+      "scan_coverage": {
+        "recomputed": 125,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 125
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_wrong_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "recorded_disclosures": 0,
+      "events": 16,
+      "sealed_files": 125,
+      "seal_sha256": "ed0af721a032cc44a58b0e8923bd690f53424faa7705d60f136b2df068a1a269",
+      "scan_coverage": {
+        "recomputed": 125,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 125
+      },
+      "canary_reconstructed_from_nonce": true
+    },
+    "d1_reflected_canary": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": false,
+      "recorded_disclosures": 2,
+      "events": 16,
+      "sealed_files": 124,
+      "seal_sha256": "2487ffaf481092d8c5f917bcb73da719f602c7d18b2d8b2edcc09e6919914b3e",
+      "scan_coverage": {
+        "recomputed": 124,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 124
+      },
+      "canary_reconstructed_from_nonce": true
+    }
+  },
+  "episode_population": [
+    "d1_http503",
+    "d1_missing_credential",
+    "d1_reflected_canary",
+    "d1_valid",
+    "d1_wrong_credential"
+  ],
+  "episode_population_matches_frozen_cases": true,
+  "process_logs_present": 5,
+  "event_hashes_recomputed": 111,
+  "sealed_entries_checked": 685,
+  "canary_derivation": "r6-004-synthetic-canary-v1",
+  "canaries_scanned": 5,
+  "bundle_roots": [
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/runs/credential-checkpoint-v2",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/R6-004.md",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/reviews/2026-09-09",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/policies/credential-http-v2.json",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/policies/credential-harness-v2.sha256.json",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/credential.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/publication.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_contract.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_http.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_episode.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/credential_audit.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/test_credentials.py",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/schema/credential-verdict.schema.json"
+  ],
+  "bundle_files_scanned": 734,
+  "bundle_gzip_streams_scanned": 3,
+  "disclosures_expected_synthetic": 2,
+  "disclosures_expected_detail": [
+    {
+      "path": "d1_reflected_canary/stages/proposal-1/output/provider-response.json",
+      "path_sha256": "47e0e55ad3a284c4de927def3ad96b7a57b7e5e926456a596817b1f5872c5c11",
+      "stream": "raw",
+      "representation": "4:authorization",
+      "form": "utf-8",
+      "offset": 52,
+      "episode": "d1_reflected_canary"
+    },
+    {
+      "path": "d1_reflected_canary/stages/proposal-1/output/provider-response.json",
+      "path_sha256": "47e0e55ad3a284c4de927def3ad96b7a57b7e5e926456a596817b1f5872c5c11",
+      "stream": "raw",
+      "representation": "4:token",
+      "form": "utf-8",
+      "offset": 59,
+      "episode": "d1_reflected_canary"
+    }
+  ],
+  "disclosures_unexpected": 0,
+  "disclosures_in_publication_accepted_episodes": 0,
+  "disclosure_population_note": "the reflected control deliberately retains its synthetic canary as research evidence; the bundle is not clean, and no blanket zero is claimed for it",
+  "publication_representations": [
+    "token",
+    "authorization"
+  ],
+  "publication_encoded_forms": [
+    "utf-8",
+    "utf-8-lower",
+    "utf-8-upper",
+    "base64",
+    "hex",
+    "utf-16-le",
+    "utf-16-be"
+  ],
+  "publication_decompression_limit_bytes": 67108864,
+  "finalization_order": [
+    "artifacts",
+    "scan",
+    "scan_report",
+    "report_scan",
+    "terminal_event",
+    "seal"
+  ],
+  "prior_files_checked": 9986,
+  "prior_changed_or_missing": [],
+  "policy_sha256": "92f10afadc5944ee32fc4580b576e4c91358d913b4d0b246a941b927837539dd",
+  "source_lock_sha256": "e581a905f6f69b06b0bc291e80fca79777e726a2164b6d1d237cfc0bedd7997a",
+  "runtime_lock_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "declared_cases": [
+    "valid",
+    "http503",
+    "missing_credential",
+    "wrong_credential",
+    "reflected_canary"
+  ],
+  "python_compile_exit": 0,
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "real_credentials_used": 0
+}

@@ -1,0 +1,31 @@
+{
+  "baseline": {
+    "accepted": true,
+    "case_count": 550
+  },
+  "compressed_disclosure_bin_reported_raw": {
+    "accepted": false,
+    "rejected_case": "operator_scan:report_bound",
+    "detail": "operator_scan:report_bound: 1 entries not cleanly scanned, with findings, or not their bytes' streams, e.g. ['compressed-disclosure.bin']"
+  },
+  "inventory_file_changed_after_scan": {
+    "accepted": false,
+    "rejected_case": "operator_scan:report_bound",
+    "detail": "operator_scan:report_bound: 1 entries not cleanly scanned, with findings, or not their bytes' streams, e.g. ['captures/signing/model.html']"
+  },
+  "gzip_stream_total_miscounted": {
+    "accepted": false,
+    "rejected_case": "operator_scan:report_bound",
+    "detail": "operator_scan:report_bound: counts"
+  },
+  "preconditions": {
+    "compressed_disclosure_bin_reported_raw": {
+      "scanner_streams": [
+        "raw",
+        "gzip"
+      ],
+      "gzip_findings": 2,
+      "raw_findings": 0
+    }
+  }
+}

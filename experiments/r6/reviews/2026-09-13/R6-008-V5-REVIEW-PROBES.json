@@ -1,0 +1,170 @@
+{
+  "completed": true,
+  "policy_sha256": "f9349ed27308859980380d72d8bce0e0a8ca7fcd4f3230195ac59ccf9a9595a9",
+  "source_lock_sha256": "4df4f48aacde9c361efcc44b9c444815634b11707db28b1833c2ac63fae3889e",
+  "program_sha256": "5e0b6dc1f2c2efceb1b1486a93e708affdee6456e969a54644495791b2b50d4c",
+  "expected_cases": [
+    "summary_top_level_control",
+    "summary_nested_evidence",
+    "summary_nested_allowance",
+    "summary_task_identity",
+    "reconciliation_head_failure_control",
+    "reconciliation_recovery_snapshot_failure",
+    "marker_release_repair_control",
+    "marker_release_repair_interrupted",
+    "marker_unknown_torn",
+    "operator_malformed_nonce",
+    "operator_report_write_failure"
+  ],
+  "cases": {
+    "summary_top_level_control": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "mutated_copy": {
+        "accepted": false,
+        "rejected_case": "rehearsal-3:chain:expected_sequence",
+        "detail": "rehearsal-3:chain:expected_sequence: 51 events"
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "summary_nested_evidence": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "summary_nested_allowance": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "summary_task_identity": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "mutated_copy": {
+        "accepted": true,
+        "case_count": 73
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "reconciliation_head_failure_control": {
+      "calls": {
+        "head_failure": 1,
+        "terminal_row_found": 1,
+        "snapshot_failure": 0
+      },
+      "raised": null,
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "retained_lifecycle_kind": "send_grant",
+      "ledger_reconciled": true,
+      "allowance_consumed": 1,
+      "scope": "production reconciliation helper and accounting; no launcher, finalization, native episode or full audit",
+      "fault_scope": "terminal head-write failure control"
+    },
+    "reconciliation_recovery_snapshot_failure": {
+      "calls": {
+        "head_failure": 1,
+        "terminal_row_found": 1,
+        "snapshot_failure": 1
+      },
+      "raised": "OSError",
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "retained_lifecycle_kind": null,
+      "ledger_reconciled": false,
+      "allowance_consumed": null,
+      "scope": "production reconciliation helper and accounting; no launcher, finalization, native episode or full audit",
+      "fault_scope": "terminal head-write failure followed by snapshot-read failure"
+    },
+    "marker_release_repair_control": {
+      "faults": 1,
+      "ledger_kind": "unknown",
+      "reason": "torn_marker",
+      "torn_marker": "release.json",
+      "files": [
+        "release.json",
+        "unknown.json"
+      ],
+      "open_reservations": 0,
+      "consumed": 1,
+      "slot_predicate": {
+        "accepted": true
+      },
+      "scope": "ledger recovery and slot predicate only; not a full episode or full-audit claim"
+    },
+    "marker_release_repair_interrupted": {
+      "faults": 2,
+      "ledger_kind": "unknown",
+      "reason": "completed_from_marker",
+      "torn_marker": null,
+      "files": [
+        "release.json",
+        "unknown.json"
+      ],
+      "open_reservations": 0,
+      "consumed": 1,
+      "slot_predicate": {
+        "accepted": false,
+        "case": "probe:slot:authoritative_matches_retained"
+      },
+      "scope": "ledger recovery and slot predicate only; not a full episode or full-audit claim"
+    },
+    "marker_unknown_torn": {
+      "faults": 1,
+      "recovery_code": "campaign_marker_torn_unrecoverable",
+      "open_reservations": 1,
+      "consumed": 0,
+      "next_reservation_rejected": "campaign_reservation_open",
+      "qualification": "held open, fails closed; not automatically converted to a terminal unknown row"
+    },
+    "operator_malformed_nonce": {
+      "exit_code": 2,
+      "safe_refusal": {
+        "accepted": false,
+        "refused": "internal error: TypeError",
+        "bound_runs_accepted": false
+      },
+      "stderr_bytes": 0,
+      "stdout_token_occurrences": 0,
+      "report_created": false,
+      "synthetic_only": true
+    },
+    "operator_report_write_failure": {
+      "exit_code": 2,
+      "safe_refusal": {
+        "accepted": false,
+        "refused": "internal error: IsADirectoryError",
+        "bound_runs_accepted": false
+      },
+      "stderr_bytes": 0,
+      "stdout_token_occurrences": 0,
+      "report_created": false,
+      "synthetic_only": true
+    }
+  },
+  "real_credentials_read": 0,
+  "provider_calls": 0,
+  "new_native_episodes": 0,
+  "new_lean_replays": 0,
+  "case_count": 11
+}

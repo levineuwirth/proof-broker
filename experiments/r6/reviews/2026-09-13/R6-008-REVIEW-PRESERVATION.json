@@ -1,0 +1,8 @@
+{
+ "checked_files": 33301,
+ "missing": [],
+ "changed": [],
+ "inventory_sha256": "d6e53eed5119c2610f4e239046be35d228309c2d301799383432dd520599e63e",
+ "inventory": "R6-008-REVIEW-BEFORE.json.gz",
+ "population": "files under experiments/r6 at review start, excluding .cache and __pycache__ path components; not Git-selected"
+}

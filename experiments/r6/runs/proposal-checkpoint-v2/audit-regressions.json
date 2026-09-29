@@ -1,0 +1,283 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_retained_only",
+    "c8_retained_only",
+    "wrong_proposer",
+    "wrong_assembler",
+    "numeric_boolean",
+    "missing_request_receipt",
+    "hidden_fallback",
+    "wrong_request_mount",
+    "unsafe_request_flag",
+    "wrong_budget",
+    "leaked_context",
+    "changed_task_source",
+    "wrong_witness",
+    "wrong_recovery",
+    "missing_c_source",
+    "wrong_source_provenance",
+    "late_failure_marker",
+    "wrong_harness_source",
+    "current_source_independence",
+    "legacy_broker_v1",
+    "legacy_broker_v2",
+    "legacy_broker_v3",
+    "legacy_c8_v1",
+    "prior_artifacts_preserved"
+  ],
+  "check_count": 24,
+  "checks": [
+    {
+      "name": "d1_retained_only",
+      "passed": true,
+      "detail": {
+        "accepted": true,
+        "retained_files": 135
+      }
+    },
+    {
+      "name": "c8_retained_only",
+      "passed": true,
+      "detail": {
+        "accepted": true,
+        "retained_files": 135
+      }
+    },
+    {
+      "name": "wrong_proposer",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "'fixture_response' was expected\n\nFailed validating 'const' in schema['properties']['witness_proposer']:\n    {'const': 'fixture_response'}\n\nOn instance['witness_proposer']:\n    'sdk_synthesis'",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_assembler",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "'sdk_proposal_assembler_v1' was expected\n\nFailed validating 'const' in schema['properties']['certificate_assembler']:\n    {'const': 'sdk_proposal_assembler_v1'}\n\nOn instance['certificate_assembler']:\n    'model'",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "numeric_boolean",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "1 is not of type 'boolean'\n\nFailed validating 'type' in schema['properties']['certificate_consumed']:\n    {'type': 'boolean'}\n\nOn instance['certificate_consumed']:\n    1",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "verdict.json"
+        ]
+      }
+    },
+    {
+      "name": "missing_request_receipt",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: missing, extra, or reordered supervisor receipts",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "events.ndjson"
+        ]
+      }
+    },
+    {
+      "name": "hidden_fallback",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: frozen fixture policy changed",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "search-policy.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_request_mount",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: fixture command permits extra inputs, capabilities, or a different request",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "unsafe_request_flag",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: fixture command permits extra inputs, capabilities, or a different request",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_budget",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: stage limit receipt mismatch",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "leaked_context",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Context projection is not the four-field allowlist",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "sanitized-context.json"
+        ]
+      }
+    },
+    {
+      "name": "changed_task_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: source differs from permitted extraction",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "input/Frozen.lean"
+        ]
+      }
+    },
+    {
+      "name": "wrong_witness",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: proposed and assembled witnesses differ",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "evidence.json",
+          "stages/assembly/output/evidence.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_recovery",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: proposal recovery attribution",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "events.ndjson"
+        ]
+      }
+    },
+    {
+      "name": "missing_c_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: artifact not retained: provenance/harness/validate/fixture_responder.c",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "provenance/harness/validate/fixture_responder.c"
+        ]
+      }
+    },
+    {
+      "name": "wrong_source_provenance",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: source/dispatch overlay provenance changed",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "provenance/sources.json"
+        ]
+      }
+    },
+    {
+      "name": "late_failure_marker",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: episode has a failure marker",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "failure.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_harness_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Proposal audit: harness source differs: proposal_episode.py",
+        "coherently_resealed": true,
+        "changed_artifacts": [
+          "provenance/harness/proposal_episode.py"
+        ]
+      }
+    },
+    {
+      "name": "current_source_independence",
+      "passed": true,
+      "detail": "Audit uses the frozen source lock and saved source bytes, not working-tree harness bytes"
+    },
+    {
+      "name": "legacy_broker_v1",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_broker_v2",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_broker_v3",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_c8_v1",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "prior_artifacts_preserved",
+      "passed": true,
+      "detail": {
+        "checked_files": 4905,
+        "changed": 0,
+        "missing": 0
+      }
+    }
+  ]
+}

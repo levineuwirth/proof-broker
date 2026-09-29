@@ -1,0 +1,9 @@
+{
+  "campaign_contract.py": "ad247539acdaf25bc7314e64bf12b32d091ea3e56505ca70670449ed557e6c06",
+  "campaign_ledger.py": "43dd0b06658f0bc4dde5ca72894aa96d8f6f4398e73536036e81f028293621df",
+  "campaign_https.py": "728e4b9876f3b0ab93b2e56f29e045f1ad30c51a5b1a3d6f209b71d5af2d5178",
+  "campaign_network.py": "5efaaea92b01023ccc5c241b7def267126ca5b790131fb42559338a91a765f10",
+  "campaign_budget.py": "597df5f4fd410ff2711f1f465ecb8fbd46027a4f5679c51c026b2aca24c6c863",
+  "campaign_episode.py": "b7408b235cc6d5f126cab5a6111542aa4b5976f333a1d22ad5f22dbf4a91ab97",
+  "test_campaign.py": "10531cce22b7aa646dc12b2eafaf9495eb8f6db3c360ad5ef98d0c8bcb6e6357"
+}

@@ -1,0 +1,158 @@
+{
+  "passed": true,
+  "controls": 29,
+  "expected_controls": [
+    "baseline",
+    "instruction_altered_in_one_run",
+    "policy_digest_in_request",
+    "arguments_option_altered",
+    "revision_row_removed",
+    "slot_marker_removed",
+    "retained_contract_altered",
+    "run_added",
+    "serialized_body_altered",
+    "outbound_body_altered",
+    "received_body_altered",
+    "raw_provider_response_altered",
+    "reconstruction_context_false",
+    "summary_wrong_task",
+    "summary_nested_allowance_zero",
+    "accounting_allowance_zero",
+    "credential_receipt_false",
+    "proposer_attribution_altered",
+    "authoritative_ledger_mount_changed",
+    "retained_imported_module_changed",
+    "unlisted_file_after_seal",
+    "publication_report_rejected",
+    "audit_case_removed",
+    "arguments_option_type_altered",
+    "accounting_and_summary_allowance_zero",
+    "d1_bytes_in_c8_run",
+    "refusal_code_altered",
+    "permit_task_join_altered",
+    "grant_reordered_coherent"
+  ],
+  "results": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 181
+    },
+    "instruction_altered_in_one_run": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:versions:policy_lock_contract_campaign_bound"
+    },
+    "policy_digest_in_request": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:request:regenerated_under_contract"
+    },
+    "arguments_option_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:envelope:recomputed_from_contract"
+    },
+    "revision_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "slot_marker_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "retained_contract_altered": {
+      "rejected": true,
+      "rejected_case": "r1-d1-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "run_added": {
+      "rejected": true,
+      "rejected_case": "population:exactly_expected_runs"
+    },
+    "serialized_body_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:transport:bodies_are_the_contract_rendering"
+    },
+    "outbound_body_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:transport:bodies_are_the_contract_rendering"
+    },
+    "received_body_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:transport:bodies_are_the_contract_rendering"
+    },
+    "raw_provider_response_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:transport:local_send_and_remote_receipt"
+    },
+    "reconstruction_context_false": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:proof:shared_checker"
+    },
+    "summary_wrong_task": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:summary:bound_to_audited_records"
+    },
+    "summary_nested_allowance_zero": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:summary:bound_to_audited_records"
+    },
+    "accounting_allowance_zero": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:summary:bound_to_audited_records"
+    },
+    "credential_receipt_false": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:credential_receipt:recorded"
+    },
+    "proposer_attribution_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:proof:attribution_passed_through"
+    },
+    "authoritative_ledger_mount_changed": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:mounts:authority_bound"
+    },
+    "retained_imported_module_changed": {
+      "rejected": true,
+      "rejected_case": "modules:bound_to_retained_copies"
+    },
+    "unlisted_file_after_seal": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:seal:retained_hashes"
+    },
+    "publication_report_rejected": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:publication:recomputed"
+    },
+    "audit_case_removed": {
+      "rejected": true,
+      "rejected_case": "cases:population"
+    },
+    "arguments_option_type_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:envelope:recomputed_from_contract"
+    },
+    "accounting_and_summary_allowance_zero": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw2:accounting:recomputed"
+    },
+    "d1_bytes_in_c8_run": {
+      "rejected": true,
+      "rejected_case": "r2-c8-draw2:transport:bodies_are_the_contract_rendering"
+    },
+    "refusal_code_altered": {
+      "rejected": true,
+      "rejected_case": "r2-d1-draw1-refused:pricing:host_admission_rederived"
+    },
+    "permit_task_join_altered": {
+      "rejected": true,
+      "rejected_case": "r2-c8-draw2:ledger:permit_and_reconciliation_bound"
+    },
+    "grant_reordered_coherent": {
+      "rejected": true,
+      "rejected_case": "r2-c8-draw2:grant:ordered_before_first_header_byte"
+    }
+  },
+  "auditor_sha256": "7ced48f159fddf2dc6a201312f5f4ab67627c6a3a416cc9ef1cf527f269d43dc",
+  "program_sha256": "b0fcc562312c467422a8047072322cd2ea6240fc94753ed83204058396791046",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies; one relationship per mutation; exact control population"
+}

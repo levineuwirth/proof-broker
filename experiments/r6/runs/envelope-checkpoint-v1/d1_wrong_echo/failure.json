@@ -1,0 +1,15 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "canned_envelope_v1",
+  "failure_stage": "response-binding",
+  "failure_phase": "proposal",
+  "failure_category": "transport_binding_failure",
+  "error": "Response request digest does not match the recorded request bytes",
+  "evidence": {
+    "expected_request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288",
+    "received_request_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

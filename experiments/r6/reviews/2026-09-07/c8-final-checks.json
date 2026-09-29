@@ -1,0 +1,63 @@
+{
+  "preservation": {
+    "files": 2336,
+    "changed": [],
+    "snapshot_sha256": "ee5ef1d136c9294c4790bfef1a984b55bf7ba91a5ba7106993b375c8a61abc6a"
+  },
+  "episodes": {
+    "golden-c8-v1": {
+      "events": 38,
+      "retained_files": 74,
+      "seal_sha256": "a1e6e22f28a2ec0bb11bc9e5c8c6d3312e0fdffca8906ae83329b2750677aeae",
+      "source_records_verified": 53,
+      "binaries_verified": 13,
+      "source_or_artifact_mismatches": []
+    },
+    "golden-broker-v3": {
+      "events": 36,
+      "retained_files": 74,
+      "seal_sha256": "f4f3294ea365abe09bf40273f47217a2b3f3883a6a60e60d70cb86c327015890",
+      "source_records_verified": 53,
+      "binaries_verified": 13,
+      "source_or_artifact_mismatches": []
+    }
+  },
+  "conformance": {
+    "c8-conformance-v1": {
+      "checks": 41,
+      "source_seal_sha256": "a1e6e22f28a2ec0bb11bc9e5c8c6d3312e0fdffca8906ae83329b2750677aeae",
+      "retained_artifacts": 237,
+      "tests_sha256": "c90f272eb791dd20a19921d9003001237934ef5ae7670a47469c659f14ccb3e1"
+    },
+    "broker-conformance-v4": {
+      "checks": 41,
+      "source_seal_sha256": "f4f3294ea365abe09bf40273f47217a2b3f3883a6a60e60d70cb86c327015890",
+      "retained_artifacts": 237,
+      "tests_sha256": "b2bb43eec5242d226134ae76092f56600305a6e9be13e417579b91c502a162a8"
+    }
+  },
+  "completion": {
+    "c8-completion-v1": {
+      "checks": 45,
+      "tests_sha256": "c6822182ab8e61f493df9538182eaa7becf2fc68095146d15cc069fc1c188400"
+    },
+    "conformance-completion-v4": {
+      "checks": 45,
+      "tests_sha256": "ea21c3bd4b947ec8e691db184f0a00550cc6823014396524a7e3783a3eaf7b9a"
+    }
+  },
+  "review": {
+    "checks": 26,
+    "tests_sha256": "bde5547db006e9738359aa55bb6e072f177a7a8d5c08fd63ddf0d06286cd79c2"
+  },
+  "packaging": {
+    "required_paths": 667,
+    "ignored_required_paths": []
+  },
+  "standalone": {
+    "accepted": true,
+    "same_solution": true,
+    "verdict_sha256": "c845713fa85eadc479c0d5fa11003d7f7aed42bc0105a9f5e63515ac809f72c7"
+  },
+  "qualification": "Source/binary consistency under trusted build/cache assumptions; no compilation or inference attestation."
+}

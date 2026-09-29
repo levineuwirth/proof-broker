@@ -1,0 +1,518 @@
+{
+  "passed": true,
+  "rehearsal_controls": 101,
+  "live_controls": 24,
+  "rehearsal": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 665
+    },
+    "instruction_altered_in_one_run": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "policy_digest_in_request": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:request:regenerated_under_contract"
+    },
+    "arguments_option_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:envelope:recomputed_from_contract"
+    },
+    "activation_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_single_revision"
+    },
+    "slot_marker_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_single_revision"
+    },
+    "retained_contract_altered": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "run_added": {
+      "rejected": true,
+      "rejected_case": "population:exactly_expected_runs"
+    },
+    "serialized_body_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "outbound_body_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "received_body_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "raw_provider_response_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:transport:local_send_and_remote_receipt"
+    },
+    "reconstruction_context_false": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:proof:shared_checker"
+    },
+    "summary_wrong_task": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:summary:bound_to_audited_records"
+    },
+    "summary_nested_allowance_zero": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:summary:bound_to_audited_records"
+    },
+    "accounting_allowance_zero": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:summary:bound_to_audited_records"
+    },
+    "credential_receipt_false": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:credential_receipt:recorded"
+    },
+    "proposer_attribution_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:proof:attribution_passed_through"
+    },
+    "authoritative_ledger_mount_changed": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:mounts:authority_bound"
+    },
+    "retained_imported_module_changed": {
+      "rejected": true,
+      "rejected_case": "modules:bound_to_retained_copies"
+    },
+    "unlisted_file_after_seal": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:seal:retained_hashes"
+    },
+    "publication_report_rejected": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:publication:recomputed"
+    },
+    "audit_case_removed": {
+      "rejected": true,
+      "rejected_case": "cases:population"
+    },
+    "arguments_option_type_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:envelope:recomputed_from_contract"
+    },
+    "accounting_and_summary_allowance_zero": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:accounting:recomputed"
+    },
+    "other_site_bytes_in_run": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "interface_refusal_altered": {
+      "rejected": true,
+      "rejected_case": "l098-draw1:interface:refused_before_reservation"
+    },
+    "permit_task_join_altered": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:ledger:permit_and_reconciliation_bound"
+    },
+    "grant_reordered_coherent": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:grant:ordered_before_first_header_byte"
+    },
+    "zero_reservation_coherent": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:ledger:reservation_priced_from_contract_limits"
+    },
+    "mounted_adapter_foreign": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:mounts:authority_bound"
+    },
+    "nonzero_sender_exit_coherent": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:stage_returned_within_frozen_limits"
+    },
+    "credential_hash_pair_false": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:credential_receipt:recorded"
+    },
+    "pricing_admitted_receipt_wrong": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:payloads_bound_to_records"
+    },
+    "request_reserved_receipt_wrong": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:payloads_bound_to_records"
+    },
+    "reservation_reconciled_receipt_wrong": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:payloads_bound_to_records"
+    },
+    "https_observed_receipt_wrong": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:payloads_bound_to_records"
+    },
+    "transport_validated_receipt_false": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:payloads_bound_to_records"
+    },
+    "resource_limit_receipt_wrong": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:receipts:stage_returned_within_frozen_limits"
+    },
+    "runtime_source_and_role_foreign": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "interpreter_source_and_role_foreign": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "extra_readonly_host_mount": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "nonzero_assembly_exit_coherent": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:stages:every_stage_on_the_path_returned"
+    },
+    "nonzero_whole_validation_exit_coherent": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:stages:every_stage_on_the_path_returned"
+    },
+    "consumption_receipt_removed": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:chain:expected_sequence"
+    },
+    "consumption_receipt_forged_certificate": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:reconstruction:evidence_bound"
+    },
+    "consumption_receipt_wrong_closer": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:proof:certificate_consumed"
+    },
+    "nat_consumption_receipt_wrong_closer": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:proof:certificate_consumed"
+    },
+    "closer_selection_wrong_certificate": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:reconstruction:evidence_bound"
+    },
+    "verdict_names_another_closer": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:proof:certificate_consumed"
+    },
+    "reconstruction_ir_differs_from_preparation": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:reconstruction:preparation_ir_equal"
+    },
+    "refusal_without_branch_evidence": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:chain:expected_sequence"
+    },
+    "refusal_diagnosis_altered": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:refusal_diagnosed"
+    },
+    "refusal_from_crashed_process": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:refusal_diagnosed"
+    },
+    "refusal_with_unrelated_error": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:refusal_diagnosed"
+    },
+    "refused_run_certificate_verdict_false": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:certificate:verified_and_bound"
+    },
+    "fabricated_verdict_on_refused_run": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:summary:bound_to_audited_records"
+    },
+    "fabricated_export_stage_on_refused_run": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:receipts:payloads_bound_to_records"
+    },
+    "negative_control_verifier_accepted": {
+      "rejected": true,
+      "rejected_case": "l170-draw1:negative:verifier_rejected_and_stopped"
+    },
+    "prepared_problem_differs_from_classification": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:site:prepared_equals_classification"
+    },
+    "unrepaired_helper_in_preparation_input": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:site:preparation_is_the_repaired_helper"
+    },
+    "frozen_context_altered_in_preparation": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:site:original_context_bound"
+    },
+    "search_context_rename_reverted": {
+      "rejected": true,
+      "rejected_case": "l178-draw1:site:renaming_recorded"
+    },
+    "retained_site_lock_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:site:identity_bound"
+    },
+    "classification_certificate_altered": {
+      "rejected": true,
+      "rejected_case": "eligibility:recomputed_fifteen_sites"
+    },
+    "pricing_origin_not_the_reviewed_capture": {
+      "rejected": true,
+      "rejected_case": "revision:runtime_pricing_ledger_publication_bound"
+    },
+    "bridge_patch_not_revision_2": {
+      "rejected": true,
+      "rejected_case": "revision:runtime_pricing_ledger_publication_bound"
+    },
+    "history_v4_run_removed": {
+      "rejected": true,
+      "rejected_case": "history_v4:population_exact"
+    },
+    "history_v4_seal_broken": {
+      "rejected": true,
+      "rejected_case": "history_v4:seals_and_chains"
+    },
+    "history_v4_certificate_verdict_false": {
+      "rejected": true,
+      "rejected_case": "history_v4:verified_certificates"
+    },
+    "history_v4_guard_message_removed": {
+      "rejected": true,
+      "rejected_case": "history_v4:reconstruction_errors"
+    },
+    "history_v4_terminal_row_dropped": {
+      "rejected": true,
+      "rejected_case": "history_v4:ledger_dispositions"
+    },
+    "history_v5_run_removed": {
+      "rejected": true,
+      "rejected_case": "history_v5:population_exact"
+    },
+    "history_v5_seal_broken": {
+      "rejected": true,
+      "rejected_case": "history_v5:seals_and_chains"
+    },
+    "history_v5_consumption_receipt_synthesized": {
+      "rejected": true,
+      "rejected_case": "history_v5:qualified_kernel_successes"
+    },
+    "history_v5_refusal_recategorized": {
+      "rejected": true,
+      "rejected_case": "history_v5:closer_refusals_recorded"
+    },
+    "history_v5_terminal_row_dropped": {
+      "rejected": true,
+      "rejected_case": "history_v5:ledger_dispositions"
+    },
+    "refused_dispatch_certificate": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound"
+    },
+    "refused_dispatch_final_ir": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound"
+    },
+    "refused_verification_started_certificate": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound"
+    },
+    "coherent_wrong_success_closer": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:reconstruction:closer_selected"
+    },
+    "refused_reconstruction_foreign_packet": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:stages:commands_reconstructed"
+    },
+    "historical_wrong_kernel_target": {
+      "rejected": true,
+      "rejected_case": "history_v5:qualified_kernel_successes"
+    },
+    "refused_dispatch_trace": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound"
+    },
+    "refused_child_foreign_component": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:evidence_bound"
+    },
+    "proof_dispatch_final_ir": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:reconstruction:evidence_bound"
+    },
+    "coherent_wrong_refused_closer": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:closer_selected"
+    },
+    "certificate_check_foreign_packet": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:stages:commands_reconstructed"
+    },
+    "assembly_foreign_prepared_problem": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:stages:commands_reconstructed"
+    },
+    "preparation_foreign_input": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:stages:commands_reconstructed"
+    },
+    "pipeline_prepare_foreign_ir": {
+      "rejected": true,
+      "rejected_case": "l098-draw1:stages:commands_reconstructed"
+    },
+    "validation_foreign_solution": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:stages:commands_reconstructed"
+    },
+    "export_target_altered": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:stages:commands_reconstructed"
+    },
+    "history_v4_wrong_kernel_target": {
+      "rejected": true,
+      "rejected_case": "history_v4:kernel_reports_bound"
+    },
+    "refused_reconstruction_helper_changed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:sources_bound"
+    },
+    "refused_reconstruction_source_changed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:reconstruction:sources_bound"
+    },
+    "library_source_escapes_system_directory": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:stages:commands_reconstructed"
+    },
+    "proof_reconstruction_helper_changed": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:reconstruction:sources_bound"
+    },
+    "library_pair_removed_in_one_run": {
+      "rejected": true,
+      "rejected_case": "l099-draw1:stages:commands_reconstructed"
+    },
+    "library_pair_added_to_every_assembly": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:stages:commands_reconstructed"
+    },
+    "challenge_path_inside_recorded_root": {
+      "rejected": true,
+      "rejected_case": "l070-draw1:stages:commands_reconstructed"
+    }
+  },
+  "live": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 549
+    },
+    "live_policy_unsigned": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "live_checkpoint_altered": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "live_checkpoint_missing": {
+      "rejected": true,
+      "rejected_case": "revision:superseded_v6_bound"
+    },
+    "live_run_outside_signed_schedule": {
+      "rejected": true,
+      "rejected_case": "population:within_authorized_schedule"
+    },
+    "live_unreviewed_outcome_fails_closed": {
+      "rejected": true,
+      "rejected_case": "population:derived_from_evidence"
+    },
+    "live_commitment_forged_in_receipt": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:commitment:bound_to_mounted_canary"
+    },
+    "live_exact_receipt_claimed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:credential_receipt:recorded"
+    },
+    "live_local_receiver_recorded": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:transport:local_send_and_remote_receipt"
+    },
+    "live_received_body_present": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "live_fixture_mount_in_sender": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_unshare_net_in_sender": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_unshared_network_recorded": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_credential_inside_tree": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_publication_acceptance_claimed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:terminal:commitments_bound"
+    },
+    "live_ledger_terminal_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_single_revision"
+    },
+    "live_negative_control_accepted": {
+      "rejected": true,
+      "rejected_case": "l170-draw1:witness_rejected:recomputed_invalid_and_stopped"
+    },
+    "operator_receipt_missing": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_receipt_commitment_unbound": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_receipt_seal_stale": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_report_disclosure": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_scan_before_runs_finished": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_inventory_uncovered_file": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_commitment_domain_changed": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    }
+  },
+  "rehearsal_population": "reviews/2026-09-22/cohort_v6_audit_controls.py (approved at R6-013 revision 3), run against the v7 auditor and runs",
+  "rehearsal_baseline_cases": 665,
+  "live_baseline_cases": 549,
+  "auditor_sha256": "e9b7d1a7d5e9f9af36c1a5628050a203f67c37c4b71eb5e0c040a813435e88eb",
+  "program_sha256": "27489a89659b1efc1b1047e1f074a2ffd91a45534c947c5c67e4aad4a1291639",
+  "live_fixture_sha256": "1ec299c9a5cb624b2da0c6a36df5d683642fd5ac32c230009754ce7396324acb",
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "scope": "temporary copies; one relationship per mutation; exact control populations; the live fixture is synthetic"
+}

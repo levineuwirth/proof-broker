@@ -1,0 +1,20 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "failure_stage": "certificate-check",
+  "failure_phase": "certificate_verification",
+  "failure_category": "certificate_verification",
+  "error": "Farkas witness was not verified",
+  "evidence": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "farkas_not_contradictory",
+      "detail": "weighted sum is -7*Zmax + 458756, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:0608fe7d825db756a836cc568273640d82974eb25adc827fc517da55873a0b7f"
+  },
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

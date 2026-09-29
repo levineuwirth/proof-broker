@@ -1,0 +1,5 @@
+{
+  "stage": "challenge_match",
+  "error": "Const does not match between challenge and target 'Bracket.P'",
+  "accepted": false
+}

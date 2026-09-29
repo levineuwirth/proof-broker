@@ -1,0 +1,62 @@
+runs/20260907-113052/lean/B3_false_wide_bound.grind.lean:22:2: error: `grind` failed
+case grind
+g_hi : ZMod P
+hhi : g_hi.val < 2 ^ 46
+hP : P = 18446744069414584321
+h : P ≤ 262144 * g_hi.val
+⊢ False
+[grind] Goal diagnostics
+  [facts] Asserted facts
+    [prop] g_hi.val ≤ 70368744177663
+    [prop] P = 18446744069414584321
+    [prop] P ≤ 262144 * g_hi.val
+    [prop] g_hi.val + 1 ≤ P
+  [eqc] True propositions
+    [prop] P ≤ 262144 * g_hi.val
+    [prop] g_hi.val ≤ 70368744177663
+    [prop] g_hi.val + 1 ≤ P
+  [eqc] Equivalence classes
+    [eqc] {P, 18446744069414584321}
+    [eqc] others
+      [eqc] {↑P, ↑18446744069414584321}
+  [ematch] E-matching patterns
+    [thm] Set.subset_def: [@LE.le _ _ #1 #0]
+    [thm] ZMod.val_lt: [@ZMod.val #2 #0]
+  [cutsat] Assignment satisfying linear constraints
+    [assign] P := 18446744069414584321
+    [assign] g_hi.val := 70368744161281
+  [ring] Ring `ℤ`
+    [basis] Basis
+      [_] ↑P + -18446744069414584321 = 0
+[grind] Diagnostics
+  [thm] E-Matching instances
+    [thm] ZMod.val_lt ↦ 1
+cumulative profiling times:
+	attribute application 0.00749ms
+	congr simp thm 0.249ms
+	elaboration 2.72ms
+	fix level params 0.0135ms
+	grind 2.47ms
+	grind ac 0.00302ms
+	grind cutsat 0.0457ms
+	grind ematch 0.393ms
+	grind linarith 0.00136ms
+	grind mark subsingleton 0.0939ms
+	grind ring 0.0392ms
+	grind simp 2.15ms
+	instantiate metavars 0.00872ms
+	interpretation 0.184ms
+	linting 13.9ms
+	module linting 0.0011ms
+	overlappingInstancesLinter 0.685ms
+	parsing 0.299ms
+	process pre-definitions 0.209ms
+	share common exprs 0.0472ms
+	sym canon 0.435ms
+	sym typeclass inference 13.3ms
+	tactic execution 1.08ms
+	tacticAnalysis 2.18ms
+	type checking 0.283ms
+	typeclass inference 7.83ms
+PEAK_RSS_BYTES=687656960
+EXIT=1 WALL=4.2s CAP=8G

@@ -1,0 +1,386 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_valid",
+    "c8_valid",
+    "d1_alternate_encoding",
+    "d1_invalid_witness",
+    "c8_invalid_witness",
+    "d1_malformed",
+    "d1_wrong_echo",
+    "d1_altered_prompt",
+    "d1_omitted_prompt",
+    "d1_altered_body",
+    "d1_timeout",
+    "d1_transport_error",
+    "d1_exhausted_budget"
+  ],
+  "check_count": 13,
+  "checks": [
+    {
+      "name": "d1_valid",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "9bbbf6d5c1c89d760113cfac9ac45ee2e6b87162a601033be72a5b9cd72a09c1",
+        "seal_sha256": "db2d9933607b477839a5357d24770f7ebd086ef15de69c3b36fe20c9a9b7b712",
+        "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+        "request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288",
+        "solution_sha256": "b290102edb55da122cbb8846a8ca3a1f23dda205164f33fc344d63de6f003eaf",
+        "axiom_delta": {
+          "Bracket.lift_cell.r6_d1_70": {
+            "added": [],
+            "removed": []
+          },
+          "Bracket.lift_cell": {
+            "added": [],
+            "removed": []
+          }
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "c8_valid",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "a36624179b96b5d0ee10c310352e5440ca9983503342b2b7692be4793789e25e",
+        "seal_sha256": "81c7855222098a3d802eedf76cd61db4b66b1fe92610ee71ae3f54cda759d270",
+        "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+        "request_sha256": "e03eb0e126838b537d611f2ad077abc5e5cc51fec5376e60ce7524d1635025d5",
+        "solution_sha256": "87617e9cd93457f90efb8daf959b3ff8caca383fd35ee4387349cb299d4b4b35",
+        "axiom_delta": {
+          "R6.C8.coefficient_bound.r6_c8": {
+            "added": [],
+            "removed": []
+          },
+          "R6.C8.coefficient_bound": {
+            "added": [],
+            "removed": []
+          }
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_alternate_encoding",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "260d3b5f8b3a4392f1955ad76ac1b6774c8f0294c172a18c3cdcc5e446478fe7",
+        "seal_sha256": "c17a4ceb9eb53496fa865720e21617741b1ede5a82aafd63a1d0729a3653b733",
+        "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+        "request_sha256": "ba70f330606db41f5974a6cc47d233bf4ddb5e2b902c4ecee76c83f0483e5288",
+        "solution_sha256": "b290102edb55da122cbb8846a8ca3a1f23dda205164f33fc344d63de6f003eaf",
+        "axiom_delta": {
+          "Bracket.lift_cell.r6_d1_70": {
+            "added": [],
+            "removed": []
+          },
+          "Bracket.lift_cell": {
+            "added": [],
+            "removed": []
+          }
+        },
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_invalid_witness",
+      "passed": true,
+      "detail": {
+        "failure_category": "certificate_verification",
+        "failure_stage": "certificate-check",
+        "failure_phase": "certificate_verification",
+        "failure_sha256": "bf2d89b3041d5254eb8ecafc69a9ab6dd182b6ae199a99e25d23f8b6c3e74a34",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "c8_invalid_witness",
+      "passed": true,
+      "detail": {
+        "failure_category": "certificate_verification",
+        "failure_stage": "certificate-check",
+        "failure_phase": "certificate_verification",
+        "failure_sha256": "e4c8bfd695273189710990080e7ac57e01296f7619ae22ff8e19b1980388b6a8",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_malformed",
+      "passed": true,
+      "detail": {
+        "failure_category": "response_decode",
+        "failure_stage": "response-decode",
+        "failure_phase": "proposal",
+        "failure_sha256": "689f9c19839ec2a2d4b030dbbb7f16681eba5314f380e9d15b0ec712d5b2661a",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_wrong_echo",
+      "passed": true,
+      "detail": {
+        "failure_category": "transport_binding_failure",
+        "failure_stage": "response-binding",
+        "failure_phase": "proposal",
+        "failure_sha256": "325c2422489f16cb0cb965ada3a7bc91d3060656599cd0d7ff323fcedcbbe954",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_altered_prompt",
+      "passed": true,
+      "detail": {
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "failure_sha256": "8a51dcdd151e9dc9c8ac3f69565dd51c51839da55629547959f1b15a48228ef9",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_omitted_prompt",
+      "passed": true,
+      "detail": {
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "failure_sha256": "8a51dcdd151e9dc9c8ac3f69565dd51c51839da55629547959f1b15a48228ef9",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_altered_body",
+      "passed": true,
+      "detail": {
+        "failure_category": "outbound_envelope_binding",
+        "failure_stage": "envelope-audit",
+        "failure_phase": "proposal",
+        "failure_sha256": "8a51dcdd151e9dc9c8ac3f69565dd51c51839da55629547959f1b15a48228ef9",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_timeout",
+      "passed": true,
+      "detail": {
+        "failure_category": "resource_exhaustion",
+        "failure_stage": "proposal-1",
+        "failure_phase": "proposal",
+        "failure_sha256": "bdbf05b771287f8ff9bd127776d94ff3535e965d4ebfd7ac825c91e73f504338",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_transport_error",
+      "passed": true,
+      "detail": {
+        "failure_category": "transport_failure",
+        "failure_stage": "proposal-1",
+        "failure_phase": "proposal",
+        "failure_sha256": "69c8c3ec2c69b13fdd435f272946e22d033c7c7fa36122cce8f24afbc2406bfb",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    },
+    {
+      "name": "d1_exhausted_budget",
+      "passed": true,
+      "detail": {
+        "failure_category": "request_budget_exhaustion",
+        "failure_stage": "proposal",
+        "failure_phase": "proposal",
+        "failure_sha256": "715086e7ef093c40c48779544522034da9732df713a724e928969394840bf277",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true,
+        "accounting": {
+          "attempts_reserved": 1,
+          "transmissions_observed": 1,
+          "reported_usage": {
+            "input_tokens": null,
+            "output_tokens": null,
+            "total_tokens": null,
+            "cost_usd": null,
+            "status": "unreported"
+          },
+          "live_model_calls": 0,
+          "live_model_cost_usd": 0,
+          "scope": "local canned transport; absent simulated usage is unknown, actual live calls/cost are zero"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": "r6-pricing-admission-1",
+  "accepted": true,
+  "policy_sha256": "e94a55d0fa75dfb2700cd801f167017d751eddfb62ea9a6a9b8d8ec960d419d2",
+  "request_sha256": "a18831d7668197d2962f591fc6c7bfd049875e73fca4c25af635cc4459a81771",
+  "arguments_sha256": "079c7e22847b9690940399d0a6b80369ef8dc2371618a01e52b574e5d165da11",
+  "body_sha256": "c08ba95bcd94933d5e371fda4ea6ba213672154509697f82dc7c6511fea21ec4",
+  "sources": {
+    "model": {
+      "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819",
+      "extract_sha256": "daa16b1f391816eba87b9daa7af57c1f4980cacc615c77ddd3bd1f0493ab0ee2",
+      "receipt_sha256": "76dc28f11506cd6dae068fc016da2e69144a48fc90a5b4afb7f08535c3c7fa11"
+    },
+    "caching": {
+      "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af",
+      "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+      "receipt_sha256": "facce4f91640c60a5fa87beedd4579eee54214ba6b634bfd6a2b0dc266432154"
+    }
+  },
+  "nano_usd_per_token": {
+    "input": 2500,
+    "cached_input": 250,
+    "output": 15000,
+    "cache_write": 2500
+  },
+  "reserved_micro_usd": 102400,
+  "message_utf8_bytes": 3301,
+  "evaluated_at_unix": 1788989437.490834,
+  "billing_guarantee": false,
+  "evidence_scope": "local retained-source, clock and request consistency; no remote pricing or inference attestation"
+}

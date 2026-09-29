@@ -1,0 +1,19 @@
+proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1352 fragment=LIA hyps=3 dispatch_ms=21 verify_ms=1 wall_ms=38
+cumulative profiling times:
+	attribute application 0.00759ms
+	elaboration 2.31ms
+	fix level params 0.0233ms
+	instantiate metavars 0.0261ms
+	interpretation 0.0529ms
+	linting 15.3ms
+	module linting 0.00127ms
+	overlappingInstancesLinter 0.474ms
+	parsing 0.284ms
+	process pre-definitions 0.246ms
+	share common exprs 0.0801ms
+	tactic execution 31.4ms
+	tacticAnalysis 2.43ms
+	type checking 4.69ms
+	typeclass inference 8.65ms
+PEAK_RSS_BYTES=728559616
+EXIT=0 WALL=4.2s CAP=8G

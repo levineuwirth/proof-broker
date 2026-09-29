@@ -1,0 +1,35 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l098",
+  "route": "site_cvc4_term_mode_v1",
+  "outcome": "backend_not_invoked",
+  "attempts": null,
+  "first_error": "/input/Frozen.lean:99:4: error: proof_broker_term: no adapter minted a cert",
+  "error_count": 1,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received"
+  ],
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 1.1858781190094305,
+        "cgroup_cpu_usec": 1171476,
+        "cgroup_memory_peak_bytes": 184897536,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 4.299618738994468,
+        "cgroup_cpu_usec": 4524083,
+        "cgroup_memory_peak_bytes": 735698944,
+        "exit_code": 1
+      }
+    },
+    "wall_seconds": 5.485,
+    "cpu_seconds": 5.696,
+    "peak_memory_bytes": 735698944
+  },
+  "verdict_sha256": null
+}

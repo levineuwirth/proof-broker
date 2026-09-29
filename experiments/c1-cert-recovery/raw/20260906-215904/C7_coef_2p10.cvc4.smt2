@@ -1,0 +1,8 @@
+(set-logic QF_LIA)
+(declare-const _pb_atom_0 Int)
+(assert (< _pb_atom_0 4398046511104))
+(assert (= 18446744069414584321 18446744069414584321))
+(assert (<= 0 _pb_atom_0))
+(assert (not (< (* 1024 _pb_atom_0) 18446744069414584321)))
+(check-sat)
+(exit)

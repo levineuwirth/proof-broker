@@ -1,0 +1,222 @@
+{
+  "negative_raw_verifier_acceptance": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    }
+  },
+  "proof_raw_verifier_rejection": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "negative_summary_acceptance": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l170-draw2",
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l175-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "witness_rejected",
+      "reasons": []
+    }
+  },
+  "missing_consumption_receipt": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "foreign_ledger_task": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "empty_seal_inventory": {
+    "fresh": {
+      "observed": "continued",
+      "launches": [
+        "l069-draw2",
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    },
+    "restart": {
+      "observed": "continued",
+      "launches": [
+        "l070-draw2"
+      ],
+      "decision": "continue",
+      "outcome": "proof",
+      "reasons": []
+    }
+  },
+  "authentic_ledger": {
+    "rows": 23,
+    "baselines": {
+      "l069": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l070": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l071": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l078": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l096": [
+        "continue",
+        "proof",
+        []
+      ],
+      "l166": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l170": [
+        "continue",
+        "witness_rejected",
+        []
+      ],
+      "l175": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l178": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l204": [
+        "continue",
+        "closer_refusal",
+        []
+      ],
+      "l099": [
+        "continue",
+        "proof",
+        []
+      ]
+    },
+    "foreign_reconciliation": {
+      "fresh": {
+        "result": "continued",
+        "launches": [
+          "l069-draw1",
+          "l070-draw1"
+        ],
+        "decision": {
+          "run": "l069-draw1",
+          "fresh": true,
+          "exit": 0,
+          "decision": "continue",
+          "outcome": "proof",
+          "reasons": [],
+          "consumed": 11,
+          "committed_micro_usd": 1126400
+        }
+      },
+      "restart": {
+        "result": "continued",
+        "launches": [
+          "l070-draw1"
+        ],
+        "decision": {
+          "run": "l069-draw1",
+          "fresh": false,
+          "decision": "continue",
+          "outcome": "proof",
+          "reasons": [],
+          "consumed": 11,
+          "committed_micro_usd": 1126400
+        }
+      }
+    }
+  }
+}

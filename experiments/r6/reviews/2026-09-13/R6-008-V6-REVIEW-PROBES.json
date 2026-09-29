@@ -1,0 +1,181 @@
+{
+  "completed": true,
+  "policy_sha256": "0f83bf91c8bce4c1720fa41cc9b141ec418999fa15bbc74ba8d130ecaa406376",
+  "source_lock_sha256": "1ac95bfab7925be6655094ba5b546c11b9d604f85c26a010752f7d15559683f6",
+  "program_sha256": "af1554abf824605ec21fcbb0a6302c631619be312c017ceffe0bf32b7959d620",
+  "expected_cases": [
+    "summary_top_level_control",
+    "summary_nested_evidence",
+    "summary_nested_allowance",
+    "summary_task_identity",
+    "reconciliation_head_failure_control",
+    "reconciliation_recovery_snapshot_failure",
+    "marker_release_repair_control",
+    "marker_release_repair_interrupted",
+    "marker_unknown_torn",
+    "operator_malformed_nonce",
+    "operator_report_write_failure"
+  ],
+  "cases": {
+    "summary_top_level_control": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 76
+      },
+      "mutated_copy": {
+        "accepted": false,
+        "rejected_case": "rehearsal-3:chain:expected_sequence",
+        "detail": "rehearsal-3:chain:expected_sequence: 51 events"
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "summary_nested_evidence": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 76
+      },
+      "mutated_copy": {
+        "accepted": false,
+        "rejected_case": "rehearsal-3:summary:bound_to_audited_records",
+        "detail": "rehearsal-3:summary:bound_to_audited_records: summary identity or embedded accounting differs from the audited records"
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "summary_nested_allowance": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 76
+      },
+      "mutated_copy": {
+        "accepted": false,
+        "rejected_case": "rehearsal-3:summary:bound_to_audited_records",
+        "detail": "rehearsal-3:summary:bound_to_audited_records: summary identity or embedded accounting differs from the audited records"
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "summary_task_identity": {
+      "unmutated_copy": {
+        "accepted": true,
+        "case_count": 76
+      },
+      "mutated_copy": {
+        "accepted": false,
+        "rejected_case": "rehearsal-3:summary:bound_to_audited_records",
+        "detail": "rehearsal-3:summary:bound_to_audited_records: summary identity or embedded accounting differs from the audited records"
+      },
+      "normal_finalizer": true,
+      "source_of_change": "credential-summary.json only; publication records, event chain and seal regenerated"
+    },
+    "reconciliation_head_failure_control": {
+      "calls": {
+        "head_failure": 1,
+        "terminal_row_found": 1,
+        "snapshot_failure": 0
+      },
+      "raised": null,
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "retained_lifecycle_kind": "send_grant",
+      "ledger_reconciled": true,
+      "allowance_consumed": 1,
+      "evidence_complete": true,
+      "evidence_write_failures": [],
+      "scope": "production reconciliation helper and accounting; no launcher, finalization, native episode or full audit",
+      "fault_scope": "terminal head-write failure control"
+    },
+    "reconciliation_recovery_snapshot_failure": {
+      "calls": {
+        "head_failure": 1,
+        "terminal_row_found": 1,
+        "snapshot_failure": 1
+      },
+      "raised": null,
+      "actual_open": 0,
+      "actual_consumed": 1,
+      "retained_lifecycle_kind": "send_grant",
+      "ledger_reconciled": true,
+      "allowance_consumed": 1,
+      "evidence_complete": false,
+      "evidence_write_failures": [
+        {
+          "artifact": "ledger-after",
+          "error": "OSError"
+        }
+      ],
+      "scope": "production reconciliation helper and accounting; no launcher, finalization, native episode or full audit",
+      "fault_scope": "terminal head-write failure followed by snapshot-read failure"
+    },
+    "marker_release_repair_control": {
+      "faults": 1,
+      "ledger_kind": "unknown",
+      "reason": "torn_marker",
+      "torn_marker": "release.json",
+      "files": [
+        "release.json",
+        "unknown.json"
+      ],
+      "open_reservations": 0,
+      "consumed": 1,
+      "slot_predicate": {
+        "accepted": true
+      },
+      "scope": "ledger recovery and slot predicate only; not a full episode or full-audit claim"
+    },
+    "marker_release_repair_interrupted": {
+      "faults": 2,
+      "ledger_kind": "unknown",
+      "reason": "completed_from_marker",
+      "torn_marker": "release.json",
+      "files": [
+        "release.json",
+        "unknown.json"
+      ],
+      "open_reservations": 0,
+      "consumed": 1,
+      "slot_predicate": {
+        "accepted": true
+      },
+      "scope": "ledger recovery and slot predicate only; not a full episode or full-audit claim"
+    },
+    "marker_unknown_torn": {
+      "faults": 1,
+      "recovery_code": "campaign_marker_torn_unrecoverable",
+      "open_reservations": 1,
+      "consumed": 0,
+      "next_reservation_rejected": "campaign_reservation_open",
+      "qualification": "held open, fails closed; not automatically converted to a terminal unknown row"
+    },
+    "operator_malformed_nonce": {
+      "exit_code": 2,
+      "safe_refusal": {
+        "accepted": false,
+        "refused": "internal error: TypeError",
+        "bound_runs_accepted": false
+      },
+      "stderr_bytes": 0,
+      "stdout_token_occurrences": 0,
+      "report_created": false,
+      "synthetic_only": true
+    },
+    "operator_report_write_failure": {
+      "exit_code": 2,
+      "safe_refusal": {
+        "accepted": false,
+        "refused": "internal error: IsADirectoryError",
+        "bound_runs_accepted": false
+      },
+      "stderr_bytes": 0,
+      "stdout_token_occurrences": 0,
+      "report_created": false,
+      "synthetic_only": true
+    }
+  },
+  "real_credentials_read": 0,
+  "provider_calls": 0,
+  "new_native_episodes": 0,
+  "new_lean_replays": 0,
+  "case_count": 11
+}

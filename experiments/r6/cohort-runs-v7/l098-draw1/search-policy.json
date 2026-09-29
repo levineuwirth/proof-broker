@@ -1,0 +1,15 @@
+{
+  "name": "farkas_cohort_v7",
+  "mode": "rehearsal",
+  "task_id": "bracket-l098",
+  "draw": 1,
+  "config_sha256": "d7dbb092dd4f7854ccd208a8f58e38bdcb2cc47762bd9cf49a548ed1bd75583e",
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "campaign_id": "62b7e07b319b4098b4d30a170523457c",
+  "revision": 1,
+  "source_lock_sha256": "687b0aa41194d1e6e7bc7b0b0167a0db208c86104d2117b113b5fa478d458b4b",
+  "manifest_sha256": "8127836d65de51434b623dce20cb9f07103890e0ac5e4a955c444beb16ac9fbb",
+  "ledger_path": "ledgers/campaigns/62b7e07b319b4098b4d30a170523457c/rehearsal/ledger.ndjson",
+  "ledger_slots": "ledgers/campaigns/62b7e07b319b4098b4d30a170523457c/rehearsal/slots",
+  "ledger_scope": "rehearsal ledger; never funds a transmission"
+}

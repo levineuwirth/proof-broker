@@ -1,0 +1,38 @@
+{
+  "schema_version": "r6-contract-choice-review-1",
+  "reviewed_commit": "27579e5",
+  "choice": "C_with_existing_unique_reference_requirement",
+  "status": "design_decided; classification_correction_and_new_canned_gate_required_before_schedule_freeze",
+  "review_sha256": "d25eed41ae5b3aa56670c6f541fe93734fbbc5819e549c28d35337f167e6c3d8",
+  "arithmetic_review_sha256": "7aa9fc39b6906d7ecb9fb8cf2a6e9bb332e941f4e145815ff199498e119bb692",
+  "primary_decision_sha256": "107e59ef6dd255a6088aee91d9136b218748089849e7612ddd431fa4686a6bb6",
+  "exposure_addendum_sha256": "fe7834eebbf840a726fc43c0737051e2b213e73a6976ef321e92f302601b2490",
+  "population_denominator": 15,
+  "candidate_learned_sites": [
+    "bracket-l069",
+    "bracket-l070",
+    "bracket-l071",
+    "bracket-l078",
+    "bracket-l096",
+    "bracket-l099",
+    "bracket-l166",
+    "bracket-l170",
+    "bracket-l175",
+    "bracket-l204"
+  ],
+  "arithmetic_feasible_negative_control": [
+    "bracket-l170"
+  ],
+  "ambiguous_reference_unposable": [
+    "bracket-l178"
+  ],
+  "sdk_goal_form_unposable": [
+    "bracket-l098",
+    "bracket-l101",
+    "bracket-l158",
+    "bracket-l180"
+  ],
+  "selection_uses_search_success": false,
+  "deterministic_outcomes_to_measure": true,
+  "live_calls_authorized": 0
+}

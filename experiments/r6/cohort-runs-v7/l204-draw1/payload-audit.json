@@ -1,0 +1,22 @@
+{
+  "sanitized_context_sha256": "1f8d7c4749b91435ed26da51e9f805d03418dfcaa9ec88576795e7f4063bd671",
+  "source_context_sha256": "c9cb2f00b469ec0653f2c18736366fb46f5bf1617cab0cd4569f31946a9406e8",
+  "context_projection_is_model_visible": false,
+  "context_policy": "farkas_rows_only_v1",
+  "let_facts_preserved": [],
+  "reifier_omissions": [
+    {
+      "name": "R",
+      "reason": "data local at an undeclarable type (Row Zmax v0 n)"
+    },
+    {
+      "name": "i",
+      "reason": "data local at an undeclarable type (Fin n)"
+    },
+    {
+      "name": "a._@._internal.0.Frozen.2507035005._hygCtx._hyg.39",
+      "reason": "proposition outside the reifiable fragment (i ∈ Finset.univ)"
+    }
+  ],
+  "farkas_omissions": []
+}

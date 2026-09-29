@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/P4_prime_literal.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/P4_prime_literal.dump.lean:18:2: warning: 'pb_dump_ir"ir/P4_prime_literal.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00728ms
+	elaboration 2.91ms
+	fix level params 0.00993ms
+	instantiate metavars 0.0179ms
+	interpretation 0.11ms
+	linting 15.3ms
+	module linting 0.00276ms
+	overlappingInstancesLinter 0.611ms
+	parsing 0.21ms
+	process pre-definitions 0.108ms
+	share common exprs 0.0404ms
+	tactic execution 12.3ms
+	tacticAnalysis 3.3ms
+	type checking 4.08ms
+	typeclass inference 9.04ms
+PEAK_RSS_BYTES=704126976
+EXIT=0 WALL=4.0s CAP=8G

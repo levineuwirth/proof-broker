@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "live_model_calls": 0,
+  "scope": "local canned transport; no provider SDK, remote receipt, compilation or inference attestation",
+  "prompt_sha256": "5850f01b67c17a82477d850ec82ff43f4e683df78e9541b49b4579b5e89e3ed4",
+  "policy_sha256": "9cbd96a36b0f1b818836ac2ce04449147b45127f84947b253d7b167a4f304dca",
+  "source_lock_sha256": "5db38ec734b924913ca3d61b728518f6811dfa6d355217e2e624310611bdb8a0",
+  "suites": {
+    "prompt-transport.json": {
+      "sha256": "db70dab991d95365692937f08e8eae1a596bff49079bd0ee6b41cdd3e5ef398d",
+      "count": 36
+    },
+    "native-envelopes.json": {
+      "sha256": "ac7e92febc24291b79323918ab3f9e0159b7fb0ab6cc77617c2a245278729f77",
+      "count": 13
+    },
+    "envelope-audits.json": {
+      "sha256": "8895dc27a8351054c49b0a1ff97bc23b9d70d04640268c21c0b17549bb5dece8",
+      "count": 35
+    }
+  }
+}

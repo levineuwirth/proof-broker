@@ -1,0 +1,10 @@
+{
+  "request_sha256": "f66f82db9e0d596484b7b273b2a858bc1b90b9c42e98c11bbb9d640d3af34e49",
+  "policy_sha256": "7e16462d13a4fc3e29590c54d10508abf88982564abbc800678604352914f039",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "arguments_sha256": "746a86002feed266d1da060a6104c52a876021f712ef7319dc58818d6e6dbf75",
+  "messages_sha256": "218baab1d12f40efa33dd68054123111016ff6dacac97bac548c933a0857dd62",
+  "prepared_sha256": "6b603f6dedb519a50554a0f11773ce32550abb5b808fc9212fc187fae9cf8b9b",
+  "preparation_request_sha256": "84be1b18e80780f18b87211c274fe40e452e248ffd17ab54c06ebddf6b903e42",
+  "inner_binding": "request policy_sha256 is this campaign policy; the preparation component request is retained separately"
+}

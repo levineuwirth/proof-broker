@@ -1,0 +1,26 @@
+{
+  "reservation_id": "fc51a4d2654a4453a989ddf0e435424d",
+  "episode_id": "l096-draw2-format",
+  "task_id": "bracket-l096",
+  "draw": 2,
+  "evidence": {
+    "process_sha256": "f294335a43f73c064fe34897ad45fe39aee669e3e1aa3f11a66d97f4ed61cde0",
+    "http_sha256": "925794e0fb3c7732ff8fdab4f5f474e77ce969f178005bdd3c4761d58318f95f",
+    "grant_file_sha256": null,
+    "launched": true,
+    "process_exit_code": 0,
+    "record_read_failures": []
+  },
+  "launched": true,
+  "termination_established": true,
+  "reconciled_at_unix": 1790114390,
+  "kind": "release",
+  "reason": "pre_send_failure_with_established_termination",
+  "failure_category": "credential_format",
+  "transport_record_present": true,
+  "marker_sha256": "1532aa1d3973ff907add1f31e159728ac58aeb94dd9806e9026da39990edda97",
+  "domain": "r6-cohort-ledger-1",
+  "sequence": 24,
+  "previous_hash": "e2282e8c2fbf89651fdf2a77192b0bc3d6c11f608cf084a6376e234138c9b356",
+  "row_hash": "9d459634e563722362eda1c17b377bc7d3d8fafa84f38257fdf4d97d4e772283"
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": "r6-admission-1",
+  "rule": "dropped_proposition_and_original_true_and_checked_ir_counterexample_v1",
+  "criterion": [
+    "at least one recorded dropped proposition",
+    "independently established original truth",
+    "independently checked satisfying assignment for all IR hypotheses and negated goal"
+  ],
+  "unknown_evidence": "unresolved; never inferred from lack of solver/model success",
+  "rule_scope": "sufficient diagnostic criterion; not a completeness test for reification",
+  "controls": {
+    "verinf-d1-70": {
+      "stratum": "development_control",
+      "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87"
+    },
+    "c1-c8-2p18": {
+      "stratum": "development_control",
+      "manifest_sha256": "b517153f5b2dd878ba724ecc172d38deceb5475f58a0b871daebdcee29852e97"
+    }
+  },
+  "P6_hyp_le": {
+    "stratum": "translation_loss_diagnostic",
+    "dispatch_in_this_policy": false,
+    "repository": "https://github.com/levineuwirth/proof-broker.git",
+    "commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+    "inputs": {
+      "source": {
+        "path": "experiments/c1-cert-recovery/runs/20260907-113052/lean/P6_hyp_le.omega.lean",
+        "sha256": "58066119f10cf878917bcf58a65c6d8c42caa41ec809d2d3ff4ed9d8b4d9325a"
+      },
+      "reification_log": {
+        "path": "experiments/c1-cert-recovery/runs/20260907-113052/irlogs/P6_hyp_le.capture.log",
+        "sha256": "444a7056c315a95bfa4a429604ca642f94dc64644b4d4b427808870c49983d8e"
+      },
+      "final_ir": {
+        "path": "experiments/c1-cert-recovery/raw/20260907-113052/P6_hyp_le.final_ir.json",
+        "sha256": "73056aa5af222f8cd126a7d4aadbc5c3e5eb1a93570a1890c105a0ca38f1f5c3"
+      }
+    },
+    "evidence": {
+      "dropped_propositions": [
+        "hhi"
+      ],
+      "original_true": true,
+      "truth_method": "integer upper bound using the explicit hP equality and hhi bound",
+      "maximum_lhs": "1152921504606584832",
+      "rhs": "18446744069414584321",
+      "strict_margin": "17293822564807999489",
+      "satisfying_original_value": "0",
+      "ir_counterexample": {
+        "_pb_atom_0": "70368744161281"
+      },
+      "row_evaluations": [
+        {
+          "name": "hP",
+          "result": "0",
+          "satisfied": true
+        },
+        {
+          "name": "_pb_nonneg_atom_0",
+          "result": "-70368744161281",
+          "satisfied": true
+        },
+        {
+          "name": "neg_goal",
+          "result": "-262143",
+          "satisfied": true
+        }
+      ],
+      "ir_counterexample_checked": true,
+      "classification": "translation_loss_diagnostic"
+    }
+  },
+  "qualification": "P6 is diagnosed before requests, not registered as a runnable task. Reifier logs are observations, not computation attestations. The criterion does not isolate dropping from other abstraction effects."
+}

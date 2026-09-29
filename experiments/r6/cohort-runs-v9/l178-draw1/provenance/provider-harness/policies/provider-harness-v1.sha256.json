@@ -1,0 +1,11 @@
+{
+  "provider_contract.py": "ab41219b9c82e4ca62769e40966feb63a13c14cb824a07dc080d1b2c2e6d31b8",
+  "provider_payload.py": "caa57b356dda9218085e741e2e806d590d8b6cbf4d94ff9f7044149d14b8c6e1",
+  "provider_http.py": "7c34c749b073c982e39e94a73e04e5d18c26fb648a4726cd74ce6bde86e52160",
+  "provider_episode.py": "b211e7781baef8d3a3b88db6a323b8a7bb0c45611c3469fd325e559efdeacdc2",
+  "provider_audit.py": "63e508eb142f6dcb632564f37dd42aad0195c44d0028e59e7f52922c4d1a28b2",
+  "test_provider.py": "173f793b922f61d397e4210114516d7bdafe11f442d94db90f9a7e2e72a4d681",
+  "schema/provider-request.schema.json": "a322dacf7d640a5f0053c79da75298fe8aadd2240a32396bbe11fc2d3dd4a233",
+  "schema/provider-verdict.schema.json": "2e23dc9eee14da78ad8d2cc0ea8401a4fc41e6727147658829589c107dbed1ec",
+  "prompts/farkas-lia-v1.txt": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0"
+}

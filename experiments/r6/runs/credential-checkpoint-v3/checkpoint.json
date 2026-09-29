@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "live_model_calls": 0,
+  "scope": "synthetic canary over an isolated local HTTP fixture; no real credential, TLS, remote receipt, compilation or inference attestation",
+  "canary_derivation": "r6-004-synthetic-canary-v1",
+  "policy_sha256": "e6e037d11b206326b064653ea3648db7cf8a0533880b78990738a783230bd39f",
+  "source_lock_sha256": "846ffd8beb6e41457c31d557189c026d807ae1e9d662a782e02417fb8caf379b",
+  "publication_representations": [
+    "token",
+    "authorization"
+  ],
+  "publication_encoded_forms": [
+    "utf-8",
+    "utf-8-lower",
+    "utf-8-upper",
+    "base64",
+    "hex",
+    "utf-16-le",
+    "utf-16-be"
+  ],
+  "suites": {
+    "credential-units.json": {
+      "sha256": "29f6848c0d4cba44facf34bfab991cb8b57ba1d4c6dbd7fea8ff3254cf2d5210",
+      "count": 26
+    },
+    "credential-native.json": {
+      "sha256": "204c7169144881df2bf0bffb8af0667af6459849ac11299c85dc359e31b509e6",
+      "count": 5
+    },
+    "credential-audits.json": {
+      "sha256": "42d2799427b6c40b6c183a81b28e5dc27256707dece94c31d80dc086c397c000",
+      "count": 30
+    }
+  },
+  "gates": {
+    "sha256": "c444e18fa59ea2d8ca6f9738d469c6d98ef13fd28f0fa8d790b7e6089826c8c4",
+    "count": 6,
+    "scope": "gate probes run against this checkpoint before this record existed"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "fixture_farkas_v1",
+  "failure_stage": "proposal",
+  "failure_category": "proposal_binding",
+  "error": "Response is bound to a different request",
+  "process": null,
+  "causal_attribution": "unassigned; observed boundary only"
+}

@@ -1,0 +1,85 @@
+{
+  "case": "existing_directives",
+  "expected_renames": [],
+  "repaired": {
+    "prepared": true,
+    "user_directives": {
+      "rewriter_preferences": {
+        "enable_definition_unfolding": [
+          "numeral_definition"
+        ]
+      },
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    },
+    "search_context": [
+      {
+        "fvar_in_original": true,
+        "index": 1,
+        "original_name": "x",
+        "search_name": "x"
+      },
+      {
+        "fvar_in_original": true,
+        "index": 2,
+        "original_name": "hK",
+        "search_name": "hK"
+      },
+      {
+        "fvar_in_original": true,
+        "index": 3,
+        "original_name": "hx",
+        "search_name": "hx"
+      }
+    ],
+    "hypothesis_names": [
+      "hK",
+      "hx",
+      "_pb_nonneg_x"
+    ],
+    "free_var_names": [
+      "x"
+    ],
+    "same_ir": {
+      "guard_rejected": false,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:9:2: error: R6 proposal trace decode: property not found: entries"
+    },
+    "directives_removed": {
+      "guard_rejected": true,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:9:2: error: R6 proposal input differs from freshly reified goal/context"
+    },
+    "rename_reverted": null
+  },
+  "unrepaired": {
+    "prepared": true,
+    "user_directives": {
+      "rewriter_preferences": {
+        "enable_definition_unfolding": [
+          "numeral_definition"
+        ]
+      },
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    },
+    "search_context": null,
+    "hypothesis_names": [
+      "hK",
+      "hx",
+      "_pb_nonneg_x"
+    ],
+    "free_var_names": [
+      "x"
+    ],
+    "same_ir": {
+      "guard_rejected": false,
+      "failed": true,
+      "first_error": "/input/Frozen.lean:9:2: error: R6 proposal trace decode: property not found: entries"
+    }
+  }
+}

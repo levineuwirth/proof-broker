@@ -1,0 +1,60 @@
+{
+  "schema_version": "r6-deterministic-outcome-1",
+  "task_id": "bracket-l158",
+  "route": "site_cvc4_default_closer_v1",
+  "outcome": "witness_not_recovered",
+  "recovery": [
+    {
+      "route": "bounded_enumeration",
+      "ok": false,
+      "reason": "search_exhausted"
+    },
+    {
+      "route": "exact_support_bounded",
+      "ok": false,
+      "reason": "exact_search_exhausted"
+    }
+  ],
+  "certificate_tier": 0,
+  "first_error": null,
+  "error_count": 0,
+  "observations": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "solver_started",
+    "solver_finished",
+    "recovery_started",
+    "recovery_finished",
+    "recovery_started",
+    "recovery_finished",
+    "certificate_created",
+    "certificate_bound",
+    "selection_decided",
+    "dispatch_returned",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "broker_closer_returned"
+  ],
+  "resources": {
+    "stages": {
+      "capture-build": {
+        "wall_seconds": 1.2271412080008304,
+        "cgroup_cpu_usec": 1207004,
+        "cgroup_memory_peak_bytes": 183205888,
+        "exit_code": 0
+      },
+      "search": {
+        "wall_seconds": 4.884194797006785,
+        "cgroup_cpu_usec": 5084670,
+        "cgroup_memory_peak_bytes": 742879232,
+        "exit_code": 0
+      }
+    },
+    "wall_seconds": 6.111,
+    "cpu_seconds": 6.292,
+    "peak_memory_bytes": 742879232
+  },
+  "verdict_sha256": null
+}

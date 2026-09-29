@@ -1,0 +1,66 @@
+{
+ "ir_version": "1.0",
+ "source_system": {
+  "name": "c1-cert-recovery-fixture",
+  "version": "1.0"
+ },
+ "tier": "goal",
+ "logic_classification": {
+  "order": "first_order",
+  "first_order_fragment": "LRA",
+  "features_used": [],
+  "decidable_theory": null
+ },
+ "goal": {
+  "shell": {
+   "node": "Const",
+   "name": "False"
+  }
+ },
+ "context": {
+  "type_vars": [],
+  "free_vars": [],
+  "hypotheses": [
+   {
+    "name": "hP",
+    "shell": {
+     "node": "Eq",
+     "type": "Real",
+     "left": {
+      "node": "NumLit",
+      "value": "0",
+      "type": "Real"
+     },
+     "right": {
+      "node": "NumLit",
+      "value": "0",
+      "type": "Real"
+     }
+    }
+   },
+   {
+    "name": "strict",
+    "shell": {
+     "node": "App",
+     "symbol": "LT.lt",
+     "type_args": [],
+     "args": [
+      {
+       "node": "NumLit",
+       "value": "0",
+       "type": "Real"
+      },
+      {
+       "node": "NumLit",
+       "value": "0",
+       "type": "Real"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "type_metadata": {},
+ "definitional_metadata": {},
+ "library_provenance": {}
+}

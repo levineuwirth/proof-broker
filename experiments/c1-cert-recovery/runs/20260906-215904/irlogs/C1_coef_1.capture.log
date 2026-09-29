@@ -1,0 +1,22 @@
+pb_dump_ir: wrote ir/C1_coef_1.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/C1_coef_1.dump.lean:18:2: warning: 'pb_dump_ir"ir/C1_coef_1.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.0188ms
+	elaboration 2.94ms
+	fix level params 0.00963ms
+	instantiate metavars 0.0199ms
+	interpretation 0.102ms
+	linting 15ms
+	module linting 0.00112ms
+	overlappingInstancesLinter 0.904ms
+	parsing 0.269ms
+	process pre-definitions 0.152ms
+	share common exprs 0.0373ms
+	tactic execution 10.4ms
+	tacticAnalysis 2.56ms
+	type checking 6.25ms
+	typeclass inference 7.81ms
+PEAK_RSS_BYTES=688742400
+EXIT=0 WALL=4.3s CAP=8G

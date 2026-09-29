@@ -1,0 +1,93 @@
+{
+  "kind": "reservation",
+  "reservation_id": "c3b29eb864a04d529a98a5d221fb0f88",
+  "attempt_id": "9f853052c5bdb0923c3802a7726b4d57a201ce4958123166a2628f9296c360b2",
+  "episode_id": "l175-draw1",
+  "task_id": "bracket-l175",
+  "draw": 1,
+  "slot_attempt": 1,
+  "policy_sha256": "8972bd55c136c86f87fde19092f5090f71266764e730c4f61e495ab54f885b8c",
+  "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+  "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "task_manifest_sha256": "eff06b10a2b0b8d636ab2fd43eb6855daa88ebf7d647148f9e900d2138a97724",
+  "challenge_sha256": "6d4092dc6864172a10f9a4d1384a9a0be243cb50ed670b73524e812211be3d01",
+  "reserved_micro_usd": 102400,
+  "reservation": {
+    "reserved_micro_usd": 102400,
+    "message_utf8_bytes": 4155,
+    "input_tokens_reserved": 16384,
+    "output_tokens_reserved": 4096,
+    "input_token_bound_status": "byte_ceiling_plus_framing_assumption",
+    "billing_guarantee": false
+  },
+  "pricing_admission": {
+    "schema_version": "r6-pricing-admission-3",
+    "accepted": true,
+    "policy_sha256": "8972bd55c136c86f87fde19092f5090f71266764e730c4f61e495ab54f885b8c",
+    "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+    "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+    "arguments_sha256": "7a316911baf9f0eb410879fe162d3fd29ae68e6f162a7a4dcd219d7cff271915",
+    "body_sha256": "f519a0c71b80901c2556281e10de42b3b4a713202e8880f7311cd244d3bdf138",
+    "message_utf8_bytes": 4155,
+    "sources": {
+      "model": {
+        "raw_sha256": "0e88bcc51004a2360062cb9eea8f737a6bd789d38e3e069f50045093f2109aae",
+        "extract_sha256": "90fba6364cc9ddde98f38c9022cc8ff5e1176050ed7cf217e2d644895876a344",
+        "receipt_sha256": "5c09fc27c9dbbcb44f91d60210b27335bdf79b4429cdbc30ec849a27fbad4dc8"
+      },
+      "caching": {
+        "raw_sha256": "40f28bcd3a579769a43e117ab357d0b41a492613c80c535135c11c8d61b24503",
+        "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+        "receipt_sha256": "f2b403c10d41120cede7fe2e650c39e222f6fb00cbccbc0fc69ba0f4842e1029"
+      }
+    },
+    "nano_usd_per_token": {
+      "input": 2500,
+      "cached_input": 250,
+      "output": 15000,
+      "cache_write": 2500
+    },
+    "reserved_micro_usd": 102400,
+    "applicability": {
+      "source_conditions": {
+        "long_context": {
+          "input_tokens_threshold": 272000,
+          "comparison": "greater_than",
+          "input_multiplier": "2",
+          "output_multiplier": "1.5",
+          "scope": "full_session",
+          "service_tiers": [
+            "standard",
+            "batch",
+            "flex"
+          ]
+        },
+        "regional_processing": {
+          "uplift_percent": 10,
+          "scope": "regional_processing_endpoints"
+        }
+      },
+      "input_tokens_reserved": 16384,
+      "input_tokens_upper_bound_exclusive": 272000,
+      "endpoint": {
+        "host": "api.openai.com",
+        "path": "/v1/responses",
+        "port": 443,
+        "scheme": "https"
+      },
+      "long_context_surcharge_applicable": false,
+      "regional_surcharge_applicable": false,
+      "session_scope": "one_stateless_request",
+      "scope": "local policy/input applicability under the existing token-bound assumption; not billing attestation"
+    },
+    "evaluated_at_unix": 1790240708.8623219,
+    "billing_guarantee": false,
+    "evidence_scope": "envelope recomputed from the request under the contract; local retained-source, clock and request consistency; no remote pricing or inference attestation"
+  },
+  "reserved_at_unix": 1790240709,
+  "domain": "r6-cohort-ledger-1",
+  "sequence": 15,
+  "previous_hash": "40f3e6e76ca07522f4b203e516febe2f7954608b7687192ca4fdb9159f946ec9",
+  "row_hash": "12e11d96ff3a819586cecbc866633e94567eae3e0d56a0370433e668f44f8451"
+}

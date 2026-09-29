@@ -1,0 +1,12 @@
+{
+  "python": "/usr/bin/python3.14",
+  "runtime_path": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/pilot-runtime/7e32ccee50b1476d867c4526bd40f5549bcf3bd17e040ce0313c02ac04e60231/stdlib",
+  "actor_source": "/home/jeans/Repos/research/proof-broker/experiments/r6/pilot_https.py",
+  "network_stage": "/home/jeans/Repos/research/proof-broker/experiments/r6/pilot_network.py",
+  "unused_legacy_responder": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/fixture",
+  "assembler": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/proposal_driver.exe",
+  "verifier": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/verify_certificate.exe",
+  "checker": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/checker/.lake/build/bin/r6-replay",
+  "runtime_pin": "pilot-runtime-v1; diverges from provider-runtime-v1 as recorded in the policy",
+  "downstream_setup": "frozen proposal_episode.setup; earlier request policies not executed"
+}

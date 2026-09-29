@@ -364,10 +364,13 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                3. Tier 2 (multi-la_generic case split) — extracts
                   per-branch Farkas witnesses from disjunctive
                   subproofs.
-               4. Tier 1 (internal closer) — runs our own bounded
-                  Farkas search over the IR directly, rescuing the
-                  Farkas-shaped cases cvc5 closes via theory
-                  rewrites with no la_generic.
+               4. Tier 1 (internal closer) — runs our own Farkas
+                  search over the IR directly (bounded enumeration,
+                  then exact support-bounded recovery where that came
+                  up empty), rescuing the Farkas-shaped cases cvc5
+                  closes via theory rewrites with no la_generic, and
+                  the ones whose la_generic addresses an
+                  integer-tightened literal the matcher cannot align.
                5. Tier 0 oracle — falls back when nothing else
                   produced a soundness-checkable witness. *)
             let mk_oracle () =
@@ -390,7 +393,7 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                 ~witness
             in
             let try_internal_closer () =
-              match Farkas_search.try_close ir with
+              match Farkas_search.try_close_then_exact ir with
               | Ok witness -> mk_farkas witness
               | Error _ -> mk_oracle ()
             in
@@ -486,7 +489,7 @@ let dispatch ~rewrite_trace_hash (ir : Ir.t) : Adapter.result =
                    (match Alethe_farkas.extract ir proof_str with
                     | Ok witness -> mk_farkas witness
                     | Error _ when prefer_farkas ->
-                      (match Farkas_search.try_close ir with
+                      (match Farkas_search.try_close_then_exact ir with
                        | Ok witness -> mk_farkas witness
                        | Error _ ->
                          (match try_tier3 proof_str with

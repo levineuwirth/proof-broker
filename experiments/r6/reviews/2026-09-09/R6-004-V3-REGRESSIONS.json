@@ -1,0 +1,732 @@
+{
+  "scope": "Fresh focused, artifact-audit and gate controls on disposable copies; five native episodes are retained inputs, not rerun.",
+  "suites": {
+    "focused": {
+      "passed": true,
+      "expected_cases": [
+        "canary_derivation_frozen",
+        "canary_nonce_validated",
+        "canary_record_omits_value",
+        "delivery_outside_artifact_tree",
+        "delivery_value_absent_from_command",
+        "encoded_forms_declared",
+        "scan_detects_each_form",
+        "scan_authorization_representation",
+        "scan_detects_gzip_member",
+        "scan_decompression_limit",
+        "scan_unreadable_rejects",
+        "scan_unreadable_directory",
+        "scan_symlink_rejected",
+        "scan_findings_omit_value",
+        "scan_path_disclosure",
+        "scan_irregular_name_safe",
+        "scan_inventory_independent",
+        "scan_missing_target_rejected",
+        "final_record_structurally_safe",
+        "safe_record_exact_keys",
+        "finalization_order_declared",
+        "receipt_requires_exact_value",
+        "receipt_expectation_derived",
+        "source_lock_guard",
+        "missing_case_rejected",
+        "duplicate_case_rejected"
+      ],
+      "check_count": 26,
+      "checks": [
+        {
+          "name": "canary_derivation_frozen",
+          "passed": true,
+          "detail": {
+            "derivation": "r6-004-synthetic-canary-v1",
+            "tag": "R6CANARY",
+            "canary_sha256": "72ee1fa65258b630e8dabf3013cac5e256e02cdf1bff961b288be5fd12092bc5"
+          }
+        },
+        {
+          "name": "canary_nonce_validated",
+          "passed": true,
+          "detail": "rejected"
+        },
+        {
+          "name": "canary_record_omits_value",
+          "passed": true,
+          "detail": {
+            "schema_version": "r6-canary-1",
+            "nonce": "65fbcd5740f4afd9a4460de756d81114b3ce7c33da1250c89fecbcaef8b45a15",
+            "derivation": "r6-004-synthetic-canary-v1",
+            "tag": "R6CANARY",
+            "scheme": "Bearer",
+            "authorization_sha256": "5f37cea6e13c0f7e62491f2e69612ce890e8e75129377451abee46a26fd6ef63",
+            "delivery": "private_read_only_file",
+            "value_retained": false,
+            "scope": "synthetic non-secret canary; reconstructible from this nonce by design, unlike a real credential; receipt digest is a test commitment only"
+          }
+        },
+        {
+          "name": "delivery_outside_artifact_tree",
+          "passed": true,
+          "detail": {
+            "mode": "600",
+            "outside_artifact_tree": true,
+            "removed_after_use": true
+          }
+        },
+        {
+          "name": "delivery_value_absent_from_command",
+          "passed": true,
+          "detail": {
+            "argv_carries": "guest path only",
+            "environment_carries": [
+              "LEAN_ABORT_ON_PANIC",
+              "PATH"
+            ]
+          }
+        },
+        {
+          "name": "encoded_forms_declared",
+          "passed": true,
+          "detail": {
+            "representations": [
+              "token",
+              "authorization"
+            ],
+            "forms": [
+              "utf-8",
+              "utf-8-lower",
+              "utf-8-upper",
+              "base64",
+              "hex",
+              "utf-16-le",
+              "utf-16-be"
+            ]
+          }
+        },
+        {
+          "name": "scan_detects_each_form",
+          "passed": true,
+          "detail": {
+            "patterns_detected": 14,
+            "disclosures": 21
+          }
+        },
+        {
+          "name": "scan_authorization_representation",
+          "passed": true,
+          "detail": {
+            "representation": "authorization",
+            "form": "base64",
+            "token_patterns_matched": 0
+          }
+        },
+        {
+          "name": "scan_detects_gzip_member",
+          "passed": true,
+          "detail": {
+            "gzip_streams_scanned": 1,
+            "raw_stream_clean": true,
+            "findings": [
+              {
+                "path": "artifact.ndjson.gz",
+                "path_sha256": "e6c5227539a74876a3e96602c2c47390787d0fbcb5d0ba1d6bd215c45c15b0a6",
+                "stream": "gzip",
+                "representation": "token",
+                "form": "utf-8",
+                "offset": 9
+              }
+            ]
+          }
+        },
+        {
+          "name": "scan_decompression_limit",
+          "passed": true,
+          "detail": {
+            "limit_bytes": 1024,
+            "incompletely_scanned": [
+              "large.gz"
+            ]
+          }
+        },
+        {
+          "name": "scan_unreadable_rejects",
+          "passed": true,
+          "detail": {
+            "incompletely_scanned": [
+              "locked.json"
+            ],
+            "enforced": true
+          }
+        },
+        {
+          "name": "scan_unreadable_directory",
+          "passed": true,
+          "detail": {
+            "unreadable_directories": [
+              "hidden"
+            ],
+            "target_present_once_readable": true
+          }
+        },
+        {
+          "name": "scan_symlink_rejected",
+          "passed": true,
+          "detail": {
+            "policy": "symlinks are rejected, never followed",
+            "irregular_entries": 1
+          }
+        },
+        {
+          "name": "scan_findings_omit_value",
+          "passed": true,
+          "detail": {
+            "findings_record": [
+              "form",
+              "offset",
+              "path",
+              "path_sha256",
+              "representation",
+              "stream"
+            ],
+            "value_reemitted": false
+          }
+        },
+        {
+          "name": "scan_path_disclosure",
+          "passed": true,
+          "detail": {
+            "stream": "path",
+            "identifier": "path_sha256",
+            "name_reemitted": false
+          }
+        },
+        {
+          "name": "scan_irregular_name_safe",
+          "passed": true,
+          "detail": {
+            "kind": "symlink",
+            "identifier": "name_sha256",
+            "name_reemitted": false
+          }
+        },
+        {
+          "name": "scan_inventory_independent",
+          "passed": true,
+          "detail": {
+            "walked": [
+              "a.json",
+              "nested/b.log",
+              "nested/c.gz"
+            ],
+            "source": "filesystem walk; no reported target list"
+          }
+        },
+        {
+          "name": "scan_missing_target_rejected",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Publication inventory target is missing: /home/jeans/Repos/research/proof-broker/experiments/r6/no-such-target"
+          }
+        },
+        {
+          "name": "final_record_structurally_safe",
+          "passed": true,
+          "detail": {
+            "safe_shapes": [
+              "sha256",
+              "int",
+              "bool",
+              "null"
+            ],
+            "report_scanned_separately": true
+          }
+        },
+        {
+          "name": "safe_record_exact_keys",
+          "passed": true,
+          "detail": {
+            "enforced": "exact key set plus digest/int/bool/null values"
+          }
+        },
+        {
+          "name": "finalization_order_declared",
+          "passed": true,
+          "detail": {
+            "order": [
+              "artifacts",
+              "scan",
+              "scan_report",
+              "report_scan",
+              "terminal_event",
+              "seal"
+            ],
+            "post_scan_writes": "exact key set of digests, counts, booleans"
+          }
+        },
+        {
+          "name": "receipt_requires_exact_value",
+          "passed": true,
+          "detail": {
+            "presence_bit_sufficient": false,
+            "declared_wrong_value": "Bearer r6-not-the-canary-0000000000000000"
+          }
+        },
+        {
+          "name": "receipt_expectation_derived",
+          "passed": true,
+          "detail": {
+            "source": "retained nonce and frozen generator"
+          }
+        },
+        {
+          "name": "source_lock_guard",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential policy requires its frozen source revision"
+          }
+        },
+        {
+          "name": "missing_case_rejected",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "missing/extra cases: {'b'}"
+          }
+        },
+        {
+          "name": "duplicate_case_rejected",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "duplicate case"
+          }
+        }
+      ]
+    },
+    "audits": {
+      "passed": true,
+      "expected_cases": [
+        "d1_retained_only",
+        "reflected_canary_audited",
+        "injected_log_leak",
+        "injected_metadata_leak",
+        "injected_gzip_leak",
+        "missing_scanner",
+        "omitted_scan_target",
+        "forged_passing_report",
+        "forged_receipt_digest",
+        "forged_scan_hash_and_size",
+        "phantom_scan_target",
+        "duplicate_scan_target",
+        "altered_request_reservation",
+        "altered_route_attribution",
+        "altered_client_arguments",
+        "forged_verdict_task_binding",
+        "altered_reconstruction_context",
+        "legacy_broker_v1",
+        "legacy_broker_v2",
+        "legacy_broker_v3",
+        "legacy_c8_v1",
+        "legacy_d1_fixture",
+        "legacy_c8_fixture",
+        "legacy_d1_envelope",
+        "legacy_c8_envelope",
+        "legacy_alternate_envelope",
+        "legacy_d1_provider",
+        "legacy_c8_provider",
+        "legacy_alternate_provider",
+        "prior_artifacts_preserved"
+      ],
+      "check_count": 30,
+      "checks": [
+        {
+          "name": "d1_retained_only",
+          "passed": true,
+          "detail": {
+            "accepted": true,
+            "publication_accepted": true,
+            "retained_files": 187,
+            "coverage": {
+              "recomputed": 185,
+              "recorded_not_recomputed": 8,
+              "files_scanned": 193
+            }
+          }
+        },
+        {
+          "name": "reflected_canary_audited",
+          "passed": true,
+          "detail": {
+            "accepted": false,
+            "publication_accepted": false,
+            "retained_files": 124,
+            "coverage": {
+              "recomputed": 122,
+              "recorded_not_recomputed": 2,
+              "files_scanned": 124
+            },
+            "scope": "sealed evidence preserved through a publication rejection"
+          }
+        },
+        {
+          "name": "injected_log_leak",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: recorded findings differ from recomputation: stages/proposal-1/supervisor.stderr",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "stages/proposal-1/supervisor.stderr"
+            ]
+          }
+        },
+        {
+          "name": "injected_metadata_leak",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: recorded findings differ from recomputation: provider-metadata.json",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "provider-metadata.json"
+            ]
+          }
+        },
+        {
+          "name": "injected_gzip_leak",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: recorded findings differ from recomputation: solution.ndjson.gz",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "solution.ndjson.gz"
+            ]
+          }
+        },
+        {
+          "name": "missing_scanner",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: publication record is not retained: publication-scan.json",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "publication-scan.json"
+            ]
+          }
+        },
+        {
+          "name": "omitted_scan_target",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: scan inventory omits a publication target",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "publication-scan.json"
+            ]
+          }
+        },
+        {
+          "name": "forged_passing_report",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: reported disclosures differ from recomputation",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "publication-scan.json"
+            ]
+          }
+        },
+        {
+          "name": "forged_receipt_digest",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: credential receipt differs from endpoint observations",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "credential-receipt.json"
+            ]
+          }
+        },
+        {
+          "name": "forged_scan_hash_and_size",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: recorded scan provenance differs from recomputation: accounting.json",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "publication-scan.json"
+            ]
+          }
+        },
+        {
+          "name": "phantom_scan_target",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: scan inventory names a target that is neither present nor a frozen build product",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "publication-scan.json"
+            ]
+          }
+        },
+        {
+          "name": "duplicate_scan_target",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: duplicate scan inventory entries",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "publication-scan.json"
+            ]
+          }
+        },
+        {
+          "name": "altered_request_reservation",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: reservation receipt differs",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "events.ndjson"
+            ]
+          }
+        },
+        {
+          "name": "altered_route_attribution",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: recovery start attribution",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "events.ndjson"
+            ]
+          }
+        },
+        {
+          "name": "altered_client_arguments",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: client arguments differ from frozen messages",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "client-arguments.json"
+            ]
+          }
+        },
+        {
+          "name": "forged_verdict_task_binding",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: verdict challenge binding",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "events.ndjson",
+              "verdict.json"
+            ]
+          }
+        },
+        {
+          "name": "altered_reconstruction_context",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "Credential audit: reconstruction context differs from the frozen obligation",
+            "coherently_resealed": true,
+            "changed_artifacts": [
+              "events.ndjson",
+              "stages/reconstruct/output/context.json"
+            ]
+          }
+        },
+        {
+          "name": "legacy_broker_v1",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_broker_v2",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_broker_v3",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_c8_v1",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_d1_fixture",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_c8_fixture",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_d1_envelope",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_c8_envelope",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_alternate_envelope",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_d1_provider",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_c8_provider",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "legacy_alternate_provider",
+          "passed": true,
+          "detail": {
+            "accepted": true
+          }
+        },
+        {
+          "name": "prior_artifacts_preserved",
+          "passed": true,
+          "detail": {
+            "checked_files": 9986,
+            "changed": 0,
+            "missing": 0,
+            "git_base": "ac0f50f"
+          }
+        }
+      ]
+    },
+    "gates": {
+      "passed": true,
+      "expected_cases": [
+        "recount_missing_episode",
+        "recount_missing_log",
+        "recount_suite_artifact_leak",
+        "recount_incomplete_status",
+        "recount_substituted_episode",
+        "recount_incomplete_case_set"
+      ],
+      "check_count": 6,
+      "checks": [
+        {
+          "name": "recount_missing_episode",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "R6-004 recount: episode population differs from the frozen native case set",
+            "gate": "publication",
+            "unmutated_copy_passes": true
+          }
+        },
+        {
+          "name": "recount_missing_log",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "R6-004 recount: missing episode process log: d1_valid",
+            "gate": "publication",
+            "unmutated_copy_passes": true
+          }
+        },
+        {
+          "name": "recount_suite_artifact_leak",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "R6-004 recount: unexpected canary disclosure in the publication bundle",
+            "gate": "publication",
+            "unmutated_copy_passes": true
+          }
+        },
+        {
+          "name": "recount_incomplete_status",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "R6-004 recount: checkpoint is not marked complete",
+            "gate": "complete_checkpoint",
+            "unmutated_copy_passes": true
+          }
+        },
+        {
+          "name": "recount_substituted_episode",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "R6-004 recount: episode directory holds a different canned case: d1_missing_credential",
+            "gate": "complete_checkpoint",
+            "unmutated_copy_passes": true
+          }
+        },
+        {
+          "name": "recount_incomplete_case_set",
+          "passed": true,
+          "detail": {
+            "rejected": true,
+            "reason": "R6-004 recount: suite case set differs from the frozen module: credential-units.json",
+            "gate": "complete_checkpoint",
+            "unmutated_copy_passes": true
+          }
+        }
+      ]
+    }
+  },
+  "gate_suite_validation": {
+    "sha256": "c444e18fa59ea2d8ca6f9738d469c6d98ef13fd28f0fa8d790b7e6089826c8c4",
+    "count": 6,
+    "frozen_case_set": true,
+    "scope": "validated at publication; the probes call recount against a checkpoint that predates their own results, so recount cannot validate this suite"
+  },
+  "fresh_checks": 62,
+  "passed": true
+}

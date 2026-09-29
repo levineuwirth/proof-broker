@@ -1,0 +1,321 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "policy_frozen_disabled",
+    "ledger_path_derived_from_policy_digest",
+    "authorization_scope_one_function",
+    "ledger_activation_requires_signature",
+    "ledger_one_transmission_across_runs",
+    "ledger_release_only_established_presend_failure",
+    "ledger_presend_attempt_limit",
+    "ledger_ambiguous_outcome_consumed",
+    "ledger_stale_counters_do_not_release",
+    "ledger_serializes_reservations",
+    "ledger_money_ceiling",
+    "ledger_refuses_recreation_and_truncation",
+    "permit_reuse_refused",
+    "grant_single_use",
+    "actor_credential_format_classified",
+    "actor_grant_before_first_header_byte",
+    "actor_commitment_recorded",
+    "actor_permit_verified_against_ledger",
+    "actor_live_rejects_unsigned_policy",
+    "interpretation_splits_local_send_from_remote_receipt",
+    "network_stage_receipts_owned_by_supervisor",
+    "network_stage_isolation_switch",
+    "attribution_passed_through",
+    "finalize_seals_every_failure",
+    "live_publication_pending_not_accepted",
+    "counters_separate",
+    "ca_bundle_pinned",
+    "live_refuses_fixture",
+    "rehearsal_requires_fixture",
+    "endpoint_allowlist_exact"
+  ],
+  "check_count": 30,
+  "checks": [
+    {
+      "name": "policy_frozen_disabled",
+      "passed": true,
+      "detail": {
+        "live_enabled": false,
+        "authorization": null,
+        "live_ledger_activated": false,
+        "rehearsal_ledger_activated": true
+      }
+    },
+    {
+      "name": "ledger_path_derived_from_policy_digest",
+      "passed": true,
+      "detail": {
+        "live_ledger": "ledgers/live/d63a6680d591201b43332134be4f53c3a5a91ce683bb80b04ebc4d6739188e0b.ndjson",
+        "derived_from": "sha256 of the approved policy bytes",
+        "rehearsal_ledger": "ledgers/rehearsal/d63a6680d591201b43332134be4f53c3a5a91ce683bb80b04ebc4d6739188e0b.ndjson"
+      }
+    },
+    {
+      "name": "authorization_scope_one_function",
+      "passed": true,
+      "detail": {
+        "host_and_actor_share": "campaign_ledger.authorization_scope",
+        "rejections": [
+          "campaign_authorization_approver",
+          "campaign_authorization_maximum_micro_usd",
+          "campaign_authorization_maximum_presend_attempts",
+          "campaign_authorization_money",
+          "campaign_authorization_subject",
+          "campaign_authorization_timestamp",
+          "campaign_authorization_transmissions"
+        ]
+      }
+    },
+    {
+      "name": "ledger_activation_requires_signature",
+      "passed": true,
+      "detail": {
+        "unactivated_digest_has_no_authority": true,
+        "activation_once": true
+      }
+    },
+    {
+      "name": "ledger_one_transmission_across_runs",
+      "passed": true,
+      "detail": {
+        "runs": [
+          "run-a",
+          "run-b"
+        ],
+        "second_run_refused": "campaign_transmissions_exhausted",
+        "state": {
+          "transmissions_consumed": 1,
+          "reservations": 1
+        }
+      }
+    },
+    {
+      "name": "ledger_release_only_established_presend_failure",
+      "passed": true,
+      "detail": {
+        "released": true,
+        "presend_attempts_used": 1,
+        "slot_available_again": true
+      }
+    },
+    {
+      "name": "ledger_presend_attempt_limit",
+      "passed": true,
+      "detail": {
+        "maximum_presend_attempts": 2,
+        "third_refused": true
+      }
+    },
+    {
+      "name": "ledger_ambiguous_outcome_consumed",
+      "passed": true,
+      "detail": {
+        "no_process_record": "unknown, consumed",
+        "counters_without_grant": "unknown, consumed",
+        "terminated_without_transport_record": "released"
+      }
+    },
+    {
+      "name": "ledger_stale_counters_do_not_release",
+      "passed": true,
+      "detail": {
+        "grant_with_stale_zero_counters": "send_grant / send_outcome unknown; consumed"
+      }
+    },
+    {
+      "name": "ledger_serializes_reservations",
+      "passed": true,
+      "detail": {
+        "open_reservation_blocks_second": true
+      }
+    },
+    {
+      "name": "ledger_money_ceiling",
+      "passed": true,
+      "detail": {
+        "slot_available_but_money_exhausted": true
+      }
+    },
+    {
+      "name": "ledger_refuses_recreation_and_truncation",
+      "passed": true,
+      "detail": {
+        "truncated": "refused",
+        "tampered": "refused",
+        "missing_after_activation": "refused, not recreated"
+      }
+    },
+    {
+      "name": "permit_reuse_refused",
+      "passed": true,
+      "detail": {
+        "used_permit_refused": "campaign_permit_not_last_row",
+        "second_reconcile_refused": "campaign_reservation_not_open"
+      }
+    },
+    {
+      "name": "grant_single_use",
+      "passed": true,
+      "detail": {
+        "single_use": true,
+        "bound_to_reservation": true
+      }
+    },
+    {
+      "name": "actor_credential_format_classified",
+      "passed": true,
+      "detail": {
+        "classified": "credential_format",
+        "connections": 0,
+        "grant": null,
+        "traceback": false
+      }
+    },
+    {
+      "name": "actor_grant_before_first_header_byte",
+      "passed": true,
+      "detail": {
+        "order": "tls_verified < grant.at_ns < header_send",
+        "send_outcome": "returned"
+      }
+    },
+    {
+      "name": "actor_commitment_recorded",
+      "passed": true,
+      "detail": {
+        "commitment": "sha256(domain:nonce:header)",
+        "value_absent_from_records": true
+      }
+    },
+    {
+      "name": "actor_permit_verified_against_ledger",
+      "passed": true,
+      "detail": {
+        "foreign_ledger_refused": "campaign_permit_not_last_row",
+        "connections": 0
+      }
+    },
+    {
+      "name": "actor_live_rejects_unsigned_policy",
+      "passed": true,
+      "detail": {
+        "disabled_policy": "campaign_live_disabled",
+        "zero_money_signed_policy": "campaign_authorization_maximum_micro_usd",
+        "connections": 0
+      }
+    },
+    {
+      "name": "interpretation_splits_local_send_from_remote_receipt",
+      "passed": true,
+      "detail": {
+        "local_send_checked_without_receiver": true,
+        "remote_receipt_unobservable_recorded_as_none": true
+      }
+    },
+    {
+      "name": "network_stage_receipts_owned_by_supervisor",
+      "passed": true,
+      "detail": {
+        "receipt_owner": "supervise.py",
+        "network_stage_appends": 0
+      }
+    },
+    {
+      "name": "network_stage_isolation_switch",
+      "passed": true,
+      "detail": {
+        "rehearsal": "unshare-net kept",
+        "live": "network shared, resolver mounted",
+        "grant_slot": "writable bind in both"
+      }
+    },
+    {
+      "name": "attribution_passed_through",
+      "passed": true,
+      "detail": {
+        "consumer_parameters": [
+          "proposer",
+          "route"
+        ],
+        "policy_attribution": {
+          "certificate_assembler": "sdk_proposal_assembler_v1",
+          "consumer": "provider_episode.consume (R6-003) with proposer and route passed through",
+          "rehearsal_witness_proposer": "canned_provider_response",
+          "scope": "attribution names the observed proposer in every receipt; no canned label is reused for a live witness",
+          "witness_proposer": "live_model_response"
+        }
+      }
+    },
+    {
+      "name": "finalize_seals_every_failure",
+      "passed": true,
+      "detail": {
+        "failed_run": "scanned, terminated, sealed",
+        "execute_catches_stage_failure_before_finalize": true
+      }
+    },
+    {
+      "name": "live_publication_pending_not_accepted",
+      "passed": true,
+      "detail": {
+        "live": "episode_finished with accepted=false until the operator scan is bound"
+      }
+    },
+    {
+      "name": "counters_separate",
+      "passed": true,
+      "detail": {
+        "accounting_fields": [
+          "transmissions_started",
+          "transmissions_returned",
+          "grant_committed",
+          "send_outcome",
+          "ledger_outcome",
+          "live_transmissions_consumed",
+          "live_usage_ceiling_usd"
+        ]
+      }
+    },
+    {
+      "name": "ca_bundle_pinned",
+      "passed": true,
+      "detail": {
+        "bundle": "/etc/ca-certificates/extracted/tls-ca-bundle.pem",
+        "certificates": 121,
+        "sha256": "8c97794a899a32666593979dc7adfaec8bda2b420eb092ff0d987e44ad0bf6ea"
+      }
+    },
+    {
+      "name": "live_refuses_fixture",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "live refuses fixture inputs"
+      }
+    },
+    {
+      "name": "rehearsal_requires_fixture",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "rehearsal requires --fixture, --server-cert and --server-key"
+      }
+    },
+    {
+      "name": "endpoint_allowlist_exact",
+      "passed": true,
+      "detail": {
+        "endpoint": {
+          "host": "api.openai.com",
+          "path": "/v1/responses",
+          "port": 443,
+          "scheme": "https"
+        },
+        "enforced_by": "actor endpoint check and audited command"
+      }
+    }
+  ]
+}

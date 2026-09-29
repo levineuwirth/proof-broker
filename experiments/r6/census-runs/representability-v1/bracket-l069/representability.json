@@ -1,0 +1,70 @@
+{
+  "site_id": "bracket-l069",
+  "family": "Bracket.lift_cell",
+  "exposure_class": "prior_input_premise_formula",
+  "class": "rational_certificate",
+  "fragment": "LIA",
+  "row_count": 18,
+  "row_names": [
+    "hx",
+    "hz",
+    "hzh",
+    "hZ",
+    "hwidth",
+    "hZval",
+    "hprod_le",
+    "hbound",
+    "hmul",
+    "hnum",
+    "_pb_nonneg_Zmax",
+    "_pb_nonneg_atom_0",
+    "_pb_nonneg_atom_1",
+    "_pb_nonneg_atom_2",
+    "_pb_nonneg_atom_3",
+    "_pb_nonneg_atom_4",
+    "_pb_nonneg_atom_5",
+    "neg_goal"
+  ],
+  "neg_goal_rows": 1,
+  "variables": [
+    "Zmax",
+    "_pb_atom_0",
+    "_pb_atom_1",
+    "_pb_atom_2",
+    "_pb_atom_3",
+    "_pb_atom_4",
+    "_pb_atom_5"
+  ],
+  "reifier_data_locals": [
+    "c",
+    "x",
+    "z",
+    "zhigh"
+  ],
+  "reifier_dropped_propositions": [
+    {
+      "name": "hrec",
+      "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+    }
+  ],
+  "farkas_omissions": [],
+  "sdk_rows_rational_certificate": true,
+  "certificate": [
+    {
+      "hypothesis": "hx",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hz",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "certificate_support": 3,
+  "certificate_uses_neg_goal": true,
+  "certificate_scope": "existence proof over Q by exact simplex on the SDK rows; rehearsal fixture only; never model-visible; not the deterministic arm",
+  "seconds": 6.7
+}

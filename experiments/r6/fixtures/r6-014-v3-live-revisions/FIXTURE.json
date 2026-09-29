@@ -1,0 +1,83 @@
+{
+  "schema_version": "r6-live-shaped-fixture-3",
+  "synthetic": true,
+  "source_runs": "cohort-runs-v9",
+  "runs": [
+    {
+      "run": "l069-draw1",
+      "kind": "send_grant",
+      "reservation_id": "276254acb6a2447caa4aa456ee55ac79",
+      "revision": 1
+    },
+    {
+      "run": "l070-draw1",
+      "kind": "send_grant",
+      "reservation_id": "6c46fddfb98e47a79b4649ad9d7c6cd8",
+      "revision": 1
+    },
+    {
+      "run": "l071-draw1",
+      "kind": "send_grant",
+      "reservation_id": "1e3c30ae492f4570970d8e41000027a2",
+      "revision": 1
+    },
+    {
+      "run": "l078-draw1",
+      "kind": "send_grant",
+      "reservation_id": "71d0fc771d94495db3d7804430c85aa8",
+      "revision": 1
+    },
+    {
+      "run": "l096-draw1",
+      "kind": "send_grant",
+      "reservation_id": "62e377d7dda14b3895e31ee3a323a3b6",
+      "revision": 1
+    },
+    {
+      "run": "l166-draw1",
+      "kind": "send_grant",
+      "reservation_id": "761ff69c6b204dbdb4758ff60ba93783",
+      "revision": 2
+    },
+    {
+      "run": "l170-draw1",
+      "kind": "send_grant",
+      "reservation_id": "2ed751ba40f04307959d729f4605cd88",
+      "revision": 2
+    },
+    {
+      "run": "l175-draw1",
+      "kind": "send_grant",
+      "reservation_id": "b85291ca90114b87a7b049215749efb6",
+      "revision": 2
+    },
+    {
+      "run": "l178-draw1",
+      "kind": "send_grant",
+      "reservation_id": "e826fcec524244788d31f7dd3feb44f0",
+      "revision": 3
+    },
+    {
+      "run": "l204-draw1",
+      "kind": "send_grant",
+      "reservation_id": "2e29115678c94759a615ecbde1090364",
+      "revision": 3
+    },
+    {
+      "run": "l099-draw1",
+      "kind": "send_grant",
+      "reservation_id": "a4920e6998ca4845a9d7595fd156ef8c",
+      "revision": 3
+    }
+  ],
+  "revisions": {
+    "1": "signed: eleven sites, draw 1; capture captures/signing",
+    "2": "authorize: plus l069 and l170 draw 2, later approval; capture captures/block-2",
+    "3": "revise: pricing refresh, same authority; capture captures/pricing-refresh"
+  },
+  "captures": "byte copies of sources/pricing-approved-campaign-3 at distinct paths; no newly fetched price is claimed",
+  "test_policy_sha256": "322a7b5f01ff1e4b5bd9b5c0c9e97fb156aae441013863a8e7dce99aff6caf24",
+  "operator_credential": "credential.derive(OPERATOR_NONCE); synthetic, never a real credential",
+  "program_sha256": "1d78c6f201277c8b9d105dfb5ddd0fe9b639654088d835742e526da009fecbcf",
+  "scope": "no provider was contacted; no real credential; nothing here authorizes or funds a transmission"
+}

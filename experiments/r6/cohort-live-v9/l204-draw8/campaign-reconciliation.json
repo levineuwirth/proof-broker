@@ -1,0 +1,33 @@
+{
+  "reservation_id": "d42c5f1d69294ad2af9eb1e5f6ef59b6",
+  "episode_id": "l204-draw8",
+  "task_id": "bracket-l204",
+  "draw": 8,
+  "evidence": {
+    "process_sha256": "c15a72abe1b90e8c49bd7f3c9489794121aac991d257e3c8e2e754eb54fa6339",
+    "http_sha256": "5c13728fe84a807ec852653031c6b4dcf1c600660b1ed7643b3b147b0feb9ac2",
+    "grant_file_sha256": "38bb4fa3748b9172c10156f3f8e9d9fc3a5406840fa9192f07c2cb7e533f44f7",
+    "launched": true,
+    "process_exit_code": 0,
+    "record_read_failures": []
+  },
+  "launched": true,
+  "termination_established": true,
+  "reconciled_at_unix": 1790696554,
+  "kind": "send_grant",
+  "grant": {
+    "at_ns": 163391839946170,
+    "domain": "r6-campaign-send-grant-2",
+    "episode_id": "l204-draw8",
+    "grant_id": "a71f64b98ab04f41acf17b24ca49f3ee",
+    "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+    "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+    "reservation_id": "d42c5f1d69294ad2af9eb1e5f6ef59b6"
+  },
+  "send_outcome": "returned",
+  "marker_sha256": "38bb4fa3748b9172c10156f3f8e9d9fc3a5406840fa9192f07c2cb7e533f44f7",
+  "domain": "r6-cohort-ledger-1",
+  "sequence": 178,
+  "previous_hash": "a678d49232fab63d74bb808d4834d3039966b4b59a4eaf7b403a4398e02f35d1",
+  "row_hash": "8ce7d7806449299be813c8fed7a1056cc390159ab675bd1d49d0fa6e81a3ad26"
+}

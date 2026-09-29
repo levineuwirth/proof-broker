@@ -1,0 +1,5 @@
+name = "R6C8Control"
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.32.0"

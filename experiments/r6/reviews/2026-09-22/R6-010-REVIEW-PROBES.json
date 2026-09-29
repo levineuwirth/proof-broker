@@ -1,0 +1,136 @@
+{
+  "complete": true,
+  "expected_cases": [
+    "wrong_challenge_export",
+    "false_local_type",
+    "missing_required_artifact_binding"
+  ],
+  "live_model_calls": 0,
+  "program_sha256": "3740234d92928786f78bea3b4247092199ffc783957072bfe3ae2f3d132f3af6",
+  "real_credentials_read": 0,
+  "results": {
+    "false_local_type": {
+      "mutated": {
+        "accepted": true,
+        "checked_names": [
+          "census_reproduced_from_pristine_bytes",
+          "comments_and_strings_are_not_sites",
+          "site_identity_is_the_byte_span",
+          "forms_classified_exactly_once",
+          "capture_helper_differs_only_by_parameterization",
+          "permitted_modification_is_one_token_and_one_import",
+          "site_manifests_bound",
+          "line70_reproduces_the_r6_000_control",
+          "families_and_exposure_recorded",
+          "membership_partitions_and_binds_the_census",
+          "freeze_bound_to_its_sources"
+        ],
+        "skipped_names": [
+          "exclusion_records_failing_stage_and_stderr"
+        ]
+      },
+      "unmutated": {
+        "accepted": true,
+        "checked_names": [
+          "census_reproduced_from_pristine_bytes",
+          "comments_and_strings_are_not_sites",
+          "site_identity_is_the_byte_span",
+          "forms_classified_exactly_once",
+          "capture_helper_differs_only_by_parameterization",
+          "permitted_modification_is_one_token_and_one_import",
+          "site_manifests_bound",
+          "line70_reproduces_the_r6_000_control",
+          "families_and_exposure_recorded",
+          "membership_partitions_and_binds_the_census",
+          "freeze_bound_to_its_sources"
+        ],
+        "skipped_names": [
+          "exclusion_records_failing_stage_and_stderr"
+        ]
+      }
+    },
+    "missing_required_artifact_binding": {
+      "mutated": {
+        "accepted": true,
+        "checked_names": [
+          "census_reproduced_from_pristine_bytes",
+          "comments_and_strings_are_not_sites",
+          "site_identity_is_the_byte_span",
+          "forms_classified_exactly_once",
+          "capture_helper_differs_only_by_parameterization",
+          "permitted_modification_is_one_token_and_one_import",
+          "site_manifests_bound",
+          "line70_reproduces_the_r6_000_control",
+          "families_and_exposure_recorded",
+          "membership_partitions_and_binds_the_census",
+          "freeze_bound_to_its_sources"
+        ],
+        "skipped_names": [
+          "exclusion_records_failing_stage_and_stderr"
+        ]
+      },
+      "unmutated": {
+        "accepted": true,
+        "checked_names": [
+          "census_reproduced_from_pristine_bytes",
+          "comments_and_strings_are_not_sites",
+          "site_identity_is_the_byte_span",
+          "forms_classified_exactly_once",
+          "capture_helper_differs_only_by_parameterization",
+          "permitted_modification_is_one_token_and_one_import",
+          "site_manifests_bound",
+          "line70_reproduces_the_r6_000_control",
+          "families_and_exposure_recorded",
+          "membership_partitions_and_binds_the_census",
+          "freeze_bound_to_its_sources"
+        ],
+        "skipped_names": [
+          "exclusion_records_failing_stage_and_stderr"
+        ]
+      }
+    },
+    "wrong_challenge_export": {
+      "mutated": {
+        "accepted": true,
+        "checked_names": [
+          "census_reproduced_from_pristine_bytes",
+          "comments_and_strings_are_not_sites",
+          "site_identity_is_the_byte_span",
+          "forms_classified_exactly_once",
+          "capture_helper_differs_only_by_parameterization",
+          "permitted_modification_is_one_token_and_one_import",
+          "site_manifests_bound",
+          "line70_reproduces_the_r6_000_control",
+          "families_and_exposure_recorded",
+          "membership_partitions_and_binds_the_census",
+          "freeze_bound_to_its_sources"
+        ],
+        "skipped_names": [
+          "exclusion_records_failing_stage_and_stderr"
+        ]
+      },
+      "unmutated": {
+        "accepted": true,
+        "checked_names": [
+          "census_reproduced_from_pristine_bytes",
+          "comments_and_strings_are_not_sites",
+          "site_identity_is_the_byte_span",
+          "forms_classified_exactly_once",
+          "capture_helper_differs_only_by_parameterization",
+          "permitted_modification_is_one_token_and_one_import",
+          "site_manifests_bound",
+          "line70_reproduces_the_r6_000_control",
+          "families_and_exposure_recorded",
+          "membership_partitions_and_binds_the_census",
+          "freeze_bound_to_its_sources"
+        ],
+        "skipped_names": [
+          "exclusion_records_failing_stage_and_stderr"
+        ]
+      }
+    }
+  },
+  "reviewed_commit": "51dd7ab",
+  "scope": "eleven non-native production controls on copies; native exclusion separately rerun on original frozen census",
+  "test_census_sha256": "3210d9f91c01349d7cc984c28d3592b99778125b3f5bb9eaa250c4cd875a1efa"
+}

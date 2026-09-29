@@ -1,0 +1,18 @@
+{
+  "python": "/usr/bin/python3.14",
+  "runtime_path": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/campaign-runtime/f2bd4733795f61e779e63185b3d59d40a04544bce842b859c432ad145740c862/stdlib",
+  "actor_source": "/home/jeans/Repos/research/proof-broker/experiments/r6/cohort_https.py",
+  "network_stage": "/home/jeans/Repos/research/proof-broker/experiments/r6/campaign_network.py",
+  "ledger_module": "/home/jeans/Repos/research/proof-broker/experiments/r6/cohort_ledger.py",
+  "ledger_directory": "/home/jeans/Repos/research/proof-broker/experiments/r6/fixtures/r6-014-live-shaped/ledgers/campaigns",
+  "contract": "/home/jeans/Repos/research/proof-broker/experiments/r6/contracts/farkas-proposal-contract-v2.json",
+  "assembler": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented-r2/sdk/_build/default/validate/proposal_driver.exe",
+  "verifier": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented-r2/sdk/_build/default/validate/verify_certificate.exe",
+  "checker": "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/checker/.lake/build/bin/r6-replay",
+  "runtime_pin": "cohort-runtime-v1",
+  "downstream_setup": "site_task.setup: frozen proposal_episode.setup on the D1 control, site expectation substituted",
+  "site_supervisor": "/home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py",
+  "site_stage": "/home/jeans/Repos/research/proof-broker/experiments/r6/site_stage.py",
+  "site_network": "/home/jeans/Repos/research/proof-broker/experiments/r6/site_network.py",
+  "site_lock": "/home/jeans/Repos/research/proof-broker/experiments/r6/policies/site-harness-v4.sha256.json"
+}

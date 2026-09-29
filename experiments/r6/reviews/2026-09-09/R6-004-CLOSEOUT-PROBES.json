@@ -1,0 +1,95 @@
+{
+  "scope": "Disposable R6-004 v3 review probes; no native episode or adapter execution.",
+  "source_sha256": "ca312d66236414dd9db6f843a6d7c3dace2df3120cb2df668a33e34b9e1ffd46",
+  "context": {
+    "unmutated_audit_accepted": true,
+    "events_scan_and_seal_rebound": true,
+    "audit_returned": false,
+    "error": "Credential audit: reconstruction context differs from the frozen obligation"
+  },
+  "safe_paths": {
+    "symlink_precondition": true,
+    "publication_accepted": false,
+    "diagnostic_contains_canary": false,
+    "name_is_null": true,
+    "name_digest_verified": true
+  },
+  "gate_suite_validation": [
+    {
+      "name": "missing_gate_record",
+      "unmutated_copy_passes": true,
+      "rejected": true,
+      "error": "R6-004 recount: checkpoint declares no gate-suite record"
+    },
+    {
+      "name": "missing_gate_case",
+      "unmutated_copy_passes": true,
+      "rejected": true,
+      "error": "R6-004 recount: gate suite case set differs from the frozen module"
+    },
+    {
+      "name": "failed_gate_suite",
+      "unmutated_copy_passes": true,
+      "rejected": true,
+      "error": "R6-004 recount: gate suite did not pass"
+    },
+    {
+      "name": "missing_gate_precondition",
+      "unmutated_copy_passes": true,
+      "rejected": true,
+      "error": "R6-004 recount: a gate probe did not first confirm its unmutated copy passes"
+    }
+  ],
+  "publication_identity": [
+    {
+      "name": "checkpoint_policy_and_lock_binding",
+      "unmutated_copy_passes": true,
+      "mutation": "Only checkpoint policy/source-lock hashes changed; episode policies untouched.",
+      "outcome": {
+        "exit_code": 1,
+        "report_written": false,
+        "passed": null,
+        "total_checks": null,
+        "error": "ValueError: R6-004 recount: checkpoint policy digest differs from the frozen policy"
+      }
+    },
+    {
+      "name": "native_suite_seal_binding",
+      "unmutated_copy_passes": true,
+      "mutation": "Native-suite d1_valid seal hash changed to zero; suite hash rebound; actual episode untouched.",
+      "actual_seal_sha256": "136b71805ed5e1aed0a1b4cf50f0a3bef40d49ace70b9185bf05dcc934ee05d2",
+      "outcome": {
+        "exit_code": 1,
+        "report_written": false,
+        "passed": null,
+        "total_checks": null,
+        "error": "ValueError: R6-004 recount: native suite record seal digest differs from the episode: d1_valid"
+      }
+    },
+    {
+      "name": "native_suite_observation_binding",
+      "unmutated_copy_passes": true,
+      "mutation": "d1_valid native-suite scan count, coverage, disclosure count and outer-log result contradicted; suite hash rebound.",
+      "outcome": {
+        "exit_code": 1,
+        "report_written": false,
+        "passed": null,
+        "total_checks": null,
+        "error": "ValueError: R6-004 recount: native suite record scan count differs from the episode: d1_valid"
+      }
+    },
+    {
+      "name": "preservation_population_binding",
+      "unmutated_copy_passes": true,
+      "mutation": "Replace the 9,986-entry prior-artifact inventory with an empty map; suite records untouched.",
+      "prior_files_checked": null,
+      "outcome": {
+        "exit_code": 1,
+        "report_written": false,
+        "passed": null,
+        "total_checks": null,
+        "error": "ValueError: R6-004 recount: preservation inventory differs from the pinned commit population"
+      }
+    }
+  ]
+}

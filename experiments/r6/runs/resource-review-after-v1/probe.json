@@ -1,0 +1,216 @@
+[
+  {
+    "case": "finite_0",
+    "limit_usec": 4000.0,
+    "accepted": false,
+    "category": "resource_exhaustion",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.0395308440001827,
+      "execution_wall_seconds": 0.03920801999993273,
+      "cgroup_cpu_usec": 25133,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 1544192,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  {
+    "case": "finite_1",
+    "limit_usec": 8000.0,
+    "accepted": false,
+    "category": "resource_exhaustion",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.0422058919994015,
+      "execution_wall_seconds": 0.041864152000016475,
+      "cgroup_cpu_usec": 27519,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 1662976,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  {
+    "case": "finite_2",
+    "limit_usec": 4000.0,
+    "accepted": false,
+    "category": "resource_exhaustion",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.05096424000021216,
+      "execution_wall_seconds": 0.05063205799979187,
+      "cgroup_cpu_usec": 24228,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 1417216,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  {
+    "case": "finite_3",
+    "limit_usec": 8000.0,
+    "accepted": false,
+    "category": "resource_exhaustion",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.04842011199980334,
+      "execution_wall_seconds": 0.04810011300014594,
+      "cgroup_cpu_usec": 25926,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 1019904,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  {
+    "case": "finite_4",
+    "limit_usec": 4000.0,
+    "accepted": false,
+    "category": "resource_exhaustion",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.0494268460006424,
+      "execution_wall_seconds": 0.049085517000094114,
+      "cgroup_cpu_usec": 22158,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 1515520,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  {
+    "case": "finite_5",
+    "limit_usec": 8000.0,
+    "accepted": false,
+    "category": "resource_exhaustion",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": "cpu_time",
+      "wall_seconds": 0.04903546199966513,
+      "execution_wall_seconds": 0.04887341299945547,
+      "cgroup_cpu_usec": 24878,
+      "resource_violations": [
+        "cpu_time"
+      ],
+      "cgroup_memory_peak_bytes": 1544192,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  {
+    "case": "terminal_event",
+    "accepted": false,
+    "category": "observation_protocol_failure",
+    "process": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.04937761200017121,
+      "execution_wall_seconds": 0.03888807200019073,
+      "cgroup_cpu_usec": 15264,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 1777664,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": "Malformed or reserved broker observation",
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 66,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  }
+]

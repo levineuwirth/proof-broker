@@ -1,0 +1,91 @@
+{
+  "site_id": "bracket-l070",
+  "family": "Bracket.lift_cell",
+  "exposure_class": "prior_direct_target",
+  "class": "posable_certificate",
+  "fragment": "LIA",
+  "row_count": 19,
+  "row_names": [
+    "hx",
+    "hz",
+    "hzh",
+    "hZ",
+    "hwidth",
+    "hZval",
+    "hprod_le",
+    "hbound",
+    "hmul",
+    "hnum",
+    "hzsum",
+    "_pb_nonneg_Zmax",
+    "_pb_nonneg_atom_0",
+    "_pb_nonneg_atom_1",
+    "_pb_nonneg_atom_2",
+    "_pb_nonneg_atom_3",
+    "_pb_nonneg_atom_4",
+    "_pb_nonneg_atom_5",
+    "neg_goal"
+  ],
+  "neg_goal_rows": 1,
+  "variables": [
+    "Zmax",
+    "_pb_atom_0",
+    "_pb_atom_1",
+    "_pb_atom_2",
+    "_pb_atom_3",
+    "_pb_atom_4",
+    "_pb_atom_5"
+  ],
+  "reifier_data_locals": [
+    "c",
+    "x",
+    "z",
+    "zhigh"
+  ],
+  "reifier_dropped_propositions": [
+    {
+      "name": "hrec",
+      "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+    }
+  ],
+  "farkas_omissions": [],
+  "names_unique": true,
+  "duplicate_names": [],
+  "frozen_policy_class": "admissible",
+  "arithmetic_certificate": true,
+  "certificate_rows": [
+    {
+      "index": 3,
+      "name": "hZ",
+      "coefficient": "2"
+    },
+    {
+      "index": 18,
+      "name": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "certificate_support": 2,
+  "certificate_uses_neg_goal": true,
+  "certificate": [
+    {
+      "hypothesis": "hZ",
+      "coefficient": "2"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+  "policy_c": "posable",
+  "policy_c_evidence": {
+    "source_fragment": "LIA",
+    "omitted": [],
+    "omitted_names": [],
+    "posed_fragment": "LIA",
+    "input_ir_sha256": "0b52df9dcf87fd0ecade553e9512af0975b0f507a265b668169231fc746f7558",
+    "final_ir_sha256": "7a57f310cbc5dce20a2e56fdb6bb5bce4e16935bdaaf348a6a900fbfbb32d794"
+  },
+  "seconds": 7.1
+}

@@ -1,0 +1,23 @@
+pb_dump_ir: wrote ir/B2_false_2p22.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/B2_false_2p22.dump.lean:16:0: warning: declaration uses `sorry`
+ir/B2_false_2p22.dump.lean:18:2: warning: 'pb_dump_ir"ir/B2_false_2p22.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00865ms
+	elaboration 3.09ms
+	fix level params 0.0126ms
+	instantiate metavars 0.0138ms
+	interpretation 0.0961ms
+	linting 16.6ms
+	module linting 0.001ms
+	overlappingInstancesLinter 0.781ms
+	parsing 0.375ms
+	process pre-definitions 0.229ms
+	share common exprs 0.0568ms
+	tactic execution 8.84ms
+	tacticAnalysis 2.5ms
+	type checking 0.257ms
+	typeclass inference 3.65ms
+PEAK_RSS_BYTES=687296512
+EXIT=0 WALL=4.4s CAP=8G

@@ -1,0 +1,15 @@
+{
+  "name": "farkas_cohort_v8",
+  "mode": "live",
+  "task_id": "bracket-l099",
+  "draw": 1,
+  "config_sha256": "651dafcd61a9efaca15359aafec3a2fe471c3db85593020716eb2fd8dfbc6363",
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "campaign_id": "2040e83b5cc8485c87d97c2f0c9bdd96",
+  "revision": 3,
+  "source_lock_sha256": "73ebe32f1a372ba70afe65814fe1ce4ab5ca75ff2965da3b30f7b08a27b9b132",
+  "manifest_sha256": "d9f7eeca3b964b8322efcf29f0e72671f799c30e78802239a7ee83ef2d8c30ae",
+  "ledger_path": "fixtures/r6-014-v2-live-revisions/ledgers/campaigns/2040e83b5cc8485c87d97c2f0c9bdd96/live/ledger.ndjson",
+  "ledger_slots": "fixtures/r6-014-v2-live-revisions/ledgers/campaigns/2040e83b5cc8485c87d97c2f0c9bdd96/live/slots",
+  "ledger_scope": "live authorization ledger"
+}

@@ -1,0 +1,19 @@
+{
+  "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+  "witness": {
+    "coefficients": [
+      {
+        "hypothesis": "hx",
+        "coefficient": "1"
+      },
+      {
+        "hypothesis": "hz",
+        "coefficient": "1"
+      },
+      {
+        "hypothesis": "neg_goal",
+        "coefficient": "1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+/input/Frozen.lean:102:4: error: proof_broker: no adapter could close the goal (1 attempt(s); first: ProofBroker.AttemptOutcome.skipped
+  (ProofBroker.MatchReason.logicOutOfFragment "ir.first_order_fragment=UF not in adapter cvc4's fragments [LIA, LRA]"))
+/input/Frozen.lean:149:19: warning: Variable name `hz` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`

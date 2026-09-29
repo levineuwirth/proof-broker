@@ -1,0 +1,1443 @@
+{
+  "schema_version": "r6-preparation-differences-1",
+  "before": "census-runs/representability-v2",
+  "after": "census-runs/representability-v4",
+  "summary": {
+    "sites": 15,
+    "input_ir_changed": [
+      "bracket-l096",
+      "bracket-l098",
+      "bracket-l099",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l166",
+      "bracket-l170",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l180",
+      "bracket-l204"
+    ],
+    "rows_changed": [
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l178"
+    ],
+    "rows_changed_in_meaning": [],
+    "renamed": {
+      "bracket-l096": [
+        [
+          "c'",
+          "c_"
+        ],
+        [
+          "h1'",
+          "h1_"
+        ],
+        [
+          "h2'",
+          "h2_"
+        ]
+      ],
+      "bracket-l098": [
+        [
+          "c'",
+          "c_"
+        ],
+        [
+          "h1'",
+          "h1_"
+        ],
+        [
+          "h2'",
+          "h2_"
+        ]
+      ],
+      "bracket-l099": [
+        [
+          "c'",
+          "c_"
+        ],
+        [
+          "h1'",
+          "h1_"
+        ],
+        [
+          "h2'",
+          "h2_"
+        ]
+      ],
+      "bracket-l101": [
+        [
+          "c'",
+          "c_"
+        ],
+        [
+          "h1'",
+          "h1_"
+        ],
+        [
+          "h2'",
+          "h2_"
+        ]
+      ],
+      "bracket-l178": [
+        [
+          "this",
+          "this_1"
+        ]
+      ]
+    },
+    "request_changed": [
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l166",
+      "bracket-l170",
+      "bracket-l175",
+      "bracket-l204"
+    ],
+    "request_posed_only_after": [
+      "bracket-l178"
+    ],
+    "request_not_posed": [
+      "bracket-l098",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l180"
+    ],
+    "class_changed": {
+      "bracket-l178": [
+        "ambiguous_reference",
+        "posable_certificate"
+      ]
+    }
+  },
+  "sites": {
+    "bracket-l069": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": true,
+        "differing_fields": [],
+        "user_directives_before": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "user_directives_after": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "final_ir_equal": true,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "616720887114cc45cbf3e43a318a85e50f4db1b85b7fca4c410bbfd3b20f3aa8",
+          "omitted": []
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "e886f2a3604b4e56ac201a36d3e8f1c983f1c824bb6e188402ee0ed08f1ac853",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "616720887114cc45cbf3e43a318a85e50f4db1b85b7fca4c410bbfd3b20f3aa8",
+          "omitted": []
+        },
+        "bytes_equal": true
+      }
+    },
+    "bracket-l070": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": true,
+        "differing_fields": [],
+        "user_directives_before": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "user_directives_after": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "final_ir_equal": true,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "hzsum",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "0b52df9dcf87fd0ecade553e9512af0975b0f507a265b668169231fc746f7558",
+          "omitted": []
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "c6369e6e517e315e6d0aeef6d150990e0004d6281e4c3736bf8bdf1a75ab704c",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "hzsum",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "0b52df9dcf87fd0ecade553e9512af0975b0f507a265b668169231fc746f7558",
+          "omitted": []
+        },
+        "bytes_equal": true
+      }
+    },
+    "bracket-l071": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": true,
+        "differing_fields": [],
+        "user_directives_before": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "user_directives_after": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "hle",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hzsum",
+          "hle",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "neg_goal"
+        ],
+        "final_ir_equal": true,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "hzsum",
+            "hle",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "840dabdaf23cc0fb43a02cd2fb9755b6243f63baec5b61814eefbad9d07af297",
+          "omitted": []
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "b08d433d8700e32802e05e0a98dc3caba5f0e4d58fb6bbc0a46db07048d15c13",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "hzsum",
+            "hle",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "840dabdaf23cc0fb43a02cd2fb9755b6243f63baec5b61814eefbad9d07af297",
+          "omitted": []
+        },
+        "bytes_equal": true
+      }
+    },
+    "bracket-l078": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": true,
+        "differing_fields": [],
+        "user_directives_before": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        },
+        "user_directives_after": {
+          "rewriter_preferences": {
+            "enable_definition_unfolding": [
+              "numeral_definition"
+            ]
+          },
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hxz",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "_pb_nonneg_atom_6",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hx",
+          "hz",
+          "hzh",
+          "hZ",
+          "hwidth",
+          "hZval",
+          "hprod_le",
+          "hbound",
+          "hmul",
+          "hnum",
+          "hxz",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_atom_0",
+          "_pb_nonneg_atom_1",
+          "_pb_nonneg_atom_2",
+          "_pb_nonneg_atom_3",
+          "_pb_nonneg_atom_4",
+          "_pb_nonneg_atom_5",
+          "_pb_nonneg_atom_6",
+          "neg_goal"
+        ],
+        "final_ir_equal": true,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "hxz",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "_pb_nonneg_atom_6",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "ebdfdfb086199f109144ed4fc552f09df7f66c267ae3237bbbedfb82fc2c5cae",
+          "omitted": []
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "5356cb659474154186bf6b6fa93f865528839215432b52995400ca5b924c0d0f",
+          "row_names": [
+            "hx",
+            "hz",
+            "hzh",
+            "hZ",
+            "hwidth",
+            "hZval",
+            "hprod_le",
+            "hbound",
+            "hmul",
+            "hnum",
+            "hxz",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_atom_0",
+            "_pb_nonneg_atom_1",
+            "_pb_nonneg_atom_2",
+            "_pb_nonneg_atom_3",
+            "_pb_nonneg_atom_4",
+            "_pb_nonneg_atom_5",
+            "_pb_nonneg_atom_6",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "ebdfdfb086199f109144ed4fc552f09df7f66c267ae3237bbbedfb82fc2c5cae",
+          "omitted": []
+        },
+        "bytes_equal": true
+      }
+    },
+    "bracket-l096": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "context",
+          "goal",
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "rows": {
+        "equal": false,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hlt",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hlt",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": false
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "7d4c43110a644124163cdfd296fa403bb962144270a58e823b8a00ac41dc82af",
+          "row_names": [
+            "hlt",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "9ae711eb55a34b9e009996552e3e15a71c472f9f04f727014a1b7382a4909d73",
+          "omitted": [
+            "hf",
+            "h1",
+            "h2",
+            "h1'",
+            "h2'",
+            "hne"
+          ]
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+          "row_names": [
+            "hlt",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "3775a5ab2f496bd0f82a2d07338dc1494e66a5d291daffab8bee5f39baf2927e",
+          "omitted": [
+            "hf",
+            "h1",
+            "h2",
+            "h1_",
+            "h2_",
+            "hne"
+          ]
+        },
+        "bytes_equal": false
+      }
+    },
+    "bracket-l098": {
+      "class_before": "interface_refused",
+      "class_after": "interface_refused",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "context",
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "rows": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "request": {
+        "before": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "after": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "bytes_equal": null
+      }
+    },
+    "bracket-l099": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "context",
+          "goal",
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "rows": {
+        "equal": false,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hgt",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hgt",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": false
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "705358819b325286303b8f87d2de0d19ed6e7cb5cccb2726d68f473482ccd041",
+          "row_names": [
+            "hgt",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "3c5903da01e546965d74574cd1c4da2c5735941a420494c9d2b748e7a1730846",
+          "omitted": [
+            "hf",
+            "h1",
+            "h2",
+            "h1'",
+            "h2'",
+            "hne"
+          ]
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "fb1cbeae50d2fb6feef13d94eeb7ef492f4e4535d8c34989bd4d6df31fe3127b",
+          "row_names": [
+            "hgt",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "7265a8b3f83bd0854f3715cd9808331095f6c8d3d43ddb96ba4e9cd1ed4a5e26",
+          "omitted": [
+            "hf",
+            "h1",
+            "h2",
+            "h1_",
+            "h2_",
+            "hne"
+          ]
+        },
+        "bytes_equal": false
+      }
+    },
+    "bracket-l101": {
+      "class_before": "interface_refused",
+      "class_after": "interface_refused",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "context",
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "rows": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "request": {
+        "before": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "after": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "bytes_equal": null
+      }
+    },
+    "bracket-l158": {
+      "class_before": "interface_refused",
+      "class_after": "interface_refused",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "request": {
+        "before": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "after": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "bytes_equal": null
+      }
+    },
+    "bracket-l166": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hz0",
+          "hz",
+          "hZpos",
+          "hzh0",
+          "hv",
+          "hrec",
+          "hlt",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hz0",
+          "hz",
+          "hZpos",
+          "hzh0",
+          "hv",
+          "hrec",
+          "hlt",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "15c68b23476cd4b7a715cb63c48394f8dd6d24b6901016030027ac2000fd007d",
+          "row_names": [
+            "hz0",
+            "hz",
+            "hZpos",
+            "hzh0",
+            "hv",
+            "hrec",
+            "hlt",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "af237ce0e7fa0f4615426e8c8ee923c24077a90c5f0408b5f65310728c314d47",
+          "omitted": []
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "77e2bfd6a61eb11ea173e126f4d680391a8c793131924b867d7f8c021d8c70ee",
+          "row_names": [
+            "hz0",
+            "hz",
+            "hZpos",
+            "hzh0",
+            "hv",
+            "hrec",
+            "hlt",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+          "omitted": []
+        },
+        "bytes_equal": false
+      }
+    },
+    "bracket-l170": {
+      "class_before": "posable_negative_control",
+      "class_after": "posable_negative_control",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "ea4aab32bebed255b98e00aedf42fdea01e2215b907a6c373f4cadf3b510dde9",
+          "row_names": [
+            "hv",
+            "hrec",
+            "hz0",
+            "hz",
+            "hzh0",
+            "hZpos",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "54571a6841d4f06e2b920b3858dbd8a1465e17e1cd1ffb89c148b2707c3f8dab",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "9cbad03ace75b3575c0ebc10e58b5ce22ace4cfe61157b53774492c838fd75f8",
+          "row_names": [
+            "hv",
+            "hrec",
+            "hz0",
+            "hz",
+            "hzh0",
+            "hZpos",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "4c43aa4c9895ea8dabb151e035f005226e727c65f784d6cd72c73830290477a8",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "bytes_equal": false
+      }
+    },
+    "bracket-l175": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "22a6ec257e6ebec1ca45601085a1da44a979333a44080e0a35cc914b4fa157e0",
+          "row_names": [
+            "hv",
+            "hrec",
+            "hz0",
+            "hz",
+            "hzh0",
+            "hZpos",
+            "hzh1",
+            "this",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "fe73ebd12553ea73cf5298f3a4f0d2e2411159808ff2fb123220951c688c49e7",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "71f408cb806838d40f15a57f042a10e524ef57adcd356b985e3f7056f230d317",
+          "row_names": [
+            "hv",
+            "hrec",
+            "hz0",
+            "hz",
+            "hzh0",
+            "hZpos",
+            "hzh1",
+            "this",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "22cb44d17ca7a23570da9f051c6306981010bcc8f7baf9439cda773fd73f372f",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "bytes_equal": false
+      }
+    },
+    "bracket-l178": {
+      "class_before": "ambiguous_reference",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "context",
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 15,
+          "original_name": "this",
+          "search_name": "this_1"
+        }
+      ],
+      "rows": {
+        "equal": false,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hv",
+          "hrec",
+          "hz0",
+          "hz",
+          "hzh0",
+          "hZpos",
+          "hzh1",
+          "this_1",
+          "this",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": false,
+          "code": "policy_ambiguous_reference"
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "e67364aa0ef5571f5345945d4478940830539732ba05c0658a392ce5ad861674",
+          "row_names": [
+            "hv",
+            "hrec",
+            "hz0",
+            "hz",
+            "hzh0",
+            "hZpos",
+            "hzh1",
+            "this_1",
+            "this",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "47aa4fc6cc5592c0dbea56ba22d65d486a14993dca1f5c8c9ca30a2a7b47dc40",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "bytes_equal": null
+      }
+    },
+    "bracket-l180": {
+      "class_before": "interface_refused",
+      "class_after": "interface_refused",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "prepared_before": false,
+        "prepared_after": false
+      },
+      "request": {
+        "before": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "after": {
+          "posed": false,
+          "code": "interface_refused"
+        },
+        "bytes_equal": null
+      }
+    },
+    "bracket-l204": {
+      "class_before": "posable_certificate",
+      "class_after": "posable_certificate",
+      "input_ir": {
+        "equal": false,
+        "differing_fields": [
+          "user_directives"
+        ],
+        "user_directives_before": null,
+        "user_directives_after": {
+          "tier_preference": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "renamed": [],
+      "rows": {
+        "equal": true,
+        "equal_up_to_names": true,
+        "names_before": [
+          "hab",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "_pb_nonneg_n",
+          "neg_goal"
+        ],
+        "names_after": [
+          "hab",
+          "_pb_nonneg_Zmax",
+          "_pb_nonneg_v0",
+          "_pb_nonneg_n",
+          "neg_goal"
+        ],
+        "final_ir_equal": false,
+        "farkas_omissions_equal": true
+      },
+      "request": {
+        "before": {
+          "posed": true,
+          "request_sha256": "c277cf4f9e8351b3d61dfbc3e8624a44a58ee99b508fa91f2532160b96babf5b",
+          "row_names": [
+            "hab",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "_pb_nonneg_n",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "8a202c88da0f62bbf66707031002b70d58bcdb8e5f0e82fccbe1df738eae19f9",
+          "omitted": []
+        },
+        "after": {
+          "posed": true,
+          "request_sha256": "e475df7e36a5cb9880ec7dda12470d635573fe85f6de6140f65097f922407f05",
+          "row_names": [
+            "hab",
+            "_pb_nonneg_Zmax",
+            "_pb_nonneg_v0",
+            "_pb_nonneg_n",
+            "neg_goal"
+          ],
+          "binding_input_ir_sha256": "1c9bca8d160c748b1efbece23a0c16a3766adc7e8179251e56ec19a654cfd9d6",
+          "omitted": []
+        },
+        "bytes_equal": false
+      }
+    }
+  },
+  "program_sha256": "1b2b45b64c9453abdc2b23f2c43f45e7db9f40f09351e6326285394deecdad5f",
+  "scope": "retained classification runs only; no native execution"
+}

@@ -1,0 +1,22 @@
+{
+  "targets": [
+    {
+      "statement_and_dependencies_match": true,
+      "name": "Bracket.lift_cell.r6_d1_70",
+      "kernel_accepted": true,
+      "declaration_exists": true,
+      "axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "type_sha256": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+      "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+    }
+  ],
+  "stage": "complete",
+  "local_proof_binding_checked": false,
+  "kernel_version": "4.32.2",
+  "checked_declarations": 3693,
+  "accepted": true
+}

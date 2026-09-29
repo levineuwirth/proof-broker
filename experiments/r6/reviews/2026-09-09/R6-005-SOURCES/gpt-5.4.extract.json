@@ -1,0 +1,23 @@
+{
+  "cache_write_multiplier": null,
+  "cache_write_scope": "not established by this page",
+  "currency": "USD",
+  "listed_dated_ids": [
+    "gpt-5.4-2026-03-05"
+  ],
+  "listed_ids": [
+    "gpt-5.4",
+    "gpt-5.4-2026-03-05"
+  ],
+  "model_page": "gpt-5.4",
+  "per_million_tokens": {
+    "cache_write": null,
+    "cached_input": "0.25",
+    "input": "2.50",
+    "output": "15.00"
+  },
+  "pricing_section": "Text tokens Per 1M tokens ∙ Batch API price Input $2.50 Cached input $0.25 Output $15.00 Quick comparison Input Cached input Output GPT-5.4 $ 2.50 GPT-5.2 $ 1.75 GPT-5.4 Mini $ 0.75 For models with a 1.05M context window (GPT-5.4 and GPT-5.4 Pro), prompts with >272K input tokens are priced at 2x input and 1.5x output for the full session for standard, batch, and flex. Regional processing (data residency) endpoints are charged a 10% uplift for GPT-5.4 and GPT-5.4 Pro.",
+  "schema_version": "r6-pricing-extract-1",
+  "snapshot_section": "Snapshots Snapshots let you lock in a specific version of the model so that performance and behavior remain consistent. Below is a list of all available snapshots and aliases for GPT-5.4 . gpt-5.4 gpt-5.4-2026-03-05 gpt-5.4-2026-03-05",
+  "unit": "per_million_tokens"
+}

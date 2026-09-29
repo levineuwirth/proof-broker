@@ -1,0 +1,207 @@
+{
+  "admission_rule": "dropped_proposition_and_original_true_and_checked_ir_counterexample_v1",
+  "admission_sha256": "d3b28b78683023a7ebe55733fc557f254145f5aed0bada32f8040cd7426a7ddf",
+  "attribution": {
+    "certificate_assembler": "sdk_proposal_assembler_v1",
+    "scope": "new proposer identity; no canned or earlier receipt is reused",
+    "witness_proposer": "live_model_response"
+  },
+  "authorization": null,
+  "canary_derivation": "r6-004-synthetic-canary-v1",
+  "credential": {
+    "channel": "private_read_only_file",
+    "guest_path": "/credential",
+    "operator_supplied": true,
+    "retained": false,
+    "scope": "the operator supplies the file path; the harness never reads an environment credential and never copies the value into the run"
+  },
+  "endpoint": {
+    "host": "api.openai.com",
+    "path": "/v1/responses",
+    "port": 443,
+    "scheme": "https"
+  },
+  "limits": {
+    "attempts_per_episode": 1,
+    "automatic_retries": 0,
+    "campaign_attempts": 1,
+    "input_tokens_reserved": 16384,
+    "io_timeout_seconds": 30,
+    "maximum_request_bytes": 32768,
+    "maximum_response_bytes": 262144,
+    "message_utf8_bytes": 12288,
+    "output_tokens": 4096,
+    "redirects": 0,
+    "request_cpu_seconds": 5,
+    "request_memory_bytes": 402653184,
+    "request_output_bytes": 4194304,
+    "request_wall_seconds": 60,
+    "total_micro_usd": 102400
+  },
+  "live_enabled": false,
+  "live_model_calls_authorized": 0,
+  "mode": "provider_request",
+  "model": {
+    "allowed_response_ids": [
+      "gpt-5.4-2026-03-05"
+    ],
+    "model_computation_attested": false,
+    "requested_id": "gpt-5.4-2026-03-05",
+    "revision_status": "documented dated provider snapshot; not a model-content hash or an attestation that the returned text came from it"
+  },
+  "name": "responses_live_pilot_v1",
+  "network": {
+    "egress_restriction_enforced_by_harness": false,
+    "intended_destination": {
+      "host": "api.openai.com",
+      "path": "/v1/responses",
+      "port": 443,
+      "scheme": "https"
+    },
+    "sandbox": "proposal stage shares the host network namespace; every other stage keeps --unshare-all",
+    "scope": "the namespace is shared, not filtered; destination control is the endpoint allowlist and the audited command, not a network policy"
+  },
+  "previous_policy_sha256": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d",
+  "previous_source_lock_sha256": "1c37c0f123ba442d816e43356a9602db843c6583dcf8b64357f27147a867f81e",
+  "pricing": {
+    "additional_cache_write_charge": 0,
+    "cache_write_charge_scope": "ordinary input rate, zero additional write surcharge under the earlier-model rule",
+    "currency": "USD",
+    "nano_usd_per_token": {
+      "cache_write": 2500,
+      "cached_input": 250,
+      "input": 2500,
+      "output": 15000
+    },
+    "scope": "conditional reservation under source rates and input byte/framing assumption; no provider billing guarantee"
+  },
+  "pricing_admission": {
+    "applicability": {
+      "long_context": {
+        "input_tokens_upper_bound_exclusive": 272000,
+        "source_condition": {
+          "comparison": "greater_than",
+          "input_multiplier": "2",
+          "input_tokens_threshold": 272000,
+          "output_multiplier": "1.5",
+          "scope": "full_session",
+          "service_tiers": [
+            "standard",
+            "batch",
+            "flex"
+          ]
+        }
+      },
+      "regional_processing": {
+        "allowed_endpoints": [
+          {
+            "host": "api.openai.com",
+            "path": "/v1/responses",
+            "port": 443,
+            "scheme": "https"
+          }
+        ],
+        "source_condition": {
+          "scope": "regional_processing_endpoints",
+          "uplift_percent": 10
+        }
+      },
+      "session_scope": "one_stateless_request"
+    },
+    "applicability_scope": "source threshold is >272000; project admits only <272000, one stateless request and the exact standard endpoint; no regional or long-context tariff support",
+    "clock_scope": "local host observation; source freshness is not attestation of retrieval or unchanged provider prices",
+    "future_clock_tolerance_seconds": 5,
+    "gate_locations": [
+      "before durable reservation",
+      "inside actor before credential read and connection"
+    ],
+    "maximum_permit_age_seconds": 60,
+    "maximum_source_age_seconds": 86400,
+    "raw_change_policy": "reject even when selected extracted sections are unchanged; review and a new approved binding required",
+    "source_review": {
+      "caching_difference": "two rate-neutral insertions: a prompt_cache_key comparison row and a trailing UI string",
+      "caching_extract_identical_to_previous": false,
+      "capture": "sources/pricing-approved-pilot-1",
+      "model_extract_identical_to_previous": true,
+      "previous_approved": {
+        "caching": {
+          "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+          "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af"
+        },
+        "model": {
+          "extract_sha256": "c3769aa47f08763af4aa774f3d2232c1d2b3b6dc1220213724a71298e7d62ab4",
+          "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819"
+        }
+      },
+      "rate_bearing_fields_unchanged": true,
+      "scope": "a fresh capture within the 24-hour admission window; reviewed by diff against the approved v2 extracts"
+    },
+    "sources": {
+      "caching": {
+        "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+        "raw_sha256": "7bed029c171427f3353bd22b9d1f4bd2426138bb728bfc4fb3ca3e9450d76755"
+      },
+      "model": {
+        "extract_sha256": "c3769aa47f08763af4aa774f3d2232c1d2b3b6dc1220213724a71298e7d62ab4",
+        "raw_sha256": "631040b5d883a6a9081646cf1d76a73e9e50263639f9588b258ca51400f553d2"
+      }
+    }
+  },
+  "pricing_gate_sha256": "19199a6a4c54fd5a24f3b5ccc44320dbe211ab2421278dd6f4d7afc10a4097eb",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "provider_api": "OpenAI Responses",
+  "publication_scan_version": "r6-publication-scan-2",
+  "request": {
+    "background": false,
+    "max_output_tokens": 4096,
+    "model": "gpt-5.4-2026-03-05",
+    "parallel_tool_calls": false,
+    "reasoning": {
+      "effort": "medium"
+    },
+    "service_tier": "default",
+    "store": false,
+    "stream": false,
+    "tool_choice": "none",
+    "tools": [],
+    "truncation": "disabled"
+  },
+  "runtime_divergence": {
+    "libraries_added": [],
+    "libraries_changed": [
+      "/usr/lib/liblzma.so.5"
+    ],
+    "libraries_removed": [],
+    "previous_runtime_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+    "python_unchanged": true,
+    "stdlib_unchanged": true
+  },
+  "runtime_lock_sha256": "7e32ccee50b1476d867c4526bd40f5549bcf3bd17e040ce0313c02ac04e60231",
+  "sampling": {
+    "reasoning_effort": "medium",
+    "scope": "omitted sampling controls are not a determinism claim",
+    "seed": null,
+    "service_tier": "default",
+    "temperature": null,
+    "top_p": null
+  },
+  "schema_version": "r6-live-pilot-policy-1",
+  "scope": "one canned-rehearsed provider request; no capability, benchmark or reliability claim follows from a single attempt",
+  "selection_status": "author-signed dated snapshot; provider availability untested",
+  "source_lock_sha256": "9f37cd4eaf60ad479dff86a37603e6678a8f6eccc1bad8973a826f114bb95387",
+  "tls": {
+    "alpn": [
+      "http/1.1"
+    ],
+    "check_hostname": true,
+    "minimum_version": "TLSv1.2",
+    "public_ca_bundle": {
+      "bytes": 185311,
+      "certificates": 121,
+      "path": "/etc/ca-certificates/extracted/tls-ca-bundle.pem",
+      "sha256": "8c97794a899a32666593979dc7adfaec8bda2b420eb092ff0d987e44ad0bf6ea"
+    },
+    "verify_mode": "CERT_REQUIRED"
+  },
+  "transport": "python_stdlib_https_client"
+}

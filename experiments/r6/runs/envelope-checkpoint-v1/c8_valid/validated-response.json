@@ -1,0 +1,15 @@
+{
+  "request_sha256": "e03eb0e126838b537d611f2ad077abc5e5cc51fec5376e60ce7524d1635025d5",
+  "witness": {
+    "coefficients": [
+      {
+        "coefficient": "786432",
+        "hypothesis": "hhi"
+      },
+      {
+        "coefficient": "3",
+        "hypothesis": "neg_goal"
+      }
+    ]
+  }
+}

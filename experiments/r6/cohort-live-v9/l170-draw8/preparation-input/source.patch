@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import PreparationCapture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -167,7 +168,7 @@
+       ring
+   · -- t = 1, y1 = 0.  Need g v = 0, i.e. v ≥ v0.
+     simp only [hzh, if_false]
+-    have hzh1 : 1 ≤ zhigh := by omega
++    have hzh1 : 1 ≤ zhigh := by r6_prepare "Bracket.cell_value_neutral.r6_site_l170" "bracket-l170"
+     -- v = z + Zmax·zhigh ≥ Zmax ≥ v0
+     have : (Zmax : ℤ) ≤ v := by
+       have : (Zmax : ℤ) * 1 ≤ (Zmax : ℤ) * zhigh := by

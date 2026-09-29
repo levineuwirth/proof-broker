@@ -1,0 +1,11 @@
+{
+  "name": "responses_campaign_v7",
+  "mode": "rehearsal",
+  "task_id": "verinf-d1-70",
+  "config_sha256": "1d2696c69844f0c0a34c91327b09fb9c5d6470c84a7b8512962fefd0373a16a8",
+  "source_lock_sha256": "50e42fbc1b221fc1f1b8ae58ddb779d25645a4781420b049f1c4fa2ebffeee56",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "ledger_path": "ledgers/rehearsal/1d2696c69844f0c0a34c91327b09fb9c5d6470c84a7b8512962fefd0373a16a8.ndjson",
+  "ledger_slots": "ledgers/rehearsal/1d2696c69844f0c0a34c91327b09fb9c5d6470c84a7b8512962fefd0373a16a8.slots",
+  "ledger_scope": "rehearsal ledger; never funds a transmission"
+}

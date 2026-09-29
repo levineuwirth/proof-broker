@@ -1,0 +1,463 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_retained_only",
+    "c8_retained_only",
+    "alternate_retained_only",
+    "wrong_prompt_file",
+    "wrong_client_arguments",
+    "capture_only_mutation",
+    "unreported_second_capture",
+    "hidden_retry",
+    "false_http_status",
+    "invented_usage_zero",
+    "wrong_output_extraction",
+    "wrong_provider_metadata",
+    "missing_http_receipt",
+    "wrong_request_mount",
+    "unsafe_network_flag",
+    "wrong_runtime",
+    "wrong_new_source",
+    "wrong_shared_checker_source",
+    "false_attestation",
+    "hidden_fallback",
+    "late_failure_marker",
+    "shared_checker_certificate",
+    "shared_checker_proof",
+    "shared_checker_type",
+    "shared_checker_axiom",
+    "false_component_resealed",
+    "false_missing_component_presence",
+    "current_source_independence",
+    "legacy_broker_v1",
+    "legacy_broker_v2",
+    "legacy_broker_v3",
+    "legacy_c8_v1",
+    "legacy_d1_fixture",
+    "legacy_c8_fixture",
+    "legacy_d1_envelope",
+    "legacy_c8_envelope",
+    "legacy_alternate_envelope",
+    "prior_artifacts_preserved"
+  ],
+  "check_count": 38,
+  "checks": [
+    {
+      "name": "d1_retained_only",
+      "passed": true,
+      "detail": {
+        "shared_checker_calls": 1,
+        "retained_files": 172
+      }
+    },
+    {
+      "name": "c8_retained_only",
+      "passed": true,
+      "detail": {
+        "shared_checker_calls": 1,
+        "retained_files": 172
+      }
+    },
+    {
+      "name": "alternate_retained_only",
+      "passed": true,
+      "detail": {
+        "shared_checker_calls": 1,
+        "retained_files": 172
+      }
+    },
+    {
+      "name": "wrong_prompt_file",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: frozen semantic prompt changed",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "prompt.txt"
+        ]
+      }
+    },
+    {
+      "name": "wrong_client_arguments",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: client arguments differ from frozen messages",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "client-arguments.json"
+        ]
+      }
+    },
+    {
+      "name": "capture_only_mutation",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: server receipt differs",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "stages/proposal-1/output/received-body-1.json"
+        ]
+      }
+    },
+    {
+      "name": "unreported_second_capture",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: HTTP observation file inventory differs; possible unreported capture",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "stages/proposal-1/output/received-body-2.json"
+        ]
+      }
+    },
+    {
+      "name": "hidden_retry",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: unreserved transmission/retry",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "stages/proposal-1/output/http.json"
+        ]
+      }
+    },
+    {
+      "name": "false_http_status",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: HTTP status differs from canned endpoint",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "stages/proposal-1/output/http.json"
+        ]
+      }
+    },
+    {
+      "name": "invented_usage_zero",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: accounting differs from HTTP observations",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "accounting.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_output_extraction",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: extracted provider output differs",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "response.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_provider_metadata",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: provider decode metadata differs",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "provider-metadata.json"
+        ]
+      }
+    },
+    {
+      "name": "missing_http_receipt",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: missing, extra, or reordered supervisor receipts",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "events.ndjson"
+        ]
+      }
+    },
+    {
+      "name": "wrong_request_mount",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: HTTP command permits extra inputs/capabilities or a different boundary",
+        "coherently_resealed": true,
+        "shared_checker_reached": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "unsafe_network_flag",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: HTTP command permits extra inputs/capabilities or a different boundary",
+        "coherently_resealed": true,
+        "shared_checker_reached": true,
+        "changed_artifacts": [
+          "stages/proposal-1/command.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_runtime",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: pinned runtime inventory differs",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "provenance/python-runtime.json"
+        ]
+      }
+    },
+    {
+      "name": "wrong_new_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: retained harness source differs: provider-harness/provider_http.py",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "provenance/provider-harness/provider_http.py"
+        ]
+      }
+    },
+    {
+      "name": "wrong_shared_checker_source",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: retained harness source differs: envelope-harness/envelope_proof_audit.py",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "provenance/envelope-harness/envelope_proof_audit.py"
+        ]
+      }
+    },
+    {
+      "name": "false_attestation",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: independently reconstructed transport diagnostics differ",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "transport-validation.json"
+        ]
+      }
+    },
+    {
+      "name": "hidden_fallback",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: frozen envelope policy changed",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "search-policy.json"
+        ]
+      }
+    },
+    {
+      "name": "late_failure_marker",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: episode has a failure marker",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "failure.json"
+        ]
+      }
+    },
+    {
+      "name": "shared_checker_certificate",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope proof audit: reconstruction received different evidence",
+        "coherently_resealed": true,
+        "shared_checker_reached": true,
+        "changed_artifacts": [
+          "events.ndjson"
+        ]
+      }
+    },
+    {
+      "name": "shared_checker_proof",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope proof audit: proof hash mismatch",
+        "coherently_resealed": true,
+        "shared_checker_reached": true,
+        "changed_artifacts": [
+          "solution.ndjson.gz"
+        ]
+      }
+    },
+    {
+      "name": "shared_checker_type",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope proof audit: frozen type/axiom policy",
+        "coherently_resealed": true,
+        "shared_checker_reached": true,
+        "changed_artifacts": [
+          "validation-local.raw.json.gz"
+        ]
+      }
+    },
+    {
+      "name": "shared_checker_axiom",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Envelope proof audit: frozen type/axiom policy",
+        "coherently_resealed": true,
+        "shared_checker_reached": true,
+        "changed_artifacts": [
+          "validation-local.raw.json.gz"
+        ]
+      }
+    },
+    {
+      "name": "false_component_resealed",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: independently reconstructed transport diagnostics differ",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "events.ndjson",
+          "failure.json",
+          "transport-validation.json"
+        ]
+      }
+    },
+    {
+      "name": "false_missing_component_presence",
+      "passed": true,
+      "detail": {
+        "rejected": true,
+        "reason": "Provider audit: independently reconstructed transport diagnostics differ",
+        "coherently_resealed": true,
+        "shared_checker_reached": false,
+        "changed_artifacts": [
+          "events.ndjson",
+          "transport-validation.json"
+        ]
+      }
+    },
+    {
+      "name": "current_source_independence",
+      "passed": true,
+      "detail": "Locks and retained source bytes; trusted auditor implementation and frozen protocol inputs"
+    },
+    {
+      "name": "legacy_broker_v1",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_broker_v2",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_broker_v3",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_c8_v1",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_d1_fixture",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_c8_fixture",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_d1_envelope",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_c8_envelope",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "legacy_alternate_envelope",
+      "passed": true,
+      "detail": {
+        "accepted": true
+      }
+    },
+    {
+      "name": "prior_artifacts_preserved",
+      "passed": true,
+      "detail": {
+        "checked_files": 7195,
+        "changed": 0,
+        "missing": 0,
+        "git_base": "13baa73"
+      }
+    }
+  ]
+}

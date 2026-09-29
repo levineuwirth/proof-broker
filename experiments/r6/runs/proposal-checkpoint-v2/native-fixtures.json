@@ -1,0 +1,116 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "d1_valid",
+    "c8_valid",
+    "d1_invalid_witness",
+    "c8_invalid_witness",
+    "d1_malformed",
+    "d1_wrong_binding",
+    "d1_timeout",
+    "d1_exhausted_budget"
+  ],
+  "check_count": 8,
+  "checks": [
+    {
+      "name": "d1_valid",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "5fb4829e6041f8921fead7ef22012bb041f6074f807ce3ae1c4bcc48f6d132fb",
+        "seal_sha256": "44fd0e8f29c5a84014246ac6a5daad79f4b1e74af7cf79aba49f4cc90baaf86e",
+        "request_sha256": "a86e420306dcae1aa67e0f64cd8f4d2560fbcb986d1723d2f55a2d205135c2ca",
+        "solution_sha256": "99a70cc2509592c03770cb28d81e08cfc6a83bd7993f71ee549b8d6cc0ab4a42",
+        "axiom_delta": {
+          "Bracket.lift_cell.r6_d1_70": {
+            "added": [],
+            "removed": []
+          },
+          "Bracket.lift_cell": {
+            "added": [],
+            "removed": []
+          }
+        }
+      }
+    },
+    {
+      "name": "c8_valid",
+      "passed": true,
+      "detail": {
+        "verdict_sha256": "aa8e693b57c43c3dd47a792cf00cc1b2a69bfcf284ef3bca074e0216a323f410",
+        "seal_sha256": "c737673b26e9598176cc4ef97319b3eee5424795e7c7ac03822ed052aab11a4e",
+        "request_sha256": "bdbb2378f028c0c6387178c5a8490d593b56572b2cc3cdc77e71e6d79f419cde",
+        "solution_sha256": "82220d339794ad0a4143377e769c4b569d89161cf7080fe9ac1240643024404c",
+        "axiom_delta": {
+          "R6.C8.coefficient_bound.r6_c8": {
+            "added": [],
+            "removed": []
+          },
+          "R6.C8.coefficient_bound": {
+            "added": [],
+            "removed": []
+          }
+        }
+      }
+    },
+    {
+      "name": "d1_invalid_witness",
+      "passed": true,
+      "detail": {
+        "failure_category": "certificate_verification",
+        "failure_sha256": "cc893272555431b8124c2f782531ae9afc1a5387871fb996cec25c79ea873b68",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "c8_invalid_witness",
+      "passed": true,
+      "detail": {
+        "failure_category": "certificate_verification",
+        "failure_sha256": "2b64badbbc7fd5b88470a6489a5d7a8f48d3aa0605e4a7701730236f2f5cb868",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_malformed",
+      "passed": true,
+      "detail": {
+        "failure_category": "proposal_decode",
+        "failure_sha256": "5ed345ff990aff17ab78d9a0045e9ea68272656ca24fa59c2eaf4b67d8336879",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_wrong_binding",
+      "passed": true,
+      "detail": {
+        "failure_category": "proposal_binding",
+        "failure_sha256": "5490f2f17077526ef51c7ba07c05130daf2679d2358adf0f5a0f7a557acf7c3b",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_timeout",
+      "passed": true,
+      "detail": {
+        "failure_category": "resource_exhaustion",
+        "failure_sha256": "e525974a79b6d842beb78431b9c34d7ffd27f1739e16f9b463ee61d2c241bd48",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    },
+    {
+      "name": "d1_exhausted_budget",
+      "passed": true,
+      "detail": {
+        "failure_category": "request_budget_exhaustion",
+        "failure_sha256": "7ab316186ef2a1762d2b2c6b73d6630a3236ef488058f50062bcda88fa579e77",
+        "completion_event_absent": true,
+        "failure_marker_preserved": true
+      }
+    }
+  ]
+}

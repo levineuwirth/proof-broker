@@ -1,0 +1,94 @@
+{
+  "authentic_ledger_rows": 23,
+  "original_baselines": {
+    "l069": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l070": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l071": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l078": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l096": [
+      "continue",
+      "proof",
+      []
+    ],
+    "l166": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l170": [
+      "continue",
+      "witness_rejected",
+      []
+    ],
+    "l175": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l178": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l204": [
+      "continue",
+      "closer_refusal",
+      []
+    ],
+    "l099": [
+      "continue",
+      "proof",
+      []
+    ]
+  },
+  "foreign_authentic_reconciliation": {
+    "fresh": {
+      "result": "continued",
+      "launches": [
+        "l069-draw1",
+        "l070-draw1"
+      ],
+      "decision": {
+        "run": "l069-draw1",
+        "fresh": true,
+        "exit": 0,
+        "decision": "continue",
+        "outcome": "proof",
+        "reasons": [],
+        "consumed": 11,
+        "committed_micro_usd": 1126400
+      }
+    },
+    "restart": {
+      "result": "continued",
+      "launches": [
+        "l070-draw1"
+      ],
+      "decision": {
+        "run": "l069-draw1",
+        "fresh": false,
+        "decision": "continue",
+        "outcome": "proof",
+        "reasons": [],
+        "consumed": 11,
+        "committed_micro_usd": 1126400
+      }
+    }
+  }
+}

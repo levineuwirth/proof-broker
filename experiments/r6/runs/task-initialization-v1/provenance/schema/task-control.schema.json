@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-broker.invalid/experiments/r6/control-task-1",
+  "title": "R6 C1-derived synthetic recovery control, revision 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "revision",
+    "frozen_at",
+    "task_unit",
+    "upstream",
+    "original_declaration",
+    "local_name",
+    "saved_local_declaration",
+    "local_goal_source",
+    "elaborated_context",
+    "expected_declarations",
+    "allowed_imports",
+    "trusted_instrumentation_imports",
+    "environment_lock",
+    "compiled_environment_inventory",
+    "allowed_axioms",
+    "baseline_axioms",
+    "axiom_policy",
+    "context_policy",
+    "model_context_policy",
+    "permitted_modifications",
+    "acceptance",
+    "artifacts_sha256",
+    "capture_sha256",
+    "vendor_lock_sha256",
+    "control"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "names": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "r6-control-task-1"
+    },
+    "task_id": {
+      "const": "c1-c8-2p18"
+    },
+    "revision": {
+      "const": 1
+    },
+    "frozen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "task_unit": {
+      "const": "local_obligation"
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit",
+        "commit_date",
+        "source_file",
+        "line",
+        "pristine_sha256",
+        "proof_byte_span"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "format": "uri"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "commit_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_file": {
+          "$ref": "#/$defs/text"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pristine_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "proof_byte_span": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end_exclusive"
+          ],
+          "properties": {
+            "start": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "end_exclusive": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "original_declaration": {
+      "const": "R6.C8.coefficient_bound"
+    },
+    "local_name": {
+      "const": "hlt"
+    },
+    "saved_local_declaration": {
+      "const": "R6.C8.coefficient_bound.r6_c8"
+    },
+    "local_goal_source": {
+      "$ref": "#/$defs/text"
+    },
+    "elaborated_context": {
+      "$ref": "#/$defs/text"
+    },
+    "expected_declarations": {
+      "$ref": "#/$defs/text"
+    },
+    "allowed_imports": {
+      "const": [
+        "Mathlib"
+      ]
+    },
+    "trusted_instrumentation_imports": {
+      "const": [
+        "Capture"
+      ]
+    },
+    "environment_lock": {
+      "$ref": "#/$defs/text"
+    },
+    "compiled_environment_inventory": {
+      "$ref": "#/$defs/text"
+    },
+    "allowed_axioms": {
+      "const": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ]
+    },
+    "baseline_axioms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "R6.C8.coefficient_bound",
+        "R6.C8.coefficient_bound.r6_c8"
+      ],
+      "properties": {
+        "R6.C8.coefficient_bound": {
+          "$ref": "#/$defs/names"
+        },
+        "R6.C8.coefficient_bound.r6_c8": {
+          "$ref": "#/$defs/names"
+        }
+      }
+    },
+    "axiom_policy": {
+      "$ref": "#/$defs/text"
+    },
+    "context_policy": {
+      "$ref": "#/$defs/text"
+    },
+    "model_context_policy": {
+      "$ref": "#/$defs/text"
+    },
+    "permitted_modifications": {
+      "$ref": "#/$defs/text"
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local_obligation_closed",
+        "whole_declaration_validated",
+        "episode_accepted"
+      ],
+      "properties": {
+        "local_obligation_closed": {
+          "$ref": "#/$defs/text"
+        },
+        "whole_declaration_validated": {
+          "$ref": "#/$defs/text"
+        },
+        "episode_accepted": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "artifacts_sha256": {
+      "type": "object",
+      "minProperties": 11,
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "capture_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "vendor_lock_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "synthetic_recovery_control"
+        },
+        "derived_source_sha256": {
+          "const": "42d55407f02d104db111a21d1bfbc0a70ea7e3b9bdd8386169d8f7180e06670e"
+        },
+        "source_provenance": {
+          "const": "source-provenance.json"
+        },
+        "derivation": {
+          "const": "derivation.patch"
+        },
+        "truth_check": {
+          "const": "truth.json"
+        },
+        "required_recovery_route": {
+          "const": "exact_support_bounded"
+        },
+        "required_witness_coefficients": {
+          "const": {
+            "hhi": "262144",
+            "neg_goal": "1"
+          }
+        },
+        "benchmark_breadth": {
+          "const": false
+        },
+        "original_declaration_meaning": {
+          "$ref": "#/$defs/text"
+        }
+      },
+      "required": [
+        "kind",
+        "derived_source_sha256",
+        "source_provenance",
+        "derivation",
+        "truth_check",
+        "required_recovery_route",
+        "required_witness_coefficients",
+        "benchmark_breadth",
+        "original_declaration_meaning"
+      ]
+    }
+  }
+}

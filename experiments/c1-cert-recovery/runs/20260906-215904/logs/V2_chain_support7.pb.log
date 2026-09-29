@@ -1,0 +1,19 @@
+proof_broker report: tactic=proof_broker closer=alethe_walker backend=cvc5 tier=3 format=alethe-2024 cert_bytes=17280 fragment=LIA hyps=6 dispatch_ms=23 verify_ms=1 wall_ms=1075
+tactic execution of ProofBroker.Tactic.proofBroker took 628ms
+cumulative profiling times:
+	attribute application 0.0119ms
+	elaboration 51.2ms
+	fix level params 1.05ms
+	instantiate metavars 12.8ms
+	linting 18.7ms
+	module linting 0.0013ms
+	overlappingInstancesLinter 1.03ms
+	parsing 0.336ms
+	process pre-definitions 25.2ms
+	share common exprs 47.8ms
+	tactic execution 628ms
+	tacticAnalysis 2.21ms
+	type checking 22.7ms
+	typeclass inference 469ms
+PEAK_RSS_BYTES=731480064
+EXIT=0 WALL=5.2s CAP=8G

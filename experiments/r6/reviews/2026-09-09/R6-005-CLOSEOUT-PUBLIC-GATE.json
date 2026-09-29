@@ -1,0 +1,521 @@
+{
+  "passed": true,
+  "total_checks": 96,
+  "policy_sha256": "d882aa3d60e38c9222013654ad93062668b5da91ea386970905c4a73f0de79c4",
+  "source_lock_sha256": "e849da261b95210a864c39a2dbf47ae32ea86383cf56ef4e5552df7649112911",
+  "preservation": {
+    "checked_files": 12242,
+    "inventory_sha256": "32b4840cc4a4d4914420c5b853d8609312f324a9e2dc74e803c7569d65725484",
+    "git_base": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+    "scope": "pre-work Git-selected bytes, including closed uncommitted R6-004"
+  },
+  "event_count": 518,
+  "sealed_entries": 3960,
+  "episodes": {
+    "d1_valid": {
+      "accepted": true,
+      "proof_accepted": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "2ee0a30df2ca4a958129dbb3678398102ddca4f9ed9f881cf490b7934fecce83",
+      "publication_scan_sha256": "eb8441615d4bb2feb4d085088f6c3fe0f2ec6fdc4c6c3358c060ed7e7b092792",
+      "publication_final_sha256": "5b28f630ae70063dd4764cf2bd3d0481fa89dab5c612e35ae7fdb6b6e65dce40",
+      "failure_category": null,
+      "coverage": {
+        "recomputed": 215,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 215
+      },
+      "event_count": 48,
+      "sealed_files": 209,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "c8_valid": {
+      "accepted": true,
+      "proof_accepted": true,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "65360a89d56482265e9b2695901a563d5a61698c8271a9193281c5a91c2f18cf",
+      "publication_scan_sha256": "f7a8dc4144cb9a0b97f6d9cd2e980644095925f142d58d2906bcb1dbf62b3e72",
+      "publication_final_sha256": "0adf1e5b7b798a6991fb83025f99fa0e467c0208248431f40baa2e051a72b447",
+      "failure_category": null,
+      "coverage": {
+        "recomputed": 215,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 215
+      },
+      "event_count": 48,
+      "sealed_files": 209,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "c8_invalid_witness": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "852c6ff1d03ec1d16470c5c0a93327ed9464c46c376326c061f4528eebccb841",
+      "publication_scan_sha256": "2903deedb668500f1b96d18d2cdbebd48daeea3bda6791b66fc0bd5036fde0e1",
+      "publication_final_sha256": "0a79e8532b41e330fc4b5385e45ac4d275e29036e7085a1a8fe27a9c4cbe5b4d",
+      "failure_category": "certificate_verification",
+      "coverage": {
+        "recomputed": 166,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 166
+      },
+      "event_count": 24,
+      "sealed_files": 165,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_untrusted_ca": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "summary_sha256": "e7aac2dd1cb1d4fd55b31704003a48478849d2d902adf1b98b0cc073e7fb6b43",
+      "publication_scan_sha256": "0ef22bf707d88a7f7469acde0e633b04992932b195afce22daaf861efd4ac328",
+      "publication_final_sha256": "7393092b7bcf2752b4790206df70bc9f042386d6b4491abb2203f0a826fd4008",
+      "failure_category": "tls_certificate_verification",
+      "coverage": {
+        "recomputed": 143,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 143
+      },
+      "event_count": 17,
+      "sealed_files": 143,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_wrong_hostname": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "summary_sha256": "1385245b1281f134d48d12a9461bfd25c58351a431208ea13ea9aa6d486014d3",
+      "publication_scan_sha256": "026e8e65a036a2ebbecd2020df5a7839ac3b7f6bb8cd404037ded9f49f7ed935",
+      "publication_final_sha256": "910fe9ebca220fe9e1dd0dbde91b475c5dc62e2e6204f49b6a95b5872f706399",
+      "failure_category": "tls_certificate_verification",
+      "coverage": {
+        "recomputed": 143,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 143
+      },
+      "event_count": 17,
+      "sealed_files": 143,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_expired_certificate": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "summary_sha256": "48727da646f27782b02394fd65a79548ceca88ab6bfc06f026109d4baae6a274",
+      "publication_scan_sha256": "bdb6db550e965f2f1dc2cede64d8e51583e4b5fe5be12727522ce1fd94b26aea",
+      "publication_final_sha256": "b3c65f108e61be8ba6c4b03096864ceae39c06aa2ecdef131183b866b0769e7a",
+      "failure_category": "tls_certificate_verification",
+      "coverage": {
+        "recomputed": 143,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 143
+      },
+      "event_count": 17,
+      "sealed_files": 143,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_redirect": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "21683896779c42472c2879d7bb457f48705082163b621b04009b626501a0c03b",
+      "publication_scan_sha256": "4712d6d586ca2b95496c91be4f8ba85aab3e93acc4afacf48deddbd9c28f14c8",
+      "publication_final_sha256": "3cb3fa611e6cd941d8f0596b1091c5e45a325906a416bb99ea980e526d5636dc",
+      "failure_category": "provider_http_error",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_http429": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "bce6ed3d092186931bc83cb6d51b700c02be5feab0c536b6578e08c879c13a7f",
+      "publication_scan_sha256": "2faaff55c5b9669e2107a69cec585524ea926c3f003d8b6adc2de3e6b029567a",
+      "publication_final_sha256": "71e0fd8a36e4147f1e317e5533b329e586b01c5a03f377d4ac336e7532d88518",
+      "failure_category": "provider_http_error",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_http503": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "26c9751edd56ec0f6f3350a1f073c02053539d2c3dc8686ea748ad4969ab7d29",
+      "publication_scan_sha256": "0c351d94d01aebceca9b3d4bdcf7c84c5e4ac91e33bc8d01bd6ea7bf9fd9e8fb",
+      "publication_final_sha256": "704f9b975bddd2f0cab1b068e5285eccef24ad4acc7cb3b99a6c40825a34bea5",
+      "failure_category": "provider_http_error",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_missing_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "summary_sha256": "04f5bc19a13e017a36620a3c5c12efeae1217757b12b9535dad73d95fbb469dc",
+      "publication_scan_sha256": "b11eb3020c012c37366537a37a7e36b7464434b89d5e006a63155031bde9028a",
+      "publication_final_sha256": "11b935a6acba93a9c84307aa5658158797278ad5a225c41348171aa63be6f963",
+      "failure_category": "credential_receipt_failure",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_wrong_credential": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": false,
+      "publication_accepted": true,
+      "summary_sha256": "0008fcb27922964c3e695096000c66727a24aa20938f504d806b2adcecb639d5",
+      "publication_scan_sha256": "401b8c346d3d88101fed5efeb5a6948b46515fa2927f482580872c9b3bc34f5a",
+      "publication_final_sha256": "813801e39b881dcc69cef34740728de29335f603ca640423d44b646e402cb3ab",
+      "failure_category": "credential_receipt_failure",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_reflected_canary": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": false,
+      "summary_sha256": "490ca698cab479dc56ad3f437af94ae0d296f2e1544ed646df8172fc5a6b56e4",
+      "publication_scan_sha256": "2d03856963ddad72460b7114d2a6e9d25a93187531e4bb1d34703cb0769d78f6",
+      "publication_final_sha256": "cef975512585603fb40fce2a92435d5a0106eb1de10bbb83ee47b8d82160944f",
+      "failure_category": "provider_http_error",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 2,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_wrong_echo": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "cf8f246bed36b54fa7997cf4902f75077bf18e470746d2ab36e6fd04b5bf9444",
+      "publication_scan_sha256": "cb376f741c99f4a42c8bbd521a3ab90967a8f5b87191bd7a33ca996326785b3a",
+      "publication_final_sha256": "5d0f0b7b144013366f6fd9cc5aa0188b8c146993b3b0c565a46adb761510861b",
+      "failure_category": "transport_binding_failure",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_invalid_witness": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "252a5498f08c3fdf80e9a5dbdecf618de9438333f57603ada72d840834d473bb",
+      "publication_scan_sha256": "27576235f2a8fbb62dd3d0b9a29f5b3e3c60be27e021257e85063cc7b95dc12e",
+      "publication_final_sha256": "85d0dadf38a5cd6e9ff779b67f2d9f2f457d334a5ad611ccea5963f9b79a7cb3",
+      "failure_category": "certificate_verification",
+      "coverage": {
+        "recomputed": 166,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 166
+      },
+      "event_count": 24,
+      "sealed_files": 165,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_malformed": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "83a4fe53067ab5c9b35a1495a1ea163ac56254fde5b2d1b7b95309d578c25b40",
+      "publication_scan_sha256": "31d831d4f451e5ab5eb78bb153642a2f650eded5dbc28cf673c2136ef83c93f0",
+      "publication_final_sha256": "dde7ccc04dd057224e4196734e6dab90a525a521fc877421a0a6d821fedcc4a0",
+      "failure_category": "response_decode",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_altered_prompt": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "dd5124a171a607c54bfc4d73b592bb96871e9007aa2dbbba8f053c937236a747",
+      "publication_scan_sha256": "65661bc71683bf4a153f876fd81777ba51656cc7a2795c9d5588498081849a80",
+      "publication_final_sha256": "8e074daefa3dc7f4c43c49829c95154670eccf97bd396b1be091140fdeb73cde",
+      "failure_category": "outbound_envelope_binding",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_omitted_prompt": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "d0131dfe72bc43e571e3fe8330f6ae63d43644a47e174068fa84228cc14b38eb",
+      "publication_scan_sha256": "53680fe7f244c717008b2636eec51a8936f6c58f62cac33c65b563ec15daed1f",
+      "publication_final_sha256": "d9779850402df6a2c80bb1313e5466f82a019c38ae792e88dde89b992e66fade",
+      "failure_category": "outbound_envelope_binding",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_altered_prefix": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "a532432d1fd148f3a2c29f40a2f212d792fd90f8e62b2a74152e2b8408eb9b51",
+      "publication_scan_sha256": "8cc22c3c47a825ee4602355967b9c88781b793afbd89f92e348622fa5b8bbb7a",
+      "publication_final_sha256": "ecf9fe3452e0ac2c11134953c344b7b55f0dcdd5be14da401cc43a2a0bcfcce3",
+      "failure_category": "outbound_envelope_binding",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_altered_body": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "52b1dd170d12282f7fb17a808142a00c0456597373379df428102f22af4c1ad6",
+      "publication_scan_sha256": "3d49d8d871cc29500041564051cd7c51d80e00b797e09a648779406b8747a930",
+      "publication_final_sha256": "093a72c9751c3643f29ab667779e3409fa87cc8a7154f548c8c7d2f8e8e3df4b",
+      "failure_category": "outbound_envelope_binding",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_altered_options": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "17ddcb3b10d99ed07c3652b5157867fbdba6dbc9ffa70fd0241d918e8ec7f2ba",
+      "publication_scan_sha256": "49d388de7171ff5878ed2100a7ed8854f8828ea88b7008dfc6958771e838297a",
+      "publication_final_sha256": "17497f1c0b081d8774f49db0943b9c6838bb2eb6273086b958c947da2bca55ed",
+      "failure_category": "outbound_envelope_binding",
+      "coverage": {
+        "recomputed": 147,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 147
+      },
+      "event_count": 17,
+      "sealed_files": 147,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_wrong_model": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "f3864e29f0661ef2dfea10dd1d56b16acd99c0a22e25ad67b13d007f5c71e29e",
+      "publication_scan_sha256": "d4613bc845d26ca14df391dc531854904b43625ae4e077be0ab618ed2683c9cd",
+      "publication_final_sha256": "ccd8ad9886e34f2d6a6696776f75743a4e1c120968712df35e2d46cb6cf195a5",
+      "failure_category": "provider_model_binding",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_wrong_service_tier": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "3af3a37664a8f9c5c4010d4a6374e541eb1cfe97b3ed944b0a1fdb209c2cfde4",
+      "publication_scan_sha256": "bf61b47f7ed2b2c09b1699911eb22edac88ed4feb06eef28b4bf34984ea06015",
+      "publication_final_sha256": "3f69b41f50f4610fae6e88a439da7c540b8137061a27c4d918964cdc2b457a20",
+      "failure_category": "provider_service_tier",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_incomplete": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "5e7740f346c7acb5a9cc320f2445779592de84ba2dba83ca672d881d93a2b137",
+      "publication_scan_sha256": "002f8d0cbb317d2c4d5af40686e2bb6e460b4d95d80b1b933bbd7e273bf3a4de",
+      "publication_final_sha256": "e2544b922e688594ed03bcb350e9b753c118e6904feaf87bf4163032c261f65d",
+      "failure_category": "provider_incomplete",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_output_budget": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "26d3ca836ed3491dc53d232b542635fda371f2dd4309684adf9146177a4dc697",
+      "publication_scan_sha256": "9c2d143a51835cf635bfd6d8ea9311a28a86ab37ce3d545af724d5b344680de7",
+      "publication_final_sha256": "a99db958072d259f357d16f3005b41a0021ead5ca9dbaa1908957b60b8f26110",
+      "failure_category": "provider_output_budget",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_input_budget": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "0bbbf28ea492374a3d177750df00adf5f716c4c675e5648de73ead98b8f709bd",
+      "publication_scan_sha256": "28b9c3c4b1dd0a22622de1991d40a79de6b9ddc95818fe40c413c16a6fdc63be",
+      "publication_final_sha256": "9c39dc17570602866a97e2ca10e1ba27264974197274f6310cc6c319f2986e0e",
+      "failure_category": "provider_input_budget",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    },
+    "d1_truncated_response": {
+      "accepted": false,
+      "proof_accepted": false,
+      "credential_receipt_accepted": true,
+      "publication_accepted": true,
+      "summary_sha256": "20fb6f2da73134be5afe83c685207420c0ba2ddcca91ebe60d0648394da4903d",
+      "publication_scan_sha256": "6a73ad06248e66f9f303ebb9ae9fe798dfb8bc5371ddbecddff6e4c5cfcdea15",
+      "publication_final_sha256": "894b674a0685c040b8ef9fae9e6e1c25aeead56468c76aa9a9816e9c245c21a6",
+      "failure_category": "transport_incomplete_response",
+      "coverage": {
+        "recomputed": 146,
+        "recorded_not_recomputed": 0,
+        "files_scanned": 146
+      },
+      "event_count": 17,
+      "sealed_files": 146,
+      "disclosures": 0,
+      "scope": "artifact consistency and observed local TLS/credential/proof boundaries; no execution or inference attestation"
+    }
+  },
+  "publication": {
+    "bundle_files_scanned": 4083,
+    "expected_synthetic_disclosures": 2
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "content_checks": 81,
+  "gate_checks": 15,
+  "gate_file_sha256": "08c6d02a31771999c97f970f00fde41b32244c328e07292e730829bb506493f4",
+  "gate_program_sha256": "adb9ff0ddeb67d762033a4d9b9ed1495badc620a45446ffd376b6ecb8c00ea88",
+  "scope": "complete original-tree content recount plus separately validated outer-gate probes; no live inference"
+}

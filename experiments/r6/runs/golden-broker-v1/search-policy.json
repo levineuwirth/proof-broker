@@ -1,0 +1,31 @@
+{
+  "schema_version": "r6-search-policy-1",
+  "name": "cvc4_term_mode_v1",
+  "parent_task_manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "task_revision": 1,
+  "sdk_base_commit": "e627efe1ee69638678cc94e3f759d93abd69a160",
+  "instrumentation_patch_sha256": "447a99913be411586860d51e9c88ff9917d0afa297865dc17203c660e307a5a1",
+  "source_patch_sha256": "213f27cab0c2ec5bd83ffc8b0666c9f83cc974a221cc6a4f7bbd2820ed50c82d",
+  "capture_sha256": "602fb6d4b76a2914b70059b20c386f9e502783e9cae471541831621cbb30dcd4",
+  "trusted_imports": [
+    "BrokerCapture",
+    "ProofBroker"
+  ],
+  "manifest_order": [
+    "cvc4"
+  ],
+  "attempt_limit": 1,
+  "context_policy": "complete_local_context; reifier omissions recorded",
+  "model_calls": 0,
+  "sampling_settings": null,
+  "provider": null,
+  "model_revision": null,
+  "solver_internal_limit": {
+    "argument": "--tlimit-per",
+    "value_ms": 5000
+  },
+  "required_local_proof_reference": "ProofBroker.TermMode.farkasContradictN",
+  "search_stage_wall_seconds": 150,
+  "search_stage_cpu_seconds": 120,
+  "search_stage_memory_bytes": 8589934592
+}

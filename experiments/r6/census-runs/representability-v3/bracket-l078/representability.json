@@ -1,0 +1,207 @@
+{
+  "site_id": "bracket-l078",
+  "family": "Bracket.lift_cell",
+  "exposure_class": "prior_target_family",
+  "class": "posable_certificate",
+  "fragment": "LIA",
+  "row_count": 20,
+  "row_names": [
+    "hx",
+    "hz",
+    "hzh",
+    "hZ",
+    "hwidth",
+    "hZval",
+    "hprod_le",
+    "hbound",
+    "hmul",
+    "hnum",
+    "hxz",
+    "_pb_nonneg_Zmax",
+    "_pb_nonneg_atom_0",
+    "_pb_nonneg_atom_1",
+    "_pb_nonneg_atom_2",
+    "_pb_nonneg_atom_3",
+    "_pb_nonneg_atom_4",
+    "_pb_nonneg_atom_5",
+    "_pb_nonneg_atom_6",
+    "neg_goal"
+  ],
+  "neg_goal_rows": 1,
+  "variables": [
+    "Zmax",
+    "_pb_atom_0",
+    "_pb_atom_1",
+    "_pb_atom_2",
+    "_pb_atom_3",
+    "_pb_atom_4",
+    "_pb_atom_5",
+    "_pb_atom_6"
+  ],
+  "reifier_data_locals": [
+    "c",
+    "x",
+    "z",
+    "zhigh"
+  ],
+  "reifier_dropped_propositions": [
+    {
+      "name": "hrec",
+      "reason": "proposition outside the reifiable fragment (c = x + z + ↑Zmax * zhigh)"
+    }
+  ],
+  "farkas_omissions": [],
+  "names_unique": true,
+  "duplicate_names": [],
+  "frozen_policy_class": "admissible",
+  "arithmetic_certificate": true,
+  "certificate_rows": [
+    {
+      "index": 0,
+      "name": "hx",
+      "coefficient": "1"
+    },
+    {
+      "index": 1,
+      "name": "hz",
+      "coefficient": "1"
+    },
+    {
+      "index": 6,
+      "name": "hprod_le",
+      "coefficient": "1"
+    },
+    {
+      "index": 19,
+      "name": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "certificate_support": 4,
+  "certificate_uses_neg_goal": true,
+  "certificate": [
+    {
+      "hypothesis": "hx",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hz",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hprod_le",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "evidence_scope": "exact arithmetic over the emitted rows; evaluator-only; not model-visible; not the deterministic arm; not a reconstruction",
+  "policy_c": "posable",
+  "policy_c_evidence": {
+    "source_fragment": "LIA",
+    "omitted": [],
+    "omitted_names": [],
+    "posed_fragment": "LIA",
+    "input_ir_sha256": "ebdfdfb086199f109144ed4fc552f09df7f66c267ae3237bbbedfb82fc2c5cae",
+    "final_ir_sha256": "848afd081f857d5d817ca68bd7e602a732e84a47958e5497ca989fa013f8b3f6"
+  },
+  "search_context_renamed": [],
+  "search_context_entries": 17,
+  "revision_2_comparison": {
+    "prepared_before": true,
+    "prepared_after": true,
+    "input_ir_equal": true,
+    "final_ir_equal": true,
+    "rows_equal": true,
+    "user_directives_before": {
+      "tier_preference": [
+        "1",
+        "2"
+      ],
+      "rewriter_preferences": {
+        "enable_definition_unfolding": [
+          "numeral_definition"
+        ]
+      }
+    },
+    "user_directives_after": {
+      "tier_preference": [
+        "1",
+        "2"
+      ],
+      "rewriter_preferences": {
+        "enable_definition_unfolding": [
+          "numeral_definition"
+        ]
+      }
+    },
+    "row_names_before": [
+      "hx",
+      "hz",
+      "hzh",
+      "hZ",
+      "hwidth",
+      "hZval",
+      "hprod_le",
+      "hbound",
+      "hmul",
+      "hnum",
+      "hxz",
+      "_pb_nonneg_Zmax",
+      "_pb_nonneg_atom_0",
+      "_pb_nonneg_atom_1",
+      "_pb_nonneg_atom_2",
+      "_pb_nonneg_atom_3",
+      "_pb_nonneg_atom_4",
+      "_pb_nonneg_atom_5",
+      "_pb_nonneg_atom_6",
+      "neg_goal"
+    ],
+    "row_names_after": [
+      "hx",
+      "hz",
+      "hzh",
+      "hZ",
+      "hwidth",
+      "hZval",
+      "hprod_le",
+      "hbound",
+      "hmul",
+      "hnum",
+      "hxz",
+      "_pb_nonneg_Zmax",
+      "_pb_nonneg_atom_0",
+      "_pb_nonneg_atom_1",
+      "_pb_nonneg_atom_2",
+      "_pb_nonneg_atom_3",
+      "_pb_nonneg_atom_4",
+      "_pb_nonneg_atom_5",
+      "_pb_nonneg_atom_6",
+      "neg_goal"
+    ],
+    "variables_before": [
+      "Zmax",
+      "_pb_atom_0",
+      "_pb_atom_1",
+      "_pb_atom_2",
+      "_pb_atom_3",
+      "_pb_atom_4",
+      "_pb_atom_5",
+      "_pb_atom_6"
+    ],
+    "variables_after": [
+      "Zmax",
+      "_pb_atom_0",
+      "_pb_atom_1",
+      "_pb_atom_2",
+      "_pb_atom_3",
+      "_pb_atom_4",
+      "_pb_atom_5",
+      "_pb_atom_6"
+    ],
+    "rows_equal_modulo_names": true
+  },
+  "seconds": 6.5
+}

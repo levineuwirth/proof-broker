@@ -1,0 +1,16 @@
+{
+  "sanitized_context_sha256": "608493afeff1b719aed08464ac63f49cedc4cbf85e5140a86b5768bf1c6e9463",
+  "source_context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+  "context_projection_is_model_visible": false,
+  "context_policy": "farkas_rows_only_v1",
+  "let_facts_preserved": [],
+  "reifier_omissions": [],
+  "farkas_omissions": [
+    "hf",
+    "h1",
+    "h2",
+    "h1'",
+    "h2'",
+    "hne"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.0/bin/lean": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/exporter/.lake/build/bin/lean4export": "8a7c4298f4f57389aaf0ca95dc08fac3eb3fb97c7ef24405d60b105608fff76f",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/checker/.lake/build/bin/r6-replay": "f7e5cb233c3d42fce630915cb52b975371408616582bdbb66ca97f08fbe74bd0",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/ffi/proof_broker_ffi.so": "72a62c8d627f49eccee8656f0ee1ff797b801477b49b3a78484ea6a3e677027e",
+  "/home/jeans/Repos/research/proof-broker/lean-bridge/.lake/build/lib/libpbglue.so": "12363eb0b6369b8a44844b705de025defa740f50ba812182cecf91f5fdaf61ce",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/proposal_driver.exe": "bc808c53cc394961d46d5fe7b992eb48349318d7817ff8f047498ad76ea8b5b3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/validate/verify_certificate.exe": "849686f459d74e4a0d720ad6c1eb3562caca58d39bc989e57c8e99ac3373a387",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/fixture": "d2e3b021fb188c6685cc11bed870a836acbb7a0921a0cb4024e0323884b3b609",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/bridge/.lake/build/lib/lean/r6_x2dproposal_ProofBroker_IR.so": "a78b8af29a8b8db42b133bb17c553b3149d57d269da0730755c89b1ac7a50679",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/bridge/.lake/build/lib/lean/r6_x2dproposal_ProofBroker_Trace.so": "79f0f7d1d03ae5cbdf10ce354c3fe2d163e6ae9bfbc466c3fe9c4bf1349da68a",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/bridge/.lake/build/lib/lean/r6_x2dproposal_ProofBroker_Bridge.so": "8433da0e7d0fc9e8a6d0544a234bb07ea479caf3816bda5ad781c0b7c4772a74",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/bridge/.lake/build/lib/lean/r6_x2dproposal_ProofBroker_TermMode.so": "056445f97aaa8e2277203392d32b5a5ce4d894c8c9859796c76c20c5358b4f60",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/bridge/.lake/build/lib/lean/r6_x2dproposal_ProofBroker_Alethe.so": "2cbf7b41007bc99e84ca7e2621d82cff0a127b571a1ba28bd0a009bb91665dfa",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/bridge/.lake/build/lib/lean/r6_x2dproposal_ProofBroker_Tactic.so": "ea2a62d012cb05cf2ee505ecd2a7acc1666569ab947e7d7c7e74004464d98012",
+  "/usr/bin/python3.14": "d78f9cf7178ecff09963551399855543c297f37ac207e626228bfe43cb26a70c"
+}

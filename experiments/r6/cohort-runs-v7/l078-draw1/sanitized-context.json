@@ -1,0 +1,107 @@
+{
+  "target": "x.val + z.val + Zmax * zhigh.val < 2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16",
+  "hypotheses": [
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 1,
+      "name": "c",
+      "type": "ZMod P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 2,
+      "name": "x",
+      "type": "ZMod P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 3,
+      "name": "z",
+      "type": "ZMod P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 4,
+      "name": "zhigh",
+      "type": "ZMod P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.implicit",
+      "index": 5,
+      "name": "Zmax",
+      "type": "ℕ"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 6,
+      "name": "hrec",
+      "type": "c = x + z + ↑Zmax * zhigh"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 7,
+      "name": "hx",
+      "type": "x.val < 2 ^ 24"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 8,
+      "name": "hz",
+      "type": "z.val < 2 * Zmax"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 9,
+      "name": "hzh",
+      "type": "zhigh.val < 2 ^ 16"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 10,
+      "name": "hZ",
+      "type": "Zmax ≤ 2 ^ 16"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 11,
+      "name": "hwidth",
+      "type": "2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16 < P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 12,
+      "name": "hZval",
+      "type": "(↑Zmax).val = Zmax"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 13,
+      "name": "hprod_le",
+      "type": "Zmax * zhigh.val ≤ Zmax * 2 ^ 16"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 14,
+      "name": "hbound",
+      "type": "Zmax * zhigh.val < P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 15,
+      "name": "hmul",
+      "type": "(↑Zmax * zhigh).val = Zmax * zhigh.val"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 16,
+      "name": "hnum",
+      "type": "2 ^ 24 + 2 * 2 ^ 16 ≤ P"
+    },
+    {
+      "binder_info": "Lean.BinderInfo.default",
+      "index": 17,
+      "name": "hxz",
+      "type": "(x + z).val = x.val + z.val"
+    }
+  ]
+}

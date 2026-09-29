@@ -1,0 +1,8 @@
+{
+  "name": "responses_live_pilot_v1",
+  "mode": "live",
+  "task_id": "verinf-d1-70",
+  "config_sha256": "833035eb0d34b103aed7aad5f32cb519963b48d34040d2afb14e0739e36fa0ea",
+  "source_lock_sha256": "bf5d637bc5639fcc7619d5819c1d4f4c01ecda641e822f18a3df8151c151e0d9",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87"
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": "r6-pricing-admission-2",
+  "accepted": true,
+  "policy_sha256": "7e16462d13a4fc3e29590c54d10508abf88982564abbc800678604352914f039",
+  "request_sha256": "f66f82db9e0d596484b7b273b2a858bc1b90b9c42e98c11bbb9d640d3af34e49",
+  "arguments_sha256": "0cbe881e064a8be2caa06adc4d0e052b8bbcb58dfe29d109f2a14d00253ed570",
+  "body_sha256": "15dc23848e3e89351997c300c3b9df6a8b140841844171ac964620ba96be186a",
+  "sources": {
+    "model": {
+      "raw_sha256": "7593d79447c238c28469212174a545a7b229e4976d5fa917fb53e1bf5d2cbec7",
+      "extract_sha256": "c3769aa47f08763af4aa774f3d2232c1d2b3b6dc1220213724a71298e7d62ab4",
+      "receipt_sha256": "73a6e3a21daf3df8f90f2f9ab56f391f499c40cc4d2dc53f8a2c21eff3e0ce61"
+    },
+    "caching": {
+      "raw_sha256": "36abbaca16b49c61e7a5009e363cc7c877c67727bdc2b7884277404ca21cb7e9",
+      "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+      "receipt_sha256": "2c48f157a3aa749b51e303216ceae39e4fd5591ecde2af0b3eb8987c9709fe0a"
+    }
+  },
+  "nano_usd_per_token": {
+    "input": 2500,
+    "cached_input": 250,
+    "output": 15000,
+    "cache_write": 2500
+  },
+  "reserved_micro_usd": 102400,
+  "applicability": {
+    "source_conditions": {
+      "long_context": {
+        "input_tokens_threshold": 272000,
+        "comparison": "greater_than",
+        "input_multiplier": "2",
+        "output_multiplier": "1.5",
+        "scope": "full_session",
+        "service_tiers": [
+          "standard",
+          "batch",
+          "flex"
+        ]
+      },
+      "regional_processing": {
+        "uplift_percent": 10,
+        "scope": "regional_processing_endpoints"
+      }
+    },
+    "input_tokens_reserved": 16384,
+    "input_tokens_upper_bound_exclusive": 272000,
+    "endpoint": {
+      "host": "api.openai.com",
+      "path": "/v1/responses",
+      "port": 443,
+      "scheme": "https"
+    },
+    "long_context_surcharge_applicable": false,
+    "regional_surcharge_applicable": false,
+    "session_scope": "one_stateless_request",
+    "scope": "local policy/input applicability under the existing token-bound assumption; not billing attestation"
+  },
+  "message_utf8_bytes": 5203,
+  "evaluated_at_unix": 1789382655.84798,
+  "billing_guarantee": false,
+  "evidence_scope": "local retained-source, clock and request consistency; no remote pricing or inference attestation"
+}

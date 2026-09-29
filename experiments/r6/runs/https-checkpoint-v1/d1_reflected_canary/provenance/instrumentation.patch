@@ -1,0 +1,134 @@
+--- a/lean-bridge/ProofBroker/Tactic.lean
++++ b/lean-bridge/ProofBroker/Tactic.lean
+@@ -1653,6 +1653,18 @@
+   dispatchMs : Nat
+   verifyMs : Nat
+ 
++
++private def episodeEvent (event : String) (fields : List (String × Json)) : TacticM Unit := do
++  if (← IO.getEnv "PROOF_BROKER_EPISODE_TRACE") == some "1" then
++    let line := "R6_EVENT " ++ (Json.mkObj [
++      ("component", toJson "lean_bridge"), ("event", toJson event),
++      ("data", Json.mkObj fields)]).compress
++    -- Bypass Lean's elaboration-output capture: this is the same OS pipe the
++    -- SDK writes, and the supervisor receives each event during execution.
++    IO.FS.withFile "/proc/self/fd/2" .append fun handle => do
++      handle.putStrLn line
++      handle.flush
++
+ private def msSince (t0 : Nat) : BaseIO Nat := do
+   return (← IO.monoMsNow) - t0
+ 
+@@ -1748,13 +1760,39 @@
+     "no adapter succeeded" / "cert rejected by verifier" as soft
+     failures recorded in the path so the verbose form can show
+     them before re-raising. -/
++
++private def r6ReadProposal (ir : ProofBroker.IR.IR) : TacticM BrokerResult := do
++  let some path ← IO.getEnv "R6_PROPOSAL_PACKET" | throwError "R6_PROPOSAL_PACKET is required"
++  let raw ← IO.FS.readFile path
++  let packet ← match Json.parse raw with
++    | .ok p => pure p | .error e => throwError "R6 proposal JSON: {e}"
++  let input ← match packet.getObjVal? "input_ir" with
++    | .ok p => pure p | .error e => throwError "R6 proposal input: {e}"
++  unless input == ProofBroker.IR.IR.toJson ir do
++    throwError "R6 proposal input differs from freshly reified goal/context"
++  let cert ← match packet.getObjVal? "certificate" with
++    | .ok p => pure p | .error e => throwError "R6 proposal certificate: {e}"
++  let finalIr ← match packet.getObjVal? "final_ir" with
++    | .ok p => pure p | .error e => throwError "R6 proposal final IR: {e}"
++  let traceJson ← match packet.getObjVal? "trace" with
++    | .ok p => pure p | .error e => throwError "R6 proposal trace: {e}"
++  let trace ← match Trace.Document.fromJson? traceJson with
++    | .ok t => pure t | .error e => throwError "R6 proposal trace decode: {e}"
++  return {cert := some cert, finalIr := some finalIr, trace := some trace,
++          attempts := [{adapter := "r6_fixture_witness", outcome := .succeeded}]}
++
+ private def buildExtractionPath
+     (goal : MVarId)
+     (adapterNames? : Option (List String))
+     (preferHigherTier : Bool)
+     (tierPreference : Option (List String) := none)
+     : TacticM ExtractionPath := do
++  episodeEvent "reification_started" []
+   let (ir, natAtoms, natDefs, skippedLocals) ← Reify.buildIR goal
++  episodeEvent "reification_finished" [
++    ("ir", ProofBroker.IR.IR.toJson ir),
++    ("skipped_locals", toJson (skippedLocals.map fun (name, reason) =>
++      Json.mkObj [("name", toJson name), ("reason", toJson reason)]))]
+   -- Walker-strict callers pass `tierPreference := some ["3"]`:
+   -- the IR's `user_directives.tier_preference` (spec §5.4) tells
+   -- the cvc5 adapter to mint the verified Tier-3 alethe trace
+@@ -1769,14 +1807,18 @@
+         preferredBackend := none, tierPreference := none,
+         rewriterPreferences := none, budget := none }
+       { ir with userDirectives := some { ud with tierPreference := some tp } }
+-  let manifests ← match adapterNames? with
+-    | some names => loadManifestsByName names
+-    | none => loadDefaultManifests
++  unless adapterNames? == some ["r6_fixture_witness"] do
++    throwError "R6 fixture delivery requires the explicit proposal route"
++  let manifests : List Json := []
++  episodeEvent "dispatch_started" [
++    ("ir", ProofBroker.IR.IR.toJson ir), ("manifests", toJson manifests),
++    ("prefer_higher_tier", toJson preferHigherTier)]
+   let t0 ← IO.monoMsNow
+-  let dispatch ← match runDispatchBroker ir manifests preferHigherTier with
+-    | .ok r => pure r
+-    | .error e => throwError "proof_broker: dispatch_broker failed: {repr e}"
++  let dispatch ← r6ReadProposal ir
+   let dispatchMs ← msSince t0
++  episodeEvent "dispatch_received" [
++    ("dispatch_ms", toJson dispatchMs), ("certificate", toJson dispatch.cert),
++    ("final_ir", toJson dispatch.finalIr), ("trace", toJson dispatch.trace)]
+   let mut verifyOk : Option Bool := none
+   let mut verifyEnvelopeOk : Option Bool := none
+   let mut verifyReason : Option CertReason := none
+@@ -1788,6 +1830,7 @@
+     -- with the trace, so a cert/trace/IR triple that doesn't
+     -- cohere is a hash mismatch here rather than a silent pass.
+     let irForVerify := dispatch.finalIr.getD (ProofBroker.IR.IR.toJson ir)
++    episodeEvent "certificate_verification_started" [("certificate", cert)]
+     let verif ← match runVerifyCertificateJson cert irForVerify dispatch.trace with
+       | .ok v => pure v
+       | .error e => throwError "proof_broker: verify_certificate failed: {repr e}"
+@@ -1795,6 +1838,9 @@
+     verifyOk := some verif.ok
+     verifyEnvelopeOk := some verif.envelopeOk
+     verifyReason := some verif.reason
++    episodeEvent "certificate_verification_finished" [
++      ("ok", toJson verif.ok), ("envelope_ok", toJson verif.envelopeOk),
++      ("reason", toJson (reprStr verif.reason)), ("certificate", cert)]
+   return {
+     ir, attempts := dispatch.attempts, cert := dispatch.cert,
+     trace := dispatch.trace, finalIr := dispatch.finalIr,
+@@ -3206,7 +3252,11 @@
+ private def closeOmegaSubgoal (omegaMV : MVarId) : TacticM Unit := do
+   let prevGoals ← getGoals
+   setGoals [omegaMV]
++  episodeEvent "residual_started" [("closer", toJson "omega"),
++    ("goal", toJson (← ppExpr (← omegaMV.getType)).pretty)]
+   evalTactic (← `(tactic| omega))
++  unless (← getGoals).isEmpty do throwError "R6 residual closer left goals"
++  episodeEvent "residual_finished" [("closer", toJson "omega")]
+   setGoals prevGoals
+ 
+ /-- Term-mode closer, False-goal arity-N path. Folds the witness's
+@@ -3837,6 +3887,7 @@
+   let cert ← match path.cert with
+     | some c => pure c
+     | none => throwError "proof_broker_term: no adapter minted a cert"
++  episodeEvent "reconstruction_started" [("certificate", cert)]
+   -- Trace guard (R2, lifted for definition unfolding in R3-M3): the
+   -- term-mode closers rebuild the proof from the cert's witness, so
+   -- the trace must be identity OR consist solely of definition
+@@ -3870,6 +3921,9 @@
+       throwError "proof_broker_term: Tier 2 case-split over a ℕ \
+         extraction is not lifted yet"
+     closeNatViaTermMode goal goalType cert path.ir path.natAtoms
++    episodeEvent "reconstruction_finished" [("certificate", cert),
++      ("closer", toJson "term_mode_nat"), ("certificate_consumed", toJson true),
++      ("derivation_replayed", toJson false), ("residual_closer", toJson "omega")]
+     return (path, "term_mode_nat")
+   if polyModeOf path.ir then
+     if certStrategyHint cert == "case_split_farkas" then

@@ -1,0 +1,166 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "site_stage_differs_by_the_supervisor_line",
+    "supervisor_shim_runs_frozen_main",
+    "registry_admits_only_verified_primary_sites",
+    "registered_controls_unchanged",
+    "instrumentation_is_the_census_form_renamed",
+    "preparation_helper_is_the_frozen_overlay",
+    "site_environment_equals_d1",
+    "farkas_solver_exact",
+    "classification_recomputed_from_retained_runs",
+    "denominator_preserved",
+    "certificates_checked_against_retained_rows",
+    "line70_prepared_problem_is_the_d1_control"
+  ],
+  "check_count": 12,
+  "checks": [
+    {
+      "name": "site_stage_differs_by_the_supervisor_line",
+      "passed": true,
+      "detail": {
+        "changed_lines": 1
+      }
+    },
+    {
+      "name": "supervisor_shim_runs_frozen_main",
+      "passed": true,
+      "detail": {
+        "shim": "register verified primary sites, then the frozen supervise.main"
+      }
+    },
+    {
+      "name": "registry_admits_only_verified_primary_sites",
+      "passed": true,
+      "detail": {
+        "unknown": "rejected",
+        "tampered_manifest": "rejected",
+        "unbound_addendum": "rejected",
+        "changed_decision": "rejected",
+        "registered": 15
+      }
+    },
+    {
+      "name": "registered_controls_unchanged",
+      "passed": true,
+      "detail": {
+        "controls": [
+          "verinf-d1-70",
+          "c1-c8-2p18"
+        ],
+        "registry_file": "unchanged"
+      }
+    },
+    {
+      "name": "instrumentation_is_the_census_form_renamed",
+      "passed": true,
+      "detail": {
+        "sites": 15,
+        "helpers": 2,
+        "hunks": 2,
+        "retained_input_reproduced": "bracket-l098"
+      }
+    },
+    {
+      "name": "preparation_helper_is_the_frozen_overlay",
+      "passed": true,
+      "detail": {
+        "preparation": "reifies then runs the human closer",
+        "proposal": "proof_broker_term with the fixture adapter"
+      }
+    },
+    {
+      "name": "site_environment_equals_d1",
+      "passed": true,
+      "detail": {
+        "files": [
+          "upstream-lake-manifest.json",
+          "upstream-lakefile.toml",
+          "lean-toolchain",
+          "Pristine.lean",
+          "environment-inventory"
+        ],
+        "tampered": "rejected"
+      }
+    },
+    {
+      "name": "farkas_solver_exact",
+      "passed": true,
+      "detail": {
+        "d1_known_witness": "accepted",
+        "d1_found": {
+          "hZ": 2,
+          "neg_goal": 1
+        },
+        "feasible": "none",
+        "equality_negative_multiplier": {
+          "e": -1,
+          "a": 1,
+          "neg_goal": 1
+        }
+      }
+    },
+    {
+      "name": "classification_recomputed_from_retained_runs",
+      "passed": true,
+      "detail": {
+        "bracket-l069": "rational_certificate",
+        "bracket-l070": "rational_certificate",
+        "bracket-l071": "rational_certificate",
+        "bracket-l078": "rational_certificate",
+        "bracket-l096": "not_lia",
+        "bracket-l098": "interface_refused",
+        "bracket-l099": "not_lia",
+        "bracket-l101": "interface_refused",
+        "bracket-l158": "interface_refused",
+        "bracket-l166": "projection_unsupported",
+        "bracket-l170": "farkas_omissions",
+        "bracket-l175": "farkas_omissions",
+        "bracket-l178": "farkas_omissions",
+        "bracket-l180": "interface_refused",
+        "bracket-l204": "rational_certificate"
+      }
+    },
+    {
+      "name": "denominator_preserved",
+      "passed": true,
+      "detail": {
+        "preparation_failed": 0,
+        "interface_refused": 4,
+        "not_lia": 2,
+        "farkas_omissions": 3,
+        "projection_unsupported": 1,
+        "projection_mismatch": 0,
+        "no_rational_certificate": 0,
+        "rational_certificate": 5
+      }
+    },
+    {
+      "name": "certificates_checked_against_retained_rows",
+      "passed": true,
+      "detail": {
+        "certificates_checked": [
+          "bracket-l069",
+          "bracket-l070",
+          "bracket-l071",
+          "bracket-l078",
+          "bracket-l096",
+          "bracket-l099",
+          "bracket-l166",
+          "bracket-l175",
+          "bracket-l204"
+        ]
+      }
+    },
+    {
+      "name": "line70_prepared_problem_is_the_d1_control",
+      "passed": true,
+      "detail": {
+        "prepared": "equal",
+        "input_ir": "equal",
+        "d1_run": "cohort-runs-v3/r1-d1-draw1"
+      }
+    }
+  ]
+}

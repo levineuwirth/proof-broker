@@ -1,0 +1,20 @@
+{
+  "cache_write_multiplier": "1.25",
+  "cache_write_scope": "derived from the stated multiplier",
+  "currency": "USD",
+  "listed_dated_ids": [],
+  "listed_ids": [
+    "gpt-5.6-sol"
+  ],
+  "model_page": "gpt-5.6-sol",
+  "per_million_tokens": {
+    "cache_write": "5.00",
+    "cached_input": "0.40",
+    "input": "4.00",
+    "output": "20.00"
+  },
+  "pricing_section": "Text tokens Per 1M tokens Input $4.00 Cached input $0.40 Output $20.00 Quick comparison Input Cached input Output GPT-5.5 $ 5.00 GPT-5.6 Sol $ 4.00 GPT-5.4 $ 2.50 GPT-5.6 Sol costs $4 per million input tokens and $20 per million output tokens, a 20% reduction in input pricing and a 33% reduction in output pricing. GPT-5.6 Sol’s promotional pricing is available at least through November 21, 2026. Prompts with >272K input tokens are priced at 2x input and 1.5x output for the full request. Cache writes are billed at 1.25x the uncached input token rate.",
+  "schema_version": "r6-pricing-extract-1",
+  "snapshot_section": "Snapshots Snapshots let you lock in a specific version of the model so that performance and behavior remain consistent. Below is a list of all available snapshots and aliases for GPT-5.6 Sol . gpt-5.6-sol gpt-5.6-sol gpt-5.6-sol",
+  "unit": "per_million_tokens"
+}

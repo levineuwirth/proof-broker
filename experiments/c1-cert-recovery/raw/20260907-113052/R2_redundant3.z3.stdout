@@ -1,0 +1,20 @@
+unsat
+((set-logic QF_LIA)
+(proof
+(let (($x109 (>= _pb_atom_0 70368744161281)))
+(let ((@x112 (rewrite (= (not (<= 18446744069414584321 (* 262144 _pb_atom_0))) (not $x109)))))
+(let (($x102 (not (<= 18446744069414584321 (* 262144 _pb_atom_0)))))
+(let ((?x97 (* 262144 _pb_atom_0)))
+(let (($x98 (< ?x97 18446744069414584321)))
+(let ((@x114 (monotonicity (trans (rewrite (= $x98 $x102)) @x112 (= $x98 (not $x109))) (= (not $x98) (not (not $x109))))))
+(let ((@x119 (mp (asserted (not $x98)) (trans @x114 (rewrite (= (not (not $x109)) $x109)) (= (not $x98) $x109)) $x109)))
+(let (($x66 (>= _pb_atom_0 4398046511104)))
+(let (($x65 (not $x66)))
+(let ((@x69 (rewrite (= (not (<= 4398046511104 _pb_atom_0)) $x65))))
+(let (($x60 (not (<= 4398046511104 _pb_atom_0))))
+(let ((@x62 (rewrite (= (< _pb_atom_0 4398046511104) $x60))))
+(let (($x57 (< _pb_atom_0 4398046511104)))
+(let ((@x58 (asserted $x57)))
+(let ((@x152 (mp (mp (mp @x58 @x62 $x60) (rewrite (= $x60 $x60)) $x60) @x69 $x65)))
+(unit-resolution ((_ th-lemma arith farkas 1 1) (or $x66 (not $x109))) @x152 (mp @x119 (rewrite (= $x109 $x109)) $x109) false))))))))))))))))))
+

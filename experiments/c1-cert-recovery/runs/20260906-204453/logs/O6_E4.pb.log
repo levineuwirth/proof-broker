@@ -1,0 +1,20 @@
+proof_broker report: tactic=proof_broker closer=gated_omega backend=z3 tier=1 format=farkas cert_bytes=1687 fragment=LIA hyps=10 dispatch_ms=101 verify_ms=1 wall_ms=128
+tactic execution of ProofBroker.Tactic.proofBroker took 114ms
+cumulative profiling times:
+	attribute application 0.0101ms
+	elaboration 10.1ms
+	fix level params 0.0152ms
+	instantiate metavars 0.0428ms
+	interpretation 0.102ms
+	linting 14.9ms
+	module linting 0.000932ms
+	overlappingInstancesLinter 0.581ms
+	parsing 0.368ms
+	process pre-definitions 0.354ms
+	share common exprs 0.064ms
+	tactic execution 119ms
+	tacticAnalysis 1.86ms
+	type checking 13.6ms
+	typeclass inference 32.6ms
+PEAK_RSS_BYTES=715509760
+EXIT=0 WALL=4.4s CAP=8G

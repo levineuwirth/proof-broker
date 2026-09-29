@@ -1,0 +1,222 @@
+{
+  "context": {
+    "free_vars": [
+      {
+        "name": "Zmax",
+        "type": "Nat"
+      },
+      {
+        "name": "v0",
+        "type": "Nat"
+      },
+      {
+        "name": "n",
+        "type": "Nat"
+      },
+      {
+        "name": "a",
+        "type": "Int"
+      },
+      {
+        "name": "b",
+        "type": "Int"
+      }
+    ],
+    "hypotheses": [
+      {
+        "name": "hab",
+        "shell": {
+          "args": [
+            {
+              "name": "a",
+              "node": "Var"
+            },
+            {
+              "name": "b",
+              "node": "Var"
+            }
+          ],
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": []
+        }
+      },
+      {
+        "name": "_pb_nonneg_Zmax",
+        "shell": {
+          "args": [
+            {
+              "node": "NumLit",
+              "type": "Int",
+              "value": "0"
+            },
+            {
+              "args": [
+                {
+                  "name": "Zmax",
+                  "node": "Var"
+                }
+              ],
+              "node": "App",
+              "symbol": "Int.ofNat",
+              "type_args": []
+            }
+          ],
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": []
+        }
+      },
+      {
+        "name": "_pb_nonneg_v0",
+        "shell": {
+          "args": [
+            {
+              "node": "NumLit",
+              "type": "Int",
+              "value": "0"
+            },
+            {
+              "args": [
+                {
+                  "name": "v0",
+                  "node": "Var"
+                }
+              ],
+              "node": "App",
+              "symbol": "Int.ofNat",
+              "type_args": []
+            }
+          ],
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": []
+        }
+      },
+      {
+        "name": "_pb_nonneg_n",
+        "shell": {
+          "args": [
+            {
+              "node": "NumLit",
+              "type": "Int",
+              "value": "0"
+            },
+            {
+              "args": [
+                {
+                  "name": "n",
+                  "node": "Var"
+                }
+              ],
+              "node": "App",
+              "symbol": "Int.ofNat",
+              "type_args": []
+            }
+          ],
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": []
+        }
+      }
+    ],
+    "type_vars": []
+  },
+  "definitional_metadata": {},
+  "goal": {
+    "payloads": {
+      "_pb_iatom_0": {
+        "kind": "int_opaque_atom",
+        "lean": "R.x i"
+      }
+    },
+    "shell": {
+      "args": [
+        {
+          "args": [
+            {
+              "name": "a",
+              "node": "Var"
+            },
+            {
+              "node": "Opaque",
+              "payload_id": "_pb_iatom_0"
+            }
+          ],
+          "node": "App",
+          "symbol": "HSub.hSub",
+          "type_args": []
+        },
+        {
+          "args": [
+            {
+              "name": "b",
+              "node": "Var"
+            },
+            {
+              "node": "Opaque",
+              "payload_id": "_pb_iatom_0"
+            }
+          ],
+          "node": "App",
+          "symbol": "HSub.hSub",
+          "type_args": []
+        }
+      ],
+      "node": "App",
+      "symbol": "LE.le",
+      "type_args": []
+    }
+  },
+  "ir_version": "1.0",
+  "library_provenance": {
+    "Int.natCast_nonneg": {
+      "content_hash": "sha256:74e3e6efa91cd98b13e1a0e560694a16aebf20c9b692b3e372b4a8bb9fe4edbd",
+      "library": "lean-core",
+      "module_path": "Init.Data.Int.Order",
+      "version": "4.32.0"
+    },
+    "Int.ofNat_inj": {
+      "content_hash": "sha256:f7480039da059eed1b3a2f89105fc91d0b0b9ab9c3ae4b0775e56337426865e5",
+      "library": "lean-core",
+      "module_path": "Init.Data.Int.Lemmas",
+      "version": "4.32.0"
+    },
+    "Int.ofNat_le": {
+      "content_hash": "sha256:95d406cb64c71fd2f63e26173b1e8605f2e84a7c9085d0b4545e46156f84cbd2",
+      "library": "lean-core",
+      "module_path": "Init.Data.Int.Order",
+      "version": "4.32.0"
+    },
+    "Int.ofNat_lt": {
+      "content_hash": "sha256:0afe9efc53c5f88048e0589b01439319ec80236b3a35e6f7718bb15707117155",
+      "library": "lean-core",
+      "module_path": "Init.Data.Int.Order",
+      "version": "4.32.0"
+    }
+  },
+  "logic_classification": {
+    "decidable_theory": null,
+    "features_used": [],
+    "first_order_fragment": "LIA",
+    "order": "first_order"
+  },
+  "source_system": {
+    "name": "lean",
+    "version": "0.0"
+  },
+  "tier": "structural",
+  "type_metadata": {
+    "Nat": {
+      "kind": "primitive",
+      "name": "Nat",
+      "theory_tags": [
+        "embeds_into:Int_for_universal_LIA",
+        "embedding_witness:Int.ofNat_le",
+        "embedding_witness:Int.ofNat_lt",
+        "embedding_witness:Int.ofNat_inj",
+        "embedding_witness:Int.natCast_nonneg"
+      ]
+    }
+  }
+}

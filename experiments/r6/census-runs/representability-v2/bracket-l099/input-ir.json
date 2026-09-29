@@ -1,0 +1,292 @@
+{
+  "context": {
+    "free_vars": [
+      {
+        "name": "f",
+        "type": "Int->Int"
+      },
+      {
+        "name": "c",
+        "type": "Int"
+      },
+      {
+        "name": "c'",
+        "type": "Int"
+      },
+      {
+        "name": "T",
+        "type": "Int"
+      }
+    ],
+    "hypotheses": [
+      {
+        "name": "hf",
+        "shell": {
+          "body": {
+            "body": {
+              "antecedent": {
+                "args": [
+                  {
+                    "name": "a",
+                    "node": "Var"
+                  },
+                  {
+                    "name": "b",
+                    "node": "Var"
+                  }
+                ],
+                "node": "App",
+                "symbol": "LE.le",
+                "type_args": []
+              },
+              "consequent": {
+                "args": [
+                  {
+                    "args": [
+                      {
+                        "name": "b",
+                        "node": "Var"
+                      }
+                    ],
+                    "node": "App",
+                    "symbol": "UF.f",
+                    "type_args": []
+                  },
+                  {
+                    "args": [
+                      {
+                        "name": "a",
+                        "node": "Var"
+                      }
+                    ],
+                    "node": "App",
+                    "symbol": "UF.f",
+                    "type_args": []
+                  }
+                ],
+                "node": "App",
+                "symbol": "LE.le",
+                "type_args": []
+              },
+              "node": "Implies"
+            },
+            "node": "Forall",
+            "type": "Int",
+            "var": "b"
+          },
+          "node": "Forall",
+          "type": "Int",
+          "var": "a"
+        }
+      },
+      {
+        "name": "h1",
+        "shell": {
+          "args": [
+            {
+              "args": [
+                {
+                  "name": "c",
+                  "node": "Var"
+                }
+              ],
+              "node": "App",
+              "symbol": "UF.f",
+              "type_args": []
+            },
+            {
+              "name": "T",
+              "node": "Var"
+            }
+          ],
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": []
+        }
+      },
+      {
+        "name": "h2",
+        "shell": {
+          "args": [
+            {
+              "name": "T",
+              "node": "Var"
+            },
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "name": "c",
+                      "node": "Var"
+                    },
+                    {
+                      "node": "NumLit",
+                      "type": "Int",
+                      "value": "1"
+                    }
+                  ],
+                  "node": "App",
+                  "symbol": "HSub.hSub",
+                  "type_args": []
+                }
+              ],
+              "node": "App",
+              "symbol": "UF.f",
+              "type_args": []
+            }
+          ],
+          "node": "App",
+          "symbol": "LT.lt",
+          "type_args": []
+        }
+      },
+      {
+        "name": "h1'",
+        "shell": {
+          "args": [
+            {
+              "args": [
+                {
+                  "name": "c'",
+                  "node": "Var"
+                }
+              ],
+              "node": "App",
+              "symbol": "UF.f",
+              "type_args": []
+            },
+            {
+              "name": "T",
+              "node": "Var"
+            }
+          ],
+          "node": "App",
+          "symbol": "LE.le",
+          "type_args": []
+        }
+      },
+      {
+        "name": "h2'",
+        "shell": {
+          "args": [
+            {
+              "name": "T",
+              "node": "Var"
+            },
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "name": "c'",
+                      "node": "Var"
+                    },
+                    {
+                      "node": "NumLit",
+                      "type": "Int",
+                      "value": "1"
+                    }
+                  ],
+                  "node": "App",
+                  "symbol": "HSub.hSub",
+                  "type_args": []
+                }
+              ],
+              "node": "App",
+              "symbol": "UF.f",
+              "type_args": []
+            }
+          ],
+          "node": "App",
+          "symbol": "LT.lt",
+          "type_args": []
+        }
+      },
+      {
+        "name": "hne",
+        "shell": {
+          "node": "Not",
+          "operand": {
+            "left": {
+              "name": "c",
+              "node": "Var"
+            },
+            "node": "Eq",
+            "right": {
+              "name": "c'",
+              "node": "Var"
+            },
+            "type": "Int"
+          }
+        }
+      },
+      {
+        "name": "hgt",
+        "shell": {
+          "args": [
+            {
+              "name": "c'",
+              "node": "Var"
+            },
+            {
+              "name": "c",
+              "node": "Var"
+            }
+          ],
+          "node": "App",
+          "symbol": "LT.lt",
+          "type_args": []
+        }
+      }
+    ],
+    "type_vars": []
+  },
+  "definitional_metadata": {},
+  "goal": {
+    "shell": {
+      "args": [
+        {
+          "name": "c'",
+          "node": "Var"
+        },
+        {
+          "args": [
+            {
+              "name": "c",
+              "node": "Var"
+            },
+            {
+              "node": "NumLit",
+              "type": "Int",
+              "value": "1"
+            }
+          ],
+          "node": "App",
+          "symbol": "HSub.hSub",
+          "type_args": []
+        }
+      ],
+      "node": "App",
+      "symbol": "LE.le",
+      "type_args": []
+    }
+  },
+  "ir_version": "1.0",
+  "library_provenance": {},
+  "logic_classification": {
+    "decidable_theory": null,
+    "features_used": [
+      "universal_quantification_over_first_order",
+      "equality_at_first_order_type"
+    ],
+    "first_order_fragment": "UF",
+    "order": "first_order"
+  },
+  "source_system": {
+    "name": "lean",
+    "version": "0.0"
+  },
+  "tier": "structural",
+  "type_metadata": {}
+}

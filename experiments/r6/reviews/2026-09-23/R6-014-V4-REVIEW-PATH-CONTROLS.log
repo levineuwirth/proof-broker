@@ -1,0 +1,24 @@
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+live baseline {'accepted': True, 'case_count': 550}
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+live inventory_path_absolute operator_scan:report_bound
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+live inventory_path_parent_traversal operator_scan:report_bound
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+live inventory_path_symlink_escape operator_scan:report_bound
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+live inventory_path_not_normalized operator_scan:report_bound
+{"trial": true, "rehearsal": 0, "live": 5}

@@ -1,0 +1,840 @@
+{
+  "passed": true,
+  "expected_cases": [
+    "policy_frozen_disabled",
+    "contract_frozen_canonical_and_bound",
+    "request_carries_contract_not_policy",
+    "envelope_identical_across_revisions",
+    "slot_identity_absent_from_model_bytes",
+    "policy_conflicts_with_contract_rejected",
+    "host_admission_recomputes_envelope",
+    "actor_validates_envelope_against_contract",
+    "request_task_joined_to_funded_slot",
+    "request_grammar_enforced_at_admission",
+    "generation_option_types_exact",
+    "slot_hierarchy_durable",
+    "slot_ancestry_durable_after_interrupted_creation",
+    "actor_permit_bound_to_slot",
+    "actor_live_rejects_unsigned_policy",
+    "campaign_identity_survives_revision",
+    "unregistered_revision_refused",
+    "revision_registration_rules",
+    "distinct_campaigns_share_contract",
+    "slot_rules",
+    "activation_bound_to_policy_and_mode",
+    "actor_grant_before_first_header_byte",
+    "actor_commitment_recorded",
+    "actor_credential_format_classified",
+    "persistence_fault_sweep",
+    "counters_separate",
+    "ca_bundle_pinned",
+    "endpoint_allowlist_exact",
+    "gate_v4_is_gate_v3_with_listed_substitutions",
+    "site_driver_stages_one_line_each",
+    "contract_v2_differs_from_v1_only_in_request",
+    "posable_set_confirmed_through_gate",
+    "policy_c_requests_for_sites",
+    "pricing_review_is_narrow",
+    "driver_refuses_unposable_sites_before_reservation",
+    "runtime_pin_divergence_recorded",
+    "consumption_receipt_required",
+    "reconstruction_refusal_requires_bound_evidence"
+  ],
+  "check_count": 38,
+  "checks": [
+    {
+      "name": "policy_frozen_disabled",
+      "passed": true,
+      "detail": {
+        "live_enabled": false,
+        "campaign_id": "5206666c6ddd4e08b516a948a35b4122",
+        "revision": 1,
+        "schedule": {
+          "bracket-l069": 8,
+          "bracket-l070": 8,
+          "bracket-l071": 8,
+          "bracket-l078": 8,
+          "bracket-l096": 8,
+          "bracket-l099": 8,
+          "bracket-l166": 8,
+          "bracket-l170": 8,
+          "bracket-l175": 8,
+          "bracket-l178": 8,
+          "bracket-l204": 8
+        }
+      }
+    },
+    {
+      "name": "contract_frozen_canonical_and_bound",
+      "passed": true,
+      "detail": {
+        "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+        "instruction_bytes": 2143,
+        "omitted_options": 14
+      }
+    },
+    {
+      "name": "request_carries_contract_not_policy",
+      "passed": true,
+      "detail": {
+        "request_keys": [
+          "binding",
+          "contract_sha256",
+          "problem",
+          "schema_version"
+        ],
+        "binding_keys": [
+          "challenge_sha256",
+          "final_ir_sha256",
+          "input_ir_sha256",
+          "manifest_sha256",
+          "prompt_sha256",
+          "task_id"
+        ]
+      }
+    },
+    {
+      "name": "envelope_identical_across_revisions",
+      "passed": true,
+      "detail": {
+        "entity_body_sha256": "5616bc28306b98d7dc1d50db2a5ac84f00ef31ef0d763bed490bc7b64fd53e40",
+        "identical_under_revised_policy": true
+      }
+    },
+    {
+      "name": "slot_identity_absent_from_model_bytes",
+      "passed": true,
+      "detail": {
+        "checked_absent": [
+          "draw",
+          "reservation",
+          "campaign id",
+          "policy digest",
+          "slot"
+        ]
+      }
+    },
+    {
+      "name": "policy_conflicts_with_contract_rejected",
+      "passed": true,
+      "detail": {
+        "rejections": [
+          "generation option",
+          "omitted option added",
+          "scientific limit",
+          "model",
+          "contract digest"
+        ]
+      }
+    },
+    {
+      "name": "host_admission_recomputes_envelope",
+      "passed": true,
+      "detail": {
+        "altered_prompt_text": "contract_envelope_messages",
+        "omitted_option_present": "contract_envelope_keys",
+        "generation_option": "contract_generation_max_output_tokens",
+        "model": "contract_generation_model",
+        "foreign_contract_digest": "contract_request_binding",
+        "instruction_bytes": "contract_instruction_bytes"
+      }
+    },
+    {
+      "name": "actor_validates_envelope_against_contract",
+      "passed": true,
+      "detail": {
+        "altered_prompt_text": "contract_envelope_messages",
+        "omitted_option_present": "contract_envelope_keys",
+        "generation_option": "contract_generation_max_output_tokens",
+        "unaltered": "sent"
+      }
+    },
+    {
+      "name": "request_task_joined_to_funded_slot",
+      "passed": true,
+      "detail": {
+        "host_d1_request_c8_slot": "cohort_request_task_mismatch",
+        "host_identity_mismatch": "cohort_request_task_identity",
+        "actor_d1_request_c8_permit": "cohort_request_task_mismatch, no credential read, no connection",
+        "host_c8_request_d1_slot": "cohort_request_task_mismatch"
+      }
+    },
+    {
+      "name": "request_grammar_enforced_at_admission",
+      "passed": true,
+      "detail": {
+        "host": {
+          "policy_digest_injected": "contract_request_keys",
+          "binding_task_deleted": "contract_request_binding_keys",
+          "extra_binding_key": "contract_request_binding_keys",
+          "unknown_task": "contract_request_task",
+          "bad_digest_form": "contract_request_binding_form",
+          "empty_rows": "contract_request_rows_empty",
+          "row_extra_key": "contract_request_row_keys",
+          "constant_leading_zero": "contract_request_constant_grammar",
+          "coefficient_float": "contract_request_term_grammar",
+          "duplicate_row": "contract_request_duplicate_row",
+          "fragment_changed": "contract_request_problem_keys",
+          "neg_goal_not_last": "contract_request_neg_goal",
+          "neg_goal_missing": "contract_request_neg_goal"
+        },
+        "actor": {
+          "policy_digest_injected": "contract_request_keys",
+          "binding_task_deleted": "contract_request_binding_keys"
+        },
+        "schema_parity": 10,
+        "validator_only": [
+          "duplicate_row",
+          "neg_goal_missing",
+          "neg_goal_not_last"
+        ]
+      }
+    },
+    {
+      "name": "generation_option_types_exact",
+      "passed": true,
+      "detail": {
+        "host": {
+          "float_for_int": "contract_generation_max_output_tokens",
+          "int_for_bool": "contract_generation_store",
+          "bool_for_int": "contract_generation_max_output_tokens"
+        },
+        "policy": [
+          "float_for_int",
+          "int_for_bool"
+        ],
+        "actor": [
+          "float_for_int",
+          "int_for_bool"
+        ]
+      }
+    },
+    {
+      "name": "slot_hierarchy_durable",
+      "passed": true,
+      "detail": {
+        "first_task_first_draw": "attempt, draw, task, slots, ledger directory - child before parent",
+        "new_draw_existing_task": "the same ancestry, existing links included"
+      }
+    },
+    {
+      "name": "slot_ancestry_durable_after_interrupted_creation",
+      "passed": true,
+      "detail": {
+        "task": {
+          "first_attempt_failed_at": "bracket-l070",
+          "rows_after_failure": 1,
+          "retry_synced": [
+            "ffa497c7ef5a40289823af98a8d96742",
+            "1",
+            "bracket-l070",
+            "slots",
+            "tmp2fzj313m"
+          ]
+        },
+        "slots": {
+          "first_attempt_failed_at": "slots",
+          "rows_after_failure": 1,
+          "retry_synced": [
+            "baf3db55287c446f9bd53db654e0b63b",
+            "1",
+            "bracket-l070",
+            "slots",
+            "tmp5ngyei2p"
+          ]
+        }
+      }
+    },
+    {
+      "name": "actor_permit_bound_to_slot",
+      "passed": true,
+      "detail": {
+        "draw_mismatch": "cohort_permit_binding",
+        "consumed_permit": "cohort_permit_not_last_row",
+        "slot_in_receipt": true
+      }
+    },
+    {
+      "name": "actor_live_rejects_unsigned_policy",
+      "passed": true,
+      "detail": {
+        "disabled_policy": "cohort_live_disabled",
+        "rehearsal_ledger_under_live_policy": "cohort_activation_purpose",
+        "connections": 0
+      }
+    },
+    {
+      "name": "campaign_identity_survives_revision",
+      "passed": true,
+      "detail": {
+        "consumed_before_refresh": "still consumed",
+        "old_revision": "cohort_revision_not_current",
+        "released_slot": "retried under the new revision, same slot",
+        "continuous_accounting": "2 consumed across 2 revisions"
+      }
+    },
+    {
+      "name": "unregistered_revision_refused",
+      "passed": true,
+      "detail": {
+        "unregistered_policy_digest": "refused by host and actor"
+      }
+    },
+    {
+      "name": "revision_registration_rules",
+      "passed": true,
+      "detail": {
+        "refused": [
+          "campaign identity",
+          "contract",
+          "schedule shrunk",
+          "purpose",
+          "while open",
+          "money below committed",
+          "duplicate"
+        ]
+      }
+    },
+    {
+      "name": "distinct_campaigns_share_contract",
+      "passed": true,
+      "detail": {
+        "shared_contract": true,
+        "independent_ledgers": true
+      }
+    },
+    {
+      "name": "slot_rules",
+      "passed": true,
+      "detail": {
+        "wrong_task": "cohort_slot_not_scheduled",
+        "draw_out_of_schedule": "cohort_slot_not_scheduled",
+        "same_slot_presend_retries": 3,
+        "unknown": "consumes the draw",
+        "global_money_cap": "cohort_money_exhausted"
+      }
+    },
+    {
+      "name": "activation_bound_to_policy_and_mode",
+      "passed": true,
+      "detail": {
+        "rehearsal_under_live": "cohort_activation_purpose",
+        "foreign_authorization": "cohort_revision_not_current"
+      }
+    },
+    {
+      "name": "actor_grant_before_first_header_byte",
+      "passed": true,
+      "detail": {
+        "order": "tls_verified < grant created < grant durable < header_send",
+        "slot": "slots/<task>/<draw>/<reservation_id>"
+      }
+    },
+    {
+      "name": "actor_commitment_recorded",
+      "passed": true,
+      "detail": {
+        "commitment": "sha256(domain:nonce:header)",
+        "value_absent_from_records": true
+      }
+    },
+    {
+      "name": "actor_credential_format_classified",
+      "passed": true,
+      "detail": {
+        "classified": "credential_format",
+        "connections": 0
+      }
+    },
+    {
+      "name": "persistence_fault_sweep",
+      "passed": true,
+      "detail": {
+        "ledger_short_append": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "ledger_append_failure_after_partial": {
+          "reservations": 0,
+          "open": 0,
+          "consumed": 0,
+          "terminal": null,
+          "attempts": 0,
+          "state": "not_reserved",
+          "reconciled": true,
+          "allowance": null,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "cohort_ledger"
+        },
+        "reserve_head_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reservation_receipt_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "request_reserved_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "stage_interrupted_truncated_http": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "http_empty_object": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "http_wrong_types": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "process_missing_fields_no_grant": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "unknown",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reconciliation_receipt_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "reservation_uncertain_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reservation_recovered_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 0,
+          "terminal": "release",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 0,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "harness_failure"
+        },
+        "reservation_reconciled_event_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "reconcile_append_failure_after_marker": {
+          "reservations": 1,
+          "open": 1,
+          "consumed": 0,
+          "terminal": null,
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": false,
+          "allowance": null,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "reconciliation_failure"
+        },
+        "reconcile_head_failure_after_row": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": true,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "reconcile_recovery_snapshot_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        },
+        "evidence_copy_failure": {
+          "reservations": 1,
+          "open": 0,
+          "consumed": 1,
+          "terminal": "send_grant",
+          "attempts": 1,
+          "state": "reserved",
+          "reconciled": true,
+          "allowance": 1,
+          "evidence_complete": false,
+          "sealed": true,
+          "terminal_event": "episode_rejected",
+          "category": "transport_record_unreadable"
+        }
+      }
+    },
+    {
+      "name": "counters_separate",
+      "passed": true,
+      "detail": {
+        "accounting_fields": "R6-008 revision 6 shape, unchanged"
+      }
+    },
+    {
+      "name": "ca_bundle_pinned",
+      "passed": true,
+      "detail": {
+        "bundle": "/etc/ca-certificates/extracted/tls-ca-bundle.pem",
+        "sha256": "8c97794a899a32666593979dc7adfaec8bda2b420eb092ff0d987e44ad0bf6ea"
+      }
+    },
+    {
+      "name": "endpoint_allowlist_exact",
+      "passed": true,
+      "detail": {
+        "endpoint": {
+          "host": "api.openai.com",
+          "path": "/v1/responses",
+          "port": 443,
+          "scheme": "https"
+        }
+      }
+    },
+    {
+      "name": "gate_v4_is_gate_v3_with_listed_substitutions",
+      "passed": true,
+      "detail": {
+        "changed_lines": 9,
+        "tasks": 15
+      }
+    },
+    {
+      "name": "site_driver_stages_one_line_each",
+      "passed": true,
+      "detail": {
+        "sender_stage": "one line",
+        "final_validation": "one line",
+        "seal": "one line; event schema widened to the reviewed sites only",
+        "driver_calls": "site stages only"
+      }
+    },
+    {
+      "name": "contract_v2_differs_from_v1_only_in_request",
+      "passed": true,
+      "detail": {
+        "unchanged": [
+          "generation",
+          "instruction",
+          "limits",
+          "model",
+          "rendering",
+          "response_schema",
+          "schema_version",
+          "scope"
+        ],
+        "request_schema_changed": [
+          "admission_policy",
+          "path",
+          "schema_version",
+          "sha256",
+          "tasks"
+        ]
+      }
+    },
+    {
+      "name": "posable_set_confirmed_through_gate",
+      "passed": true,
+      "detail": {
+        "posable": 11,
+        "refused": {
+          "bracket-l098": "interface_refused",
+          "bracket-l101": "interface_refused",
+          "bracket-l158": "interface_refused",
+          "bracket-l180": "interface_refused"
+        }
+      }
+    },
+    {
+      "name": "policy_c_requests_for_sites",
+      "passed": true,
+      "detail": {
+        "bracket-l069": {
+          "rows": 18,
+          "source_fragment": "LIA",
+          "omitted": []
+        },
+        "bracket-l070": {
+          "rows": 19,
+          "source_fragment": "LIA",
+          "omitted": []
+        },
+        "bracket-l071": {
+          "rows": 20,
+          "source_fragment": "LIA",
+          "omitted": []
+        },
+        "bracket-l078": {
+          "rows": 20,
+          "source_fragment": "LIA",
+          "omitted": []
+        },
+        "bracket-l096": {
+          "rows": 2,
+          "source_fragment": "UF",
+          "omitted": [
+            "hf",
+            "h1",
+            "h2",
+            "h1_",
+            "h2_",
+            "hne"
+          ]
+        },
+        "bracket-l099": {
+          "rows": 2,
+          "source_fragment": "UF",
+          "omitted": [
+            "hf",
+            "h1",
+            "h2",
+            "h1_",
+            "h2_",
+            "hne"
+          ]
+        },
+        "bracket-l166": {
+          "rows": 10,
+          "source_fragment": "LIA",
+          "omitted": []
+        },
+        "bracket-l170": {
+          "rows": 9,
+          "source_fragment": "LIA",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "bracket-l175": {
+          "rows": 11,
+          "source_fragment": "LIA",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "bracket-l178": {
+          "rows": 12,
+          "source_fragment": "LIA",
+          "omitted": [
+            "hzh"
+          ]
+        },
+        "bracket-l204": {
+          "rows": 5,
+          "source_fragment": "LIA",
+          "omitted": []
+        }
+      }
+    },
+    {
+      "name": "pricing_review_is_narrow",
+      "passed": true,
+      "detail": {
+        "recorded": {
+          "caching": [],
+          "model": [
+            "snapshot_section"
+          ]
+        },
+        "refused": {
+          "listed_ids": "differs semantically",
+          "price": "differs semantically",
+          "pricing_section": "differs semantically",
+          "unreviewed_snapshot_prose": "differs semantically",
+          "whitespace_elsewhere_in_snapshot": "differs semantically"
+        }
+      }
+    },
+    {
+      "name": "driver_refuses_unposable_sites_before_reservation",
+      "passed": true,
+      "detail": {
+        "bracket-l178": {
+          "category": "policy_refused",
+          "ledger_rows": 1,
+          "sealed": true
+        },
+        "bracket-l098": {
+          "category": "interface_refused",
+          "ledger_rows": 1,
+          "sealed": true
+        }
+      }
+    },
+    {
+      "name": "runtime_pin_divergence_recorded",
+      "passed": true,
+      "detail": {
+        "changed": {
+          "/usr/lib/libexpat.so.1": {
+            "from": "/usr/lib/libexpat.so.1.12.4",
+            "to": "/usr/lib/libexpat.so.1.12.5"
+          },
+          "/usr/lib/libreadline.so.8": {
+            "from": "/usr/lib/libreadline.so.8.3",
+            "to": "/usr/lib/libreadline.so.8.3"
+          }
+        },
+        "python": "unchanged",
+        "stdlib": "unchanged",
+        "host_drift": "rejected"
+      }
+    },
+    {
+      "name": "consumption_receipt_required",
+      "passed": true,
+      "detail": {
+        "selected_then_finished": true,
+        "v5_record_without_selection": false,
+        "receipt_removed": false,
+        "receipt_certificate_forged": false,
+        "selection_names_another_certificate": false,
+        "selection_names_another_closer": false,
+        "receipt_without_consumption": false
+      }
+    },
+    {
+      "name": "reconstruction_refusal_requires_bound_evidence",
+      "passed": true,
+      "detail": {
+        "nat_closer_int_goal": "nat_closer_int_goal",
+        "v5_record_without_selection": null,
+        "nat_closer_nat_goal": null,
+        "int_closer_selected": null,
+        "selection_names_another_certificate": null,
+        "process_killed": null,
+        "resource_exhausted": null,
+        "monitor_failed": null,
+        "unrelated_error_as_well": null,
+        "success_receipt_present": null,
+        "dispatched_ir_differs_from_packet": null
+      }
+    }
+  ]
+}

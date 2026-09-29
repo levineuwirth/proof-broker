@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import Capture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -163,7 +164,7 @@
+     · simp [hlt]
+     · -- z ≥ v0 ⟹ TA z = 0 = g z
+       simp only [hlt, if_false]
+-      rw [cert.zero_tail z (by omega)]
++      rw [cert.zero_tail z (by r6_capture_human "Bracket.cell_value_neutral.r6_site_l166" "bracket-l166")]
+       ring
+   · -- t = 1, y1 = 0.  Need g v = 0, i.e. v ≥ v0.
+     simp only [hzh, if_false]

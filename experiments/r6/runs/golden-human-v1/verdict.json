@@ -1,0 +1,75 @@
+{
+  "task_id": "verinf-d1-70",
+  "search_policy": "human_omega",
+  "accepted": true,
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true,
+  "challenge_sha256": "3864871a7878c096dc9fac19de410e1c56cda10000493a31f020d4d14cb4de55",
+  "solution_sha256": "3864871a7878c096dc9fac19de410e1c56cda10000493a31f020d4d14cb4de55",
+  "proof_exporter_sha256": "8a7c4298f4f57389aaf0ca95dc08fac3eb3fb97c7ef24405d60b105608fff76f",
+  "replay_binary_sha256": "f7e5cb233c3d42fce630915cb52b975371408616582bdbb66ca97f08fbe74bd0",
+  "manifest_sha256": "10cec5d40b0cd3fba9722147eb55f75565ea8b3b5a7279de9b8d57a9982efa87",
+  "runtime_sha256": "ace1f82cd77e38114357d33da6f0e04f070816d61e3e2f383cb51ec4ee641a53",
+  "harness_sources_sha256": {
+    "run.py": "814e8b874f7433bbebe1d402d55b97c64775fd6cd52f3d893a5ca1126b67b78e",
+    "capture/Capture.lean": "932aebb62e843f7346b4990c7a73131d66bb30cd5163c73df56e0b40ca0d9a3a",
+    "validate/Replay.lean": "7106ff8078eeb243bc3b30d3de68ee9f719ae3cf25b1206469d8963c3a9e4f9e",
+    "vendor/sources.lock.json": "cd8d79361006a996c567fb425a27c6370494e6a29bb13f820b37a9320b52e179"
+  },
+  "axiom_delta": {
+    "Bracket.lift_cell.r6_d1_70": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell.r6_d1_70",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "26b1db6f3b81f376e813c82fa1d6d23bd8c7355ce56d325611cb2cfe82b5635c",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": false,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3693,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "Bracket.lift_cell",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "424d464d82ab2b66e428d2de7fb0d92d70855e0c5218d36ea92c406ff71d2abe",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 3712,
+      "accepted": true
+    }
+  }
+}

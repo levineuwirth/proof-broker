@@ -1,0 +1,117 @@
+{
+ "census": {
+  "commit": "c07e03c94884e9084ffaf7a7294fc0907672f6c2",
+  "path": "lean/BracketSpike/BracketSpike/Bracket.lean",
+  "pristine_matches": true,
+  "scope": "15 textual omega occurrences, manually inspected as tactics; no extraction or admission attempted",
+  "sha256": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+  "sites": [
+   {
+    "line": 69,
+    "text": "have hzsum : x.val + z.val < 2^24 + 2 * Zmax := by omega"
+   },
+   {
+    "line": 70,
+    "text": "have hle : (2:\u2115)^24 + 2 * Zmax \u2264 P := by omega"
+   },
+   {
+    "line": 71,
+    "text": "omega"
+   },
+   {
+    "line": 78,
+    "text": "< 2^24 + 2 * Zmax + Zmax * 2^16 := by omega"
+   },
+   {
+    "line": 96,
+    "text": "\u00b7 have hle : c \u2264 c' - 1 := by omega"
+   },
+   {
+    "line": 98,
+    "text": "omega"
+   },
+   {
+    "line": 99,
+    "text": "\u00b7 have hle : c' \u2264 c - 1 := by omega"
+   },
+   {
+    "line": 101,
+    "text": "omega"
+   },
+   {
+    "line": 158,
+    "text": "have hzv : z = v := by simp at hrec; omega"
+   },
+   {
+    "line": 166,
+    "text": "rw [cert.zero_tail z (by omega)]"
+   },
+   {
+    "line": 170,
+    "text": "have hzh1 : 1 \u2264 zhigh := by omega"
+   },
+   {
+    "line": 175,
+    "text": "simp at this; omega"
+   },
+   {
+    "line": 178,
+    "text": "omega"
+   },
+   {
+    "line": 180,
+    "text": "have : \u00ac v < (v0 : \u2124) := by omega"
+   },
+   {
+    "line": 204,
+    "text": "exact g_noninc R.cert (a - R.x i) (b - R.x i) (by omega)"
+   }
+  ]
+ },
+ "comparison_proof_hashes": {
+  "golden-broker-v1": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+  "golden-broker-v2": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+  "golden-broker-v3": "f4c179f39dc8b5f2116348361bc457ede86e12591d4cd354f0d058bc86e589ca",
+  "provider-checkpoint-v1/d1_valid": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812"
+ },
+ "credential_reads": 0,
+ "live_model_calls": 0,
+ "passed": true,
+ "preservation": {
+  "before_sha256": "26428b4053699f19bbf2de8139c7974297ce02a62b40b598be2960e3b5f219d0",
+  "changed": [],
+  "files": 1346
+ },
+ "program_sha256": "78a85c7933fb4f4f84e48bcff26ce979be31a5fd0e747bd381cb7764f0aeb329",
+ "retention": {
+  "git_selected_all_six": {
+   "apparent_bytes": 35099485,
+   "files": 1305,
+   "unique_blobs": 413,
+   "unique_bytes": 8325998
+  },
+  "git_selected_proposed_three": {
+   "apparent_bytes": 20035722,
+   "files": 725,
+   "unique_blobs": 294,
+   "unique_bytes": 6634867
+  },
+  "ignored_required_paths": {
+   "live-2": [],
+   "rehearsal-1": [],
+   "rehearsal-2": [],
+   "rehearsal-3": [],
+   "rehearsal-4": []
+  },
+  "incremental_unique_bytes": 1691131,
+  "scope": "current Git selection; unique uncompressed blobs, not packed Git size"
+ },
+ "source_binding": {
+  "binary_mismatches": 0,
+  "commit_mismatches": 0,
+  "current_overlay_mismatches": 0,
+  "git_base": "e627efe",
+  "recorded_binaries": 15,
+  "sdk_bridge_sources": 53
+ }
+}

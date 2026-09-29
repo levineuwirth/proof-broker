@@ -1,0 +1,362 @@
+{
+  "passed": true,
+  "release": {
+    "precondition_amendment_1": {
+      "accepted": false,
+      "rejected_case": "population:within_authorized_schedule",
+      "detail": "population:within_authorized_schedule: [('bracket-l069', 1), ('bracket-l070', 1), ('bracket-l071', 1), ('bracket-l078', 1), ('bracket-l096', 1), ('bracket-l096', 2), ('bracket-l096', 2), ('bracket-l099', 1), ('bracket-l166', 1), ('bracket-l170', 1), ('bracket-l175', 1), ('bracket-l178', 1), ('bracket-l204', 1)]"
+    },
+    "baseline": {
+      "accepted": true,
+      "case_count": 639
+    },
+    "release_http_altered_after_reconciliation": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:ledger:permit_and_reconciliation_bound",
+      "detail": "l096-draw2:ledger:permit_and_reconciliation_bound"
+    },
+    "retry_renamed_out_of_sequence": {
+      "accepted": false,
+      "rejected_case": "population:within_authorized_schedule",
+      "detail": "population:within_authorized_schedule: [('bracket-l069', 1), ('bracket-l070', 1), ('bracket-l071', 1), ('bracket-l078', 1), ('bracket-l096', 1), ('bracket-l096', 2), ('bracket-l096', 2), ('bracket-l099', 1), ('bracket-l166', 1), ('bracket-l170', 1), ('bracket-l175', 1), ('bracket-l178', 1), ('bracket-l204', 1)]"
+    },
+    "second_sent_attempt_for_slot": {
+      "accepted": false,
+      "rejected_case": "population:within_authorized_schedule",
+      "detail": "population:within_authorized_schedule: [('bracket-l069', 1), ('bracket-l070', 1), ('bracket-l071', 1), ('bracket-l078', 1), ('bracket-l096', 1), ('bracket-l096', 2), ('bracket-l096', 2), ('bracket-l096', 2), ('bracket-l099', 1), ('bracket-l166', 1), ('bracket-l170', 1), ('bracket-l175', 1), ('bracket-l178', 1), ('bracket-l204', 1)]"
+    },
+    "retry_without_first_attempt": {
+      "accepted": false,
+      "rejected_case": "population:within_authorized_schedule",
+      "detail": "population:within_authorized_schedule: [('bracket-l069', 1), ('bracket-l070', 1), ('bracket-l071', 1), ('bracket-l078', 1), ('bracket-l096', 1), ('bracket-l096', 2), ('bracket-l099', 1), ('bracket-l166', 1), ('bracket-l170', 1), ('bracket-l175', 1), ('bracket-l178', 1), ('bracket-l204', 1)]"
+    },
+    "retry_renamed_as_first_attempt": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:ledger:permit_and_reconciliation_bound",
+      "detail": "l096-draw2:ledger:permit_and_reconciliation_bound"
+    },
+    "regenerated_baseline": {
+      "accepted": true,
+      "case_count": 639,
+      "ledger_reconciled_release_as": "release"
+    },
+    "release_header_send_recorded": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:ledger:permit_and_reconciliation_bound",
+      "detail": "l096-draw2:ledger:permit_and_reconciliation_bound",
+      "ledger_reconciled_release_as": "unknown",
+      "retry_reservation_refused_by_ledger": "cohort_slot_consumed"
+    },
+    "release_grant_committed": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:grant:consistent_with_outcome",
+      "detail": "l096-draw2:grant:consistent_with_outcome: durable completion timestamp missing",
+      "ledger_reconciled_release_as": "send_grant",
+      "retry_reservation_refused_by_ledger": "cohort_slot_consumed"
+    },
+    "release_category_outside_connection_phase": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:failure:classified_and_finalized",
+      "detail": "l096-draw2:failure:classified_and_finalized",
+      "ledger_reconciled_release_as": "release"
+    },
+    "release_tls_verified": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:failure:classified_and_finalized",
+      "detail": "l096-draw2:failure:classified_and_finalized",
+      "ledger_reconciled_release_as": "release"
+    },
+    "release_nonzero_exit": {
+      "accepted": false,
+      "rejected_case": "l096-draw2:receipts:stage_returned_within_frozen_limits",
+      "detail": "l096-draw2:receipts:stage_returned_within_frozen_limits: exit 1, limits {'cgroup': '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/r6-832bd9fc2b814f2d8984198a87080d73.scope/workload', 'command_file': 'stages/proposal-1/command.json', 'cpu_limit_seconds': 5, 'memory_limit_bytes': 402653184, 'wall_limit_seconds': 60}",
+      "ledger_reconciled_release_as": "release"
+    }
+  },
+  "limit_probe": {
+    "limits_by_revision": {
+      "1": 3,
+      "2": 3,
+      "3": 3
+    },
+    "observed": {
+      "three_attempts_last_sent": true,
+      "four_attempts_last_sent": false,
+      "sent_before_last": false,
+      "three_releases": true
+    },
+    "expected": {
+      "three_attempts_last_sent": true,
+      "four_attempts_last_sent": false,
+      "sent_before_last": false,
+      "three_releases": true
+    }
+  },
+  "baselines": {
+    "isolated_fixture": {
+      "case_count": 550,
+      "identical_to": "reviews/2026-09-23/R6-014-V4-LIVE-FIXTURE-AUDIT.json"
+    }
+  },
+  "shared": {
+    "shared_directory_accepted": {
+      "accepted": true,
+      "case_count": 550
+    },
+    "shared_unrelated_lookalike_accepted": {
+      "accepted": true,
+      "case_count": 550
+    },
+    "shared_floor_missing": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']"
+    },
+    "shared_checkpoint_missing": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']; FileNotFoundError: [Errno 2] No such file or directory: '/home/jeans/scratch/tmp/r6-014-a2-shared-ozv6nrum/shared-policies/farkas-cohort-v9.checkpoint.json'"
+    },
+    "shared_unexpected_campaign_revision": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json', 'farkas-cohort-v9.r7.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']"
+    },
+    "shared_unexpected_policy_prefixed_file": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.json.bak', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']"
+    },
+    "shared_unexpected_lock_prefixed_file": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: campaign files in the policy directory ['cohort-harness-v9.sha256.json', 'cohort-harness-v9.sha256.json.orig', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json'], expected ['cohort-harness-v9.sha256.json', 'farkas-cohort-v9.activation.json', 'farkas-cohort-v9.checkpoint.json', 'farkas-cohort-v9.floor.json', 'farkas-cohort-v9.json', 'farkas-cohort-v9.r1.json', 'farkas-cohort-v9.r2.json']"
+    },
+    "shared_retained_revision_altered": {
+      "accepted": false,
+      "rejected_case": "revision:history_bound",
+      "detail": "revision:history_bound: revision 3: chain"
+    },
+    "shared_activation_receipt_altered": {
+      "accepted": false,
+      "rejected_case": "ledger:continuous_across_revisions",
+      "detail": "ledger:continuous_across_revisions: ['activation', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'authorization_revision', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant', 'authorization_revision', 'reservation', 'send_grant', 'reservation', 'send_grant', 'reservation', 'send_grant']"
+    }
+  },
+  "live": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 550
+    },
+    "live_policy_unsigned": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "live_checkpoint_altered": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "live_checkpoint_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "live_run_outside_signed_schedule": {
+      "rejected": true,
+      "rejected_case": "population:within_authorized_schedule"
+    },
+    "live_unreviewed_outcome_fails_closed": {
+      "rejected": true,
+      "rejected_case": "population:derived_from_evidence"
+    },
+    "live_commitment_forged_in_receipt": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:commitment:bound_to_mounted_canary"
+    },
+    "live_exact_receipt_claimed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:credential_receipt:recorded"
+    },
+    "live_local_receiver_recorded": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:transport:local_send_and_remote_receipt"
+    },
+    "live_received_body_present": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:transport:bodies_are_the_contract_rendering"
+    },
+    "live_fixture_mount_in_sender": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_unshare_net_in_sender": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_unshared_network_recorded": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_credential_inside_tree": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout"
+    },
+    "live_publication_acceptance_claimed": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:terminal:commitments_bound"
+    },
+    "live_ledger_terminal_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "live_negative_control_accepted": {
+      "rejected": true,
+      "rejected_case": "l170-draw1:witness_rejected:recomputed_invalid_and_stopped"
+    },
+    "operator_receipt_missing": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_receipt_commitment_unbound": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_receipt_seal_stale": {
+      "rejected": true,
+      "rejected_case": "l069-draw1:operator_scan:receipt_bound"
+    },
+    "operator_report_disclosure": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_scan_before_runs_finished": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_inventory_uncovered_file": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_commitment_domain_changed": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_scanned_false": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_error_present": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_finding_present": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_duplicated": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_entry_gzip_stream_missing": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "operator_files_scanned_miscounted": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "revision_retained_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_retained_altered": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_authority_rolled_back": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_outside_plan": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "revision_pricing_admission_unbound": {
+      "rejected": true,
+      "rejected_case": "revision:runtime_pricing_ledger_publication_bound"
+    },
+    "revision_capture_substituted": {
+      "rejected": true,
+      "rejected_case": "revision:runtime_pricing_ledger_publication_bound"
+    },
+    "activation_receipt_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "activation_receipt_altered": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "ledger_revision_row_removed": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "run_retained_policy_swapped": {
+      "rejected": true,
+      "rejected_case": "l204-draw1:versions:policy_lock_contract_campaign_bound"
+    },
+    "progress_floor_missing": {
+      "rejected": true,
+      "rejected_case": "revision:history_bound"
+    },
+    "progress_floor_behind": {
+      "rejected": true,
+      "rejected_case": "ledger:continuous_across_revisions"
+    },
+    "compressed_disclosure_bin_reported_raw": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_file_changed_after_scan": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "gzip_stream_total_miscounted": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_absolute": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_parent_traversal": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_symlink_escape": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "inventory_path_not_normalized": {
+      "rejected": true,
+      "rejected_case": "operator_scan:report_bound"
+    },
+    "production_policy_file_signed": {
+      "accepted": true,
+      "case_count": 550
+    },
+    "production_policy_files_unread": {
+      "accepted": true,
+      "case_count": 550
+    }
+  },
+  "release_controls": 13,
+  "shared_controls": 9,
+  "live_controls": 51,
+  "amended_auditor_sha256": "525d8603161b891b44204c02ba0d4b6dcf238950a7121c451cb637f2543d30a0",
+  "amendment_1_auditor_sha256": "b2d15640d8d8bc6be9f62482152d9ae16666b9a7f15aabc49a670f2784ca4623",
+  "fixture_sha256": "7347ecdc81ec735954fcc4e29d1ca2e8a1dbac33712bf6164b43f33ff9bf8740",
+  "program_sha256": "1a43f3e2b6f3d7b1cfdea6e29f84d5312255cb8344b17cb7d4d2a88ab6eb29c9",
+  "collected_block_read": false,
+  "not_reexecuted": "the rehearsal-mode audit and its 101 controls: they presuppose the pre-signing tree; the amended paths are live-only",
+  "scope": "synthetic evidence only; the collected block 2 (including its release) is not read by these controls"
+}

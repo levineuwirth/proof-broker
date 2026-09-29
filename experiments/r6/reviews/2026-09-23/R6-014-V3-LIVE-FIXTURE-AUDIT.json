@@ -1,0 +1,1689 @@
+{
+  "runs": {
+    "l069-draw1": {
+      "kind": "proof",
+      "task": "bracket-l069",
+      "draw": 1,
+      "revision": 1,
+      "policy_sha256": "481632e43c82017d1b9607e3bbdfd05aa567d5979391d72048f69d2c95714849",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "c7f6fe1cc170d22df4ecc819841d9d5040185ab0d53b2eab926d66718ea99e43",
+      "renamed": [],
+      "solution_sha256": "6a73cd9e5d149f46a5120205e25fd0cb4a0bb55d121c8cbdf44e5a3c8644f056",
+      "closer": "term_mode_nat",
+      "diagnosis": null
+    },
+    "l070-draw1": {
+      "kind": "proof",
+      "task": "bracket-l070",
+      "draw": 1,
+      "revision": 1,
+      "policy_sha256": "481632e43c82017d1b9607e3bbdfd05aa567d5979391d72048f69d2c95714849",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "5616bc28306b98d7dc1d50db2a5ac84f00ef31ef0d763bed490bc7b64fd53e40",
+      "renamed": [],
+      "solution_sha256": "4405d62eef4b30f935ec679100a5c976e137be0fc1da9dfd0a2a6993efc7afed",
+      "closer": "term_mode_nat",
+      "diagnosis": null
+    },
+    "l071-draw1": {
+      "kind": "proof",
+      "task": "bracket-l071",
+      "draw": 1,
+      "revision": 1,
+      "policy_sha256": "481632e43c82017d1b9607e3bbdfd05aa567d5979391d72048f69d2c95714849",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "58eef417b0c82e4942bfc5bdc01e30d71d17503d3c9d2880104aceb9130c8331",
+      "renamed": [],
+      "solution_sha256": "03ae6c19f0e61fcf4cc65ad11fecf683fccf8b00b460564ae0cd0ef0495bc3a8",
+      "closer": "term_mode_nat",
+      "diagnosis": null
+    },
+    "l078-draw1": {
+      "kind": "proof",
+      "task": "bracket-l078",
+      "draw": 1,
+      "revision": 1,
+      "policy_sha256": "481632e43c82017d1b9607e3bbdfd05aa567d5979391d72048f69d2c95714849",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "07f4055a1d1590557556f158abaa67dd88384d8e36fbd02042f68fdbd69e436d",
+      "renamed": [],
+      "solution_sha256": "fc0136e9847e58161e4fa48f08a3ec7a3663642cf1aa44964b820b92968ee213",
+      "closer": "term_mode_nat",
+      "diagnosis": null
+    },
+    "l096-draw1": {
+      "kind": "proof",
+      "task": "bracket-l096",
+      "draw": 1,
+      "revision": 1,
+      "policy_sha256": "481632e43c82017d1b9607e3bbdfd05aa567d5979391d72048f69d2c95714849",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "b2fd74892bd2759e8943f75c586b69efd0703a902a2732c9d7fad651e1bdd37b",
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "solution_sha256": "656ea4d6b79b5af7a059bc16e61b04afaf31c7851e623cf898235dfe856ed0a0",
+      "closer": "term_mode_int",
+      "diagnosis": null
+    },
+    "l099-draw1": {
+      "kind": "proof",
+      "task": "bracket-l099",
+      "draw": 1,
+      "revision": 3,
+      "policy_sha256": "322a7b5f01ff1e4b5bd9b5c0c9e97fb156aae441013863a8e7dce99aff6caf24",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "25618ae60e5ef9f36951738c39387365e22dabcec8c1394dd5634a4c616b85c9",
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 4,
+          "original_name": "c'",
+          "search_name": "c_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 8,
+          "original_name": "h1'",
+          "search_name": "h1_"
+        },
+        {
+          "fvar_in_original": true,
+          "index": 9,
+          "original_name": "h2'",
+          "search_name": "h2_"
+        }
+      ],
+      "solution_sha256": "9f088eb39bf6c3a7f6cbb15ebc6bb48293e8155fb6fd702fe1fd3ae0324f7ebd",
+      "closer": "term_mode_int",
+      "diagnosis": null
+    },
+    "l166-draw1": {
+      "kind": "reconstruction_refused",
+      "task": "bracket-l166",
+      "draw": 1,
+      "revision": 2,
+      "policy_sha256": "9ca3d0f22283c2e44f862fcfcccf7099daeb080e89a5d7983b26a40afe9ef101",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "d78f12415685ece2460636cf80d1cf288ac7b0df61ff86290daa0438bee43b04",
+      "renamed": [],
+      "solution_sha256": null,
+      "closer": "term_mode_nat",
+      "diagnosis": "nat_closer_int_goal"
+    },
+    "l170-draw1": {
+      "kind": "witness_rejected",
+      "task": "bracket-l170",
+      "draw": 1,
+      "revision": 2,
+      "policy_sha256": "9ca3d0f22283c2e44f862fcfcccf7099daeb080e89a5d7983b26a40afe9ef101",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "19e6f8f489b1d72c8615148608e5126446717f3f81c355bef77f64e7a2732127",
+      "renamed": [],
+      "solution_sha256": null,
+      "closer": null,
+      "diagnosis": null
+    },
+    "l175-draw1": {
+      "kind": "reconstruction_refused",
+      "task": "bracket-l175",
+      "draw": 1,
+      "revision": 2,
+      "policy_sha256": "9ca3d0f22283c2e44f862fcfcccf7099daeb080e89a5d7983b26a40afe9ef101",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "f519a0c71b80901c2556281e10de42b3b4a713202e8880f7311cd244d3bdf138",
+      "renamed": [],
+      "solution_sha256": null,
+      "closer": "term_mode_nat",
+      "diagnosis": "nat_closer_int_goal"
+    },
+    "l178-draw1": {
+      "kind": "reconstruction_refused",
+      "task": "bracket-l178",
+      "draw": 1,
+      "revision": 3,
+      "policy_sha256": "322a7b5f01ff1e4b5bd9b5c0c9e97fb156aae441013863a8e7dce99aff6caf24",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "dfa61e1b0540a060eafcce8e02c0899aa014f31ae6a4ccf7b0b4eede99285f0b",
+      "renamed": [
+        {
+          "fvar_in_original": true,
+          "index": 15,
+          "original_name": "this",
+          "search_name": "this_1"
+        }
+      ],
+      "solution_sha256": null,
+      "closer": "term_mode_nat",
+      "diagnosis": "nat_closer_int_goal"
+    },
+    "l204-draw1": {
+      "kind": "reconstruction_refused",
+      "task": "bracket-l204",
+      "draw": 1,
+      "revision": 3,
+      "policy_sha256": "322a7b5f01ff1e4b5bd9b5c0c9e97fb156aae441013863a8e7dce99aff6caf24",
+      "ledger_outcome": "send_grant",
+      "body_sha256": "644f226b31aaf420af7b4e0d602f875bd85d84e8e7c02bd484e92d393463fd43",
+      "renamed": [],
+      "solution_sha256": null,
+      "closer": "term_mode_nat",
+      "diagnosis": "nat_closer_int_goal"
+    }
+  },
+  "modules": {
+    "revision": "farkas_cohort_v9",
+    "superseded": false
+  },
+  "campaign": {
+    "campaign_id": "7ae7620a5fd14df8aebb60c0d57ce561",
+    "rows": 25,
+    "state": {
+      "transmissions_consumed": 11,
+      "maximum_transmissions": 13,
+      "committed_micro_usd": 1126400,
+      "maximum_micro_usd": 1331200,
+      "slots": {
+        "bracket-l069/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l070/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l071/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l078/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l096/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l166/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l170/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l175/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l178/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l204/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        },
+        "bracket-l099/1": {
+          "consumed": true,
+          "released": 0,
+          "open": null,
+          "reservations": 1
+        }
+      }
+    }
+  },
+  "operator_scan": {
+    "report_sha256": "5e4c8834ba6579dc80bbe305e8f2f647d22311886088365454a125e6ff72a89c",
+    "receipts_bound": {
+      "l069-draw1": true,
+      "l070-draw1": true,
+      "l071-draw1": true,
+      "l078-draw1": true,
+      "l096-draw1": true,
+      "l099-draw1": true,
+      "l166-draw1": true,
+      "l170-draw1": true,
+      "l175-draw1": true,
+      "l178-draw1": true,
+      "l204-draw1": true
+    }
+  },
+  "analysis_input": {
+    "schema_version": "r6-analysis-input-1",
+    "slots": {
+      "bracket-l069/1": {
+        "task_id": "bracket-l069",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hx"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "hz"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": true,
+          "refusal": null
+        },
+        "kernel": {
+          "local": true,
+          "whole": true,
+          "axioms_clean": true
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l070/1": {
+        "task_id": "bracket-l070",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "2",
+              "hypothesis": "hZ"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": true,
+          "refusal": null
+        },
+        "kernel": {
+          "local": true,
+          "whole": true,
+          "axioms_clean": true
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l071/1": {
+        "task_id": "bracket-l071",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hx"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "hz"
+            },
+            {
+              "coefficient": "2",
+              "hypothesis": "hZ"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": true,
+          "refusal": null
+        },
+        "kernel": {
+          "local": true,
+          "whole": true,
+          "axioms_clean": true
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l078/1": {
+        "task_id": "bracket-l078",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hx"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "hz"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "hprod_le"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": true,
+          "refusal": null
+        },
+        "kernel": {
+          "local": true,
+          "whole": true,
+          "axioms_clean": true
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l096/1": {
+        "task_id": "bracket-l096",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hlt"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_int",
+          "consumed": true,
+          "refusal": null
+        },
+        "kernel": {
+          "local": true,
+          "whole": true,
+          "axioms_clean": true
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l099/1": {
+        "task_id": "bracket-l099",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hgt"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_int",
+          "consumed": true,
+          "refusal": null
+        },
+        "kernel": {
+          "local": true,
+          "whole": true,
+          "axioms_clean": true
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l166/1": {
+        "task_id": "bracket-l166",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hlt"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": false,
+          "refusal": "nat_closer_int_goal"
+        },
+        "kernel": {
+          "local": null,
+          "whole": null,
+          "axioms_clean": null
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l170/1": {
+        "task_id": "bracket-l170",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": false
+        },
+        "reconstruction": {
+          "attempted": false,
+          "closer": null,
+          "consumed": null,
+          "refusal": null
+        },
+        "kernel": {
+          "local": null,
+          "whole": null,
+          "axioms_clean": null
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l175/1": {
+        "task_id": "bracket-l175",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "-1",
+              "hypothesis": "hrec"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "hz0"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "this"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": false,
+          "refusal": "nat_closer_int_goal"
+        },
+        "kernel": {
+          "local": null,
+          "whole": null,
+          "axioms_clean": null
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l178/1": {
+        "task_id": "bracket-l178",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "this_1"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "this"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": false,
+          "refusal": "nat_closer_int_goal"
+        },
+        "kernel": {
+          "local": null,
+          "whole": null,
+          "axioms_clean": null
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      },
+      "bracket-l204/1": {
+        "task_id": "bracket-l204",
+        "draw": 1,
+        "ledger": {
+          "disposition": "send_grant",
+          "presend_attempts": 0,
+          "maximum_presend_attempts": 3,
+          "reserved_micro_usd": 102400
+        },
+        "transport": {
+          "response_received": true,
+          "failure_category": null
+        },
+        "witness": {
+          "present": true,
+          "coefficients": [
+            {
+              "coefficient": "1",
+              "hypothesis": "hab"
+            },
+            {
+              "coefficient": "1",
+              "hypothesis": "neg_goal"
+            }
+          ]
+        },
+        "verification": {
+          "accepted": true
+        },
+        "reconstruction": {
+          "attempted": true,
+          "closer": "term_mode_nat",
+          "consumed": false,
+          "refusal": "nat_closer_int_goal"
+        },
+        "kernel": {
+          "local": null,
+          "whole": null,
+          "axioms_clean": null
+        },
+        "usage": {
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "cached_tokens": 2
+        },
+        "audit": {
+          "accepted": true,
+          "publication": "accepted"
+        }
+      }
+    },
+    "synthetic": true,
+    "campaign": {
+      "authorized_schedule": {
+        "bracket-l069": 2,
+        "bracket-l070": 1,
+        "bracket-l071": 1,
+        "bracket-l078": 1,
+        "bracket-l096": 1,
+        "bracket-l099": 1,
+        "bracket-l166": 1,
+        "bracket-l170": 2,
+        "bracket-l175": 1,
+        "bracket-l178": 1,
+        "bracket-l204": 1
+      },
+      "planned_schedule": {
+        "bracket-l069": 8,
+        "bracket-l070": 8,
+        "bracket-l071": 8,
+        "bracket-l078": 8,
+        "bracket-l096": 8,
+        "bracket-l099": 8,
+        "bracket-l166": 8,
+        "bracket-l170": 8,
+        "bracket-l175": 8,
+        "bracket-l178": 8,
+        "bracket-l204": 8
+      },
+      "authorized_micro_usd": 1331200,
+      "ledger": {
+        "consumed_slots": [
+          "bracket-l069/1",
+          "bracket-l070/1",
+          "bracket-l071/1",
+          "bracket-l078/1",
+          "bracket-l096/1",
+          "bracket-l099/1",
+          "bracket-l166/1",
+          "bracket-l170/1",
+          "bracket-l175/1",
+          "bracket-l178/1",
+          "bracket-l204/1"
+        ],
+        "transmissions_consumed": 11,
+        "committed_micro_usd": 1126400
+      }
+    }
+  },
+  "accepted": true,
+  "cases": {
+    "eligibility:recomputed_fifteen_sites": true,
+    "revision:history_bound": true,
+    "population:derived_from_evidence": true,
+    "population:within_authorized_schedule": true,
+    "population:exactly_expected_runs": true,
+    "revision:superseded_v8_bound": true,
+    "revision:runtime_pricing_ledger_publication_bound": true,
+    "tasks:manifests_bound": true,
+    "modules:bound_to_retained_copies": true,
+    "modules:cohort_revision": true,
+    "l069-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l069-draw1:chain:valid": true,
+    "l069-draw1:chain:expected_sequence": true,
+    "l069-draw1:site:identity_bound": true,
+    "l069-draw1:site:prepared_equals_classification": true,
+    "l069-draw1:site:preparation_is_the_repaired_helper": true,
+    "l069-draw1:site:original_context_bound": true,
+    "l069-draw1:site:renaming_recorded": true,
+    "l069-draw1:request:regenerated_under_contract": true,
+    "l069-draw1:envelope:recomputed_from_contract": true,
+    "l069-draw1:pricing:host_admission_rederived": true,
+    "l069-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l069-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l069-draw1:ledger:disposition_derived": true,
+    "l069-draw1:slot:authoritative_matches_retained": true,
+    "l069-draw1:mounts:authority_bound": true,
+    "l069-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l069-draw1:receipts:single_pair_bound_to_process": true,
+    "l069-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l069-draw1:seal:retained_hashes": true,
+    "l069-draw1:publication:recomputed": true,
+    "l069-draw1:terminal:commitments_bound": true,
+    "l069-draw1:summary:bound_to_audited_records": true,
+    "l069-draw1:seal:chain_and_outcome": true,
+    "l069-draw1:grant:consistent_with_outcome": true,
+    "l069-draw1:grant:ordered_before_first_header_byte": true,
+    "l069-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l069-draw1:transport:record_consistent": true,
+    "l069-draw1:transport:local_send_and_remote_receipt": true,
+    "l069-draw1:pricing:actor_check_rederived": true,
+    "l069-draw1:interpretation:reproduced": true,
+    "l069-draw1:commitment:bound_to_mounted_canary": true,
+    "l069-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l069-draw1:accounting:recomputed": true,
+    "l069-draw1:credential_receipt:recorded": true,
+    "l069-draw1:receipts:payloads_bound_to_records": true,
+    "l069-draw1:stages:every_stage_on_the_path_returned": true,
+    "l069-draw1:stages:commands_reconstructed": true,
+    "l069-draw1:proof:response_bound": true,
+    "l069-draw1:proof:attribution_passed_through": true,
+    "l069-draw1:certificate:verified_and_bound": true,
+    "l069-draw1:reconstruction:preparation_ir_equal": true,
+    "l069-draw1:reconstruction:sources_bound": true,
+    "l069-draw1:reconstruction:evidence_bound": true,
+    "l069-draw1:reconstruction:closer_selected": true,
+    "l069-draw1:proof:certificate_consumed": true,
+    "l069-draw1:proof:shared_checker": true,
+    "l069-draw1:proof:original_declarations_validated": true,
+    "l069-draw1:proof:export_recorded": true,
+    "l070-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l070-draw1:chain:valid": true,
+    "l070-draw1:chain:expected_sequence": true,
+    "l070-draw1:site:identity_bound": true,
+    "l070-draw1:site:prepared_equals_classification": true,
+    "l070-draw1:site:preparation_is_the_repaired_helper": true,
+    "l070-draw1:site:original_context_bound": true,
+    "l070-draw1:site:renaming_recorded": true,
+    "l070-draw1:request:regenerated_under_contract": true,
+    "l070-draw1:envelope:recomputed_from_contract": true,
+    "l070-draw1:pricing:host_admission_rederived": true,
+    "l070-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l070-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l070-draw1:ledger:disposition_derived": true,
+    "l070-draw1:slot:authoritative_matches_retained": true,
+    "l070-draw1:mounts:authority_bound": true,
+    "l070-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l070-draw1:receipts:single_pair_bound_to_process": true,
+    "l070-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l070-draw1:seal:retained_hashes": true,
+    "l070-draw1:publication:recomputed": true,
+    "l070-draw1:terminal:commitments_bound": true,
+    "l070-draw1:summary:bound_to_audited_records": true,
+    "l070-draw1:seal:chain_and_outcome": true,
+    "l070-draw1:grant:consistent_with_outcome": true,
+    "l070-draw1:grant:ordered_before_first_header_byte": true,
+    "l070-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l070-draw1:transport:record_consistent": true,
+    "l070-draw1:transport:local_send_and_remote_receipt": true,
+    "l070-draw1:pricing:actor_check_rederived": true,
+    "l070-draw1:interpretation:reproduced": true,
+    "l070-draw1:commitment:bound_to_mounted_canary": true,
+    "l070-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l070-draw1:accounting:recomputed": true,
+    "l070-draw1:credential_receipt:recorded": true,
+    "l070-draw1:receipts:payloads_bound_to_records": true,
+    "l070-draw1:stages:every_stage_on_the_path_returned": true,
+    "l070-draw1:stages:commands_reconstructed": true,
+    "l070-draw1:proof:response_bound": true,
+    "l070-draw1:proof:attribution_passed_through": true,
+    "l070-draw1:certificate:verified_and_bound": true,
+    "l070-draw1:reconstruction:preparation_ir_equal": true,
+    "l070-draw1:reconstruction:sources_bound": true,
+    "l070-draw1:reconstruction:evidence_bound": true,
+    "l070-draw1:reconstruction:closer_selected": true,
+    "l070-draw1:proof:certificate_consumed": true,
+    "l070-draw1:proof:shared_checker": true,
+    "l070-draw1:proof:original_declarations_validated": true,
+    "l070-draw1:proof:export_recorded": true,
+    "l071-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l071-draw1:chain:valid": true,
+    "l071-draw1:chain:expected_sequence": true,
+    "l071-draw1:site:identity_bound": true,
+    "l071-draw1:site:prepared_equals_classification": true,
+    "l071-draw1:site:preparation_is_the_repaired_helper": true,
+    "l071-draw1:site:original_context_bound": true,
+    "l071-draw1:site:renaming_recorded": true,
+    "l071-draw1:request:regenerated_under_contract": true,
+    "l071-draw1:envelope:recomputed_from_contract": true,
+    "l071-draw1:pricing:host_admission_rederived": true,
+    "l071-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l071-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l071-draw1:ledger:disposition_derived": true,
+    "l071-draw1:slot:authoritative_matches_retained": true,
+    "l071-draw1:mounts:authority_bound": true,
+    "l071-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l071-draw1:receipts:single_pair_bound_to_process": true,
+    "l071-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l071-draw1:seal:retained_hashes": true,
+    "l071-draw1:publication:recomputed": true,
+    "l071-draw1:terminal:commitments_bound": true,
+    "l071-draw1:summary:bound_to_audited_records": true,
+    "l071-draw1:seal:chain_and_outcome": true,
+    "l071-draw1:grant:consistent_with_outcome": true,
+    "l071-draw1:grant:ordered_before_first_header_byte": true,
+    "l071-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l071-draw1:transport:record_consistent": true,
+    "l071-draw1:transport:local_send_and_remote_receipt": true,
+    "l071-draw1:pricing:actor_check_rederived": true,
+    "l071-draw1:interpretation:reproduced": true,
+    "l071-draw1:commitment:bound_to_mounted_canary": true,
+    "l071-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l071-draw1:accounting:recomputed": true,
+    "l071-draw1:credential_receipt:recorded": true,
+    "l071-draw1:receipts:payloads_bound_to_records": true,
+    "l071-draw1:stages:every_stage_on_the_path_returned": true,
+    "l071-draw1:stages:commands_reconstructed": true,
+    "l071-draw1:proof:response_bound": true,
+    "l071-draw1:proof:attribution_passed_through": true,
+    "l071-draw1:certificate:verified_and_bound": true,
+    "l071-draw1:reconstruction:preparation_ir_equal": true,
+    "l071-draw1:reconstruction:sources_bound": true,
+    "l071-draw1:reconstruction:evidence_bound": true,
+    "l071-draw1:reconstruction:closer_selected": true,
+    "l071-draw1:proof:certificate_consumed": true,
+    "l071-draw1:proof:shared_checker": true,
+    "l071-draw1:proof:original_declarations_validated": true,
+    "l071-draw1:proof:export_recorded": true,
+    "l078-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l078-draw1:chain:valid": true,
+    "l078-draw1:chain:expected_sequence": true,
+    "l078-draw1:site:identity_bound": true,
+    "l078-draw1:site:prepared_equals_classification": true,
+    "l078-draw1:site:preparation_is_the_repaired_helper": true,
+    "l078-draw1:site:original_context_bound": true,
+    "l078-draw1:site:renaming_recorded": true,
+    "l078-draw1:request:regenerated_under_contract": true,
+    "l078-draw1:envelope:recomputed_from_contract": true,
+    "l078-draw1:pricing:host_admission_rederived": true,
+    "l078-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l078-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l078-draw1:ledger:disposition_derived": true,
+    "l078-draw1:slot:authoritative_matches_retained": true,
+    "l078-draw1:mounts:authority_bound": true,
+    "l078-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l078-draw1:receipts:single_pair_bound_to_process": true,
+    "l078-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l078-draw1:seal:retained_hashes": true,
+    "l078-draw1:publication:recomputed": true,
+    "l078-draw1:terminal:commitments_bound": true,
+    "l078-draw1:summary:bound_to_audited_records": true,
+    "l078-draw1:seal:chain_and_outcome": true,
+    "l078-draw1:grant:consistent_with_outcome": true,
+    "l078-draw1:grant:ordered_before_first_header_byte": true,
+    "l078-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l078-draw1:transport:record_consistent": true,
+    "l078-draw1:transport:local_send_and_remote_receipt": true,
+    "l078-draw1:pricing:actor_check_rederived": true,
+    "l078-draw1:interpretation:reproduced": true,
+    "l078-draw1:commitment:bound_to_mounted_canary": true,
+    "l078-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l078-draw1:accounting:recomputed": true,
+    "l078-draw1:credential_receipt:recorded": true,
+    "l078-draw1:receipts:payloads_bound_to_records": true,
+    "l078-draw1:stages:every_stage_on_the_path_returned": true,
+    "l078-draw1:stages:commands_reconstructed": true,
+    "l078-draw1:proof:response_bound": true,
+    "l078-draw1:proof:attribution_passed_through": true,
+    "l078-draw1:certificate:verified_and_bound": true,
+    "l078-draw1:reconstruction:preparation_ir_equal": true,
+    "l078-draw1:reconstruction:sources_bound": true,
+    "l078-draw1:reconstruction:evidence_bound": true,
+    "l078-draw1:reconstruction:closer_selected": true,
+    "l078-draw1:proof:certificate_consumed": true,
+    "l078-draw1:proof:shared_checker": true,
+    "l078-draw1:proof:original_declarations_validated": true,
+    "l078-draw1:proof:export_recorded": true,
+    "l096-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l096-draw1:chain:valid": true,
+    "l096-draw1:chain:expected_sequence": true,
+    "l096-draw1:site:identity_bound": true,
+    "l096-draw1:site:prepared_equals_classification": true,
+    "l096-draw1:site:preparation_is_the_repaired_helper": true,
+    "l096-draw1:site:original_context_bound": true,
+    "l096-draw1:site:renaming_recorded": true,
+    "l096-draw1:request:regenerated_under_contract": true,
+    "l096-draw1:envelope:recomputed_from_contract": true,
+    "l096-draw1:pricing:host_admission_rederived": true,
+    "l096-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l096-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l096-draw1:ledger:disposition_derived": true,
+    "l096-draw1:slot:authoritative_matches_retained": true,
+    "l096-draw1:mounts:authority_bound": true,
+    "l096-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l096-draw1:receipts:single_pair_bound_to_process": true,
+    "l096-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l096-draw1:seal:retained_hashes": true,
+    "l096-draw1:publication:recomputed": true,
+    "l096-draw1:terminal:commitments_bound": true,
+    "l096-draw1:summary:bound_to_audited_records": true,
+    "l096-draw1:seal:chain_and_outcome": true,
+    "l096-draw1:grant:consistent_with_outcome": true,
+    "l096-draw1:grant:ordered_before_first_header_byte": true,
+    "l096-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l096-draw1:transport:record_consistent": true,
+    "l096-draw1:transport:local_send_and_remote_receipt": true,
+    "l096-draw1:pricing:actor_check_rederived": true,
+    "l096-draw1:interpretation:reproduced": true,
+    "l096-draw1:commitment:bound_to_mounted_canary": true,
+    "l096-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l096-draw1:accounting:recomputed": true,
+    "l096-draw1:credential_receipt:recorded": true,
+    "l096-draw1:receipts:payloads_bound_to_records": true,
+    "l096-draw1:stages:every_stage_on_the_path_returned": true,
+    "l096-draw1:stages:commands_reconstructed": true,
+    "l096-draw1:proof:response_bound": true,
+    "l096-draw1:proof:attribution_passed_through": true,
+    "l096-draw1:certificate:verified_and_bound": true,
+    "l096-draw1:reconstruction:preparation_ir_equal": true,
+    "l096-draw1:reconstruction:sources_bound": true,
+    "l096-draw1:reconstruction:evidence_bound": true,
+    "l096-draw1:reconstruction:closer_selected": true,
+    "l096-draw1:proof:certificate_consumed": true,
+    "l096-draw1:proof:shared_checker": true,
+    "l096-draw1:proof:original_declarations_validated": true,
+    "l096-draw1:proof:export_recorded": true,
+    "l099-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l099-draw1:chain:valid": true,
+    "l099-draw1:chain:expected_sequence": true,
+    "l099-draw1:site:identity_bound": true,
+    "l099-draw1:site:prepared_equals_classification": true,
+    "l099-draw1:site:preparation_is_the_repaired_helper": true,
+    "l099-draw1:site:original_context_bound": true,
+    "l099-draw1:site:renaming_recorded": true,
+    "l099-draw1:request:regenerated_under_contract": true,
+    "l099-draw1:envelope:recomputed_from_contract": true,
+    "l099-draw1:pricing:host_admission_rederived": true,
+    "l099-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l099-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l099-draw1:ledger:disposition_derived": true,
+    "l099-draw1:slot:authoritative_matches_retained": true,
+    "l099-draw1:mounts:authority_bound": true,
+    "l099-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l099-draw1:receipts:single_pair_bound_to_process": true,
+    "l099-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l099-draw1:seal:retained_hashes": true,
+    "l099-draw1:publication:recomputed": true,
+    "l099-draw1:terminal:commitments_bound": true,
+    "l099-draw1:summary:bound_to_audited_records": true,
+    "l099-draw1:seal:chain_and_outcome": true,
+    "l099-draw1:grant:consistent_with_outcome": true,
+    "l099-draw1:grant:ordered_before_first_header_byte": true,
+    "l099-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l099-draw1:transport:record_consistent": true,
+    "l099-draw1:transport:local_send_and_remote_receipt": true,
+    "l099-draw1:pricing:actor_check_rederived": true,
+    "l099-draw1:interpretation:reproduced": true,
+    "l099-draw1:commitment:bound_to_mounted_canary": true,
+    "l099-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l099-draw1:accounting:recomputed": true,
+    "l099-draw1:credential_receipt:recorded": true,
+    "l099-draw1:receipts:payloads_bound_to_records": true,
+    "l099-draw1:stages:every_stage_on_the_path_returned": true,
+    "l099-draw1:stages:commands_reconstructed": true,
+    "l099-draw1:proof:response_bound": true,
+    "l099-draw1:proof:attribution_passed_through": true,
+    "l099-draw1:certificate:verified_and_bound": true,
+    "l099-draw1:reconstruction:preparation_ir_equal": true,
+    "l099-draw1:reconstruction:sources_bound": true,
+    "l099-draw1:reconstruction:evidence_bound": true,
+    "l099-draw1:reconstruction:closer_selected": true,
+    "l099-draw1:proof:certificate_consumed": true,
+    "l099-draw1:proof:shared_checker": true,
+    "l099-draw1:proof:original_declarations_validated": true,
+    "l099-draw1:proof:export_recorded": true,
+    "l166-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l166-draw1:chain:valid": true,
+    "l166-draw1:chain:expected_sequence": true,
+    "l166-draw1:site:identity_bound": true,
+    "l166-draw1:site:prepared_equals_classification": true,
+    "l166-draw1:site:preparation_is_the_repaired_helper": true,
+    "l166-draw1:site:original_context_bound": true,
+    "l166-draw1:site:renaming_recorded": true,
+    "l166-draw1:request:regenerated_under_contract": true,
+    "l166-draw1:envelope:recomputed_from_contract": true,
+    "l166-draw1:pricing:host_admission_rederived": true,
+    "l166-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l166-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l166-draw1:ledger:disposition_derived": true,
+    "l166-draw1:slot:authoritative_matches_retained": true,
+    "l166-draw1:mounts:authority_bound": true,
+    "l166-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l166-draw1:receipts:single_pair_bound_to_process": true,
+    "l166-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l166-draw1:seal:retained_hashes": true,
+    "l166-draw1:publication:recomputed": true,
+    "l166-draw1:terminal:commitments_bound": true,
+    "l166-draw1:summary:bound_to_audited_records": true,
+    "l166-draw1:seal:chain_and_outcome": true,
+    "l166-draw1:grant:consistent_with_outcome": true,
+    "l166-draw1:grant:ordered_before_first_header_byte": true,
+    "l166-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l166-draw1:transport:record_consistent": true,
+    "l166-draw1:transport:local_send_and_remote_receipt": true,
+    "l166-draw1:pricing:actor_check_rederived": true,
+    "l166-draw1:interpretation:reproduced": true,
+    "l166-draw1:commitment:bound_to_mounted_canary": true,
+    "l166-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l166-draw1:accounting:recomputed": true,
+    "l166-draw1:credential_receipt:recorded": true,
+    "l166-draw1:receipts:payloads_bound_to_records": true,
+    "l166-draw1:stages:every_stage_on_the_path_returned": true,
+    "l166-draw1:stages:commands_reconstructed": true,
+    "l166-draw1:reconstruction_refused:response_bound": true,
+    "l166-draw1:reconstruction_refused:attribution_passed_through": true,
+    "l166-draw1:certificate:verified_and_bound": true,
+    "l166-draw1:reconstruction:preparation_ir_equal": true,
+    "l166-draw1:reconstruction:sources_bound": true,
+    "l166-draw1:reconstruction:evidence_bound": true,
+    "l166-draw1:reconstruction:closer_selected": true,
+    "l166-draw1:reconstruction:refusal_diagnosed": true,
+    "l166-draw1:reconstruction:no_completion_evidence": true,
+    "l170-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l170-draw1:chain:valid": true,
+    "l170-draw1:chain:expected_sequence": true,
+    "l170-draw1:site:identity_bound": true,
+    "l170-draw1:site:prepared_equals_classification": true,
+    "l170-draw1:site:preparation_is_the_repaired_helper": true,
+    "l170-draw1:site:original_context_bound": true,
+    "l170-draw1:site:renaming_recorded": true,
+    "l170-draw1:request:regenerated_under_contract": true,
+    "l170-draw1:envelope:recomputed_from_contract": true,
+    "l170-draw1:pricing:host_admission_rederived": true,
+    "l170-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l170-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l170-draw1:ledger:disposition_derived": true,
+    "l170-draw1:slot:authoritative_matches_retained": true,
+    "l170-draw1:mounts:authority_bound": true,
+    "l170-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l170-draw1:receipts:single_pair_bound_to_process": true,
+    "l170-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l170-draw1:seal:retained_hashes": true,
+    "l170-draw1:publication:recomputed": true,
+    "l170-draw1:terminal:commitments_bound": true,
+    "l170-draw1:summary:bound_to_audited_records": true,
+    "l170-draw1:seal:chain_and_outcome": true,
+    "l170-draw1:grant:consistent_with_outcome": true,
+    "l170-draw1:grant:ordered_before_first_header_byte": true,
+    "l170-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l170-draw1:transport:record_consistent": true,
+    "l170-draw1:transport:local_send_and_remote_receipt": true,
+    "l170-draw1:pricing:actor_check_rederived": true,
+    "l170-draw1:interpretation:reproduced": true,
+    "l170-draw1:commitment:bound_to_mounted_canary": true,
+    "l170-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l170-draw1:accounting:recomputed": true,
+    "l170-draw1:credential_receipt:recorded": true,
+    "l170-draw1:receipts:payloads_bound_to_records": true,
+    "l170-draw1:stages:every_stage_on_the_path_returned": true,
+    "l170-draw1:stages:commands_reconstructed": true,
+    "l170-draw1:witness_rejected:response_bound": true,
+    "l170-draw1:witness_rejected:attribution_passed_through": true,
+    "l170-draw1:witness_rejected:recomputed_invalid_and_stopped": true,
+    "l175-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l175-draw1:chain:valid": true,
+    "l175-draw1:chain:expected_sequence": true,
+    "l175-draw1:site:identity_bound": true,
+    "l175-draw1:site:prepared_equals_classification": true,
+    "l175-draw1:site:preparation_is_the_repaired_helper": true,
+    "l175-draw1:site:original_context_bound": true,
+    "l175-draw1:site:renaming_recorded": true,
+    "l175-draw1:request:regenerated_under_contract": true,
+    "l175-draw1:envelope:recomputed_from_contract": true,
+    "l175-draw1:pricing:host_admission_rederived": true,
+    "l175-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l175-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l175-draw1:ledger:disposition_derived": true,
+    "l175-draw1:slot:authoritative_matches_retained": true,
+    "l175-draw1:mounts:authority_bound": true,
+    "l175-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l175-draw1:receipts:single_pair_bound_to_process": true,
+    "l175-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l175-draw1:seal:retained_hashes": true,
+    "l175-draw1:publication:recomputed": true,
+    "l175-draw1:terminal:commitments_bound": true,
+    "l175-draw1:summary:bound_to_audited_records": true,
+    "l175-draw1:seal:chain_and_outcome": true,
+    "l175-draw1:grant:consistent_with_outcome": true,
+    "l175-draw1:grant:ordered_before_first_header_byte": true,
+    "l175-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l175-draw1:transport:record_consistent": true,
+    "l175-draw1:transport:local_send_and_remote_receipt": true,
+    "l175-draw1:pricing:actor_check_rederived": true,
+    "l175-draw1:interpretation:reproduced": true,
+    "l175-draw1:commitment:bound_to_mounted_canary": true,
+    "l175-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l175-draw1:accounting:recomputed": true,
+    "l175-draw1:credential_receipt:recorded": true,
+    "l175-draw1:receipts:payloads_bound_to_records": true,
+    "l175-draw1:stages:every_stage_on_the_path_returned": true,
+    "l175-draw1:stages:commands_reconstructed": true,
+    "l175-draw1:reconstruction_refused:response_bound": true,
+    "l175-draw1:reconstruction_refused:attribution_passed_through": true,
+    "l175-draw1:certificate:verified_and_bound": true,
+    "l175-draw1:reconstruction:preparation_ir_equal": true,
+    "l175-draw1:reconstruction:sources_bound": true,
+    "l175-draw1:reconstruction:evidence_bound": true,
+    "l175-draw1:reconstruction:closer_selected": true,
+    "l175-draw1:reconstruction:refusal_diagnosed": true,
+    "l175-draw1:reconstruction:no_completion_evidence": true,
+    "l178-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l178-draw1:chain:valid": true,
+    "l178-draw1:chain:expected_sequence": true,
+    "l178-draw1:site:identity_bound": true,
+    "l178-draw1:site:prepared_equals_classification": true,
+    "l178-draw1:site:preparation_is_the_repaired_helper": true,
+    "l178-draw1:site:original_context_bound": true,
+    "l178-draw1:site:renaming_recorded": true,
+    "l178-draw1:request:regenerated_under_contract": true,
+    "l178-draw1:envelope:recomputed_from_contract": true,
+    "l178-draw1:pricing:host_admission_rederived": true,
+    "l178-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l178-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l178-draw1:ledger:disposition_derived": true,
+    "l178-draw1:slot:authoritative_matches_retained": true,
+    "l178-draw1:mounts:authority_bound": true,
+    "l178-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l178-draw1:receipts:single_pair_bound_to_process": true,
+    "l178-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l178-draw1:seal:retained_hashes": true,
+    "l178-draw1:publication:recomputed": true,
+    "l178-draw1:terminal:commitments_bound": true,
+    "l178-draw1:summary:bound_to_audited_records": true,
+    "l178-draw1:seal:chain_and_outcome": true,
+    "l178-draw1:grant:consistent_with_outcome": true,
+    "l178-draw1:grant:ordered_before_first_header_byte": true,
+    "l178-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l178-draw1:transport:record_consistent": true,
+    "l178-draw1:transport:local_send_and_remote_receipt": true,
+    "l178-draw1:pricing:actor_check_rederived": true,
+    "l178-draw1:interpretation:reproduced": true,
+    "l178-draw1:commitment:bound_to_mounted_canary": true,
+    "l178-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l178-draw1:accounting:recomputed": true,
+    "l178-draw1:credential_receipt:recorded": true,
+    "l178-draw1:receipts:payloads_bound_to_records": true,
+    "l178-draw1:stages:every_stage_on_the_path_returned": true,
+    "l178-draw1:stages:commands_reconstructed": true,
+    "l178-draw1:reconstruction_refused:response_bound": true,
+    "l178-draw1:reconstruction_refused:attribution_passed_through": true,
+    "l178-draw1:certificate:verified_and_bound": true,
+    "l178-draw1:reconstruction:preparation_ir_equal": true,
+    "l178-draw1:reconstruction:sources_bound": true,
+    "l178-draw1:reconstruction:evidence_bound": true,
+    "l178-draw1:reconstruction:closer_selected": true,
+    "l178-draw1:reconstruction:refusal_diagnosed": true,
+    "l178-draw1:reconstruction:no_completion_evidence": true,
+    "l204-draw1:versions:policy_lock_contract_campaign_bound": true,
+    "l204-draw1:chain:valid": true,
+    "l204-draw1:chain:expected_sequence": true,
+    "l204-draw1:site:identity_bound": true,
+    "l204-draw1:site:prepared_equals_classification": true,
+    "l204-draw1:site:preparation_is_the_repaired_helper": true,
+    "l204-draw1:site:original_context_bound": true,
+    "l204-draw1:site:renaming_recorded": true,
+    "l204-draw1:request:regenerated_under_contract": true,
+    "l204-draw1:envelope:recomputed_from_contract": true,
+    "l204-draw1:pricing:host_admission_rederived": true,
+    "l204-draw1:ledger:permit_and_reconciliation_bound": true,
+    "l204-draw1:ledger:reservation_priced_from_contract_limits": true,
+    "l204-draw1:ledger:disposition_derived": true,
+    "l204-draw1:slot:authoritative_matches_retained": true,
+    "l204-draw1:mounts:authority_bound": true,
+    "l204-draw1:command:reconstructed_from_pinned_runtime_and_layout": true,
+    "l204-draw1:receipts:single_pair_bound_to_process": true,
+    "l204-draw1:receipts:stage_returned_within_frozen_limits": true,
+    "l204-draw1:seal:retained_hashes": true,
+    "l204-draw1:publication:recomputed": true,
+    "l204-draw1:terminal:commitments_bound": true,
+    "l204-draw1:summary:bound_to_audited_records": true,
+    "l204-draw1:seal:chain_and_outcome": true,
+    "l204-draw1:grant:consistent_with_outcome": true,
+    "l204-draw1:grant:ordered_before_first_header_byte": true,
+    "l204-draw1:transport:bodies_are_the_contract_rendering": true,
+    "l204-draw1:transport:record_consistent": true,
+    "l204-draw1:transport:local_send_and_remote_receipt": true,
+    "l204-draw1:pricing:actor_check_rederived": true,
+    "l204-draw1:interpretation:reproduced": true,
+    "l204-draw1:commitment:bound_to_mounted_canary": true,
+    "l204-draw1:slot:identity_in_receipts_not_in_model_bytes": true,
+    "l204-draw1:accounting:recomputed": true,
+    "l204-draw1:credential_receipt:recorded": true,
+    "l204-draw1:receipts:payloads_bound_to_records": true,
+    "l204-draw1:stages:every_stage_on_the_path_returned": true,
+    "l204-draw1:stages:commands_reconstructed": true,
+    "l204-draw1:reconstruction_refused:response_bound": true,
+    "l204-draw1:reconstruction_refused:attribution_passed_through": true,
+    "l204-draw1:certificate:verified_and_bound": true,
+    "l204-draw1:reconstruction:preparation_ir_equal": true,
+    "l204-draw1:reconstruction:sources_bound": true,
+    "l204-draw1:reconstruction:evidence_bound": true,
+    "l204-draw1:reconstruction:closer_selected": true,
+    "l204-draw1:reconstruction:refusal_diagnosed": true,
+    "l204-draw1:reconstruction:no_completion_evidence": true,
+    "campaign:single_identity": true,
+    "input:distinct_model_bytes_across_tasks": true,
+    "receipts:distinct_across_runs": true,
+    "ledger:continuous_across_revisions": true,
+    "ledger:slots_match_population": true,
+    "operator_scan:report_bound": true,
+    "l069-draw1:operator_scan:receipt_bound": true,
+    "l070-draw1:operator_scan:receipt_bound": true,
+    "l071-draw1:operator_scan:receipt_bound": true,
+    "l078-draw1:operator_scan:receipt_bound": true,
+    "l096-draw1:operator_scan:receipt_bound": true,
+    "l099-draw1:operator_scan:receipt_bound": true,
+    "l166-draw1:operator_scan:receipt_bound": true,
+    "l170-draw1:operator_scan:receipt_bound": true,
+    "l175-draw1:operator_scan:receipt_bound": true,
+    "l178-draw1:operator_scan:receipt_bound": true,
+    "l204-draw1:operator_scan:receipt_bound": true
+  },
+  "case_count": 550,
+  "revision": "farkas_cohort_v9",
+  "eligibility": {
+    "preparation_failed": [],
+    "interface_refused": [
+      "bracket-l098",
+      "bracket-l101",
+      "bracket-l158",
+      "bracket-l180"
+    ],
+    "ambiguous_reference": [],
+    "policy_c_refused": [],
+    "posable_negative_control": [
+      "bracket-l170"
+    ],
+    "posable_certificate": [
+      "bracket-l069",
+      "bracket-l070",
+      "bracket-l071",
+      "bracket-l078",
+      "bracket-l096",
+      "bracket-l099",
+      "bracket-l166",
+      "bracket-l175",
+      "bracket-l178",
+      "bracket-l204"
+    ]
+  },
+  "population": {
+    "l069-draw1": [
+      "proof",
+      "bracket-l069",
+      1,
+      1
+    ],
+    "l070-draw1": [
+      "proof",
+      "bracket-l070",
+      1,
+      1
+    ],
+    "l071-draw1": [
+      "proof",
+      "bracket-l071",
+      1,
+      1
+    ],
+    "l078-draw1": [
+      "proof",
+      "bracket-l078",
+      1,
+      1
+    ],
+    "l096-draw1": [
+      "proof",
+      "bracket-l096",
+      1,
+      1
+    ],
+    "l099-draw1": [
+      "proof",
+      "bracket-l099",
+      1,
+      3
+    ],
+    "l166-draw1": [
+      "reconstruction_refused",
+      "bracket-l166",
+      1,
+      2
+    ],
+    "l170-draw1": [
+      "witness_rejected",
+      "bracket-l170",
+      1,
+      2
+    ],
+    "l175-draw1": [
+      "reconstruction_refused",
+      "bracket-l175",
+      1,
+      2
+    ],
+    "l178-draw1": [
+      "reconstruction_refused",
+      "bracket-l178",
+      1,
+      3
+    ],
+    "l204-draw1": [
+      "reconstruction_refused",
+      "bracket-l204",
+      1,
+      3
+    ]
+  },
+  "carried_forward": {
+    "population:exactly_expected_runs": "population:exactly_expected_runs (population derived from eligibility: population:derived_from_eligibility)",
+    "tasks:manifests_bound": "tasks:manifests_bound (and per run site:identity_bound)",
+    "modules:bound_to_retained_copies": "modules:bound_to_retained_copies (site harness modules added)",
+    "modules:cohort_revision": "modules:cohort_revision",
+    "campaign:single_identity": "campaign:single_identity",
+    "revisions:chained_distinct_policies_same_lock": "revision:superseded_v5_bound (one revision; its predecessor is the superseded v5 policy and lock, itself superseding v4)",
+    "input:identical_model_bytes_across_revisions:<task>": "input:identical_model_bytes_across_draws:bracket-l096 (one revision; the same site across draws)",
+    "input:distinct_model_bytes_across_tasks": "input:distinct_model_bytes_across_tasks (eleven sites)",
+    "receipts:distinct_across_runs": "receipts:distinct_across_runs",
+    "ledger:continuous_across_revisions": "ledger:continuous_single_revision",
+    "ledger:consumed_slots_persist": "ledger:slots_match_population",
+    "ledger:refusals_bound_to_earlier_consumption": null,
+    "<run>:refusal:slot_consumed_before_reservation": "<run>:interface:refused_before_reservation (the refusal kind here)",
+    "<run>:proof:export_expected": "<run>:proof:export_recorded (no canned export digest exists for a site; the export is bound to its stage and the verdict)",
+    "<run>:proof:certificate_bound": "<run>:certificate:verified_and_bound (also for reconstruction_refused runs: validity is separate from consumption)",
+    "<run>:proof:shared_checker": "<run>:proof:shared_checker (the frozen R6-001 checks with the closer read from its own receipt)",
+    "<run>:* (all other per-run cases)": "the same name, for every kind to which it applies"
+  },
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "entity_body_sha256": {
+    "bracket-l069": "c7f6fe1cc170d22df4ecc819841d9d5040185ab0d53b2eab926d66718ea99e43",
+    "bracket-l070": "5616bc28306b98d7dc1d50db2a5ac84f00ef31ef0d763bed490bc7b64fd53e40",
+    "bracket-l071": "58eef417b0c82e4942bfc5bdc01e30d71d17503d3c9d2880104aceb9130c8331",
+    "bracket-l078": "07f4055a1d1590557556f158abaa67dd88384d8e36fbd02042f68fdbd69e436d",
+    "bracket-l096": "b2fd74892bd2759e8943f75c586b69efd0703a902a2732c9d7fad651e1bdd37b",
+    "bracket-l099": "25618ae60e5ef9f36951738c39387365e22dabcec8c1394dd5634a4c616b85c9",
+    "bracket-l166": "d78f12415685ece2460636cf80d1cf288ac7b0df61ff86290daa0438bee43b04",
+    "bracket-l170": "19e6f8f489b1d72c8615148608e5126446717f3f81c355bef77f64e7a2732127",
+    "bracket-l175": "f519a0c71b80901c2556281e10de42b3b4a713202e8880f7311cd244d3bdf138",
+    "bracket-l178": "dfa61e1b0540a060eafcce8e02c0899aa014f31ae6a4ccf7b0b4eede99285f0b",
+    "bracket-l204": "644f226b31aaf420af7b4e0d602f875bd85d84e8e7c02bd484e92d393463fd43"
+  },
+  "identities": {
+    "l069-draw1": {
+      "reservation_id": "276254acb6a2447caa4aa456ee55ac79",
+      "attempt_id": "258abb9960917c1121ed86f491a4a8c9d352155649c1bc76d737cce913f826d3",
+      "grant_id": "98c7f24862b34c7795ee90dea1f59ffd",
+      "commitment": "11b9f75ee54bc5b3d8052026a39f3e36e8844b2cb10fc863942c67ac61ccd16d",
+      "nonce": "5a02be370701f83fc8a0f5b4affaa34301bbf2757bc956adb7ce88d41410024e"
+    },
+    "l070-draw1": {
+      "reservation_id": "6c46fddfb98e47a79b4649ad9d7c6cd8",
+      "attempt_id": "a45b1cd3df5ff8e126901ab141ef8d6ad03fe73ebfba6e371a2c012e71c683c3",
+      "grant_id": "10b4eeb34312483e89025f178dc9d76b",
+      "commitment": "46866e8adb9e68a3805cbc6b642fea3358530023b6e62ebe25a3d067bd5ee22d",
+      "nonce": "d9c7c38f0980e7cb09be25d77a05a007d94748496bd955a4f8032768fec29067"
+    },
+    "l071-draw1": {
+      "reservation_id": "1e3c30ae492f4570970d8e41000027a2",
+      "attempt_id": "220c044e2d1827a7c9f77313fd0a8076e38124c71220b14e18a79a70f2328b27",
+      "grant_id": "89449197bfe145508d283d1ae6e0d70e",
+      "commitment": "9e309e5f3528e000156bf302cf3f05d89141a2d15fb0453cf406046dea1825e6",
+      "nonce": "63b45124cb1b65b9b58b1a6f925fb6d46f7d5c7406d04ecb8b5a9e7af10daeea"
+    },
+    "l078-draw1": {
+      "reservation_id": "71d0fc771d94495db3d7804430c85aa8",
+      "attempt_id": "85d7a4fd5bc27cb17fb31f99ba59cde974f4390dbf01c1d22605a8c37834f142",
+      "grant_id": "d749a511cb5f4db3b01aebded2bd3ac6",
+      "commitment": "2aeed1143e2d73c4e15e38581c6b13bc5b01d091f36608535520ac9ab8b73a7a",
+      "nonce": "ffade89aac926b48c8d1b12ffd785ad95d7652cd66eee2b085c69b3eb6d0935e"
+    },
+    "l096-draw1": {
+      "reservation_id": "62e377d7dda14b3895e31ee3a323a3b6",
+      "attempt_id": "f42db431d30b1116d02fa029b39654c898736a5969ee7d93f7852665c035021a",
+      "grant_id": "ad68c4535cbb4b7f8587542b593340a1",
+      "commitment": "de3a2e9b29218bf717f442ecf129edea17a6ded69926228ebf75561e6dec16fe",
+      "nonce": "73d1bd879219c4099cdc5571d8773760fe457a33fbeda6bbe477b7dd23b0c83f"
+    },
+    "l099-draw1": {
+      "reservation_id": "a4920e6998ca4845a9d7595fd156ef8c",
+      "attempt_id": "5b5d1dafbd8d787ae5d15049c7bb589463e2ff6ed215d27e57427d4facde8967",
+      "grant_id": "ce29ca99d0fe4c6b91b1bd2c6373d2d2",
+      "commitment": "4a3821fe6fae72fc5eca0bee40437aa44ae98e2b88fb7e4233d61857cd74dfab",
+      "nonce": "daea2b87d1652d1629d1aca7436353da932c8e6d671777b3648ab0ee876e965c"
+    },
+    "l166-draw1": {
+      "reservation_id": "761ff69c6b204dbdb4758ff60ba93783",
+      "attempt_id": "673e11fc8b55ee3754a5a46f3ed96b3f190075bbc71326ac7248fb39216d01af",
+      "grant_id": "4555b10839b44bb7b269150c8c77359c",
+      "commitment": "f06b86d470c328faa2147821710dcf1d97ed14be24be495d90b75baafbc19c72",
+      "nonce": "a0f04545fe3ddbb104fedca650afbd7ea2b10df2d7f1b2a3bc626c7a60ec0276"
+    },
+    "l170-draw1": {
+      "reservation_id": "2ed751ba40f04307959d729f4605cd88",
+      "attempt_id": "68fb71869dbb45763f689369b931aa541fc0744f63c11735456864ac301c6814",
+      "grant_id": "69cdab64466b44dcb41cc6758982a80f",
+      "commitment": "acb9922d0c2d28bc69a6dc1f739c7a2cfd0ebc9863f852e6c933b54face898c8",
+      "nonce": "b408c3b647d26d5ca138013baa85f57a128f566e73a76deb7339cb0396b294de"
+    },
+    "l175-draw1": {
+      "reservation_id": "b85291ca90114b87a7b049215749efb6",
+      "attempt_id": "061942587f7732806f57e6da94001d5cee6fe420ddb06e7a29285a343208e530",
+      "grant_id": "da1b470b2bd04c4c988eb7bf8bf7102e",
+      "commitment": "21cbc74e80397c6eeea947e048d4f1e140cbb3b9e6939eb480f8b5b8ecc848cb",
+      "nonce": "b17fb361bdeb4e7c3111b000f1e4fe11982ae822e96d90cee561500fbfd87681"
+    },
+    "l178-draw1": {
+      "reservation_id": "e826fcec524244788d31f7dd3feb44f0",
+      "attempt_id": "2ea95e37fc6ca8127c2dd48d15477ee135ae17633698773b97dac9746a15ba63",
+      "grant_id": "7471cf9b03d84e1fbcd00401531ce85d",
+      "commitment": "91721c167fd4aeb2cdbad127e445cc74f0e24d392490781820611e93a24d539e",
+      "nonce": "1f13504d54023b8ed2a129b5f6f402754e27a57cc59745c0b58c36472f1c41c1"
+    },
+    "l204-draw1": {
+      "reservation_id": "2e29115678c94759a615ecbde1090364",
+      "attempt_id": "eb96ce5771942376ab43a59e8a8cb2df9a11d92e2a29f4cd5f8e2646e2016e9b",
+      "grant_id": "dfbd798c3cbd4a9b8580fee0bba2f04b",
+      "commitment": "b419a37fac59538870e3235eba08ced88e11c3782e1fdaa05a7b6f87dfadd7f4",
+      "nonce": "0b52c2c9fc1adc7fa52e827ee67fe37d548b2abf6333be208bb835d59f50a2fa"
+    }
+  },
+  "mode": "live",
+  "synthetic": true,
+  "live_model_calls": 0,
+  "credentials_read": 0,
+  "program_sha256": "366c0e4c839e6455846dbb4efe8f1cafd770b243cad9a3cec274f7b0865c098f",
+  "library_inventory_sha256": "562ad153446968c19434449f3fec4ab34f58e9166fe7f2aad45cf4b228e1bead",
+  "challenge_claim": "both replays name one temporary path of the driver pattern outside the recorded root; the bytes were not retained, and the driver hashing the challenge before replay is a property of the pinned source, not a retained-byte check",
+  "scope": "audit over retained bytes, with the classification recomputed; no native episode or proof replay; cached tool build invoked (run.build_tools)"
+}

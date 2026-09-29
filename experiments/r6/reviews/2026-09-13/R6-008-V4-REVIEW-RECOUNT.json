@@ -1,0 +1,127 @@
+{
+  "acceptance_scope": "recount completed; this is not approval of the disabled policy",
+  "accepted": true,
+  "archived_run_files_matching_independent_v3_review": 2158,
+  "audit_cases": 73,
+  "audit_controls": {
+    "baseline": 1,
+    "copy_mutations": 31,
+    "predicate_mutations": 4
+  },
+  "before_snapshot": {
+    "bytes": 1007123,
+    "sha256": "ab04f6108d63769a8c6674ce926280e4259940b5b689d7ae8b1558206cf5e39c"
+  },
+  "changed": [],
+  "evidence": {
+    "AUDIT": {
+      "bytes": 4799,
+      "sha256": "5ecdfdb3ff9500e0e9a78bf1113ea4408838c7460a591d56bf92bea43d7ef10f"
+    },
+    "AUDIT-CONTROLS": {
+      "bytes": 6392,
+      "sha256": "5b7bf68a06f66972b5ad39b5c01576a3f93dbc41a27e416bed60487933ead178"
+    },
+    "FOCUSED": {
+      "bytes": 20584,
+      "sha256": "e5866dc17255cad08cfa41846ac39b913aea0ca49174c5bec95c02aa15ef26a6"
+    },
+    "OPERATOR-CONTROLS": {
+      "bytes": 2835,
+      "sha256": "246cebda5fc08d794c5921d813724c2494118e60789e1871746fe72da0ddd32e"
+    },
+    "PILOT-AUDIT": {
+      "bytes": 13618,
+      "sha256": "74bc7693bd15ee80bcb258b9173cbdc668c1e735226ea4b16104aec5be3bfac4"
+    },
+    "PROBES": {
+      "bytes": 15636,
+      "sha256": "80a50708f79825ac16e6f1e8d11da5bbbaba78e2f4eb0d28572631f7f481f0ea"
+    }
+  },
+  "focused_controls": 47,
+  "live_enabled": false,
+  "live_ledger_exists": false,
+  "missing": [],
+  "new_native_episodes": 0,
+  "new_review_probes": 12,
+  "operator_controls": 8,
+  "pilot_audit_cases": 124,
+  "policy_sha256": "fd6b53d475c57c7bca0d9e361de37a9081a30e079139992207cd9d3ca1212327",
+  "preserved_files": 35536,
+  "program_sha256": "f837cc07e3634cebe1345dc907b101bfd8c8944c1fb40cda825cb8f18a4cf332",
+  "provider_calls": 0,
+  "real_credentials_read": 0,
+  "restored_v3_files": {
+    "campaign-harness-v3.sha256.json": {
+      "bytes": 648,
+      "matches_independent_v3_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "30934b333f9f0c163e3296b47becb1adcb4c410f9363e70b78b837ebdd00b05b"
+    },
+    "responses-campaign-v3.json": {
+      "bytes": 8028,
+      "matches_independent_v3_review_snapshot": true,
+      "retained_copies_match": 3,
+      "sha256": "3a5af1d844bcf72fe37c09d53a2b8c78f62e409b2c0c0724b8afe84863c53f5d"
+    }
+  },
+  "runs": {
+    "rehearsal-1": {
+      "accepted": false,
+      "events": 20,
+      "ledger_kind": "release",
+      "retained_files": 215,
+      "seal": {
+        "bytes": 25408,
+        "sha256": "260a3e377795b59c68f5a77d956bdd3a3d06d0a13fafee2cfa2abc5395719a2d"
+      },
+      "termination_established": true
+    },
+    "rehearsal-2": {
+      "accepted": false,
+      "events": 18,
+      "ledger_kind": "release",
+      "retained_files": 209,
+      "seal": {
+        "bytes": 24747,
+        "sha256": "e5b53d2a68e2e2bbb32aac5ffa384699923385eb02c6a4ddf3a43dcf88d9e6bb"
+      },
+      "termination_established": true
+    },
+    "rehearsal-3": {
+      "accepted": true,
+      "axiom_delta": {
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell.r6_d1_70": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "checked_declarations": {
+        "local": 3702,
+        "whole": 3721
+      },
+      "events": 51,
+      "grant_creation_to_durability_ns": 10547068,
+      "grant_durability_to_header_ns": 419668,
+      "ledger_kind": "send_grant",
+      "proof_export_sha256": "cd6081daac2fc64d718d28202d1742ff1e653e9862031fb19a5efeb7cd7d1812",
+      "retained_files": 281,
+      "seal": {
+        "bytes": 33493,
+        "sha256": "fa306f8fb0ce391df9dbf0c4c8bd567149fa96d63cd7f5bc8b1ff4299ac4bfc7"
+      },
+      "termination_established": true
+    }
+  },
+  "scope": "byte consistency, fresh canned controls, historical audits and fault probes; no new native episode or Lean replay",
+  "snapshot_scope": "review-start working tree; experiments/r6 excluding .cache and __pycache__; not a committed baseline",
+  "source_lock_sha256": "1800644081b39cd7f4178f3818425b2233557405d9d98a1c180215bd06ddd1bb",
+  "superseded_positive_audits": 3,
+  "total_events": 89,
+  "total_sealed_entries": 705
+}

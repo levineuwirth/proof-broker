@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/supervise.py", line 134, in <module>
+    sys.exit(main(sys.argv[1]))
+             ~~~~^^^^^^^^^^^^^
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/supervise.py", line 129, in main
+    events.append(run, stage, 'stage_finished', stats)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/events.py", line 44, in append
+    raise ValueError("Episode is already closed")
+ValueError: Episode is already closed

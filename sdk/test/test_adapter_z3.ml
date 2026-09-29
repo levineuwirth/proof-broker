@@ -100,7 +100,7 @@ let test_dispatch_unsat_mints_farkas_cert () =
     to close, exceeding the search box. z3 still says [unsat], so
     the dispatcher falls through the closer-fail branch into the
     oracle path. *)
-let test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle () =
+let test_dispatch_unsat_beyond_enumeration_bound_recovers_exactly () =
   with_z3 @@ fun () ->
   let n : Ir.shell_term = Var { name = "n" } in
   let one : Ir.shell_term = Num_lit { value = "1"; ty = "Int" } in
@@ -126,9 +126,57 @@ let test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle () =
           ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
           ir with
   | Cert cert ->
+    Alcotest.(check int) "tier=1" 1 cert.tier;
+    Alcotest.(check string) "format=farkas" "farkas" cert.format;
+    (match Verifier.verify cert ir with
+     | Verified_farkas -> ()
+     | other ->
+       Alcotest.fail
+         (Printf.sprintf "expected Verified_farkas, got %s"
+            (Verifier.kind_of_reason other)))
+  | Failed f ->
+    Alcotest.fail
+      (Printf.sprintf "expected Cert, got Failed(%s: %s)"
+         (Adapter.kind_of_failure f)
+         (Adapter.detail_of_failure f))
+
+(* Exact recovery is bounded in SUPPORT, so "beyond the closer" still exists
+   and must still DEGRADE TIER rather than fail. This witness needs support 6
+   (above [Farkas_search.max_exact_support] = 4) AND coefficient 7 (above the
+   enumeration bound 3), so neither internal closer reaches it:
+
+     7*h1 + 7*h2 + 7*h3 + 7*h4 + 1*h5 + 7*h6  =  1 > 0
+
+   and the chain forces every one of those coefficients, so no smaller
+   support and no smaller coefficient will do. *)
+let test_dispatch_beyond_both_closers_falls_back_to_oracle () =
+  with_z3 @@ fun () ->
+  let v i : Ir.shell_term = Var { name = Printf.sprintf "x%d" i } in
+  let num s : Ir.shell_term = Num_lit { value = s; ty = "Int" } in
+  let le a b : Ir.shell_term =
+    App { symbol = "LE.le"; type_args = []; args = [ a; b ] } in
+  let mul a b : Ir.shell_term =
+    App { symbol = "Int.mul"; type_args = []; args = [ a; b ] } in
+  let hyp name shell : Ir.hypothesis = { name; shell } in
+  let ir = make_ir
+    ~free_vars:(List.init 5 (fun i ->
+      ({ name = Printf.sprintf "x%d" i; ty = "Int" } : Ir.free_var)))
+    ~hypotheses:[
+      hyp "h1" (le (v 0) (v 1));
+      hyp "h2" (le (v 1) (v 2));
+      hyp "h3" (le (v 2) (v 3));
+      hyp "h4" (le (v 3) (v 4));
+      hyp "h5" (le (mul (num "7") (v 4)) (num "6"));
+      hyp "h6" (le (num "1") (v 0));
+    ]
+    (Const { name = "False" })
+  in
+  match Adapter_z3.dispatch
+          ~rewrite_trace_hash:(Pipeline.identity_trace_hash ir)
+          ir with
+  | Cert cert ->
     Alcotest.(check int) "tier=0" 0 cert.tier;
-    Alcotest.(check string) "format=oracle" "oracle" cert.format;
-    Alcotest.(check string) "backend=z3" "z3" cert.backend.name
+    Alcotest.(check string) "format=oracle" "oracle" cert.format
   | Failed f ->
     Alcotest.fail
       (Printf.sprintf "expected Cert, got Failed(%s: %s)"
@@ -269,8 +317,12 @@ let () =
     "dispatch", [
       Alcotest.test_case "unsat on Farkas-shape mints Tier 1 farkas cert"
         `Quick test_dispatch_unsat_mints_farkas_cert;
-      Alcotest.test_case "unsat beyond closer bound falls back to Tier 0 oracle"
-        `Quick test_dispatch_unsat_beyond_closer_bound_falls_back_to_oracle;
+      Alcotest.test_case
+        "unsat beyond the enumeration bound is recovered exactly (Tier 1)"
+        `Quick test_dispatch_unsat_beyond_enumeration_bound_recovers_exactly;
+      Alcotest.test_case
+        "beyond BOTH closers still degrades to Tier 0 oracle"
+        `Quick test_dispatch_beyond_both_closers_falls_back_to_oracle;
       Alcotest.test_case "sat returns Sat_returned"
         `Quick test_dispatch_sat_returns_failure;
       Alcotest.test_case "unsupported IR shape"

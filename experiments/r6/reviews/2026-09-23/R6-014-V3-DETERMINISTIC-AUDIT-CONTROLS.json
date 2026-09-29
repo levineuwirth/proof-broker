@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "controls": 32,
+  "results": {
+    "baseline": {
+      "accepted": true,
+      "case_count": 539
+    },
+    "empty_population": {
+      "accepted": false,
+      "rejected_case": "population:exactly_fifteen_sites_by_two_routes",
+      "detail": "population:exactly_fifteen_sites_by_two_routes: []"
+    },
+    "summary_sites_emptied": {
+      "accepted": false,
+      "rejected_case": "population:summary_bound",
+      "detail": "population:summary_bound"
+    },
+    "run_missing": {
+      "accepted": false,
+      "rejected_case": "population:exactly_fifteen_sites_by_two_routes",
+      "detail": "population:exactly_fifteen_sites_by_two_routes: ['site_cvc4_default_closer_v1/bracket-l069', 'site_cvc4_default_closer_v1/bracket-l070', 'site_cvc4_default_closer_v1/bracket-l071', 'site_cvc4_default_closer_v1/bracket-l078', 'site_cvc4_default_closer_v1/bracket-l096', 'site_cvc4_default_closer_v1/bracket-l098', 'site_cvc4_default_closer_v1/bracke"
+    },
+    "extra_run": {
+      "accepted": false,
+      "rejected_case": "population:exactly_fifteen_sites_by_two_routes",
+      "detail": "population:exactly_fifteen_sites_by_two_routes: ['site_cvc4_default_closer_v1/bracket-l069', 'site_cvc4_default_closer_v1/bracket-l070', 'site_cvc4_default_closer_v1/bracket-l071', 'site_cvc4_default_closer_v1/bracket-l078', 'site_cvc4_default_closer_v1/bracket-l096', 'site_cvc4_default_closer_v1/bracket-l098', 'site_cvc4_default_closer_v1/bracke"
+    },
+    "local_type_zeroed_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports: local: raw report, verdict and receipt differ"
+    },
+    "raw_type_changed_coherently": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports: local: raw report content or frozen type"
+    },
+    "raw_axiom_added_coherently": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports: whole: raw report content or frozen type"
+    },
+    "validation_policy_unbound_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:kernel:derived_from_raw_reports: local: validation policy; axiom delta"
+    },
+    "certificate_verdict_forged_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:certificate_check_reexecuted",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:certificate_check_reexecuted"
+    },
+    "evidence_packet_altered_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:evidence_rebuilt_from_observations",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:evidence_rebuilt_from_observations"
+    },
+    "consumption_receipt_altered_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:consumption_receipt",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:consumption_receipt"
+    },
+    "reference_closer_relabelled_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_default_closer_v1/bracket-l069:search:fields_recomputed",
+      "detail": "site_cvc4_default_closer_v1/bracket-l069:search:fields_recomputed"
+    },
+    "search_outcome_relabelled_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:search:outcome_recomputed",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:search:outcome_recomputed: reconstruction_refused vs backend_not_invoked"
+    },
+    "stage_budget_raised_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:commands:rebuilt_by_the_stage_function",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:commands:rebuilt_by_the_stage_function: search: first difference at None; search: budgets"
+    },
+    "sandbox_flag_removed_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:commands:rebuilt_by_the_stage_function",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:commands:rebuilt_by_the_stage_function: search: first difference at 1"
+    },
+    "stage_receipt_differs_from_process": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:commands:rebuilt_by_the_stage_function",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:commands:rebuilt_by_the_stage_function: search: receipt differs from its process record"
+    },
+    "manifest_altered_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:inputs:recomputed",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:inputs:recomputed"
+    },
+    "harness_copy_altered_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:provenance:locked_sources_and_overlay",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:provenance:locked_sources_and_overlay"
+    },
+    "binary_digest_altered_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:provenance:binaries_at_current_tool_digests",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:provenance:binaries_at_current_tool_digests"
+    },
+    "verdict_on_rejected_run_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:search:downstream_exactly_when_proved",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:search:downstream_exactly_when_proved"
+    },
+    "rejected_run_terminal_finished": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:chain:expected_sequence",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:chain:expected_sequence: [('episode', 'episode_started'), ('capture-build', 'stage_started'), ('capture-build', 'stage_finished'), ('search', 'stage_started'), ('search', 'stage_finished'), ('episode', 'episode_finished')]"
+    },
+    "retained_file_changed_unsealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:seal:every_retained_file_at_its_digest",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:seal:every_retained_file_at_its_digest"
+    },
+    "unlisted_file_added": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:seal:every_retained_file_at_its_digest",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:seal:every_retained_file_at_its_digest"
+    },
+    "solution_replaced_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound"
+    },
+    "summary_cost_changed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:outcome:record_bound",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:outcome:record_bound"
+    },
+    "refused_zero_witness_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound: certificate_bound; claimed verification not reproduced by the checker"
+    },
+    "refused_closer_relabelled_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound",
+      "detail": "site_cvc4_term_mode_v1/bracket-l166:search:observations_bound: closer term_mode_int, pinned term_mode_nat"
+    },
+    "verification_observation_certificate_altered_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:search:observations_bound",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:search:observations_bound: certificate at certificate_verification_finished"
+    },
+    "search_workload_not_emptied_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:search:terminated_cleanly",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:search:terminated_cleanly"
+    },
+    "proof_search_exit_nonzero_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:search:terminated_cleanly",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:search:terminated_cleanly"
+    },
+    "solution_from_other_site_resealed": {
+      "accepted": false,
+      "rejected_case": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound",
+      "detail": "site_cvc4_term_mode_v1/bracket-l070:proof:solution_bound"
+    }
+  },
+  "baseline_cases": 539,
+  "preconditions": {
+    "refused_zero_witness_resealed": {
+      "independent_check_accepted": false,
+      "reason": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    }
+  },
+  "auditor_sha256": "f0beac4c28e394d8eac92b8834670010854152751e4edf4be0dd275f5a601adb",
+  "program_sha256": "e0891283b357bb99a03203948ad9ecd566714b2ebc8371ee2744c2e334c7a1e2",
+  "scope": "temporary copies; one relationship per mutation; coherent re-chaining and re-sealing where the relationship is sealed"
+}

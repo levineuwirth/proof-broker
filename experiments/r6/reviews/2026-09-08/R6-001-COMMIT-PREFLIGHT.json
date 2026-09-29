@@ -1,0 +1,252 @@
+{
+  "scope": "R6-001 approved local commit preflight; read-only checks, no native re-execution",
+  "staged_files_excluding_this_record": 787,
+  "retained_episode_files_matched_against_index": 270,
+  "no_development_runs_or_compilation_products_staged": true,
+  "full_staged_whitespace_exit": 2,
+  "non_patch_whitespace_exit": 0,
+  "retained_patch_context_warnings": [
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_invalid_witness/preparation-input/source.patch",
+      "line": 10,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_invalid_witness/preparation-input/source.patch",
+      "line": 16,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/input/source.patch",
+      "line": 10,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/input/source.patch",
+      "line": 16,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/preparation-input/source.patch",
+      "line": 10,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/preparation-input/source.patch",
+      "line": 16,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/c8_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_exhausted_budget/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_exhausted_budget/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_invalid_witness/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_invalid_witness/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_malformed/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_malformed/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_malformed/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_malformed/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_timeout/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_timeout/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_timeout/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_timeout/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_valid/input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_valid/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_valid/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_valid/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_valid/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_wrong_binding/preparation-input/source.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_wrong_binding/provenance/instrumentation.patch",
+      "line": 6,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_wrong_binding/provenance/instrumentation.patch",
+      "line": 21,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    },
+    {
+      "path": "experiments/r6/runs/proposal-checkpoint-v2/d1_wrong_binding/provenance/instrumentation.patch",
+      "line": 115,
+      "bytes_hex": "20",
+      "interpretation": "empty unified-diff context line"
+    }
+  ],
+  "attribution_commit": "",
+  "artifact_checks": "two approved fixture audits, four historical golden audits, frozen source lock and complete final-checks.json recomputation pass"
+}

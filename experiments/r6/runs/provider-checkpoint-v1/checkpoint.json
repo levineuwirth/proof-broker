@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "live_model_calls": 0,
+  "scope": "isolated local HTTP fixture; no remote receipt, compilation or inference attestation",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "policy_sha256": "eefae339cb7067f88802d768e2acb3444651da3037b90e3e74441567672c4487",
+  "source_lock_sha256": "cd51ec861614e70579e3bcf549ad86b61491275a6313703344c69a9b34aa76f0",
+  "runtime_lock_sha256": "b3326bfc8e75474a395300bd56e9e9c5b2d6d34b843811ac4ef868a4a0fd5935",
+  "suites": {
+    "provider-units.json": {
+      "sha256": "f6db21c32367fbd553d159cb3ad3508356bb946fd8bfa820c66b7b43eb257a08",
+      "count": 47
+    },
+    "provider-native.json": {
+      "sha256": "a8ccfe0184c313c24cb4c461f1d2427ecd2c51d4f886dbf1cd4445989b180c2b",
+      "count": 23
+    },
+    "provider-audits.json": {
+      "sha256": "631ae927a128d7e9b355c202f7c02ee237267f0acacf83154ab7cfa979489fda",
+      "count": 38
+    }
+  }
+}

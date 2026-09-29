@@ -1,0 +1,23 @@
+pb_dump_ir: wrote ir/B3_false_wide_bound.json | hypotheses=3 fragment=LIA | skipped_locals=[g_hi — data local at an undeclarable type (ZMod P)] | nat_atoms=[_pb_atom_0] | numeral_defs=[RmsNorm.P=18446744069414584321]
+ir/B3_false_wide_bound.dump.lean:16:0: warning: declaration uses `sorry`
+ir/B3_false_wide_bound.dump.lean:18:2: warning: 'pb_dump_ir"ir/B3_false_wide_bound.json"' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+cumulative profiling times:
+	attribute application 0.00752ms
+	elaboration 4.14ms
+	fix level params 0.0111ms
+	instantiate metavars 0.017ms
+	interpretation 0.102ms
+	linting 16.3ms
+	module linting 0.00108ms
+	overlappingInstancesLinter 0.642ms
+	parsing 0.421ms
+	process pre-definitions 0.165ms
+	share common exprs 0.0507ms
+	tactic execution 9.96ms
+	tacticAnalysis 3.08ms
+	type checking 0.381ms
+	typeclass inference 6.87ms
+PEAK_RSS_BYTES=687128576
+EXIT=0 WALL=4.4s CAP=8G

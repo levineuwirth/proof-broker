@@ -1,0 +1,170 @@
+[  1/168] B1_true_2p21.grind.lean                          exit=0 tac=1.06 
+[  2/168] B1_true_2p21.omega.lean                          exit=0 tac=2.23 
+[  3/168] B1_true_2p21.pb.lean                             exit=0 tac=34.1 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[  4/168] B1_true_2p21.pbterm.lean                         exit=1 tac=27.7 
+[  5/168] B1_true_2p21.pbterm_cvc4.lean                    exit=1 tac=18.9 
+[  6/168] B1_true_2p21.pbterm_cvc5.lean                    exit=1 tac=17.5 
+[  7/168] B1_true_2p21.pbterm_z3.lean                      exit=1 tac=27.3 
+[  8/168] B2_false_2p22.grind.lean                         exit=1 tac=1.19 
+[  9/168] B2_false_2p22.omega.lean                         exit=1 tac=0.677 
+[ 10/168] B2_false_2p22.pb.lean                            exit=1 tac=26.3 
+[ 11/168] B2_false_2p22.pbterm.lean                        exit=1 tac=29.8 
+[ 12/168] B2_false_2p22.pbterm_cvc4.lean                   exit=1 tac=18.5 
+[ 13/168] B2_false_2p22.pbterm_cvc5.lean                   exit=1 tac=26.4 
+[ 14/168] B2_false_2p22.pbterm_z3.lean                     exit=1 tac=27.2 
+[ 15/168] B3_false_wide_bound.grind.lean                   exit=1 tac=1.3 
+[ 16/168] B3_false_wide_bound.omega.lean                   exit=1 tac=0.788 
+[ 17/168] B3_false_wide_bound.pb.lean                      exit=1 tac=28.6 
+[ 18/168] B3_false_wide_bound.pbterm.lean                  exit=1 tac=26.7 
+[ 19/168] B3_false_wide_bound.pbterm_cvc4.lean             exit=1 tac=16.3 
+[ 20/168] B3_false_wide_bound.pbterm_cvc5.lean             exit=1 tac=27.0 
+[ 21/168] B3_false_wide_bound.pbterm_z3.lean               exit=1 tac=28.9 
+[ 22/168] B4_true_exact.grind.lean                         exit=0 tac=0.567 
+[ 23/168] B4_true_exact.omega.lean                         exit=0 tac=1.79 
+[ 24/168] B4_true_exact.pb.lean                            exit=0 tac=32.3 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 25/168] B4_true_exact.pbterm.lean                        exit=1 tac=28.5 
+[ 26/168] B4_true_exact.pbterm_cvc4.lean                   exit=1 tac=22.0 
+[ 27/168] B4_true_exact.pbterm_cvc5.lean                   exit=1 tac=20.8 
+[ 28/168] B4_true_exact.pbterm_z3.lean                     exit=1 tac=29.7 
+[ 29/168] C1_coef_1.grind.lean                             exit=0 tac=0.584 
+[ 30/168] C1_coef_1.omega.lean                             exit=0 tac=2.13 
+[ 31/168] C1_coef_1.pb.lean                                exit=0 tac=29.5 tactic=proof_broker closer=gated_omega backend=cvc4 tier=1 format=fark
+[ 32/168] C1_coef_1.pbterm.lean                            exit=0 tac=35.5 tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 form
+[ 33/168] C1_coef_1.pbterm_cvc4.lean                       exit=0 tac=24.7 tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 form
+[ 34/168] C1_coef_1.pbterm_cvc5.lean                       exit=0 tac=23.4 tactic=proof_broker_term closer=term_mode_nat backend=cvc5 tier=1 form
+[ 35/168] C1_coef_1.pbterm_z3.lean                         exit=0 tac=31.7 tactic=proof_broker_term closer=term_mode_nat backend=z3 tier=1 format
+[ 36/168] C2_coef_2.grind.lean                             exit=0 tac=0.56 
+[ 37/168] C2_coef_2.omega.lean                             exit=0 tac=2.9 
+[ 38/168] C2_coef_2.pb.lean                                exit=0 tac=34.4 tactic=proof_broker closer=gated_omega backend=cvc4 tier=1 format=fark
+[ 39/168] C2_coef_2.pbterm.lean                            exit=0 tac=37.7 tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 form
+[ 40/168] C2_coef_2.pbterm_cvc4.lean                       exit=0 tac=24.8 tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 form
+[ 41/168] C2_coef_2.pbterm_cvc5.lean                       exit=0 tac=23.4 tactic=proof_broker_term closer=term_mode_nat backend=cvc5 tier=1 form
+[ 42/168] C2_coef_2.pbterm_z3.lean                         exit=0 tac=21.5 tactic=proof_broker_term closer=term_mode_nat backend=z3 tier=1 format
+[ 43/168] C3_coef_3.grind.lean                             exit=0 tac=0.591 
+[ 44/168] C3_coef_3.omega.lean                             exit=0 tac=2.12 
+[ 45/168] C3_coef_3.pb.lean                                exit=0 tac=33.3 tactic=proof_broker closer=gated_omega backend=cvc4 tier=1 format=fark
+[ 46/168] C3_coef_3.pbterm.lean                            exit=0 tac=33.1 tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 form
+[ 47/168] C3_coef_3.pbterm_cvc4.lean                       exit=0 tac=25.2 tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 form
+[ 48/168] C3_coef_3.pbterm_cvc5.lean                       exit=0 tac=19.7 tactic=proof_broker_term closer=term_mode_nat backend=cvc5 tier=1 form
+[ 49/168] C3_coef_3.pbterm_z3.lean                         exit=0 tac=33.0 tactic=proof_broker_term closer=term_mode_nat backend=z3 tier=1 format
+[ 50/168] C4_coef_4.grind.lean                             exit=0 tac=0.722 
+[ 51/168] C4_coef_4.omega.lean                             exit=0 tac=1.81 
+[ 52/168] C4_coef_4.pb.lean                                exit=0 tac=22.0 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 53/168] C4_coef_4.pbterm.lean                            exit=1 tac=27.6 
+[ 54/168] C4_coef_4.pbterm_cvc4.lean                       exit=1 tac=17.0 
+[ 55/168] C4_coef_4.pbterm_cvc5.lean                       exit=1 tac=19.7 
+[ 56/168] C4_coef_4.pbterm_z3.lean                         exit=1 tac=28.7 
+[ 57/168] C5_coef_5.grind.lean                             exit=0 tac=0.545 
+[ 58/168] C5_coef_5.omega.lean                             exit=0 tac=1.9 
+[ 59/168] C5_coef_5.pb.lean                                exit=0 tac=29.4 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 60/168] C5_coef_5.pbterm.lean                            exit=1 tac=30.7 
+[ 61/168] C5_coef_5.pbterm_cvc4.lean                       exit=1 tac=20.5 
+[ 62/168] C5_coef_5.pbterm_cvc5.lean                       exit=1 tac=22.5 
+[ 63/168] C5_coef_5.pbterm_z3.lean                         exit=1 tac=32.8 
+[ 64/168] C6_coef_8.grind.lean                             exit=0 tac=0.96 
+[ 65/168] C6_coef_8.omega.lean                             exit=0 tac=1.91 
+[ 66/168] C6_coef_8.pb.lean                                exit=0 tac=28.8 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 67/168] C6_coef_8.pbterm.lean                            exit=1 tac=28.3 
+[ 68/168] C6_coef_8.pbterm_cvc4.lean                       exit=1 tac=22.1 
+[ 69/168] C6_coef_8.pbterm_cvc5.lean                       exit=1 tac=19.4 
+[ 70/168] C6_coef_8.pbterm_z3.lean                         exit=1 tac=31.0 
+[ 71/168] C7_coef_2p10.grind.lean                          exit=0 tac=0.762 
+[ 72/168] C7_coef_2p10.omega.lean                          exit=0 tac=2.05 
+[ 73/168] C7_coef_2p10.pb.lean                             exit=0 tac=32.7 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 74/168] C7_coef_2p10.pbterm.lean                         exit=1 tac=27.6 
+[ 75/168] C7_coef_2p10.pbterm_cvc4.lean                    exit=1 tac=17.9 
+[ 76/168] C7_coef_2p10.pbterm_cvc5.lean                    exit=1 tac=17.4 
+[ 77/168] C7_coef_2p10.pbterm_z3.lean                      exit=1 tac=29.1 
+[ 78/168] C8_coef_2p18.grind.lean                          exit=0 tac=0.557 
+[ 79/168] C8_coef_2p18.omega.lean                          exit=0 tac=1.82 
+[ 80/168] C8_coef_2p18.pb.lean                             exit=0 tac=32.7 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 81/168] C8_coef_2p18.pbterm.lean                         exit=1 tac=31.2 
+[ 82/168] C8_coef_2p18.pbterm_cvc4.lean                    exit=1 tac=18.1 
+[ 83/168] C8_coef_2p18.pbterm_cvc5.lean                    exit=1 tac=19.6 
+[ 84/168] C8_coef_2p18.pbterm_z3.lean                      exit=1 tac=28.1 
+[ 85/168] O5_site2_isolated.grind.lean                     exit=0 tac=0.587 
+[ 86/168] O5_site2_isolated.omega.lean                     exit=0 tac=2.12 
+[ 87/168] O5_site2_isolated.pb.lean                        exit=0 tac=29.6 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[ 88/168] O5_site2_isolated.pbterm.lean                    exit=1 tac=28.4 
+[ 89/168] O5_site2_isolated.pbterm_cvc4.lean               exit=1 tac=17.4 
+[ 90/168] O5_site2_isolated.pbterm_cvc5.lean               exit=1 tac=16.9 
+[ 91/168] O5_site2_isolated.pbterm_z3.lean                 exit=1 tac=34.8 
+[ 92/168] O6_E4.grind.lean                                 exit=0 tac=1.04 
+[ 93/168] O6_E4.omega.lean                                 exit=0 tac=4.19 
+[ 94/168] O6_E4.pb.lean                                    exit=0 tac=119.0 tactic=proof_broker closer=gated_omega backend=z3 tier=1 format=farkas
+[ 95/168] O6_E4.pbterm.lean                                exit=0 tac=117.0 tactic=proof_broker_term closer=term_mode_nat backend=z3 tier=1 format
+[ 96/168] O6_E4.pbterm_cvc4.lean                           exit=1 tac=53.8 
+[ 97/168] O6_E4.pbterm_cvc5.lean                           exit=1 tac=73.9 
+[ 98/168] O6_E4.pbterm_z3.lean                             exit=0 tac=37.3 tactic=proof_broker_term closer=term_mode_nat backend=z3 tier=1 format
+[ 99/168] P1_decimal_coef.grind.lean                       exit=0 tac=1.05 
+[100/168] P1_decimal_coef.omega.lean                       exit=0 tac=2.09 
+[101/168] P1_decimal_coef.pb.lean                          exit=0 tac=33.2 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[102/168] P1_decimal_coef.pbterm.lean                      exit=1 tac=29.7 
+[103/168] P1_decimal_coef.pbterm_cvc4.lean                 exit=1 tac=17.3 
+[104/168] P1_decimal_coef.pbterm_cvc5.lean                 exit=1 tac=20.9 
+[105/168] P1_decimal_coef.pbterm_z3.lean                   exit=1 tac=55.9 
+[106/168] P2_operand_order.grind.lean                      exit=0 tac=0.855 
+[107/168] P2_operand_order.omega.lean                      exit=0 tac=2.01 
+[108/168] P2_operand_order.pb.lean                         exit=0 tac=20.5 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[109/168] P2_operand_order.pbterm.lean                     exit=1 tac=27.5 
+[110/168] P2_operand_order.pbterm_cvc4.lean                exit=1 tac=17.5 
+[111/168] P2_operand_order.pbterm_cvc5.lean                exit=1 tac=18.2 
+[112/168] P2_operand_order.pbterm_z3.lean                  exit=1 tac=20.5 
+[113/168] P3_le_pred.grind.lean                            exit=0 tac=0.692 
+[114/168] P3_le_pred.omega.lean                            exit=0 tac=2.33 
+[115/168] P3_le_pred.pb.lean                               exit=1 tac=0.224 
+[116/168] P3_le_pred.pbterm.lean                           exit=1 tac=0.216 
+[117/168] P3_le_pred.pbterm_cvc4.lean                      exit=1 tac=0.23 
+[118/168] P3_le_pred.pbterm_cvc5.lean                      exit=1 tac=0.228 
+[119/168] P3_le_pred.pbterm_z3.lean                        exit=1 tac=0.416 
+[120/168] P4_prime_literal.grind.lean                      exit=0 tac=0.561 
+[121/168] P4_prime_literal.omega.lean                      exit=0 tac=1.76 
+[122/168] P4_prime_literal.pb.lean                         exit=0 tac=32.6 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[123/168] P4_prime_literal.pbterm.lean                     exit=1 tac=30.9 
+[124/168] P4_prime_literal.pbterm_cvc4.lean                exit=1 tac=16.9 
+[125/168] P4_prime_literal.pbterm_cvc5.lean                exit=1 tac=19.9 
+[126/168] P4_prime_literal.pbterm_z3.lean                  exit=1 tac=28.2 
+[127/168] P5_plain_nat.grind.lean                          exit=0 tac=0.592 
+[128/168] P5_plain_nat.omega.lean                          exit=0 tac=2.06 
+[129/168] P5_plain_nat.pb.lean                             exit=0 tac=34.4 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[130/168] P5_plain_nat.pbterm.lean                         exit=1 tac=27.1 
+[131/168] P5_plain_nat.pbterm_cvc4.lean                    exit=1 tac=17.8 
+[132/168] P5_plain_nat.pbterm_cvc5.lean                    exit=1 tac=18.2 
+[133/168] P5_plain_nat.pbterm_z3.lean                      exit=1 tac=28.3 
+[134/168] P6_hyp_le.grind.lean                             exit=0 tac=0.566 
+[135/168] P6_hyp_le.omega.lean                             exit=0 tac=1.59 
+[136/168] P6_hyp_le.pb.lean                                exit=1 tac=29.9 
+[137/168] P6_hyp_le.pbterm.lean                            exit=1 tac=40.1 
+[138/168] P6_hyp_le.pbterm_cvc4.lean                       exit=1 tac=25.2 
+[139/168] P6_hyp_le.pbterm_cvc5.lean                       exit=1 tac=27.5 
+[140/168] P6_hyp_le.pbterm_z3.lean                         exit=1 tac=27.7 
+[141/168] R1_reorder.grind.lean                            exit=0 tac=0.766 
+[142/168] R1_reorder.omega.lean                            exit=0 tac=1.96 
+[143/168] R1_reorder.pb.lean                               exit=0 tac=32.8 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[144/168] R1_reorder.pbterm.lean                           exit=1 tac=17.7 
+[145/168] R1_reorder.pbterm_cvc4.lean                      exit=1 tac=17.9 
+[146/168] R1_reorder.pbterm_cvc5.lean                      exit=1 tac=17.4 
+[147/168] R1_reorder.pbterm_z3.lean                        exit=1 tac=27.4 
+[148/168] R2_redundant3.grind.lean                         exit=0 tac=0.57 
+[149/168] R2_redundant3.omega.lean                         exit=0 tac=2.85 
+[150/168] R2_redundant3.pb.lean                            exit=0 tac=5870.0 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[151/168] R2_redundant3.pbterm.lean                        exit=1 tac=6000.0 
+[152/168] R2_redundant3.pbterm_cvc4.lean                   exit=1 tac=1980.0 
+[153/168] R2_redundant3.pbterm_cvc5.lean                   exit=1 tac=1990.0 
+[154/168] R2_redundant3.pbterm_z3.lean                     exit=1 tac=1980.0 
+[155/168] R3_site2_in_context.grind.lean                   exit=0 tac=0.723 
+[156/168] R3_site2_in_context.omega.lean                   exit=0 tac=3.19 
+[157/168] R3_site2_in_context.pb.lean                      exit=0 tac=230.0 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[158/168] R3_site2_in_context.pbterm.lean                  exit=1 tac=227.0 
+[159/168] R3_site2_in_context.pbterm_cvc4.lean             exit=1 tac=99.4 
+[160/168] R3_site2_in_context.pbterm_cvc5.lean             exit=1 tac=88.4 
+[161/168] R3_site2_in_context.pbterm_z3.lean               exit=1 tac=98.7 
+[162/168] R4_redundant6.grind.lean                         exit=0 tac=0.782 
+[163/168] R4_redundant6.omega.lean                         exit=0 tac=2.41 
+[164/168] R4_redundant6.pb.lean                            exit=0 tac=350.0 tactic=proof_broker closer=gated_omega backend=cvc4 tier=0 format=orac
+[165/168] R4_redundant6.pbterm.lean                        exit=1 tac=350.0 
+[166/168] R4_redundant6.pbterm_cvc4.lean                   exit=1 tac=156.0 
+[167/168] R4_redundant6.pbterm_cvc5.lean                   exit=1 tac=126.0 
+[168/168] R4_redundant6.pbterm_z3.lean                     exit=1 tac=131.0 
+
+168 runs in 736s -> runs/20260906-204453/results.json

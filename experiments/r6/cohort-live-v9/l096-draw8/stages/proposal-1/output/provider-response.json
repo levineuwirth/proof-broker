@@ -1,0 +1,102 @@
+{
+  "id": "resp_08f6db0c15331583016abbdb94d93c87d1b31adbb5890dd3cb",
+  "object": "response",
+  "created_at": 1790696340,
+  "status": "completed",
+  "access_programs": null,
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1790696344,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": 4096,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-2026-03-05",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_08f6db0c15331583016abbdb9581e887d1b1cfb0ed477e2171",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqu9uYIOPWMxZ8UfwjeSQVUESAxqaTY7U1z7oQ47vPbKBciarWxUsRmC4mfKLPgLTQFKnVkS5-9VbRuHHlrsYaioJhnkeUsQUIIqU_i3ok9-N-qt_oZfCtyqkIZVYGMeCiRkMY3NhMjDdmZ3TBoCLCXSD9bt9l7mtePiaxApcN5z1isFgohuLm85ZJ01vaoj7F_oPQfH9Md1ty9qnfL0qLdsvNgrAtPb1eHDay7j_Heuw6q45w6GjkiBm5K274BQR0bZTQ50ARaZ8G7yx6wYve_gbGQ2IQMjp0fgqsdgyGdI1UkgzAlKM3oDHQ98GV1PZ2glIxp6nogYcBSnvnRKwiGj--r2gUlUGVKrF2EEhlFlUDt-ZnVVkqXcfUpqZ9LecB_bYpB8xYxHK2huJuaA3dEfeMes7o_NDp36ZWs6hdkRu_spmTAH3pvIWdUDkXD-wComEUrTFgHGHUhXmbsXaHnAgWkgMJY-6Y1baLpvtu9k4jc4HDq2th8OGxwtfxfEwgcfq49aYLNT6191lV_OtRDzkcDbazTbkUoohTiGX5smwVeNHQ_D3ehOeuX2YFwOpbTwbgNcYoArVdX4fed4TMZF-veJx87TL1yqqVdfoOibQfhArFcmQCvQ7e2vBqfvb9-4akBToC370iB1QVRfnm7eavNJnTzqOksAjof8r2BuOeGmqRIzDVWLly1vCkShrgdwsv4QA7Vh6huOyQgzDA2MTfZmPmNMvj7inF8uQZFrl-IcXwfZkQqtfSYfZ8VbhB_gH8rpzIIHTSw1zzNSpCaPJGnRAAUYPslA7-vOBIoSkWwRUxbGm8YkMgB1NTNbFuZ8CoaBT9znTHvFEA7lDKHGKXIgH-fF6_jDDISRB4a28qqV_9wz1eAnfgEJN2L2cp8i69lPAF_8WBthXW_H_xYbHRTg1PxaYnoZ-ujg_YVy93Er_w0Ovph9Qjer6qIlBM9zUqAywClxL4OkRMqNt1CRZCk0NDHj5fe5R39YZxGRg4oSLv77dIM9EfHuHqW-qBVpMuAGSqvxI28wfcW6_lY7345xXqA2zxhrTecrcsU1EylJ7M8PtTKkvHeS3gBWF58dba9D_ycBmz39qrvCQK4I09KCG8ldeZ5MoI0ZoNw3u-xBX9EGTs3gn9yFpBXkUMowOhUPmT5elASF_aWowIQhErl-nRAgKKhRIKBll1_Cx4p66vrXxpMRrw80ZE5JFgY4K_sBQAPlNsQ7qfw0esKqZ_wxztuBx3qmAHB-AUrpraDq-MHzcAGT1UXrjFugVcutXRDMGGpV37lCqo_jdb4UUNcUPV2ovbtY9mCtPCLLoBuzR_AvbOuBgUuk-lW4tIpOvvKnupEP-z80Egc6leFTtYSgXTtYc8hGm3q6oimncFA4u1bxDDkXVmM-uQqXfHYt_UWQNJBFvJtpn3oDnZPUTeGbZAAqZ7b4BQ3On72V_W-ExyW0cVXgTLr94immhA5lNwldz3PegUn-XIasGfZjwbNwXmDtn3v48RHAPbMB-J4uieyZVJd5oc_ACVNGbVqQt4MLcYmXbpJZ_oG7wo-2aRoA==",
+      "summary": []
+    },
+    {
+      "id": "msg_08f6db0c15331583016abbdb9762b887d1ba84305e50ec18ef",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "{\"request_sha256\":\"4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293\",\"witness\":{\"coefficients\":[{\"hypothesis\":\"hlt\",\"coefficient\":\"1\"},{\"hypothesis\":\"neg_goal\",\"coefficient\":\"1\"}]}}"
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": false,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "medium",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "none",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 893,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 179,
+    "output_tokens_details": {
+      "reasoning_tokens": 97
+    },
+    "total_tokens": 1072
+  },
+  "user": null,
+  "metadata": {}
+}

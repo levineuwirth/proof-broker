@@ -1,0 +1,4769 @@
+{
+  "schema_version": "r6-analysis-input-1",
+  "slots": {
+    "bracket-l069/1": {
+      "task_id": "bracket-l069",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 482,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/2": {
+      "task_id": "bracket-l069",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 518,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/3": {
+      "task_id": "bracket-l069",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 520,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/4": {
+      "task_id": "bracket-l069",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 649,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/5": {
+      "task_id": "bracket-l069",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 550,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/6": {
+      "task_id": "bracket-l069",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 456,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/7": {
+      "task_id": "bracket-l069",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 505,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l069/8": {
+      "task_id": "bracket-l069",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1488,
+        "output_tokens": 591,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/1": {
+      "task_id": "bracket-l070",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hwidth",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "32769"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 600,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/2": {
+      "task_id": "bracket-l070",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hZ",
+            "coefficient": "2"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 504,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/3": {
+      "task_id": "bracket-l070",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hwidth",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "_pb_nonneg_Zmax",
+            "coefficient": "65536"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 482,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/4": {
+      "task_id": "bracket-l070",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hwidth",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "32769"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 585,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/5": {
+      "task_id": "bracket-l070",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hwidth",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "_pb_nonneg_atom_4",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 689,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/6": {
+      "task_id": "bracket-l070",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hZ",
+            "coefficient": "2"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 714,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/7": {
+      "task_id": "bracket-l070",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hZ",
+            "coefficient": "2"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 537,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l070/8": {
+      "task_id": "bracket-l070",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hwidth",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "32769"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1527,
+        "output_tokens": 600,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/1": {
+      "task_id": "bracket-l071",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 649,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/2": {
+      "task_id": "bracket-l071",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 609,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/3": {
+      "task_id": "bracket-l071",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 606,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/4": {
+      "task_id": "bracket-l071",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 823,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/5": {
+      "task_id": "bracket-l071",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 602,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/6": {
+      "task_id": "bracket-l071",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 922,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/7": {
+      "task_id": "bracket-l071",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 722,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l071/8": {
+      "task_id": "bracket-l071",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzsum",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hle",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1569,
+        "output_tokens": 511,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/1": {
+      "task_id": "bracket-l078",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 659,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/2": {
+      "task_id": "bracket-l078",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 894,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/3": {
+      "task_id": "bracket-l078",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 612,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/4": {
+      "task_id": "bracket-l078",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 793,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/5": {
+      "task_id": "bracket-l078",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 680,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/6": {
+      "task_id": "bracket-l078",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 599,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/7": {
+      "task_id": "bracket-l078",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 784,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l078/8": {
+      "task_id": "bracket-l078",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hx",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hprod_le",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 1584,
+        "output_tokens": 877,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/1": {
+      "task_id": "bracket-l096",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 231,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/2": {
+      "task_id": "bracket-l096",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 207,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/3": {
+      "task_id": "bracket-l096",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 197,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/4": {
+      "task_id": "bracket-l096",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 163,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/5": {
+      "task_id": "bracket-l096",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 184,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/6": {
+      "task_id": "bracket-l096",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 181,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/7": {
+      "task_id": "bracket-l096",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 183,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l096/8": {
+      "task_id": "bracket-l096",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 893,
+        "output_tokens": 179,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/1": {
+      "task_id": "bracket-l099",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 186,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/2": {
+      "task_id": "bracket-l099",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 168,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/3": {
+      "task_id": "bracket-l099",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 181,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/4": {
+      "task_id": "bracket-l099",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 191,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/5": {
+      "task_id": "bracket-l099",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 161,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/6": {
+      "task_id": "bracket-l099",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 202,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/7": {
+      "task_id": "bracket-l099",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 183,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l099/8": {
+      "task_id": "bracket-l099",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hgt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_int",
+        "consumed": true,
+        "refusal": null
+      },
+      "kernel": {
+        "local": true,
+        "whole": true,
+        "axioms_clean": true
+      },
+      "usage": {
+        "input_tokens": 898,
+        "output_tokens": 189,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/1": {
+      "task_id": "bracket-l166",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 381,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/2": {
+      "task_id": "bracket-l166",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 351,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/3": {
+      "task_id": "bracket-l166",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 349,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/4": {
+      "task_id": "bracket-l166",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 359,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/5": {
+      "task_id": "bracket-l166",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 335,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/6": {
+      "task_id": "bracket-l166",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 333,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/7": {
+      "task_id": "bracket-l166",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 381,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l166/8": {
+      "task_id": "bracket-l166",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 263,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/1": {
+      "task_id": "bracket-l170",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 1073,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/2": {
+      "task_id": "bracket-l170",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 1066,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/3": {
+      "task_id": "bracket-l170",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 1082,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/4": {
+      "task_id": "bracket-l170",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 1215,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/5": {
+      "task_id": "bracket-l170",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 823,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/6": {
+      "task_id": "bracket-l170",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 1074,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/7": {
+      "task_id": "bracket-l170",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 596,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l170/8": {
+      "task_id": "bracket-l170",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hzh0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": false
+      },
+      "reconstruction": {
+        "attempted": false,
+        "closer": null,
+        "consumed": null,
+        "refusal": null
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1109,
+        "output_tokens": 1051,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/1": {
+      "task_id": "bracket-l175",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 615,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/2": {
+      "task_id": "bracket-l175",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 724,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/3": {
+      "task_id": "bracket-l175",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 615,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/4": {
+      "task_id": "bracket-l175",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 615,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/5": {
+      "task_id": "bracket-l175",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 615,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/6": {
+      "task_id": "bracket-l175",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 615,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/7": {
+      "task_id": "bracket-l175",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 530,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l175/8": {
+      "task_id": "bracket-l175",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hrec",
+            "coefficient": "-1"
+          },
+          {
+            "hypothesis": "hz0",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1182,
+        "output_tokens": 1408,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/1": {
+      "task_id": "bracket-l178",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 425,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/2": {
+      "task_id": "bracket-l178",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 378,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/3": {
+      "task_id": "bracket-l178",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 411,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/4": {
+      "task_id": "bracket-l178",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 448,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/5": {
+      "task_id": "bracket-l178",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 412,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/6": {
+      "task_id": "bracket-l178",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 450,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/7": {
+      "task_id": "bracket-l178",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 490,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l178/8": {
+      "task_id": "bracket-l178",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "this_1",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "this",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 1235,
+        "output_tokens": 408,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/1": {
+      "task_id": "bracket-l204",
+      "draw": 1,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 177,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/2": {
+      "task_id": "bracket-l204",
+      "draw": 2,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 233,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/3": {
+      "task_id": "bracket-l204",
+      "draw": 3,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 206,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/4": {
+      "task_id": "bracket-l204",
+      "draw": 4,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 236,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/5": {
+      "task_id": "bracket-l204",
+      "draw": 5,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 211,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/6": {
+      "task_id": "bracket-l204",
+      "draw": 6,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 1,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 229,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/7": {
+      "task_id": "bracket-l204",
+      "draw": 7,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 217,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    },
+    "bracket-l204/8": {
+      "task_id": "bracket-l204",
+      "draw": 8,
+      "ledger": {
+        "disposition": "send_grant",
+        "presend_attempts": 0,
+        "maximum_presend_attempts": 3,
+        "reserved_micro_usd": 102400
+      },
+      "transport": {
+        "response_received": true,
+        "failure_category": null
+      },
+      "witness": {
+        "present": true,
+        "coefficients": [
+          {
+            "hypothesis": "hab",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          }
+        ]
+      },
+      "verification": {
+        "accepted": true
+      },
+      "reconstruction": {
+        "attempted": true,
+        "closer": "term_mode_nat",
+        "consumed": false,
+        "refusal": "nat_closer_int_goal"
+      },
+      "kernel": {
+        "local": null,
+        "whole": null,
+        "axioms_clean": null
+      },
+      "usage": {
+        "input_tokens": 979,
+        "output_tokens": 176,
+        "cached_tokens": 0
+      },
+      "audit": {
+        "accepted": true,
+        "publication": "accepted"
+      }
+    }
+  },
+  "synthetic": false,
+  "campaign": {
+    "authorized_schedule": {
+      "bracket-l069": 8,
+      "bracket-l070": 8,
+      "bracket-l071": 8,
+      "bracket-l078": 8,
+      "bracket-l096": 8,
+      "bracket-l099": 8,
+      "bracket-l166": 8,
+      "bracket-l170": 8,
+      "bracket-l175": 8,
+      "bracket-l178": 8,
+      "bracket-l204": 8
+    },
+    "planned_schedule": {
+      "bracket-l069": 8,
+      "bracket-l070": 8,
+      "bracket-l071": 8,
+      "bracket-l078": 8,
+      "bracket-l096": 8,
+      "bracket-l099": 8,
+      "bracket-l166": 8,
+      "bracket-l170": 8,
+      "bracket-l175": 8,
+      "bracket-l178": 8,
+      "bracket-l204": 8
+    },
+    "authorized_micro_usd": 9011200,
+    "ledger": {
+      "consumed_slots": [
+        "bracket-l069/1",
+        "bracket-l069/2",
+        "bracket-l069/3",
+        "bracket-l069/4",
+        "bracket-l069/5",
+        "bracket-l069/6",
+        "bracket-l069/7",
+        "bracket-l069/8",
+        "bracket-l070/1",
+        "bracket-l070/2",
+        "bracket-l070/3",
+        "bracket-l070/4",
+        "bracket-l070/5",
+        "bracket-l070/6",
+        "bracket-l070/7",
+        "bracket-l070/8",
+        "bracket-l071/1",
+        "bracket-l071/2",
+        "bracket-l071/3",
+        "bracket-l071/4",
+        "bracket-l071/5",
+        "bracket-l071/6",
+        "bracket-l071/7",
+        "bracket-l071/8",
+        "bracket-l078/1",
+        "bracket-l078/2",
+        "bracket-l078/3",
+        "bracket-l078/4",
+        "bracket-l078/5",
+        "bracket-l078/6",
+        "bracket-l078/7",
+        "bracket-l078/8",
+        "bracket-l096/1",
+        "bracket-l096/2",
+        "bracket-l096/3",
+        "bracket-l096/4",
+        "bracket-l096/5",
+        "bracket-l096/6",
+        "bracket-l096/7",
+        "bracket-l096/8",
+        "bracket-l099/1",
+        "bracket-l099/2",
+        "bracket-l099/3",
+        "bracket-l099/4",
+        "bracket-l099/5",
+        "bracket-l099/6",
+        "bracket-l099/7",
+        "bracket-l099/8",
+        "bracket-l166/1",
+        "bracket-l166/2",
+        "bracket-l166/3",
+        "bracket-l166/4",
+        "bracket-l166/5",
+        "bracket-l166/6",
+        "bracket-l166/7",
+        "bracket-l166/8",
+        "bracket-l170/1",
+        "bracket-l170/2",
+        "bracket-l170/3",
+        "bracket-l170/4",
+        "bracket-l170/5",
+        "bracket-l170/6",
+        "bracket-l170/7",
+        "bracket-l170/8",
+        "bracket-l175/1",
+        "bracket-l175/2",
+        "bracket-l175/3",
+        "bracket-l175/4",
+        "bracket-l175/5",
+        "bracket-l175/6",
+        "bracket-l175/7",
+        "bracket-l175/8",
+        "bracket-l178/1",
+        "bracket-l178/2",
+        "bracket-l178/3",
+        "bracket-l178/4",
+        "bracket-l178/5",
+        "bracket-l178/6",
+        "bracket-l178/7",
+        "bracket-l178/8",
+        "bracket-l204/1",
+        "bracket-l204/2",
+        "bracket-l204/3",
+        "bracket-l204/4",
+        "bracket-l204/5",
+        "bracket-l204/6",
+        "bracket-l204/7",
+        "bracket-l204/8"
+      ],
+      "transmissions_consumed": 88,
+      "committed_micro_usd": 9011200
+    }
+  }
+}

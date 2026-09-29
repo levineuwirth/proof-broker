@@ -1,0 +1,87 @@
+{
+ "result": {
+  "full_bounded": {
+   "found": true,
+   "witness": {
+    "coefficients": [
+     {
+      "hypothesis": "hZ",
+      "coefficient": "2"
+     },
+     {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+     }
+    ]
+   },
+   "verified": true
+  },
+  "full_exact": {
+   "found": true,
+   "witness": {
+    "coefficients": [
+     {
+      "hypothesis": "hZ",
+      "coefficient": "2"
+     },
+     {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+     }
+    ]
+   },
+   "verified": true
+  },
+  "hwidth_only_bounded": {
+   "found": false
+  },
+  "hwidth_only_exact": {
+   "found": true,
+   "witness": {
+    "coefficients": [
+     {
+      "hypothesis": "hwidth",
+      "coefficient": "1"
+     },
+     {
+      "hypothesis": "neg_goal",
+      "coefficient": "32769"
+     }
+    ]
+   },
+   "verified": true
+  },
+  "scope": "existing SDK search; hwidth-only is a diagnostic context restriction, not a new evaluation episode"
+ },
+ "provenance": {
+  "compile_command": [
+   "ocamlfind",
+   "ocamlopt",
+   "-thread",
+   "-package",
+   "yojson,digestif.c,unix,zarith,threads.posix",
+   "-linkpkg",
+   "-I",
+   "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/lib",
+   "-I",
+   "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/lib/.proof_broker.objs/byte",
+   "-I",
+   "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/lib/.proof_broker.objs/native",
+   "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/proposal-instrumented/sdk/_build/default/lib/proof_broker.cmxa",
+   "probe.ml",
+   "-o",
+   "probe"
+  ],
+  "probe_command": [
+   "/home/jeans/scratch/tmp/r6-007-review-tm8u6x_l/exact/probe",
+   "/home/jeans/Repos/research/proof-broker/experiments/r6/pilot-runs/live-2/evidence.json"
+  ],
+  "source_sha256": "33af52025ef143bac0dfbee789b33ab6938bd9e38ba60d1243955fdfb0a4e2bd",
+  "library_sha256": "05c4952b127200747016ff6b3e9d61298016c4a1b63a27063ac2101ec1168a20",
+  "archive_sha256": "04f2c6d5803d457bcd2a978602bacaaaa8adcfce64f35ecd64675684e85f0a3c",
+  "probe_sha256": "1c09ed94a796443513f1dbb82559e2f955e116a36102c08c27716c3b69485551",
+  "exit_code": 0
+ },
+ "model_calls": 0,
+ "scope": "fresh deterministic SDK diagnostic on saved IR and a stated context restriction; no solver dispatch or episode rerun"
+}

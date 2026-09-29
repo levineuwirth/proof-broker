@@ -1,0 +1,42 @@
+[
+  {
+    "case": "wrong_recovery_branch",
+    "audit_accepted": false,
+    "error": "Episode consistency: recovery branch contradicts the observed search"
+  },
+  {
+    "case": "negative_certificate_verdict",
+    "audit_accepted": false,
+    "error": "Episode consistency: certificate verdict/receipt mismatch"
+  },
+  {
+    "case": "missing_kernel_targets",
+    "audit_accepted": false,
+    "error": "Episode consistency: local kernel report/receipt/verdict mismatch"
+  },
+  {
+    "case": "wrong_solution_hash",
+    "audit_accepted": false,
+    "error": "Episode consistency: saved proof hash disagrees with the verdict"
+  },
+  {
+    "case": "resource_error_in_verdict",
+    "audit_accepted": false,
+    "error": "Episode consistency: search resource record mismatch"
+  },
+  {
+    "case": "missing_independent_check_event",
+    "audit_accepted": false,
+    "error": "Episode consistency: missing, extra, or reordered supervisor receipts"
+  },
+  {
+    "case": "changed_source",
+    "audit_accepted": false,
+    "error": "Episode consistency: source differs from the permitted extraction"
+  },
+  {
+    "case": "missing_recovery_start",
+    "audit_accepted": false,
+    "error": "Recovery start/finish observations are incomplete or out of order"
+  }
+]

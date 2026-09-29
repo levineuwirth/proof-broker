@@ -1,0 +1,19 @@
+runs/20260907-113052/lean/B2_false_2p22.pbterm.lean:22:2: error: proof_broker_term: no adapter minted a cert
+cumulative profiling times:
+	attribute application 0.0121ms
+	elaboration 3.22ms
+	fix level params 0.0126ms
+	instantiate metavars 0.00947ms
+	interpretation 0.173ms
+	linting 7.96ms
+	module linting 0.000901ms
+	overlappingInstancesLinter 0.507ms
+	parsing 0.406ms
+	process pre-definitions 0.21ms
+	share common exprs 0.0542ms
+	tactic execution 28.8ms
+	tacticAnalysis 0.984ms
+	type checking 0.164ms
+	typeclass inference 4.3ms
+PEAK_RSS_BYTES=710062080
+EXIT=1 WALL=4.1s CAP=8G

@@ -1,0 +1,9 @@
+unsat
+((set-logic QF_LIA)
+(proof
+(let ((@x108 (monotonicity (rewrite (= (<= 18446744069414584321 262144) false)) (= (not (<= 18446744069414584321 262144)) (not false)))))
+(let ((@x112 (trans @x108 (rewrite (= (not false) true)) (= (not (<= 18446744069414584321 262144)) true))))
+(let ((@x114 (trans (rewrite (= (< 262144 18446744069414584321) (not (<= 18446744069414584321 262144)))) @x112 (= (< 262144 18446744069414584321) true))))
+(let ((@x121 (trans (monotonicity @x114 (= (not (< 262144 18446744069414584321)) (not true))) (rewrite (= (not true) false)) (= (not (< 262144 18446744069414584321)) false))))
+(mp (asserted (not (< 262144 18446744069414584321))) @x121 false)))))))
+

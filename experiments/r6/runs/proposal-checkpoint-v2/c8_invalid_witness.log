@@ -1,0 +1,32 @@
+Build completed successfully (6 jobs).
+Build completed successfully (14 jobs).
+⚠ [2/21] Replayed ProofBroker.IR
+warning: ProofBroker/IR.lean:17:0: `Lean.RBMap` is deprecated; use `Std.TreeMap` instead
+'Lean.Data.RBMap' has been deprecated: please replace this import by
+
+import Init.Data.Ord.Basic
+import Init.Data.Nat.Linear
+import Init.Data.Array.Basic
+import Init.WFTactics
+⚠ [12/21] Replayed ProofBroker.Alethe
+warning: ProofBroker/Alethe.lean:293:13: `String.trim` has been deprecated: Use `String.trimAscii` instead
+
+Note: The updated constant has a different type:
+  String → String.Slice
+instead of
+  String → String
+⚠ [17/21] Replayed ProofBroker.Tactic
+warning: ProofBroker/Tactic.lean:4269:37: `Lean.levelOne` has been deprecated: Use `Lean.Level.one` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.levelOne` to `Level.one x`).
+Build completed successfully (21 jobs).
+Traceback (most recent call last):
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/proposal_episode.py", line 281, in <module>
+    main()
+    ~~~~^^
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/proposal_episode.py", line 265, in main
+    execute(run, task, args.case, args.packages_dir)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jeans/Repos/research/proof-broker/experiments/r6/proposal_episode.py", line 203, in execute
+    raise PolicyFailure('certificate-check', 'certificate_verification', json.dumps(report))
+PolicyFailure: {"accepted": false, "stage": "certificate_verification", "reason": {"kind": "farkas_not_contradictory", "detail": "weighted sum is -524287*_pb_atom_0 + 36893483740782657539, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"}, "certificate_hash": "sha256:53b5a4323220f075171c7e38f2ddab102e2410ecee23fcf9f9c97359834e1ba8"}

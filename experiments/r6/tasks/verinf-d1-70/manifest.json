@@ -1,0 +1,74 @@
+{
+  "schema_version": "r6-task-1",
+  "task_id": "verinf-d1-70",
+  "revision": 1,
+  "frozen_at": "2026-09-06T20:31:37.581560+00:00",
+  "task_unit": "local_obligation",
+  "upstream": {
+    "repository": "https://github.com/JamesPetrie/VerInf.git",
+    "commit": "c07e03c94884e9084ffaf7a7294fc0907672f6c2",
+    "commit_date": "2026-07-21T22:25:27Z",
+    "source_file": "lean/BracketSpike/BracketSpike/Bracket.lean",
+    "line": 70,
+    "pristine_sha256": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+    "proof_byte_span": {
+      "start": 3339,
+      "end_exclusive": 3344
+    }
+  },
+  "original_declaration": "Bracket.lift_cell",
+  "local_name": "hle",
+  "saved_local_declaration": "Bracket.lift_cell.r6_d1_70",
+  "local_goal_source": "(2:ℕ)^24 + 2 * Zmax ≤ P",
+  "elaborated_context": "context/local-context.json",
+  "expected_declarations": "expected.json",
+  "allowed_imports": [
+    "Mathlib"
+  ],
+  "trusted_instrumentation_imports": [
+    "Capture"
+  ],
+  "environment_lock": "upstream-lake-manifest.json",
+  "compiled_environment_inventory": "environment-inventory.json.gz",
+  "allowed_axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "baseline_axioms": {
+    "Bracket.lift_cell.r6_d1_70": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Bracket.lift_cell": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ]
+  },
+  "axiom_policy": "transitive_allowlist; report added and removed relative to each baseline",
+  "context_policy": "complete_elaborated_context; auxiliary declaration placeholders recorded but excluded",
+  "model_context_policy": "undecided; reference human proofs are evaluator-only",
+  "permitted_modifications": "permitted.patch; no other source changes",
+  "acceptance": {
+    "local_obligation_closed": "expected local theorem/type/definitions/axioms/kernel replay",
+    "whole_declaration_validated": "original containing theorem/type/definitions/axioms/kernel replay and local-proof reference",
+    "episode_accepted": "local_obligation_closed AND whole_declaration_validated"
+  },
+  "artifacts_sha256": {
+    "Pristine.lean": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+    "pristine.sha256": "6d493f8458447c429222359481a43f3b774fed7114bc88e967a07c840c7f26c7",
+    "expected.json": "01579025dfdfa6e943479f12d9c9f99e1070d142c59ee6a8edaa5b690fd811c0",
+    "challenge.ndjson.gz": "8024fbab8dbcdf7dd125c47acd09d9af14e639f178ef830c266a8ca71cd4d87a",
+    "baseline.ndjson.gz": "f4c8c4230b3f1fc0a2485d94fd5b65c782696c056b42fb4045cc2578daca3f1d",
+    "context/local-context.json": "11f6eabb5c8b4929798fe8d7067caa1b8747d87d7a841bbc2d1e1bfa40199019",
+    "permitted.patch": "59d4a878bc66cb22cd50666f30a4319050a6220c541839bfe7e7d3d36ccbd9c8",
+    "upstream-lake-manifest.json": "a403bdda3993346837d7dbfba9e8637d35bc8d0bb032e16d2e40f78b37e6b9a5",
+    "upstream-lakefile.toml": "7d9b9a8d00ebba9ff6a1ff344aa6a3a097c0fce3041bae6c4050cdd924af5250",
+    "lean-toolchain": "2773c517aa90b66ea8a2c52bddddf84393157797f8341be0df45294fff7fd32e",
+    "environment-inventory.json.gz": "fe59473e2305722e932a711f57f24648d310ebd8d70d73e254e19ffb6b185aa3"
+  },
+  "capture_sha256": "932aebb62e843f7346b4990c7a73131d66bb30cd5163c73df56e0b40ca0d9a3a",
+  "vendor_lock_sha256": "cd8d79361006a996c567fb425a27c6370494e6a29bb13f820b37a9320b52e179"
+}

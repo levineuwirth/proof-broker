@@ -1,0 +1,17 @@
+--- Pristine.lean
++++ Frozen.lean
+@@ -1,4 +1,5 @@
+ import Mathlib
++import Capture
+ 
+ /-!
+ # Softmax bracket uniqueness — de-risking spike (paper Appendix B.3, Lemma B.3)
+@@ -201,7 +202,7 @@
+   unfold Row.s1
+   apply Finset.sum_le_sum
+   intro i _
+-  exact g_noninc R.cert (a - R.x i) (b - R.x i) (by omega)
++  exact g_noninc R.cert (a - R.x i) (b - R.x i) (by r6_capture_human "Bracket.Row.s1_noninc.r6_site_l204" "bracket-l204")
+ 
+ /-- **Bracket uniqueness for the shift `c`.**
+     If `c` and `c'` both satisfy the two bracket pins

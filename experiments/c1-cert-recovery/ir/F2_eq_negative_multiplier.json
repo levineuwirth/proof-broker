@@ -1,0 +1,100 @@
+{
+ "ir_version": "1.0",
+ "source_system": {
+  "name": "c1-cert-recovery-fixture",
+  "version": "1.0"
+ },
+ "tier": "goal",
+ "logic_classification": {
+  "order": "first_order",
+  "first_order_fragment": "LRA",
+  "features_used": [],
+  "decidable_theory": null
+ },
+ "goal": {
+  "shell": {
+   "node": "Const",
+   "name": "False"
+  }
+ },
+ "context": {
+  "type_vars": [],
+  "free_vars": [
+   {
+    "name": "x",
+    "type": "Real"
+   }
+  ],
+  "hypotheses": [
+   {
+    "name": "hle",
+    "shell": {
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": [],
+     "args": [
+      {
+       "node": "Var",
+       "name": "x"
+      },
+      {
+       "node": "NumLit",
+       "value": "0",
+       "type": "Real"
+      }
+     ]
+    }
+   },
+   {
+    "name": "hge",
+    "shell": {
+     "node": "App",
+     "symbol": "LE.le",
+     "type_args": [],
+     "args": [
+      {
+       "node": "NumLit",
+       "value": "0",
+       "type": "Real"
+      },
+      {
+       "node": "Var",
+       "name": "x"
+      }
+     ]
+    }
+   },
+   {
+    "name": "heq",
+    "shell": {
+     "node": "Eq",
+     "type": "Real",
+     "left": {
+      "node": "App",
+      "symbol": "HMul.hMul",
+      "type_args": [],
+      "args": [
+       {
+        "node": "NumLit",
+        "value": "2",
+        "type": "Real"
+       },
+       {
+        "node": "Var",
+        "name": "x"
+       }
+      ]
+     },
+     "right": {
+      "node": "NumLit",
+      "value": "1",
+      "type": "Real"
+     }
+    }
+   }
+  ]
+ },
+ "type_metadata": {},
+ "definitional_metadata": {},
+ "library_provenance": {}
+}

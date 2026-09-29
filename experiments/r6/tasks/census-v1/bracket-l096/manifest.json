@@ -1,0 +1,87 @@
+{
+  "schema_version": "r6-task-site-1",
+  "task_id": "bracket-l096",
+  "census_id": "bracket-c07e03c9",
+  "revision": 1,
+  "frozen_at": "2026-09-14T20:35:02.533368+00:00",
+  "task_unit": "local_obligation",
+  "upstream": {
+    "repository": "https://github.com/JamesPetrie/VerInf.git",
+    "commit": "c07e03c94884e9084ffaf7a7294fc0907672f6c2",
+    "commit_date": "2026-07-21T22:25:27Z",
+    "source_file": "lean/BracketSpike/BracketSpike/Bracket.lean",
+    "line": 96,
+    "pristine_sha256": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+    "proof_byte_span": {
+      "start": 4533,
+      "end_exclusive": 4538
+    }
+  },
+  "site": {
+    "line": 96,
+    "column": 32,
+    "form": "named_have",
+    "line_text": "  · have hle : c ≤ c' - 1 := by omega"
+  },
+  "original_declaration": "Bracket.threshold_unique",
+  "family": "Bracket.threshold_unique",
+  "saved_local_declaration": "Bracket.threshold_unique.r6_site_l096",
+  "local_goal_source": "c ≤ c' - 1",
+  "captured_target": "c ≤ c' - 1",
+  "exposure": {
+    "exposed": false,
+    "as_task": null,
+    "model_visible_in": []
+  },
+  "elaborated_context": "context/local-context.json",
+  "expected_declarations": "expected.json",
+  "allowed_imports": [
+    "Mathlib"
+  ],
+  "trusted_instrumentation_imports": [
+    "Capture"
+  ],
+  "environment_lock": "../upstream-lake-manifest.json",
+  "compiled_environment_inventory": "../environment-inventory.json.gz",
+  "allowed_axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "baseline_axioms": {
+    "Bracket.threshold_unique.r6_site_l096": [
+      "Quot.sound",
+      "propext"
+    ],
+    "Bracket.threshold_unique": [
+      "Quot.sound",
+      "propext"
+    ]
+  },
+  "axiom_policy": "transitive_allowlist; report added and removed relative to each baseline",
+  "context_policy": "complete_elaborated_context; auxiliary declaration placeholders recorded but excluded",
+  "model_context_policy": "undecided; reference human proofs are evaluator-only",
+  "permitted_modifications": "permitted.patch; the site token and the trusted import only",
+  "acceptance": {
+    "local_obligation_closed": "expected local theorem/type/definitions/axioms/kernel replay",
+    "whole_declaration_validated": "original containing theorem/type/definitions/axioms/kernel replay and local-proof reference",
+    "episode_accepted": "local_obligation_closed AND whole_declaration_validated"
+  },
+  "artifacts_sha256": {
+    "challenge.ndjson.gz": "48fa2b38b63bc7b1c6d10a51e156735e906a886ac6adedef0291a7e755bc6206",
+    "context/local-context.json": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "expected.json": "7c32317f9ed65c621da5aa8fec2d47dafc11ec26908b27831d8b95ca072a8c07",
+    "permitted.patch": "2add0e7ab7858690fcf6415e132e0382b0c3a4d2d4a79a6f01291b5aa41e52af"
+  },
+  "shared_artifacts_sha256": {
+    "Pristine.lean": "03b4d5ca39f435b0eed7d79fe70e9cc33c401fc7ec240a4120a194b54de722a2",
+    "pristine.sha256": "6d493f8458447c429222359481a43f3b774fed7114bc88e967a07c840c7f26c7",
+    "upstream-lake-manifest.json": "a403bdda3993346837d7dbfba9e8637d35bc8d0bb032e16d2e40f78b37e6b9a5",
+    "upstream-lakefile.toml": "7d9b9a8d00ebba9ff6a1ff344aa6a3a097c0fce3041bae6c4050cdd924af5250",
+    "lean-toolchain": "2773c517aa90b66ea8a2c52bddddf84393157797f8341be0df45294fff7fd32e",
+    "environment-inventory.json.gz": "fe59473e2305722e932a711f57f24648d310ebd8d70d73e254e19ffb6b185aa3",
+    "baseline-Bracket.threshold_unique.ndjson.gz": "5c718ea484f3882fbbf140bba8c1d9ea87208bcd6c6ba8e6c4d4edfebd18de54"
+  },
+  "capture_sha256": "d2f5dfd1c2a2f5a590fca8d0ec65998703f665a361d325c54cd9ae90e2d598d5",
+  "vendor_lock_sha256": "cd8d79361006a996c567fb425a27c6370494e6a29bb13f820b37a9320b52e179"
+}

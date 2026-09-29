@@ -1,0 +1,254 @@
+{
+  "passed": true,
+  "policy_sha256": "b79815ba2d9a0442ab82209ec83b685746075ace415fa141db66966cdf9bc83d",
+  "source_lock_sha256": "1c37c0f123ba442d816e43356a9602db843c6583dcf8b64357f27147a867f81e",
+  "public_gate_record_sha256": "49965bf9a8304fedd073aa7fd925557efd0b3c811d567a53582b501e61126474",
+  "suite_counts": {
+    "focused.json": 46,
+    "native.json": 20,
+    "audits.json": 39
+  },
+  "content_checks": 105,
+  "gate_checks": 15,
+  "total_checks": 120,
+  "price_basis": {
+    "model": "gpt-5.4-2026-03-05",
+    "nano_usd_per_token": {
+      "cache_write": 2500,
+      "cached_input": 250,
+      "input": 2500,
+      "output": 15000
+    },
+    "sources": {
+      "caching": {
+        "extract_sha256": "a272b6c216ffcd8903397928d714c25f5ae6b05aec2ffe040cae1cbee96be310",
+        "raw_sha256": "4c7ed74cefc9f9fc8dcc410d057845c2a6ad112044bd5922cc6d18a52365f3af"
+      },
+      "model": {
+        "extract_sha256": "c3769aa47f08763af4aa774f3d2232c1d2b3b6dc1220213724a71298e7d62ab4",
+        "raw_sha256": "48694e884ca474ec75632f7b66a5f995f0a41695d05b5d17c4d9aef4f057a819"
+      }
+    },
+    "applicability": {
+      "long_context": {
+        "input_tokens_upper_bound_exclusive": 272000,
+        "source_condition": {
+          "comparison": "greater_than",
+          "input_multiplier": "2",
+          "input_tokens_threshold": 272000,
+          "output_multiplier": "1.5",
+          "scope": "full_session",
+          "service_tiers": [
+            "standard",
+            "batch",
+            "flex"
+          ]
+        }
+      },
+      "regional_processing": {
+        "allowed_endpoints": [
+          {
+            "host": "api.openai.com",
+            "path": "/v1/responses",
+            "port": 443,
+            "scheme": "https"
+          }
+        ],
+        "source_condition": {
+          "scope": "regional_processing_endpoints",
+          "uplift_percent": 10
+        }
+      },
+      "session_scope": "one_stateless_request"
+    }
+  },
+  "preflight_program_sha256": "961ae94e0fbc4b5dceb2bd4a2733d9a00721a5dbe4752b102e50c9ef15edffa6",
+  "event_hashes_recomputed": 431,
+  "sealed_hashes_recomputed": 3951,
+  "episodes": {
+    "d1_valid": {
+      "events": 49,
+      "sealed": 256,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_invalid_witness": {
+      "events": 25,
+      "sealed": 212,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_missing_permit": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_forged_admission": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_wrong_reservation": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_changed_request": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_raw_source_changed": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_semantic_source_changed": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_stale_source": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_future_source": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_host_stale_source": {
+      "events": 13,
+      "sealed": 159,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": false
+    },
+    "d1_wrong_request_model": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_http503": {
+      "events": 18,
+      "sealed": 193,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_untrusted_ca": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": true,
+      "transport_stage_present": true
+    },
+    "d1_reflected_canary": {
+      "events": 18,
+      "sealed": 193,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_context_at_limit": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_context_over_limit": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "d1_regional_endpoint": {
+      "events": 18,
+      "sealed": 190,
+      "header_sends": 0,
+      "body_sends": 0,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "c8_valid": {
+      "events": 49,
+      "sealed": 256,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    },
+    "c8_invalid_witness": {
+      "events": 25,
+      "sealed": 212,
+      "header_sends": 1,
+      "body_sends": 1,
+      "tls_failure": false,
+      "transport_stage_present": true
+    }
+  },
+  "preservation": {
+    "checked_files": 19536,
+    "inventory_sha256": "c909c0899e240f268490797bbfb1d6e97597c26225e58e90c22827f222173076",
+    "git_base": "ac0f50f21c1e1a3b5f3bcae0ea823706e94041eb",
+    "scope": "pre-revision Git-selected bytes, including reviewed R6-004/005/006 and closeouts"
+  },
+  "retention_inputs": {
+    "files": 4022,
+    "apparent_bytes": 103209285,
+    "distinct_blobs": 918,
+    "unique_bytes": 12391981,
+    "inventory_sha256": "e4de23a85e2c76234000f4f55f6a2fbcbfd0f04ace6bb8837f73b6335bf5cc2f",
+    "scope": "Git-selected R6-006 v2 additions before this output; record excluded to avoid self-reference"
+  },
+  "publication": {
+    "files_scanned": 4076,
+    "canaries": 20,
+    "expected_reflection_matches": 2,
+    "unexpected_matches": 0,
+    "new_non_run_artifacts_scanned": true
+  },
+  "live_model_calls": 0,
+  "live_model_cost_usd": 0,
+  "scope": "independent artifact recount and publication scan; no new native execution or inference attestation"
+}

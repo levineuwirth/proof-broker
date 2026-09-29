@@ -1,0 +1,8 @@
+{
+  "exit_code": 1,
+  "diagnostic": "R6 validation failed: Task is already frozen; introduce a new task revision instead of overwriting it",
+  "preserved_sha256": {
+    "expected.json": "b7943a2fe3c2e69c151bf5e404c11cdfe7dbc9aa4455718080811ce9dcb23bef",
+    "manifest.json": "b517153f5b2dd878ba724ecc172d38deceb5475f58a0b871daebdcee29852e97"
+  }
+}

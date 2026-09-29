@@ -1,0 +1,267 @@
+--- a/sdk/lib/adapter_cvc4.ml
++++ b/sdk/lib/adapter_cvc4.ml
+@@ -68,6 +68,9 @@
+     "--tlimit-per"; string_of_int timeout_ms;
+     "--no-interactive";
+   |] in
++  Episode_trace.emit "solver_started" ["backend", `String "cvc4";
++    "argv", `List (Array.to_list (Array.map (fun s -> `String s) argv));
++    "stdin", `String script];
+   (* No shell: see the module header. argv.(0) ("cvc4") is resolved
+      via execvp against the inherited PATH — caller owns PATH trust. *)
+   let stdout_ch, stdin_ch, stderr_ch =
+@@ -81,6 +84,8 @@
+     | Unix.WEXITED n -> n
+     | Unix.WSIGNALED _ | Unix.WSTOPPED _ -> -1
+   in
++  Episode_trace.emit "solver_finished" ["backend", `String "cvc4";
++    "stdout", `String out; "stderr", `String err; "exit_code", `Int code];
+   (out, err, code)
+ 
+ (* --- response parsing ------------------------------------------------ *)
+@@ -271,6 +276,8 @@
+                   ~logic:script.logic
+                   ~wall_ms
+             in
++            Episode_trace.emit "certificate_created" ["backend", `String "cvc4";
++              "producer", `String "sdk_synthesis"; "certificate", Certificate.to_json cert];
+             Cert cert
+           | Sat, _ -> Failed Sat_returned
+           | Unknown_resp, _ -> Failed Unknown_returned
+--- a/sdk/lib/dispatch.ml
++++ b/sdk/lib/dispatch.ml
+@@ -324,6 +324,9 @@
+                    let c' = { c with
+                      backend = { c.backend with config_hash }
+                    } in
++                   Episode_trace.emit "certificate_bound" [
++                     "before", Certificate.to_json c; "after", Certificate.to_json c';
++                     "manifest", Manifest.to_json m];
+                    Succeeded c'
+                  | Failed f -> Failed f)
+             with e ->
+@@ -359,9 +362,16 @@
+     (* Decision is fixed here; later/lagging certs do not change
+        it. *)
+     let result = snapshot () in
++    Episode_trace.emit "selection_decided" [
++      "manifest_order", `List (Array.to_list (Array.map (fun n -> `String n) names));
++      "grace_window_ms", `Int grace_window_ms;
++      "selection_rule", `String "tier_preference_then_tier_then_manifest_index";
++      "attempts", `List (List.map attempt_to_json result.attempts);
++      "certificate", (match result.cert with Some c -> Certificate.to_json c | None -> `Null)];
+     (* No OCaml thread may outlive this call (embedded-runtime
+        safety): join every runner. Bounded by each solver's own
+        per-call wall-clock limit. *)
+     List.iter Thread.join handles;
++    Episode_trace.emit "dispatch_returned" [];
+     result
+   end
+--- a/sdk/lib/farkas_search.ml
++++ b/sdk/lib/farkas_search.ml
+@@ -796,6 +796,19 @@
+     THIS is what the adapters call. [try_close] itself is untouched, so the
+     unit tests that pin its first-hit order still pin exactly that. *)
+ let try_close_then_exact ?bound (ir : Ir.t) : (Yojson.Safe.t, error) result =
++  Episode_trace.emit "recovery_started" ["route", `String "bounded_enumeration"];
+   match try_close ?bound ir with
+-  | Ok w -> Ok w
+-  | Error _ -> try_close_exact ir
++  | Ok w ->
++    Episode_trace.emit "recovery_finished" ["route", `String "bounded_enumeration";
++      "ok", `Bool true; "witness", w];
++    Ok w
++  | Error e ->
++    Episode_trace.emit "recovery_finished" ["route", `String "bounded_enumeration";
++      "ok", `Bool false; "reason", `String (kind_of_error e)];
++    Episode_trace.emit "recovery_started" ["route", `String "exact_support_bounded"];
++    let result = try_close_exact ir in
++    Episode_trace.emit "recovery_finished" (["route", `String "exact_support_bounded"] @
++      (match result with
++       | Ok w -> ["ok", `Bool true; "witness", w]
++       | Error e -> ["ok", `Bool false; "reason", `String (kind_of_error e)]));
++    result
+--- a/lean-bridge/ProofBroker/Tactic.lean
++++ b/lean-bridge/ProofBroker/Tactic.lean
+@@ -1653,6 +1653,18 @@
+   dispatchMs : Nat
+   verifyMs : Nat
+ 
++
++private def episodeEvent (event : String) (fields : List (String × Json)) : TacticM Unit := do
++  if (← IO.getEnv "PROOF_BROKER_EPISODE_TRACE") == some "1" then
++    let line := "R6_EVENT " ++ (Json.mkObj [
++      ("component", toJson "lean_bridge"), ("event", toJson event),
++      ("data", Json.mkObj fields)]).compress
++    -- Bypass Lean's elaboration-output capture: this is the same OS pipe the
++    -- SDK writes, and the supervisor receives each event during execution.
++    IO.FS.withFile "/proc/self/fd/2" .append fun handle => do
++      handle.putStrLn line
++      handle.flush
++
+ private def msSince (t0 : Nat) : BaseIO Nat := do
+   return (← IO.monoMsNow) - t0
+ 
+@@ -1754,7 +1766,12 @@
+     (preferHigherTier : Bool)
+     (tierPreference : Option (List String) := none)
+     : TacticM ExtractionPath := do
++  episodeEvent "reification_started" []
+   let (ir, natAtoms, natDefs, skippedLocals) ← Reify.buildIR goal
++  episodeEvent "reification_finished" [
++    ("ir", ProofBroker.IR.IR.toJson ir),
++    ("skipped_locals", toJson (skippedLocals.map fun (name, reason) =>
++      Json.mkObj [("name", toJson name), ("reason", toJson reason)]))]
+   -- Walker-strict callers pass `tierPreference := some ["3"]`:
+   -- the IR's `user_directives.tier_preference` (spec §5.4) tells
+   -- the cvc5 adapter to mint the verified Tier-3 alethe trace
+@@ -1772,11 +1789,17 @@
+   let manifests ← match adapterNames? with
+     | some names => loadManifestsByName names
+     | none => loadDefaultManifests
++  episodeEvent "dispatch_started" [
++    ("ir", ProofBroker.IR.IR.toJson ir), ("manifests", toJson manifests),
++    ("prefer_higher_tier", toJson preferHigherTier)]
+   let t0 ← IO.monoMsNow
+   let dispatch ← match runDispatchBroker ir manifests preferHigherTier with
+     | .ok r => pure r
+     | .error e => throwError "proof_broker: dispatch_broker failed: {repr e}"
+   let dispatchMs ← msSince t0
++  episodeEvent "dispatch_received" [
++    ("dispatch_ms", toJson dispatchMs), ("certificate", toJson dispatch.cert),
++    ("final_ir", toJson dispatch.finalIr), ("trace", toJson dispatch.trace)]
+   let mut verifyOk : Option Bool := none
+   let mut verifyEnvelopeOk : Option Bool := none
+   let mut verifyReason : Option CertReason := none
+@@ -1788,6 +1811,7 @@
+     -- with the trace, so a cert/trace/IR triple that doesn't
+     -- cohere is a hash mismatch here rather than a silent pass.
+     let irForVerify := dispatch.finalIr.getD (ProofBroker.IR.IR.toJson ir)
++    episodeEvent "certificate_verification_started" [("certificate", cert)]
+     let verif ← match runVerifyCertificateJson cert irForVerify dispatch.trace with
+       | .ok v => pure v
+       | .error e => throwError "proof_broker: verify_certificate failed: {repr e}"
+@@ -1795,6 +1819,9 @@
+     verifyOk := some verif.ok
+     verifyEnvelopeOk := some verif.envelopeOk
+     verifyReason := some verif.reason
++    episodeEvent "certificate_verification_finished" [
++      ("ok", toJson verif.ok), ("envelope_ok", toJson verif.envelopeOk),
++      ("reason", toJson (reprStr verif.reason)), ("certificate", cert)]
+   return {
+     ir, attempts := dispatch.attempts, cert := dispatch.cert,
+     trace := dispatch.trace, finalIr := dispatch.finalIr,
+@@ -3206,7 +3233,11 @@
+ private def closeOmegaSubgoal (omegaMV : MVarId) : TacticM Unit := do
+   let prevGoals ← getGoals
+   setGoals [omegaMV]
++  episodeEvent "residual_started" [("closer", toJson "omega"),
++    ("goal", toJson (← ppExpr (← omegaMV.getType)).pretty)]
+   evalTactic (← `(tactic| omega))
++  unless (← getGoals).isEmpty do throwError "R6 residual closer left goals"
++  episodeEvent "residual_finished" [("closer", toJson "omega")]
+   setGoals prevGoals
+ 
+ /-- Term-mode closer, False-goal arity-N path. Folds the witness's
+@@ -3722,6 +3753,7 @@
+     | _ => throwError "proof_broker: malformed invocation"
+   let path ← buildExtractionPath goal adapterNames? preferHigherTier
+   let closer ← closeOrFail goal goalType path
++  episodeEvent "broker_closer_returned" [("closer", toJson closer), ("certificate", toJson path.cert)]
+   reportIfRequested "proof_broker" t0 path closer
+ 
+ @[tactic proofBrokerWalker]
+@@ -3804,6 +3836,21 @@
+   (cert.getObjVal? "payload"
+     |>.bind (·.getObjValAs? String "strategy_hint")).toOption.getD ""
+ 
++/-- R6-013 observation helpers: the selected closer, the goal, and the comparison's carrier type. -/
++private def r6ComparisonType (goalType : Expr) : MetaM Json := do
++  match goalType.getAppFnArgs with
++  | (``LE.le, #[α, _, _, _]) => return toJson (toString (← ppExpr α))
++  | (``LT.lt, #[α, _, _, _]) => return toJson (toString (← ppExpr α))
++  | (``GE.ge, #[α, _, _, _]) => return toJson (toString (← ppExpr α))
++  | (``GT.gt, #[α, _, _, _]) => return toJson (toString (← ppExpr α))
++  | _ => return Json.null
++
++private def r6CloserSelected (closer : String) (cert : Json) (goal : MVarId) (goalType : Expr) : TacticM Unit := do
++  let (shown, carrier) ← goal.withContext do
++    return (toString (← ppExpr goalType), ← r6ComparisonType goalType)
++  episodeEvent "closer_selected" [("certificate", cert), ("closer", toJson closer),
++    ("goal", toJson shown), ("comparison_type", carrier)]
++
+ /-- Single-goal term-mode pipeline: build the IR + dispatch + verify
+     + close the given mvar. Extracted so the equality-goal split
+     can run it twice (once per direction of `Int.le_antisymm`)
+@@ -3837,6 +3884,7 @@
+   let cert ← match path.cert with
+     | some c => pure c
+     | none => throwError "proof_broker_term: no adapter minted a cert"
++  episodeEvent "reconstruction_started" [("certificate", cert)]
+   -- Trace guard (R2, lifted for definition unfolding in R3-M3): the
+   -- term-mode closers rebuild the proof from the cert's witness, so
+   -- the trace must be identity OR consist solely of definition
+@@ -3869,14 +3917,21 @@
+     if certStrategyHint cert == "case_split_farkas" then
+       throwError "proof_broker_term: Tier 2 case-split over a ℕ \
+         extraction is not lifted yet"
++    r6CloserSelected "term_mode_nat" cert goal goalType
+     closeNatViaTermMode goal goalType cert path.ir path.natAtoms
++    episodeEvent "reconstruction_finished" [("certificate", cert),
++      ("closer", toJson "term_mode_nat"), ("certificate_consumed", toJson true),
++      ("derivation_replayed", toJson false), ("residual_closer", toJson "omega")]
+     return (path, "term_mode_nat")
+   if polyModeOf path.ir then
+     if certStrategyHint cert == "case_split_farkas" then
+       throwError "proof_broker_term: Tier 2 case-split over a \
+         polymorphic-α extraction is not lifted yet"
+     match ← reifierExt.get with
+-    | some ext => ext.polyFarkasCloser cert path.ir
++    | some ext =>
++      r6CloserSelected "term_mode_poly" cert goal goalType
++      ext.polyFarkasCloser cert path.ir
++      episodeEvent "closer_returned" [("certificate", cert), ("closer", toJson "term_mode_poly")]
+     | none =>
+       throwError "proof_broker_term: polymorphic-α cert minted but no \
+         extension closer is registered (import `ProofBrokerMathlib` \
+@@ -3884,7 +3939,11 @@
+     return (path, "term_mode_poly")
+   if certStrategyHint cert == "case_split_farkas" then
+     match ← reifierExt.get with
+-    | some ext => ext.tier2CaseSplitCloser cert path.ir; pure (path, "term_mode_case_split")
++    | some ext =>
++      r6CloserSelected "term_mode_case_split" cert goal goalType
++      ext.tier2CaseSplitCloser cert path.ir
++      episodeEvent "closer_returned" [("certificate", cert), ("closer", toJson "term_mode_case_split")]
++      pure (path, "term_mode_case_split")
+     | none =>
+       throwError "proof_broker_term: Tier 2 case_split_farkas cert \
+                    minted but no extension closer registered (import \
+@@ -3898,11 +3957,24 @@
+     match extOpt with
+     | some ext =>
+       if fragment == ext.irFragment then
+-        ext.tier1FarkasCloser cert path.ir; pure (path, "term_mode_ext")
++        r6CloserSelected "term_mode_ext" cert goal goalType
++        ext.tier1FarkasCloser cert path.ir
++        episodeEvent "closer_returned" [("certificate", cert), ("closer", toJson "term_mode_ext")]
++        pure (path, "term_mode_ext")
+       else
+-        closeViaTermMode goal goalType cert; pure (path, "term_mode_int")
++        r6CloserSelected "term_mode_int" cert goal goalType
++        closeViaTermMode goal goalType cert
++        episodeEvent "reconstruction_finished" [("certificate", cert),
++          ("closer", toJson "term_mode_int"), ("certificate_consumed", toJson true),
++          ("derivation_replayed", toJson false), ("residual_closer", toJson "omega")]
++        pure (path, "term_mode_int")
+     | none =>
+-      closeViaTermMode goal goalType cert; pure (path, "term_mode_int")
++      r6CloserSelected "term_mode_int" cert goal goalType
++      closeViaTermMode goal goalType cert
++      episodeEvent "reconstruction_finished" [("certificate", cert),
++        ("closer", toJson "term_mode_int"), ("certificate_consumed", toJson true),
++        ("derivation_replayed", toJson false), ("residual_closer", toJson "omega")]
++      pure (path, "term_mode_int")
+ 
+ /-- Match an Int equality goal `Eq Int a b`. Returns `(a, b)` if so;
+     `none` otherwise. The closer pre-splits equality goals via

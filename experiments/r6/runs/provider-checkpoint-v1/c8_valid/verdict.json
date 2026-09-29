@@ -1,0 +1,395 @@
+{
+  "schema_version": "r6-provider-episode-1",
+  "search_policy": "openai_responses_http_fixture_v1",
+  "task_id": "c1-c8-2p18",
+  "accepted": true,
+  "search_succeeded": true,
+  "certificate_type": "farkas",
+  "trust_tier": 1,
+  "witness_proposer": "canned_provider_response",
+  "certificate_assembler": "sdk_proposal_assembler_v1",
+  "recovery_route": "openai_responses_http_fixture_v1",
+  "certificate_verified": true,
+  "certificate_consumed": true,
+  "derivation_replayed": false,
+  "residual_closer": "omega",
+  "proof_replayed": true,
+  "local_obligation_closed": true,
+  "whole_declaration_validated": true,
+  "axiom_delta": {
+    "R6.C8.coefficient_bound.r6_c8": {
+      "added": [],
+      "removed": []
+    },
+    "R6.C8.coefficient_bound": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "local_proof_required_reference": "ProofBroker.TermMode.farkasContradictN",
+  "failure_category": null,
+  "failure_phase": null,
+  "accounting": {
+    "attempts_reserved": 1,
+    "client_connection_attempts": 1,
+    "body_sends_started": 1,
+    "body_sends_returned": 1,
+    "transmissions_observed": 1,
+    "reported_usage": {
+      "status": "unreported",
+      "cost_usd": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "cached_tokens": null,
+      "reasoning_tokens": null
+    },
+    "live_model_calls": 0,
+    "live_model_cost_usd": 0,
+    "scope": "local HTTP fixture; usage is synthetic or unreported, cost unknown; actual live calls/cost zero"
+  },
+  "transport_validation": {
+    "outbound_envelope": {
+      "accepted": true,
+      "category": null,
+      "mismatches": [],
+      "captured_body_sha256": "d1a7844ee1289a26d6a2f1b4e000e5046b3a8082dafca540bc2804f810fc5877",
+      "request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+      "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+      "evidence_scope": "observed HTTP body consistency; no remote-input or inference attestation",
+      "observation": "local_server_received"
+    },
+    "capture_consistency": {
+      "checked": true,
+      "accepted": true
+    },
+    "provider_response": {
+      "accepted": true,
+      "failure_category": null
+    },
+    "response_request_binding": {
+      "checked": true,
+      "accepted": true,
+      "scope": "response_request_association",
+      "expected_request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+      "received_request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875"
+    },
+    "response_validated": true,
+    "response_failure_category": null,
+    "evidence_scope": "local HTTP observations; no remote receipt, compilation or inference attestation"
+  },
+  "solution_sha256": "67e53933b2185f0c65dc628a9e7d770d8e71638731fe7f4f20deb99cb53a68ae",
+  "challenge_sha256": "53c2c71c79db6dfc0ae441481899d22fd76a48d7942c6b17aae2620b6ee15b04",
+  "manifest_sha256": "b517153f5b2dd878ba724ecc172d38deceb5475f58a0b871daebdcee29852e97",
+  "prompt_sha256": "30fcc51b1aec545efbff448a28ea37cdba1ab1af4dcee37c46b5a8223414aed0",
+  "request_sha256": "c20b474502fce3319d0076794f880d6aa670514ff706c4e0474dcafc68bef875",
+  "response_sha256": "69fb8ee65642b2959f02350dacaa2ecdaa50452db2ba70798358dfbdf69a9ee9",
+  "final_validation": {
+    "local": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "R6.C8.coefficient_bound.r6_c8",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 1470,
+      "accepted": true
+    },
+    "whole": {
+      "targets": [
+        {
+          "statement_and_dependencies_match": true,
+          "name": "R6.C8.coefficient_bound",
+          "kernel_accepted": true,
+          "declaration_exists": true,
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ],
+          "type_sha256": "178f93e731a1a2e54be349d1dd27986f61e203c858350652f1f012f5c70127b2",
+          "type_hash_format": "Lean-4.32.2-reprStr-Expr-UTF8"
+        }
+      ],
+      "stage": "complete",
+      "local_proof_binding_checked": true,
+      "kernel_version": "4.32.2",
+      "checked_declarations": 1471,
+      "accepted": true
+    }
+  },
+  "certificate_validation": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+      "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:e69e7d6ed57781b887f5c599b3e81350b3742646183e28e360429cd349f260a8"
+  },
+  "resources": {
+    "assembly": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.021772547013824806,
+      "execution_wall_seconds": 0.021194699016632512,
+      "cgroup_cpu_usec": 11480,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4632576,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "capture-build": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 1.0255743529996835,
+      "execution_wall_seconds": 1.0250391459849197,
+      "cgroup_cpu_usec": 1002956,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 181514240,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "certificate-check": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.021801450988277793,
+      "execution_wall_seconds": 0.02143081699614413,
+      "cgroup_cpu_usec": 8660,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4382720,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "export": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 2.9005835050193127,
+      "execution_wall_seconds": 2.9001552110130433,
+      "cgroup_cpu_usec": 2853652,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 730963968,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 4032429,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "pipeline-prepare": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.03382125898497179,
+      "execution_wall_seconds": 0.03339332598261535,
+      "cgroup_cpu_usec": 14034,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 4939776,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "preparation": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 3.2985718050040305,
+      "execution_wall_seconds": 3.2980171619856264,
+      "cgroup_cpu_usec": 3285279,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 697286656,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "preparation-build": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 1.018627996003488,
+      "execution_wall_seconds": 1.0181167339906096,
+      "cgroup_cpu_usec": 1008771,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 182042624,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "proposal-1": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.28865608701016754,
+      "execution_wall_seconds": 0.28823879500851035,
+      "cgroup_cpu_usec": 264138,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 22302720,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "reconstruct": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 3.672407067992026,
+      "execution_wall_seconds": 3.671888762997696,
+      "cgroup_cpu_usec": 3611211,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 709156864,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 18239,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "validation-local": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.5453333370096516,
+      "execution_wall_seconds": 0.5450154530117288,
+      "cgroup_cpu_usec": 524255,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 26664960,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    },
+    "validation-whole": {
+      "exit_code": 0,
+      "resource_exhausted": null,
+      "wall_seconds": 0.5106874730263371,
+      "execution_wall_seconds": 0.5102869420079514,
+      "cgroup_cpu_usec": 495481,
+      "resource_violations": [],
+      "cgroup_memory_peak_bytes": 26669056,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "monitor_error": null,
+      "observation_error": null,
+      "workload_empty_after_cleanup": true,
+      "output_bytes": 0,
+      "accounting_scope": "sandbox_process_tree"
+    }
+  },
+  "evidence_receipt_claim": "local HTTP fixture and proof checks; no remote receipt, compilation or inference attestation"
+}

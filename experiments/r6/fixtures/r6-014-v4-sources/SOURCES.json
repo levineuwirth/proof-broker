@@ -1,0 +1,88 @@
+{
+  "schema_version": "r6-014-release-sources-1",
+  "synthetic": true,
+  "slot": {
+    "task_id": "bracket-l096",
+    "draw": 2
+  },
+  "runs": {
+    "l069-draw1": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    },
+    "l070-draw1": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    },
+    "l071-draw1": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    },
+    "l078-draw1": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    },
+    "l096-draw1": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    },
+    "l166-draw1": {
+      "failure_category": "reconstruction_refused",
+      "proof_accepted": false,
+      "reservation_state": "reserved"
+    },
+    "l170-draw1": {
+      "failure_category": "certificate_verification",
+      "proof_accepted": false,
+      "reservation_state": "reserved"
+    },
+    "l175-draw1": {
+      "failure_category": "reconstruction_refused",
+      "proof_accepted": false,
+      "reservation_state": "reserved"
+    },
+    "l178-draw1": {
+      "failure_category": "reconstruction_refused",
+      "proof_accepted": false,
+      "reservation_state": "reserved"
+    },
+    "l204-draw1": {
+      "failure_category": "reconstruction_refused",
+      "proof_accepted": false,
+      "reservation_state": "reserved"
+    },
+    "l099-draw1": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    },
+    "l096-draw2": {
+      "failure_category": "tls_certificate_verification",
+      "proof_accepted": false,
+      "reservation_state": "reserved"
+    },
+    "l096-draw2-attempt2": {
+      "failure_category": null,
+      "proof_accepted": true,
+      "reservation_state": "reserved"
+    }
+  },
+  "ledger": {
+    "slot": {
+      "consumed": true,
+      "released": 1,
+      "open": null,
+      "reservations": 2
+    },
+    "rows": 28
+  },
+  "disabled_policy_sha256": "8fdadaa3bdc6bb952e06cd7cae45324238df946b1a2823b1f8daad5820440323",
+  "intervention": "attempt 1 only: live_tls_fixture.materialize(run, \"untrusted_ca\") in place of \"valid\"",
+  "program_sha256": "649691acb3298d3361e821186c3267b4b5778a42d41b05c284635f475d405740",
+  "scope": "canned rehearsal episodes on an isolated copy of the disabled v9 policy and its own ledger; no provider; synthetic canary"
+}

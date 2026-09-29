@@ -1,0 +1,112 @@
+{
+  "reviewed_commit": "db20792e",
+  "fresh_audit": {
+    "accepted": true,
+    "cases": 550,
+    "exact_record_match": true,
+    "exact_fixture_case_set": true
+  },
+  "fresh_analysis": {
+    "exact_input_match": true,
+    "exact_result_match": true,
+    "denominators": {
+      "primary": 15,
+      "posed": 11,
+      "certificate_feasible": 10,
+      "negative_control": 1,
+      "closer_reachable": 6,
+      "closer_unreachable": 4
+    },
+    "stages": {
+      "returned": {
+        "true": 11,
+        "false": 0,
+        "unobserved": 0
+      },
+      "verified": {
+        "true": 10,
+        "false": 1,
+        "unobserved": 0
+      },
+      "consumed": {
+        "true": 6,
+        "false": 4,
+        "unobserved": 1
+      },
+      "local": {
+        "true": 6,
+        "false": 0,
+        "unobserved": 5
+      },
+      "whole": {
+        "true": 6,
+        "false": 0,
+        "unobserved": 5
+      },
+      "axioms": {
+        "true": 6,
+        "false": 0,
+        "unobserved": 5
+      }
+    },
+    "costs": {
+      "reserved_micro_usd": 1126400,
+      "authorized_micro_usd": 1126400,
+      "usage_fields": {
+        "input_tokens": {
+          "reported_slots": 11,
+          "unreported_slots": 0,
+          "known_total": 13560
+        },
+        "output_tokens": {
+          "reported_slots": 11,
+          "unreported_slots": 0,
+          "known_total": 5478
+        },
+        "cached_tokens": {
+          "reported_slots": 11,
+          "unreported_slots": 0,
+          "known_total": 0
+        }
+      },
+      "consumed_slots": 11,
+      "priced_slots": 11,
+      "unpriced_slots": [],
+      "known_priced_subtotal_nano_usd": 116070000,
+      "priced_ceiling_nano_usd": 116070000,
+      "priced_ceiling_micro_usd": 116070,
+      "cached_unreported_bounded_as_uncached": [],
+      "complete": true,
+      "scope": "reservations and provider-reported usage at frozen rates; not a bill"
+    }
+  },
+  "recount": {
+    "runs": 11,
+    "events": 510,
+    "sealed_entries": 3130,
+    "mismatches": 0
+  },
+  "scan": {
+    "files": 101646,
+    "disclosures": 0,
+    "bound_runs": 11,
+    "credential_scan_rerun": false
+  },
+  "preexisting_tracked_files_unchanged_since": "6a361a3e",
+  "untracked_subprocess": {
+    "bytes": 13314116,
+    "sha256": "1b549e2022bbd375b0149f53a4e6722b067452d75fde75e402bc76f9922d8aac",
+    "format": "PostScript",
+    "creator": "ImageMagick",
+    "header_created_utc": "2026-09-24T10:34:34+00:00",
+    "dimensions": [
+      1916,
+      1143
+    ],
+    "origin_command_unconfirmed": true,
+    "rendered": false,
+    "modified": false
+  },
+  "provider_calls": 0,
+  "credentials_read": 0
+}

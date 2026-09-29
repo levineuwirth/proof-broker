@@ -1,0 +1,47 @@
+# campaign baseline, recorded 2026-09-07T11:30:52+02:00
+# host Linux 7.2.2-arch1-1 x86_64, 16 cpus
+
+proof-broker      /home/jeans/Repos/research/proof-broker
+  HEAD            ab6fd19c05f449f1233c4ab6883b578b734ccd16 (r6/c1-cert-recovery)
+  worktree dirty  10 path(s)
+  libpbglue.so                                               12363eb0b6369b8a44844b705de025defa740f50ba812182cecf91f5fdaf61ce  (mtime 2026-08-30\ 21:03)
+  libproof-broker-bridge_ProofBroker.so                      93a7ec67c66445fbecb25ef5a19fbc96b672de1844526320e20391662cdd70ca  (mtime 2026-09-05\ 19:13)
+  sdk/ffi/proof_broker_ffi.so                                fa0733db6d375be67da6f9e8127668b06b49fd7633d188bef28ee1b851eb8c8b  (mtime 2026-09-07\ 11:29)
+  ProofBroker/Tactic.olean                                   76a54bd39b7cc16f8bd8d791a36e70d06b65e61cf1162b8118faef8c76b5e087  (mtime 2026-09-05\ 23:17)
+  ProofBrokerMathlib.olean                                   de760366679bf3c2c78f001f671408471e391117359375735e2a052fe701dbca  (mtime 2026-09-05\ 23:17)
+  examples/manifest-cvc4.json                                a328e0b4fb2e6c38b8466bf0d4eff9164e0681cedbac8845184ca2304f1ffb12  (mtime 2026-08-30\ 10:59)
+  examples/manifest-cvc5.json                                8c0e7ca119e90ea4b76ab64d63bbc2394700d01ccfc5e8deb0ca93d5a8d97753  (mtime 2026-09-01\ 20:22)
+  examples/manifest-z3.json                                  a66799b108ed4963646581c2675c3c676975e5726699a0c714e2bf53d96d58a0  (mtime 2026-08-30\ 10:59)
+  examples/manifest-vampire.json                             729caee479b9074740be8a68e76641d8b3a8bbbccea22d97854e1771cd871964  (mtime 2026-09-01\ 20:22)
+
+proof-broker-demo /home/jeans/Repos/research/proof-broker-demo
+  HEAD            f208e978e2b2147cbd2d3844560ccbf140fbb690 (main)
+  Mathlib.olean                                              9c5bf984a8c4ed7c7854d68673a37a3847ff24783554f451920d4ff95d68b97e  (mtime 2026-09-05\ 21:15)
+  lake-manifest pins:
+    «proof-broker-bridge»    c3bcf237dfd9393f9d5736cf282d21cf2823f650
+    mathlib                  81a5d257c8e410db227a6665ed08f64fea08e997
+    plausible                e12c1910fe855cbfc38803cd4e55543906d5fa62
+    LeanSearchClient         c5d5b8fe6e5158def25cd28eb94e4141ad97c843
+    importGraph              7e9612bf0b9ee66db3cb5b9988a35afc706f5a12
+    proofwidgets             6e311e2a844da9b2cc3971187df2fe0066947b93
+    aesop                    a7dbf0c63b694e47f425f3dcddbc0e178bb432d3
+    Qq                       38d591e778f100aec9762bb582f9c7f55f50e9dc
+    batteries                023ce7d62a0531e22a5331e20b587817a80d49ff
+    Cli                      88679d088c9720c27ebdf2ba4dafe17341747f94
+
+verinf case study /home/jeans/Repos/research/verinf/.claude/worktrees/rmsnorm-proof-broker-case-study
+  HEAD            573e1686323fe5fc1aa9a41c1d3c20b1175732cd (worktree-rmsnorm-proof-broker-case-study)
+  dirty           0 path(s)
+  case-study Model.olean                                     cfce8cd88f4b0b6a5bb014446dcf55690fbfe29130ebea1aa6985b05ab8c0efa  (mtime 2026-09-06\ 10:17)
+
+toolchain
+  lean-toolchain (case study)  leanprover/lean4:v4.32.0
+  lean                         Lean (version 4.32.0, x86_64-unknown-linux-gnu, commit 8c9756b28d64dab099da31a4c09229a9e6a2ef35, Release)
+  elan                         elan 4.2.3 (7e263976f 2026-07-06)
+  dune                         3.23.1
+  ocaml                        The OCaml toplevel, version 5.5.0
+solvers (PATH binaries the adapters spawn)
+  z3         Z3 version 5.1.0 - 64 bit   [/home/jeans/.local/bin/z3]
+  cvc5       This is cvc5 version 1.3.0 [git tag 1.3.0 branch HEAD] [/home/jeans/.local/bin/cvc5]
+  cvc4       This is CVC4 version 1.8 [git HEAD 52479010] [/home/jeans/.local/bin/cvc4]
+  vampire    Vampire 5.1.0 (Release build, commit 7b2f410 on 2026-08-13 10:17:34 +0200) [/home/jeans/.local/bin/vampire]

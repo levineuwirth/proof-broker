@@ -1,0 +1,34 @@
+{
+  "accepted": false,
+  "task_id": "verinf-d1-70",
+  "search_policy": "canned_envelope_v1",
+  "failure_stage": "proposal-1",
+  "failure_phase": "proposal",
+  "failure_category": "transport_failure",
+  "error": "Canned transport failed after reservation",
+  "evidence": null,
+  "process": {
+    "exit_code": 17,
+    "resource_exhausted": null,
+    "wall_seconds": 0.01880095999513287,
+    "execution_wall_seconds": 0.018435755002428778,
+    "cgroup_cpu_usec": 8856,
+    "resource_violations": [],
+    "cgroup_memory_peak_bytes": 1560576,
+    "memory_events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "monitor_error": null,
+    "observation_error": null,
+    "workload_empty_after_cleanup": true,
+    "output_bytes": 0,
+    "accounting_scope": "sandbox_process_tree"
+  },
+  "causal_attribution": "unassigned; observed boundary only"
+}

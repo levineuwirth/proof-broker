@@ -1,0 +1,41 @@
+{
+  "schema_version": "r6-014-capture-admission-1",
+  "capture": "sources/pricing-approved-campaign-5",
+  "tool": "pricing_capture_v2.py",
+  "sources": {
+    "model": {
+      "raw_sha256": "218528dfbadf7da857393139bc66255d5aa5ed955e608b78ba91df4c8601b5d7",
+      "extract_sha256": "90fba6364cc9ddde98f38c9022cc8ff5e1176050ed7cf217e2d644895876a344",
+      "finished_unix": 1790342328.783843
+    },
+    "caching": {
+      "raw_sha256": "b98d8ba4412dd899369564fec5304457eb77a05cf439a9507aaec5e15041a2fc",
+      "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+      "finished_unix": 1790342330.676195
+    }
+  },
+  "admission_review": {
+    "rates_identical_to_previous": true,
+    "semantic_fields_identical": true,
+    "differing_extract_fields": {
+      "model": [
+        "snapshot_section"
+      ],
+      "caching": []
+    },
+    "model_extract_identical_to_previous": false,
+    "caching_extract_identical_to_previous": true
+  },
+  "maximum_source_age_seconds": 86400,
+  "admissible_until_unix": 1790428728.783843,
+  "sandbox_authorization": {
+    "revision": 2,
+    "transmissions": 88,
+    "money_micro_usd": 9011200,
+    "consumed_preserved": 11,
+    "committed_preserved": 1126400,
+    "production_unchanged": true
+  },
+  "scope": "public documentation pages fetched without credentials; admission by the production review; sandbox authorize on copies of the production authority; not an authorization",
+  "admissible_until_utc": "2026-09-26T13:18:48.783843+00:00"
+}

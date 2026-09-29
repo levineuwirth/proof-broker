@@ -1,0 +1,195 @@
+{
+  "exit_code": 0,
+  "summary": {
+    "files_scanned": 3283,
+    "gzip_streams_scanned": 18,
+    "accepted": true,
+    "roots": [
+      "/home/jeans/Repos/research/proof-broker/experiments/r6/fixtures/r6-014-live-shaped"
+    ],
+    "unreadable": 0,
+    "irregular": 0,
+    "incomplete": 0,
+    "disclosures": 0,
+    "disclosure_paths": [],
+    "run_receipts": [
+      {
+        "run": {
+          "name": "l069-draw1",
+          "name_sha256": "393971b99d7033e5ecdb4ae13d254681f71977042f0d52c06763559f6d0ac289"
+        },
+        "commitment_nonce": "4ad6dce22ea47c9fc21b434ce9d067ccc15bb72a094ed84c21fb53f47124d87c",
+        "recorded_commitment_sha256": "1bd8f22cea94f7c2b03ab2e6cc6c53fac8b47d3a298164373b6c9a0780299e8f",
+        "files": 312,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "fb289409fd19ce53002550d7d5c5bd54d9429f095d142af984439bf72eea54d4",
+        "http_sha256": "e7b9124e78d236917466d6a159109240142fb3e7b5446ce452d9385e668b3e0b"
+      },
+      {
+        "run": {
+          "name": "l070-draw1",
+          "name_sha256": "c5a828b46fe57079fb32dbc7f8e8d3147a622fb1769f861b6c3645fa317e9042"
+        },
+        "commitment_nonce": "a0649b898cb3b204a50a85351258920308a70c38d021dee4f9b6800fe0c92f97",
+        "recorded_commitment_sha256": "b213b3e5487f44832d5990fa3cf58f60df390ce720dbada90da3feadfafb62fc",
+        "files": 312,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "b3b7ecefdcb4f5313cebde6b3120790853db067709ab2de56f48b49e6e78987f",
+        "http_sha256": "d29cf845b072a329fdd8d57b7894052337918a9fca7f7016aabe7d8a37141f86"
+      },
+      {
+        "run": {
+          "name": "l071-draw1",
+          "name_sha256": "01f651d9a6128ab874f66c748b75613b4d9bf902ebcbedd12217bdd394d69f84"
+        },
+        "commitment_nonce": "b61ef25524322d4a49a5c43fea53334533650117d333464e0089508f14feacc6",
+        "recorded_commitment_sha256": "bd22cdfb61564f7b80a1282037df3f6d565d0155e38d17cee7ce7b74119e7337",
+        "files": 312,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "9d78d379c2797c6c2f422173e16bc6c7b6e3af9ebd9956dbf5616895c92a7b40",
+        "http_sha256": "5e2d4ce830eacdfe8b24c79a8c4de90f765ea9503b0949f31fa93022adad002c"
+      },
+      {
+        "run": {
+          "name": "l078-draw1",
+          "name_sha256": "ba89b7b477dcc226e8b0403538e97f9c9b9c32041fdc819798c8c6eaef4f4df7"
+        },
+        "commitment_nonce": "6de4cefb1e68c7f668bb4db9f516d77e60f1c36e4a0add1cc914f390c91b05e6",
+        "recorded_commitment_sha256": "6728b23ad5a8a330e2acf7c79c5b111a27c5cb413e7baa6e08bd013e8d2c832d",
+        "files": 312,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "c7a0b01e8c8a7df837ec78e841bc5ceab264aa6f04f1debbe8ed4d343c6b5938",
+        "http_sha256": "5863076e11f4e82685d8a3f020b5a4547a2884f3ca11085de8c91e320c57298e"
+      },
+      {
+        "run": {
+          "name": "l096-draw1",
+          "name_sha256": "3e449be6fe93d4344a9a6c882aca06a27a5ba50a64429e4f9cb79bc3ce9b51c1"
+        },
+        "commitment_nonce": "966910df1398a8fa94be3e3e469ab109a1375036f82d096d3d9c6252fb35ac1f",
+        "recorded_commitment_sha256": "000b1444da232ede31c06c9c9ff00aef7352502e4a176d6b8a161dc620b66743",
+        "files": 312,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "736a861459452a9a30db2be58c74fa88b709204eb31900cedefd83d42ec35a70",
+        "http_sha256": "969ec5b9578071d38dc7dc508a155b6d5aa9fb36c0596ff4f20a988da5fca21f"
+      },
+      {
+        "run": {
+          "name": "l166-draw1",
+          "name_sha256": "4bc326f3d9524d23e6f1df54d59ad7a3c553b25d453adeddfa45a41dbaaad47a"
+        },
+        "commitment_nonce": "eaf1d8fd414efde457197971b74c7b1accbbbfb304a715cc03508b30b551f3bd",
+        "recorded_commitment_sha256": "3ca63ba48e9989272998ae7490522e1935e82bb59980ff358ab1b6d2b8ef596d",
+        "files": 282,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "4bc62a487fdbb1cf8222b7dd2f9821de98aaf2bcbde91c32e4da2ccf28a0fdba",
+        "http_sha256": "31f536d92d91eae7925b08e32af99f688ff16e35963671abd4c3b4162ca6a68e"
+      },
+      {
+        "run": {
+          "name": "l170-draw1",
+          "name_sha256": "fab18ebcc307b593b2adf08f424fe7d5b98f12c2ee888c1582096a792749f64d"
+        },
+        "commitment_nonce": "f3b8c22aadfea4ad2a7ee954cc87251e275804a2029d6a7ac2192d48b1901dba",
+        "recorded_commitment_sha256": "538b605ba6c56d24ae79b4c010c887db509932090c1118ef034041c986c7bfc3",
+        "files": 263,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "c9e4b7fd1c478e370dfb5fe3794a76123da1589f3f1bbe141896f04a49d1759d",
+        "http_sha256": "0c1973f8c7b0bdcdd349b7b8ad47c416d67b0afbd69485dfa5838a29bd34acf3"
+      },
+      {
+        "run": {
+          "name": "l175-draw1",
+          "name_sha256": "4b84502ef0fa5bcc6457013f043c24bbf7c9d5c80f77f470f6a3fbd159b0538f"
+        },
+        "commitment_nonce": "118a5f23e6eef1f5e6e071cb6b1e916ec8f95c19b2ba7b2ce8c00101f27d5f46",
+        "recorded_commitment_sha256": "73162866795ecbb5130b77a530aef881cadaa8e7b3b25df3a2b462a034dad241",
+        "files": 282,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "ddf00767bb3ba56ff22d0b8a4c549261c184c88e059736df19903da227540b49",
+        "http_sha256": "8bc3d3e3bb9fb88283f681ca709b649398399320051aac664d02356d0668ac3a"
+      },
+      {
+        "run": {
+          "name": "l178-draw1",
+          "name_sha256": "32a3aaecde863e28714d73c3b421ee5ebabfa87c44192c21af3e35fa434d8e04"
+        },
+        "commitment_nonce": "684a3c7ed0bbc7eace690abaabb5b0831dd5d4278367828d4421a82fbdb7f451",
+        "recorded_commitment_sha256": "1186fa446cce776cf07bcb6a900fcb8e881f8611dc874075adc932f646099383",
+        "files": 282,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "18167abe484e467066d3e6e383c3d164f8225ca533d041d5d56fe92f6e0db1a8",
+        "http_sha256": "de539fe511613b8b96a341cae1dc34cad0f95d2adbe9ace00abe00f5807fd281"
+      },
+      {
+        "run": {
+          "name": "l204-draw1",
+          "name_sha256": "6fe7926ded07ad21ce967230d0473a3e37d50d2d4dfc0ed7b37ef319675d3101"
+        },
+        "commitment_nonce": "614a14b2e57f37dfb2be068185a1509d6e484bd8d1f63389f336a1218e13b1ba",
+        "recorded_commitment_sha256": "690ddeeecc4f81f85f6ff95c91fbe4a927976cc7c6ba6eb63498ba844fa0241f",
+        "files": 282,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "61f11f6a709f3d26ed489655041662654c19a6b13319fc6da827ba5f020db4e8",
+        "http_sha256": "24b580fc926dcbca6cf65dab812a23a44369f19ad5b0beada683e6c302418eb8"
+      },
+      {
+        "run": {
+          "name": "l099-draw1",
+          "name_sha256": "f60975b1e92a2a2c6aa797bb9a1a429376425a957a3191e6b8ef8f7d5e61b06e"
+        },
+        "commitment_nonce": "17298f6b625ffd4ae8499adce82aa58657d2aca28769faf7cf924485d6ec895c",
+        "recorded_commitment_sha256": "cbfd14518947083cf26f0c9730bfec09d90a896c174b9114eca2980ea1c8ba36",
+        "files": 312,
+        "read_failures": 0,
+        "covered_by_scan": true,
+        "sealed_and_intact": true,
+        "commitment_record_sealed": true,
+        "commitment_bound": true,
+        "seal_sha256": "aaec628fcde870a52d2d4877139bc3f6acee33eb87e6e0b790b00a55874b6134",
+        "http_sha256": "af0589366ef1a60945da97285e60af8ad7847c4ffb199274bf6f911e3bc526fd"
+      }
+    ],
+    "bound_runs_accepted": true
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "request_sha256": "c0897f47f4c4152e5461c93875a189f38692eb591b80ad5afe971953ba8d685c",
+  "witness": {
+    "coefficients": [
+      {
+        "coefficient": "8",
+        "hypothesis": "hZ"
+      },
+      {
+        "coefficient": "4",
+        "hypothesis": "neg_goal"
+      },
+      {
+        "coefficient": "4",
+        "hypothesis": "hnum"
+      }
+    ]
+  }
+}

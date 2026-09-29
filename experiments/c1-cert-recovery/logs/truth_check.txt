@@ -1,0 +1,32 @@
+  O5_site2_isolated        TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  O6_E4                    TRUE  (symbolic window; checked by omega only)
+  C1_coef_1                TRUE  computed=TRUE  ok   sup=4398046511103 rhs=18446744069414584321
+  C2_coef_2                TRUE  computed=TRUE  ok   sup=8796093022206 rhs=18446744069414584321
+  C3_coef_3                TRUE  computed=TRUE  ok   sup=13194139533309 rhs=18446744069414584321
+  C4_coef_4                TRUE  computed=TRUE  ok   sup=17592186044412 rhs=18446744069414584321
+  C5_coef_5                TRUE  computed=TRUE  ok   sup=21990232555515 rhs=18446744069414584321
+  C6_coef_8                TRUE  computed=TRUE  ok   sup=35184372088824 rhs=18446744069414584321
+  C7_coef_2p10             TRUE  computed=TRUE  ok   sup=4503599627369472 rhs=18446744069414584321
+  C8_coef_2p18             TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  P1_decimal_coef          TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  P2_operand_order         TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  P3_le_pred               TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  P4_prime_literal         TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  P5_plain_nat             TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  P6_hyp_le                TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  R1_reorder               TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  R2_redundant3            TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  R3_site2_in_context      TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  R4_redundant6            TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  B1_true_2p21             TRUE  computed=TRUE  ok   sup=9223372036852678656 rhs=18446744069414584321
+  B2_false_2p22            FALSE computed=FALSE ok   sup=18446744073705357312 rhs=18446744069414584321
+  B3_false_wide_bound      FALSE computed=FALSE ok   sup=18446744073709289472 rhs=18446744069414584321
+  B4_true_exact            TRUE  computed=TRUE  ok   sup=18446744069414584320 rhs=18446744069414584321
+  H1_hyp_succ_form         TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  H2_coef_2p36             TRUE  computed=TRUE  ok   sup=1152921435887370240 rhs=18446744069414584321
+  H3_two_large_coefs       TRUE  computed=TRUE  ok   sup=1152921504606584832 rhs=18446744069414584321
+  H4_mixed_small_large     TRUE  computed=TRUE  ok   sup=288233674686332925 rhs=18446744069414584321
+  H5_false_2p19            FALSE computed=FALSE ok   sup=18446744073709027328 rhs=18446744069414584321
+  H6_other_limb_width      TRUE  computed=TRUE  ok   sup=1152921504606322688 rhs=18446744069414584321
+
+0 mismatch(es)

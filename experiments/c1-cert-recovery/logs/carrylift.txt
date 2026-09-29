@@ -1,0 +1,20 @@
+imports_only | pass 1 | EXIT=0 WALL=3.7s | tactic n/a | reports 0 | errors 0
+imports_only | pass 2 | EXIT=0 WALL=3.7s | tactic n/a | reports 0 | errors 0
+CarryLift | pass 1 | EXIT=0 WALL=4.3s | tactic 133ms | reports 0 | errors 0
+CarryLift | pass 2 | EXIT=0 WALL=4.3s | tactic 138ms | reports 0 | errors 0
+CarryLiftGrind | pass 1 | EXIT=0 WALL=4.9s | tactic 133ms | reports 0 | errors 0
+CarryLiftGrind | pass 2 | EXIT=0 WALL=5.0s | tactic 115ms | reports 0 | errors 0
+CarryLiftPB | pass 1 | EXIT=0 WALL=5.4s | tactic 886ms | reports 4 | errors 0
+CarryLiftPB | pass 2 | EXIT=0 WALL=5.2s | tactic 889ms | reports 4 | errors 0
+CarryLiftPBTerm | pass 1 | EXIT=0 WALL=5.3s | tactic 893ms | reports 4 | errors 0
+CarryLiftPBTerm | pass 2 | EXIT=0 WALL=5.3s | tactic 895ms | reports 4 | errors 0
+
+# per-site report lines (pass 2)
+CarryLiftPB: 1691:proof_broker report: tactic=proof_broker closer=gated_omega backend=cvc5 tier=3 format=alethe-2024 cert_bytes=2478 fragment=LIA hyps=9 dispatch_ms=22 verify_ms=0 wall_ms=34
+CarryLiftPB: 1692:proof_broker report: tactic=proof_broker closer=gated_omega backend=cvc4 tier=1 format=farkas cert_bytes=1594 fragment=LIA hyps=12 dispatch_ms=220 verify_ms=0 wall_ms=238
+CarryLiftPB: 1693:proof_broker report: tactic=proof_broker closer=gated_omega backend=cvc4 tier=1 format=farkas cert_bytes=1869 fragment=LIA hyps=15 dispatch_ms=465 verify_ms=0 wall_ms=485
+CarryLiftPB: 1694:proof_broker report: tactic=proof_broker closer=gated_omega backend=cvc4 tier=1 format=farkas cert_bytes=1702 fragment=LIA hyps=20 dispatch_ms=21 verify_ms=1 wall_ms=38
+CarryLiftPBTerm: 1690:proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1360 fragment=LIA hyps=9 dispatch_ms=22 verify_ms=1 wall_ms=52
+CarryLiftPBTerm: 1691:proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1594 fragment=LIA hyps=12 dispatch_ms=214 verify_ms=1 wall_ms=235
+CarryLiftPBTerm: 1692:proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1869 fragment=LIA hyps=15 dispatch_ms=438 verify_ms=0 wall_ms=469
+CarryLiftPBTerm: 1693:proof_broker report: tactic=proof_broker_term closer=term_mode_nat backend=cvc4 tier=1 format=farkas cert_bytes=1702 fragment=LIA hyps=20 dispatch_ms=22 verify_ms=1 wall_ms=42
