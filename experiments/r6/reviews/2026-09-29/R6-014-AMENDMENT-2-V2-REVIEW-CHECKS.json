@@ -1,0 +1,56 @@
+{
+  "runner": {
+    "records": 176,
+    "populations": 16,
+    "match_committed_except_temporary_paths": true
+  },
+  "predicate_copies_equal": true,
+  "required_field_tests": 60,
+  "direct_pregrant": {
+    "unmodified": true,
+    "body_sends_returned": false,
+    "header_send_at_ns": false,
+    "tls_verified_at_ns": false,
+    "header_sends_returned": false,
+    "outbound_body_sha256": false,
+    "grant_created_at_ns": false,
+    "grant_durable_at_ns": false,
+    "grant_id": false,
+    "grant_write_failed": false,
+    "http_status": false,
+    "response_sha256": false,
+    "response_bytes": false,
+    "response_headers": false,
+    "retries": false,
+    "redirects_followed": false,
+    "send_outcome": false,
+    "ledger_failure_code": false,
+    "pricing_failure_code": false,
+    "connection_attempts": false,
+    "field_missing": false,
+    "counter_malformed": false,
+    "connection_attempts_malformed": false,
+    "milestone_missing": false,
+    "milestones_out_of_order": false,
+    "verify_code_missing": false,
+    "outbound_body_file": false,
+    "provider_response_file": false
+  },
+  "retained_audit_controls": {
+    "release": 40,
+    "shared": 9,
+    "live": 51,
+    "new_negatives": 27,
+    "hashes_and_names_bound": true,
+    "old_outcomes_identical": true,
+    "full_suite_rerun": false
+  },
+  "fresh_fixture": {
+    "accepted": true,
+    "case_count": 639,
+    "exact_case_set": true,
+    "analysis_input_identical": true
+  },
+  "analysis_bytes_identical": true,
+  "passed": true
+}
