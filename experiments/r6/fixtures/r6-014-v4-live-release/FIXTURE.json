@@ -1,0 +1,95 @@
+{
+  "schema_version": "r6-live-shaped-fixture-4",
+  "synthetic": true,
+  "source_runs": "fixtures/r6-014-v4-sources/runs",
+  "runs": [
+    {
+      "run": "l069-draw1",
+      "kind": "send_grant",
+      "reservation_id": "67b68b871a95453b91cafe41e5728e7f",
+      "revision": 1
+    },
+    {
+      "run": "l070-draw1",
+      "kind": "send_grant",
+      "reservation_id": "ed65a48aee134ba4b43807ffab6e527b",
+      "revision": 1
+    },
+    {
+      "run": "l071-draw1",
+      "kind": "send_grant",
+      "reservation_id": "fc881016a7374ee6bfe8110803b22164",
+      "revision": 1
+    },
+    {
+      "run": "l078-draw1",
+      "kind": "send_grant",
+      "reservation_id": "5f34033b871042cd9c03d8488e2cd2ad",
+      "revision": 1
+    },
+    {
+      "run": "l096-draw1",
+      "kind": "send_grant",
+      "reservation_id": "e0417ae58fbe4c4197891e5ca40e30a1",
+      "revision": 1
+    },
+    {
+      "run": "l166-draw1",
+      "kind": "send_grant",
+      "reservation_id": "856282573e0247eebf0d069de86e40f6",
+      "revision": 2
+    },
+    {
+      "run": "l170-draw1",
+      "kind": "send_grant",
+      "reservation_id": "3eefa1dd232a415fbe329c0e78dc31b5",
+      "revision": 2
+    },
+    {
+      "run": "l175-draw1",
+      "kind": "send_grant",
+      "reservation_id": "188b70e9e0f14005b17151a8fa0b9dca",
+      "revision": 2
+    },
+    {
+      "run": "l096-draw2",
+      "kind": "release",
+      "reservation_id": "24e28e9376434b349b29e3e8b2d250c9",
+      "revision": 2
+    },
+    {
+      "run": "l096-draw2-attempt2",
+      "kind": "send_grant",
+      "reservation_id": "4894ccafd910452f929e25bf2b85a4b2",
+      "revision": 2
+    },
+    {
+      "run": "l178-draw1",
+      "kind": "send_grant",
+      "reservation_id": "51fb575ba3154aa9a042aa281e629df6",
+      "revision": 3
+    },
+    {
+      "run": "l204-draw1",
+      "kind": "send_grant",
+      "reservation_id": "68fe10ee68b84fb0bb61c1b972bc2f3d",
+      "revision": 3
+    },
+    {
+      "run": "l099-draw1",
+      "kind": "send_grant",
+      "reservation_id": "f3542ef5c48a4c16a02a42fa99058b8c",
+      "revision": 3
+    }
+  ],
+  "revisions": {
+    "1": "signed: eleven sites, draw 1; capture captures/signing",
+    "2": "authorize: plus l069, l170 and l096 draw 2, later approval; capture captures/block-2; l096 draw 2 released before send, then retried",
+    "3": "revise: pricing refresh, same authority; capture captures/pricing-refresh"
+  },
+  "captures": "byte copies of sources/pricing-approved-campaign-6 at distinct paths (the checkpoint is frozen with capture 3); no newly fetched price is claimed",
+  "test_policy_sha256": "fc8641e98293d69fde2639270e70e660d2a0383d590365d2ce2000480ccbea44",
+  "operator_credential": "credential.derive(OPERATOR_NONCE); synthetic, never a real credential",
+  "program_sha256": "93347bc55bc0c3fad8686c6a978d8e985a8cc32a06c4aa09b61cf9e1b0dad330",
+  "scope": "no provider was contacted; no real credential; nothing here authorizes or funds a transmission"
+}
