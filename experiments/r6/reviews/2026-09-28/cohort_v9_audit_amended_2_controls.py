@@ -19,6 +19,13 @@
 3. The pre-send limit, as a direct probe of `slot_attempts_ok` under the fixture's history: three attempts pass, a fourth does not, and a
    sent attempt before the last does not (a fixture cannot reach a fourth attempt: the sources hold one release).
 
+Revision 2 (review `reviews/2026-09-29/R6-014-AMENDMENT-2-REVIEW.md`, P1). Each field of the sender's pre-grant state contradicted alone
+in the release's source, the fixture regenerated as above (the ledger reconciles every one as a release): both returned counters (the
+review's `body_sends_returned`), each handoff milestone (the review's `header_send_at_ns` and `tls_verified_at_ns`), the grant and response
+fields, retries and redirects, the send outcome, the failure codes, a second connection attempt, a missing field, malformed counters, a
+missing or out-of-order milestone, a missing verification code, an outbound body or provider response file: 27 in all. Each is rejected,
+23 at the release predicate and four earlier by shared checks (`EARLIER`); `pre_grant_probe` applies the predicate itself to all 27, each failing.
+
 Not re-executed: the rehearsal-mode audit and its 101 controls, as for amendment 1 (they presuppose the pre-signing tree; the amended paths
 are live-only).
 """
@@ -60,6 +67,27 @@ REGENERATED = {  # a transport mutation of the release's source, then the fixtur
     'release_tls_verified': f'{RELEASE}:failure:classified_and_finalized',
     'release_nonzero_exit': f'{RELEASE}:receipts:stage_returned_within_frozen_limits',  # the shared stage receipt, before the release check
 }
+PRE_GRANT_CHANGES = {  # revision 2 (review P1): one field of the release's pre-grant HTTPS record contradicted alone (the review's three first)
+    'body_sends_returned': lambda h: h.update(body_sends_returned=1), 'header_send_at_ns': lambda h: h.update(header_send_at_ns=12345),
+    'tls_verified_at_ns': lambda h: h.update(tls_verified_at_ns=12345), 'header_sends_returned': lambda h: h.update(header_sends_returned=1),
+    'outbound_body_sha256': lambda h: h.update(outbound_body_sha256='0'*64), 'grant_created_at_ns': lambda h: h.update(grant_created_at_ns=12345),
+    'grant_durable_at_ns': lambda h: h.update(grant_durable_at_ns=12345), 'grant_id': lambda h: h.update(grant_id='0'*32),
+    'grant_write_failed': lambda h: h.update(grant_write_failed=True), 'http_status': lambda h: h.update(http_status=200),
+    'response_sha256': lambda h: h.update(response_sha256='0'*64), 'response_bytes': lambda h: h.update(response_bytes=0),
+    'response_headers': lambda h: h.update(response_headers={'x-request-id': 'r'}), 'retries': lambda h: h.update(retries=1),
+    'redirects_followed': lambda h: h.update(redirects_followed=1), 'send_outcome': lambda h: h.update(send_outcome='unknown'),
+    'ledger_failure_code': lambda h: h.update(ledger_failure_code='cohort_ledger_head'), 'pricing_failure_code': lambda h: h.update(pricing_failure_code='pricing_stale'),
+    'connection_attempts': lambda h: h.update(connection_attempts=2), 'field_missing': lambda h: h.pop('body_sends_returned'),
+    'counter_malformed': lambda h: h.update(header_sends_returned=False), 'connection_attempts_malformed': lambda h: h.update(connection_attempts=True),
+    'milestone_missing': lambda h: h.update(connection_started_at_ns=None),
+    'milestones_out_of_order': lambda h: h.update(credential_read_at_ns=h['connection_started_at_ns']+1),
+    'verify_code_missing': lambda h: h.update(tls_verify_code=None),
+}
+PRE_GRANT_FILES = {'outbound_body_file': 'outbound-body.json', 'provider_response_file': 'provider-response.json'}
+EARLIER = {  # the four the auditor's shared checks reject before the release predicate (which rejects them too: `pre_grant_probe`)
+    'retries': f'{RELEASE}:transport:record_consistent', 'redirects_followed': f'{RELEASE}:transport:record_consistent',
+    'send_outcome': f'{RELEASE}:grant:consistent_with_outcome', 'outbound_body_file': f'{RELEASE}:transport:bodies_are_the_contract_rendering'}
+REGENERATED.update({f'release_pregrant_{f}': EARLIER.get(f, f'{RELEASE}:failure:classified_and_finalized') for f in (*PRE_GRANT_CHANGES, *PRE_GRANT_FILES)})
 ON_FIXTURE = {  # a change to a copy of the committed fixture: name -> expected rejected case
     'release_http_altered_after_reconciliation': f'{RELEASE}:ledger:permit_and_reconciliation_bound',
     'retry_renamed_out_of_sequence': 'population:within_authorized_schedule',
@@ -102,6 +130,10 @@ def change_source(name, run):
         rows = frozen.events.read(run/'events.ndjson')
         finished = [r for r in rows if r['source'] == 'supervisor' and r['stage'] == 'proposal-1' and r['event'] == 'stage_finished']
         assert len(finished) == 1; finished[0]['payload'] = process; frozen.base.rechain(run, rows)
+    elif name.startswith('release_pregrant_'):  # revision 2: one pre-grant field or file contradicted alone
+        field = name.removeprefix('release_pregrant_')
+        if field in PRE_GRANT_FILES: (run/'stages/proposal-1/output'/PRE_GRANT_FILES[field]).write_text('{}\n')
+        else: PRE_GRANT_CHANGES[field](http)
     elif name != 'regenerated_baseline': raise AssertionError(name)
     r6.write_json(http_path, http); r6.write_json(run/'credential-summary.json', summary)
 
@@ -142,6 +174,20 @@ def change_fixture(name, f):
     else: raise AssertionError(name)
 
 
+def pre_grant_probe():
+    """Revision 2: `pre_grant_state` directly, on the fixture's release record with each field or file contradicted alone: every one fails,
+    including the four that the full audit rejects earlier; the unmodified record passes."""
+    with tempfile.TemporaryDirectory(prefix='r6-014-a2-pregrant-') as temp:
+        f = copy_fixture(Path(temp), amended2); stage = f/'runs'/RELEASE/'stages/proposal-1'; http = r6.read_json(stage/'output/http.json')
+        out = {'unmodified': amended2.pre_grant_state(json.loads(json.dumps(http)), stage)}
+        for field, change in PRE_GRANT_CHANGES.items():
+            h = json.loads(json.dumps(http)); change(h); out[field] = amended2.pre_grant_state(h, stage)
+        for field, name in PRE_GRANT_FILES.items():
+            (stage/'output'/name).write_text('{}\n'); out[field] = amended2.pre_grant_state(http, stage); (stage/'output'/name).unlink()
+        assert out['unmodified'] is True and not any(v for k, v in out.items() if k != 'unmodified'), out
+        return out
+
+
 def limit_probe():
     """`slot_attempts_ok` directly, under the fixture's history (every revision's limit is 3)."""
     with tempfile.TemporaryDirectory(prefix='r6-014-a2-limit-') as temp:
@@ -163,7 +209,7 @@ def main():
     parser.add_argument('--only-release', action='store_true', help='trial: the release section only')
     args = parser.parse_args()
     if args.output.exists(): raise SystemExit('Refusing to overwrite: '+str(args.output))
-    out = {'release': {}, 'limit_probe': None, 'baselines': {}, 'shared': {}, 'live': {}}
+    out = {'release': {}, 'limit_probe': None, 'pre_grant_probe': None, 'baselines': {}, 'shared': {}, 'live': {}}
     # 2. the release fixture: amendment 1 rejects it (precondition); amendment 2 accepts it; each release relationship broken alone rejects
     with tempfile.TemporaryDirectory(prefix='r6-014-a2-pre-') as temp:
         f = copy_fixture(Path(temp), amended1); out['release']['precondition_amendment_1'] = audit_at(f, amended1)
@@ -181,6 +227,7 @@ def main():
         with tempfile.TemporaryDirectory(prefix='.r6-014-a2-regenerated-', dir=R6/'fixtures') as temp:
             f, generated = regenerate(Path(temp), name); record(name, audit_at(f, amended2), expected, generated)
     out['limit_probe'] = limit_probe(); print('limit', out['limit_probe']['observed'], flush=True)
+    out['pre_grant_probe'] = pre_grant_probe(); print('pre-grant probe', out['pre_grant_probe'], flush=True)
     if args.only_release: print(json.dumps({'trial': True, 'release': len(out['release'])})); return
     # 1. amendment 1's populations under amendment 2
     with tempfile.TemporaryDirectory(prefix='r6-014-a2-isolated-') as temp:

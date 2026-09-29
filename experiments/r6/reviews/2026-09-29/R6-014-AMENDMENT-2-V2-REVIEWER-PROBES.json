@@ -1,0 +1,94 @@
+{
+  "passed": true,
+  "restart": {
+    "baseline": {
+      "outcome": "launch",
+      "checked": [
+        "l096-draw2",
+        "l096-draw2-attempt2"
+      ],
+      "launches": [
+        "l070-draw2"
+      ],
+      "stop": null
+    },
+    "extra_attempt_after_sent": {
+      "outcome": "paused",
+      "checked": [
+        "l096-draw2",
+        "l096-draw2-attempt2"
+      ],
+      "launches": [],
+      "stop": "PAUSE before any launch: an attempt follows l096-draw2-attempt2, which was not released; stop and review"
+    },
+    "gap_before_existing_retry": {
+      "outcome": "paused",
+      "checked": [],
+      "launches": [],
+      "stop": "PAUSE before any launch: l096-draw2 attempts [2] are not 1..n within the limit 3; stop and review"
+    },
+    "later_existing_bad_run": {
+      "outcome": "paused",
+      "checked": [],
+      "launches": [],
+      "stop": "PAUSE before any launch: the slots with runs are not a prefix of the schedule: ['l096-draw2', 'l166-draw2']; stop and review"
+    }
+  },
+  "transport": {
+    "body_sends_returned": {
+      "value": 1,
+      "audit": {
+        "accepted": false,
+        "rejected_case": "l096-draw2:failure:classified_and_finalized",
+        "detail": "l096-draw2:failure:classified_and_finalized"
+      },
+      "runner": [
+        "pause",
+        "released",
+        [
+          "not a pre-send release: the connection-phase failure, zero sends or the release reconciliation does not hold"
+        ]
+      ],
+      "ledger_reconciled_release_as": "release"
+    },
+    "header_send_at_ns": {
+      "value": 12345,
+      "audit": {
+        "accepted": false,
+        "rejected_case": "l096-draw2:failure:classified_and_finalized",
+        "detail": "l096-draw2:failure:classified_and_finalized"
+      },
+      "runner": [
+        "pause",
+        "released",
+        [
+          "not a pre-send release: the connection-phase failure, zero sends or the release reconciliation does not hold"
+        ]
+      ],
+      "ledger_reconciled_release_as": "release"
+    },
+    "tls_verified_at_ns": {
+      "value": 12345,
+      "audit": {
+        "accepted": false,
+        "rejected_case": "l096-draw2:failure:classified_and_finalized",
+        "detail": "l096-draw2:failure:classified_and_finalized"
+      },
+      "runner": [
+        "pause",
+        "released",
+        [
+          "not a pre-send release: the connection-phase failure, zero sends or the release reconciliation does not hold"
+        ]
+      ],
+      "ledger_reconciled_release_as": "release"
+    }
+  },
+  "review_probes_sha256": "a3500be6a0965cf7b660b65708d161ac7b3be1500bdcb298e74c7857ef77d3e9",
+  "auditor_sha256": "262e87b8158ff76e53a2af4b40da95e17978bbcba7d26eac5b645b1205ad283e",
+  "runner_sha256": "2cb904b86c0a84699978a5dcf52e81eee160baa62f1bcc35269bb898d5009955",
+  "program_sha256": "6c91a09f01e6a28eba4a0fb8863b23a21022068bd416787283f866328da28643",
+  "transmissions": 0,
+  "credentials_read": 0,
+  "collected_block_read": false
+}

@@ -46,11 +46,21 @@ again as `<site>-draw<d>-attempt<k+1>`, within the frozen pre-send limit (the le
 exhausted and collection pauses. On restart every existing attempt is gated in order. A sent slot must show its prior releases as its
 `released` count. Everything else is revision 5's.
 
+Revision 7 (review `reviews/2026-09-29/R6-014-AMENDMENT-2-REVIEW.md`). P1: a release is retried only on the sender's complete pre-grant
+state (`pre_grant_state`, the amendment 2 auditor's revision 2 predicate): every field `cohort_https.execute` initializes, present with its
+initial value and type, the milestones before `handoff` reached in order, no outbound body or provider response; a missing or malformed
+field pauses. P2: `preflight` inventories and gates the whole existing population before any sender is invoked — canonical run directory
+names only, the slots with runs a prefix of the schedule, each slot's attempts 1..n within the limit, every attempt gated in order (each but
+the last a retry, and only the last slot awaiting one), and the ledger's block 2 slots exactly these, nothing open, each with n reservations,
+its releases and its consumption; collection then resumes at the next missing attempt, and a run directory that appears after the preflight
+pauses.
+
 The block 1 runner (`run_block1.py`) is retained as run; this revision is for block 2 only.
 """
 import argparse
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
@@ -84,6 +94,25 @@ NEGATIVE_CONTROL = 'bracket-l170'
 CONTINUABLE = ('proof', 'closer_refusal', 'witness_rejected', 'response_invalid')
 CONNECT_PHASE = ('tls_certificate_verification', 'tls_protocol_failure', 'transport_timeout', 'transport_connection_failure')  # cohort_https.handoff, before the grant
 RETRY_DELAY_SECONDS = 60  # revision 6: a released slot is retried after this pause, riding out a brief network interruption
+PRE_GRANT = {  # revision 7: the sender's record as `cohort_https.execute` initializes it (the amendment 2 auditor's, revision 2)
+    'header_sends_started': 0, 'header_sends_returned': 0, 'body_sends_started': 0, 'body_sends_returned': 0, 'tls': None, 'tls_verified_at_ns': None,
+    'header_send_at_ns': None, 'outbound_body_sha256': None, 'response_sha256': None, 'response_bytes': None, 'http_status': None, 'response_headers': {},
+    'retries': 0, 'redirects_followed': 0, 'pricing_failure_code': None, 'ledger_failure_code': None, 'grant_committed': False, 'grant_write_failed': False,
+    'grant_id': None, 'grant_created_at_ns': None, 'grant_durable_at_ns': None, 'send_outcome': 'not_started'}
+REACHED = ('permit_verified_at_ns', 'pricing_admitted_at_ns', 'credential_read_at_ns', 'connection_started_at_ns')  # before `handoff`, in this order
+NAME = re.compile(r'(l\d{3})-draw([1-9]\d*)(?:-attempt([2-9]|[1-9]\d+))?')  # revision 7: the only run directory names
+
+
+def pre_grant_state(http, stage):
+    """Revision 7: every `PRE_GRANT` field present with its initial value and type (missing or malformed fails), one connection attempt, the
+    milestones before `handoff` reached in order, a verification code exactly for a certificate failure, no outbound body or response file."""
+    same = lambda v, w: type(v) is type(w) and v == w
+    reached = [http.get(k) for k in REACHED]; category = http.get('failure_category')
+    return (all(k in http and same(http[k], v) for k, v in PRE_GRANT.items()) and same(http.get('connection_attempts'), 1)
+            and all(type(t) is int for t in reached) and reached == sorted(reached) and type(http.get('elapsed_ns')) is int and http['elapsed_ns'] >= 0
+            and category in CONNECT_PHASE and 'tls_verify_code' in http
+            and (type(http['tls_verify_code']) is int if category == 'tls_certificate_verification' else http['tls_verify_code'] is None)
+            and not (stage/'output/outbound-body.json').exists() and not (stage/'output/provider-response.json').exists())
 
 
 def ledger_snapshot():
@@ -230,11 +259,8 @@ def gate(run, task_id, draw):
                 and validation.get('response_request_binding', {}).get('accepted') is True)
     if released:  # revision 6: the sender's connection-phase failure before its grant, nothing sent (the amendment 2 auditor's `live_release`)
         process = load(run/'stages/proposal-1/proposal-1.process.json'); stderr = (run/'stages/proposal-1/proposal-1.stderr').read_text()
-        tls = http.get('tls')
-        if not (http.get('failure_category') in CONNECT_PHASE and category == validation.get('failure_category') == http.get('failure_category')
-                and summary.get('failure_phase') == validation.get('failure_phase') == 'https_transport' and validation.get('send_outcome') == http.get('send_outcome') == 'not_started'
-                and http.get('connection_attempts') == 1 and (tls is None or tls.get('verified') is not True) and http.get('grant_committed') is False and not http.get('grant_id')
-                and http.get('header_sends_started') == 0 and http.get('body_sends_started') == 0 and status is None and http.get('response_sha256') is None
+        if not (pre_grant_state(http, run/'stages/proposal-1') and category == validation.get('failure_category') == http.get('failure_category')
+                and summary.get('failure_phase') == validation.get('failure_phase') == 'https_transport' and validation.get('send_outcome') == 'not_started'
                 and process.get('exit_code') == 0 and stderr == '' and summary.get('credential_use_accepted') is False
                 and reconciliation.get('reason') == 'pre_send_failure_with_established_termination' and reconciliation.get('termination_established') is True
                 and reconciliation.get('launched') is True and reconciliation.get('send_outcome') is None):
@@ -307,29 +333,76 @@ def gate(run, task_id, draw):
     return ('continue' if not reasons and outcome in CONTINUABLE else 'pause'), outcome, reasons
 
 
+def run_name(site, draw, attempt): return f'{site}-draw{draw}' if attempt == 1 else f'{site}-draw{draw}-attempt{attempt}'
+
+
+def report(run, fresh, result, decision, outcome, reasons):
+    _, s = ledger_snapshot()
+    print(json.dumps({'run': run.name, 'fresh': fresh, **({'exit': result.returncode} if fresh else {}), 'decision': decision, 'outcome': outcome,
+                      'reasons': reasons, 'consumed': s['transmissions_consumed'], 'committed_micro_usd': s['committed_micro_usd']}), flush=True)
+    if decision == 'integrity_stop': raise SystemExit(f'INTEGRITY STOP at {run.name}: {reasons}; collection stops, the block needs review')
+    if decision not in ('continue', 'retry'): raise SystemExit(f'PAUSE at {run.name}: {reasons}; stop and review (a restart re-applies this decision)')
+
+
+def preflight(schedule):
+    """Revision 7 (review P2): the whole existing population, before any sender is invoked. Every entry is a run directory with a canonical
+    name (block 1's draw-1 runs, or a block 2 slot's attempt); the slots with runs are a prefix of the schedule; each slot's attempts are
+    1..n, n within the pre-send limit; every attempt is gated in order, each but the last deciding `retry` and only the last slot awaiting
+    one; the ledger holds a slot for exactly these block 2 slots, nothing open, each with n reservations, its releases and its consumption.
+    Returns where collection resumes: (schedule index, attempt)."""
+    def pause(why): raise SystemExit(f'PAUSE before any launch: {why}; stop and review')
+    attempts = {}
+    for entry in sorted(RUNS.iterdir()):
+        parsed = NAME.fullmatch(entry.name); site, draw, k = (parsed.group(1), int(parsed.group(2)), int(parsed.group(3) or 1)) if parsed else (None, None, None)
+        if not (parsed and entry.is_dir() and site in ORDER and (draw in DRAWS or (draw == 1 and k == 1)) and not entry.is_symlink()):
+            pause(f'{entry.name} is not a canonical run directory of this schedule')
+        if draw in DRAWS: attempts.setdefault((draw, site), []).append(k)
+    existing = [slot for slot in schedule if slot in attempts]
+    if existing != schedule[:len(existing)]: pause(f'the slots with runs are not a prefix of the schedule: {[run_name(s, d, 1) for d, s in existing]}')
+    _, s = ledger_snapshot(); limit = s['maximum_presend_attempts']
+    held = {key for key in s['slots'] if int(key.rsplit('/', 1)[1]) in DRAWS}
+    if held != {f'bracket-{site}/{draw}' for draw, site in existing} or s['open_reservations']:
+        pause(f'the ledger holds block 2 slots {sorted(held)} (open {s["open_reservations"]}), the runs {[run_name(s_, d, 1) for d, s_ in existing]}')
+    resume = (len(existing), 1)
+    for i, (draw, site) in enumerate(existing):
+        ks = sorted(attempts[(draw, site)])
+        if ks != list(range(1, len(ks)+1)) or len(ks) > limit: pause(f'{run_name(site, draw, 1)} attempts {ks} are not 1..n within the limit {limit}')
+        decisions = []
+        for k in ks:
+            run = RUNS/run_name(site, draw, k); decision, outcome, reasons = gate(run, f'bracket-{site}', draw)
+            report(run, False, None, decision, outcome, reasons); decisions.append(decision)
+            if k < len(ks) and decision != 'retry': pause(f'an attempt follows {run.name}, which was not released')
+        slot = s['slots'][f'bracket-{site}/{draw}']
+        if not (slot.get('reservations') == len(ks) and slot.get('released') == decisions.count('retry') and slot.get('consumed') is (decisions[-1] == 'continue')):
+            pause(f'the ledger slot {slot} disagrees with attempts {ks} decided {decisions}')
+        if decisions[-1] == 'retry':
+            if i != len(existing)-1: pause(f'{run_name(site, draw, ks[-1])} awaits a retry, but later slots have runs')
+            resume = (i, len(ks)+1)
+    print(json.dumps({'preflight': {'existing_block2_slots': len(existing), 'resume': run_name(*reversed(schedule[resume[0]]), resume[1]) if resume[0] < len(schedule) else None}}), flush=True)
+    return resume
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--credential-file', type=Path, required=True)
     args = parser.parse_args()
     RUNS.mkdir(exist_ok=True)
-    for draw, site in [(d, s) for d in DRAWS for s in ORDER]:
-        task_id, attempt = f'bracket-{site}', 1
+    schedule = [(d, s) for d in DRAWS for s in ORDER]
+    start, attempt = preflight(schedule)  # revision 7: nothing is launched until every existing run is inventoried and gated
+    for index in range(start, len(schedule)):
+        draw, site = schedule[index]; task_id = f'bracket-{site}'
+        if index > start: attempt = 1
         while True:  # revision 6: a verified pre-send release is retried as the slot's next attempt directory
-            run = RUNS/(f'{site}-draw{draw}' if attempt == 1 else f'{site}-draw{draw}-attempt{attempt}')
-            fresh = not run.exists()
-            if fresh:
-                _, s = ledger_snapshot()
-                if s['open_reservations']: raise SystemExit(f'PAUSE: an open reservation exists before {run.name}: {s["open_reservations"]}')
-                if attempt > 1: time.sleep(RETRY_DELAY_SECONDS)
-                result = subprocess.run([sys.executable, str(R6/'cohort_episode.py'), '--mode', 'live', '--task', task_id, '--draw', str(draw),
-                                         '--run-dir', str(run), '--credential-file', str(args.credential_file)], cwd=R6)
-            decision, outcome, reasons = gate(run, task_id, draw)
+            run = RUNS/run_name(site, draw, attempt)
+            if run.exists(): raise SystemExit(f'PAUSE: {run.name} appeared after the preflight; stop and review')
             _, s = ledger_snapshot()
-            print(json.dumps({'run': run.name, 'fresh': fresh, **({'exit': result.returncode} if fresh else {}), 'decision': decision, 'outcome': outcome,
-                              'reasons': reasons, 'consumed': s['transmissions_consumed'], 'committed_micro_usd': s['committed_micro_usd']}), flush=True)
-            if decision == 'integrity_stop': raise SystemExit(f'INTEGRITY STOP at {run.name}: {reasons}; collection stops, the block needs review')
+            if s['open_reservations']: raise SystemExit(f'PAUSE: an open reservation exists before {run.name}: {s["open_reservations"]}')
+            if attempt > 1: time.sleep(RETRY_DELAY_SECONDS)
+            result = subprocess.run([sys.executable, str(R6/'cohort_episode.py'), '--mode', 'live', '--task', task_id, '--draw', str(draw),
+                                     '--run-dir', str(run), '--credential-file', str(args.credential_file)], cwd=R6)
+            decision, outcome, reasons = gate(run, task_id, draw)
+            report(run, True, result, decision, outcome, reasons)
             if decision == 'retry': attempt += 1; continue
-            if decision != 'continue': raise SystemExit(f'PAUSE at {run.name}: {reasons}; stop and review (a restart re-applies this decision)')
             break
     print(json.dumps({'block_2': 'complete', 'runs': len(ORDER)*len(DRAWS), 'next': 'the operator disclosure scan over all 88 runs, then the frozen evaluation'}), flush=True)
 

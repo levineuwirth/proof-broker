@@ -1,6 +1,8 @@
 # R6-014 amendment 2 — live pre-send releases and retried slots
 
-Status: prepared for review, 2026-09-29. This is a **post-collection amendment**. It is not an unchanged preregistered evaluation. Its
+Status: **revision 2**, prepared for review, 2026-09-29. Revision 1 (`536f66c8`) was reviewed in
+[R6-014-AMENDMENT-2-REVIEW.md](reviews/2026-09-29/R6-014-AMENDMENT-2-REVIEW.md), which requested changes. The response is
+[R6-014-AMENDMENT-2-REVISION-2.md](reviews/2026-09-29/R6-014-AMENDMENT-2-REVISION-2.md). This is a **post-collection amendment**. It is not an unchanged preregistered evaluation. Its
 decision is recorded in [R6-014-BLOCK2-PAUSE-1.md](reviews/2026-09-28/R6-014-BLOCK2-PAUSE-1.md) ("Amendment 2, then resume").
 
 Nothing has been authorized, reserved or sent since the pause. Analysis stays deferred until an accepted audit. The collected runs, the
@@ -36,7 +38,11 @@ Amendment 1's auditor with these changes, each stated in its docstring (80 diff 
 - **`live_release`**, the live counterpart of the rehearsal-only release check:
   - the sender's failure is one of the four connection-phase categories `cohort_https.handoff` raises before the grant (TLS
     verification, TLS protocol, timeout, connection failure), agreed by the summary, the validation and the HTTPS record;
-  - one connection attempt, no verified TLS, no grant, zero header and body sends, no status, no response;
+  - (revision 2) the sender's **complete pre-grant state**, `pre_grant_state`. Every field that `cohort_https` initializes and `handoff`
+    would change must be present, with its initial value and type: all four send counters, the TLS, header-send and grant milestones,
+    the grant, response, retry and failure-code fields, and the send outcome. There must be one connection attempt, the milestones
+    before `handoff` in order, and no outbound-body or provider-response file. A missing or malformed field fails. The ledger's release
+    is not taken as evidence;
   - the handled exception: exit 0 and an empty stderr; the pricing check admitted.
 - **Retried slots.** A slot may hold `<site>-draw<d>`, then `-attempt2`, `-attempt3`, contiguously:
   - every attempt but the last is a release;
@@ -46,17 +52,27 @@ Amendment 1's auditor with these changes, each stated in its docstring (80 diff 
 Every other predicate is amendment 1's: the ledger binding (which already binds each reconciliation's evidence digests), the grant, the
 receipts, the chain, the publication and the scan. A partial or unknown send still fails closed. The rehearsal path is unchanged.
 
-## (b) The runner: [`run_block2.py`](reviews/2026-09-24/run_block2.py), revision 6
+## (b) The runner: [`run_block2.py`](reviews/2026-09-24/run_block2.py), revisions 6 and 7
 
 A release the gate verifies is decided **`retry`**. Verification means:
-- the auditor's release predicates;
+- the auditor's release predicates, including (revision 7) the same `pre_grant_state`;
 - the ledger's release (`pre_send_failure_with_established_termination`), the slot's k-th release on the ledger, nothing open;
 - nothing past the send: no certificate, consumer, kernel, proof record or response;
 - the frozen live release chain.
 
 The runner then waits `RETRY_DELAY_SECONDS` (60 s, to ride out a brief interruption) and reserves the slot again as `-attempt<k+1>`. At the
-limit the slot is exhausted and collection pauses. A sent slot must show its prior releases as its `released` count. On restart, every
-existing attempt is gated in order before anything launches. Everything else is revision 5's, including the frozen sequences, which
+limit the slot is exhausted and collection pauses. A sent slot must show its prior releases as its `released` count.
+
+**Revision 7: `preflight`.** Before any sender is invoked, the runner checks the whole existing population:
+- canonical run directory names only;
+- the slots with runs form a prefix of the schedule;
+- each slot's attempts are 1..n, within the limit;
+- every attempt is gated in order: each but the last must decide `retry`, and only the last slot may await one;
+- the ledger's block 2 slots are exactly these, nothing is open, and each slot's reservations, releases and consumption agree.
+
+Collection then resumes at the next missing attempt.
+
+Everything else is revision 5's, including the frozen sequences, which
 still come from the v2-locked auditor.
 
 ## Synthetic evidence first
@@ -71,6 +87,16 @@ still come from the v2-locked auditor.
   The operator scan binds all 13.
 
 ## Controls
+
+**Revision 2** adds these; the detail is in [R6-014-AMENDMENT-2-REVISION-2.md](reviews/2026-09-29/R6-014-AMENDMENT-2-REVISION-2.md).
+- **Auditor:** 27 coherently regenerated controls, one per pre-grant field or file. All are rejected: 23 by the release predicate and 4
+  first by shared checks. A direct probe shows the predicate alone rejects all 27.
+- **Runner:** the same 27 fields, each pausing on the pre-grant reason alone, and 16 restart populations. Each population asserts its
+  sender invocations and its stop reason.
+- **Reproduced:** the review's own probes.
+- **Unchanged:** revision 1's populations keep their outcomes under revision 2.
+
+### Revision 1's controls
 
 **Auditor** ([R6-014-AMENDMENT-2-AUDIT-CONTROLS.json](reviews/2026-09-28/R6-014-AMENDMENT-2-AUDIT-CONTROLS.json),
 [controls](reviews/2026-09-28/cohort_v9_audit_amended_2_controls.py)). The collected block 2 is not read.
@@ -119,7 +145,7 @@ Eleven cases are new, on the fixture's release and retry:
   - the release is retried;
   - release then sent retry continues;
 - pauses:
-  - the third release, as exhausted;
+  - exhaustion, with the mocked limit lowered to 1 at the first release (a comparison test, not a fixture-backed third release);
   - a header send, a grant, a category outside the connection phase, verified TLS or a non-zero exit;
   - records past the send;
   - a ledger release count that disagrees;
@@ -131,11 +157,11 @@ Eleven cases are new, on the fixture's release and retry:
    - the amendment 2 auditor and its controls;
    - the fixture and its generators;
    - the frozen analysis;
-   - as records: v2, this record, its review, and runner revision 6 and its controls.
+   - as records: v2, this record, its review and revision 2 record, and runner revision 7 and its controls.
 2. `verify` it.
 3. Capture 6 is admissible until **2026-09-29T20:13:37Z**. If it has lapsed, refresh pricing by the established revision, a new capture
    and `revise` under the same authority. The operator runs the capture.
-4. The operator relaunches the runner in a new log. It re-gates the 54 existing runs, retries l204 draw 6, then collects the 23 remaining
-   slots. If the collected release does not gate as a retry, the runner pauses with nothing sent, and that is reviewed separately.
+4. The operator relaunches the runner in a new log. Its preflight inventories the 65 existing runs and gates the 54 block 2 runs before
+   any launch. It then retries l204 draw 6 and collects the 23 remaining slots. If the collected release does not gate as a retry, the runner pauses with nothing sent, and that is reviewed separately.
 5. The operator scan binds every run, including attempt directories. Then the amendment 2 audit runs; the frozen analysis runs only on
    acceptance. Any further production-only mismatch is retained and reviewed separately.

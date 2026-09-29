@@ -21,6 +21,12 @@ The amendment, each change stated:
   release; at most the reserving revision's `maximum_presend_attempts`; on the live ledger the attempts' reservations are in attempt order
   and the slot's `released` count equals its release runs. The frozen analysis already defines pre-send releases and exhaustion.
 
+Revision 2 (review `reviews/2026-09-29/R6-014-AMENDMENT-2-REVIEW.md`, P1): `live_release` required only the started counters, so a record whose
+returned counters or handoff milestones contradicted a connection-phase failure passed. It now requires the sender's complete pre-grant
+state (`pre_grant_state`): every field `cohort_https.execute` initializes, present with its initial value and type, which a failure before
+`handoff` records a verified TLS session cannot have changed; the milestones before `handoff` reached in order; no outbound body or provider response. A missing or
+malformed field fails. The ledger's release is not taken as evidence of any of it (its classifier reads the started counters).
+
 Amendment 1's docstring follows.
 
 R6-014 amendment 1 (post-collection): the frozen cohort v9 auditor (`reviews/2026-09-23/cohort_v9_audit.py`, locked by
@@ -1412,15 +1418,34 @@ def failure(a, run, name, http):
               and (run/'seal.json').exists(), f'{name}:failure:classified_and_finalized')
 
 
+PRE_GRANT = {  # amendment 2, revision 2: the sender's record as `cohort_https.execute` initializes it; a failure before `handoff` records a verified TLS session changes none of it
+    'header_sends_started': 0, 'header_sends_returned': 0, 'body_sends_started': 0, 'body_sends_returned': 0, 'tls': None, 'tls_verified_at_ns': None,
+    'header_send_at_ns': None, 'outbound_body_sha256': None, 'response_sha256': None, 'response_bytes': None, 'http_status': None, 'response_headers': {},
+    'retries': 0, 'redirects_followed': 0, 'pricing_failure_code': None, 'ledger_failure_code': None, 'grant_committed': False, 'grant_write_failed': False,
+    'grant_id': None, 'grant_created_at_ns': None, 'grant_durable_at_ns': None, 'send_outcome': 'not_started'}
+REACHED = ('permit_verified_at_ns', 'pricing_admitted_at_ns', 'credential_read_at_ns', 'connection_started_at_ns')  # before `handoff`, in this order
+
+
+def pre_grant_state(http, stage):
+    """Amendment 2, revision 2: the complete state of a connection-phase failure before the grant. Every field of `PRE_GRANT` present with its
+    initial value and type (a missing or malformed field fails; nothing defaults to zero or absence); one connection attempt; the milestones
+    before `handoff` reached, in order; a verification code exactly for a certificate failure; no outbound body or provider response written."""
+    same = lambda v, w: type(v) is type(w) and v == w
+    reached = [http.get(k) for k in REACHED]; category = http.get('failure_category')
+    return (all(k in http and same(http[k], v) for k, v in PRE_GRANT.items()) and same(http.get('connection_attempts'), 1)
+            and all(type(t) is int for t in reached) and reached == sorted(reached) and type(http.get('elapsed_ns')) is int and http['elapsed_ns'] >= 0
+            and category in CONNECT_PHASE and 'tls_verify_code' in http
+            and (type(http['tls_verify_code']) is int if category == 'tls_certificate_verification' else http['tls_verify_code'] is None)
+            and not (stage/'output/outbound-body.json').exists() and not (stage/'output/provider-response.json').exists())
+
+
 def live_release(a, run, name, http):
-    """Amendment 2: a live pre-send release — the sender's connection-phase failure before its grant, nothing sent, the handled exception."""
+    """Amendment 2: a live pre-send release — the sender's connection-phase failure before its grant, nothing sent, the handled exception.
+    Revision 2 (review P1): the sender's complete pre-grant state (`pre_grant_state`), not the started counters alone."""
     summary = load(run/'credential-summary.json'); validation = load(run/'transport-validation.json')
     stderr = (run/'stages/proposal-1/proposal-1.stderr').read_text(); process = load(run/'stages/proposal-1/proposal-1.process.json')
-    tls = http.get('tls')
-    a.require(http['failure_category'] in CONNECT_PHASE and summary['failure_category'] == validation['failure_category'] == http['failure_category']
-              and summary['failure_phase'] == validation['failure_phase'] == 'https_transport' and validation.get('send_outcome') == http.get('send_outcome') == 'not_started'
-              and http['connection_attempts'] == 1 and (tls is None or tls.get('verified') is not True) and http['grant_committed'] is False and not http.get('grant_id')
-              and http['header_sends_started'] == 0 and http['body_sends_started'] == 0 and http['http_status'] is None and http.get('response_sha256') is None
+    a.require(pre_grant_state(http, run/'stages/proposal-1') and summary['failure_category'] == validation['failure_category'] == http['failure_category']
+              and summary['failure_phase'] == validation['failure_phase'] == 'https_transport' and validation.get('send_outcome') == 'not_started'
               and process['exit_code'] == 0 and stderr == '' and load(run/'stages/proposal-1/output/pricing-check.json')['accepted'] is True
               and not (run/'response.json').exists() and (run/'seal.json').exists(), f'{name}:failure:classified_and_finalized')
 

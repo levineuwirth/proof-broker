@@ -26,6 +26,16 @@ grant, a category outside the connection phase, verified TLS, a non-zero exit, a
 this attempt, a sent retry whose slot does not show its prior releases). The existing cases' ledger state now carries the pre-send limit
 and the slot's released count.
 
+Revision 7 (R6-014 amendment 2 review). P1: each field of the sender's pre-grant state contradicted alone on the synthetic release (both
+returned counters, each handoff milestone, the grant and response fields, a missing field, a malformed counter, milestones missing or out of
+order, a verification code, an outbound body or provider response file), each pausing on the pre-grant reason and nothing else. P2: the
+existing population checked before any sender (`POPULATION`, restart only, zero sender invocations asserted): an attempt after a sent attempt,
+a missing first attempt, a gap before a later run, a later invalid run, a stray file, two non-canonical names, a ledger slot without its run
+and a run without its ledger slot, attempts beyond the limit, a released slot followed by a later slot, a ledger reservation count that
+disagrees, an open reservation; each with its stop reason asserted;
+and the positive populations (a release awaiting its retry, a completed retry, block 1's draw-1 runs beside them). The mocked ledger now
+holds no block 2 slot before the first launch (fresh) and the case's slot afterwards, with its reservation count.
+
 Each case runs through the production `main()` twice, with the same expected decision:
 * **fresh** — the mocked sender materializes the case as the episode's result; the runner then gates it;
 * **restart** — the case already exists when the runner starts; the runner must gate it before any launch.
@@ -116,6 +126,34 @@ CASES = {  # name: (template site, expected decision)
     'release_records_past_send_pauses': ('l096', 'paused'),
     'release_ledger_count_mismatch_pauses': ('l096', 'paused'),
     'sent_retry_release_count_mismatch_pauses': ('l096', 'paused'),
+    # revision 7 (review P1): one field of the pre-grant state contradicted alone
+    'release_pregrant_body_sends_returned_pauses': ('l096', 'paused'),
+    'release_pregrant_header_sends_returned_pauses': ('l096', 'paused'),
+    'release_pregrant_header_send_at_ns_pauses': ('l096', 'paused'),
+    'release_pregrant_tls_verified_at_ns_pauses': ('l096', 'paused'),
+    'release_pregrant_outbound_body_sha256_pauses': ('l096', 'paused'),
+    'release_pregrant_grant_created_at_ns_pauses': ('l096', 'paused'),
+    'release_pregrant_grant_durable_at_ns_pauses': ('l096', 'paused'),
+    'release_pregrant_grant_id_pauses': ('l096', 'paused'),
+    'release_pregrant_grant_write_failed_pauses': ('l096', 'paused'),
+    'release_pregrant_http_status_pauses': ('l096', 'paused'),
+    'release_pregrant_response_sha256_pauses': ('l096', 'paused'),
+    'release_pregrant_response_bytes_pauses': ('l096', 'paused'),
+    'release_pregrant_response_headers_pauses': ('l096', 'paused'),
+    'release_pregrant_retries_pauses': ('l096', 'paused'),
+    'release_pregrant_redirects_followed_pauses': ('l096', 'paused'),
+    'release_pregrant_send_outcome_pauses': ('l096', 'paused'),
+    'release_pregrant_ledger_failure_code_pauses': ('l096', 'paused'),
+    'release_pregrant_pricing_failure_code_pauses': ('l096', 'paused'),
+    'release_pregrant_connection_attempts_pauses': ('l096', 'paused'),
+    'release_pregrant_field_missing_pauses': ('l096', 'paused'),
+    'release_pregrant_counter_malformed_pauses': ('l096', 'paused'),
+    'release_pregrant_connection_attempts_malformed_pauses': ('l096', 'paused'),
+    'release_pregrant_milestone_missing_pauses': ('l096', 'paused'),
+    'release_pregrant_milestones_out_of_order_pauses': ('l096', 'paused'),
+    'release_pregrant_verify_code_missing_pauses': ('l096', 'paused'),
+    'release_pregrant_outbound_body_file_pauses': ('l096', 'paused'),
+    'release_pregrant_provider_response_file_pauses': ('l096', 'paused'),
     'negative_control_certificate_record_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_verifier_receipt_accepts_stops': ('l170', 'integrity_stop'),
     'negative_control_summary_claims_proof_stops': ('l170', 'integrity_stop'),
@@ -124,6 +162,26 @@ CASES = {  # name: (template site, expected decision)
 }
 NEXT = {'l069': 'l070', 'l166': 'l175', 'l170': 'l175', 'l096': 'l166'}
 RELEASE_CASES = {name for name in CASES if name.startswith('release_') or name.startswith('sent_retry_')}
+PRE_GRANT_REASON = 'not a pre-send release: the connection-phase failure, zero sends or the release reconciliation does not hold'
+PRE_GRANT_CHANGES = {  # revision 7: the one contradiction each P1 case makes to the synthetic release's HTTPS record
+    'body_sends_returned': lambda h: h.update(body_sends_returned=1), 'header_sends_returned': lambda h: h.update(header_sends_returned=1),
+    'header_send_at_ns': lambda h: h.update(header_send_at_ns=12345), 'tls_verified_at_ns': lambda h: h.update(tls_verified_at_ns=12345),
+    'outbound_body_sha256': lambda h: h.update(outbound_body_sha256='0'*64), 'grant_created_at_ns': lambda h: h.update(grant_created_at_ns=12345),
+    'grant_durable_at_ns': lambda h: h.update(grant_durable_at_ns=12345), 'grant_id': lambda h: h.update(grant_id='0'*32),
+    'grant_write_failed': lambda h: h.update(grant_write_failed=True), 'http_status': lambda h: h.update(http_status=200),
+    'response_sha256': lambda h: h.update(response_sha256='0'*64), 'response_bytes': lambda h: h.update(response_bytes=0),
+    'response_headers': lambda h: h.update(response_headers={'x-request-id': 'r'}), 'retries': lambda h: h.update(retries=1),
+    'redirects_followed': lambda h: h.update(redirects_followed=1), 'send_outcome': lambda h: h.update(send_outcome='unknown'),
+    'ledger_failure_code': lambda h: h.update(ledger_failure_code='cohort_ledger_head'), 'pricing_failure_code': lambda h: h.update(pricing_failure_code='pricing_stale'),
+    'connection_attempts': lambda h: h.update(connection_attempts=2), 'field_missing': lambda h: h.pop('body_sends_returned'),
+    'counter_malformed': lambda h: h.update(header_sends_returned=False), 'connection_attempts_malformed': lambda h: h.update(connection_attempts=True),
+    'milestone_missing': lambda h: h.update(connection_started_at_ns=None),
+    'milestones_out_of_order': lambda h: h.update(credential_read_at_ns=h['connection_started_at_ns']+1),
+    'verify_code_missing': lambda h: h.update(tls_verify_code=None),
+}
+PRE_GRANT_FILES = {'outbound_body_file': 'outbound-body.json', 'provider_response_file': 'provider-response.json'}
+PRE_GRANT_CASES = {f'release_pregrant_{f}_pauses' for f in (*PRE_GRANT_CHANGES, *PRE_GRANT_FILES)}
+EMPTY_LEDGER = ([], {'open_reservations': [], 'transmissions_consumed': 11, 'committed_micro_usd': 1126400, 'maximum_presend_attempts': 3, 'slots': {}})
 TWO_ATTEMPTS = ('release_then_sent_retry_continues', 'sent_retry_release_count_mismatch_pauses')  # a release, then a sent retry of the slot
 
 
@@ -191,6 +249,10 @@ def build(name, site, target):
         p = J(target/'stages/proposal-1/proposal-1.process.json'); p['exit_code'] = 1; W(target/'stages/proposal-1/proposal-1.process.json', p)
         supervisor(chain, 'proposal-1', 'stage_finished')['payload'] = p  # its stage receipt, as the supervisor writes it
     elif name == 'release_records_past_send_pauses': shutil.copyfile(BLOCK1/'l170-draw1/certificate-verdict.json', target/'certificate-verdict.json')
+    elif name in PRE_GRANT_CASES:  # revision 7: one pre-grant field or file contradicted alone
+        field = name.removeprefix('release_pregrant_').removesuffix('_pauses')
+        if field in PRE_GRANT_FILES: (target/'stages/proposal-1/output'/PRE_GRANT_FILES[field]).write_text('{}\n')
+        else: h = J(target/'stages/proposal-1/output/http.json'); PRE_GRANT_CHANGES[field](h); W(target/'stages/proposal-1/output/http.json', h)
     elif name == 'returned_binding_failure_pauses':
         v = J(target/'transport-validation.json'); v['response_request_binding']['accepted'] = False
         v.update(failure_category='transport_capture_failure', failure_phase='https_transport'); W(target/'transport-validation.json', v)
@@ -283,7 +345,8 @@ def build(name, site, target):
     released = sum(r['kind'] == 'release' and r.get('task_id') == task and r.get('draw') == 2 for r in view)
     if name == 'ledger_row_mismatch_pauses': view[ti] = {**view[ti], 'reconciled_at_unix': view[ti]['reconciled_at_unix']+1}
     state = {'open_reservations': [], 'transmissions_consumed': 12, 'committed_micro_usd': 1228800, 'maximum_presend_attempts': 1 if name == 'release_exhausted_pauses' else 3,
-             'slots': {f'{task}/2': {'consumed': consumed, 'released': released}}}
+             'slots': {f'{task}/2': {'consumed': consumed, 'released': released, 'open': None,
+                                     'reservations': sum(r['kind'] == 'reservation' and r.get('task_id') == task and r.get('draw') == 2 for r in view)}}}
     return view, state
 
 
@@ -299,19 +362,84 @@ def exercise(name, site, mode):
             if name == 'sent_retry_release_count_mismatch_pauses': view[1]['slots'][f'bracket-{site}/2']['released'] = 2
         if mode == 'restart':
             for live, source in stages.items(): shutil.copytree(source, live)
+        book = {'now': view if mode == 'restart' else EMPTY_LEDGER}  # revision 7: no block 2 slot before the first launch
         def sender(argv, **kwargs):
             run = Path(argv[argv.index('--run-dir')+1]); launches.append(run.name)
-            if mode == 'fresh' and run in stages: shutil.copytree(stages[run], run); return SimpleNamespace(returncode=0)
+            if mode == 'fresh' and run in stages: shutil.copytree(stages[run], run); book['now'] = view; return SimpleNamespace(returncode=0)
             raise NextLaunch()
-        out = io.StringIO()
-        with patch.object(m, 'RUNS', runs), patch.object(m, 'ORDER', (site, NEXT[site])), patch.object(m, 'DRAWS', (2,)), \
-             patch.object(m, 'ledger_snapshot', lambda: view), patch.object(m, 'subprocess', SimpleNamespace(run=sender)), patch.object(m.time, 'sleep', lambda s: None), \
-             patch.object(sys, 'argv', ['run_block2.py', '--credential-file', str(temp/'never-created')]), contextlib.redirect_stdout(out):
-            try: m.main(); observed = 'completed'
-            except NextLaunch: observed = 'retried' if launches and launches[-1] == f'{site}-draw2-attempt2' and name not in TWO_ATTEMPTS else 'continued'
-            except SystemExit as e: observed = 'integrity_stop' if str(e).startswith('INTEGRITY STOP') else 'paused' if str(e).startswith('PAUSE') else str(e)
-        lines = [json.loads(l) for l in out.getvalue().splitlines() if l.startswith('{')]; line = lines[-1] if lines else {}  # the decisive (last) gate line
+        observed, line = drive(runs, (site, NEXT[site]), lambda: book['now'], sender, temp)
+        if observed == 'launch': observed = 'retried' if launches and launches[-1] == f'{site}-draw2-attempt2' and name not in TWO_ATTEMPTS else 'continued'
         return {'observed': observed, 'launches': launches, 'decision': line.get('decision'), 'outcome': line.get('outcome'), 'reasons': line.get('reasons')}
+
+
+def drive(runs, order, snapshot, sender, temp):
+    """The production `main()` over `runs`, with the sender and ledger mocked; returns what it did and the decisive (last) gate line."""
+    out = io.StringIO()
+    with patch.object(m, 'RUNS', runs), patch.object(m, 'ORDER', order), patch.object(m, 'DRAWS', (2,)), \
+         patch.object(m, 'ledger_snapshot', snapshot), patch.object(m, 'subprocess', SimpleNamespace(run=sender)), patch.object(m.time, 'sleep', lambda s: None), \
+         patch.object(sys, 'argv', ['run_block2.py', '--credential-file', str(temp/'never-created')]), contextlib.redirect_stdout(out):
+        stop = None
+        try: m.main(); observed = 'completed'
+        except NextLaunch: observed = 'launch'
+        except SystemExit as e:
+            stop = str(e); observed = 'integrity_stop' if stop.startswith('INTEGRITY STOP') else 'paused' if stop.startswith('PAUSE') else stop
+    lines = [json.loads(l) for l in out.getvalue().splitlines() if l.startswith('{')]
+    gates = [l for l in lines if 'decision' in l]
+    return observed, {**(gates[-1] if gates else {}), 'gated': [l['run'] for l in gates], 'stop': stop}
+
+
+POPULATION = {  # revision 7 (review P2), restart only: name -> expected (observed, launches, the stop's reason, or None)
+    'release_awaiting_retry_resumes': ('launch', ['l096-draw2-attempt2'], None),
+    'completed_retry_resumes_at_next_slot': ('launch', ['l166-draw2'], None),
+    'block1_runs_beside_resumes': ('launch', ['l166-draw2'], None),
+    'attempt_after_sent_attempt_pauses': ('paused', [], 'an attempt follows l096-draw2-attempt2, which was not released'),
+    'missing_first_attempt_pauses': ('paused', [], 'l096-draw2 attempts [2] are not 1..n'),
+    'gap_before_later_run_pauses': ('paused', [], 'the slots with runs are not a prefix of the schedule'),
+    'later_invalid_run_pauses': ('paused', [], 'PAUSE at l166-draw2:'),
+    'stray_file_pauses': ('paused', [], 'notes.txt is not a canonical run directory'),
+    'noncanonical_attempt_name_pauses': ('paused', [], 'l096-draw2-attempt02 is not a canonical run directory'),
+    'block1_attempt_name_pauses': ('paused', [], 'l096-draw1-attempt2 is not a canonical run directory'),
+    'ledger_slot_without_run_pauses': ('paused', [], "the ledger holds block 2 slots ['bracket-l096/2'] (open []), the runs []"),
+    'run_without_ledger_slot_pauses': ('paused', [], "the ledger holds block 2 slots [] (open []), the runs ['l096-draw2']"),
+    'attempts_beyond_limit_pauses': ('paused', [], 'l096-draw2 attempts [1, 2] are not 1..n within the limit 1'),
+    'released_slot_followed_by_later_slot_pauses': ('paused', [], 'l096-draw2 awaits a retry, but later slots have runs'),
+    'ledger_reservations_disagree_pauses': ('paused', [], "disagrees with attempts [1, 2] decided ['retry', 'continue']"),
+    'open_reservation_pauses': ('paused', [], "(open ['"+'0'*32+"'])"),
+}
+
+
+def population(name):
+    """An existing population in RUNS when the runner starts (restart): the synthetic release (attempt 1) and sent retry (attempt 2) of l096
+    draw 2, changed in one respect; the schedule is l096, l166, l175 at draw 2."""
+    with tempfile.TemporaryDirectory(prefix='block2-population-') as temp:
+        temp = Path(temp); runs = temp/'runs'; runs.mkdir(); staged = temp/'staged'; staged.mkdir()
+        first, second = runs/'l096-draw2', runs/'l096-draw2-attempt2'
+        build('release_is_retried', 'l096', first); rows, state = build('_sent_retry', 'l096', second)
+        state = json.loads(json.dumps(state)); launches = []
+        later = {'consumed': True, 'released': 0, 'open': None, 'reservations': 1}
+        if name == 'release_awaiting_retry_resumes':
+            shutil.rmtree(second); rows, state = build('release_is_retried', 'l096', staged/first.name)
+        elif name == 'block1_runs_beside_resumes':
+            for site in ('l096', 'l166', 'l175'): (runs/f'{site}-draw1').mkdir()
+        elif name == 'attempt_after_sent_attempt_pauses': shutil.copytree(second, runs/'l096-draw2-attempt3')
+        elif name == 'missing_first_attempt_pauses': shutil.rmtree(first)
+        elif name == 'gap_before_later_run_pauses': (runs/'l175-draw2').mkdir(); state['slots']['bracket-l175/2'] = later
+        elif name == 'later_invalid_run_pauses': (runs/'l166-draw2').mkdir(); state['slots']['bracket-l166/2'] = later
+        elif name == 'stray_file_pauses': (runs/'notes.txt').write_text('stray\n')
+        elif name == 'noncanonical_attempt_name_pauses': second.rename(runs/'l096-draw2-attempt02')
+        elif name == 'block1_attempt_name_pauses': (runs/'l096-draw1-attempt2').mkdir()
+        elif name == 'ledger_slot_without_run_pauses': shutil.rmtree(first); shutil.rmtree(second)
+        elif name == 'run_without_ledger_slot_pauses': state['slots'] = {}
+        elif name == 'attempts_beyond_limit_pauses': state['maximum_presend_attempts'] = 1
+        elif name == 'released_slot_followed_by_later_slot_pauses':
+            shutil.rmtree(second); rows, state = build('release_is_retried', 'l096', staged/first.name); state = json.loads(json.dumps(state))
+            shutil.copytree(first, runs/'l166-draw2'); state['slots']['bracket-l166/2'] = later
+        elif name == 'ledger_reservations_disagree_pauses': state['slots']['bracket-l096/2']['reservations'] = 3
+        elif name == 'open_reservation_pauses': state['open_reservations'] = ['0'*32]
+        elif name != 'completed_retry_resumes_at_next_slot': raise AssertionError(name)
+        def sender(argv, **kwargs): launches.append(Path(argv[argv.index('--run-dir')+1]).name); raise NextLaunch()
+        observed, line = drive(runs, ('l096', 'l166', 'l175'), lambda: (rows, state), sender, temp)
+        return {'observed': observed, 'launches': launches, 'gated': line['gated'], 'stop': line['stop'], 'decision': line.get('decision'), 'reasons': line.get('reasons')}
 
 
 def main():
@@ -332,10 +460,16 @@ def main():
                                     [following] if expected == 'continued' else [first] if mode == 'fresh' else []
             assert got['observed'] == expected and got['launches'] == expected_launches, (name, mode, got)
             if expected in ('continued', 'retried'): assert got['reasons'] == [], (name, mode, got)
+            if name in PRE_GRANT_CASES: assert got['reasons'] == [PRE_GRANT_REASON], (name, mode, got)  # revision 7: the pre-grant predicate alone
             results[f'{name}:{mode}'] = got; print(name, mode, got['observed'], got['outcome'], got['reasons'], flush=True)
+    populations = {}
+    for name, (expected, expected_launches, reason) in POPULATION.items():  # revision 7: the existing population, before any sender
+        got = population(name); assert got['observed'] == expected and got['launches'] == expected_launches, (name, got)
+        assert (got['stop'] is None) if reason is None else (reason in got['stop']), (name, got)
+        populations[name] = got; print('population', name, got['observed'], got['launches'], got['gated'], got['stop'], flush=True)
     baselines = {site: list(m.gate(BLOCK1/f'{site}-draw1', f'bracket-{site}', 1)) for site in m.ORDER}  # the audited block 1 runs, read-only
     assert all(d[0] == 'continue' and d[2] == [] for d in baselines.values()), baselines
-    r6.write_json(args.output, {'passed': True, 'cases': len(CASES), 'records': len(results), 'results': results, 'block1_baselines': baselines,
+    r6.write_json(args.output, {'passed': True, 'cases': len(CASES), 'records': len(results), 'results': results, 'populations': populations, 'block1_baselines': baselines,
                                 'runner_sha256': r6.sha(HERE/'run_block2.py'), 'program_sha256': r6.sha(Path(__file__)), 'transmissions': 0, 'credentials_read': 0,
                                 'scope': 'synthetic copies of audited block 1 runs, consistent at every identity; mocked sender and ledger; continuation decisions only'})
     print(json.dumps({'passed': True, 'cases': len(CASES), 'records': len(results)}))
