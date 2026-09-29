@@ -1,0 +1,64 @@
+{
+  "schema_version": "r6-pricing-admission-3",
+  "accepted": true,
+  "policy_sha256": "9b6153f29eaf4d314ccc82a8b0d8cbf16c4124f034895869a5e8544b4edb8316",
+  "contract_sha256": "7565fe81f07abf1c472b303fe2879c34a4ef7846d7624da2980ce964ab391725",
+  "request_sha256": "4899761934d67daa6e8000611a8c3a8171a8c4e9c746cfb5fa465bd8f9b0a293",
+  "arguments_sha256": "744e94fd71b25b5564c8e772e057b17d2211abfab7eb8eec7d602639802d2456",
+  "body_sha256": "b2fd74892bd2759e8943f75c586b69efd0703a902a2732c9d7fad651e1bdd37b",
+  "message_utf8_bytes": 3153,
+  "sources": {
+    "model": {
+      "raw_sha256": "677b33adc8fd55d44c82dd8be31ab7707fa0821f6f7c1d2535d28689f84b4bfe",
+      "extract_sha256": "90fba6364cc9ddde98f38c9022cc8ff5e1176050ed7cf217e2d644895876a344",
+      "receipt_sha256": "239bf51e180c7765b2e41f3b1341efd183dea135c0bd69d463a0dacf34056586"
+    },
+    "caching": {
+      "raw_sha256": "bb9b6dfc8015dd0120cbaab8585cc8072931ac39f0c77b1d083854bd4fa744d0",
+      "extract_sha256": "ccbe694016dbc02310cdda6e857ec11bb64e4361433e468ab67efb332daa3f27",
+      "receipt_sha256": "96539b5f05336c459e690578e855a002bee054c2f0090c65a61ca952f281161b"
+    }
+  },
+  "nano_usd_per_token": {
+    "input": 2500,
+    "cached_input": 250,
+    "output": 15000,
+    "cache_write": 2500
+  },
+  "reserved_micro_usd": 102400,
+  "applicability": {
+    "source_conditions": {
+      "long_context": {
+        "input_tokens_threshold": 272000,
+        "comparison": "greater_than",
+        "input_multiplier": "2",
+        "output_multiplier": "1.5",
+        "scope": "full_session",
+        "service_tiers": [
+          "standard",
+          "batch",
+          "flex"
+        ]
+      },
+      "regional_processing": {
+        "uplift_percent": 10,
+        "scope": "regional_processing_endpoints"
+      }
+    },
+    "input_tokens_reserved": 16384,
+    "input_tokens_upper_bound_exclusive": 272000,
+    "endpoint": {
+      "host": "api.openai.com",
+      "path": "/v1/responses",
+      "port": 443,
+      "scheme": "https"
+    },
+    "long_context_surcharge_applicable": false,
+    "regional_surcharge_applicable": false,
+    "session_scope": "one_stateless_request",
+    "scope": "local policy/input applicability under the existing token-bound assumption; not billing attestation"
+  },
+  "evaluated_at_unix": 1790695899.6747289,
+  "billing_guarantee": false,
+  "evidence_scope": "envelope recomputed from the request under the contract; local retained-source, clock and request consistency; no remote pricing or inference attestation"
+}
