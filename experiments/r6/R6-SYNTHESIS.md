@@ -67,9 +67,14 @@ obligations**, in **two** declaration families, and it did not change from draw 
   its backend there. On l069–l078 both arms prove the same obligations.
 - **On this population and interface, reconstruction constrained coverage, not proposal.** The four closer-unreachable obligations
   received verified witnesses at every draw, and the pinned ℕ closer refused them all.
-- **The default reference route**, recorded beside the frozen arm and never pooled with it, closed eight sites. Those were l069–l078
-  and exactly those four: l166, l175, l178 and l204. Neither route alone closed all ten certificate-feasible obligations. This is the
-  motivation for the proposed follow-up below, not part of this result.
+- **The default reference route** (`site_cvc4_default_closer_v1`, closing through `gated_omega`) is a separate control. It was
+  recorded beside the frozen arm and never pooled with it.
+  - It closed eight sites: l069–l078, and exactly those four, l166, l175, l178 and l204. It missed l096 and l099.
+  - `gated_omega` re-proves the original goal with `omega` once the certificate is accepted
+    (`lean-bridge/ProofBroker/Tactic.lean`). It does not consume the certificate. Its closures show that those obligations are
+    provable; they do not show that a retained witness can be consumed.
+  - No route closed all ten certificate-feasible obligations. This motivates the proposed follow-up below; it is not part of this
+    result.
 - **What repetition bought** was witness diversity, not coverage.
   - l070 returned four distinct verified witnesses, three of its eight slots matching the classification's certificate.
   - l071 returned two, none matching.
@@ -117,8 +122,8 @@ the closeout review).
   - the integrity stop on a negative-control acceptance;
   - any unknown or partial send;
   - an exhausted slot.
-- **Runner review:** only reviewed and approved runner revisions transmitted: revision 5, then revision 7. Revisions 1–4 and 6 were
-  each repaired after review findings, before any transmission.
+- **Runner review, block 2:** only reviewed and approved revisions of the block 2 runner transmitted: revision 5, then revision 7.
+  Revisions 1–4 and 6 were each repaired after review findings, before any transmission. Block 1 ran under its own runner history.
 - **Amendment 2's first review** found two defects before any resumption:
   - contradictory send evidence could still authorize a retry;
   - a restart could skip existing attempts.
@@ -146,13 +151,15 @@ release ([`release_sources.py`](reviews/2026-09-28/release_sources.py)).
 
 ## Proposed follow-up, not part of this closeout: R6-015
 
-This would be an **offline** test of a changed reconstruction route on retained evidence:
-- the 32 verified witnesses at l166, l175, l178 and l204, replayed through an ℤ-capable closer or the reference route;
-- preregistered separately;
-- no provider, no credential, no spending.
+This would be an **offline** test of a changed reconstruction route on retained evidence. Its question: **can an appropriate closer
+construct a proof from the retained certificates?** That means consuming the 32 verified witnesses at l166, l175, l178 and l204 with a
+closer suited to their ℤ goals.
+- It would be preregistered separately.
+- It needs no provider, no credential and no spending.
+- The reference route stays a separate control. Its `gated_omega` closures re-prove the goals without the certificate, so they cannot
+  answer this question.
 
-It would measure whether "closer-unreachable" is a property of those obligations or only of the closer choice. It would **not revise
-R6-014's result**, which stands as recorded under its frozen route.
+It would **not revise R6-014's result**, which stands as recorded under its frozen route.
 
 ## Records
 
