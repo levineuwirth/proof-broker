@@ -1,7 +1,8 @@
 # R6-015 proposal — consuming the refused certificates, offline
 
-Status: research-design proposal, **revision 2**, 2026-09-30, against `1f694b65` (tag `r6`). It responds to
-[the review of revision 1](reviews/2026-09-30/R6-015-PROPOSAL-REVIEW.md), which found two P1 and three P2 issues. It is not frozen,
+Status: research-design proposal, **revision 3**, 2026-09-30, against `1f694b65` (tag `r6`). Revision 2 responded to
+[the review of revision 1](reviews/2026-09-30/R6-015-PROPOSAL-REVIEW.md), which found two P1 and three P2 issues. Revision 3 corrects
+what a failed regression control may be taken to show, per [the review of R6 qualification 1](reviews/2026-09-30/R6-QUALIFICATION-1-REVIEW.md). It is not frozen,
 not implemented, and not an amendment to R6-014. R6-014's result stands as recorded ([synthesis](R6-SYNTHESIS.md)).
 - **No provider, credential, reservation or spending** is involved at any stage.
 - No R6 run, record, policy or lock is changed.
@@ -101,8 +102,9 @@ positivity subgoal", and the ladder's "consumed" stage rests on that. In R6, "co
 verified certificate and the kernel accepted the result*. It does not mean *the certificate alone discharged the contradiction*,
 because the closer did not enforce that.
 
-R6-015's regression control (below) tests whether R6's proved certificates also pass the constrained fold. Recording a
-qualification in R6's own records is the author's decision; this proposal does not make it.
+The qualification is recorded in [R6 qualification 1](R6-QUALIFICATION-1.md). R6-015's regression control (below) tests whether
+R6's proved certificates also *suffice* under the constrained fold. How R6's own proofs were built is settled only by a dependency
+audit of their retained proof terms.
 
 ## The proposed route
 
@@ -167,7 +169,8 @@ A well-formed but invalid witness injected into the closer at l170 must fail.
 - each distinct map retained for them is replayed through the constrained fold;
 - each must close, with its original closer named.
 
-This measures whether R6's consumed certificates pass a hypothesis-free check. The constrained fold may change proof terms, so
+This measures whether R6's consumed certificates pass a hypothesis-free check. **Passing** establishes that the certificate suffices under
+the new route. **Failing** requires diagnosis and is not, by itself, evidence that R6's proof relied on its context. The constrained fold may change proof terms, so
 byte-identity with R6's exports is not required. Axioms must be unchanged.
 
 **6. Selection guard.** A `Nat` comparison in a mixed context still takes the ℕ closer. An `Int` comparison with no ℕ variables
@@ -214,8 +217,9 @@ baseline. They are never counted as consumption.
 
   The result is a located boundary, reported per obligation, map and class.
 - **None.** The gap is more than these changes, and the record says where.
-- **Regression control 5 fails for an R6-proved certificate.** That certificate's R6 proof depended on the contextual step. The
-  record says so, and it bears directly on the R6 qualification above.
+- **Regression control 5 fails for an R6-proved certificate.** This requires diagnosis. The cause could be incomplete cast
+  normalization in the constrained step, an implementation defect, or dependence of R6's proof on its contextual step. Only an audit
+  of R6's retained proof term (`solution.ndjson.gz`) can establish the last; see [qualification 1](R6-QUALIFICATION-1.md).
 
 In every case, R6-014's result is unchanged. R6-015 is reported separately, under its own route, and never pooled with R6's
 numbers.
