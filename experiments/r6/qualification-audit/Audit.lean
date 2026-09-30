@@ -3,26 +3,29 @@ import Export.Parse
 open Lean Meta Elab
 
 /-!
-# R6 qualification 1 audit
+# R6 qualification 1 audit (build revision 2)
 
-The tool specified by `experiments/r6/R6-QUALIFICATION-1-AUDIT-PROPOSAL.md` (revision 2). For one `lean4export` export it
-reports, for the broker's final positivity step `hpos : 0 < s` in `ProofBroker.TermMode.farkasContradictN s sumProof hpos`:
+The tool specified by `experiments/r6/R6-QUALIFICATION-1-AUDIT-PROPOSAL.md` (revision 2), revised after the implementation review
+of build revision 1 (`reviews/2026-09-30/R6-QUALIFICATION-1-AUDIT-BUILD-REVIEW.md`). For one `lean4export` export it reports,
+for the broker's final positivity step `hpos : 0 < s` in `ProofBroker.TermMode.farkasContradictN s sumProof hpos`:
 
 * **Check 1 (dependency):** which hypotheses `hpos` refers to, directly or through local definitions (`let` values and the
   arguments of applied lambdas), each with its path; for the whole target, mapped through the arguments at its single reference
   to the local theorem.
-* **Check 2 (sufficiency):** whether `omega`, in an empty context, proves the original quantified statement `∀ values, 0 < s`;
-  a success counts only when the kernel accepts the proof. An abstraction path (non-arithmetic subterms generalized) counts
-  only together with a kernel-checked specialization back to the original statement.
+* **Check 2 (sufficiency):** whether a kernel-accepted theorem exists whose type is exactly the *original* quantified statement:
+  `hpos`'s type closed over its free variables, local definitions retained. `omega` runs only in an empty context. Dropping
+  definitions (quantifying a `let`-bound value as a plain variable) and generalizing non-arithmetic subterms are both
+  generalizations; each counts only through a kernel-checked specialization back.
+* **Binding:** in real mode, `hpos`'s pretty-printed type must equal the run's retained residual goal, or no sufficiency
+  classification is made for either target. Synthetic controls run in an explicit mode without a retained residual.
 
 ## Environment
 
-Built with the Lean 4.32.0 toolchain, whose git hash equals the exports' header (`8c9756b2…`). `Init` is imported with its
-extensions; every export constant `Init` also has must equal it up to what the kernel ignores (metadata, binder names and info,
-the `let` `nonDep` hint), or the audit refuses. The export's remaining constants are replayed through `addDecl`, so each is
-kernel-checked and visible to `MetaM`. The replay is adapted from Lean's `Lean.Replay` (Copyright (c) 2023 Kim Morrison,
-Apache-2.0). R6's final validation used the 4.32.2 kernel, whose fix concerns nested inductive *declarations*; every constant
-replayed here was already accepted by that validation, and the only new declarations are Check 2's theorems.
+Built with Lean 4.32.2, the kernel of R6's final validation. `Init` is imported with its extensions. Every export constant `Init`
+also has must equal it in **every field** once expressions are erased of what the kernel ignores (metadata, binder names and
+info, the `let` `nonDep` hint), recursor-rule right-hand sides included; otherwise the audit refuses. The export's remaining
+constants are replayed through `addDecl`, so each is kernel-checked and visible to `MetaM`. The replay is adapted from Lean's
+`Lean.Replay` (Copyright (c) 2023 Kim Morrison, Apache-2.0).
 -/
 
 -- As in the vendored Comparator (Comparator/Compare.lean:25-28).
@@ -49,7 +52,7 @@ def parseFile (path : String) : IO Export.ExportedEnv := do
   let (_, state) ← Export.Parse.M.run items stream
   return { constMap := state.constMap, constOrder := state.constOrder }
 
-/-! ## Equality up to what the kernel ignores -/
+/-! ## Equality up to what the kernel ignores, over the complete `ConstantInfo` -/
 
 partial def erase : Expr → Expr
   | .mdata _ e => erase e
@@ -60,13 +63,18 @@ partial def erase : Expr → Expr
   | .proj s i e => .proj s i (erase e)
   | e => e
 
-def kindOf : ConstantInfo → String
-  | .axiomInfo _ => "axiom" | .defnInfo _ => "defn" | .thmInfo _ => "thm" | .opaqueInfo _ => "opaque"
-  | .quotInfo _ => "quot" | .inductInfo _ => "induct" | .ctorInfo _ => "ctor" | .recInfo _ => "rec"
+/-- Every expression in the declaration erased; every other field kept, and compared by `==`. -/
+def eraseCI : ConstantInfo → ConstantInfo
+  | .axiomInfo v => .axiomInfo { v with type := erase v.type }
+  | .defnInfo v => .defnInfo { v with type := erase v.type, value := erase v.value }
+  | .thmInfo v => .thmInfo { v with type := erase v.type, value := erase v.value }
+  | .opaqueInfo v => .opaqueInfo { v with type := erase v.type, value := erase v.value }
+  | .quotInfo v => .quotInfo { v with type := erase v.type }
+  | .inductInfo v => .inductInfo { v with type := erase v.type }
+  | .ctorInfo v => .ctorInfo { v with type := erase v.type }
+  | .recInfo v => .recInfo { v with type := erase v.type, rules := v.rules.map fun r => { r with rhs := erase r.rhs } }
 
-def sameUpToAnnotations (a b : ConstantInfo) : Bool :=
-  kindOf a == kindOf b && a.levelParams == b.levelParams && erase a.type == erase b.type &&
-  ((a.value? (allowOpaque := true)).map erase == (b.value? (allowOpaque := true)).map erase)
+def sameUpToAnnotations (a b : ConstantInfo) : Bool := eraseCI a == eraseCI b
 
 /-! ## Replay through `addDecl` -/
 
@@ -161,7 +169,6 @@ partial def reach (e : Expr) (defs : Std.HashMap FVarId Expr) : MetaM (Array (FV
       let d ← id.getDecl
       if ← isProp d.type then hyps.modify (·.push (id, path.reverse))
       else vals.modify (·.push id)
-      -- definitions: a let value, or a recorded applied-lambda argument
       if let some v := d.value? then go v (d.userName :: path)
       if let some v := defs[id]? then go v (d.userName :: path)
   go e []
@@ -173,8 +180,7 @@ def arithHeads : List Name :=
   [``HAdd.hAdd, ``HSub.hSub, ``Neg.neg, ``HMul.hMul, ``OfNat.ofNat, ``Nat.cast, ``NatCast.natCast, ``Int.ofNat, ``HPow.hPow,
    ``LT.lt, ``LE.le]
 
-/-- Generalize maximal non-arithmetic subterms that are not free variables. A product of two non-numeral factors is itself an
-    atom (linear arithmetic only). Returns the atoms in order of first occurrence. -/
+/-- Maximal non-arithmetic subterms that are not free variables. A product of two non-numeral factors is itself an atom. -/
 partial def atomsOf (e : Expr) (acc : Array Expr) : MetaM (Array Expr) := do
   let e := e.consumeMData
   if e.isFVar || e.isRawNatLit || (e.isAppOf ``OfNat.ofNat) then return acc
@@ -183,11 +189,9 @@ partial def atomsOf (e : Expr) (acc : Array Expr) : MetaM (Array Expr) := do
     if arithHeads.contains n then
       let args := e.getAppArgs
       if n == ``HMul.hMul && args.size == 6 then
-        let (a, b) := (args[4]!, args[5]!)
         let numeral (x : Expr) := x.consumeMData.isAppOf ``OfNat.ofNat || x.consumeMData.isRawNatLit
-        unless numeral a || numeral b do
+        unless numeral args[4]! || numeral args[5]! do
           return if acc.contains e then acc else acc.push e
-      -- recurse into the value arguments; type and instance arguments carry no atoms of interest
       let mut acc := acc
       for a in args do
         unless (← isType a) || (← isInstanceArg a) do acc ← atomsOf a acc
@@ -202,6 +206,14 @@ structure Proved where
   detail : String
   deriving ToJson
 
+def addTheorem (name : Name) (type value : Expr) : MetaM Proved := do
+  if type.hasFVar || type.hasMVar || value.hasFVar || value.hasMVar then return { ok := false, detail := "not closed" }
+  try
+    addDecl (.thmDecl { name, levelParams := [], type, value })
+    return { ok := true, detail := "kernel accepted" }
+  catch err => return { ok := false, detail := s!"kernel rejected: {(← err.toMessageData.toString).take 300}" }
+
+/-- `omega` on a closed statement, in an empty local context; the proof is then added through the kernel. -/
 def proveClosed (name : Name) (closed : Expr) : MetaM Proved := withLCtx {} {} do
   if closed.hasFVar || closed.hasMVar then return { ok := false, detail := "statement not closed" }
   let mv ← mkFreshExprMVar closed
@@ -209,81 +221,99 @@ def proveClosed (name : Name) (closed : Expr) : MetaM Proved := withLCtx {} {} d
     let rest ← Term.TermElabM.run' (Tactic.run mv.mvarId! (Tactic.evalTactic (← `(tactic| intros; omega))))
     unless rest.isEmpty do return { ok := false, detail := "goals remain" }
   catch err => return { ok := false, detail := s!"omega: {(← err.toMessageData.toString).take 300}" }
-  let pf ← instantiateMVars mv
-  if pf.hasFVar || pf.hasMVar then return { ok := false, detail := "proof not closed" }
-  try
-    addDecl (.thmDecl { name, levelParams := [], type := closed, value := pf })
-    return { ok := true, detail := "kernel accepted" }
-  catch err => return { ok := false, detail := s!"kernel rejected: {(← err.toMessageData.toString).take 300}" }
+  addTheorem name closed (← instantiateMVars mv)
 
-/-- All free variables `e` depends on, including through their types, in local-context order. -/
-partial def closure (e : Expr) : MetaM (Array FVarId) := do
+/-- All free variables `e` depends on, through types and (when `values`) through `let` values, in local-context order. -/
+partial def closure (e : Expr) (values : Bool) : MetaM (Array FVarId) := do
   let mut todo := (collectFVars {} e).fvarIds
   let mut seen : Std.HashSet FVarId := {}
   while !todo.isEmpty do
     let id := todo.back!; todo := todo.pop
     if seen.contains id then continue
     seen := seen.insert id
-    todo := todo ++ (collectFVars {} (← id.getDecl).type).fvarIds
+    let d ← id.getDecl
+    todo := todo ++ (collectFVars {} d.type).fvarIds
+    if values then if let some v := d.value? then todo := todo ++ (collectFVars {} v).fvarIds
   let lctx ← getLCtx
   return seen.toArray.qsort fun a b => (lctx.get! a).index < (lctx.get! b).index
 
-structure Check2 where
-  statement : String
-  original : Proved
-  abstraction : Option Proved
-  specialization : Option Proved
-  atoms : Array String
-  deriving ToJson
-
-/-- Replace every `let`-bound variable of `ty` by a fresh variable of the same type, dropping its definition: the statement is
-    then quantified over it as a plain value, which is stronger, and no definition can bring a hypothesis into scope. -/
-partial def dropDefinitions (ty : Expr) (k : Expr → MetaM α) : MetaM α := do
-  let lets ← (collectFVars {} ty).fvarIds.filterM fun id => return (← id.getDecl).isLet
-  let rec go (i : Nat) (ty : Expr) : MetaM α :=
+/-- Replace each `let`-bound variable by a fresh plain variable of the same type (its definition dropped). -/
+partial def withPlainVars (lets : Array FVarId) (ty : Expr) (k : Expr → Array (FVarId × FVarId) → MetaM α) : MetaM α := do
+  let rec go (i : Nat) (ty : Expr) (repl : Array (FVarId × FVarId)) : MetaM α :=
     if h : i < lets.size then do
       let d ← lets[i].getDecl
-      withLocalDeclD d.userName d.type fun v => go (i + 1) (ty.replaceFVar (mkFVar lets[i]) v)
-    else k ty
-  go 0 ty
+      withLocalDeclD d.userName d.type fun v => go (i + 1) (ty.replaceFVar (mkFVar lets[i]) v) (repl.push (lets[i], v.fvarId!))
+    else k ty repl
+  go 0 ty #[]
 
-def check2 (tag : String) (ty0 : Expr) (forceAbstraction : Bool) : MetaM Check2 := do
-  dropDefinitions (← instantiateMVars ty0) fun ty => do
-    let fvs ← closure ty
-    if ← fvs.anyM (fun id => do isProp (← id.getDecl).type) then
-      let none : Proved := { ok := false, detail := "the statement mentions a proof term; not attempted" }
-      return { statement := toString (← ppExpr ty), original := none, abstraction := none, specialization := none, atoms := #[] }
-    let closed ← mkForallFVars (fvs.map mkFVar) ty
-    let statement := toString (← ppExpr closed)
-    let original ← proveClosed (.mkSimple s!"_r6audit_{tag}_original") closed
-    if original.ok && !forceAbstraction then
-      return { statement, original, abstraction := none, specialization := none, atoms := #[] }
-    -- abstraction path
-    let atoms ← atomsOf ty #[]
-    let atomStrs ← atoms.mapM fun a => return toString (← ppExpr a)
-    let rec withAtoms (i : Nat) (vars : Array Expr) (k : Array Expr → MetaM (Option Proved × Option Proved)) :
-        MetaM (Option Proved × Option Proved) :=
-      if h : i < atoms.size then do
-        withLocalDeclD (.mkSimple s!"_atom{i}") (← inferType atoms[i]) fun v => withAtoms (i + 1) (vars.push v) k
-      else k vars
-    let (abs, spec) ← withAtoms 0 #[] fun vars => do
-      let gen := (atoms.zip vars).foldl (fun e (a, v) => e.replace fun x => if x == a then some v else none) ty
-      let genFvs ← closure gen
-      let genFvs := genFvs.filter fun id => !vars.any (·.fvarId! == id)
-      let genClosed ← mkForallFVars (genFvs.map mkFVar ++ vars) gen
-      let genName := Name.mkSimple s!"_r6audit_{tag}_generalized"
-      let abs ← proveClosed genName genClosed
-      unless abs.ok do return (some abs, none)
-      -- specialization back to the original statement, kernel-checked
-      let body := mkAppN (.const genName []) (genFvs.map mkFVar ++ atoms)
-      let specVal ← mkLambdaFVars (fvs.map mkFVar) body
-      if specVal.hasFVar then return (some abs, some { ok := false, detail := "specialization not closed" })
-      let spec ← try
-          addDecl (.thmDecl { name := .mkSimple s!"_r6audit_{tag}_specialized", levelParams := [], type := closed, value := specVal })
-          pure { ok := true, detail := "kernel accepted" : Proved }
-        catch err => pure { ok := false, detail := s!"kernel rejected: {(← err.toMessageData.toString).take 300}" }
-      return (some abs, some spec)
-    return { statement, original, abstraction := abs, specialization := spec, atoms := atomStrs }
+structure Check2 where
+  statement : String                       -- the original quantified statement, definitions retained
+  definitions_dropped : Array String
+  attempted : String                       -- the statement `omega` was asked for (the original, or its generalization)
+  direct : Proved
+  abstraction : Option Proved
+  atoms : Array String
+  specialization_atoms : Option Proved     -- the atom generalization back to the attempted statement
+  specialization_definitions : Option Proved  -- the attempted statement back to the original (when definitions were dropped)
+  established : Bool                       -- a kernel-accepted theorem whose type is the original statement exists
+  deriving ToJson
+
+def check2 (tag : String) (hposTy : Expr) (forceAbstraction : Bool) : MetaM Check2 := do
+  let ty ← instantiateMVars hposTy
+  let fvsO ← closure ty (values := true)
+  let original ← mkForallFVars (fvsO.map mkFVar) ty
+  let statement := toString (← ppExpr original)
+  let origName := Name.mkSimple s!"_r6audit_{tag}_original"
+  let lets ← fvsO.filterM fun id => return (← id.getDecl).isLet
+  withPlainVars lets ty fun tyA repl => do
+    let fvsA ← closure tyA (values := false)
+    let dropped ← lets.mapM fun id => return toString (← id.getDecl).userName
+    let fail (why : String) : MetaM Check2 := return {
+      statement, definitions_dropped := dropped, attempted := "", direct := { ok := false, detail := why },
+      abstraction := none, atoms := #[], specialization_atoms := none, specialization_definitions := none, established := false }
+    if ← fvsA.anyM (fun id => do isProp (← id.getDecl).type) then return ← fail "the statement mentions a proof term; not attempted"
+    let attemptedE ← mkForallFVars (fvsA.map mkFVar) tyA
+    let attempted := toString (← ppExpr attemptedE)
+    -- when nothing was dropped, the attempted statement is the original, and is proved under the original's name
+    let attName := if lets.isEmpty then origName else Name.mkSimple s!"_r6audit_{tag}_attempted"
+    let direct ← proveClosed attName attemptedE
+    let mut proof? : Option Name := if direct.ok then some attName else none
+    let mut abs? : Option Proved := none
+    let mut specA? : Option Proved := none
+    let mut atomStrs := #[]
+    if !direct.ok || forceAbstraction then
+      let atoms ← atomsOf tyA #[]
+      atomStrs ← atoms.mapM fun a => return toString (← ppExpr a)
+      let genName := Name.mkSimple s!"_r6audit_{tag}_atoms"
+      let viaName := if direct.ok then Name.mkSimple s!"_r6audit_{tag}_via_atoms" else attName
+      let rec withAtoms (i : Nat) (vars : Array Expr) (k : Array Expr → MetaM (Proved × Option Proved)) : MetaM (Proved × Option Proved) :=
+        if h : i < atoms.size then do
+          withLocalDeclD (.mkSimple s!"_atom{i}") (← inferType atoms[i]) fun v => withAtoms (i + 1) (vars.push v) k
+        else k vars
+      let (abs, specA) ← withAtoms 0 #[] fun vars => do
+        let gen := (atoms.zip vars).foldl (fun e (a, v) => e.replace fun x => if x == a then some v else none) tyA
+        let genFvs := (← closure gen (values := false)).filter fun id => !vars.any (·.fvarId! == id)
+        let abs ← proveClosed genName (← mkForallFVars (genFvs.map mkFVar ++ vars) gen)
+        unless abs.ok do return (abs, none)
+        -- the atoms back: instantiate the generalized theorem, kernel-checked against the attempted statement
+        let value ← mkLambdaFVars (fvsA.map mkFVar) (mkAppN (.const genName []) (genFvs.map mkFVar ++ atoms))
+        return (abs, some (← addTheorem viaName attemptedE value))
+      abs? := some abs; specA? := specA
+      if proof?.isNone && abs.ok && (specA.any (·.ok)) then proof? := some viaName
+    -- the dropped definitions back: instantiate the attempted theorem at the let-bound variables, checked against the original
+    let mut specD? : Option Proved := none
+    let mut established := false
+    match proof? with
+    | none => pure ()
+    | some thm =>
+      if lets.isEmpty then established := true
+      else
+        let args := fvsA.map fun id => mkFVar ((repl.find? (·.2 == id)).map (·.1) |>.getD id)
+        let value ← mkLambdaFVars (fvsO.map mkFVar) (mkAppN (.const thm []) args)
+        let specD ← addTheorem origName original value
+        specD? := some specD; established := specD.ok
+    return { statement, definitions_dropped := dropped, attempted, direct, abstraction := abs?, atoms := atomStrs,
+             specialization_atoms := specA?, specialization_definitions := specD?, established }
 
 /-! ## One export -/
 
@@ -295,16 +325,15 @@ structure Hyp where
 def hypsJson (hs : Array (FVarId × List Name)) : MetaM (Array Hyp) :=
   hs.mapM fun (id, path) => return { name := (← id.getDecl).userName.toString, path := path.map toString }
 
-def classify (hyps : Array Hyp) (c2 : Check2) : String :=
-  let sufficient := c2.original.ok || (c2.abstraction.any (·.ok) && c2.specialization.any (·.ok))
-  if !sufficient then "sufficiency_not_established"
+def classify (bound : Bool) (hyps : Array Hyp) (c2 : Check2) : String :=
+  if !bound then "unbound_residual_mismatch"
+  else if !c2.established then "sufficiency_not_established"
   else if hyps.isEmpty then "certificate_alone"
   else "sufficient_but_context_referenced"
 
-def auditExport (localName wholeName : Name) (residual : String) (forceAbstraction : Bool) : MetaM Json := do
+def auditExport (localName wholeName : Name) (residual : Option String) (forceAbstraction : Bool) : MetaM Json := do
   let some li := (← getEnv).find? localName | throwError "missing local target {localName}"
   let some wi := (← getEnv).find? wholeName | throwError "missing whole target {wholeName}"
-  -- local target: exactly one fold
   let folds ← IO.mkRef #[]
   visit (li.value? (allowOpaque := true)).get! {} (·.isAppOfArity `ProofBroker.TermMode.farkasContradictN 3) folds
   let folds ← folds.get
@@ -315,23 +344,26 @@ def auditExport (localName wholeName : Name) (residual : String) (forceAbstracti
     let hpos := fold.args[2]!
     let hposTy ← inferType hpos
     let pp := toString (← ppExpr hposTy)
+    -- binding: in real mode the audited term must be the run's; a mismatch withholds every sufficiency classification
+    let (bound, binding) := match residual with
+      | none => (true, "not_applicable_synthetic")
+      | some r => if pp == r then (true, "matches_residual") else (false, "residual_mismatch")
     let (localHyps, localVals) ← reach hpos fold.defs
     let localHypsJ ← hypsJson localHyps
     let c2 ← check2 "c" hposTy forceAbstraction
-    -- which of the local theorem's parameters does hpos reach? (the outermost binders, in order)
     let nParams ← forallTelescope li.type fun xs _ => pure xs.size
     let paramIds := (fold.lctx.foldl (init := #[]) fun acc d => if d.isImplementationDetail then acc else acc.push d.fvarId)[:nParams].toArray
     let reached := (localHyps.map (·.1)) ++ localVals
     let reachedParams := (List.range nParams).filter fun i => reached.contains paramIds[i]!
     let internal := localHyps.filter fun (id, _) => !paramIds.contains id
     let internalJ := (← hypsJson internal).map fun h => { h with path := "internal to the local proof" :: h.path }
-    -- whole target: exactly one reference to the local theorem, fully applied
     let refs ← IO.mkRef #[]
     withLCtx {} {} do
       visit (wi.value? (allowOpaque := true)).get! {} (fun e => e.getAppFn.consumeMData.isConstOf localName) refs
     let refs ← refs.get
     let wholeJ ← if refs.size != 1 || refs[0]!.args.size != nParams then
-        pure <| Json.mkObj [("locatable", false), ("reason", toJson s!"{refs.size} references; arity {refs.map (·.args.size)} for {nParams} parameters")]
+        pure <| Json.mkObj [("locatable", false), ("reason", toJson s!"{refs.size} references; arity {refs.map (·.args.size)} for {nParams} parameters"),
+                            ("classification", toJson "not_locatable")]
       else
         let r := refs[0]!
         withLCtx r.lctx #[] do
@@ -343,18 +375,21 @@ def auditExport (localName wholeName : Name) (residual : String) (forceAbstracti
                               path := s!"parameter {i} of {localName}" :: path.map toString }
           let all := internalJ ++ hs
           pure <| Json.mkObj [("locatable", true), ("hypotheses", toJson all),
-            ("internal_to_local_proof", toJson internalJ), ("classification", toJson (classify all c2))]
+            ("internal_to_local_proof", toJson internalJ), ("classification", toJson (classify bound all c2))]
     return Json.mkObj [
-      ("local", Json.mkObj [("locatable", true), ("residual_goal", toJson pp), ("binding_matches_residual", toJson (pp == residual)),
-                            ("hypotheses", toJson localHypsJ), ("classification", toJson (classify localHypsJ c2))]),
+      ("binding", toJson binding),
+      ("local", Json.mkObj [("locatable", true), ("residual_goal", toJson pp), ("hypotheses", toJson localHypsJ),
+                            ("classification", toJson (classify bound localHypsJ c2))]),
       ("whole", wholeJ),
       ("check2", toJson c2)]
 
 def main (args : List String) : IO UInt32 := do
   let (flags, args) := args.partition (·.startsWith "--")
   let [path, localName, wholeName, residualPath, reportPath] := args
-    | IO.eprintln "usage: r6-qualification-audit [--force-abstraction] EXPORT LOCAL WHOLE RESIDUAL.txt REPORT.json"; return 2
+    | IO.eprintln "usage: r6-qualification-audit [--synthetic] [--force-abstraction] EXPORT LOCAL WHOLE RESIDUAL.txt|- REPORT.json"; return 2
   let forceAbstraction := flags.contains "--force-abstraction"
+  let synthetic := flags.contains "--synthetic"
+  if !synthetic && residualPath == "-" then IO.eprintln "a retained residual goal is required outside --synthetic"; return 2
   let exp ← parseFile path
   initSearchPath (← findSysroot)
   unsafe enableInitializersExecution
@@ -373,15 +408,15 @@ def main (args : List String) : IO UInt32 := do
   unless differing.isEmpty do
     IO.FS.writeFile reportPath ((Json.mkObj [("refused", toJson s!"constants differ from Init beyond annotations: {differing[:10]}")]).pretty ++ "\n")
     return 1
-  let residual ← IO.FS.readFile residualPath
+  let residual ← if synthetic then pure none else some <$> (·.trimAsciiEnd.toString) <$> IO.FS.readFile residualPath
   let ctx : Core.Context := { fileName := "<audit>", fileMap := default, maxHeartbeats := 0,
                               options := Options.empty.setBool `Elab.async false }
   let (report, _) ← (do
       replayAll added
-      let r ← auditExport localName.toName wholeName.toName residual.trimAsciiEnd.toString forceAbstraction
-      return r
+      auditExport localName.toName wholeName.toName residual forceAbstraction
     : MetaM Json).run' {} |>.toIO ctx { env := base }
   let env := Json.mkObj [("init_shared_identical", toJson identical), ("init_shared_equal_up_to_annotations", toJson annotated),
-                         ("replayed_through_addDecl", toJson added.size), ("lean", toJson Lean.versionString)]
+                         ("replayed_through_addDecl", toJson added.size), ("lean", toJson Lean.versionString),
+                         ("mode", toJson (if synthetic then "synthetic" else "real"))]
   IO.FS.writeFile reportPath ((Json.mkObj [("environment", env), ("audit", report)]).pretty ++ "\n")
   return 0

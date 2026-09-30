@@ -1,116 +1,92 @@
 # R6 qualification 1 audit — build, for implementation review
 
-Built 2026-09-30 to [the proposal, revision 2](R6-QUALIFICATION-1-AUDIT-PROPOSAL.md), after its approval ("I approve proceeding to
-build the tool and controls. The implementation review remains required before locking and auditing the 48").
+**Build revision 2**, 2026-09-30. It responds to [the implementation review of revision 1](reviews/2026-09-30/R6-QUALIFICATION-1-AUDIT-BUILD-REVIEW.md),
+which found two P1 defects and two P2 gaps. Revision 1 is `8a8bbeae`. The build follows [the proposal, revision 2](R6-QUALIFICATION-1-AUDIT-PROPOSAL.md).
 
 **Status:**
-- The tool and the six controls are built, and the controls pass their frozen expectations
-  ([pre-lock record](reviews/2026-09-30/R6-QUALIFICATION-1-AUDIT-CONTROLS-PRELOCK.json)).
-- **Nothing is locked, and the 48 have not been audited.** The driver's `audit` refuses without a lock; this was checked.
+- Controls C1–C9 pass their frozen expectations ([pre-lock record, revision 2](reviews/2026-09-30/R6-QUALIFICATION-1-AUDIT-CONTROLS-PRELOCK-2.json)).
+- **Nothing is locked, and the 48 have not been audited.** `audit` refuses without a lock; this was checked again.
+- The 48-slot selection was computed once as a dry run, to show that the lock step works: 48 slots, 6 target pairs, every consumed
+  artifact matching its run's seal. That run hashed the exports but did not parse them.
 
-## What was built
+## A retraction
 
-All of it is in [`qualification-audit/`](qualification-audit/):
+**Revision 1 claimed that 4.32.2's `Init` differs from the export's in 218 shared constants, "including `omega`'s own lemmas", and
+rejected 4.32.2 on that basis. The claim was wrong.** The 218 came from raw equality on 4.32.2, before I found that the differences
+are annotations the exporter strips. The comparison was never repeated on 4.32.2 with annotations erased.
 
-| file | role |
-|---|---|
-| `Audit.lean` | the tool: environment, locating, Check 1, Check 2 |
-| `make_controls.py` | generates `R6AuditControls.lean`: the pinned fold, copied byte for byte from `Tactic.lean` at `e627efe`, plus C1–C6 |
-| `R6AuditControls.lean`, `.provenance.json` | the generated controls; the fold region's digest is `477c4ec7…`, and its thirteen declarations are asserted by name |
-| `qualification_audit.py` | the driver: `build`, `controls`, `lock`, `audit` |
+The review built the tool on 4.32.2 and found the same shared-constant counts as on 4.32.0; so does this build. Revision 2 is built
+on **4.32.2**, the kernel of R6's final validation. The per-export equality check makes the choice immaterial for any export that
+passes it; the review's caution stands that this does not establish compatibility for every R6 export in advance.
 
-- **The build** is reproducible with `qualification_audit.py build` into `.cache/qualification-audit/` (gitignored).
-  - Tool binary: `eb5859cf…`.
-  - Controls: compiled against the lean-bridge's `ProofBroker.TermMode`, which is unchanged between `e627efe` and `r6`.
-  - Control exports: made with R6's own pinned exporter (`.cache/exporter/…/lean4export`), one local-and-whole pair per control, the
-    shape of R6's exports.
+## What changed
 
-## The environment, and why it is 4.32.0
+1. **P1: the environment comparison covers the complete declaration.** Every expression in a `ConstantInfo` is erased of what the
+   kernel ignores, recursor-rule right-hand sides included. Every other field is then compared by `==`: recursor rules and their
+   `nfields`, constructor fields, inductive metadata, hints, safety, `all`, and so on. Generated constructors and recursors are
+   compared the same way.
+   - **C7** is the review's mutation: C2's export with `Nat.rec`'s first rule's `nfields` changed from 0 to 1. It is refused
+     ("constants differ from Init beyond annotations: `Nat.rec`").
+2. **P1: binding gates classification.**
+   - **Real mode** requires the run's retained residual goal. If `hpos`'s pretty-printed type differs from it, both targets are
+     classified `unbound_residual_mismatch`, and no sufficiency classification is made.
+   - **Synthetic controls** run in an explicit `--synthetic` mode, with binding `not_applicable_synthetic`.
+   - **C8** is C2 in real mode with a wrong residual; both targets are unbound.
+   - **C9** is C2 with its exact residual (`0 < 1 * (x - y) + 1 * (y + 1 - x)`); it binds and classifies.
+3. **P2: dropping definitions is a generalization.**
+   - The **original** statement is `hpos`'s type closed over its free variables with local definitions **retained**. At C5 it is
+     `∀ h, let v := Classical.choose h; 0 < …`.
+   - `omega` is asked only for the *attempted* statement, with definitions dropped: `∀ v : Int, 0 < …`.
+   - A kernel-checked specialization instantiates that theorem at the let-bound variable, against the original. No `omega` runs in
+     the original context.
+   - Check 2 is **established** only when a kernel-accepted theorem whose type is exactly the original exists. The atom abstraction
+     composes the same way: atoms back to the attempted statement, then definitions back to the original.
+4. **P2: the lock freezes every audit input.** The lock binds:
+   - the analysis file that selects the 48, by path and digest;
+   - the selection itself: for each slot, its run, its local and whole targets, and its retained residual goal;
+   - the digests of each run's `seal.json`, `solution.ndjson.gz` and `events.ndjson`, each also checked against the seal;
+   - the tool, the sources, the control exports, the exporter and the toolchains.
 
-**The Lean build.** The exports' header names Lean 4.32.0 at git hash `8c9756b2…`, and the installed 4.32.0 toolchain has exactly that
-hash. The tool is built with it and imports its `Init` with extensions loaded, which `omega` needs.
+   `audit` recomputes all of it **before and after** (`verify_lock`), verifies `live-evaluation-v3` before and after, and checks
+   each export's digest again as it reads it.
 
-**The toolchain correction.** The proposal says "the pinned 4.32.0 toolchain, loading exports as `validate/Replay.lean` does".
-`Replay.lean` actually builds on **4.32.2**. 4.32.2's `Init` differs from the export's in 218 shared constants, including `omega`'s own
-lemmas, so an audit on 4.32.2 would reason about different constants. It was therefore built on 4.32.0.
+The review accepted C6's mechanism and the internal-hypothesis labels, and confirmed that the fold copy matches `e627efe` byte for
+byte.
 
-**Equality with the export.** Every export constant that `Init` also has must equal it **up to what the kernel ignores**, or the audit
-refuses. What the kernel ignores here is metadata, binder names and info, and the `let` `nonDep` hint, all of which the exporter
-strips. Measured on the controls' exports, and on the one R6 export read during development (see the disclosure below):
+## The controls, pre-lock (revision 2, on 4.32.2)
 
-| shared constants | identical | equal up to annotations | different |
-|---|---|---|---|
-| l069 draw 1 | 1,923 | 218 | 0 |
-| the six control exports | 1,245–1,309 | 170–174 | 0 |
+| control | result | expectation |
+|---|---|---|
+| **C1**, the review's probe | `h` referenced; Check 2 not established | met |
+| **C2**, valid, with unused `hu1`–`hu3` | `h`, `neg_goal`, not `hu1`–`hu3`; established | met; Check 1 kept |
+| **C3**, casts and a product | established directly; the abstraction (`x * y`) and its specialization accepted | met |
+| **C4**, the exported structure | local `h`; whole `hpq` through parameter 2, not `hextra`; the targets agree | met |
+| **C5**, a let-bound value | `h` through `v`; `v`'s definition dropped and restored by a checked specialization; established against the original | met |
+| **C6**, a lossy abstraction | established directly; the abstraction (`x % 2`) not established; counts as sufficient | met |
+| **C7**, `Nat.rec` mutated | refused | met |
+| **C8**, a wrong residual | `unbound_residual_mismatch`, both targets | met |
+| **C9**, the exact residual | binds; classified | met |
 
-**Replay.** The export's other constants are replayed through `CoreM`'s `addDecl`, adapted from Lean's `Lean.Replay` (Apache-2.0,
-attributed in the source). Each is therefore kernel-checked *and* visible to `MetaM`. A plain kernel replay leaves constants
-invisible to `Environment.find?`.
+The shared-constant counts on 4.32.2 are:
+- C1–C4: 1,283 identical and 170 equal up to annotations;
+- C5 and C6: 1,245 and 1,309 identical, and 170 and 174 up to annotations;
+- 0 different in every case.
 
-**The kernel.** Check 2's theorems are checked by the 4.32.0 kernel. 4.32.2 fixes a soundness bug in checking *nested inductive
-declarations*. Check 2 adds only theorems, and every replayed constant was already accepted by R6's 4.32.2 validation.
+## Unchanged from revision 1
 
-## Where the implementation departs from, or interprets, the proposal
-
-1. **The toolchain:** 4.32.0, as above.
-2. **Check 2 and local definitions.** The proposal says "abstract its free value variables universally (after resolving definitions
-   as in Check 1)". The tool quantifies each `let`-bound value as a **plain variable**, with its definition dropped. That is a stronger
-   statement.
-   - Expanding the definition instead (zeta) can bring a hypothesis into the statement, as `v := Classical.choose h` does, and
-     `intros` would then hand it to `omega`.
-   - If a proof term remains in the statement, Check 2 reports *not attempted*.
-
-   This interpretation should be confirmed.
-3. **C6's mechanism.** The proposal's example was `x.val` against `(x + 0).val`. The built C6 uses `x % 2 < 2`. `omega` reads `%`, and
-   the abstraction makes `x % 2` an atom, losing `x % 2 < 2`. It is the same property: a lossy abstraction that must read *not
-   established* while the original succeeds.
-4. **Internal hypotheses.** Propositional binders introduced inside the local proof are reported in both targets. For the whole
-   target they are labelled "internal to the local proof". Examples are `neg_goal` and asserted cast facts.
-5. **Check 2 for the whole target.** The whole target reaches the same `hpos` through its reference to the local theorem, so Check 2 is
-   reported once per export and applies to both.
-6. **An abstraction attempt after a failure.** When the direct attempt fails, the abstraction path is tried, as the proposal says. The
-   controls force it for C3 and C6.
-
-## Disclosure
-
-**During development, before the controls existed, the prototype read one of the 48 exports, l069 draw 1.** It was used to establish
-the export's structure and the environment. That exposed its Check 1 result early:
-- `hpos` references **no hypotheses**, only value variables;
-- its retained residual goal matched, character for character.
-
-Its first Check 2 attempt was invalid: it ran inside the site's context, and the kernel rejected the leaked variables. That led to
-the empty-context rule. No rule of the tool was tuned on the Check 1 result. No other R6 export has been read.
-
-## The controls, pre-lock
-
-| control | Check 1 | Check 2 | expectation |
-|---|---|---|---|
-| **C1**, the review's probe | `h` (and `neg_goal`) | direct and abstraction both fail: not established | met |
-| **C2**, a valid combination with unused `hu1`–`hu3` in scope | `h`, `neg_goal`; **not** `hu1`–`hu3` | kernel-accepted | met; Check 1 **can** tell use from collection, and is kept |
-| **C3**, casts and a product | `h`, `neg_goal` | direct accepted; the abstraction (atom `x * y`) and its specialization accepted | met |
-| **C4**, the exported structure | local `h`; whole `hpq` through parameter 2, not `hextra` | not established, both targets | met |
-| **C5**, a let-bound value | `h` through `v`; whole `h` through parameter 0 | accepted, over a plain `v` | met |
-| **C6**, a lossy abstraction | `neg_goal` | direct accepted; the abstraction (atom `x % 2`) not established; counts as sufficient; no mismatch | met |
-
-**An observation that bears on reading the 48.** In C2 the combination is valid, yet Check 1 reports `h` and `neg_goal`. Inside the
-fold, a valid certificate's own hypotheses are jointly contradictory, so contextual `omega` can derive `0 < s` from them directly, and
-here it did. Two things follow:
-- The unrelated `hu` facts, including `hu3 : y ≤ z + 10`, which shares an atom, are not referenced. That is why Check 1 is kept.
-- Reading R6's results: *hypotheses referenced* means the final step did not rest on the weighted sum alone, even when the certificate
-  suffices. That is the table's "sufficient, but context referenced" row.
+- The disclosure: one R6 export (l069 draw 1) was read while prototyping, and its Check 1 showed no hypotheses. No other has been
+  read since.
+- The observation that even a valid certificate can show "hypotheses referenced": a valid certificate's own hypotheses are jointly
+  contradictory in the fold's context, and contextual `omega` can use them (C2).
+- The files, in [`qualification-audit/`](qualification-audit/): `Audit.lean`, `make_controls.py`, the generated controls with their
+  provenance, and `qualification_audit.py`.
 
 ## For the implementation review
 
-1. `Audit.lean` against proposal revision 2, in particular:
-   - the whole-target traversal through the local theorem's reference;
-   - the definition tracking for `let`s and applied lambdas;
-   - **that every Check 2 success is a kernel-checked proof of the original quantified statement**, with checked specialization
-     wherever abstraction was used.
-2. The environment rule: the equality up to annotations, and the replay through `addDecl`.
-3. The interpretation in item 2 of the departures (plain variables in place of definitions).
-4. C6's changed mechanism.
-5. The fold copy: `make_controls.py` and its digest, against `Tactic.lean` at `e627efe`.
-6. The driver: the seal checks before any export is read, the `live-evaluation-v3` verification before and after, and the lock.
+1. The four repairs above, against the review's findings.
+2. That **every established Check 2 is a kernel-checked theorem whose type is the original statement**, definitions retained,
+   through every composition of generalizations.
+3. The lock's contents, and the before-and-after verification in `audit`.
 
-**After approval:** lock (`qualification_audit.py lock`), re-run the controls, run `audit` on the 48, and record the result and the
-addendum to qualification 1. Then R6-015 is frozen.
+**After approval:** lock, re-run the controls, run `audit` on the 48, and record the result and the addendum to qualification 1.
+Then R6-015 is frozen.
