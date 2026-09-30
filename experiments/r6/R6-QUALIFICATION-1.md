@@ -66,3 +66,8 @@ column of the frozen analysis. Editing them would break R6's locks and seals, an
 
 Until the dependency audit is done, R6 claims only the qualified meaning above. A passing control 5 would show that the
 certificates suffice. It would not show how R6's own proofs were built.
+
+## Addendum
+
+*2026-10-01:* the audit of the final step is recorded in [addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md). The stronger reading holds
+for 24 of the 48 proofs (l069, l071, l078). l070 drew on context at every draw. l096 and l099 are unbound and not classified.
