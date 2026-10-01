@@ -27,8 +27,8 @@ re-checked each export's digest as it read it. Nothing in R6's runs, records, lo
 
 **Consistency checks:**
 - All 48 are locatable in both targets. Their local and whole classifications agree at every slot.
-- Every export's shared constants matched `Init` up to annotations: 1,923 identical, 218 annotation-only, 0 different. 1,798
-  constants per export were replayed through `addDecl` on the 4.32.2 kernel.
+- Every export's shared constants matched `Init` up to annotations. The remaining declarations were kernel-checked through
+  `addDecl` on 4.32.2. The counts vary by export and are retained in the audit record.
 - Every established Check 2 was established **directly**: no atom generalization was needed, and no R6 slot had a definition to drop.
 
 ## What this means for qualification 1
