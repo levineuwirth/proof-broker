@@ -1,0 +1,22 @@
+{
+ "pin": "e627efe",
+ "source": "lean-bridge/ProofBroker/Tactic.lean",
+ "declarations": [
+  "fvarOfName",
+  "HypKind",
+  "matchIntBound?",
+  "matchIntEqHyp?",
+  "matchIntNotBound?",
+  "normalizeHypothesis",
+  "intLitExpr",
+  "buildNonnegProof",
+  "closeOmegaSubgoal",
+  "closeViaTermModeFalse",
+  "GoalKind",
+  "matchLiaGoal?",
+  "closeViaTermModeComparison"
+ ],
+ "region_sha256": "477c4ec7c5361cd45439238b8291afc5a411ff62f83748e40e3346c7f0ca4bf1",
+ "generated_sha256": "3e55eeff9c16ab22d9baef580e6b89f842a8b81004a4d52aa60eb96d66b257d4",
+ "v1_generator_sha256": "7780cd5ad80b993aaab93ade4f7aa14224d78f3a3031ac5622e642c09cfe18ab"
+}

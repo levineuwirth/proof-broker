@@ -1,0 +1,1510 @@
+{
+ "passed": true,
+ "failures": {
+  "C1": [],
+  "C2": [],
+  "C3": [],
+  "C4": [],
+  "C5": [],
+  "C6": [],
+  "C7": [],
+  "C8": [],
+  "C9": [],
+  "R1": [],
+  "R2": [],
+  "R3": [],
+  "R4": [],
+  "R5": [],
+  "R6": [],
+  "R7l": [],
+  "R7n": [],
+  "R7b": [],
+  "R8": [],
+  "R9": [],
+  "R9b": []
+ },
+ "results": {
+  "C1": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.c1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - y) + 2 * (y + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 (x y : Int), 0 < 1 * (x - y) + 2 * (y + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 2\nwhere\n a := x\u271d\n b := y\u271d"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x y : Int), 0 < 1 * (x - y) + 2 * (y + 1 - x)",
+     "atoms": [],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 2\nwhere\n a := x\u271d\n b := y\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "C2": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 3 of R6Audit.c2_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 7
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (x y : Int), 0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x y : Int), 0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "C3": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1284,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 4 of R6Audit.c3_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 5
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191(a + b) + x * y - 4) + 1 * (4 + 1 - (\u2191a + \u2191b + x * y))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (a b : Nat) (x y : Int), 0 < 1 * (\u2191(a + b) + x * y - 4) + 1 * (4 + 1 - (\u2191a + \u2191b + x * y))",
+     "specialization_definitions": null,
+     "specialization_atoms": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (a b : Nat) (x y : Int), 0 < 1 * (\u2191(a + b) + x * y - 4) + 1 * (4 + 1 - (\u2191a + \u2191b + x * y))",
+     "atoms": [
+      "x * y"
+     ],
+     "abstraction": {
+      "ok": true,
+      "detail": "kernel accepted"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "C4": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.c4_local"
+       ],
+       "name": "hpq"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - y) + 2 * (y + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 (x y : Int), 0 < 1 * (x - y) + 2 * (y + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 2\nwhere\n a := x\u271d\n b := y\u271d"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x y : Int), 0 < 1 * (x - y) + 2 * (y + 1 - x)",
+     "atoms": [],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 2\nwhere\n a := x\u271d\n b := y\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "C5": {
+   "environment": {
+    "replayed_through_addDecl": 6,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1245,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 0 of R6Audit.c5_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 1
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (v + 1 + 1 - v)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [
+        "v"
+       ],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (h : \u2203 n, n \u2264 3),\n  let v := Classical.choose h;\n  0 < 1 * (v + 1 + 1 - v)",
+     "specialization_definitions": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [
+      "v"
+     ],
+     "attempted": "\u2200 (v : Int), 0 < 1 * (v + 1 + 1 - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "C6": {
+   "environment": {
+    "replayed_through_addDecl": 6,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1309,
+    "init_shared_equal_up_to_annotations": 174
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 1
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (2 - x % 2)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (x : Int), 0 < 1 * (2 - x % 2)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x : Int), 0 < 1 * (2 - x % 2)",
+     "atoms": [
+      "x % 2"
+     ],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 2\nwhere\n a := _atom0\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "C7": {
+   "refused": "constants differ from Init beyond annotations: #[Nat.rec]",
+   "exit": 1
+  },
+  "C8": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 3 of R6Audit.c2_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "parameters": {
+     "established": true,
+     "count": 7
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "check2": {
+     "statement": "\u2200 (x y : Int), 0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x y : Int), 0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "residual_mismatch"
+   },
+   "exit": 0
+  },
+  "C9": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 3 of R6Audit.c2_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 7
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (x y : Int), 0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x y : Int), 0 < 1 * (x - y) + 1 * (y + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "R1": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 2,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (x - c_) + 1 * (c_ + 1 - x)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "R2": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "check2": {
+     "statement": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "d_",
+       "original_name": "c'",
+       "index": 2,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (x - d_) + 1 * (d_ + 1 - x)"
+    },
+    "binding": "residual_mismatch"
+   },
+   "exit": 0
+  },
+  "R3": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "check2": {
+     "statement": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": "two rows name the same index",
+    "binding": "rename_unverified"
+   },
+   "exit": 0
+  },
+  "R4": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "check2": {
+     "statement": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": "search name x already names another binder",
+    "binding": "rename_unverified"
+   },
+   "exit": 0
+  },
+  "R5": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "check2": {
+     "statement": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": "two rows share a search name",
+    "binding": "rename_unverified"
+   },
+   "exit": 0
+  },
+  "R6": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1283,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r1_local"
+       ],
+       "name": "h"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "unbound_residual_mismatch"
+    },
+    "check2": {
+     "statement": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x c' : Int), 0 < 1 * (x - c') + 1 * (c' + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": "row 3: the frozen context names h",
+    "binding": "rename_unverified"
+   },
+   "exit": 0
+  },
+  "R7l": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1282,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 1 of R6Audit.r7l_local"
+       ],
+       "name": "h"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r7l_local"
+       ],
+       "name": "hn"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "hn"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "atoms": [],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "R7n": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1281,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 1 of R6Audit.r7n_local"
+       ],
+       "name": "h"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r7n_local"
+       ],
+       "name": "hn"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "hn"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "atoms": [],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "R7b": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1281,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 1 of R6Audit.r7b_local"
+       ],
+       "name": "h"
+      },
+      {
+       "path": [
+        "parameter 2 of R6Audit.r7b_local"
+       ],
+       "name": "hn"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "parameters": {
+     "established": true,
+     "count": 3
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "hn"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "atoms": [],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "R8": {
+   "environment": {
+    "replayed_through_addDecl": 6,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1281,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "reason": "1 references; arity #[3] for 2 parameters",
+     "locatable": false,
+     "classification": "not_locatable"
+    },
+    "parameters": {
+     "established": true,
+     "count": 2
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - 0) + 1 * (0 + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "hp"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 (x : Int), 0 < 1 * (x - 0) + 1 * (0 + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x : Int), 0 < 1 * (x - 0) + 1 * (0 + 1 - x)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  },
+  "R9": {
+   "environment": {
+    "replayed_through_addDecl": 8,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1237,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "parameters": {
+     "reason": "parameters_unverified: the value does not have the form its type requires",
+     "established": false
+    },
+    "local": {
+     "reason": "0 fold applications",
+     "locatable": false
+    }
+   },
+   "exit": 0
+  },
+  "R9b": {
+   "environment": {
+    "replayed_through_addDecl": 7,
+    "mode": "synthetic",
+    "lean": "4.32.2",
+    "init_shared_identical": 1281,
+    "init_shared_equal_up_to_annotations": 170
+   },
+   "audit": {
+    "whole": {
+     "reason": "parameters_unverified: a declaration let does not match the value's",
+     "locatable": false,
+     "classification": "not_locatable"
+    },
+    "parameters": {
+     "reason": "parameters_unverified: a declaration let does not match the value's",
+     "established": false
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "h"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (x : Int), 0 < 1 * (x - 5) + 2 * (5 + 1 - x)",
+     "atoms": [],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a \u2265 7\nwhere\n a := x\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "not_applicable_synthetic"
+   },
+   "exit": 0
+  }
+ },
+ "tool_sha256": "1a34cc740121c9e99ccf54a7275af121f1c46672a65dbdc941c2512f40785a82",
+ "controls_sha256": {
+  "c1.ndjson": "3149ce312bfefb9cd2c4a1f5581486a4547ba4788b72aabbe844273fbc7b106a",
+  "c2.ndjson": "c0a990270a205ad726acc6d23c4c369437f113c71631533482cd2241d42e1041",
+  "c3.ndjson": "9a16f5ba8f9a4d307dce7c3ff1cb362f8e62e66a3762b3ee5c283a0830fe71bd",
+  "c4.ndjson": "df2b12ea7e1eaf444258f77acbf3cb8b4359894d7c738e2e14b99d950bb8c00d",
+  "c5.ndjson": "7454d1f5da85d6b8044a156adb0e7423d0fdc0492d128b05cd5630d348a66a6f",
+  "c6.ndjson": "87823283b58b88bf13067101823a151a66a9be28f7e6cac4f07849cc18469f43",
+  "c7.ndjson": "ac7c91eaec102744c6c8f84e31081941a2ff5bbac4b8c29b27ad92c775727d79",
+  "r1.ndjson": "a8c2b195472ac62bbfb03760f9a95daeafbb14cc4a476ff8e4fb81912656a198",
+  "r7b.ndjson": "47f6b1d3917b109a8d588ba03fdf80ce9535dbe9b3c2c4d6d74d942ad3fc9362",
+  "r7l.ndjson": "a62540a373e2323c8979265ada46d01b06b336918b1b9ff5426befc32b0a45bb",
+  "r7n.ndjson": "b1f7f297c0a48fe3fef600b85cb39880fec778b2ee9efc6a195efc05483f5bb0",
+  "r8.ndjson": "a47c3ef237b0e7d8bf4b292ad21a712f45607be4ab4f9610c3ce2767ffb112cc",
+  "r9.ndjson": "e219cecb205ba6df1c34c369b37c0559022281127082a395b58b241c1819f94f",
+  "r9b.ndjson": "ab60af3601212ca40bd7ec741c53faf2eec8f6cd45e6a83b19a9daa12276146f",
+  "rename-R1.json": "d4e629627e70dc67dd24e3fec9b5e05f8fe8ce18ec2479c59ee30fa3ecaa7431",
+  "rename-R2.json": "f5a7e98be18ccce9a8a4cfbd514631c269856c3ea739445658ed6e76aa7aca5f",
+  "rename-R3.json": "d71a48b55072ad52339b9675f1edd9248a6de99b09f308ca922faab227d86b91",
+  "rename-R4.json": "16ff178c07525c55cb1134a0cbbe018bff519c3658e54a691fe9626bf8ab5504",
+  "rename-R5.json": "8a108d68748def680c1cace6aa305b5b975e103d044e0f7cb14236540901e250",
+  "rename-R6.json": "42b5a2db04b3aadc3fe6f42d83f05bd2c91ae285149714aff8bc2f68440e0fbc"
+ },
+ "sources_sha256": {
+  "experiments/r6/qualification-audit-v2/Audit.lean": "965d70d5850ff1a2781e042055daf9674bebd1fc904a82b7d8871878bf78cb21",
+  "experiments/r6/qualification-audit-v2/make_controls.py": "fa7eb811dc5045e1e877220c8d0e7f24241fd67f4f286d3f261c7b6f9389803c",
+  "experiments/r6/qualification-audit-v2/R6AuditControlsV2.lean": "3e55eeff9c16ab22d9baef580e6b89f842a8b81004a4d52aa60eb96d66b257d4",
+  "experiments/r6/qualification-audit-v2/R6AuditControlsV2.provenance.json": "59e0350df23e6f4bc2be0330dd71f5b4ea0e614dd93887c2908a8e6ea3da4ac6",
+  "experiments/r6/qualification-audit-v2/qualification_audit_v2.py": "c37add3a04b294c9f93774f29350b0a660768a6a6fde0409f884a9e26e98fb39",
+  "experiments/r6/qualification-audit/qualification_audit.py": "c7ae522d6f765c24da217d35cfc4222bd297704ea630c2e54ce61a7b7215ad56",
+  "experiments/r6/qualification-audit/make_controls.py": "7780cd5ad80b993aaab93ade4f7aa14224d78f3a3031ac5622e642c09cfe18ab",
+  "experiments/r6/vendor/lean4export/Export/Parse.lean": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286",
+  "experiments/r6/vendor/lean4export/Export.lean": "1c60d571dc24bfb99e7cbb218d8d489919bbc871238f6db9c76248521fbea998"
+ },
+ "scope": "synthetic controls only; no retained R6 or R6-015 export read"
+}
