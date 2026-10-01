@@ -1,10 +1,13 @@
 # R6-015 proposal — consuming the refused certificates, offline
 
-Status: research-design proposal, **revision 4**, 2026-10-01, against `1f694b65` (tag `r6`). Revision 4 brings in the result of
-the qualification-1 audit ([addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md)), which this proposal waited for. Revision 2 responded to
+Status: research-design proposal, **revision 5**, 2026-10-01, against `1f694b65` (tag `r6`). **Revision 4's design is approved for
+implementation** ([review](reviews/2026-10-01/R6-015-PROPOSAL-REVISION-4-REVIEW.md)). Revision 5 applies that review: one wording
+correction (l070 draw 5 has no fixed prediction), control 8's predicate frozen explicitly, and what step 3 and the lock record.
+Revision 4 (`46ac8901`) brought in the result of the qualification-1 audit ([addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md)), which
+this proposal waited for. Revision 2 responded to
 [the review of revision 1](reviews/2026-09-30/R6-015-PROPOSAL-REVIEW.md), which found two P1 and three P2 issues. Revision 3 corrects
 what a failed regression control may be taken to show, per [the review of R6 qualification 1](reviews/2026-09-30/R6-QUALIFICATION-1-REVIEW.md). It is not frozen,
-not implemented, and not an amendment to R6-014. R6-014's result stands as recorded ([synthesis](R6-SYNTHESIS.md)).
+not yet implemented, and not an amendment to R6-014. R6-014's result stands as recorded ([synthesis](R6-SYNTHESIS.md)).
 - **No provider, credential, reservation or spending** is involved at any stage.
 - No R6 run, record, policy or lock is changed.
 
@@ -131,7 +134,8 @@ It is specified, reviewed and frozen before any retained certificate is replayed
    - The proof keeps the shape `ProofBroker.TermMode.farkasContradictN s sumProof hpos`, with `hpos` built hypothesis-free, so that
      the locked qualification-audit tool can check it (control 8).
    - The normalization must identify atoms consistently: a cast of a product and a product of casts of the same factors are one atom.
-     That is the class of failure the audit found at l070 draw 5.
+     Cast/product normalization is a required synthetic case. (At l070 draw 5 the audit found distinct atoms that print
+     identically. It did not establish what caused the split.)
 
 **Forbidden:** `omega`, `decide`, `simp` or any other tactic on the goal, on its hypotheses, or on any subgoal with hypotheses in
 scope. There is no fallback.
@@ -191,11 +195,12 @@ byte-identity with R6's exports is not required. Axioms must be unchanged.
 retained maps for these obligations, learned arm: l069 1, l070 4, l071 2, l078 1, l096 1, l099 1.
 - **l069, l071, l078 (4 maps):** expected to pass.
 - **l070, the three maps of draws 1–4 and 6–8:** expected to pass.
-- **l070, draw 5's map** (the only one with product-atom facts): the audit did not establish sufficiency, because of split atoms.
-  Passing depends on the atom requirement in step 3 of the route.
+- **l070, draw 5's map** (the only one with product-atom facts): **no fixed prediction**, pending diagnosis or replay. The audit
+  found distinct atoms that print identically, and did not establish their cause. Whether the cast/product requirement repairs
+  this map is unknown.
 - **l096, l099:** no expectation. The audit did not classify them.
 - **The deterministic arm's maps** at l069, l070, l071 and l078 were not audited. They carry an expectation only where identical
-  to an audited learned map.
+  to an audited learned map. The identities, the matches and the labels are recorded in step 3, before the lock.
 
 These are expectations, not implications. The audit's sufficiency test is `omega` over the closed statement, which differs from
 normalization to a numeral: it may use the nonnegativity of ℕ variables, and it treats nonlinear subterms as atoms. The basis
@@ -209,29 +214,40 @@ baseline. They are never counted as consumption.
 
 **8. Independent check of consumption.** Every proof the new route produces is exported and checked by the audit program
 `Audit.lean`, at its `qualification-audit-v1` digest and toolchain, in real mode. R6-015's own driver runs it under R6-015's lock.
-That covers the retained-certificate replays, the validity-preserving mutations and the regression replays.
-- **The requirement:** the binding holds, and Check 1 reports **no hypothesis** at both targets. A proof of `0 < s` that refers to
-  no hypothesis is itself a hypothesis-free proof.
+`qualification-audit-v1` itself is unchanged. That covers the retained-certificate replays, the validity-preserving mutations and
+the regression replays. The program accepts only R6's export format (`lean4export` 3.1.0 from Lean 4.32.0), so R6-015's exports
+are made the same way.
+- **The predicate, frozen.** A proof passes control 8 only if, alongside kernel validation (acceptance 3 and 4):
+  - the program exits 0, and its report has no `refused` field;
+  - `binding` is `matches_residual`;
+  - `local.locatable` and `whole.locatable` are both `true`;
+  - `local.hypotheses` and `whole.hypotheses` are both present, and both are the empty list.
+
+  An error, a refusal or a missing field fails. The audit's `certificate_alone` classification is **not** required, since it also
+  requires Check 2. A proof of `0 < s` that refers to no hypothesis is itself a hypothesis-free proof.
 - **Check 2** is the audit's separate `omega` attempt. It is recorded but not required: it re-derives the step independently, and
   can fail on a step the constrained proof establishes, for instance through split atoms.
 - **Binding.** The harness retains each run's residual goal, printed from the proof term that is exported, in its names. A goal
-  printed in the renamed search context is what left l096 and l099 unbound in the audit.
+  printed in the renamed search context is what left l096 and l099 unbound in the audit. The run's seal, its targets and its
+  certificate stay bound separately, as in R6.
 
 ## Freezing and order
 
 1. **Review this revision.**
 2. **Implement** the selection rule, the fact assertion and the constrained final step in a new bridge revision, with unit tests on
    **synthetic** mixed-carrier goals. These are written from this specification: an `Int` goal over ℕ casts, with `Int` and ℕ
-   hypotheses and an opaque `Int` atom, and with the review's probe included. They also include a synthetic goal in which one
-   product appears both as a cast of a product and as a product of casts (the shape of l070 draw 5, not its certificate).
+   hypotheses and an opaque `Int` atom, and with the review's probe included. They also include the required cast/product case: a
+   synthetic goal in which one product appears both as a cast of a product and as a product of casts.
    - The synthetic tests' proofs are exported and checked by the audit program in `--synthetic` mode, so control 8 is exercised
      before the lock.
    - The four sites' shapes define the requirement and may be studied.
    - The retained certificates are **not** replayed through any candidate closer before the lock.
    - Review.
-3. **Compute the mutation sets and their validity labels** (exact arithmetic, and the checker) from the retained rows. Record them.
-4. **Lock** the bridge revision, the replay harness, the mutation sets, the controls and the analysis, as a new R6-015 lock, before
-   any retained certificate is replayed.
+3. **Compute the mutation sets and their validity labels** (exact arithmetic, and the checker) from the retained rows. Record them,
+   with the control-5 maps: each map's identity and source, its match to an audited learned map, and its expectation label.
+4. **Lock** as a new R6-015 lock, before any retained certificate is replayed:
+   - the bridge revision, the replay harness, the mutation sets and labels, the controls and the analysis;
+   - for control 8: the audit program's source and executable digests, its toolchain, R6-015's driver and its new inputs.
 5. **Replay offline** as sealed site-harness episodes with receipts:
    - the 32 learned and 4 deterministic certificates;
    - the mutation sets;
