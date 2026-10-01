@@ -3211,23 +3211,24 @@ private def buildNonnegProof (c : Int) : MetaM Expr := do
   Lean.Meta.mkDecideProof goalTy
 
 /- ============================================================
-   R6-015: the constrained final step. The weighted sum `s` is
-   reified over its atoms and normalized by core's commutative-ring
-   normalizer, by reflection: no hypothesis is in scope of any step,
-   and no decision procedure runs. The sum's variables must cancel to
-   a numeral, and the numeral must be positive (a closed `decide`).
+   R6-016: the constrained final step, axiom-preserving. The weighted
+   sum `s` is reified into core's linear `Int.Linear.Expr` over its
+   atoms and normalized by reflection (`Int.Linear.Expr.denote_norm`,
+   which depends on `propext` and `Quot.sound` only). No hypothesis is
+   in scope of any step, and no decision procedure runs. The sum's
+   variables must cancel to a numeral, and the numeral must be
+   positive (a closed `decide`). The atom rules are frozen in
+   `experiments/r6/R6-016-PROPOSAL.md`, section 3.
    ============================================================ -/
 
-/-- Atoms of the sum, identified up to definitional equality at
-    instance transparency, which unfolds instances and also every
-    `@[reducible]` definition. Terms differing only in how they were
-    elaborated (`Nat.cast` / `NatCast.natCast` / `Int.ofNat`, instance
-    paths) are then one atom. Any identification is rechecked by the
-    kernel. -/
 private abbrev ConstrainedReifyM := StateRefT (Array Expr) MetaM
 
-private def constrainedAtom (e : Expr)
-    : ConstrainedReifyM Lean.Grind.CommRing.Expr := do
+/-- Rule 4: an atom, identified up to definitional equality at
+    instance transparency, which unfolds instances and every
+    `@[reducible]` definition. Products are compared as terms: there
+    is no commutativity or associativity. Any identification is
+    rechecked by the kernel (rule 5). -/
+private def constrainedAtom (e : Expr) : ConstrainedReifyM Int.Linear.Expr := do
   let atoms ← get
   for h : i in [:atoms.size] do
     if ← withNewMCtxDepth <| withTransparency .instances <|
@@ -3236,111 +3237,134 @@ private def constrainedAtom (e : Expr)
   set (atoms.push e)
   return .var atoms.size
 
-private def constrainedNatLit? (e : Expr) : Option Nat :=
+/-- Exponents above this bound are not evaluated as numerals. -/
+private def constrainedExponentBound : Nat := 1024
+
+/-- A closed ℕ numeral: a literal, or `+`, `*`, `^` (exponent at most
+    `constrainedExponentBound`) and `Nat.succ` of closed numerals,
+    evaluated. -/
+private partial def constrainedNatNumeral? (e : Expr) : Option Nat :=
   match e.consumeMData with
   | .lit (.natVal n) => some n
   | e' =>
+    let isNat (α : Expr) := α.isConstOf ``Nat
     match e'.getAppFnArgs with
     | (``OfNat.ofNat, #[α, n, _]) =>
-      if α.isConstOf ``Nat then
-        match n.consumeMData with
-        | .lit (.natVal k) => some k
-        | _ => none
+      if isNat α then (match n.consumeMData with | .lit (.natVal k) => some k | _ => none) else none
+    | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+      if isNat α then do pure ((← constrainedNatNumeral? a) + (← constrainedNatNumeral? b)) else none
+    | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+      if isNat α then do pure ((← constrainedNatNumeral? a) * (← constrainedNatNumeral? b)) else none
+    | (``HPow.hPow, #[α, β, _, _, a, k]) =>
+      if isNat α && isNat β then do
+        let k ← constrainedNatNumeral? k
+        if k > constrainedExponentBound then none else pure ((← constrainedNatNumeral? a) ^ k)
       else none
+    | (``Nat.succ, #[a]) => (· + 1) <$> constrainedNatNumeral? a
     | _ => none
 
-private def constrainedIntLit? (e : Expr) : Option Nat :=
+/-- A closed `Int` numeral: a literal, its negation, `+`, `-`, `*`, `^`
+    (a ℕ numeral exponent, bounded) of closed numerals, or a cast of a
+    closed ℕ numeral, evaluated. -/
+private partial def constrainedIntNumeral? (e : Expr) : Option Int :=
+  let isInt (α : Expr) := α.isConstOf ``Int
   match e.consumeMData.getAppFnArgs with
   | (``OfNat.ofNat, #[α, n, _]) =>
-    if α.isConstOf ``Int then
-      match n.consumeMData with
-      | .lit (.natVal k) => some k
-      | _ => none
+    if isInt α then (match n.consumeMData with | .lit (.natVal k) => some (Int.ofNat k) | _ => none) else none
+  | (``Neg.neg, #[α, _, a]) => if isInt α then (- ·) <$> constrainedIntNumeral? a else none
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+    if isInt α then do pure ((← constrainedIntNumeral? a) + (← constrainedIntNumeral? b)) else none
+  | (``HSub.hSub, #[α, _, _, _, a, b]) =>
+    if isInt α then do pure ((← constrainedIntNumeral? a) - (← constrainedIntNumeral? b)) else none
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    if isInt α then do pure ((← constrainedIntNumeral? a) * (← constrainedIntNumeral? b)) else none
+  | (``HPow.hPow, #[α, β, _, _, a, k]) =>
+    if isInt α && β.isConstOf ``Nat then do
+      let k ← constrainedNatNumeral? k
+      if k > constrainedExponentBound then none else pure ((← constrainedIntNumeral? a) ^ k)
     else none
+  | (``Nat.cast, #[R, _, t]) => if isInt R then Int.ofNat <$> constrainedNatNumeral? t else none
+  | (``NatCast.natCast, #[R, _, t]) => if isInt R then Int.ofNat <$> constrainedNatNumeral? t else none
+  | (``Int.ofNat, #[t]) => Int.ofNat <$> constrainedNatNumeral? t
   | _ => none
 
-/-- A ℕ term under a cast to `Int`: the cast is pushed through `+`,
-    `*`, literal powers and numerals, so a cast of a product and a
-    product of casts of the same factors normalize alike. Anything
-    else (truncated subtraction, division, …) is the atom `↑t`. -/
-private partial def constrainedReifyNat (t : Expr)
-    : ConstrainedReifyM Lean.Grind.CommRing.Expr := do
+private def constrainedNatCast (t : Expr) : Expr :=
+  mkApp3 (mkConst ``Nat.cast [0]) (mkConst ``Int) (mkConst ``instNatCastInt) t
+
+/-- Rule 3: a cast of a ℕ product of two non-numeral factors, rewritten
+    at the meta level only as the product of the casts in the same
+    order, recursively through nested ℕ products. The kernel accepts
+    `↑(a * b)` as `↑a * ↑b` by unfolding. -/
+private partial def constrainedCastProduct (t : Expr) : MetaM Expr := do
+  match t.consumeMData.getAppFnArgs with
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    if α.isConstOf ``Nat && (constrainedNatNumeral? a).isNone && (constrainedNatNumeral? b).isNone then
+      mkAppM ``HMul.hMul #[← constrainedCastProduct a, ← constrainedCastProduct b]
+    else pure (constrainedNatCast t)
+  | _ => pure (constrainedNatCast t)
+
+/-- Rule 2: a ℕ term under a cast to `Int`. The cast is pushed through
+    ℕ `+`, ℕ numerals, `Nat.succ` and ℕ `*` with a numeral factor. A
+    product of two non-numeral factors is an atom (rule 3). Truncated
+    subtraction, division and every other ℕ term stay under the cast,
+    as atoms. -/
+private partial def constrainedReifyNat (t : Expr) : ConstrainedReifyM Int.Linear.Expr := do
   let t := t.consumeMData
-  if let some n := constrainedNatLit? t then return .num n
-  let castAtom : ConstrainedReifyM Lean.Grind.CommRing.Expr :=
-    constrainedAtom (mkApp3 (mkConst ``Nat.cast [0]) (mkConst ``Int)
-      (mkConst ``instNatCastInt) t)
+  if let some n := constrainedNatNumeral? t then return .num (Int.ofNat n)
   match t.getAppFnArgs with
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
-    if α.isConstOf ``Nat then
-      return .add (← constrainedReifyNat a) (← constrainedReifyNat b)
-    else castAtom
+    if α.isConstOf ``Nat then return .add (← constrainedReifyNat a) (← constrainedReifyNat b)
+    else constrainedAtom (constrainedNatCast t)
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
     if α.isConstOf ``Nat then
-      return .mul (← constrainedReifyNat a) (← constrainedReifyNat b)
-    else castAtom
-  | (``HPow.hPow, #[α, β, _, _, a, k]) =>
-    match α.isConstOf ``Nat && β.isConstOf ``Nat, constrainedNatLit? k with
-    | true, some k => return .pow (← constrainedReifyNat a) k
-    | _, _ => castAtom
+      match constrainedNatNumeral? a, constrainedNatNumeral? b with
+      | some k, _ => return .mulL (Int.ofNat k) (← constrainedReifyNat b)
+      | _, some k => return .mulR (← constrainedReifyNat a) (Int.ofNat k)
+      | none, none => constrainedAtom (← constrainedCastProduct t)
+    else constrainedAtom (constrainedNatCast t)
   | (``Nat.succ, #[a]) => return .add (← constrainedReifyNat a) (.num 1)
-  | _ => castAtom
+  | _ => constrainedAtom (constrainedNatCast t)
 
-/-- An `Int` term: `+`, `-`, `*`, negation, literal powers, numerals
-    and casts of ℕ terms are interpreted; anything else is an atom. -/
-private partial def constrainedReifyInt (e : Expr)
-    : ConstrainedReifyM Lean.Grind.CommRing.Expr := do
+/-- Rule 1: an `Int` term. `+`, `-`, negation and closed numerals are
+    interpreted; a product with a numeral on either side becomes
+    `mulL` / `mulR`; a cast of a ℕ term is rule 2's. A product of two
+    non-numeral factors, and every other term, is an atom. -/
+private partial def constrainedReifyInt (e : Expr) : ConstrainedReifyM Int.Linear.Expr := do
   let e := e.consumeMData
-  if let some n := constrainedIntLit? e then return .num n
+  if let some k := constrainedIntNumeral? e then return .num k
   let isInt (α : Expr) := α.isConstOf ``Int
   match e.getAppFnArgs with
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
-    if isInt α then return .add (← constrainedReifyInt a) (← constrainedReifyInt b)
-    else constrainedAtom e
+    if isInt α then return .add (← constrainedReifyInt a) (← constrainedReifyInt b) else constrainedAtom e
   | (``HSub.hSub, #[α, _, _, _, a, b]) =>
-    if isInt α then return .sub (← constrainedReifyInt a) (← constrainedReifyInt b)
-    else constrainedAtom e
-  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
-    if isInt α then return .mul (← constrainedReifyInt a) (← constrainedReifyInt b)
-    else constrainedAtom e
+    if isInt α then return .sub (← constrainedReifyInt a) (← constrainedReifyInt b) else constrainedAtom e
   | (``Neg.neg, #[α, _, a]) =>
     if isInt α then return .neg (← constrainedReifyInt a) else constrainedAtom e
-  | (``HPow.hPow, #[α, β, _, _, a, k]) =>
-    match isInt α && β.isConstOf ``Nat, constrainedNatLit? k with
-    | true, some k => return .pow (← constrainedReifyInt a) k
-    | _, _ => constrainedAtom e
-  | (``Nat.cast, #[R, _, t]) =>
-    if isInt R then constrainedReifyNat t else constrainedAtom e
-  | (``NatCast.natCast, #[R, _, t]) =>
-    if isInt R then constrainedReifyNat t else constrainedAtom e
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    if isInt α then
+      match constrainedIntNumeral? a, constrainedIntNumeral? b with
+      | some k, _ => return .mulL k (← constrainedReifyInt b)
+      | _, some k => return .mulR (← constrainedReifyInt a) k
+      | none, none => constrainedAtom e
+    else constrainedAtom e
+  | (``Nat.cast, #[R, _, t]) => if isInt R then constrainedReifyNat t else constrainedAtom e
+  | (``NatCast.natCast, #[R, _, t]) => if isInt R then constrainedReifyNat t else constrainedAtom e
   | (``Int.ofNat, #[t]) => constrainedReifyNat t
   | _ => constrainedAtom e
 
-private def commRingExprToExpr : Lean.Grind.CommRing.Expr → Expr
-  | .num k => mkApp (mkConst ``Lean.Grind.CommRing.Expr.num) (toExpr k)
-  | .natCast k => mkApp (mkConst ``Lean.Grind.CommRing.Expr.natCast) (toExpr k)
-  | .intCast k => mkApp (mkConst ``Lean.Grind.CommRing.Expr.intCast) (toExpr k)
-  | .var i => mkApp (mkConst ``Lean.Grind.CommRing.Expr.var) (toExpr i)
-  | .neg a => mkApp (mkConst ``Lean.Grind.CommRing.Expr.neg) (commRingExprToExpr a)
-  | .add a b => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.add)
-      (commRingExprToExpr a) (commRingExprToExpr b)
-  | .sub a b => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.sub)
-      (commRingExprToExpr a) (commRingExprToExpr b)
-  | .mul a b => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.mul)
-      (commRingExprToExpr a) (commRingExprToExpr b)
-  | .pow a k => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.pow)
-      (commRingExprToExpr a) (toExpr k)
+private def linearExprToExpr : Int.Linear.Expr → Expr
+  | .num k => mkApp (mkConst ``Int.Linear.Expr.num) (toExpr k)
+  | .var i => mkApp (mkConst ``Int.Linear.Expr.var) (toExpr i)
+  | .add a b => mkApp2 (mkConst ``Int.Linear.Expr.add) (linearExprToExpr a) (linearExprToExpr b)
+  | .sub a b => mkApp2 (mkConst ``Int.Linear.Expr.sub) (linearExprToExpr a) (linearExprToExpr b)
+  | .neg a => mkApp (mkConst ``Int.Linear.Expr.neg) (linearExprToExpr a)
+  | .mulL k a => mkApp2 (mkConst ``Int.Linear.Expr.mulL) (toExpr k) (linearExprToExpr a)
+  | .mulR a k => mkApp2 (mkConst ``Int.Linear.Expr.mulR) (linearExprToExpr a) (toExpr k)
 
 /-- The residual polynomial, over the atoms as Lean prints them. -/
-private def renderResidual (atoms : Array Expr)
-    : Lean.Grind.CommRing.Poly → MetaM MessageData
-  | .num k => return m!"{k}"
-  | .add k m p => do
-    let rec mon : Lean.Grind.CommRing.Mon → MetaM MessageData
-      | .unit => return m!"1"
-      | .mult pw .unit => return m!"{atoms[pw.x]!}^{pw.k}"
-      | .mult pw rest => return m!"{atoms[pw.x]!}^{pw.k} * {← mon rest}"
-    return m!"{k} * ({← mon m}) + {← renderResidual atoms p}"
+private def renderResidual (atoms : Array Expr) : Int.Linear.Poly → MessageData
+  | .num k => m!"{k}"
+  | .add k v p => m!"{k} * ({atoms[v]!}) + {renderResidual atoms p}"
 
 /-- Every free variable `es` reach, through local definitions'
     values, and (when `types`) through the variables' types. -/
@@ -3370,10 +3394,10 @@ private partial def constrainedReach (es : Array Expr) (types : Bool)
 private def constrainedPositivity (sum : Expr) : MetaM Expr := do
   let sum ← instantiateMVars sum
   let (e, atoms) ← (constrainedReifyInt sum).run #[]
-  let c ← match e.toPoly with
+  let c ← match e.norm with
     | .num c => pure c
     | p => throwError "proof_broker_term (constrained): the weighted sum \
-        does not cancel; its normal form is {← renderResidual atoms p}"
+        does not cancel; its normal form is {renderResidual atoms p}"
   unless 0 < c do
     throwError "proof_broker_term (constrained): the weighted sum \
       normalizes to {c}, which is not positive"
@@ -3381,12 +3405,11 @@ private def constrainedPositivity (sum : Expr) : MetaM Expr := do
   let ctx ← if h : 0 < atoms.size then
       RArray.toExpr int id (RArray.ofArray atoms h)
     else pure (mkApp2 (mkConst ``Lean.RArray.leaf [0]) int (toExpr (0 : Int)))
-  let polyNum := mkApp (mkConst ``Lean.Grind.CommRing.Poly.num) (toExpr c)
-  let normalized := mkApp2 (mkConst ``Eq.refl [1])
-    (mkConst ``Lean.Grind.CommRing.Poly) polyNum
+  let polyNum := mkApp (mkConst ``Int.Linear.Poly.num) (toExpr c)
+  let normalized := mkApp2 (mkConst ``Eq.refl [1]) (mkConst ``Int.Linear.Poly) polyNum
   let positive ← mkDecideProof (← mkAppM ``LT.lt #[toExpr (0 : Int), toExpr c])
-  let proof := mkApp5 (mkConst ``ProofBroker.TermMode.posOfNormNum) ctx
-    (commRingExprToExpr e) (toExpr c) normalized positive
+  let proof := mkApp5 (mkConst ``ProofBroker.TermMode.posOfLinearNum) ctx
+    (linearExprToExpr e) (toExpr c) normalized positive
   let ty ← mkAppM ``LT.lt #[toExpr (0 : Int), sum]
   -- The typed term is built first; both gates check exactly the term
   -- returned. Its type annotation carries `sum` itself, so a hypothesis
