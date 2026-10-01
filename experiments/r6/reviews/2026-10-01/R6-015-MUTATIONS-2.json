@@ -1,0 +1,6107 @@
+{
+ "schema_version": "r6-015-mutations-1",
+ "rules": "mutations.py docstring",
+ "sources": {
+  "cohort-live-v9/l166-draw1": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw2": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw3": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw4": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw5": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw6": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw7": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l166-draw8": {
+   "site": "l166",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166": {
+   "site": "l166",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hrec",
+     "-3"
+    ],
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "hrec": "-3",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "hrec": "-3",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw1": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hz0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw2": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ],
+    [
+     "hz0",
+     "1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw3": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ],
+    [
+     "hz0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw4": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ],
+    [
+     "hz0",
+     "1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw5": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hz0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw6": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hz0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw7": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this",
+     "1"
+    ],
+    [
+     "hz0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "hrec",
+     "-1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l175-draw8": {
+   "site": "l175",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hrec",
+     "-1"
+    ],
+    [
+     "hz0",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175": {
+   "site": "l175",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hrec",
+     "-3"
+    ],
+    [
+     "hz0",
+     "3"
+    ],
+    [
+     "this",
+     "3"
+    ],
+    [
+     "neg_goal",
+     "3"
+    ]
+   ],
+   "map": {
+    "hrec": "-3",
+    "hz0": "3",
+    "neg_goal": "3",
+    "this": "3"
+   },
+   "class": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "3",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw1": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw2": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw3": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw4": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw5": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw6": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw7": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l178-draw8": {
+   "site": "l178",
+   "arm": "learned",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l178": {
+   "site": "l178",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "this_1",
+     "1"
+    ],
+    [
+     "this",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "class": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw1": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw2": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw3": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw4": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw5": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw6-attempt2": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw7": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l204-draw8": {
+   "site": "l204",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l204": {
+   "site": "l204",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hab",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hab": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw1": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw2": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw3": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw4": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw5": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw6": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw7": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l069-draw8": {
+   "site": "l069",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069": {
+   "site": "l069",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw1": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hwidth",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "32769"
+    ]
+   ],
+   "map": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "class": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "604462909666027343249410",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw2": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hZ",
+     "2"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "18446744069397676034",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw3": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hwidth",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ],
+    [
+     "_pb_nonneg_Zmax",
+     "65536"
+    ]
+   ],
+   "map": {
+    "_pb_nonneg_Zmax": "65536",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "_pb_nonneg_Zmax": "65536",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw4": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hwidth",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "32769"
+    ]
+   ],
+   "map": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "class": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "604462909666027343249410",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw5": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hwidth",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "_pb_nonneg_atom_4",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "_pb_nonneg_atom_4": "1",
+    "hprod_le": "1",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "_pb_nonneg_atom_4": "1",
+    "hprod_le": "1",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw6": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hZ",
+     "2"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "18446744069397676034",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw7": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hZ",
+     "2"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "18446744069397676034",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l070-draw8": {
+   "site": "l070",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hwidth",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "32769"
+    ]
+   ],
+   "map": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "class": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "604462909666027343249410",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l070": {
+   "site": "l070",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hZ",
+     "2"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "18446744069397676034",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw1": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw2": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw3": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw4": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw5": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw6": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw7": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l071-draw8": {
+   "site": "l071",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "hle",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l071": {
+   "site": "l071",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hZ",
+     "2"
+    ],
+    [
+     "hzsum",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hZ": "2",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hZ": "2",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "18446744069397676034",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw1": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw2": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw3": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw4": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw5": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw6": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw7": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l078-draw8": {
+   "site": "l078",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l078": {
+   "site": "l078",
+   "arm": "deterministic",
+   "ordering": [
+    [
+     "hx",
+     "1"
+    ],
+    [
+     "hz",
+     "1"
+    ],
+    [
+     "hprod_le",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "2",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw1": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw2": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw3": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw4": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw5": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw6": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw7": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l096-draw8": {
+   "site": "l096",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hlt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw1": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw2": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw3": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw4": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw5": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw6": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw7": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  },
+  "cohort-live-v9/l099-draw8": {
+   "site": "l099",
+   "arm": "learned",
+   "ordering": [
+    [
+     "hgt",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "class": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "arithmetic": {
+    "valid": true,
+    "reason": "verified",
+    "constant": "1",
+    "strict": false
+   },
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "error": null
+   }
+  }
+ },
+ "units": {
+  "learned": {
+   "orderings": 7,
+   "maps": 4,
+   "classes": 4
+  },
+  "both": {
+   "maps": 6,
+   "classes": 5
+  }
+ },
+ "maps": {
+  "l166-deterministic": {
+   "site": "l166",
+   "representative": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166",
+   "map": {
+    "hlt": "1",
+    "hrec": "-3",
+    "neg_goal": "1"
+   }
+  },
+  "l166-learned": {
+   "site": "l166",
+   "representative": "cohort-live-v9/l166-draw1",
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   }
+  },
+  "l175-deterministic": {
+   "site": "l175",
+   "representative": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175",
+   "map": {
+    "hrec": "-3",
+    "hz0": "3",
+    "neg_goal": "3",
+    "this": "3"
+   }
+  },
+  "l175-learned": {
+   "site": "l175",
+   "representative": "cohort-live-v9/l175-draw1",
+   "map": {
+    "hrec": "-1",
+    "hz0": "1",
+    "neg_goal": "1",
+    "this": "1"
+   }
+  },
+  "l178-learned": {
+   "site": "l178",
+   "representative": "cohort-live-v9/l178-draw1",
+   "map": {
+    "neg_goal": "1",
+    "this": "1",
+    "this_1": "1"
+   }
+  },
+  "l204-learned": {
+   "site": "l204",
+   "representative": "cohort-live-v9/l204-draw1",
+   "map": {
+    "hab": "1",
+    "neg_goal": "1"
+   }
+  }
+ },
+ "mutations": {
+  "l166-deterministic": {
+   "invalid": {
+    "neg_goal_doubled": {
+     "chosen": "neg_goal",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v0": "-1",
+       "z": "1"
+      },
+      "constant": "2"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -v0 + z + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "inequality_doubled": {
+     "chosen": "hlt",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v0": "1",
+       "z": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is v0 + -z + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "hypothesis_dropped": {
+     "chosen": "hlt",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v0": "-1",
+       "z": "1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -v0 + z + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "unrelated_inequality_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    }
+   },
+   "valid": {
+    "scaled_2": {
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-6"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "2",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "scaled_3": {
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-9"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "reordered": {
+     "coefficients": [
+      {
+       "coefficient": "1",
+       "hypothesis": "neg_goal"
+      },
+      {
+       "coefficient": "1",
+       "hypothesis": "hlt"
+      },
+      {
+       "coefficient": "-3",
+       "hypothesis": "hrec"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "zero_entry_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "coefficient": "-3",
+       "hypothesis": "hrec"
+      },
+      {
+       "coefficient": "1",
+       "hypothesis": "hlt"
+      },
+      {
+       "coefficient": "1",
+       "hypothesis": "neg_goal"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "0"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "hrec_dropped": {
+     "chosen": "hrec",
+     "coefficients": [
+      {
+       "coefficient": "1",
+       "hypothesis": "hlt"
+      },
+      {
+       "coefficient": "1",
+       "hypothesis": "neg_goal"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true,
+     "equals_learned_map": true
+    }
+   }
+  },
+  "l166-learned": {
+   "invalid": {
+    "neg_goal_doubled": {
+     "chosen": "neg_goal",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v0": "-1",
+       "z": "1"
+      },
+      "constant": "2"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -v0 + z + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "inequality_doubled": {
+     "chosen": "hlt",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v0": "1",
+       "z": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is v0 + -z + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "hypothesis_dropped": {
+     "chosen": "hlt",
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v0": "-1",
+       "z": "1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -v0 + z + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "unrelated_inequality_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    }
+   },
+   "valid": {
+    "scaled_2": {
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "2",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "scaled_3": {
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "reordered": {
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hlt",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "zero_entry_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hlt",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "0"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    }
+   }
+  },
+  "l175-deterministic": {
+   "invalid": {
+    "neg_goal_doubled": {
+     "chosen": "neg_goal",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "6"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-3",
+       "v": "3"
+      },
+      "constant": "6"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -3*Zmax + 3*v + 6, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "inequality_doubled": {
+     "chosen": "hz0",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "6"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "z": "-3"
+      },
+      "constant": "3"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -3*z + 3, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "hypothesis_dropped": {
+     "chosen": "hrec",
+     "coefficients": [
+      {
+       "hypothesis": "hz0",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "_pb_iatom_0": "-3",
+       "v": "3",
+       "z": "-3"
+      },
+      "constant": "3"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -3*_pb_iatom_0 + 3*v + -3*z + 3, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "unrelated_inequality_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1"
+      },
+      "constant": "3"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + 3, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    }
+   },
+   "valid": {
+    "scaled_2": {
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-6"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "6"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "6"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "6"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "6",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "scaled_3": {
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-9"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "9"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "9"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "9"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "9",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "reordered": {
+     "coefficients": [
+      {
+       "coefficient": "3",
+       "hypothesis": "neg_goal"
+      },
+      {
+       "coefficient": "3",
+       "hypothesis": "this"
+      },
+      {
+       "coefficient": "3",
+       "hypothesis": "hz0"
+      },
+      {
+       "coefficient": "-3",
+       "hypothesis": "hrec"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "zero_entry_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "coefficient": "-3",
+       "hypothesis": "hrec"
+      },
+      {
+       "coefficient": "3",
+       "hypothesis": "hz0"
+      },
+      {
+       "coefficient": "3",
+       "hypothesis": "this"
+      },
+      {
+       "coefficient": "3",
+       "hypothesis": "neg_goal"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "0"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    }
+   }
+  },
+  "l175-learned": {
+   "invalid": {
+    "neg_goal_doubled": {
+     "chosen": "neg_goal",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-1"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1",
+       "v": "1"
+      },
+      "constant": "2"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + v + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "inequality_doubled": {
+     "chosen": "hz0",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-1"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "z": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -z + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "hypothesis_dropped": {
+     "chosen": "hrec",
+     "coefficients": [
+      {
+       "hypothesis": "hz0",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "_pb_iatom_0": "-1",
+       "v": "1",
+       "z": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -_pb_iatom_0 + v + -z + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "unrelated_inequality_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-1"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    }
+   },
+   "valid": {
+    "scaled_2": {
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-2"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "2",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "scaled_3": {
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-3"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "reordered": {
+     "coefficients": [
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "zero_entry_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hz0",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hrec",
+       "coefficient": "-1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "0"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    }
+   }
+  },
+  "l178-learned": {
+   "invalid": {
+    "neg_goal_doubled": {
+     "chosen": "neg_goal",
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "v": "1",
+       "v0": "-1"
+      },
+      "constant": "2"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is v + -v0 + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "inequality_doubled": {
+     "chosen": "this",
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1",
+       "v0": "1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + v0 + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "hypothesis_dropped": {
+     "chosen": "this",
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "1",
+       "v0": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is Zmax + -v0 + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "unrelated_inequality_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    }
+   },
+   "valid": {
+    "scaled_2": {
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "2",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "scaled_3": {
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "reordered": {
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this_1",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "zero_entry_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "this_1",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "this",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "0"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    }
+   }
+  },
+  "l204-learned": {
+   "invalid": {
+    "neg_goal_doubled": {
+     "chosen": "neg_goal",
+     "coefficients": [
+      {
+       "hypothesis": "hab",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "a": "-1",
+       "b": "1"
+      },
+      "constant": "2"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -a + b + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "inequality_doubled": {
+     "chosen": "hab",
+     "coefficients": [
+      {
+       "hypothesis": "hab",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "a": "1",
+       "b": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is a + -b + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "hypothesis_dropped": {
+     "chosen": "hab",
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "a": "-1",
+       "b": "1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -a + b + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    },
+    "unrelated_inequality_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hab",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": false,
+      "reason": "not_contradictory",
+      "residual": {
+       "Zmax": "-1"
+      },
+      "constant": "1"
+     },
+     "checker": {
+      "accepted": false,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "farkas_not_contradictory",
+       "detail": "weighted sum is -Zmax + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      },
+      "error": null
+     },
+     "valid": false
+    }
+   },
+   "valid": {
+    "scaled_2": {
+     "coefficients": [
+      {
+       "hypothesis": "hab",
+       "coefficient": "2"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "2"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "2",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "scaled_3": {
+     "coefficients": [
+      {
+       "hypothesis": "hab",
+       "coefficient": "3"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "3"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "3",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "reordered": {
+     "coefficients": [
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "hab",
+       "coefficient": "1"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    },
+    "zero_entry_added": {
+     "chosen": "_pb_nonneg_Zmax",
+     "coefficients": [
+      {
+       "hypothesis": "hab",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "neg_goal",
+       "coefficient": "1"
+      },
+      {
+       "hypothesis": "_pb_nonneg_Zmax",
+       "coefficient": "0"
+      }
+     ],
+     "arithmetic": {
+      "valid": true,
+      "reason": "verified",
+      "constant": "1",
+      "strict": false
+     },
+     "checker": {
+      "accepted": true,
+      "stage": "certificate_verification",
+      "reason": {
+       "kind": "verified_farkas"
+      },
+      "error": null
+     },
+     "valid": true
+    }
+   }
+  }
+ },
+ "control_5": [
+  {
+   "site": "l069",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l069-draw1"
+   },
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l069/1": "certificate_alone",
+    "bracket-l069/2": "certificate_alone",
+    "bracket-l069/3": "certificate_alone",
+    "bracket-l069/4": "certificate_alone",
+    "bracket-l069/5": "certificate_alone",
+    "bracket-l069/6": "certificate_alone",
+    "bracket-l069/7": "certificate_alone",
+    "bracket-l069/8": "certificate_alone"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l069",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069"
+   },
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l069/1": "certificate_alone",
+    "bracket-l069/2": "certificate_alone",
+    "bracket-l069/3": "certificate_alone",
+    "bracket-l069/4": "certificate_alone",
+    "bracket-l069/5": "certificate_alone",
+    "bracket-l069/6": "certificate_alone",
+    "bracket-l069/7": "certificate_alone",
+    "bracket-l069/8": "certificate_alone"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw1"
+   },
+   "map": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "draws": [
+    1,
+    4,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l070/1": "sufficient_but_context_referenced",
+    "bracket-l070/4": "sufficient_but_context_referenced",
+    "bracket-l070/8": "sufficient_but_context_referenced"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw2"
+   },
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "draws": [
+    2,
+    6,
+    7
+   ],
+   "audited_slots": {
+    "bracket-l070/2": "sufficient_but_context_referenced",
+    "bracket-l070/6": "sufficient_but_context_referenced",
+    "bracket-l070/7": "sufficient_but_context_referenced"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw3"
+   },
+   "map": {
+    "_pb_nonneg_Zmax": "65536",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    3
+   ],
+   "audited_slots": {
+    "bracket-l070/3": "sufficient_but_context_referenced"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw5"
+   },
+   "map": {
+    "_pb_nonneg_atom_4": "1",
+    "hprod_le": "1",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    5
+   ],
+   "audited_slots": {
+    "bracket-l070/5": "sufficiency_not_established"
+   },
+   "expectation": "no_fixed_prediction: sufficiency not established (draw 5)"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l070"
+   },
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [
+    2,
+    6,
+    7
+   ],
+   "audited_slots": {
+    "bracket-l070/2": "sufficient_but_context_referenced",
+    "bracket-l070/6": "sufficient_but_context_referenced",
+    "bracket-l070/7": "sufficient_but_context_referenced"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l071",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l071-draw1"
+   },
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l071/1": "certificate_alone",
+    "bracket-l071/2": "certificate_alone",
+    "bracket-l071/3": "certificate_alone",
+    "bracket-l071/5": "certificate_alone",
+    "bracket-l071/6": "certificate_alone",
+    "bracket-l071/7": "certificate_alone",
+    "bracket-l071/8": "certificate_alone"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l071",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l071-draw4"
+   },
+   "map": {
+    "hle": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    4
+   ],
+   "audited_slots": {
+    "bracket-l071/4": "certificate_alone"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l071",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l071"
+   },
+   "map": {
+    "hZ": "2",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [],
+   "audited_slots": {},
+   "expectation": "no_expectation: not identical to an audited learned map"
+  },
+  {
+   "site": "l078",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l078-draw1"
+   },
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l078/1": "certificate_alone",
+    "bracket-l078/2": "certificate_alone",
+    "bracket-l078/3": "certificate_alone",
+    "bracket-l078/4": "certificate_alone",
+    "bracket-l078/5": "certificate_alone",
+    "bracket-l078/6": "certificate_alone",
+    "bracket-l078/7": "certificate_alone",
+    "bracket-l078/8": "certificate_alone"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l078",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l078"
+   },
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l078/1": "certificate_alone",
+    "bracket-l078/2": "certificate_alone",
+    "bracket-l078/3": "certificate_alone",
+    "bracket-l078/4": "certificate_alone",
+    "bracket-l078/5": "certificate_alone",
+    "bracket-l078/6": "certificate_alone",
+    "bracket-l078/7": "certificate_alone",
+    "bracket-l078/8": "certificate_alone"
+   },
+   "expectation": "expected_pass"
+  },
+  {
+   "site": "l096",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l096-draw1"
+   },
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l096/1": "unbound_residual_mismatch",
+    "bracket-l096/2": "unbound_residual_mismatch",
+    "bracket-l096/3": "unbound_residual_mismatch",
+    "bracket-l096/4": "unbound_residual_mismatch",
+    "bracket-l096/5": "unbound_residual_mismatch",
+    "bracket-l096/6": "unbound_residual_mismatch",
+    "bracket-l096/7": "unbound_residual_mismatch",
+    "bracket-l096/8": "unbound_residual_mismatch"
+   },
+   "expectation": "no_expectation: not classified by the audit"
+  },
+  {
+   "site": "l096",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l096"
+   },
+   "retained": false,
+   "reason": "one dispatch, received with no certificate (sealed, chain-verified events)"
+  },
+  {
+   "site": "l099",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l099-draw1"
+   },
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l099/1": "unbound_residual_mismatch",
+    "bracket-l099/2": "unbound_residual_mismatch",
+    "bracket-l099/3": "unbound_residual_mismatch",
+    "bracket-l099/4": "unbound_residual_mismatch",
+    "bracket-l099/5": "unbound_residual_mismatch",
+    "bracket-l099/6": "unbound_residual_mismatch",
+    "bracket-l099/7": "unbound_residual_mismatch",
+    "bracket-l099/8": "unbound_residual_mismatch"
+   },
+   "expectation": "no_expectation: not classified by the audit"
+  },
+  {
+   "site": "l099",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l099"
+   },
+   "retained": false,
+   "reason": "one dispatch, received with no certificate (sealed, chain-verified events)"
+  }
+ ],
+ "control_4": [
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw1"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw2"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw3"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw4"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw5"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw6"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw7"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  },
+  {
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw8"
+   },
+   "ordering": [
+    [
+     "hzh0",
+     "1"
+    ],
+    [
+     "neg_goal",
+     "1"
+    ]
+   ],
+   "arithmetic": {
+    "valid": false,
+    "reason": "not_contradictory",
+    "constant": "0",
+    "strict": false
+   },
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "error": null
+   }
+  }
+ ],
+ "episodes": {
+  "l166-learned-draw1": null,
+  "l166-learned-draw2": null,
+  "l166-learned-draw3": null,
+  "l166-learned-draw4": null,
+  "l166-learned-draw5": null,
+  "l166-learned-draw6": null,
+  "l166-learned-draw7": null,
+  "l166-learned-draw8": null,
+  "l166-deterministic": null,
+  "l175-learned-draw1": null,
+  "l175-learned-draw2": null,
+  "l175-learned-draw3": null,
+  "l175-learned-draw4": null,
+  "l175-learned-draw5": null,
+  "l175-learned-draw6": null,
+  "l175-learned-draw7": null,
+  "l175-learned-draw8": null,
+  "l175-deterministic": null,
+  "l178-learned-draw1": null,
+  "l178-learned-draw2": null,
+  "l178-learned-draw3": null,
+  "l178-learned-draw4": null,
+  "l178-learned-draw5": null,
+  "l178-learned-draw6": null,
+  "l178-learned-draw7": null,
+  "l178-learned-draw8": null,
+  "l178-deterministic": null,
+  "l204-learned-draw1": null,
+  "l204-learned-draw2": null,
+  "l204-learned-draw3": null,
+  "l204-learned-draw4": null,
+  "l204-learned-draw5": null,
+  "l204-learned-draw6": null,
+  "l204-learned-draw7": null,
+  "l204-learned-draw8": null,
+  "l204-deterministic": null,
+  "l166-deterministic-neg_goal_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-deterministic-inequality_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-deterministic-hypothesis_dropped": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-deterministic-unrelated_inequality_added": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-deterministic-scaled_2": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-deterministic-scaled_3": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-deterministic-reordered": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-deterministic-zero_entry_added": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-learned-neg_goal_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-learned-inequality_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-learned-hypothesis_dropped": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-learned-unrelated_inequality_added": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l166-learned-scaled_2": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-learned-scaled_3": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-learned-reordered": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-learned-zero_entry_added": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-deterministic-neg_goal_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-deterministic-inequality_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-deterministic-hypothesis_dropped": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-deterministic-unrelated_inequality_added": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-deterministic-scaled_2": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-deterministic-scaled_3": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-deterministic-reordered": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-deterministic-zero_entry_added": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-learned-neg_goal_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-learned-inequality_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-learned-hypothesis_dropped": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-learned-unrelated_inequality_added": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l175-learned-scaled_2": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-learned-scaled_3": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-learned-reordered": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l175-learned-zero_entry_added": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l178-learned-neg_goal_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l178-learned-inequality_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l178-learned-hypothesis_dropped": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l178-learned-unrelated_inequality_added": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l178-learned-scaled_2": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l178-learned-scaled_3": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l178-learned-reordered": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l178-learned-zero_entry_added": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l204-learned-neg_goal_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l204-learned-inequality_doubled": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l204-learned-hypothesis_dropped": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l204-learned-unrelated_inequality_added": "control_1: certificate rejected by the checker, and not proved (the closer fails)",
+  "l204-learned-scaled_2": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l204-learned-scaled_3": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l204-learned-reordered": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l204-learned-zero_entry_added": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l166-deterministic-hrec_dropped": "control_2: proved, with the constrained receipt and kernel acceptance",
+  "l069-control5-learned-draw1": "control_5: see control_5 labels",
+  "l069-control5-deterministic": "control_5: see control_5 labels",
+  "l070-control5-learned-draw1": "control_5: see control_5 labels",
+  "l070-control5-learned-draw2": "control_5: see control_5 labels",
+  "l070-control5-learned-draw3": "control_5: see control_5 labels",
+  "l070-control5-learned-draw5": "control_5: see control_5 labels",
+  "l070-control5-deterministic": "control_5: see control_5 labels",
+  "l071-control5-learned-draw1": "control_5: see control_5 labels",
+  "l071-control5-learned-draw4": "control_5: see control_5 labels",
+  "l071-control5-deterministic": "control_5: see control_5 labels",
+  "l078-control5-learned-draw1": "control_5: see control_5 labels",
+  "l078-control5-deterministic": "control_5: see control_5 labels",
+  "l096-control5-learned-draw1": "control_5: see control_5 labels",
+  "l099-control5-learned-draw1": "control_5: see control_5 labels",
+  "l170-learned-draw1": "control_4: certificate_rejected",
+  "l170-learned-draw2": "control_4: certificate_rejected",
+  "l170-learned-draw3": "control_4: certificate_rejected",
+  "l170-learned-draw4": "control_4: certificate_rejected",
+  "l170-learned-draw5": "control_4: certificate_rejected",
+  "l170-learned-draw6": "control_4: certificate_rejected",
+  "l170-learned-draw7": "control_4: certificate_rejected",
+  "l170-learned-draw8": "control_4: certificate_rejected",
+  "l170-learned-draw1-injected": "control_4: not proved (the closer fails)"
+ },
+ "plan_sha256": "d496acb678c172d5b9896196d21ef56461aabb5c426ae50bcffab4049793b09c",
+ "tools_sha256": {
+  "proposal_driver": "bc808c53cc394961d46d5fe7b992eb48349318d7817ff8f047498ad76ea8b5b3",
+  "verify_certificate": "849686f459d74e4a0d720ad6c1eb3562caca58d39bc989e57c8e99ac3373a387"
+ },
+ "sources_sha256": {
+  "r6-015/mutations.py": "59fe52d321fd95271b7d75df5e3499a4d04d54c1a0b768b0945c7bba5ce11c55",
+  "r6-015/replay_episode.py": "ef6488c68e6c9c6626acfba548f279bddc7d94271af6a2f752085b77e8fa9ae8",
+  "r6-015/replay_lock.py": "eda801b3b3e81b0a1a4f94ae9bd9dd00c443520d643c6b2a44ab3a1d4cd7d5bd"
+ }
+}

@@ -63,6 +63,7 @@ if str(R6) not in sys.path: sys.path.insert(0, str(R6))
 if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 if str(R6/'qualification-audit') not in sys.path: sys.path.insert(0, str(R6/'qualification-audit'))
 
+import events  # noqa: E402
 import qualification_audit  # noqa: E402
 import run as r6  # noqa: E402
 import replay_bridge  # noqa: E402
@@ -275,10 +276,11 @@ def main():
             record['control_5'].append({'site': site, 'source': src, 'map': json.loads(key), 'draws': draws, 'audited_slots': slots, 'expectation': label})
             plan.append(spec(f'{site}-control5-learned-draw{draws[0]}', site, src))
         src = source(site, 'deterministic')
-        try:
-            packet, rows, es = load(site, src)
-        except ValueError as none:  # the deterministic arm retained no certificate here
-            record['control_5'].append({'site': site, 'source': src, 'retained': False, 'reason': str(none)}); continue; key = json.dumps(show(coefficient_map(es)), sort_keys=True)
+        absent = deterministic_absence(src)
+        if absent is not None:
+            record['control_5'].append({'site': site, 'source': src, 'retained': False, 'reason': absent}); continue
+        packet, rows, es = load(site, src)
+        key = json.dumps(show(coefficient_map(es)), sort_keys=True)
         match = learned_maps.get(key)
         if match:
             slots = {f'bracket-{site}/{d}': audit[f'bracket-{site}/{d}']['audit']['local']['classification'] for d in match}
@@ -300,6 +302,7 @@ def main():
     plan.append(spec('l170-learned-draw1-injected', 'l170', source('l170', 'learned', 1), None, inject=True))
 
     for s in plan: record['episodes'][s['id']] = frozen_expectation(s)
+    tied(record, plan)
     qualification_audit.verify_live_evaluation()
     plan_path.write_text(json.dumps({'schema_version': 'r6-015-plan-1', 'episodes': plan}, indent=1) + '\n')
     record['plan_sha256'] = r6.sha(plan_path)
@@ -307,6 +310,52 @@ def main():
     record['sources_sha256'] = {str(f.relative_to(R6)): r6.sha(f) for f in (Path(__file__).resolve(), HERE/'replay_episode.py', HERE/'replay_lock.py')}
     record_path.write_text(json.dumps(record, indent=1) + '\n')
     print(json.dumps({'episodes': len(plan), 'units': units}, indent=1))
+
+
+def deterministic_absence(src):
+    """`None` if the deterministic run retained a certificate. Absence is recorded only when its sealed, chain-verified events show
+    exactly one dispatch, received with no certificate; a seal, chain or decoding failure propagates."""
+    rows = events.read(replay_episode.sealed(R6/src['run'], 'events.ndjson'))
+    child = [(r['event'], r['payload']['data']) for r in rows if r['source'] == 'child_report' and r['stage'] == 'search']
+    started = [d for e, d in child if e == 'dispatch_started']; received = [d for e, d in child if e == 'dispatch_received']
+    if len(started) == 1 and len(received) == 1 and 'certificate' in received[0] and received[0]['certificate'] is None:
+        return 'one dispatch, received with no certificate (sealed, chain-verified events)'
+    return None
+
+
+def map_of(src):
+    return show(coefficient_map(entries(packet_of(src))))
+
+
+def tied(record, plan):
+    """Regression checks: every reported map is its packet's, every match and non-match is recomputed from the packets, and
+    control 5 covers exactly what R6-014 retained."""
+    for tag, m in record['maps'].items():
+        if map_of({'arm': tag.split('-')[1], 'run': m['representative']}) != m['map']: raise SystemExit(f'{tag}: map is not its packet\'s')
+    for run, s in record['sources'].items():
+        if map_of({'arm': s['arm'], 'run': run}) != s['map']: raise SystemExit(f'{run}: map is not its packet\'s')
+    analysis = r6.read_json(R6/'reviews/2026-09-29/R6-014-BLOCK2-ANALYSIS.json')
+    proofs = {s.removeprefix('bracket-') for s in analysis['arms']['deterministic']['proofs']}
+    retained, absent, learned_draws = set(), set(), Counter()
+    for c in record['control_5']:
+        site = c['site']
+        if c['source']['arm'] == 'learned':
+            if map_of(c['source']) != c['map']: raise SystemExit(f'{site}: control-5 map is not its packet\'s')
+            for d in c['draws']:
+                learned_draws[site] += 1
+                if map_of(source(site, 'learned', d)) != c['map']: raise SystemExit(f'{site} draw {d}: not this map')
+        elif c.get('retained') is False:
+            absent.add(site)
+        else:
+            retained.add(site)
+            if map_of(c['source']) != c['map']: raise SystemExit(f'{site}: deterministic control-5 map is not its packet\'s')
+            for d in range(1, 9):
+                same = map_of(source(site, 'learned', d)) == c['map']
+                if same != (d in c['identical_to_learned_draws']): raise SystemExit(f'{site}: the deterministic match is wrong at draw {d}')
+    if retained != proofs or absent != set(PROVED) - proofs: raise SystemExit(f'control-5 coverage: retained {retained}, absent {absent}')
+    if any(learned_draws[s] != 8 for s in PROVED): raise SystemExit(f'control-5 learned coverage: {dict(learned_draws)}')
+    episodes = [s for s in plan if '-control5-' in s['id']]
+    if len(episodes) != sum(1 for c in record['control_5'] if c.get('retained') is not False): raise SystemExit('control-5 plan coverage')
 
 
 def expectation(site, draws, slots):
