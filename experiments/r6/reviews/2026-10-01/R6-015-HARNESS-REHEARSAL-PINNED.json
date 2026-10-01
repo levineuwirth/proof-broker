@@ -1,0 +1,167 @@
+{
+ "passed": true,
+ "failures": {
+  "rehearsal-l069-learned-draw1": [],
+  "rehearsal-l069-deterministic": []
+ },
+ "results": {
+  "rehearsal-l069-learned-draw1": {
+   "verdict": {
+    "schema_version": "r6-015-replay-2",
+    "id": "rehearsal-l069-learned-draw1",
+    "site": "bracket-l069",
+    "source": {
+     "arm": "learned",
+     "run": "cohort-live-v9/l069-draw1"
+    },
+    "route": "pinned",
+    "coefficients": null,
+    "mutated": false,
+    "inject_unverified": false,
+    "admission": "rehearsal",
+    "excluded_from_results": true,
+    "certificate_accepted": true,
+    "closer": "term_mode_nat",
+    "final_step": null,
+    "residual_closer": "omega",
+    "local_validated": true,
+    "whole_validated": true,
+    "axiom_delta": {
+     "Bracket.lift_cell.r6_site_l069": {
+      "added": [],
+      "removed": []
+     },
+     "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+     }
+    },
+    "solution_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "outcome": "proved"
+   },
+   "control_8_unmet": [],
+   "control_8_command": {
+    "argv": [
+     ".cache/qualification-audit/.lake/build/bin/r6-qualification-audit",
+     "<tmp>/export.ndjson",
+     "Bracket.lift_cell.r6_site_l069",
+     "Bracket.lift_cell",
+     "<tmp>/residual.txt",
+     "<tmp>/report.json"
+    ],
+    "env": {
+     "PATH": "/usr/bin:/bin",
+     "LEAN_SYSROOT": "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.2"
+    },
+    "exit_code": 0,
+    "inputs": {
+     "<tmp>/export.ndjson": {
+      "unpacked_from": "rehearsal-l069-learned-draw1/solution.ndjson.gz",
+      "sha256": "6a73cd9e5d149f46a5120205e25fd0cb4a0bb55d121c8cbdf44e5a3c8644f056"
+     },
+     "<tmp>/residual.txt": {
+      "copied_from": "rehearsal-l069-learned-draw1/residual.txt",
+      "sha256": "f09b9cf6bf580d7d3acc7b5dda74164dcdc87e1824c2a7832b56889e446a74e5"
+     }
+    },
+    "stdout": "",
+    "stderr": "",
+    "tool_sha256": "a30ca41345ddeec99b7141d0e6fb723f9bd22fa8849f02f7ad84eb71f7e4ac2a"
+   },
+   "binding": "matches_residual",
+   "classification": {
+    "local": "certificate_alone",
+    "whole": "certificate_alone"
+   },
+   "export_equals_r6": true,
+   "r6_solution_retained": true,
+   "unmet": []
+  },
+  "rehearsal-l069-deterministic": {
+   "verdict": {
+    "schema_version": "r6-015-replay-2",
+    "id": "rehearsal-l069-deterministic",
+    "site": "bracket-l069",
+    "source": {
+     "arm": "deterministic",
+     "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069"
+    },
+    "route": "pinned",
+    "coefficients": null,
+    "mutated": false,
+    "inject_unverified": false,
+    "admission": "rehearsal",
+    "excluded_from_results": true,
+    "certificate_accepted": true,
+    "closer": "term_mode_nat",
+    "final_step": null,
+    "residual_closer": "omega",
+    "local_validated": true,
+    "whole_validated": true,
+    "axiom_delta": {
+     "Bracket.lift_cell.r6_site_l069": {
+      "added": [],
+      "removed": []
+     },
+     "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+     }
+    },
+    "solution_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "outcome": "proved"
+   },
+   "control_8_unmet": [],
+   "control_8_command": {
+    "argv": [
+     ".cache/qualification-audit/.lake/build/bin/r6-qualification-audit",
+     "<tmp>/export.ndjson",
+     "Bracket.lift_cell.r6_site_l069",
+     "Bracket.lift_cell",
+     "<tmp>/residual.txt",
+     "<tmp>/report.json"
+    ],
+    "env": {
+     "PATH": "/usr/bin:/bin",
+     "LEAN_SYSROOT": "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.2"
+    },
+    "exit_code": 0,
+    "inputs": {
+     "<tmp>/export.ndjson": {
+      "unpacked_from": "rehearsal-l069-deterministic/solution.ndjson.gz",
+      "sha256": "6a73cd9e5d149f46a5120205e25fd0cb4a0bb55d121c8cbdf44e5a3c8644f056"
+     },
+     "<tmp>/residual.txt": {
+      "copied_from": "rehearsal-l069-deterministic/residual.txt",
+      "sha256": "f09b9cf6bf580d7d3acc7b5dda74164dcdc87e1824c2a7832b56889e446a74e5"
+     }
+    },
+    "stdout": "",
+    "stderr": "",
+    "tool_sha256": "a30ca41345ddeec99b7141d0e6fb723f9bd22fa8849f02f7ad84eb71f7e4ac2a"
+   },
+   "binding": "matches_residual",
+   "classification": {
+    "local": "certificate_alone",
+    "whole": "certificate_alone"
+   },
+   "export_equals_r6": true,
+   "r6_solution_retained": true,
+   "unmet": []
+  }
+ },
+ "closure_loaded_outside": [],
+ "bridge_rev": "476fab317e6633511b2a73b36313457d762e3a9c",
+ "admission": "rehearsal",
+ "excluded_from_results": true,
+ "sources_sha256": {
+  "r6-015/replay_lock.py": "eda801b3b3e81b0a1a4f94ae9bd9dd00c443520d643c6b2a44ab3a1d4cd7d5bd",
+  "r6-015/replay_bridge.py": "9026f0a464054fc6d2c5d46d13acac7372d7ffec2da5959c7ff5f0daa06ca5fd",
+  "r6-015/replay_episode.py": "ef6488c68e6c9c6626acfba548f279bddc7d94271af6a2f752085b77e8fa9ae8",
+  "r6-015/replay_campaign.py": "02116fc5503e6c27c5b27d449261f9e513ce084f0996b127bc49ea2edd444534",
+  "r6-015/rehearse_pinned.py": "3df7e88a36d59a927aac4873a511470192118bb1af983805cbdda74989df2291"
+ },
+ "scope": "pre-lock harness rehearsal, pinned route; approved exception; excluded from R6-015 results"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "rehearsal-l069-learned-draw1",
+  "site": "bracket-l069",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l069-draw1"
+  },
+  "coefficients": null,
+  "inject_unverified": false,
+  "route": "pinned"
+}

@@ -1,0 +1,1 @@
+0 < 2 * (z + ↑Zmax * zhigh - v) + 2 * (0 - z) + 2 * (v + 1 - ↑Zmax) + 2 * (↑Zmax - ↑Zmax * zhigh)

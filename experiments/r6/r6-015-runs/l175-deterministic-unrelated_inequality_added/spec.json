@@ -1,0 +1,32 @@
+{
+  "id": "l175-deterministic-unrelated_inequality_added",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-3"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": true,
+  "route": "constrained"
+}

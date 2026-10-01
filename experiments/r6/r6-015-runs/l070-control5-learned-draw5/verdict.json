@@ -1,0 +1,34 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l070-control5-learned-draw5",
+  "site": "bracket-l070",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw5"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "outcome": "reconstruction_failed",
+  "failure_stage": "reconstruct",
+  "detail": {
+    "events": [
+      "reification_started",
+      "reification_finished",
+      "dispatch_started",
+      "dispatch_received",
+      "certificate_verification_started",
+      "certificate_verification_finished",
+      "reconstruction_started",
+      "term_route",
+      "closer_selected"
+    ],
+    "errors": [
+      "/input/Frozen.lean:71:45: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (↑Zmax^1 * ↑zhigh.val^1) + -1 * (↑Zmax^1 * ↑zhigh.val^1) + 2"
+    ]
+  }
+}

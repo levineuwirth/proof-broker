@@ -24,6 +24,10 @@ provide that proof?*
   3. the kernel validates the local proof and the whole containing declaration;
   4. the axioms are unchanged ([R6-000](PROTOCOL.md)).
 
+  *Qualified 2026-09-30:* in R6, "consumes" means the closer folded the independently verified certificate and the kernel accepted
+  the result. The fold's final step ran `omega` with the goal's hypotheses in scope, so R6 does not establish that the certificate
+  alone discharged the contradiction ([qualification 1](R6-QUALIFICATION-1.md)).
+
 ## Units: obligations, families and draws
 
 These are three different things, and the result is stated in the first two.

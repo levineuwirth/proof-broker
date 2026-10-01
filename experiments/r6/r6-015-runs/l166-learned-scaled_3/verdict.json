@@ -1,0 +1,45 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l166-learned-scaled_3",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l166-draw1"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hlt",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l166": {
+      "added": [
+        "Classical.choice"
+      ],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "484f6f738c059316e24a101955cf13afad0ae664502fcd160811b8c565fcbba6",
+  "residual_goal": "0 < 3 * (↑v0 - z) + 3 * (z + 1 - ↑v0)",
+  "outcome": "proved"
+}

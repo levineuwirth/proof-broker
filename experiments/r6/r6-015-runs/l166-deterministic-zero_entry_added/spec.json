@@ -1,0 +1,28 @@
+{
+  "id": "l166-deterministic-zero_entry_added",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+  },
+  "coefficients": [
+    {
+      "coefficient": "-3",
+      "hypothesis": "hrec"
+    },
+    {
+      "coefficient": "1",
+      "hypothesis": "hlt"
+    },
+    {
+      "coefficient": "1",
+      "hypothesis": "neg_goal"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "0"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l175-learned-draw8",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw8"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l175": {
+      "added": [
+        "Classical.choice"
+      ],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "1e87aba2563a809b5cb4131b5fb955ee805e79262611f24541501457faef3608",
+  "residual_goal": "0 < 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z) + 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (v + 1 - ↑Zmax)",
+  "outcome": "proved"
+}

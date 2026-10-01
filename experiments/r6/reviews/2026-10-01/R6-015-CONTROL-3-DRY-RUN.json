@@ -1,0 +1,85 @@
+{
+ "control": 3,
+ "passed": true,
+ "unmet": [],
+ "results": {
+  "checker": {
+   "accepted": false,
+   "stage": "certificate_verification",
+   "reason": {
+    "kind": "farkas_not_contradictory",
+    "detail": "weighted sum is -x + y + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+   },
+   "certificate_hash": "sha256:7a639b974c67e959f0e566ea070e5ead539a6504e1c29647e4f3b09edb4eec29"
+  },
+  "constrained": {
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "x \u2264 y",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {},
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (x^1) + 1 * (y^1) + 2"
+   ]
+  },
+  "pinned": {
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected",
+    "residual_started",
+    "residual_finished",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": false
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "x \u2264 y"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "derivation_replayed": false,
+    "residual_closer": "omega"
+   },
+   "errors": []
+  }
+ },
+ "lock_sha256": "df6e69718abe1f9c8e4a43621140003ffc24c0adcfd6cd299da686967cd8e8e5",
+ "bridge_rev": "476fab317e6633511b2a73b36313457d762e3a9c",
+ "instrumented_tactic_sha256": "48e01263880525450ffc4efa5936dd0ecd8e5b5d5d3c3d95b9640eff8d978b91",
+ "documented_difference": "the pinned fold closes the probe through contextual omega; not consumption",
+ "dry_run": {
+  "lock": "none existed; verify_lock was stubbed and lock_sha256 is a stand-in file's",
+  "scope": "pre-lock rehearsal of control 3; synthetic probe, no retained certificate; not the control-3 result"
+ }
+}

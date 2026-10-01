@@ -1,0 +1,31 @@
+{"environment":
+ {"replayed_through_addDecl": 1798,
+  "mode": "synthetic",
+  "lean": "4.32.2",
+  "init_shared_identical": 2542,
+  "init_shared_equal_up_to_annotations": 279},
+ "audit":
+ {"whole":
+  {"locatable": true,
+   "internal_to_local_proof": [],
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "local":
+  {"residual_goal":
+   "0 < 2 * (↑Zmax - ↑(2 ^ 16)) + 1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax))",
+   "locatable": true,
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "check2":
+  {"statement":
+   "∀ {Zmax : Nat}, 0 < 2 * (↑Zmax - ↑(2 ^ 16)) + 1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax))",
+   "specialization_definitions": null,
+   "specialization_atoms": null,
+   "established": true,
+   "direct": {"ok": true, "detail": "kernel accepted"},
+   "definitions_dropped": [],
+   "attempted":
+   "∀ {Zmax : Nat}, 0 < 2 * (↑Zmax - ↑(2 ^ 16)) + 1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax))",
+   "atoms": [],
+   "abstraction": null},
+  "binding": "not_applicable_synthetic"}}

@@ -1,0 +1,32 @@
+{
+  "id": "l175-learned-zero_entry_added",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "this",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-1"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "0"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

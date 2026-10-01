@@ -1,0 +1,11 @@
+{
+  "id": "l078-control5-learned-draw1",
+  "site": "bracket-l078",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l078-draw1"
+  },
+  "coefficients": null,
+  "inject_unverified": false,
+  "route": "constrained"
+}

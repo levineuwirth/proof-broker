@@ -1,0 +1,52 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l175-deterministic-inequality_doubled",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-3"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "6"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "3"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": true,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": false,
+  "outcome": "reconstruction_failed",
+  "failure_stage": "reconstruct",
+  "detail": {
+    "events": [
+      "reification_started",
+      "reification_finished",
+      "dispatch_started",
+      "dispatch_received",
+      "certificate_verification_started",
+      "certificate_verification_finished",
+      "reconstruction_started",
+      "certificate_gate_bypassed",
+      "term_route",
+      "closer_selected"
+    ],
+    "errors": [
+      "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -3 * (z^1) + 3"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l166-deterministic",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l166": {
+      "added": [
+        "Classical.choice"
+      ],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "0fd4969f36e2eef82b59fb97ecd9d1766c4315661d10c6c845798dc4a1021cad",
+  "residual_goal": "0 < 3 * (z + ↑Zmax * 0 - z) + 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+  "outcome": "proved"
+}

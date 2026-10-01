@@ -58,6 +58,18 @@ namespace ProofBroker.Tactic
 
 open Lean Lean.Elab.Tactic Lean.Meta ProofBroker.IR
 
+/-- R6-015 (`experiments/r6/R6-015-PROPOSAL.md`): the constrained
+    term-mode route. Off by default; with it off, every path is
+    unchanged. -/
+register_option proofBroker.term.constrained : Bool := {
+  defValue := false
+  descr := "proof_broker_term: enforce certificate consumption. Select \
+    the closer by the goal's comparison carrier, assert every \
+    witness-named fact at Int, and discharge the fold's positivity by \
+    hypothesis-free normalization to a positive numeral, never by \
+    contextual omega. Extension closers fail closed."
+}
+
 /- Audit H1: the former `axiom proofBrokerCertSound : ∀ (P : Prop), P`
    was removed. It was an inconsistent axiom (it proves `False`) used
    as an unconditional fallback when no Lean-side closer could
@@ -3198,6 +3210,208 @@ private def buildNonnegProof (c : Int) : MetaM Expr := do
   let goalTy ← Lean.Meta.mkAppM ``LE.le #[intLitExpr 0, intLitExpr c]
   Lean.Meta.mkDecideProof goalTy
 
+/- ============================================================
+   R6-015: the constrained final step. The weighted sum `s` is
+   reified over its atoms and normalized by core's commutative-ring
+   normalizer, by reflection: no hypothesis is in scope of any step,
+   and no decision procedure runs. The sum's variables must cancel to
+   a numeral, and the numeral must be positive (a closed `decide`).
+   ============================================================ -/
+
+/-- Atoms of the sum, identified up to definitional equality at
+    instance transparency, which unfolds instances and also every
+    `@[reducible]` definition. Terms differing only in how they were
+    elaborated (`Nat.cast` / `NatCast.natCast` / `Int.ofNat`, instance
+    paths) are then one atom. Any identification is rechecked by the
+    kernel. -/
+private abbrev ConstrainedReifyM := StateRefT (Array Expr) MetaM
+
+private def constrainedAtom (e : Expr)
+    : ConstrainedReifyM Lean.Grind.CommRing.Expr := do
+  let atoms ← get
+  for h : i in [:atoms.size] do
+    if ← withNewMCtxDepth <| withTransparency .instances <|
+        isDefEq atoms[i] e then
+      return .var i
+  set (atoms.push e)
+  return .var atoms.size
+
+private def constrainedNatLit? (e : Expr) : Option Nat :=
+  match e.consumeMData with
+  | .lit (.natVal n) => some n
+  | e' =>
+    match e'.getAppFnArgs with
+    | (``OfNat.ofNat, #[α, n, _]) =>
+      if α.isConstOf ``Nat then
+        match n.consumeMData with
+        | .lit (.natVal k) => some k
+        | _ => none
+      else none
+    | _ => none
+
+private def constrainedIntLit? (e : Expr) : Option Nat :=
+  match e.consumeMData.getAppFnArgs with
+  | (``OfNat.ofNat, #[α, n, _]) =>
+    if α.isConstOf ``Int then
+      match n.consumeMData with
+      | .lit (.natVal k) => some k
+      | _ => none
+    else none
+  | _ => none
+
+/-- A ℕ term under a cast to `Int`: the cast is pushed through `+`,
+    `*`, literal powers and numerals, so a cast of a product and a
+    product of casts of the same factors normalize alike. Anything
+    else (truncated subtraction, division, …) is the atom `↑t`. -/
+private partial def constrainedReifyNat (t : Expr)
+    : ConstrainedReifyM Lean.Grind.CommRing.Expr := do
+  let t := t.consumeMData
+  if let some n := constrainedNatLit? t then return .num n
+  let castAtom : ConstrainedReifyM Lean.Grind.CommRing.Expr :=
+    constrainedAtom (mkApp3 (mkConst ``Nat.cast [0]) (mkConst ``Int)
+      (mkConst ``instNatCastInt) t)
+  match t.getAppFnArgs with
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+    if α.isConstOf ``Nat then
+      return .add (← constrainedReifyNat a) (← constrainedReifyNat b)
+    else castAtom
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    if α.isConstOf ``Nat then
+      return .mul (← constrainedReifyNat a) (← constrainedReifyNat b)
+    else castAtom
+  | (``HPow.hPow, #[α, β, _, _, a, k]) =>
+    match α.isConstOf ``Nat && β.isConstOf ``Nat, constrainedNatLit? k with
+    | true, some k => return .pow (← constrainedReifyNat a) k
+    | _, _ => castAtom
+  | (``Nat.succ, #[a]) => return .add (← constrainedReifyNat a) (.num 1)
+  | _ => castAtom
+
+/-- An `Int` term: `+`, `-`, `*`, negation, literal powers, numerals
+    and casts of ℕ terms are interpreted; anything else is an atom. -/
+private partial def constrainedReifyInt (e : Expr)
+    : ConstrainedReifyM Lean.Grind.CommRing.Expr := do
+  let e := e.consumeMData
+  if let some n := constrainedIntLit? e then return .num n
+  let isInt (α : Expr) := α.isConstOf ``Int
+  match e.getAppFnArgs with
+  | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
+    if isInt α then return .add (← constrainedReifyInt a) (← constrainedReifyInt b)
+    else constrainedAtom e
+  | (``HSub.hSub, #[α, _, _, _, a, b]) =>
+    if isInt α then return .sub (← constrainedReifyInt a) (← constrainedReifyInt b)
+    else constrainedAtom e
+  | (``HMul.hMul, #[α, _, _, _, a, b]) =>
+    if isInt α then return .mul (← constrainedReifyInt a) (← constrainedReifyInt b)
+    else constrainedAtom e
+  | (``Neg.neg, #[α, _, a]) =>
+    if isInt α then return .neg (← constrainedReifyInt a) else constrainedAtom e
+  | (``HPow.hPow, #[α, β, _, _, a, k]) =>
+    match isInt α && β.isConstOf ``Nat, constrainedNatLit? k with
+    | true, some k => return .pow (← constrainedReifyInt a) k
+    | _, _ => constrainedAtom e
+  | (``Nat.cast, #[R, _, t]) =>
+    if isInt R then constrainedReifyNat t else constrainedAtom e
+  | (``NatCast.natCast, #[R, _, t]) =>
+    if isInt R then constrainedReifyNat t else constrainedAtom e
+  | (``Int.ofNat, #[t]) => constrainedReifyNat t
+  | _ => constrainedAtom e
+
+private def commRingExprToExpr : Lean.Grind.CommRing.Expr → Expr
+  | .num k => mkApp (mkConst ``Lean.Grind.CommRing.Expr.num) (toExpr k)
+  | .natCast k => mkApp (mkConst ``Lean.Grind.CommRing.Expr.natCast) (toExpr k)
+  | .intCast k => mkApp (mkConst ``Lean.Grind.CommRing.Expr.intCast) (toExpr k)
+  | .var i => mkApp (mkConst ``Lean.Grind.CommRing.Expr.var) (toExpr i)
+  | .neg a => mkApp (mkConst ``Lean.Grind.CommRing.Expr.neg) (commRingExprToExpr a)
+  | .add a b => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.add)
+      (commRingExprToExpr a) (commRingExprToExpr b)
+  | .sub a b => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.sub)
+      (commRingExprToExpr a) (commRingExprToExpr b)
+  | .mul a b => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.mul)
+      (commRingExprToExpr a) (commRingExprToExpr b)
+  | .pow a k => mkApp2 (mkConst ``Lean.Grind.CommRing.Expr.pow)
+      (commRingExprToExpr a) (toExpr k)
+
+/-- The residual polynomial, over the atoms as Lean prints them. -/
+private def renderResidual (atoms : Array Expr)
+    : Lean.Grind.CommRing.Poly → MetaM MessageData
+  | .num k => return m!"{k}"
+  | .add k m p => do
+    let rec mon : Lean.Grind.CommRing.Mon → MetaM MessageData
+      | .unit => return m!"1"
+      | .mult pw .unit => return m!"{atoms[pw.x]!}^{pw.k}"
+      | .mult pw rest => return m!"{atoms[pw.x]!}^{pw.k} * {← mon rest}"
+    return m!"{k} * ({← mon m}) + {← renderResidual atoms p}"
+
+/-- Every free variable `es` reach, through local definitions'
+    values, and (when `types`) through the variables' types. -/
+private partial def constrainedReach (es : Array Expr) (types : Bool)
+    : MetaM (Array FVarId) := do
+  let mut todo := es.foldl (fun acc e => acc ++ (collectFVars {} e).fvarIds) #[]
+  let mut seen : Std.HashSet FVarId := {}
+  let mut out := #[]
+  while !todo.isEmpty do
+    let id := todo.back!
+    todo := todo.pop
+    if seen.contains id then continue
+    seen := seen.insert id
+    out := out.push id
+    let d ← id.getDecl
+    if let some v := d.value? then todo := todo ++ (collectFVars {} v).fvarIds
+    if types then todo := todo ++ (collectFVars {} d.type).fvarIds
+  return out
+
+/-- The constrained final step: a proof of `0 < sum` that refers to no
+    hypothesis, or a named failure. The returned term is
+    `@id (0 < sum) proof`, so its type is literally `0 < sum`. Both
+    gates check exactly that term, and it is returned unchanged: it
+    must reach no hypothesis (through local definitions too), and
+    the kernel must accept it, closed over the variables it
+    reaches. -/
+private def constrainedPositivity (sum : Expr) : MetaM Expr := do
+  let sum ← instantiateMVars sum
+  let (e, atoms) ← (constrainedReifyInt sum).run #[]
+  let c ← match e.toPoly with
+    | .num c => pure c
+    | p => throwError "proof_broker_term (constrained): the weighted sum \
+        does not cancel; its normal form is {← renderResidual atoms p}"
+  unless 0 < c do
+    throwError "proof_broker_term (constrained): the weighted sum \
+      normalizes to {c}, which is not positive"
+  let int := mkConst ``Int
+  let ctx ← if h : 0 < atoms.size then
+      RArray.toExpr int id (RArray.ofArray atoms h)
+    else pure (mkApp2 (mkConst ``Lean.RArray.leaf [0]) int (toExpr (0 : Int)))
+  let polyNum := mkApp (mkConst ``Lean.Grind.CommRing.Poly.num) (toExpr c)
+  let normalized := mkApp2 (mkConst ``Eq.refl [1])
+    (mkConst ``Lean.Grind.CommRing.Poly) polyNum
+  let positive ← mkDecideProof (← mkAppM ``LT.lt #[toExpr (0 : Int), toExpr c])
+  let proof := mkApp5 (mkConst ``ProofBroker.TermMode.posOfNormNum) ctx
+    (commRingExprToExpr e) (toExpr c) normalized positive
+  let ty ← mkAppM ``LT.lt #[toExpr (0 : Int), sum]
+  -- The typed term is built first; both gates check exactly the term
+  -- returned. Its type annotation carries `sum` itself, so a hypothesis
+  -- reached only through the sum (an instance argument, say) is caught.
+  let hpos ← mkExpectedTypeHint proof ty
+  let hyps ← (← constrainedReach #[hpos] (types := false)).filterM fun id => do
+    isProp (← id.getType)
+  unless hyps.isEmpty do
+    throwError "proof_broker_term (constrained): the positivity proof \
+      reaches hypotheses {← hyps.mapM (·.getUserName)}"
+  let closure ← constrainedReach #[ty, hpos] (types := true)
+  let lctx ← getLCtx
+  let fvs := (closure.qsort fun a b =>
+    (lctx.get! a).index < (lctx.get! b).index).map mkFVar
+  let decl := Declaration.thmDecl {
+    name := `_proofBroker_constrained_check, levelParams := [],
+    type := ← mkForallFVars fvs ty, value := ← mkLambdaFVars fvs hpos }
+  match Kernel.Environment.addDecl (← getEnv).toKernelEnv (← getOptions) decl with
+  | .ok _ => pure ()
+  | .error ex =>
+    let opts ← getOptions
+    throwError m!"proof_broker_term (constrained): the kernel rejected \
+      the positivity proof: {ex.toMessageData opts}"
+  return hpos
+
 /-- Discharge `omegaGoal` (a fresh metavariable carrying the
     polynomial-identity-style strict-positivity subgoal) by running
     `omega` against it in isolation. Restores the caller's goal
@@ -3224,9 +3438,16 @@ private def closeOmegaSubgoal (omegaMV : MVarId) : TacticM Unit := do
 
     Arity 1 degenerates to a single product; arity 2 produces the
     same shape `farkasContradict` does; arity N ≥ 3 is the new
-    reach. -/
+    reach.
+
+    R6-015: the `omega` in step 3 runs in the goal's full context,
+    with every hypothesis in scope, so a combination that does not
+    cancel can still close. With `constrained`, step 3 is
+    `constrainedPositivity` instead: hypothesis-free normalization to
+    a positive numeral, and no fallback. -/
 private def closeViaTermModeFalse
-    (goal : MVarId) (entries : List (String × Int)) : TacticM Unit := do
+    (goal : MVarId) (entries : List (String × Int))
+    (constrained : Bool := false) : TacticM Unit := do
   if entries.isEmpty then
     throwError "proof_broker_term: empty witness — arity ≥ 1 required"
   goal.withContext do
@@ -3269,6 +3490,12 @@ private def closeViaTermModeFalse
           let newSum ← Lean.Meta.mkAppM ``HAdd.hAdd #[accE, p]
           let newProof ← Lean.Meta.mkAppM ``Int.add_nonpos #[accH, h]
           return (newSum, newProof)) (p0, h0)
+    if constrained then
+      -- `hpos` is used exactly as `constrainedPositivity` checked it.
+      let hpos ← constrainedPositivity sum
+      goal.assign (mkApp3 (mkConst ``ProofBroker.TermMode.farkasContradictN)
+        sum sumProof hpos)
+      return
     -- Build hpos evar (0 < sum), closed by omega.
     let zero := intLitExpr 0
     let hposTy ← Lean.Meta.mkAppM ``LT.lt #[zero, sum]
@@ -3322,9 +3549,8 @@ private def matchLiaGoal? (goalType : Expr)
     fold in `closeViaTermModeFalse` handles all premises uniformly —
     including `neg_goal`, whose +1-trick normalization flows through
     the existing per-universe machinery. -/
-private def closeViaTermModeComparison
-    (goal : MVarId) (goalType : Expr)
-    (entries : List (String × Int)) : TacticM Unit := do
+private def introIntNegGoal (goal : MVarId) (goalType : Expr)
+    : TacticM MVarId := do
   let (b, c, kind) ← match matchLiaGoal? goalType with
     | some t => pure t
     | none =>
@@ -3344,7 +3570,13 @@ private def closeViaTermModeComparison
     goal.assign term
     return bodyMV
   let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
-  closeViaTermModeFalse newGoal entries
+  return newGoal
+
+private def closeViaTermModeComparison
+    (goal : MVarId) (goalType : Expr)
+    (entries : List (String × Int)) (constrained : Bool := false)
+    : TacticM Unit := do
+  closeViaTermModeFalse (← introIntNegGoal goal goalType) entries constrained
 
 /-- Term-mode closer for LIA Farkas witnesses. Branches on whether
     the witness names `neg_goal`:
@@ -3355,7 +3587,7 @@ private def closeViaTermModeComparison
       the unified path applies the appropriate wrapper, introduces
       `neg_goal`, and recurses into the same arity-N False-fold. -/
 private def closeViaTermMode (goal : MVarId) (goalType : Expr)
-    (cert : Json) : TacticM Unit := do
+    (cert : Json) (constrained : Bool := false) : TacticM Unit := do
   let entries ← parseFarkasCoefficients cert
   if entries.isEmpty then
     throwError "proof_broker_term: empty witness — arity ≥ 1 required"
@@ -3365,12 +3597,12 @@ private def closeViaTermMode (goal : MVarId) (goalType : Expr)
     unless goalType.isConstOf ``False do
       throwError "proof_broker_term: witness lacks neg_goal but goal is \
                    not False ({goalType}); cert/goal mismatch"
-    closeViaTermModeFalse goal entries
+    closeViaTermModeFalse goal entries constrained
   | some _ =>
     if goalType.isConstOf ``False then
       throwError "proof_broker_term: witness names neg_goal but goal is \
                    False ({goalType}); cert/goal mismatch"
-    closeViaTermModeComparison goal goalType entries
+    closeViaTermModeComparison goal goalType entries constrained
 
 /- ============================================================
    R3-M1: term-mode closer for ℕ goals (the lift, Farkas leg)
@@ -3392,6 +3624,22 @@ private def matchNatGoal? (goalType : Expr)
     if α.isConstOf ``Nat then some (b, a, .lt) else none
   | _ => none
 
+/-- R6-015: an `Int` comparison or equality, possibly negated (as
+    `Not P`, `P → False` or `Ne`): the hypothesis shapes the fold
+    normalizes at `Int`. -/
+private def intComparisonHyp (ty : Expr) : Bool :=
+  let pos (ty : Expr) : Bool :=
+    match ty.consumeMData.getAppFnArgs with
+    | (``LE.le, #[α, _, _, _]) | (``LT.lt, #[α, _, _, _])
+    | (``GE.ge, #[α, _, _, _]) | (``GT.gt, #[α, _, _, _])
+    | (``Eq, #[α, _, _]) | (``Ne, #[α, _, _]) => α.isConstOf ``Int
+    | _ => false
+  let ty := ty.consumeMData
+  match ty.getAppFnArgs with
+  | (``Not, #[inner]) => pos inner
+  | _ =>
+    pos ty || (ty.isArrow && ty.bindingBody!.isConstOf ``False && pos ty.bindingDomain!)
+
 /-- The `_pb_z_`-prefixed name the ℕ cast layer asserts a witness
     hypothesis under (distinct from the ℕ original — the fold's
     by-name lookup must not see a shadowed pair). -/
@@ -3403,10 +3651,13 @@ private def natZName (n : String) : String := s!"_pb_z_{n}"
     their atom; every other name must be a local ℕ-shaped
     hypothesis, cast via the `natCast*` shims. A witness name the
     layer cannot produce is an ERROR — term mode consumes the
-    witness or fails, it never guesses. -/
+    witness or fails, it never guesses.
+
+    R6-015: with `intAsIs`, a local hypothesis already at `Int` is
+    asserted as it stands (its `_pb_z_` name is then an alias). -/
 private def assertNatWitnessFacts (goal : MVarId) (ir : IR)
     (tableAtoms : Array (String × Expr)) (names : List String)
-    : TacticM MVarId := do
+    (intAsIs : Bool := false) : TacticM MVarId := do
   goal.withContext do
   let atoms ← natAtomExprs ir tableAtoms
   let mut facts : Array Lean.Meta.Hypothesis := #[]
@@ -3430,8 +3681,11 @@ private def assertNatWitnessFacts (goal : MVarId) (ir : IR)
           match ← castNatHyp? decl.toExpr decl.type with
           | some p => pure p
           | none =>
-            throwError "proof_broker_term: hypothesis '{name}' has a \
-              shape the ℕ→ℤ lift cannot cast yet ({decl.type})"
+            if intAsIs && intComparisonHyp (← instantiateMVars decl.type) then
+              pure decl.toExpr
+            else
+              throwError "proof_broker_term: hypothesis '{name}' has a \
+                shape the ℕ→ℤ lift cannot cast yet ({decl.type})"
     facts := facts.push {
       userName := Name.mkSimple (natZName name),
       type := ← Lean.Meta.inferType proofZ,
@@ -3455,7 +3709,7 @@ private def assertNatWitnessFacts (goal : MVarId) (ir : IR)
     cast shims — no tactic call ever touches the original goal. -/
 private def closeNatViaTermMode (goal : MVarId) (goalType : Expr)
     (cert : Json) (ir : IR) (tableAtoms : Array (String × Expr))
-    : TacticM Unit := do
+    (constrained : Bool := false) : TacticM Unit := do
   let entries ← parseFarkasCoefficients cert
   if entries.isEmpty then
     throwError "proof_broker_term: empty witness — arity ≥ 1 required"
@@ -3467,7 +3721,8 @@ private def closeNatViaTermMode (goal : MVarId) (goalType : Expr)
       throwError "proof_broker_term: witness lacks neg_goal but goal is \
                    not False ({goalType}); cert/goal mismatch"
     let g ← assertNatWitnessFacts goal ir tableAtoms (entries.map (·.1))
-    closeViaTermModeFalse g zEntries
+      (intAsIs := constrained)
+    closeViaTermModeFalse g zEntries constrained
   | some _ =>
     let (b, c, kind) ← match matchNatGoal? goalType with
       | some t => pure t
@@ -3489,7 +3744,31 @@ private def closeNatViaTermMode (goal : MVarId) (goalType : Expr)
       return bodyMV
     let (_, newGoal) ← bodyMV.mvarId!.intro `neg_goal
     let g ← assertNatWitnessFacts newGoal ir tableAtoms (entries.map (·.1))
-    closeViaTermModeFalse g zEntries
+      (intAsIs := constrained)
+    closeViaTermModeFalse g zEntries constrained
+
+/-- R6-015: an `Int` comparison goal in an extraction with ℕ variables
+    (the shape the ℕ closer refuses with `nat_closer_int_goal`). The
+    ℤ wrappers (`intLeViaLt` / `intLtViaLe`) introduce `neg_goal` at
+    `Int`; every witness-named fact is asserted at `Int` (a local
+    `Int` hypothesis as it stands, a ℕ-shaped one through the
+    `natCast*` shims, an IR `_pb_nonneg_*` fact through
+    `natCastNonneg`; any other name is an error); the fold ends in the
+    constrained final step. Used only by the constrained route. -/
+private def closeMixedViaTermMode (goal : MVarId) (goalType : Expr)
+    (cert : Json) (ir : IR) (tableAtoms : Array (String × Expr))
+    : TacticM Unit := do
+  let entries ← parseFarkasCoefficients cert
+  if entries.isEmpty then
+    throwError "proof_broker_term: empty witness — arity ≥ 1 required"
+  unless entries.any (·.1 == "neg_goal") do
+    throwError "proof_broker_term: witness lacks neg_goal but goal is \
+                 not False ({goalType}); cert/goal mismatch"
+  let newGoal ← introIntNegGoal goal goalType
+  let g ← assertNatWitnessFacts newGoal ir tableAtoms (entries.map (·.1))
+    (intAsIs := true)
+  closeViaTermModeFalse g (entries.map fun (n, c) => (natZName n, c))
+    (constrained := true)
 
 /-- Bare form `proof_broker` runs against the default manifest list
     (cvc4, cvc5, z3 if present in the manifest dir) under
@@ -3804,6 +4083,37 @@ private def certStrategyHint (cert : Json) : String :=
   (cert.getObjVal? "payload"
     |>.bind (·.getObjValAs? String "strategy_hint")).toOption.getD ""
 
+/-- R6-015: the constrained route's closer selection, by the goal's
+    comparison carrier. Returns the closer's name.
+
+    * An `Int` comparison takes the ℤ closer, even in an extraction
+      with ℕ variables (`closeMixedViaTermMode` there).
+    * A `Nat` comparison, or a `False` goal, in an extraction with ℕ
+      variables keeps the ℕ closer.
+    * Every fold ends in the constrained final step.
+    * Tier 2 case splits, polymorphic-α extractions and extension
+      fragments are outside the route and fail closed. -/
+private def closeConstrained (goal : MVarId) (goalType : Expr)
+    (cert : Json) (ir : IR) (natAtoms : Array (String × Expr))
+    : TacticM String := do
+  let outside (what : String) : TacticM String :=
+    throwError "proof_broker_term (constrained): {what} is outside the \
+      constrained route (fail closed)"
+  if certStrategyHint cert == "case_split_farkas" then
+    return ← outside "a Tier 2 case-split certificate"
+  if polyModeOf ir then return ← outside "a polymorphic-α extraction"
+  if let some ext ← reifierExt.get then
+    if ir.logicClassification.firstOrderFragment == ext.irFragment then
+      return ← outside s!"the extension fragment {ext.irFragment}"
+  if natModeOf ir then
+    if (matchLiaGoal? goalType).isSome then
+      closeMixedViaTermMode goal goalType cert ir natAtoms
+      return "term_mode_int"
+    closeNatViaTermMode goal goalType cert ir natAtoms (constrained := true)
+    return "term_mode_nat"
+  closeViaTermMode goal goalType cert (constrained := true)
+  return "term_mode_int"
+
 /-- Single-goal term-mode pipeline: build the IR + dispatch + verify
     + close the given mvar. Extracted so the equality-goal split
     can run it twice (once per direction of `Int.le_antisymm`)
@@ -3865,6 +4175,8 @@ private def runTermModeOnGoal
   -- for the solver (R3-M2).
   let natMode := natModeOf path.ir
   checkCertSpecializations cert (termSpecMode path.ir)
+  if proofBroker.term.constrained.get (← getOptions) then
+    return (path, ← closeConstrained goal goalType cert path.ir path.natAtoms)
   if natMode then
     if certStrategyHint cert == "case_split_farkas" then
       throwError "proof_broker_term: Tier 2 case-split over a ℕ \
@@ -4514,5 +4826,52 @@ def evalAletheWalkerTest : Tactic := fun stx => do
         throwError "alethe_walker_test: failed to parse trace ({repr e})"
     walkProofIntoGoal (← getMainGoal) proof
   | _ => throwError "alethe_walker_test: malformed invocation"
+
+/-- TEST-ONLY tactic (R6-015). Injects a Farkas witness straight into
+    the term-mode closers, bypassing dispatch and the certificate
+    checker, as R6-015's synthetic tests and its control 1(b) require.
+    The goal is prepared and reified exactly as `proof_broker_term`
+    prepares it (`normalizeGoalForBroker`, `introLeadingNatForalls`,
+    `renameLocalsForSmt`, `Reify.buildIR`, for the ℕ atoms); no
+    solver runs.
+
+    * `term_closer_test constrained "h:1,neg_goal:1"` runs the
+      constrained route's selection (`closeConstrained`).
+    * `term_closer_test pinned "h:1,neg_goal:2"` runs the core
+      closers as the unconstrained path selects them (ℕ extraction →
+      `closeNatViaTermMode`, otherwise `closeViaTermMode`), ending in
+      contextual `omega`: the documented difference.
+
+    Coefficients are `name:integer` pairs. -/
+syntax (name := termCloserTest) "term_closer_test " ident str : tactic
+
+@[tactic termCloserTest]
+def evalTermCloserTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| term_closer_test $mode:ident $coeffs:str) =>
+    let entries ← coeffs.getString.splitOn "," |>.mapM fun entry => do
+      match entry.trimAscii.toString.splitOn ":" with
+      | [name, c] => pure (Json.mkObj [("hypothesis", Json.str name.trimAscii.toString),
+                                        ("coefficient", Json.str c.trimAscii.toString)])
+      | _ => throwError "term_closer_test: malformed entry '{entry}'"
+    let cert := Json.mkObj [("payload", Json.mkObj [
+      ("witness_kind", Json.str "farkas"),
+      ("witness_data", Json.mkObj [("coefficients", Json.arr entries.toArray)])])]
+    let goal ← normalizeGoalForBroker (← getMainGoal)
+    let goal ← introLeadingNatForalls goal
+    let goal ← renameLocalsForSmt goal
+    let goalType ← goal.getType
+    let (ir, natAtoms, _, _) ← Reify.buildIR goal
+    let closer ← match mode.getId.toString with
+      | "constrained" => closeConstrained goal goalType cert ir natAtoms
+      | "pinned" =>
+        if natModeOf ir then
+          closeNatViaTermMode goal goalType cert ir natAtoms; pure "term_mode_nat"
+        else
+          closeViaTermMode goal goalType cert; pure "term_mode_int"
+      | m => throwError "term_closer_test: unknown mode {m}"
+    replaceMainGoal []
+    logInfo m!"term_closer_test: {mode.getId} {closer}"
+  | _ => throwError "term_closer_test: malformed invocation"
 
 end ProofBroker.Tactic

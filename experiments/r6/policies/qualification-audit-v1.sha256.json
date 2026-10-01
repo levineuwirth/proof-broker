@@ -1,0 +1,461 @@
+{
+ "analysis": "experiments/r6/reviews/2026-09-29/R6-014-BLOCK2-ANALYSIS.json",
+ "analysis_sha256": "7322b996fb69843680f51e678fac87baa44c6f231f1b4b2bcd6cdd5405f725e8",
+ "controls_sha256": {
+  "c1": "071deb40737915bf8690b1f9cc21430d6016088ac64e8f114d0ea54b7ef9a257",
+  "c2": "4dad4d154e5d1c6236a73db5dd7d6873943a6eeb06b61e011197d4a0563079e2",
+  "c3": "d74ee4c026ce36e85ed9d019e6a402eb207ec223b8aeb814d203a34ca7d7e834",
+  "c4": "e2f702217efbaa3fce14db582301dbb2ffe6316920468ec3d6e96e4dceb40948",
+  "c5": "96c9ee5415b9d518316bcc70d7dd28f9bd9e8530e87dcd5ff16a4de269093554",
+  "c6": "d206a81bd4c4c9b56a70dc38c6c96f67982d5a2d5c78384a77db1a5e74430bc0",
+  "c7": "de1f5c38d195802cc9a7384ddb5a6f839c6eda26ea672135a4944f28ab744c58"
+ },
+ "controls_toolchain": "leanprover/lean4:v4.32.0",
+ "exporter_sha256": "8a7c4298f4f57389aaf0ca95dc08fac3eb3fb97c7ef24405d60b105608fff76f",
+ "schema_version": "r6-qualification-audit-lock-1",
+ "selection": {
+  "bracket-l069/1": {
+   "events.ndjson_sha256": "19fd08d98722127cfe27982227789b064c485fd1edd7b9ca7a105b8532b39d0c",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw1",
+   "seal_sha256": "e6de9e39e1efbc62aa0ba5cb623fb39343a7aed9e9183541ea2f05f71c9a98f5",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/2": {
+   "events.ndjson_sha256": "1cccc2b22fe830bf77783d6df50500404e83e73a24e503d50dd6fdfc8e2f5ead",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw2",
+   "seal_sha256": "32a323766d93cf71010e32d78ea9805e08cc6b7e740e732ad5e11d0ad65e3f12",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/3": {
+   "events.ndjson_sha256": "cc15cefc497945cb768fa4cc6f0eef4f1bc4fa7303bf140df8c138a51eeb550b",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw3",
+   "seal_sha256": "51e8cc958bb93be2fc06255d15cd6513373b19f2865aa790ccb732c035a6ce9b",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/4": {
+   "events.ndjson_sha256": "acf6ef3aff4bdcb0173632f4b600d03458cc9c6fcb0dd4e246178fae87e92594",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw4",
+   "seal_sha256": "0e334d6affdb671ff0739659905b649e6164ddb777b22909a04a3b32338f40b8",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/5": {
+   "events.ndjson_sha256": "728959fb333238ac908f11d836f653f4b4ec9ef33d013d1ee9784db043063960",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw5",
+   "seal_sha256": "82fc4a6008be3d2663d2e7f8e42326cad069c4c47e5a8ad2e13db1181d87559e",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/6": {
+   "events.ndjson_sha256": "e78cff8a9a411e07d1ee3efa8f8090419d2afa9846d21d8175a0bd873ab0ba7c",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw6",
+   "seal_sha256": "2d597de849e70403cce25080275e45fd2a0a1d541785036effd034952830773e",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/7": {
+   "events.ndjson_sha256": "97e930da92e7cc2cbd69933b8aef45c031481ca15222a24a8d523203cb9765a9",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw7",
+   "seal_sha256": "3bea78cc9a0422e8455a0eb39f047d1b6bed74108ba7e464bc81cf5b26201490",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l069/8": {
+   "events.ndjson_sha256": "c6390c4abac19418003ac1e8a9d033ed2c064b2b4751c3212a048327ed047bdf",
+   "local": "Bracket.lift_cell.r6_site_l069",
+   "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l069-draw8",
+   "seal_sha256": "b42f130f593804956249263745c646ecf924933ee495e0d3aa0a5e1762333473",
+   "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/1": {
+   "events.ndjson_sha256": "6b73b6fa784af6e7bbff6c63974306596c0f0d536c9b00db6a2810853e746eba",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw1",
+   "seal_sha256": "8d88bcccd899262d1b6cd2709bb655723949f3b23899a25ea367a7035af24afd",
+   "solution.ndjson.gz_sha256": "386eadbdfd3f06d23e9d908acb3b067fd5cfe458ab1429d9e0588bed7c6b95da",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/2": {
+   "events.ndjson_sha256": "643b5e91d03693d2cc532d8cba8b33ee6cc8a7e236cd7ccf86d73e8f61859952",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw2",
+   "seal_sha256": "b6a83b69a6472b93fb3a97c8effd17665a706e7a0650fe9b4eb2738f178ecd09",
+   "solution.ndjson.gz_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/3": {
+   "events.ndjson_sha256": "f467ad9865f1f604186bf1b5022c360e3960d135b30d40b9824e76450e4f6438",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax)) +\n    65536 * (0 - \u2191Zmax)",
+   "run": "experiments/r6/cohort-live-v9/l070-draw3",
+   "seal_sha256": "15b72f1bd85464376f42eb8ca5e76ee436bbc7a102bca1120c0d0bcb0215a850",
+   "solution.ndjson.gz_sha256": "ab9f0d5869e3e8455dd09f5a0049958e053fe7b68d5a4a004a1a0b7ad682bc95",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/4": {
+   "events.ndjson_sha256": "578edf3500305cf53392facb8097eecd2c03bb397ae5131da1b0394b8ea5d03e",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw4",
+   "seal_sha256": "0700d65099190bbc33afbb85917f0c2a7626e6995d5a3398bee7c1cbfa61b668",
+   "solution.ndjson.gz_sha256": "386eadbdfd3f06d23e9d908acb3b067fd5cfe458ab1429d9e0588bed7c6b95da",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/5": {
+   "events.ndjson_sha256": "338e23f3552cd15bbced23c64fcf904190953adff7c6ad1706ea6b7a0ee52849",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n        1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (0 - \u2191(Zmax * zhigh.val)) +\n    1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw5",
+   "seal_sha256": "2791ec81f1ede55000b5c5f491fb4af03e93e6071cc974135aabd8036ca42879",
+   "solution.ndjson.gz_sha256": "0746c0548cc13271130fed6b47a7e35386b61ed4794edf711ab18b1482b3b37f",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/6": {
+   "events.ndjson_sha256": "6622b93ceca28d0223d84c5b7a7d7d1a8e34335ec93c8812f159ef5879163d8a",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw6",
+   "seal_sha256": "b7c5c9c829e8402c47676626314945db2efe827ad655be094203b55ea18b9e19",
+   "solution.ndjson.gz_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/7": {
+   "events.ndjson_sha256": "0785e04d1d5cf0ebea48c803730b2bee57d805c79c341960c551c0b7a5e30b13",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw7",
+   "seal_sha256": "a2fd070954660c1707fbbb69f747b8ef087c8e8b3efe14fdc875da6e30e326a4",
+   "solution.ndjson.gz_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l070/8": {
+   "events.ndjson_sha256": "a5fdec419cc87354421a83124442da1a0178ec1fbc236b5b7ca4e48c2d56cb3e",
+   "local": "Bracket.lift_cell.r6_site_l070",
+   "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "run": "experiments/r6/cohort-live-v9/l070-draw8",
+   "seal_sha256": "d598905d1866c12eade4600dce43aaa002aa8bad7a90d5a446fe20dc73d3f343",
+   "solution.ndjson.gz_sha256": "386eadbdfd3f06d23e9d908acb3b067fd5cfe458ab1429d9e0588bed7c6b95da",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/1": {
+   "events.ndjson_sha256": "696c8290c47db9f576d656db14506cd672b65d284cffa85db3852ebcaa2f680f",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw1",
+   "seal_sha256": "1b23ddde7dc141f864661f8a06f097c2d0e91859983eebcaab5300694a49c6dd",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/2": {
+   "events.ndjson_sha256": "1ac9e53348e156cdb2024da7bee3eb794852dcbb615c687ed6f96c46643e6b83",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw2",
+   "seal_sha256": "d392b5132ff240d044a59db4241aa5ac89fab4c4fba6762ce5addafa0e6e0fdb",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/3": {
+   "events.ndjson_sha256": "7533bce3ed8de14eb07d910f3ccd3299d15d60fe0071fd0938ae5567e0009502",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw3",
+   "seal_sha256": "197df1cebe7e5bb42c3c44a8a6e09db2ed1fff98a4f3e8bf0e345f87bd6d3042",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/4": {
+   "events.ndjson_sha256": "0c88be16ec6faacc4bdfcbb6c9abd7947c8916d7fa23e4a69bb298d869b0bee2",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw4",
+   "seal_sha256": "d4207119f294d84479725c417bf6463dcc5e8ced4925180195a9f9ec9253e207",
+   "solution.ndjson.gz_sha256": "63e85827b6a52a99dcbeab9fe773dd8773e60128de28588372cf8daf0abde988",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/5": {
+   "events.ndjson_sha256": "b471d431e0760ed04a5969a3dae07ad487eed4c4d1b7a4509044ac6af08086eb",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw5",
+   "seal_sha256": "9f868939e08152434d8a0d3288dc0fea7ffdf42156678f478aec06082d79ac16",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/6": {
+   "events.ndjson_sha256": "c1554e3ebef315776dab6d9ff5d54a94e6ade06d4ba06c77ba20a9a2c6fefb49",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw6",
+   "seal_sha256": "a47189a0d9b4137206e210ec14d6eb551e4d172c9ff353911e3ab751e14a54fc",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/7": {
+   "events.ndjson_sha256": "838a7a981c78fa9b2ffbe07b4dd99986e403e560d49a494175077c24548155ec",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw7",
+   "seal_sha256": "58eb23a8a3dec4a6c385fe5d2ecf974852d72ecf593ab87667f77cf07d0a2ac7",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l071/8": {
+   "events.ndjson_sha256": "162089762a317d2f34540c03cb4ebc1983527c74ce4984fb1fb4294f108a5ae4",
+   "local": "Bracket.lift_cell.r6_site_l071",
+   "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+   "run": "experiments/r6/cohort-live-v9/l071-draw8",
+   "seal_sha256": "992c60b282ab6b7ca090f82d49a3fec50effb6fb5a05627eea48891bec86e8e5",
+   "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/1": {
+   "events.ndjson_sha256": "dc4129adf29998a1e3c1ed588261ebf0cb1b38018d05bd6db0a235ec9c7fe582",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw1",
+   "seal_sha256": "4aaffe491d86599cc62062c04867a14dec4e93e8465d4b3cd03b583463afa18d",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/2": {
+   "events.ndjson_sha256": "c4d058b756181ac1140aa77e1cddb76e41a7db3bc23d16a905762137ce3b1265",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw2",
+   "seal_sha256": "c6af768f545450ed4643643821898d7998d783dbb309d81c78d464a7787b0e97",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/3": {
+   "events.ndjson_sha256": "ae8f3d33ef4e5464a1589483b9d603e67711ce2aa32c1e597574664551279208",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw3",
+   "seal_sha256": "3010682cc7085a10859ab9db095ae7c11fae72353d47ecdb5c81dc931343ffc8",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/4": {
+   "events.ndjson_sha256": "7510a43889e2b5594ffdfa93cfa8d73c9ccc035bbb627ccfa5a43450bc93e833",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw4",
+   "seal_sha256": "b26c278d49ef137f1b0e664785dc4dd1500a7da5b2b9d6a0e41da9d7054e1f5a",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/5": {
+   "events.ndjson_sha256": "cc7864a94f9228be5382dffb8cab2766395509cb7801c91329b5f02510b0668a",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw5",
+   "seal_sha256": "f0335f09ab931738d59f41f7e4902009bc49eebd677cf1c02701d006d5cc8a66",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/6": {
+   "events.ndjson_sha256": "dfbe8df9826e1863dd778605aacdf5d5d492554545ec308858986b18791d9c31",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw6",
+   "seal_sha256": "6a11dfaecb42525f97c65ae4e32b9c08f344eb92dfe53cf0c83930730f45d70b",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/7": {
+   "events.ndjson_sha256": "dc002fbd45435bb80063b7d4df214e245161df35503691c10bc8c510f8fda4e0",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw7",
+   "seal_sha256": "9194c10dae72743709e5699b9776a6127c09015a7bb2a735ef029b59f6c779ef",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l078/8": {
+   "events.ndjson_sha256": "0d695e83609eebf99a1744a8d53e58d1e3d6a2c416486cdedbfa755cee1f94eb",
+   "local": "Bracket.lift_cell.r6_site_l078",
+   "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+   "run": "experiments/r6/cohort-live-v9/l078-draw8",
+   "seal_sha256": "70e39fb2613d6b030648548aabbb895ff3377f40737d90c8e835ea5b9efd8cb6",
+   "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+   "whole": "Bracket.lift_cell"
+  },
+  "bracket-l096/1": {
+   "events.ndjson_sha256": "74e38891fcda40a277984f24d7cada3daf221b8e25c698b4dfb4800384b0dbb7",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw1",
+   "seal_sha256": "9127b10a45642cf8de9458e7265f7c0a4451ec26c35e304616ca4fded4825465",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/2": {
+   "events.ndjson_sha256": "c79c2d0c74b2f93e002921bc8f52210dba27ee7f931c6e8c9b02c43ea4bb333d",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw2",
+   "seal_sha256": "92c3a153d75affc082e557654f6a1bdcd3d4597449078f4fc13dcb0da417df94",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/3": {
+   "events.ndjson_sha256": "668e286e226b03cb359b0cc0995dd40e5327a47d94ca4cdcbdf5e8025fc5ed5f",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw3",
+   "seal_sha256": "9987c5a4072a86777f815123eb603cfb0ce6d1272662dc33316ae284eb4e760d",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/4": {
+   "events.ndjson_sha256": "6d5f7eeba4e697444142abe6a09627211e7088f8ac405073dcf2253ff47e9910",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw4",
+   "seal_sha256": "fb5cdfc7f5b69f3ad4b84b47e05636f9c82122dd37739b8c96e7cc9e83dd949f",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/5": {
+   "events.ndjson_sha256": "833c30e6b7c82e413db02fcc529a34b7e7524e4cee94647f7179c386949aab93",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw5",
+   "seal_sha256": "7f0d7e012fc68c60a6a2d94b58360e254c4a230defd028d85a406958515861ed",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/6": {
+   "events.ndjson_sha256": "dac5a2dc51740dec95198a88a57660b717548e1967085e0ff812120ac52b9590",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw6",
+   "seal_sha256": "b593c076e348f084c286d4218d2491acd1fb23ca5362c9a90e1ad8587bf4f20d",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/7": {
+   "events.ndjson_sha256": "944469711717801c3a67fc426b8f8e0becd615fa6116b6f4c1d444fa0dde72ac",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw7",
+   "seal_sha256": "c14fe83d7d322aef91920c76fa36faffc999d5d903d81877405d86c742a96dc0",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l096/8": {
+   "events.ndjson_sha256": "19f2f1c036f179dd121a9f9287351075e4652921a18b87944e5acb8ce0937d80",
+   "local": "Bracket.threshold_unique.r6_site_l096",
+   "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+   "run": "experiments/r6/cohort-live-v9/l096-draw8",
+   "seal_sha256": "16d7df93f125c076e2936d605cb341740d3fa6218d822774b098970b6e7b10d6",
+   "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/1": {
+   "events.ndjson_sha256": "87c2a91f94f7d97fd4477d67df4073befab2e158f770aa6c128b61bd02d6fcb3",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw1",
+   "seal_sha256": "ab7f50d1e712caec6a699115672051388b1ee48d229d87bb56cbbea223f31eb9",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/2": {
+   "events.ndjson_sha256": "1e054c484eada68f4f70f0e08eeaaf61e29183a85aaa7728604e7652c69396aa",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw2",
+   "seal_sha256": "6ec79441050bd81a7a774f0cc4aa2a047adba9b0ff05428b83f80a0b92aa6410",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/3": {
+   "events.ndjson_sha256": "1cdd92f5d325d9c4511abb3427e85e1f285511e75e484650a753704cb51a584e",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw3",
+   "seal_sha256": "8365b5b79da8babf435b963370774b464c5b3bb0eb1b3798abcf8e8bf1d943f4",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/4": {
+   "events.ndjson_sha256": "1dff5fb316fbb353e2c876a0e70907a01c5016081f15837569e3cc9b0943edf4",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw4",
+   "seal_sha256": "091cfbd4c3a3ff631ec30b003dc306652c06e029c4c8d621b3a5d0411b682c24",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/5": {
+   "events.ndjson_sha256": "6e483b928c50b4407cc201d8688bb8ca7607a94c0a808a925d189d34e9c5c691",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw5",
+   "seal_sha256": "5eb7cbf7660bcc503c8be141e1bec9a41c4e211535e66ddde0ef8d1fa97f5d86",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/6": {
+   "events.ndjson_sha256": "8c849a31db2165b1ab7538d6a6014efee89198998a9b49486375511e14f19537",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw6",
+   "seal_sha256": "95babe1eec5ab6970d0c79ccd4a4c7564d65b0f457d38bf33831b278753080cc",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/7": {
+   "events.ndjson_sha256": "0f74555880f89c8cc25c3c0bf2b0f80d859fdff175442474f47d685cc1c3c8ff",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw7",
+   "seal_sha256": "2c033114eb85ac9415c0bf61ee852386830540ea0cdce5640d5171bf3bdecc80",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  },
+  "bracket-l099/8": {
+   "events.ndjson_sha256": "818e4bead02f6942c138baad98019b6bf872e602f7f5332316b2afbebb595cc3",
+   "local": "Bracket.threshold_unique.r6_site_l099",
+   "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+   "run": "experiments/r6/cohort-live-v9/l099-draw8",
+   "seal_sha256": "af9606d940316ad7e2ed3a4358f077e5e60fb01dab799426017854aafe727e34",
+   "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+   "whole": "Bracket.threshold_unique"
+  }
+ },
+ "sources_sha256": {
+  "experiments/r6/qualification-audit/Audit.lean": "e4e80a8bbf78e45fb7c7f2e618c3aec1549b4da0667b9d8968f6ae5defb1a137",
+  "experiments/r6/qualification-audit/R6AuditControls.lean": "b1dbe43653e92cefb232618d3df44c58356e5386821db994eaa7b13825f532ed",
+  "experiments/r6/qualification-audit/R6AuditControls.provenance.json": "732e6bcf169bd2d19457e57b0a83ef1c891d0826a020f6a07f0ab18fda994aa5",
+  "experiments/r6/qualification-audit/make_controls.py": "7780cd5ad80b993aaab93ade4f7aa14224d78f3a3031ac5622e642c09cfe18ab",
+  "experiments/r6/qualification-audit/qualification_audit.py": "c7ae522d6f765c24da217d35cfc4222bd297704ea630c2e54ce61a7b7215ad56",
+  "experiments/r6/vendor/lean4export/Export.lean": "1c60d571dc24bfb99e7cbb218d8d489919bbc871238f6db9c76248521fbea998",
+  "experiments/r6/vendor/lean4export/Export/Parse.lean": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286"
+ },
+ "tool_sha256": "a30ca41345ddeec99b7141d0e6fb723f9bd22fa8849f02f7ad84eb71f7e4ac2a",
+ "toolchain": "leanprover/lean4:v4.32.2"
+}

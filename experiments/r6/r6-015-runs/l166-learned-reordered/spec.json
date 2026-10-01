@@ -1,0 +1,20 @@
+{
+  "id": "l166-learned-reordered",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l166-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hlt",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}
