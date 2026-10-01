@@ -27,7 +27,7 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 R6 = HERE.parent
 REPO = R6.parents[1]
-BRIDGE_REV = 'aa32cf21eb046d39d96638ecf5b09907b06e1c6c'
+BRIDGE_REV = '476fab317e6633511b2a73b36313457d762e3a9c'
 BUILD = R6/'.cache/r6-015-synthetic-audit'
 TOOLCHAIN = Path.home()/'build/elan/toolchains/leanprover--lean4---v4.32.0'
 AUDIT_TOOLCHAIN = Path.home()/'build/elan/toolchains/leanprover--lean4---v4.32.2'
