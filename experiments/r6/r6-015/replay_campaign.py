@@ -22,8 +22,9 @@ or not:
 3. its packet equals the one rebuilt from the locked consumed artifact and the spec's coefficients;
 4. for a proof, the receipt is the one the spec requires (`replay_episode.receipt`).
 
-Then, for each proof, the audit program runs in real mode on the run's export with its retained residual, and revision 5's frozen
-predicate is evaluated: the program exits 0 without a refusal, `binding` is `matches_residual`, both targets are locatable, and
+Each entry records the run's seal and verdict digests, and for a proof its export and residual digests, so that the analysis can
+bind the entry to the run it audits and recompute the predicate from the retained report. Then, for each proof, the audit program
+runs in real mode on the run's export with its retained residual, and revision 5's frozen predicate is evaluated: the program exits 0 without a refusal, `binding` is `matches_residual`, both targets are locatable, and
 both carry an explicit, empty hypothesis list. An error, a refusal or a missing field fails. Afterwards every audited artifact is
 rechecked against its seal, and the lock is verified again. Kernel validation is the episode's own (acceptance 3 and 4).
 
@@ -161,18 +162,20 @@ def control8(args):
         except (OSError, ValueError, KeyError, replay_episode.Outcome) as unbound:
             results[spec['id']] = {'bound': False, 'reason': f'{type(unbound).__name__}: {unbound}'[:500]}
             print(spec['id'], 'unbound', results[spec['id']]['reason'], flush=True); continue
+        evidence = {'seal_sha256': r6.sha(run/'seal.json'), 'verdict_sha256': r6.sha(run/'verdict.json')}
         if verdict['outcome'] != 'proved':
-            results[spec['id']] = {'bound': True, 'outcome': verdict['outcome'], 'audited': False}; continue
+            results[spec['id']] = {'bound': True, 'outcome': verdict['outcome'], 'audited': False, **evidence}; continue
+        evidence.update(solution_sha256=r6.sha(run/'solution.ndjson.gz'), residual_sha256=r6.sha(run/'residual.txt'))
         report, command = audit_real(run, run/'solution.ndjson.gz', (run/'residual.txt').read_text().rstrip('\n'), site_task.get(spec['site']))
         results[spec['id']] = {'bound': True, 'outcome': 'proved', 'audited': True, 'unmet': predicate(report), 'command': command,
-                               'report': report}
+                               'report': report, **evidence}
         audited[spec['id']] = {name: seal['retained_sha256'][name] for name in AUDITED}
         print(spec['id'], 'pass' if not results[spec['id']]['unmet'] else results[spec['id']]['unmet'], flush=True)
     for run_id, digests in audited.items():  # afterwards: every audited artifact is still the sealed one
         if any(r6.sha(runs/run_id/name) != digest for name, digest in digests.items()): raise SystemExit(f'{run_id} changed during control 8')
     replay_lock.verify_lock()
     passed = all(r['bound'] and not r.get('unmet') for r in results.values())
-    out.write_text(json.dumps({'passed': passed, 'lock_sha256': r6.sha(replay_lock.LOCK),
+    out.write_text(json.dumps({'schema_version': 'r6-015-control-8-1', 'passed': passed, 'lock_sha256': r6.sha(replay_lock.LOCK),
                                'audit_tool_sha256': r6.sha(replay_lock.AUDIT_TOOL), 'results': results}, indent=1) + '\n')
     print(json.dumps({'passed': passed}))
 

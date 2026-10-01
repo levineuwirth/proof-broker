@@ -7,7 +7,11 @@ Runs after the replay (`replay_campaign.py run`), control 3 (`control3.py`) and 
 the R6-015 lock, which must verify before and after. Reads only bound evidence:
 - **every planned run** is bound to the locked plan by `replay_campaign.bound` (seal, spec, start record and provenance, terminal
   event, seal acceptance, verdict identity, packet, and for a proof the receipt). A run that does not bind stops the analysis;
-- **the control-3 and control-8 records** must name this lock;
+- **the control-3 and control-8 records are evidence, not verdicts.** Each predicate is recomputed. Control 8's record must cover
+  exactly the plan, each entry bound to the current run's seal, verdict, export and residual digests and audited with the locked
+  program; its predicate is recomputed from the retained report. Control 3's record must be the frozen probe, run under this lock
+  and bridge by the locked programs, not a dry run; its predicate is recomputed from its results (`control3.evaluate`). A record
+  whose flags disagree with the recomputation is rejected. Every consumed input, and every run's seal, is rechecked afterwards;
 - **the step-3 record** (`R6-015-MUTATIONS-2.json`, bound by the lock) supplies the maps, classes and control-5 labels;
 - **R6-014's analysis** (`R6-014-BLOCK2-ANALYSIS.json`, bound by the lock) supplies the original closers (control 5) and the
   reference route's closures (control 7).
@@ -27,18 +31,31 @@ changed context, an unprinted residual, a stage or harness failure) is not a rou
 
 **Units:** results per obligation (4), per map (6) and per class (5), by source, never merged.
 
-**The outcome, by the proposal's frozen definitions:**
-- **complete success**: all 36 retained certificates consumed and validated (so all six maps, both sources, all four obligations,
-  both l166 maps), and controls 1, 2, 3, 4, 6 and 8 as frozen;
-- **none**: no retained certificate consumed and validated;
-- **partial**: anything else, with the failures located per obligation, map and class.
+**The measurement** (the 36 retained certificates of the four obligations) is reported on its own: consumed and validated, of 36,
+per obligation, map and class.
 
-Control 5's expectations are stated before replay, and a failure requires diagnosis: it is reported for every entry, but it is not
-part of the outcome's definition. Control 7 is cited, never counted as consumption.
+**The overall outcome, by the proposal's frozen definitions** (revision 5: every control behaves as frozen):
+- **complete success**: all 36 consumed and validated (so all six maps, both sources, all four obligations, both l166 maps), and
+  controls 1, 2, 3, 4, 6 and 8 as frozen, and control 5's ten expected-pass entries passing;
+- **none**: none of the 36 consumed and validated;
+- **partial**: anything else, with the reasons and the failures located.
+
+**The controls, each recomputed from bound evidence:**
+- **control 1**: every injected invalid mutation is rejected by the checker, its bypass is recorded, and the constrained closer
+  fails in its final step because the sum does not cancel;
+- **control 4**: l170's checked proposals are rejected by the checker; the injected one fails in the final step as not positive.
+  An earlier refusal or a harness failure fails these controls and requires diagnosis;
+- **control 5**: each entry against its label. A pass is consumed and validated with R6-014's closer named. The four entries without
+  a prediction are diagnostic only;
+- **control 6**: on every episode that reached selection, a `Nat` comparison takes `term_mode_nat`, any other `term_mode_int`;
+- **control 7** is cited, never counted as consumption.
+
+Axiom deltas, removals included, are retained per episode.
 """
 import argparse
 from collections import Counter
 import gzip
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -50,6 +67,7 @@ if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 
 import events  # noqa: E402
 import run as r6  # noqa: E402
+import control3  # noqa: E402
 import replay_campaign  # noqa: E402
 import replay_lock  # noqa: E402
 
@@ -111,7 +129,17 @@ def packet_certificate(run):
     return r6.read_json(run/'evidence.json')['certificate']
 
 
-def axioms_ok(run, verdict):
+def current(run, proved):
+    """The run's current digests: its seal and verdict, and for a proof its export (packed and unpacked) and residual."""
+    d = {'seal_sha256': r6.sha(run/'seal.json'), 'verdict_sha256': r6.sha(run/'verdict.json')}
+    if proved:
+        d.update(solution_sha256=r6.sha(run/'solution.ndjson.gz'), residual_sha256=r6.sha(run/'residual.txt'),
+                 export_sha256=hashlib.sha256(gzip.decompress((run/'solution.ndjson.gz').read_bytes())).hexdigest())
+    return d
+
+
+def axioms(run, verdict):
+    """Acceptance 4: no axiom added, every axiom among the allowed three. The deltas are retained either way."""
     for name in ('local', 'whole'):
         report = json.loads(gzip.decompress((run/f'validation-{name}.raw.json.gz').read_bytes()))
         if report.get('accepted') is not True: return False
@@ -119,39 +147,85 @@ def axioms_ok(run, verdict):
     return all(not d['added'] for d in verdict['axiom_delta'].values())
 
 
-def analyse(runs, control3, control8):
+def check_control8(record, lock_sha, frozen, verdicts, runs):
+    """Control 8, recomputed from retained evidence. Rejects a record that does not cover exactly the plan, whose entries do not
+    bind to the current runs, or whose flags disagree with the recomputation. Returns {id: predicate met} for the proofs."""
+    if record.get('schema_version') != 'r6-015-control-8-1' or record.get('lock_sha256') != lock_sha: raise SystemExit('control 8: identity')
+    results = record.get('results') or {}
+    if set(results) != set(verdicts): raise SystemExit('control 8 does not cover exactly the plan')
+    met = {}
+    for i, verdict in verdicts.items():
+        entry, proved = results[i], verdict['outcome'] == 'proved'
+        if entry.get('bound') is not True or entry.get('outcome') != verdict['outcome'] or entry.get('audited') is not proved:
+            raise SystemExit(f'control 8: {i} does not describe the run')
+        now = current(runs/i, proved)
+        for key in ('seal_sha256', 'verdict_sha256') + (('solution_sha256', 'residual_sha256') if proved else ()):
+            if entry.get(key) != now[key]: raise SystemExit(f'control 8: {i} {key} differs from the run')
+        if not proved: continue
+        command = entry.get('command') or {}
+        inputs = command.get('inputs') or {}
+        if (command.get('tool_sha256') != frozen['binaries_sha256']['audit_tool']
+                or (inputs.get('<tmp>/export.ndjson') or {}).get('sha256') != now['export_sha256']
+                or (inputs.get('<tmp>/residual.txt') or {}).get('sha256') != now['residual_sha256']):
+            raise SystemExit(f'control 8: {i} was not audited on this export and residual with the locked program')
+        unmet = replay_campaign.predicate(entry.get('report') or {})
+        if unmet != entry.get('unmet'): raise SystemExit(f'control 8: {i} records a predicate its report does not support')
+        met[i] = not unmet
+    if record.get('passed') is not all(met.values()): raise SystemExit('control 8: the summary disagrees with its entries')
+    return met
+
+
+def check_control3(record, lock_sha, frozen):
+    """Control 3's identity, provenance and results; its predicate recomputed. A dry run or a contradictory record is rejected."""
+    if record.get('schema_version') != control3.SCHEMA or record.get('control') != 3 or 'dry_run' in record:
+        raise SystemExit('control 3: not a control-3 record (or a dry run)')
+    if record.get('lock_sha256') != lock_sha or record.get('bridge_rev') != frozen['bridge_rev'] \
+            or record.get('instrumented_tactic_sha256') != frozen['instrumented_tactic_sha256']:
+        raise SystemExit('control 3: not run under this lock and bridge')
+    sources = record.get('sources_sha256') or {}
+    if set(sources) != {str(f.relative_to(R6)) for f in control3.SOURCES} or any(frozen['python_sha256'].get(k) != v for k, v in sources.items()):
+        raise SystemExit('control 3: not run by the locked programs')
+    if (record.get('evidence') or {}).get('coefficients') != control3.PROBE: raise SystemExit('control 3: not the frozen probe')
+    unmet = control3.evaluate(record.get('results') or {})
+    if unmet != record.get('unmet') or record.get('passed') is not (not unmet): raise SystemExit('control 3: the record contradicts its results')
+    return not unmet
+
+
+def analyse(runs, control3_path, control8_path):
     frozen = replay_lock.verify_lock(); lock_sha = r6.sha(replay_lock.LOCK)
-    for name, record in (('control 3', control3), ('control 8', control8)):
-        if record.get('lock_sha256') != lock_sha: raise SystemExit(f'the {name} record does not name this lock')
+    inputs = [Path(control3_path), Path(control8_path), MUTATIONS, R6014]
+    consumed = {str(p): r6.sha(p) for p in inputs}
     plan = replay_lock.planned(frozen); mutations = r6.read_json(MUTATIONS); r6014 = r6.read_json(R6014)
-    episodes = {}
+    verdicts, seals = {}, {}
     for spec in plan.values():
         run = runs/spec['id']
         try:
-            _, verdict = replay_campaign.bound(run, spec, frozen, lock_sha)
+            _, verdicts[spec['id']] = replay_campaign.bound(run, spec, frozen, lock_sha)
         except (OSError, ValueError, KeyError, replay_campaign.replay_episode.Outcome) as unbound:
             raise SystemExit(f"{spec['id']} does not bind: {unbound}")
+        seals[spec['id']] = current(run, False)['seal_sha256']
+    c8 = check_control8(r6.read_json(control8_path), lock_sha, frozen, verdicts, runs)
+    c3 = check_control3(r6.read_json(control3_path), lock_sha, frozen)
+
+    episodes = {}
+    for spec in plan.values():
+        i = spec['id']; run = runs/i; verdict = verdicts[i]
         stage, detail, line = classify(verdict)
-        observed = reconstruct_events(run); found = dict(observed)
-        c8 = control8['results'].get(spec['id'])
+        found = dict(reconstruct_events(run))
         proved = verdict['outcome'] == 'proved'
-        accepted = proved and verdict.get('local_validated') is True and verdict.get('whole_validated') is True and axioms_ok(run, verdict)
-        c8_ok = bool(c8 and c8.get('bound') and c8.get('audited') and c8.get('unmet') == [])
-        episodes[spec['id']] = {
+        kernel_and_axioms = proved and verdict.get('local_validated') is True and verdict.get('whole_validated') is True and axioms(run, verdict)
+        episodes[i] = {
             'site': spec['site'].removeprefix('bracket-'), 'arm': spec['source']['arm'], 'source': spec['source']['run'],
             'mutated': spec['coefficients'] is not None, 'injected': spec['inject_unverified'], 'outcome': verdict['outcome'],
             'stage': stage, 'stage_detail': detail, 'error_line': line, 'certificate_accepted': verdict.get('certificate_accepted'),
             'closer_selected': (found.get('closer_selected') or {}).get('closer'),
             'comparison_type': (found.get('closer_selected') or {}).get('comparison_type'),
-            'gate_bypassed': 'certificate_gate_bypassed' in found and found['certificate_gate_bypassed'].get('certificate') ==
-                             packet_certificate(run),
-            'closer': verdict.get('closer'), 'final_step': verdict.get('final_step'), 'kernel_and_axioms': accepted,
-            'control_8': c8_ok if proved else None, 'consumed_and_validated': accepted and c8_ok}
-    if not set(control8['results']) <= set(episodes): raise SystemExit('control 8 covers episodes outside the plan')
-    if {i for i, e in episodes.items() if e['outcome'] == 'proved'} - {i for i, r in control8['results'].items() if r.get('audited')}:
-        raise SystemExit('a proof was not audited by control 8')
+            'gate_bypassed': 'certificate_gate_bypassed' in found and found['certificate_gate_bypassed'].get('certificate') == packet_certificate(run),
+            'closer': verdict.get('closer'), 'final_step': verdict.get('final_step'), 'axiom_delta': verdict.get('axiom_delta'),
+            'kernel_and_axioms': kernel_and_axioms, 'control_8': c8.get(i) if proved else None,
+            'consumed_and_validated': bool(kernel_and_axioms and c8.get(i))}
 
-    # the measurement: the 36 retained certificates of the four obligations
+    # the measurement: the 36 retained certificates of the four obligations, reported on its own
     measurement = {i: e for i, e in episodes.items() if e['site'] in TARGETS and not e['mutated'] and not e['injected']}
     if len(measurement) != 36: raise SystemExit('the measurement is not 36 episodes')
     def unit(e, kind):
@@ -169,29 +243,31 @@ def analyse(runs, control3, control8):
             table[key] = {arm: tally([e for e in sel if e['arm'] == arm]) for arm in ('learned', 'deterministic') if any(e['arm'] == arm for e in sel)}
     if (len(per_map), len(per_class)) != (6, 5): raise SystemExit('the units are not 6 maps and 5 classes')
 
-    # the controls
+    # the controls, each recomputed from bound evidence
     def ids(pred): return [i for i, e in episodes.items() if pred(i, e)]
+    def failed_at(e, detail):  # the constrained closer was reached, and failed in its final step, in this way
+        return (e['certificate_accepted'] is False and e['gate_bypassed'] and e['outcome'] == 'reconstruction_failed'
+                and (e['stage'], e['stage_detail']) == ('constrained_final_step', detail))
     c1 = ids(lambda i, e: e['site'] in TARGETS and e['mutated'] and e['injected'])
     c2 = ids(lambda i, e: e['site'] in TARGETS and e['mutated'] and not e['injected'])
     c4 = ids(lambda i, e: e['site'] == 'l170')
     c5 = ids(lambda i, e: '-control5-' in i)
+    sizes = {'control_1': (len(c1), 24), 'control_2': (len(c2), 25), 'control_4': (len(c4), 9), 'control_5': (len(c5), 14)}
+    for name, (got, want) in sizes.items():
+        if got != want: raise SystemExit(f'{name} has {got} episodes, not {want}')
     controls = {
-        'control_1': {'episodes': len(c1), 'failures': [i for i in c1 if not (episodes[i]['certificate_accepted'] is False
-                       and episodes[i]['gate_bypassed'] and episodes[i]['outcome'] != 'proved')],
-                      'stages': dict(Counter(episodes[i]['stage'] for i in c1))},
+        'control_1': {'episodes': len(c1), 'failures': [i for i in c1 if not failed_at(episodes[i], 'does not cancel')],
+                      'stages': dict(Counter(f"{episodes[i]['stage']}: {episodes[i]['stage_detail']}" for i in c1))},
         'control_2': {'episodes': len(c2), 'failures': [i for i in c2 if not episodes[i]['consumed_and_validated']],
                       'stages': dict(Counter(episodes[i]['stage'] for i in c2))},
-        'control_3': {'passed': control3.get('passed') is True, 'unmet': control3.get('unmet')},
+        'control_3': {'passed': c3, 'record': str(control3_path)},
         'control_4': {'episodes': len(c4), 'failures': [i for i in c4 if not (
-                       (episodes[i]['injected'] and episodes[i]['certificate_accepted'] is False and episodes[i]['gate_bypassed']
-                        and episodes[i]['outcome'] != 'proved')
-                       or (not episodes[i]['injected'] and episodes[i]['outcome'] == 'certificate_rejected'))]},
+                       failed_at(episodes[i], 'not positive') if episodes[i]['injected'] else episodes[i]['outcome'] == 'certificate_rejected')]},
         'control_6': {'checked': 0, 'failures': []},
         'control_7': {'cited': {s: {'outcome': r6014['arms']['deterministic_reference']['by_site'][f'bracket-{s}'],
                                     'closer': r6014['arms']['deterministic_reference']['closers'][f'bracket-{s}']} for s in TARGETS},
                       'counted_as_consumption': False},
-        'control_8': {'passed': control8.get('passed') is True,
-                      'failures': [i for i, r in control8['results'].items() if not (r.get('bound') and (not r.get('audited') or r.get('unmet') == []))]},
+        'control_8': {'passed': all(c8.values()), 'proofs': len(c8), 'failures': sorted(i for i, ok in c8.items() if not ok)},
     }
     for i, e in episodes.items():  # control 6: a Nat comparison takes the ℕ closer, any other the ℤ closer
         if e['closer_selected'] is None: continue
@@ -199,39 +275,46 @@ def analyse(runs, control3, control8):
         if (e['comparison_type'] in ('ℕ', 'Nat')) != (e['closer_selected'] == 'term_mode_nat'): controls['control_6']['failures'].append(i)
     for name in ('control_1', 'control_2', 'control_4', 'control_6'):
         controls[name]['passed'] = not controls[name]['failures']
-    expected_sizes = {'control_1': 24, 'control_2': 25, 'control_4': 9}
-    for name, n in expected_sizes.items():
-        if controls[name]['episodes'] != n: raise SystemExit(f'{name} has {controls[name]["episodes"]} episodes')
 
-    # control 5: each entry against its stated expectation
+    # control 5: each entry against its stated label; the expected passes are part of the overall outcome
     original = {}
     for slot, row in r6014['per_slot'].items():
-        site = slot.split('/')[0].removeprefix('bracket-')
-        if row.get('closer'): original.setdefault(site, set()).add(row['closer'])
+        if row.get('closer'): original.setdefault(slot.split('/')[0].removeprefix('bracket-'), set()).add(row['closer'])
     entries = []
     for c in mutations['control_5']:
         if c.get('retained') is False: entries.append({'site': c['site'], 'arm': 'deterministic', 'retained': False}); continue
         id_ = f"{c['site']}-control5-learned-draw{c['draws'][0]}" if c['source']['arm'] == 'learned' else f"{c['site']}-control5-deterministic"
         e = episodes[id_]; closers = original.get(c['site'], set())
         if len(closers) != 1: raise SystemExit(f"{c['site']}: R6-014's closer is not unique")
-        closer_ok = e['closer'] == next(iter(closers))
-        passed = e['consumed_and_validated'] and closer_ok
+        passed = e['consumed_and_validated'] and e['closer'] == next(iter(closers))
         entries.append({'episode': id_, 'site': c['site'], 'arm': c['source']['arm'], 'map': c['map'], 'expectation': c['expectation'],
                         'passed': passed, 'original_closer': next(iter(closers)), 'closer': e['closer'], 'stage': e['stage'],
-                        'requires_diagnosis': c['expectation'] == 'expected_pass' and not passed})
-    controls['control_5'] = {'episodes': len(c5), 'entries': entries,
-                             'expected_pass_met': sum(1 for x in entries if x.get('expectation') == 'expected_pass' and x['passed']),
-                             'expected_pass': sum(1 for x in entries if x.get('expectation') == 'expected_pass'),
+                        'predicted': c['expectation'] == 'expected_pass', 'requires_diagnosis': c['expectation'] == 'expected_pass' and not passed})
+    predicted = [x for x in entries if x.get('predicted')]
+    if len(predicted) != 10: raise SystemExit(f'control 5 has {len(predicted)} expected-pass entries, not 10')
+    controls['control_5'] = {'episodes': len(c5), 'entries': entries, 'expected_pass': len(predicted),
+                             'expected_pass_met': sum(x['passed'] for x in predicted), 'passed': all(x['passed'] for x in predicted),
+                             'diagnostic_only': [x['episode'] for x in entries if 'episode' in x and not x['predicted']],
                              'requires_diagnosis': [x['episode'] for x in entries if x.get('requires_diagnosis')]}
 
-    consumed = sum(e['consumed_and_validated'] for e in measurement.values())
-    frozen_controls = all(controls[c]['passed'] for c in ('control_1', 'control_2', 'control_3', 'control_4', 'control_6', 'control_8'))
-    outcome = ('complete_success' if consumed == 36 and frozen_controls else 'none' if consumed == 0 else 'partial')
+    measured = sum(e['consumed_and_validated'] for e in measurement.values())
+    frozen_controls = ('control_1', 'control_2', 'control_3', 'control_4', 'control_5', 'control_6', 'control_8')
+    reasons = ([] if measured == 36 else [f'{36 - measured} of the 36 retained certificates not consumed and validated']) + \
+              [f'{c} not as frozen' for c in frozen_controls if not controls[c]['passed']]
+    outcome = 'complete_success' if not reasons else 'none' if measured == 0 else 'partial'
+    diagnosis = sorted({i for i, e in episodes.items() if e['stage'] in ('harness', 'unclassified')}
+                       | set(controls['control_1']['failures']) | set(controls['control_4']['failures'])
+                       | set(controls['control_5']['requires_diagnosis']))
+
+    # afterwards: the lock, every run's seal and every consumed input are unchanged
     replay_lock.verify_lock()
-    return {'schema_version': 'r6-015-analysis-1', 'lock_sha256': lock_sha, 'outcome': outcome,
-            'measurement': {'consumed_and_validated': consumed, 'of': 36, 'per_obligation': per_obligation, 'per_map': per_map,
+    if any(current(runs/i, False)['seal_sha256'] != h for i, h in seals.items()) or any(r6.sha(Path(p)) != h for p, h in consumed.items()):
+        raise SystemExit('an analysis input changed during the analysis')
+    return {'schema_version': 'r6-015-analysis-2', 'lock_sha256': lock_sha, 'inputs_sha256': consumed,
+            'outcome': outcome, 'outcome_reasons': reasons,
+            'measurement': {'consumed_and_validated': measured, 'of': 36, 'per_obligation': per_obligation, 'per_map': per_map,
                             'per_class': per_class},
-            'frozen_controls_as_expected': frozen_controls, 'controls': controls, 'episodes': episodes,
+            'controls': controls, 'requires_diagnosis': diagnosis, 'episodes': episodes,
             'scope': 'R6-015, offline; reported separately from R6-014 and never pooled with it'}
 
 
@@ -243,11 +326,12 @@ def main():
     out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
     try:
-        result = analyse(Path(args.runs).resolve(), r6.read_json(args.control3), r6.read_json(args.control8))
+        result = analyse(Path(args.runs).resolve(), Path(args.control3).resolve(), Path(args.control8).resolve())
     except replay_lock.Refused as refused:
         raise SystemExit(str(refused))
     out.write_text(json.dumps(result, indent=1) + '\n')
-    print(json.dumps({'outcome': result['outcome'], 'consumed_and_validated': result['measurement']['consumed_and_validated']}))
+    print(json.dumps({'outcome': result['outcome'], 'consumed_and_validated': result['measurement']['consumed_and_validated'],
+                      'reasons': result['outcome_reasons']}))
 
 
 if __name__ == '__main__':

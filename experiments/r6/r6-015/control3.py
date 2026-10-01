@@ -27,6 +27,7 @@ R6 = HERE.parent
 if str(R6) not in sys.path: sys.path.insert(0, str(R6))
 if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 
+import events  # noqa: E402
 import run as r6  # noqa: E402
 import site_task  # noqa: E402
 import replay_bridge  # noqa: E402
@@ -36,6 +37,26 @@ from rehearse_synthetic import Stub, child_events, lean  # noqa: E402
 WORK = R6/'.cache/r6-015-control3'
 GOAL = 'theorem probe_whole (x y : Int) (h : x ≤ y) : x ≤ y := by\n  {tactic} "probe_whole.r6_site_probe" "synthetic-probe"\n'
 PROBE = [{'hypothesis': 'h', 'coefficient': '1'}, {'hypothesis': 'neg_goal', 'coefficient': '2'}]
+SCHEMA = 'r6-015-control-3-1'
+SOURCES = (Path(__file__).resolve(), HERE/'rehearse_synthetic.py', HERE/'replay_bridge.py', HERE/'replay_lock.py')
+
+
+def evaluate(results):
+    """Control 3's frozen expectations, from its results; the analysis recomputes this. Returns the unmet ones."""
+    unmet = []
+    if (results.get('checker') or {}).get('accepted') is not False: unmet.append('the independent checker did not reject the probe')
+    for route in ('constrained', 'pinned'):
+        r = results.get(route)
+        if not isinstance(r, dict): unmet.append(f'{route}: no result'); continue
+        if 'certificate_gate_bypassed' not in (r.get('events') or []): unmet.append(f'{route}: the injection was not recorded')
+        if route == 'constrained':
+            if r.get('exit') == 0 or r.get('term_route') != {'constrained': True} or (r.get('closer_selected') or {}).get('route') != 'constrained' \
+                    or not any('the weighted sum does not cancel' in e for e in r.get('errors') or []):
+                unmet.append('constrained: did not fail in the constrained final step')
+        elif r.get('exit') != 0 or r.get('term_route') != {'constrained': False} \
+                or (r.get('reconstruction_finished') or {}).get('residual_closer') != 'omega':
+            unmet.append('pinned: the documented difference did not reproduce')
+    return unmet
 
 
 def main():
@@ -66,8 +87,7 @@ def main():
                     str(prep/'evidence.json')], check=True)
     subprocess.run([str(verifier), str(prep/'evidence.json'), str(prep/'verdict.json')], capture_output=True)
     checker = r6.read_json(prep/'verdict.json')
-    results, unmet = {'checker': checker}, []
-    if checker.get('accepted') is not False: unmet.append('the independent checker did not reject the probe')
+    results = {'checker': checker}
     for route in ('constrained', 'pinned'):
         work = WORK/route; work.mkdir()
         (work/'ProposalCapture.lean').write_text(replay_bridge.capture_source(site_task, Stub, route))
@@ -82,18 +102,13 @@ def main():
                           'closer_selected': {k: v for k, v in (data.get('closer_selected') or {}).items() if k != 'certificate'},
                           'reconstruction_finished': {k: v for k, v in (data.get('reconstruction_finished') or {}).items() if k != 'certificate'},
                           'errors': errors[:5]}
-        if 'certificate_gate_bypassed' not in names: unmet.append(f'{route}: the injection was not recorded')
-        if route == 'constrained':
-            if proc.returncode == 0 or data.get('term_route') != {'constrained': True} \
-                    or (data.get('closer_selected') or {}).get('route') != 'constrained' \
-                    or not any('the weighted sum does not cancel' in e for e in errors):
-                unmet.append('constrained: did not fail in the constrained final step')
-        elif proc.returncode != 0 or data.get('term_route') != {'constrained': False} \
-                or (data.get('reconstruction_finished') or {}).get('residual_closer') != 'omega':
-            unmet.append('pinned: the documented difference did not reproduce')
+    unmet = evaluate(results)
     replay_lock.verify_lock()
     passed = not unmet
-    out.write_text(json.dumps({'control': 3, 'passed': passed, 'unmet': unmet, 'results': results,
+    out.write_text(json.dumps({'schema_version': SCHEMA, 'control': 3, 'passed': passed, 'unmet': unmet, 'results': results,
+        'evidence': {'evidence_sha256': r6.sha(prep/'evidence.json'), 'certificate_sha256': events.digest(r6.read_json(prep/'evidence.json')['certificate']),
+                     'coefficients': PROBE},
+        'sources_sha256': {str(f.relative_to(R6)): r6.sha(f) for f in SOURCES},
         'lock_sha256': r6.sha(replay_lock.LOCK), 'bridge_rev': replay_bridge.BRIDGE_REV,
         'instrumented_tactic_sha256': sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'],
         'documented_difference': 'the pinned fold closes the probe through contextual omega; not consumption'}, indent=1) + '\n')

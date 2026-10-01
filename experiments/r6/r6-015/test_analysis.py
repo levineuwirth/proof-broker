@@ -57,11 +57,25 @@ def test_classify():
 
 PLAN = {s['id']: s for s in r6.read_json(HERE/'plan.json')['episodes']}
 CERT = {'synthetic': True}
+FROZEN = {'bridge_rev': 'B' * 40, 'instrumented_tactic_sha256': 'T' * 64, 'binaries_sha256': {'audit_tool': 'A' * 64},
+          'python_sha256': {str(f.relative_to(R6)): 'P' * 64 for f in analysis.control3.SOURCES}}
+PASSING_REPORT = {'exit': 0, 'audit': {'binding': 'matches_residual', 'local': {'locatable': True, 'hypotheses': []},
+                                       'whole': {'locatable': True, 'hypotheses': []}}}
+FAILS = {'reconstruction_failed'}
+
+
+def digests(i):
+    return {'seal_sha256': f'seal-{i}', 'verdict_sha256': f'verdict-{i}', 'solution_sha256': f'solution-{i}',
+            'residual_sha256': f'residual-{i}', 'export_sha256': f'export-{i}'}
+
+
+def failure(message):
+    return {'outcome': 'reconstruction_failed', 'detail': {'events': [], 'errors': [LINE + message]}}
 
 
 def scenario(fail=lambda i, s: None):
-    """Stand-in evidence for every planned episode: everything as frozen, except where `fail` returns an outcome."""
-    verdicts, observed, c8 = {}, {}, {}
+    """Stand-in evidence for every planned episode: everything as frozen, except where `fail` returns an override."""
+    verdicts, observed = {}, {}
     for i, s in PLAN.items():
         site = s['site'].removeprefix('bracket-')
         nat = site in ('l069', 'l070', 'l071', 'l078')
@@ -71,9 +85,9 @@ def scenario(fail=lambda i, s: None):
         if site == 'l170' and not s['inject_unverified']:
             v = {'outcome': 'certificate_rejected', 'certificate_accepted': False}; ev = []
         elif s['inject_unverified']:
-            v = {'outcome': 'reconstruction_failed', 'certificate_accepted': False,
-                 'detail': {'events': [], 'errors': [LINE + 'proof_broker_term (constrained): the weighted sum does not cancel; x']}}
-            ev = bypass + [selected]
+            message = ('proof_broker_term (constrained): the weighted sum normalizes to 0, which is not positive' if site == 'l170'
+                       else 'proof_broker_term (constrained): the weighted sum does not cancel; x')
+            v = {**failure(message), 'certificate_accepted': False}; ev = bypass + [selected]
         else:
             v = {'outcome': 'proved', 'certificate_accepted': True, 'closer': closer, 'final_step': 'constrained',
                  'local_validated': True, 'whole_validated': True, 'axiom_delta': {}}
@@ -81,29 +95,69 @@ def scenario(fail=lambda i, s: None):
         override = fail(i, s)
         if override: v = {**v, **override}
         verdicts[i] = v; observed[i] = ev
-        if v['outcome'] == 'proved': c8[i] = {'bound': True, 'audited': True, 'unmet': []}
-        else: c8[i] = {'bound': True, 'audited': False, 'outcome': v['outcome']}
-    return verdicts, observed, c8
+    return verdicts, observed, control8_for(verdicts), control3_record()
 
 
-def run_analysis(verdicts, observed, c8, control3_passed=True):
+def control8_for(verdicts, report=PASSING_REPORT):
+    results = {}
+    for i, v in verdicts.items():
+        d = digests(i)
+        if v['outcome'] == 'proved':
+            results[i] = {'bound': True, 'outcome': 'proved', 'audited': True, 'unmet': [], 'report': copy.deepcopy(report),
+                          'command': {'tool_sha256': FROZEN['binaries_sha256']['audit_tool'],
+                                      'inputs': {'<tmp>/export.ndjson': {'sha256': d['export_sha256']},
+                                                 '<tmp>/residual.txt': {'sha256': d['residual_sha256']}}},
+                          **{k: d[k] for k in ('seal_sha256', 'verdict_sha256', 'solution_sha256', 'residual_sha256')}}
+        else:
+            results[i] = {'bound': True, 'outcome': v['outcome'], 'audited': False,
+                          **{k: d[k] for k in ('seal_sha256', 'verdict_sha256')}}
+    return {'schema_version': 'r6-015-control-8-1', 'passed': True, 'results': results}
+
+
+def control3_record():
+    results = {'checker': {'accepted': False},
+               'constrained': {'exit': 1, 'events': ['certificate_gate_bypassed', 'term_route', 'closer_selected'],
+                               'term_route': {'constrained': True}, 'closer_selected': {'closer': 'term_mode_int', 'route': 'constrained'},
+                               'errors': [LINE + 'proof_broker_term (constrained): the weighted sum does not cancel; its normal form is x']},
+               'pinned': {'exit': 0, 'events': ['certificate_gate_bypassed', 'term_route', 'closer_selected', 'reconstruction_finished'],
+                          'term_route': {'constrained': False}, 'reconstruction_finished': {'residual_closer': 'omega'}, 'errors': []}}
+    return {'schema_version': analysis.control3.SCHEMA, 'control': 3, 'passed': True, 'unmet': [], 'results': results,
+            'evidence': {'coefficients': analysis.control3.PROBE}, 'bridge_rev': FROZEN['bridge_rev'],
+            'instrumented_tactic_sha256': FROZEN['instrumented_tactic_sha256'],
+            'sources_sha256': {k: v for k, v in FROZEN['python_sha256'].items()}}
+
+
+def run_analysis(verdicts, observed, c8, c3):
     saved = (replay_lock.verify_lock, replay_lock.planned, replay_lock.LOCK, replay_campaign.bound, analysis.reconstruct_events,
-             analysis.axioms_ok, analysis.packet_certificate)
+             analysis.axioms, analysis.packet_certificate, analysis.current)
     with tempfile.TemporaryDirectory(prefix='r6-015-analysis-') as tmp:
-        lock = Path(tmp)/'lock.json'; lock.write_text('{"stand-in": true}\n'); sha = r6.sha(lock)
-        replay_lock.verify_lock = lambda: {'stand-in': True}
+        tmp = Path(tmp)
+        lock = tmp/'lock.json'; lock.write_text('{"stand-in": true}\n'); sha = r6.sha(lock)
+        c8 = {**c8, 'lock_sha256': c8.get('lock_sha256', sha)}; c3 = {**c3, 'lock_sha256': c3.get('lock_sha256', sha)}
+        r6.write_json(tmp/'c8.json', c8); r6.write_json(tmp/'c3.json', c3)
+        replay_lock.verify_lock = lambda: copy.deepcopy(FROZEN)
         replay_lock.planned = lambda frozen: copy.deepcopy(PLAN)
         replay_lock.LOCK = lock
         replay_campaign.bound = lambda run, spec, frozen, lock_sha: (None, verdicts[spec['id']])
         analysis.reconstruct_events = lambda run: observed[run.name]
-        analysis.axioms_ok = lambda run, verdict: True
+        analysis.axioms = lambda run, verdict: True
         analysis.packet_certificate = lambda run: CERT
+        analysis.current = lambda run, proved: {k: v for k, v in digests(run.name).items()
+                                               if proved or k in ('seal_sha256', 'verdict_sha256')}
         try:
-            return analysis.analyse(Path(tmp), {'lock_sha256': sha, 'passed': control3_passed, 'unmet': []},
-                                    {'lock_sha256': sha, 'passed': all(r.get('unmet', []) == [] for r in c8.values()), 'results': c8})
+            return analysis.analyse(tmp/'runs', tmp/'c3.json', tmp/'c8.json')
         finally:
             (replay_lock.verify_lock, replay_lock.planned, replay_lock.LOCK, replay_campaign.bound, analysis.reconstruct_events,
-             analysis.axioms_ok, analysis.packet_certificate) = saved
+             analysis.axioms, analysis.packet_certificate, analysis.current) = saved
+
+
+def rejected(*args, needle):
+    try:
+        run_analysis(*args)
+    except SystemExit as stop:
+        assert needle in str(stop), str(stop)
+        return
+    raise AssertionError(f'accepted; expected a rejection mentioning {needle!r}')
 
 
 def measured(i, s):
@@ -112,48 +166,73 @@ def measured(i, s):
 
 def test_outcomes():
     a = run_analysis(*scenario())
-    assert a['outcome'] == 'complete_success' and a['measurement']['consumed_and_validated'] == 36, a['outcome']
-    assert all(a['controls'][c]['passed'] for c in ('control_1', 'control_2', 'control_3', 'control_4', 'control_6', 'control_8'))
+    assert a['outcome'] == 'complete_success' and a['measurement']['consumed_and_validated'] == 36, a['outcome_reasons']
+    assert all(a['controls'][c]['passed'] for c in ('control_1', 'control_2', 'control_3', 'control_4', 'control_5', 'control_6', 'control_8'))
     assert a['controls']['control_5']['expected_pass_met'] == a['controls']['control_5']['expected_pass'] == 10
+    assert len(a['controls']['control_5']['diagnostic_only']) == 4
     assert len(a['measurement']['per_map']) == 6 and len(a['measurement']['per_class']) == 5
 
-    fact = {'outcome': 'reconstruction_failed', 'detail': {'events': [], 'errors': [LINE + "proof_broker_term: witness names hypothesis 'hlt' which is not in scope"]}}
+    fact = failure("proof_broker_term: witness names hypothesis 'hlt' which is not in scope")
     a = run_analysis(*scenario(lambda i, s: fact if measured(i, s) and s['site'] == 'bracket-l166' else None))
     assert a['outcome'] == 'partial' and a['measurement']['consumed_and_validated'] == 27
     assert a['measurement']['per_obligation']['l166']['learned'] == {'episodes': 8, 'consumed_and_validated': 0, 'stages': {'fact_assertion': 8}}
-
-    a = run_analysis(*scenario(lambda i, s: fact if measured(i, s) else None))
-    assert a['outcome'] == 'none'
-
+    assert run_analysis(*scenario(lambda i, s: fact if measured(i, s) else None))['outcome'] == 'none'
     a = run_analysis(*scenario(lambda i, s: fact if i == 'l204-learned-scaled_2' else None))
-    assert a['outcome'] == 'partial' and a['controls']['control_2']['failures'] == ['l204-learned-scaled_2']
+    assert a['controls']['control_2']['failures'] == ['l204-learned-scaled_2'] and a['outcome'] == 'partial'
 
-    a = run_analysis(*scenario(lambda i, s: {'outcome': 'proved', 'closer': 'term_mode_int', 'final_step': 'constrained', 'local_validated': True,
-                                             'whole_validated': True, 'axiom_delta': {}} if i == 'l166-learned-neg_goal_doubled' else None))
+    proved = {'outcome': 'proved', 'closer': 'term_mode_int', 'final_step': 'constrained', 'local_validated': True, 'whole_validated': True, 'axiom_delta': {}}
+    a = run_analysis(*scenario(lambda i, s: proved if i == 'l166-learned-neg_goal_doubled' else None))
     assert 'l166-learned-neg_goal_doubled' in a['controls']['control_1']['failures'] and a['outcome'] == 'partial'
 
-    v, o, c8 = scenario(); o['l069-control5-learned-draw1'] = [('closer_selected', {'closer': 'term_mode_int', 'comparison_type': 'ℕ'})]
-    a = run_analysis(v, o, c8)
-    assert a['controls']['control_6']['failures'] == ['l069-control5-learned-draw1'] and a['outcome'] == 'partial'
+    # the review's first probe: the negative controls ending in harness failures, or refused before the final step
+    harness = {'outcome': 'harness_failure', 'detail': 'synthetic'}
+    a = run_analysis(*scenario(lambda i, s: harness if s['inject_unverified'] else None))
+    assert len(a['controls']['control_1']['failures']) == 24 and a['controls']['control_4']['failures'] == ['l170-learned-draw1-injected']
+    assert a['outcome'] == 'partial' and 'l170-learned-draw1-injected' in a['requires_diagnosis']
+    a = run_analysis(*scenario(lambda i, s: fact if s['inject_unverified'] and s['site'] != 'bracket-l170' else None))
+    assert len(a['controls']['control_1']['failures']) == 24 and a['outcome'] == 'partial'
+    a = run_analysis(*scenario(lambda i, s: failure('proof_broker_term (constrained): the weighted sum does not cancel; x')
+                               if i == 'l170-learned-draw1-injected' else None))
+    assert a['controls']['control_4']['failures'] == ['l170-learned-draw1-injected']
 
-    v, o, c8 = scenario(); v['l070-control5-learned-draw1'] = {**v['l070-control5-learned-draw1'], 'closer': 'term_mode_int'}
-    a = run_analysis(v, o, c8)
-    assert a['controls']['control_5']['requires_diagnosis'] == ['l070-control5-learned-draw1'] and a['outcome'] == 'complete_success'
+    v, o, c8, c3 = scenario(); o['l069-control5-learned-draw1'] = [('closer_selected', {'closer': 'term_mode_int', 'comparison_type': 'ℕ'})]
+    assert run_analysis(v, o, c8, c3)['controls']['control_6']['failures'] == ['l069-control5-learned-draw1']
 
-    v, o, c8 = scenario(); c8['l166-learned-draw1'] = {'bound': True, 'audited': True, 'unmet': ['local refers to [h]']}
-    a = run_analysis(v, o, c8)
-    assert a['outcome'] == 'partial' and a['measurement']['consumed_and_validated'] == 35
+    # control 5: an expected pass failing makes the outcome partial; a diagnostic-only entry does not
+    a = run_analysis(*scenario(lambda i, s: {'closer': 'term_mode_int'} if i == 'l070-control5-learned-draw1' else None))
+    assert a['controls']['control_5']['requires_diagnosis'] == ['l070-control5-learned-draw1'] and a['outcome'] == 'partial'
+    a = run_analysis(*scenario(lambda i, s: fact if i == 'l071-control5-deterministic' else None))
+    assert a['outcome'] == 'complete_success' and a['controls']['control_5']['requires_diagnosis'] == []
 
-    v, o, c8 = scenario(); del c8['l166-learned-draw1']
-    try:
-        run_analysis(v, o, c8)
-    except SystemExit as stop:
-        assert 'not audited' in str(stop)
-    else:
-        raise AssertionError('a proof without control 8 was accepted')
+    # the review's second probe: control-8 summaries are not evidence
+    v, o, c8, c3 = scenario()
+    c8['results']['l166-learned-draw1']['report'] = {'exit': 1, 'refused': 'synthetic'}
+    rejected(v, o, c8, c3, needle='does not support')
+    v, o, c8, c3 = scenario()
+    c8['results']['l166-learned-draw1']['report']['audit']['local']['hypotheses'] = [{'name': 'h'}]
+    c8['results']['l166-learned-draw1']['unmet'] = ["local refers to ['h']"]; c8['passed'] = False
+    a = run_analysis(v, o, c8, c3)
+    assert a['outcome'] == 'partial' and a['measurement']['consumed_and_validated'] == 35 and not a['controls']['control_8']['passed']
+    v, o, c8, c3 = scenario()
+    for i in [i for i, r in c8['results'].items() if r['outcome'] != 'proved']: del c8['results'][i]
+    rejected(v, o, c8, c3, needle='exactly the plan')
+    v, o, c8, c3 = scenario(); c8['results']['l166-learned-draw1']['seal_sha256'] = 'stale'
+    rejected(v, o, c8, c3, needle='differs from the run')
+    v, o, c8, c3 = scenario(); c8['results']['l166-learned-draw1']['command']['inputs']['<tmp>/export.ndjson']['sha256'] = 'other'
+    rejected(v, o, c8, c3, needle='locked program')
+    v, o, c8, c3 = scenario(); del c8['results']['l166-learned-draw1']
+    rejected(v, o, c8, c3, needle='exactly the plan')
 
-    a = run_analysis(*scenario(), control3_passed=False)
-    assert a['outcome'] == 'partial'
+    # ... and neither are control 3's
+    v, o, c8, c3 = scenario(); c3['results']['constrained']['errors'] = []
+    rejected(v, o, c8, c3, needle='contradicts')
+    v, o, c8, c3 = scenario(); c3['dry_run'] = {'lock': 'stubbed'}
+    rejected(v, o, c8, c3, needle='dry run')
+    v, o, c8, c3 = scenario(); c3['sources_sha256'] = {k: '0' * 64 for k in c3['sources_sha256']}
+    rejected(v, o, c8, c3, needle='locked programs')
+    v, o, c8, c3 = scenario(); c3['results']['pinned']['exit'] = 1; c3['unmet'] = ['pinned: the documented difference did not reproduce']; c3['passed'] = False
+    a = run_analysis(v, o, c8, c3)
+    assert a['outcome'] == 'partial' and not a['controls']['control_3']['passed']
 
 
 if __name__ == '__main__':
