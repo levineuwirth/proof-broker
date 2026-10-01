@@ -22,7 +22,8 @@ flow through.
 
 Everything here is axiom-free: only `Init.Data.Int.Order` is touched.
 `#print axioms` of any theorem that funnels through `farkasContradict`
-reports "does not depend on any axioms".
+reports "does not depend on any axioms". The one exception is
+`posOfNormNum`, used only by the constrained route (R6-015).
 
 Arity scope: arity-2 `farkasContradict` anchors the binary fixture;
 arities 3..N are handled by `farkasContradictN` over a left-associative
@@ -85,6 +86,22 @@ theorem farkasContradict
 theorem farkasContradictN
     (s : Int) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
   absurd hpos (Int.not_lt_of_ge hsum)
+
+/-- R6-015: the constrained final step's positivity, by reflection.
+    `e` is the weighted sum reified over its atoms `ctx`; core's
+    commutative-ring normalizer (`Lean.Grind.CommRing.Expr.toPoly`,
+    sound by `Expr.denote_toPoly`) reduces it, in the kernel, to the
+    numeral `c`, whose positivity is a closed `decide`. Nothing here
+    refers to a hypothesis: the sum's variables cancel or the step
+    fails. Unlike the rest of this file it is not axiom-free; it
+    depends on `propext`, `Classical.choice` and `Quot.sound`,
+    through the normalizer's soundness proof. -/
+theorem posOfNormNum (ctx : Lean.Grind.CommRing.Context Int)
+    (e : Lean.Grind.CommRing.Expr) (c : Int)
+    (h : e.toPoly_k = .num c) (hc : 0 < c) : 0 < e.denote ctx := by
+  rw [← Lean.Grind.CommRing.Expr.denote_toPoly,
+      ← Lean.Grind.CommRing.Expr.toPoly_k_eq_toPoly, h]
+  simpa [Lean.Grind.CommRing.Poly.denote] using hc
 
 /-- Eq-hypothesis normalization: from `h : a = b`, produce
     `a - b ≤ 0`. The contribution is exactly `0` (since `a - b = 0`
