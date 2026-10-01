@@ -1,0 +1,159 @@
+{
+ "passed": true,
+ "failures": {
+  "valid": [],
+  "invalid_checked": [],
+  "invalid_injected": [],
+  "valid_pinned": []
+ },
+ "results": {
+  "valid": {
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "errors": [],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "z + \u2191n \u2264 5",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "residual_goal": "0 < 1 * (\u2191n - \u2191m) + 1 * (z + \u2191m - 5) + 1 * (5 + 1 - (z + \u2191n))",
+   "control_8": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191n - \u2191m) + 1 * (z + \u2191m - 5) + 1 * (5 + 1 - (z + \u2191n))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 (n m : Nat) (z : Int), 0 < 1 * (\u2191n - \u2191m) + 1 * (z + \u2191m - 5) + 1 * (5 + 1 - (z + \u2191n))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 (n m : Nat) (z : Int), 0 < 1 * (\u2191n - \u2191m) + 1 * (z + \u2191m - 5) + 1 * (5 + 1 - (z + \u2191n))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding": "matches_residual"
+   },
+   "control_8_unmet": [],
+   "unmet": []
+  },
+  "invalid_checked": {
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started"
+   ],
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term: cert was minted but verifier did not accept it (reason: ProofBroker.CertReason.farkasNotContradictory"
+   ],
+   "term_route": null,
+   "closer_selected": {},
+   "reconstruction_finished": {},
+   "unmet": []
+  },
+  "invalid_injected": {
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected"
+   ],
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (\u2191n^1) + -1 * (z^1) + 7"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "z + \u2191n \u2264 5",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {},
+   "unmet": []
+  },
+  "valid_pinned": {
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected"
+   ],
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term: non-False \u2115 goal must have shape (_ \u2264 _) / (_ < _) / (_ \u2265 _) / (_ > _); got z + \u2191n \u2264"
+   ],
+   "term_route": {
+    "constrained": false
+   },
+   "closer_selected": {
+    "closer": "term_mode_nat",
+    "comparison_type": "Int",
+    "goal": "z + \u2191n \u2264 5"
+   },
+   "reconstruction_finished": {},
+   "unmet": []
+  }
+ },
+ "bridge_rev": "476fab317e6633511b2a73b36313457d762e3a9c",
+ "instrumented_tactic_sha256": "48e01263880525450ffc4efa5936dd0ecd8e5b5d5d3c3d95b9640eff8d978b91",
+ "sources_sha256": {
+  "experiments/r6/r6-015/replay_bridge.py": "9026f0a464054fc6d2c5d46d13acac7372d7ffec2da5959c7ff5f0daa06ca5fd",
+  "experiments/r6/r6-015/replay_episode.py": "ac48238b836569c197aff60101f3da4f922d33c49220d4a19be1821dc359b5a6",
+  "experiments/r6/r6-015/rehearse_synthetic.py": "bda74a286319c753582c588d4a648cb8767488a9e9c3f9f6710e271c590760de"
+ },
+ "scope": "synthetic goals only; no site; no retained certificate; pre-lock"
+}
