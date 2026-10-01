@@ -3237,51 +3237,74 @@ private def constrainedAtom (e : Expr) : ConstrainedReifyM Int.Linear.Expr := do
   set (atoms.push e)
   return .var atoms.size
 
-/-- Exponents above this bound are not evaluated as numerals. -/
-private def constrainedExponentBound : Nat := 1024
+/-- The size budget for evaluating closed numerals, in bits. Every
+    operand and every value computed must fit; a term whose evaluation
+    would exceed it is not a numeral and stays an atom. A power is
+    rejected before it is computed whenever its least possible size
+    already exceeds the budget, so nested powers cannot grow past it. -/
+private def constrainedNumeralBits : Nat := 512
 
-/-- A closed ℕ numeral: a literal, or `+`, `*`, `^` (exponent at most
-    `constrainedExponentBound`) and `Nat.succ` of closed numerals,
-    evaluated. -/
+private def constrainedNatFits (n : Nat) : Bool :=
+  n == 0 || n.log2 + 1 ≤ constrainedNumeralBits
+
+/-- `b ^ k` within the budget, or `none`: `b` fits, and for `b ≥ 2` the
+    lower bound `(bitlen b − 1) · k + 1` on the result's size is
+    checked before the power is computed. -/
+private def constrainedNatPow? (b k : Nat) : Option Nat :=
+  if !constrainedNatFits b then none
+  else if b ≤ 1 then some (if k == 0 then 1 else b)
+  else if b.log2 * k + 1 > constrainedNumeralBits then none
+  else
+    let r := b ^ k
+    if constrainedNatFits r then some r else none
+
+private def constrainedNatChecked (n : Nat) : Option Nat :=
+  if constrainedNatFits n then some n else none
+
+/-- A closed ℕ numeral: a literal, or `+`, `*`, `^` and `Nat.succ` of
+    closed numerals, evaluated within the size budget. -/
 private partial def constrainedNatNumeral? (e : Expr) : Option Nat :=
   match e.consumeMData with
-  | .lit (.natVal n) => some n
+  | .lit (.natVal n) => constrainedNatChecked n
   | e' =>
     let isNat (α : Expr) := α.isConstOf ``Nat
     match e'.getAppFnArgs with
     | (``OfNat.ofNat, #[α, n, _]) =>
-      if isNat α then (match n.consumeMData with | .lit (.natVal k) => some k | _ => none) else none
+      if isNat α then (match n.consumeMData with | .lit (.natVal k) => constrainedNatChecked k | _ => none) else none
     | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
-      if isNat α then do pure ((← constrainedNatNumeral? a) + (← constrainedNatNumeral? b)) else none
+      if isNat α then do constrainedNatChecked ((← constrainedNatNumeral? a) + (← constrainedNatNumeral? b)) else none
     | (``HMul.hMul, #[α, _, _, _, a, b]) =>
-      if isNat α then do pure ((← constrainedNatNumeral? a) * (← constrainedNatNumeral? b)) else none
+      if isNat α then do constrainedNatChecked ((← constrainedNatNumeral? a) * (← constrainedNatNumeral? b)) else none
     | (``HPow.hPow, #[α, β, _, _, a, k]) =>
-      if isNat α && isNat β then do
-        let k ← constrainedNatNumeral? k
-        if k > constrainedExponentBound then none else pure ((← constrainedNatNumeral? a) ^ k)
-      else none
-    | (``Nat.succ, #[a]) => (· + 1) <$> constrainedNatNumeral? a
+      if isNat α && isNat β then do constrainedNatPow? (← constrainedNatNumeral? a) (← constrainedNatNumeral? k) else none
+    | (``Nat.succ, #[a]) => do constrainedNatChecked ((← constrainedNatNumeral? a) + 1)
     | _ => none
 
+private def constrainedIntChecked (n : Int) : Option Int :=
+  if constrainedNatFits n.natAbs then some n else none
+
 /-- A closed `Int` numeral: a literal, its negation, `+`, `-`, `*`, `^`
-    (a ℕ numeral exponent, bounded) of closed numerals, or a cast of a
-    closed ℕ numeral, evaluated. -/
+    (a ℕ numeral exponent) of closed numerals, or a cast of a closed ℕ
+    numeral, evaluated within the size budget. -/
 private partial def constrainedIntNumeral? (e : Expr) : Option Int :=
   let isInt (α : Expr) := α.isConstOf ``Int
   match e.consumeMData.getAppFnArgs with
   | (``OfNat.ofNat, #[α, n, _]) =>
-    if isInt α then (match n.consumeMData with | .lit (.natVal k) => some (Int.ofNat k) | _ => none) else none
+    if isInt α then (match n.consumeMData with | .lit (.natVal k) => constrainedIntChecked (Int.ofNat k) | _ => none) else none
   | (``Neg.neg, #[α, _, a]) => if isInt α then (- ·) <$> constrainedIntNumeral? a else none
   | (``HAdd.hAdd, #[α, _, _, _, a, b]) =>
-    if isInt α then do pure ((← constrainedIntNumeral? a) + (← constrainedIntNumeral? b)) else none
+    if isInt α then do constrainedIntChecked ((← constrainedIntNumeral? a) + (← constrainedIntNumeral? b)) else none
   | (``HSub.hSub, #[α, _, _, _, a, b]) =>
-    if isInt α then do pure ((← constrainedIntNumeral? a) - (← constrainedIntNumeral? b)) else none
+    if isInt α then do constrainedIntChecked ((← constrainedIntNumeral? a) - (← constrainedIntNumeral? b)) else none
   | (``HMul.hMul, #[α, _, _, _, a, b]) =>
-    if isInt α then do pure ((← constrainedIntNumeral? a) * (← constrainedIntNumeral? b)) else none
+    if isInt α then do constrainedIntChecked ((← constrainedIntNumeral? a) * (← constrainedIntNumeral? b)) else none
   | (``HPow.hPow, #[α, β, _, _, a, k]) =>
     if isInt α && β.isConstOf ``Nat then do
+      let a ← constrainedIntNumeral? a
+      let r ← constrainedNatPow? a.natAbs (← constrainedNatNumeral? k)
+      -- the sign of a ^ k: negative exactly when a < 0 and k is odd
       let k ← constrainedNatNumeral? k
-      if k > constrainedExponentBound then none else pure ((← constrainedIntNumeral? a) ^ k)
+      pure (if a < 0 && k % 2 == 1 then -(Int.ofNat r) else Int.ofNat r)
     else none
   | (``Nat.cast, #[R, _, t]) => if isInt R then Int.ofNat <$> constrainedNatNumeral? t else none
   | (``NatCast.natCast, #[R, _, t]) => if isInt R then Int.ofNat <$> constrainedNatNumeral? t else none
