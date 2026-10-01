@@ -199,4 +199,26 @@ example (n m : Nat) (z : Int) (hn : n ≤ m) (hz : z / 3 + ↑m ≤ 5) :
     z / 3 + ↑n ≤ 5 := by
   term_closer_test constrained "hn:1,hz:1,nope:1,neg_goal:1"
 
+/-! ## Axioms (acceptance 4)
+
+The constrained route's proofs depend on `propext`, `Classical.choice`
+and `Quot.sound`, through the ring normalizer's soundness proof
+(`TermMode.posOfNormNum`); the pinned fold's, through `omega`, on
+`propext` and `Quot.sound`. Both are within acceptance 4. -/
+
+theorem axioms_mixed (n m : Nat) (z : Int) (hn : n ≤ m) (hz : z / 3 + ↑m ≤ 5) :
+    z / 3 + ↑n ≤ 5 := by
+  term_closer_test constrained "hn:1,hz:1,neg_goal:1"
+
+/-- info: 'R6015Synthetic.axioms_mixed' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms axioms_mixed
+
+theorem axioms_pinned (x y : Int) (h : x ≤ y) : x ≤ y := by
+  term_closer_test pinned "h:1,neg_goal:1"
+
+/-- info: 'R6015Synthetic.axioms_pinned' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms axioms_pinned
+
 end R6015Synthetic

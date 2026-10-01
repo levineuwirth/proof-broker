@@ -22,8 +22,7 @@ flow through.
 
 Everything here is axiom-free: only `Init.Data.Int.Order` is touched.
 `#print axioms` of any theorem that funnels through `farkasContradict`
-reports "does not depend on any axioms". The one exception is
-`posOfNormNum`, used only by the constrained route (R6-015).
+reports "does not depend on any axioms".
 
 Arity scope: arity-2 `farkasContradict` anchors the binary fixture;
 arities 3..N are handled by `farkasContradictN` over a left-associative
@@ -93,9 +92,8 @@ theorem farkasContradictN
     sound by `Expr.denote_toPoly`) reduces it, in the kernel, to the
     numeral `c`, whose positivity is a closed `decide`. Nothing here
     refers to a hypothesis: the sum's variables cancel or the step
-    fails. Unlike the rest of this file it is not axiom-free; it
-    depends on `propext`, `Classical.choice` and `Quot.sound`,
-    through the normalizer's soundness proof. -/
+    fails. It depends on `propext`, `Classical.choice` and
+    `Quot.sound`, through the normalizer's soundness proof. -/
 theorem posOfNormNum (ctx : Lean.Grind.CommRing.Context Int)
     (e : Lean.Grind.CommRing.Expr) (c : Int)
     (h : e.toPoly_k = .num c) (hc : 0 < c) : 0 < e.denote ctx := by
