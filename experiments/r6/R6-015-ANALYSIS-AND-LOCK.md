@@ -1,7 +1,9 @@
 # R6-015 — the frozen analysis, control 3, and the lock, for review
 
-**Revision 2**, 2026-10-01. It responds to [the review of revision 1](reviews/2026-10-01/R6-015-ANALYSIS-AND-LOCK-REVIEW.md), which
-found two P1 defects and one P2. Revision 1 is `a335a054`. It follows [step 3's approval](reviews/2026-10-01/R6-015-STEP-3-REVIEW-2.md)
+**Revision 3**, 2026-10-01. It responds to [the review of revision 2](reviews/2026-10-01/R6-015-ANALYSIS-AND-LOCK-REVIEW-2.md), which
+found two remaining P2 gaps. Revision 2 (`6f674b8a`) responded to
+[the review of revision 1](reviews/2026-10-01/R6-015-ANALYSIS-AND-LOCK-REVIEW.md), which found two P1 defects and one P2. Revision 1
+is `a335a054`. It follows [step 3's approval](reviews/2026-10-01/R6-015-STEP-3-REVIEW-2.md)
 at `10f0daaf`. It completes
 [the proposal's](R6-015-PROPOSAL.md) step 4 preparation: the analysis program, frozen; control 3, run under the lock; control 7,
 cited; and the lock's contents.
@@ -12,6 +14,31 @@ cited; and the lock's contents.
 - **Control 3 ran once as a dry run**, with the lock check stubbed out
   ([record, labelled as such](reviews/2026-10-01/R6-015-CONTROL-3-DRY-RUN.json)). It is a synthetic probe with no retained
   certificate, and its result is not control 3's.
+
+## What changed in revision 3
+
+1. **The after-check revalidates the sealed files, not only the seal file.** After the analysis, every run's retained files are
+   checked against its unchanged seal (`replay_campaign.sealed`, the event chain included, no unsealed file). That covers its
+   export, residual, events, kernel reports and records. A file changed beneath an unchanged seal stops the analysis.
+2. **Execution metadata must be complete and agree.**
+   - **Control 3's exits must be integers:** nonzero on the constrained route, zero on the pinned one. A missing or boolean exit
+     fails `evaluate`.
+   - **Control 8's recorded command** must be exactly the locked program, in real mode, on the planned site's local and whole
+     targets, with the frozen environment (`PATH`, the 4.32.2 `LEAN_SYSROOT`). Its exit code must be an integer agreeing with the
+     report's.
+   - **Each run's residual command** gets the same check. It must be the locked program in `--synthetic` mode, on the same targets
+     and environment, exit 0, under `qualification-audit-v1`, reading this export.
+
+   Both real rehearsal runs' residual commands meet these conditions, and revalidating their sealed files succeeds.
+
+**The new tests:**
+- an export changed after the control checks, beneath an unchanged seal, is rejected;
+- a missing constrained exit, and a boolean pinned exit, are rejected as contradicting control 3's record;
+- control-8 commands naming synthetic mode, another executable, wrong targets, another toolchain, exit 1, or no exit code are each
+  rejected;
+- residual commands with exit 1, without `--synthetic`, on another export, or under another audit lock are each rejected;
+- a refused report under unchanged flags is rejected by the command's disagreeing exit and, with the exit made to agree, by the
+  recomputed predicate.
 
 ## What changed in revision 2
 

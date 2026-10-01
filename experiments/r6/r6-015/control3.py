@@ -50,10 +50,10 @@ def evaluate(results):
         if not isinstance(r, dict): unmet.append(f'{route}: no result'); continue
         if 'certificate_gate_bypassed' not in (r.get('events') or []): unmet.append(f'{route}: the injection was not recorded')
         if route == 'constrained':
-            if r.get('exit') == 0 or r.get('term_route') != {'constrained': True} or (r.get('closer_selected') or {}).get('route') != 'constrained' \
+            if type(r.get('exit')) is not int or r.get('exit') == 0 or r.get('term_route') != {'constrained': True} or (r.get('closer_selected') or {}).get('route') != 'constrained' \
                     or not any('the weighted sum does not cancel' in e for e in r.get('errors') or []):
                 unmet.append('constrained: did not fail in the constrained final step')
-        elif r.get('exit') != 0 or r.get('term_route') != {'constrained': False} \
+        elif type(r.get('exit')) is not int or r.get('exit') != 0 or r.get('term_route') != {'constrained': False} \
                 or (r.get('reconstruction_finished') or {}).get('residual_closer') != 'omega':
             unmet.append('pinned: the documented difference did not reproduce')
     return unmet

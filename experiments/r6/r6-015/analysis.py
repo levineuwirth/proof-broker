@@ -11,7 +11,10 @@ the R6-015 lock, which must verify before and after. Reads only bound evidence:
   exactly the plan, each entry bound to the current run's seal, verdict, export and residual digests and audited with the locked
   program; its predicate is recomputed from the retained report. Control 3's record must be the frozen probe, run under this lock
   and bridge by the locked programs, not a dry run; its predicate is recomputed from its results (`control3.evaluate`). A record
-  whose flags disagree with the recomputation is rejected. Every consumed input, and every run's seal, is rechecked afterwards;
+  whose flags disagree with the recomputation is rejected. Control 8's recorded commands, and each run's residual command, must be
+  the locked program on the planned targets in the frozen environment, their exit codes agreeing with the reports. Afterwards every
+  run's retained files are revalidated against its unchanged seal (exports, residuals, events, kernel reports), and every consumed
+  input is rechecked;
 - **the step-3 record** (`R6-015-MUTATIONS-2.json`, bound by the lock) supplies the maps, classes and control-5 labels;
 - **R6-014's analysis** (`R6-014-BLOCK2-ANALYSIS.json`, bound by the lock) supplies the original closers (control 5) and the
   reference route's closures (control 7).
@@ -70,6 +73,7 @@ import run as r6  # noqa: E402
 import control3  # noqa: E402
 import replay_campaign  # noqa: E402
 import replay_lock  # noqa: E402
+import site_task  # noqa: E402
 
 MUTATIONS = R6/'reviews/2026-10-01/R6-015-MUTATIONS-2.json'
 R6014 = R6/'reviews/2026-09-29/R6-014-BLOCK2-ANALYSIS.json'
@@ -125,6 +129,25 @@ def reconstruct_events(run):
     return [(r['event'], r['payload']['data']) for r in events.read(run/'events.ndjson') if r['source'] == 'child_report' and r['stage'] == 'reconstruct']
 
 
+AUDIT_ARGV0 = str(replay_lock.AUDIT_TOOL.relative_to(R6))
+AUDIT_ENV = {'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(replay_lock.AUDIT_TOOLCHAIN)}
+
+
+def targets(site):
+    task = site_task.get(site)
+    return task.local, task.whole
+
+
+def residual_command(run):
+    return r6.read_json(run/'residual/command.json')
+
+
+def revalidate(run):
+    """Every retained file of the run against its seal, the event chain, no unsealed file; returns the seal's digest."""
+    replay_campaign.sealed(run)
+    return r6.sha(run/'seal.json')
+
+
 def packet_certificate(run):
     return r6.read_json(run/'evidence.json')['certificate']
 
@@ -147,7 +170,7 @@ def axioms(run, verdict):
     return all(not d['added'] for d in verdict['axiom_delta'].values())
 
 
-def check_control8(record, lock_sha, frozen, verdicts, runs):
+def check_control8(record, lock_sha, frozen, verdicts, runs, plan):
     """Control 8, recomputed from retained evidence. Rejects a record that does not cover exactly the plan, whose entries do not
     bind to the current runs, or whose flags disagree with the recomputation. Returns {id: predicate met} for the proofs."""
     if record.get('schema_version') != 'r6-015-control-8-1' or record.get('lock_sha256') != lock_sha: raise SystemExit('control 8: identity')
@@ -162,12 +185,23 @@ def check_control8(record, lock_sha, frozen, verdicts, runs):
         for key in ('seal_sha256', 'verdict_sha256') + (('solution_sha256', 'residual_sha256') if proved else ()):
             if entry.get(key) != now[key]: raise SystemExit(f'control 8: {i} {key} differs from the run')
         if not proved: continue
+        local, whole = targets(plan[i]['site'])
         command = entry.get('command') or {}
         inputs = command.get('inputs') or {}
-        if (command.get('tool_sha256') != frozen['binaries_sha256']['audit_tool']
+        report_exit = (entry.get('report') or {}).get('exit')
+        if (command.get('argv') != [AUDIT_ARGV0, '<tmp>/export.ndjson', local, whole, '<tmp>/residual.txt', '<tmp>/report.json']
+                or command.get('env') != AUDIT_ENV or type(command.get('exit_code')) is not int or command.get('exit_code') != report_exit
+                or command.get('tool_sha256') != frozen['binaries_sha256']['audit_tool']
                 or (inputs.get('<tmp>/export.ndjson') or {}).get('sha256') != now['export_sha256']
                 or (inputs.get('<tmp>/residual.txt') or {}).get('sha256') != now['residual_sha256']):
-            raise SystemExit(f'control 8: {i} was not audited on this export and residual with the locked program')
+            raise SystemExit(f'control 8: {i} was not audited on this export and residual with the locked program, targets and environment')
+        printed = residual_command(runs/i)  # the residual itself: printed from this export by the locked program
+        if (printed.get('argv') != [AUDIT_ARGV0, '--synthetic', '<tmp>/export.ndjson', local, whole, '-', 'residual/report.json']
+                or printed.get('env') != AUDIT_ENV or printed.get('exit_code') != 0 or type(printed.get('exit_code')) is not int
+                or printed.get('tool_sha256') != frozen['binaries_sha256']['audit_tool']
+                or printed.get('audit_lock_sha256') != frozen['data_sha256']['policies/qualification-audit-v1.sha256.json']
+                or (printed.get('inputs') or {}).get('<tmp>/export.ndjson', {}).get('sha256') != now['export_sha256']):
+            raise SystemExit(f'control 8: {i} has a residual not printed from this export by the locked program')
         unmet = replay_campaign.predicate(entry.get('report') or {})
         if unmet != entry.get('unmet'): raise SystemExit(f'control 8: {i} records a predicate its report does not support')
         met[i] = not unmet
@@ -204,7 +238,7 @@ def analyse(runs, control3_path, control8_path):
         except (OSError, ValueError, KeyError, replay_campaign.replay_episode.Outcome) as unbound:
             raise SystemExit(f"{spec['id']} does not bind: {unbound}")
         seals[spec['id']] = current(run, False)['seal_sha256']
-    c8 = check_control8(r6.read_json(control8_path), lock_sha, frozen, verdicts, runs)
+    c8 = check_control8(r6.read_json(control8_path), lock_sha, frozen, verdicts, runs, plan)
     c3 = check_control3(r6.read_json(control3_path), lock_sha, frozen)
 
     episodes = {}
@@ -306,10 +340,14 @@ def analyse(runs, control3_path, control8_path):
                        | set(controls['control_1']['failures']) | set(controls['control_4']['failures'])
                        | set(controls['control_5']['requires_diagnosis']))
 
-    # afterwards: the lock, every run's seal and every consumed input are unchanged
+    # afterwards: the lock, every run's retained files against its unchanged seal, and every consumed input
     replay_lock.verify_lock()
-    if any(current(runs/i, False)['seal_sha256'] != h for i, h in seals.items()) or any(r6.sha(Path(p)) != h for p, h in consumed.items()):
-        raise SystemExit('an analysis input changed during the analysis')
+    for i, h in seals.items():
+        try:
+            if revalidate(runs/i) != h: raise ValueError('its seal changed')
+        except (OSError, ValueError, KeyError) as changed:
+            raise SystemExit(f'{i} changed during the analysis: {changed}')
+    if any(r6.sha(Path(p)) != h for p, h in consumed.items()): raise SystemExit('an analysis input changed during the analysis')
     return {'schema_version': 'r6-015-analysis-2', 'lock_sha256': lock_sha, 'inputs_sha256': consumed,
             'outcome': outcome, 'outcome_reasons': reasons,
             'measurement': {'consumed_and_validated': measured, 'of': 36, 'per_obligation': per_obligation, 'per_map': per_map,

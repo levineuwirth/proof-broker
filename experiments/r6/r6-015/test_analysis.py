@@ -58,7 +58,20 @@ def test_classify():
 PLAN = {s['id']: s for s in r6.read_json(HERE/'plan.json')['episodes']}
 CERT = {'synthetic': True}
 FROZEN = {'bridge_rev': 'B' * 40, 'instrumented_tactic_sha256': 'T' * 64, 'binaries_sha256': {'audit_tool': 'A' * 64},
-          'python_sha256': {str(f.relative_to(R6)): 'P' * 64 for f in analysis.control3.SOURCES}}
+          'python_sha256': {str(f.relative_to(R6)): 'P' * 64 for f in analysis.control3.SOURCES},
+          'data_sha256': {'policies/qualification-audit-v1.sha256.json': 'Q' * 64}}
+
+
+def targets(site):
+    return f'{site}.local', f'{site}.whole'
+
+
+def residual_command(i):
+    local, whole = targets(PLAN[i]['site'])
+    return {'argv': [analysis.AUDIT_ARGV0, '--synthetic', '<tmp>/export.ndjson', local, whole, '-', 'residual/report.json'],
+            'env': dict(analysis.AUDIT_ENV), 'exit_code': 0, 'tool_sha256': FROZEN['binaries_sha256']['audit_tool'],
+            'audit_lock_sha256': FROZEN['data_sha256']['policies/qualification-audit-v1.sha256.json'],
+            'inputs': {'<tmp>/export.ndjson': {'unpacked_from': 'solution.ndjson.gz', 'sha256': digests(i)['export_sha256']}}}
 PASSING_REPORT = {'exit': 0, 'audit': {'binding': 'matches_residual', 'local': {'locatable': True, 'hypotheses': []},
                                        'whole': {'locatable': True, 'hypotheses': []}}}
 FAILS = {'reconstruction_failed'}
@@ -103,8 +116,11 @@ def control8_for(verdicts, report=PASSING_REPORT):
     for i, v in verdicts.items():
         d = digests(i)
         if v['outcome'] == 'proved':
+            local, whole = targets(PLAN[i]['site'])
             results[i] = {'bound': True, 'outcome': 'proved', 'audited': True, 'unmet': [], 'report': copy.deepcopy(report),
-                          'command': {'tool_sha256': FROZEN['binaries_sha256']['audit_tool'],
+                          'command': {'argv': [analysis.AUDIT_ARGV0, '<tmp>/export.ndjson', local, whole, '<tmp>/residual.txt', '<tmp>/report.json'],
+                                      'env': dict(analysis.AUDIT_ENV), 'exit_code': report['exit'],
+                                      'tool_sha256': FROZEN['binaries_sha256']['audit_tool'],
                                       'inputs': {'<tmp>/export.ndjson': {'sha256': d['export_sha256']},
                                                  '<tmp>/residual.txt': {'sha256': d['residual_sha256']}}},
                           **{k: d[k] for k in ('seal_sha256', 'verdict_sha256', 'solution_sha256', 'residual_sha256')}}
@@ -127,9 +143,9 @@ def control3_record():
             'sources_sha256': {k: v for k, v in FROZEN['python_sha256'].items()}}
 
 
-def run_analysis(verdicts, observed, c8, c3):
+def run_analysis(verdicts, observed, c8, c3, residuals=None, changed_after=None):
     saved = (replay_lock.verify_lock, replay_lock.planned, replay_lock.LOCK, replay_campaign.bound, analysis.reconstruct_events,
-             analysis.axioms, analysis.packet_certificate, analysis.current)
+             analysis.axioms, analysis.packet_certificate, analysis.current, analysis.targets, analysis.residual_command, analysis.revalidate)
     with tempfile.TemporaryDirectory(prefix='r6-015-analysis-') as tmp:
         tmp = Path(tmp)
         lock = tmp/'lock.json'; lock.write_text('{"stand-in": true}\n'); sha = r6.sha(lock)
@@ -144,16 +160,23 @@ def run_analysis(verdicts, observed, c8, c3):
         analysis.packet_certificate = lambda run: CERT
         analysis.current = lambda run, proved: {k: v for k, v in digests(run.name).items()
                                                if proved or k in ('seal_sha256', 'verdict_sha256')}
+        analysis.targets = targets
+        analysis.residual_command = lambda run: (residuals or {}).get(run.name) or residual_command(run.name)
+        def revalidate(run):  # the after-check: a file sealed in the run changed, its seal file unchanged
+            if run.name == changed_after: raise ValueError('solution.ndjson.gz differs from the seal')
+            return digests(run.name)['seal_sha256']
+        analysis.revalidate = revalidate
         try:
             return analysis.analyse(tmp/'runs', tmp/'c3.json', tmp/'c8.json')
         finally:
             (replay_lock.verify_lock, replay_lock.planned, replay_lock.LOCK, replay_campaign.bound, analysis.reconstruct_events,
-             analysis.axioms, analysis.packet_certificate, analysis.current) = saved
+             analysis.axioms, analysis.packet_certificate, analysis.current, analysis.targets, analysis.residual_command,
+             analysis.revalidate) = saved
 
 
-def rejected(*args, needle):
+def rejected(*args, needle, **kw):
     try:
-        run_analysis(*args)
+        run_analysis(*args, **kw)
     except SystemExit as stop:
         assert needle in str(stop), str(stop)
         return
@@ -207,6 +230,8 @@ def test_outcomes():
     # the review's second probe: control-8 summaries are not evidence
     v, o, c8, c3 = scenario()
     c8['results']['l166-learned-draw1']['report'] = {'exit': 1, 'refused': 'synthetic'}
+    rejected(v, o, c8, c3, needle='targets and environment')  # the command's exit disagrees with the report
+    c8['results']['l166-learned-draw1']['command']['exit_code'] = 1  # agreeing: the recomputed predicate rejects the summary
     rejected(v, o, c8, c3, needle='does not support')
     v, o, c8, c3 = scenario()
     c8['results']['l166-learned-draw1']['report']['audit']['local']['hypotheses'] = [{'name': 'h'}]
@@ -233,6 +258,23 @@ def test_outcomes():
     v, o, c8, c3 = scenario(); c3['results']['pinned']['exit'] = 1; c3['unmet'] = ['pinned: the documented difference did not reproduce']; c3['passed'] = False
     a = run_analysis(v, o, c8, c3)
     assert a['outcome'] == 'partial' and not a['controls']['control_3']['passed']
+
+    # the review of revision 2: the after-check, and execution metadata
+    rejected(*scenario(), needle='changed during the analysis', changed_after='l166-learned-draw1')
+    v, o, c8, c3 = scenario(); del c3['results']['constrained']['exit']
+    rejected(v, o, c8, c3, needle='contradicts')
+    v, o, c8, c3 = scenario(); c3['results']['pinned']['exit'] = False
+    rejected(v, o, c8, c3, needle='contradicts')
+    for change in (lambda c: c['argv'].insert(1, '--synthetic'), lambda c: c['argv'].__setitem__(0, 'other-binary'),
+                   lambda c: c['argv'].__setitem__(2, 'wrong.local'), lambda c: c['env'].__setitem__('LEAN_SYSROOT', '/elsewhere'),
+                   lambda c: c.__setitem__('exit_code', 1), lambda c: c.pop('exit_code')):
+        v, o, c8, c3 = scenario(); change(c8['results']['l166-learned-draw1']['command'])
+        rejected(v, o, c8, c3, needle='targets and environment')
+    for change in (lambda c: c.__setitem__('exit_code', 1), lambda c: c['argv'].remove('--synthetic'),
+                   lambda c: c['inputs']['<tmp>/export.ndjson'].__setitem__('sha256', 'other'),
+                   lambda c: c.__setitem__('audit_lock_sha256', 'other')):
+        bad = residual_command('l166-learned-draw1'); change(bad)
+        rejected(*scenario(), needle='residual not printed', residuals={'l166-learned-draw1': bad})
 
 
 if __name__ == '__main__':
