@@ -1,6 +1,7 @@
 # R6-015 proposal — consuming the refused certificates, offline
 
-Status: research-design proposal, **revision 3**, 2026-09-30, against `1f694b65` (tag `r6`). Revision 2 responded to
+Status: research-design proposal, **revision 4**, 2026-10-01, against `1f694b65` (tag `r6`). Revision 4 brings in the result of
+the qualification-1 audit ([addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md)), which this proposal waited for. Revision 2 responded to
 [the review of revision 1](reviews/2026-09-30/R6-015-PROPOSAL-REVIEW.md), which found two P1 and three P2 issues. Revision 3 corrects
 what a failed regression control may be taken to show, per [the review of R6 qualification 1](reviews/2026-09-30/R6-QUALIFICATION-1-REVIEW.md). It is not frozen,
 not implemented, and not an amendment to R6-014. R6-014's result stands as recorded ([synthesis](R6-SYNTHESIS.md)).
@@ -106,6 +107,13 @@ The qualification is recorded in [R6 qualification 1](R6-QUALIFICATION-1.md). R6
 R6's proved certificates also *suffice* under the constrained fold. How R6's own proofs were built is settled only by a dependency
 audit of their retained proof terms.
 
+**That audit has run** ([addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md)):
+- **l069, l071, l078 (24 slots):** certificate alone. The final step refers to no hypothesis, and the weighted sum alone proves
+  `0 < s`.
+- **l070, seven draws:** the sum suffices, but R6's proof drew on context.
+- **l070 draw 5:** sufficiency not established. `omega` split two identically printed products into distinct atoms.
+- **l096, l099 (16 slots):** unbound, because of a renamed variable. Not classified.
+
 ## The proposed route
 
 It is specified, reviewed and frozen before any retained certificate is replayed:
@@ -118,6 +126,12 @@ It is specified, reviewed and frozen before any retained certificate is replayed
    - any other name is an error. The closer fails closed.
 3. **Fold with the witness's multipliers,** as `closeViaTermModeFalse` does. Then apply the **constrained final step** from the
    previous section in place of contextual `omega`.
+   - The ℕ and ℤ closers share this fold (`closeNatViaTermMode` calls it at lines 3470 and 3492, `closeViaTermMode` at 3368), so
+     the constrained step applies to both.
+   - The proof keeps the shape `ProofBroker.TermMode.farkasContradictN s sumProof hpos`, with `hpos` built hypothesis-free, so that
+     the locked qualification-audit tool can check it (control 8).
+   - The normalization must identify atoms consistently: a cast of a product and a product of casts of the same factors are one atom.
+     That is the class of failure the audit found at l070 draw 5.
 
 **Forbidden:** `omega`, `decide`, `simp` or any other tactic on the goal, on its hypotheses, or on any subgoal with hypotheses in
 scope. There is no fallback.
@@ -173,18 +187,45 @@ This measures whether R6's consumed certificates pass a hypothesis-free check. *
 the new route. **Failing** requires diagnosis and is not, by itself, evidence that R6's proof relied on its context. The constrained fold may change proof terms, so
 byte-identity with R6's exports is not required. Axioms must be unchanged.
 
+**Expectations, from the audit.** They are stated before any replay, per map, and a failure still requires diagnosis. The
+retained maps for these obligations, learned arm: l069 1, l070 4, l071 2, l078 1, l096 1, l099 1.
+- **l069, l071, l078 (4 maps):** expected to pass.
+- **l070, the three maps of draws 1–4 and 6–8:** expected to pass.
+- **l070, draw 5's map** (the only one with product-atom facts): the audit did not establish sufficiency, because of split atoms.
+  Passing depends on the atom requirement in step 3 of the route.
+- **l096, l099:** no expectation. The audit did not classify them.
+- **The deterministic arm's maps** at l069, l070, l071 and l078 were not audited. They carry an expectation only where identical
+  to an audited learned map.
+
+These are expectations, not implications. The audit's sufficiency test is `omega` over the closed statement, which differs from
+normalization to a numeral: it may use the nonnegativity of ℕ variables, and it treats nonlinear subterms as atoms. The basis
+for expecting a numeral is that R6's checker verified exact cancellation over these maps' rows.
+
 **6. Selection guard.** A `Nat` comparison in a mixed context still takes the ℕ closer. An `Int` comparison with no ℕ variables
 takes the ℤ closer.
 
 **7. Separate control, not pooled.** The reference route's `gated_omega` closures are cited from R6-014 as the provability
 baseline. They are never counted as consumption.
 
+**8. Independent check of consumption.** Every proof the new route produces is exported and checked by the audit program
+`Audit.lean`, at its `qualification-audit-v1` digest and toolchain, in real mode. R6-015's own driver runs it under R6-015's lock.
+That covers the retained-certificate replays, the validity-preserving mutations and the regression replays.
+- **The requirement:** the binding holds, and Check 1 reports **no hypothesis** at both targets. A proof of `0 < s` that refers to
+  no hypothesis is itself a hypothesis-free proof.
+- **Check 2** is the audit's separate `omega` attempt. It is recorded but not required: it re-derives the step independently, and
+  can fail on a step the constrained proof establishes, for instance through split atoms.
+- **Binding.** The harness retains each run's residual goal, printed from the proof term that is exported, in its names. A goal
+  printed in the renamed search context is what left l096 and l099 unbound in the audit.
+
 ## Freezing and order
 
 1. **Review this revision.**
 2. **Implement** the selection rule, the fact assertion and the constrained final step in a new bridge revision, with unit tests on
    **synthetic** mixed-carrier goals. These are written from this specification: an `Int` goal over ℕ casts, with `Int` and ℕ
-   hypotheses and an opaque `Int` atom, and with the review's probe included.
+   hypotheses and an opaque `Int` atom, and with the review's probe included. They also include a synthetic goal in which one
+   product appears both as a cast of a product and as a product of casts (the shape of l070 draw 5, not its certificate).
+   - The synthetic tests' proofs are exported and checked by the audit program in `--synthetic` mode, so control 8 is exercised
+     before the lock.
    - The four sites' shapes define the requirement and may be studied.
    - The retained certificates are **not** replayed through any candidate closer before the lock.
    - Review.
@@ -219,7 +260,9 @@ baseline. They are never counted as consumption.
 - **None.** The gap is more than these changes, and the record says where.
 - **Regression control 5 fails for an R6-proved certificate.** This requires diagnosis. The cause could be incomplete cast
   normalization in the constrained step, an implementation defect, or dependence of R6's proof on its contextual step. Only an audit
-  of R6's retained proof term (`solution.ndjson.gz`) can establish the last; see [qualification 1](R6-QUALIFICATION-1.md).
+  of R6's retained proof term (`solution.ndjson.gz`) can establish the last. That audit has run
+  ([addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md)): R6's final step referred to no hypothesis at l069, l071 and l078, and to
+  context at every l070 draw. l096 and l099 are unbound.
 
 In every case, R6-014's result is unchanged. R6-015 is reported separately, under its own route, and never pooled with R6's
 numbers.
