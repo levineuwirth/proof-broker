@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Driver for the R6 qualification-1 audit, amended (`R6-QUALIFICATION-1-AUDIT-AMENDMENT-1-PROPOSAL.md`, revision 3), build
-revision 3. `qualification-audit-v1` and its files are only read; this driver imports v1's driver for its control expectations
+revision 4. `qualification-audit-v1` and its files are only read; this driver imports v1's driver for its control expectations
 and its `Nat.rec` mutation, unchanged.
 
     build                  build the amended program (Lean 4.32.2) and the controls (Lean 4.32.0, R6's pinned exporter)
-    controls --output      run C1-C9 and R1-R9b and assert their frozen expectations
+    controls --output      run C1-C9 and R1-R10 and assert their frozen expectations (under the lock, once it exists)
     lock                   write `qualification-audit-v2`, once, after the implementation review
     regression --output    application 1: R6's 32 classified slots must reproduce addendum 1 (classifications and mappings)
-    addendum2 --output     application 2: R6's 16 slots at l096 and l099, with their sealed rename rows
-    l175 --output          application 3: R6-015's 17 proofs at l175, informational only
+    addendum2 --regression RECORD --output     application 2: R6's 16 slots at l096 and l099, with their sealed rename rows
+    l175 --regression RECORD --output          application 3: R6-015's 17 proofs at l175, informational only
+
+Applications 2 and 3 refuse unless the regression record passed under the current lock: its identity, its lock digest and its
+coverage are checked, and its verdict is recomputed from its own results against the lock's expectations (`regression_passed`).
+The lock binds the toolchains' contents: every file of both toolchains (compiler, runtime and the imported `Init`/`Lean`
+environment), digested as trees, and each bridge module the controls import, closed under its own imports as read from its
+`.olean` (`controls_bridge_environment`). `test_gates.py` exercises both gates without a lock.
 
 Every application refuses unless the lock verifies, and verifies it again afterwards, with the locks of the evidence it reads
 (`live-evaluation-v3` for R6's runs, `r6-015-replay-v1` for R6-015's). Offline: no provider, credential or spending.
@@ -39,8 +45,8 @@ R6015_LOCK = R6/'policies/r6-015-replay-v1.sha256.json'
 R6015_RUNS = R6/'r6-015-runs'
 SOURCES = [HERE/'Audit.lean', HERE/'make_controls.py', HERE/'R6AuditControlsV2.lean', HERE/'R6AuditControlsV2.provenance.json',
            Path(__file__).resolve(), V1/'qualification_audit.py', V1/'make_controls.py',
-           R6/'vendor/lean4export/Export/Parse.lean', R6/'vendor/lean4export/Export.lean']
-EXPORTS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'r1', 'r7l', 'r7n', 'r7b', 'r8', 'r9', 'r9b']
+           HERE/'test_gates.py', R6/'vendor/lean4export/Export/Parse.lean', R6/'vendor/lean4export/Export.lean']
+EXPORTS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'r1', 'r7l', 'r7n', 'r7b', 'r7d', 'r8', 'r9', 'r9b', 'r10']
 UNBOUND = 'unbound_residual_mismatch'
 
 # R1-R6: one export, a synthetic frozen context, and the rows each control passes
@@ -49,7 +55,8 @@ R1_CONTEXT = [{'index': 0, 'name': 'r1_local', 'included_in_telescope': False}, 
 R1_RESIDUAL = '0 < 1 * (x - c_) + 1 * (c_ + 1 - x)'
 def _row(i, o, s): return {'index': i, 'original_name': o, 'search_name': s, 'fvar_in_original': True}
 RENAMES = {'R1': [_row(2, "c'", 'c_')], 'R2': [_row(2, "c'", 'd_')], 'R3': [_row(2, "c'", 'c_'), _row(2, "c'", 'e_')],
-           'R4': [_row(2, "c'", 'x')], 'R5': [_row(2, "c'", 'c_'), _row(3, 'h', 'c_')], 'R6': [_row(3, "c'", 'c_')]}
+           'R4': [_row(2, "c'", 'x')], 'R4b': [_row(1, 'x', "c'"), _row(2, "c'", 'x')],
+           'R5': [_row(2, "c'", 'c_'), _row(3, 'h', 'c_')], 'R6': [_row(3, "c'", 'c_')]}
 
 sha, run = v1.sha, v1.run
 
@@ -123,10 +130,18 @@ R_RUNS = {
         ('both targets unbound', (cls(a, 'local'), cls(a, 'whole')) != (UNBOUND, UNBOUND))])),
     **{k: ('r1', R1_RESIDUAL, k, lambda r, a: check([
         ('binding must be rename_unverified', a.get('binding') != 'rename_unverified'),
-        ('both targets unbound', (cls(a, 'local'), cls(a, 'whole')) != (UNBOUND, UNBOUND))])) for k in ('R3', 'R4', 'R5', 'R6')},
+        ('both targets unbound', (cls(a, 'local'), cls(a, 'whole')) != (UNBOUND, UNBOUND))])) for k in ('R3', 'R4', 'R4b', 'R5', 'R6')},
     'R7l': ('r7l', None, None, walk_case('r7l', '_q')),
     'R7n': ('r7n', None, None, walk_case('r7n', '_q')),
     'R7b': ('r7b', None, None, walk_case('r7b', '_r')),
+    'R7d': ('r7d', None, None, lambda r, a: check([
+        ('the parameters must be established, three', (a.get('parameters') or {}).get('count') != 3),
+        ('the whole must be locatable', (a.get('whole') or {}).get('locatable') is not True),
+        ('hn must map through argument 2', paths(a.get('whole'), 'hn') != [[f'parameter 2 of R6Audit.r7d_local']]),
+        ('h may only map through argument 1', paths(a.get('whole'), 'h') not in ([], [[f'parameter 1 of R6Audit.r7d_local']]))])),
+    'R10': ('r10', None, None, lambda r, a: check([
+        ('the local must not be locatable: two folds', (a.get('local') or {}).get('locatable') is not False
+         or (a.get('local') or {}).get('reason') != '2 fold applications')])),
     'R8': ('r8', None, None, lambda r, a: check([
         ('the parameters must be established, two', (a.get('parameters') or {}).get('count') != 2),
         ('the whole must not be locatable, by arity', (a.get('whole') or {}).get('locatable') is not False
@@ -144,6 +159,8 @@ R_RUNS = {
 def controls(args):
     out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
+    locked = LOCK.exists()
+    if locked: verify_lock()
     ctl = BUILD/'controls'; results, failures = {}, {}
     for c, (exp, stem, residual, force) in v1.RUNS.items():   # C1-C9: v1's runs and frozen expectations, on the amended program
         r = audit_one(ctl/f'{exp}.ndjson', f'R6Audit.{stem}_local', f'R6Audit.{stem}_whole', residual, force=force, synthetic=residual is None)
@@ -158,7 +175,9 @@ def controls(args):
         results[name] = r
     for name, unmet in failures.items(): print(name, 'as expected' if not unmet else unmet, flush=True)
     passed = not any(failures.values())
+    if locked: verify_lock()
     out.write_text(json.dumps({'passed': passed, 'failures': failures, 'results': results, 'tool_sha256': sha(TOOL),
+                               'lock_sha256': sha(LOCK) if locked else None, 'toolchain_contents': toolchain_contents(),
                                'controls_sha256': controls_digests(), 'sources_sha256': {str(p.relative_to(REPO)): sha(p) for p in SOURCES},
                                'scope': 'synthetic controls only; no retained R6 or R6-015 export read'}, indent=1) + '\n')
     print(json.dumps({'passed': passed}))
@@ -207,9 +226,52 @@ def selection():
     return {'regression': regression, 'addendum2': renamed, 'l175': l175}
 
 
+def tree_digest(root):
+    """Every file under `root`, by relative path and content, digested as one value; with the count."""
+    files = sorted(p for p in Path(root).rglob('*') if p.is_file())
+    lines = ''.join(f'{p.relative_to(root)}\t{sha(p)}\n' for p in files)
+    return {'path': str(root), 'files': len(files), 'sha256': v1.hashlib.sha256(lines.encode()).hexdigest()}
+
+
+BRIDGE_ENVIRONMENT = REPO/'lean-bridge/.lake/build/lib/lean'
+
+
+def module_imports(olean):
+    """The modules an `.olean` imports, read from its header by the controls' toolchain."""
+    with tempfile.TemporaryDirectory(prefix='r6-qual-audit-v2-imports-') as tmp:
+        script = Path(tmp)/'imports.lean'
+        script.write_text('import Lean\nopen Lean\ndef main (args : List String) : IO Unit := do\n'
+                          '  let (d, _) ← readModuleData args[0]!\n  for i in d.imports do IO.println i.module\n')
+        out = subprocess.run([str(CONTROLS_TOOLCHAIN/'bin/lean'), '--run', str(script), str(olean)], capture_output=True, text=True,
+                             check=True, env={'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(CONTROLS_TOOLCHAIN)}).stdout
+    return sorted(set(out.split()))
+
+
+def controls_bridge_environment():
+    """The bridge modules the controls import, closed under their own imports, each bound by content. Modules found in the
+    controls' toolchain are bound by its tree; any other import outside the bridge refuses."""
+    header = [l.split()[1] for l in (HERE/'R6AuditControlsV2.lean').read_text().splitlines() if l.startswith('import ')]
+    bound, todo = {}, list(header)
+    while todo:
+        m = todo.pop()
+        rel = Path(*m.split('.')).with_suffix('.olean')
+        if m in bound or (CONTROLS_TOOLCHAIN/'lib/lean'/rel).exists(): continue
+        if not (BRIDGE_ENVIRONMENT/rel).exists(): raise SystemExit(f'refused: the controls import {m}, found nowhere bound')
+        imports = module_imports(BRIDGE_ENVIRONMENT/rel)
+        bound[m] = {'olean': str(rel), 'sha256': sha(BRIDGE_ENVIRONMENT/rel), 'imports': imports}
+        todo += imports
+    return {'header': header, 'modules': dict(sorted(bound.items()))}
+
+
+def toolchain_contents():
+    return {'tool_toolchain': tree_digest(TOOLCHAIN), 'controls_toolchain': tree_digest(CONTROLS_TOOLCHAIN),
+            'controls_bridge_environment': controls_bridge_environment()}
+
+
 def lock_record():
     return {'schema_version': 'r6-qualification-audit-lock-2', 'tool_sha256': sha(TOOL),
             'toolchain': 'leanprover/lean4:v4.32.2', 'controls_toolchain': 'leanprover/lean4:v4.32.0',
+            'toolchain_contents': toolchain_contents(),
             'sources_sha256': {str(p.relative_to(REPO)): sha(p) for p in SOURCES}, 'controls_sha256': controls_digests(),
             'exporter_sha256': sha(EXPORTER), 'qualification_audit_v1_lock_sha256': sha(v1.LOCK),
             'qualification_audit_v1_record_sha256': sha(V1_AUDIT), 'r6_015_lock_sha256': sha(R6015_LOCK),
@@ -234,10 +296,32 @@ def verify_r6015():
          str(R6), str(R6/'r6-015')], stdout=subprocess.DEVNULL)
 
 
+def regression_differences(frozen, results):
+    differences = {}
+    for key, s in frozen['selection']['regression'].items():
+        a = (results.get(key) or {}).get('audit', {})
+        got = {'local': cls(a, 'local'), 'whole': cls(a, 'whole'), 'whole_hypotheses': (a.get('whole') or {}).get('hypotheses')}
+        if got != s['v1']: differences[key] = {'v1': s['v1'], 'v2': got}
+    return differences
+
+
+def regression_passed(path, frozen):
+    """The regression record passed under this lock: identity, lock digest, exact coverage, and its verdict recomputed."""
+    record = json.loads(Path(path).read_text())
+    if record.get('application') != 'regression' or record.get('lock_sha256') != sha(LOCK):
+        raise SystemExit('refused: the regression record is not this lock\'s')
+    if set(record.get('results') or {}) != set(frozen['selection']['regression']):
+        raise SystemExit('refused: the regression record does not cover exactly the 32 slots')
+    if regression_differences(frozen, record['results']) or record.get('reproduced') is not True or record.get('differences') != {}:
+        raise SystemExit('refused: the regression did not pass')
+    return sha(path)
+
+
 def application(name, args, evidence):
     out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
     frozen = verify_lock(); evidence()
+    gate = regression_passed(args.regression, frozen) if name != 'regression' else None
     results = {}
     for key, s in sorted(frozen['selection'][name].items()):
         with tempfile.TemporaryDirectory(prefix='r6-qual-v2-export-') as tmp:
@@ -248,16 +332,13 @@ def application(name, args, evidence):
         a = results[key].get('audit', {})
         print(key, a.get('binding'), cls(a, 'local'), cls(a, 'whole'), flush=True)
     evidence(); verify_lock()
-    return out, frozen, results
+    if gate is not None and regression_passed(args.regression, frozen) != gate: raise SystemExit('the regression record changed')
+    return out, frozen, results, gate
 
 
 def regression(args):
-    out, frozen, results = application('regression', args, v1.verify_live_evaluation)
-    differences = {}
-    for key, s in frozen['selection']['regression'].items():
-        a = results[key].get('audit', {})
-        got = {'local': cls(a, 'local'), 'whole': cls(a, 'whole'), 'whole_hypotheses': (a.get('whole') or {}).get('hypotheses')}
-        if got != s['v1']: differences[key] = {'v1': s['v1'], 'v2': got}
+    out, frozen, results, _ = application('regression', args, v1.verify_live_evaluation)
+    differences = regression_differences(frozen, results)
     out.write_text(json.dumps({'application': 'regression', 'reproduced': not differences, 'differences': differences, 'results': results,
                                'lock_sha256': sha(LOCK)}, indent=1) + '\n')
     print(json.dumps({'reproduced': not differences, 'differences': len(differences)}))
@@ -265,14 +346,14 @@ def regression(args):
 
 
 def addendum2(args):
-    out, frozen, results = application('addendum2', args, v1.verify_live_evaluation)
-    out.write_text(json.dumps({'application': 'addendum2', 'results': results, 'lock_sha256': sha(LOCK),
+    out, frozen, results, gate = application('addendum2', args, v1.verify_live_evaluation)
+    out.write_text(json.dumps({'application': 'addendum2', 'results': results, 'lock_sha256': sha(LOCK), 'regression_record_sha256': gate,
                                'scope': "R6's 16 slots at l096 and l099; addendum 1 unchanged"}, indent=1) + '\n')
 
 
 def l175(args):
-    out, frozen, results = application('l175', args, verify_r6015)
-    out.write_text(json.dumps({'application': 'l175', 'results': results, 'lock_sha256': sha(LOCK),
+    out, frozen, results, gate = application('l175', args, verify_r6015)
+    out.write_text(json.dumps({'application': 'l175', 'results': results, 'lock_sha256': sha(LOCK), 'regression_record_sha256': gate,
                                'scope': "R6-015's 17 proofs at l175, informational; R6-015's result and control 8 unchanged"}, indent=1) + '\n')
 
 
@@ -282,6 +363,7 @@ def main():
     sub.add_parser('build').set_defaults(f=build)
     for name, f in (('controls', controls), ('regression', regression), ('addendum2', addendum2), ('l175', l175)):
         c = sub.add_parser(name); c.add_argument('--output', required=True); c.set_defaults(f=f)
+        if name in ('addendum2', 'l175'): c.add_argument('--regression', required=True)
     sub.add_parser('lock').set_defaults(f=lock)
     args = p.parse_args()
     sys.exit(args.f(args) or 0)

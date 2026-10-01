@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate `R6AuditControlsV2.lean`: `qualification-audit-v1`'s controls (its generator, `../qualification-audit/make_controls.py`,
 imported unchanged: the pinned fold copied byte for byte from `e627efe`, and C1-C6), plus the synthetic controls of amendment 1
-(`R6-QUALIFICATION-1-AUDIT-AMENDMENT-1-PROPOSAL.md`, revision 3): R1-R6 (one export with a binder named `c'`, audited against
-several rename inputs), R7 in two variants, R7b, R8, R9 and R9b. Each local theorem is closed by the pinned fold; each whole
+(`R6-QUALIFICATION-1-AUDIT-AMENDMENT-1-PROPOSAL.md`, revision 3): R1-R6 and R4b (one export with a binder named `c'`, audited
+against several rename inputs), R7 in two variants, R7b, R7d, R8, R9, R9b and R10. Each local theorem is closed by the pinned fold; each whole
 declaration refers to it by name, as R6's exports do.
 """
 import hashlib
@@ -20,6 +20,7 @@ ELABS = '''
 -- the valid pattern
 elab "fold_r_probe" : tactic => runComparison [("h", 1), ("neg_goal", 2)]
 elab "fold_r_valid" : tactic => runComparison [("h", 1), ("neg_goal", 1)]
+elab "fold_r_probe_hn" : tactic => runComparison [("hn", 1), ("neg_goal", 2)]
 /-- R8's `False` goal: `h : x ≤ 0` and `hp : 0 < x`. -/
 elab "fold_r8" : tactic => do
   let g ← getMainGoal
@@ -49,6 +50,17 @@ theorem r7n_whole (x : Int) (h : x ≤ 5) (hn : 0 ≤ x) : x ≤ 5 := r7n_local 
 theorem r7b_local : ∀ (x : Int) (h : x ≤ 5) (hn : 0 ≤ x), x ≤ 5 :=
   fun x => let _r : Int := 0; fun (h : x ≤ 5) (hn : 0 ≤ x) => by fold_r_probe
 theorem r7b_whole (x : Int) (h : x ≤ 5) (hn : 0 ≤ x) : x ≤ 5 := r7b_local x h hn
+
+/-- R7d, a dependent binder: an applied lambda's binder `q := x`, on which the next binders' types depend. -/
+theorem r7d_local : ∀ (x : Int) (h : 0 < x) (hn : x ≤ 5), x ≤ 5 :=
+  fun x => (fun (q : Int) => fun (h : 0 < q) (hn : q ≤ 5) => (show q ≤ 5 by fold_r_probe_hn)) x
+theorem r7d_whole (x : Int) (h : 0 < x) (hn : x ≤ 5) : x ≤ 5 := r7d_local x h hn
+
+/-- R10, a second fold in an applied lambda's argument (the build review's case): two fold applications in the value. -/
+theorem r10_local : ∀ (x : Int) (h : x ≤ 5) (hn : 0 ≤ x), x ≤ 5 :=
+  fun x => (fun (_q : x ≤ 5 → x ≤ 5) => fun (h : x ≤ 5) (hn : 0 ≤ x) => (show x ≤ 5 by fold_r_probe))
+    (fun (h : x ≤ 5) => (show x ≤ 5 by fold_r_valid))
+theorem r10_whole (x : Int) (h : x ≤ 5) (hn : 0 ≤ x) : x ≤ 5 := r10_local x h hn
 
 /-- R8, an arity mismatch: the local's conclusion is `¬ (0 < x)`, two parameters; the whole applies it to three arguments. -/
 theorem r8_local (x : Int) (h : x ≤ 0) : ¬ (0 < x) := by

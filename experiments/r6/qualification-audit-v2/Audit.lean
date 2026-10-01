@@ -342,6 +342,7 @@ structure Walked where
   params : Array FVarId := #[]           -- the declaration's parameters, in order
   telescope : Array FVarId := #[]        -- every telescope entry, parameters and declaration `let`s, in order
   defs : Std.HashMap FVarId Expr := {}   -- internal applied-lambda definitions
+  peeled : Array Expr := #[]             -- every subterm the walk passed over: binder types, `let` types and values, arguments
   body : Expr := default
 
 /-- The frozen walk. Metadata is transparent, nothing is reduced, and the first matching form is taken: (1) the end; (2) an applied
@@ -353,22 +354,27 @@ partial def walk (T V : Expr) (w : Walked) (k : Walked → MetaM α) (fail : Str
   let V := V.consumeMData
   if !(T.isForall || T.isLet) then return ← k { w with body := V }
   if V.isApp then
-    if let .lam n t b bi := V.getAppFn.consumeMData then
+    if let .lam n t b _ := V.getAppFn.consumeMData then
       let args := V.getAppArgs
-      return ← withLocalDecl n bi t fun q =>
-        walk T (mkAppN (b.instantiate1 q) args[1:]) { w with defs := w.defs.insert q.fvarId! args[0]! } k fail
+      -- a local definition, so that later binder types may depend on it definitionally
+      return ← withLetDecl n t args[0]! fun q =>
+        walk T (mkAppN (b.instantiate1 q) args[1:])
+          { w with defs := w.defs.insert q.fvarId! args[0]!, peeled := w.peeled.push t |>.push args[0]! } k fail
   match T, V with
   | .forallE _ a t' _, .lam n a' v' bi =>
-    unless ← isDefEq a a' do return ← fail s!"parameter {w.params.size}: the binder types are not definitionally equal"
+    unless ← withConfig (fun c => { c with zetaDelta := true }) (isDefEq a a') do
+      return ← fail s!"parameter {w.params.size}: the binder types are not definitionally equal"
     withLocalDecl n bi a' fun x =>
       walk (t'.instantiate1 x) (v'.instantiate1 x)
-        { w with params := w.params.push x.fvarId!, telescope := w.telescope.push x.fvarId! } k fail
+        { w with params := w.params.push x.fvarId!, telescope := w.telescope.push x.fvarId!, peeled := w.peeled.push a' } k fail
   | .letE _ a v t' _, .letE n a' v' b' _ =>
-    unless (← isDefEq a a') && (← isDefEq v v') do return ← fail "a declaration let does not match the value's"
+    unless ← withConfig (fun c => { c with zetaDelta := true }) (return (← isDefEq a a') && (← isDefEq v v')) do
+      return ← fail "a declaration let does not match the value's"
     withLetDecl n a' v' fun x =>
-      walk (t'.instantiate1 x) (b'.instantiate1 x) { w with telescope := w.telescope.push x.fvarId! } k fail
+      walk (t'.instantiate1 x) (b'.instantiate1 x)
+        { w with telescope := w.telescope.push x.fvarId!, peeled := w.peeled.push a' |>.push v' } k fail
   | .forallE .., .letE n b a v' _ =>
-    withLetDecl n b a fun q => walk T (v'.instantiate1 q) w k fail
+    withLetDecl n b a fun q => walk T (v'.instantiate1 q) { w with peeled := w.peeled.push b |>.push a } k fail
   | _, _ => fail "the value does not have the form its type requires"
 
 /-! ## Amendment 1, rule A: binding up to the run's recorded renaming -/
@@ -413,7 +419,7 @@ def verifyRenaming (input : RenameInput) (w : Walked) (hposTy : Expr) : MetaM (E
   let lctx ← getLCtx
   for (fv, n) in renames do
     for d in lctx do
-      if d.fvarId != fv && !renames.any (·.1 == d.fvarId) && d.userName == n then
+      if d.fvarId != fv && d.userName == n then
         return .error s!"search name {n} already names another binder"
   let shown ← (collectFVars {} hposTy).fvarIds.mapM fun id => do
     return ((renames.find? (·.1 == id)).map (·.2)).getD (← id.getDecl).userName
@@ -432,19 +438,28 @@ where
   body (walked : Option Walked) (walkFailure : Option String) : MetaM Json := do
     let some li := (← getEnv).find? localName | throwError "missing local target {localName}"
     let some wi := (← getEnv).find? wholeName | throwError "missing whole target {wholeName}"
-    let folds ← IO.mkRef #[]
     let pick := (·.isAppOfArity `ProofBroker.TermMode.farkasContradictN 3)
-    match walked with
-    | some w => visit w.body w.defs pick folds
-    | none => visit (li.value? (allowOpaque := true)).get! {} pick folds
-    let folds ← folds.get
+    -- the whole value must contain exactly one fold, as in build revision 2, whatever the walk established
+    let all ← IO.mkRef #[]
+    withLCtx {} {} do visit (li.value? (allowOpaque := true)).get! {} pick all
+    let all ← all.get
+    -- in the walked context, the body and everything the walk passed over must contain that one fold too; otherwise the
+    -- parameters cannot be mapped, and are unverified
+    let (walked, walkFailure, walkedFolds) ← match walked with
+      | none => pure (none, walkFailure, #[])
+      | some w => do
+        let folds ← IO.mkRef #[]
+        for e in #[w.body] ++ w.peeled do visit e w.defs pick folds
+        let folds ← folds.get
+        if folds.size == 1 then pure (some w, none, folds)
+        else pure (none, some s!"the walked context holds {folds.size} fold applications, the whole value {all.size}", #[])
     let paramsJ := match walked, walkFailure with
       | some w, _ => Json.mkObj [("established", toJson true), ("count", toJson w.params.size)]
       | none, why => Json.mkObj [("established", toJson false), ("reason", toJson s!"parameters_unverified: {why.getD ""}")]
-    unless folds.size == 1 do
+    unless all.size == 1 do
       return Json.mkObj [("parameters", paramsJ),
-        ("local", Json.mkObj [("locatable", false), ("reason", toJson s!"{folds.size} fold applications")])]
-    let fold := folds[0]!
+        ("local", Json.mkObj [("locatable", false), ("reason", toJson s!"{all.size} fold applications")])]
+    let fold := if walked.isSome then walkedFolds[0]! else all[0]!
     withLCtx fold.lctx #[] do
       let hpos := fold.args[2]!
       let hposTy ← inferType hpos
