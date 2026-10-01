@@ -1,0 +1,24 @@
+{
+  "argv": [
+    ".cache/qualification-audit/.lake/build/bin/r6-qualification-audit",
+    "--synthetic",
+    "<tmp>/export.ndjson",
+    "Bracket.cell_value_neutral.r6_site_l166",
+    "Bracket.cell_value_neutral",
+    "-",
+    "residual/report.json"
+  ],
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "LEAN_SYSROOT": "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.2"
+  },
+  "exit_code": 0,
+  "inputs": {
+    "<tmp>/export.ndjson": {
+      "unpacked_from": "solution.ndjson.gz",
+      "sha256": "7fd6fac52d3dcd80b52942ede466b20da2100f97546d01b5d69818d847567943"
+    }
+  },
+  "tool_sha256": "a30ca41345ddeec99b7141d0e6fb723f9bd22fa8849f02f7ad84eb71f7e4ac2a",
+  "audit_lock_sha256": "eea12f405ff52595c71c77f2e7a91e648a1c276185af3aa75fedc57009df9dfb"
+}

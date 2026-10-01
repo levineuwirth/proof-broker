@@ -1,0 +1,11 @@
+{
+  "id": "l204-learned-draw5",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw5"
+  },
+  "coefficients": null,
+  "inject_unverified": false,
+  "route": "constrained"
+}

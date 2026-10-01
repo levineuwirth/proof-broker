@@ -1,0 +1,38 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l099-control5-learned-draw1",
+  "site": "bracket-l099",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l099-draw1"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.threshold_unique.r6_site_l099": {
+      "added": [
+        "Classical.choice"
+      ],
+      "removed": []
+    },
+    "Bracket.threshold_unique": {
+      "added": [
+        "Classical.choice"
+      ],
+      "removed": []
+    }
+  },
+  "solution_sha256": "f2a7d2a70afae833f0acd8fe8849aaad7dc603b6e592e6973208aedca01137fc",
+  "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+  "outcome": "proved"
+}

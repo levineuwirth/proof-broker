@@ -1,0 +1,1 @@
+/input/Frozen.lean:179:6: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax^1) + 1

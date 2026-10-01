@@ -1,0 +1,24 @@
+{
+  "id": "l166-learned-unrelated_inequality_added",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l166-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hlt",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": true,
+  "route": "constrained"
+}

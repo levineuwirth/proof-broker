@@ -1,0 +1,24 @@
+{
+  "id": "l175-learned-hypothesis_dropped",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hz0",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": true,
+  "route": "constrained"
+}

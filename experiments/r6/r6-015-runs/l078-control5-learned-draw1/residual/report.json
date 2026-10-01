@@ -1,0 +1,31 @@
+{"environment":
+ {"replayed_through_addDecl": 1798,
+  "mode": "synthetic",
+  "lean": "4.32.2",
+  "init_shared_identical": 2540,
+  "init_shared_equal_up_to_annotations": 279},
+ "audit":
+ {"whole":
+  {"locatable": true,
+   "internal_to_local_proof": [],
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "local":
+  {"residual_goal":
+   "0 <\n  1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(Zmax * zhigh.val) - ↑(Zmax * 2 ^ 16)) +\n    1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - ↑(x.val + z.val + Zmax * zhigh.val))",
+   "locatable": true,
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "check2":
+  {"statement":
+   "∀ {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(Zmax * zhigh.val) - ↑(Zmax * 2 ^ 16)) +\n      1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - ↑(x.val + z.val + Zmax * zhigh.val))",
+   "specialization_definitions": null,
+   "specialization_atoms": null,
+   "established": true,
+   "direct": {"ok": true, "detail": "kernel accepted"},
+   "definitions_dropped": [],
+   "attempted":
+   "∀ {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(Zmax * zhigh.val) - ↑(Zmax * 2 ^ 16)) +\n      1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - ↑(x.val + z.val + Zmax * zhigh.val))",
+   "atoms": [],
+   "abstraction": null},
+  "binding": "not_applicable_synthetic"}}

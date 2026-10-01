@@ -1,0 +1,56 @@
+{
+  "schema_version": "r6-015-replay-2",
+  "id": "l175-learned-unrelated_inequality_added",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw1"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-1"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "1"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": true,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": false,
+  "outcome": "reconstruction_failed",
+  "failure_stage": "reconstruct",
+  "detail": {
+    "events": [
+      "reification_started",
+      "reification_finished",
+      "dispatch_started",
+      "dispatch_received",
+      "certificate_verification_started",
+      "certificate_verification_finished",
+      "reconstruction_started",
+      "certificate_gate_bypassed",
+      "term_route",
+      "closer_selected"
+    ],
+    "errors": [
+      "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax^1) + 1"
+    ]
+  }
+}

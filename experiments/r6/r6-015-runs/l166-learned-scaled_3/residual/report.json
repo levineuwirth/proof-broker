@@ -1,0 +1,28 @@
+{"environment":
+ {"replayed_through_addDecl": 1965,
+  "mode": "synthetic",
+  "lean": "4.32.2",
+  "init_shared_identical": 2419,
+  "init_shared_equal_up_to_annotations": 265},
+ "audit":
+ {"whole":
+  {"locatable": true,
+   "internal_to_local_proof": [],
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "local":
+  {"residual_goal": "0 < 3 * (↑v0 - z) + 3 * (z + 1 - ↑v0)",
+   "locatable": true,
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "check2":
+  {"statement": "∀ {v0 : Nat} {z : Int}, 0 < 3 * (↑v0 - z) + 3 * (z + 1 - ↑v0)",
+   "specialization_definitions": null,
+   "specialization_atoms": null,
+   "established": true,
+   "direct": {"ok": true, "detail": "kernel accepted"},
+   "definitions_dropped": [],
+   "attempted": "∀ {v0 : Nat} {z : Int}, 0 < 3 * (↑v0 - z) + 3 * (z + 1 - ↑v0)",
+   "atoms": [],
+   "abstraction": null},
+  "binding": "not_applicable_synthetic"}}

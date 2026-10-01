@@ -1,0 +1,30 @@
+{"environment":
+ {"replayed_through_addDecl": 1965,
+  "mode": "synthetic",
+  "lean": "4.32.2",
+  "init_shared_identical": 2421,
+  "init_shared_equal_up_to_annotations": 265},
+ "audit":
+ {"whole":
+  {"reason": "1 references; arity #[14] for 13 parameters",
+   "locatable": false,
+   "classification": "not_locatable"},
+  "local":
+  {"residual_goal":
+   "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax)",
+   "locatable": true,
+   "hypotheses": [],
+   "classification": "certificate_alone"},
+  "check2":
+  {"statement":
+   "∀ {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax)",
+   "specialization_definitions": null,
+   "specialization_atoms": null,
+   "established": true,
+   "direct": {"ok": true, "detail": "kernel accepted"},
+   "definitions_dropped": [],
+   "attempted":
+   "∀ {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax)",
+   "atoms": [],
+   "abstraction": null},
+  "binding": "not_applicable_synthetic"}}
