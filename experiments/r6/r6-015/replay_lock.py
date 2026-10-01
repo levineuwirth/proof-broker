@@ -9,10 +9,11 @@ Every episode passes `admit` before anything else runs or is written:
 Nothing else is admitted.
 
 The lock binds the complete source closure these paths use:
-- every Python module the episode, campaign and supervisor processes import from `experiments/r6`, computed by importing them
-  (`python_closure`), so a module added to the closure changes the record;
+- every Python module the episode, campaign, control-3, analysis and supervisor processes import from `experiments/r6`, computed
+  by importing them (`python_closure`), so a module added to the closure changes the record;
 - the non-Python inputs (`DATA`): the capture helper, the event and site schemas, the checker and assembler sources, the vendor
-  lock, and R6's harness locks, the census lock among them;
+  lock, and R6's harness locks, the census lock among them; step 3's record (revision 2) and `mutations.py`, which must name this
+  plan and each other; the analysis inputs (R6-014's analysis, the qualification audit's record); and the tests;
 - the binaries: the compiler, the exporter, the kernel checker, the glue library and the audit program;
 - the bridge revision and the instrumented `Tactic.lean`;
 - the plan, and every planned episode's source seal and consumed artifact.
@@ -35,10 +36,13 @@ AUDIT_TOOLCHAIN = Path.home()/'build/elan/toolchains/leanprover--lean4---v4.32.2
 AUDIT_LOCK = R6/'policies/qualification-audit-v1.sha256.json'
 EXPORTER = R6/'.cache/exporter/.lake/build/bin/lean4export'
 GLUE = R6.parents[1]/'lean-bridge/.lake/build/lib/libpbglue.so'
-ENTRY_MODULES = ('replay_lock', 'replay_bridge', 'replay_episode', 'replay_campaign', 'site_supervise', 'supervise')
+ENTRY_MODULES = ('replay_lock', 'replay_bridge', 'replay_episode', 'replay_campaign', 'control3', 'analysis', 'site_supervise', 'supervise')
 DATA = ('capture/CaptureSite.lean', 'schema/event.schema.json', 'schema/task-site.schema.json', 'validate/verify_certificate.ml',
         'validate/proposal_driver.ml', 'validate/Replay.lean', 'vendor/sources.lock.json', 'policies/census-harness-v1.sha256.json',
-        'policies/site-harness-v4.sha256.json', 'policies/fixture-harness-v1.sha256.json', 'policies/qualification-audit-v1.sha256.json')
+        'policies/site-harness-v4.sha256.json', 'policies/fixture-harness-v1.sha256.json', 'policies/qualification-audit-v1.sha256.json',
+        'reviews/2026-10-01/R6-015-MUTATIONS-2.json', 'r6-015/mutations.py', 'reviews/2026-09-29/R6-014-BLOCK2-ANALYSIS.json',
+        'reviews/2026-10-01/R6-QUALIFICATION-1-AUDIT.json', 'r6-015/test_binding.py', 'r6-015/test_mutations.py', 'r6-015/test_analysis.py')
+MUTATIONS = 'reviews/2026-10-01/R6-015-MUTATIONS-2.json'
 SPEC_FIELDS = {'id', 'site', 'source', 'coefficients', 'inject_unverified', 'route'}
 REHEARSALS = {
     'rehearsal-l069-learned-draw1': {'id': 'rehearsal-l069-learned-draw1', 'site': 'bracket-l069',
@@ -100,7 +104,11 @@ def lock_record(plan_path):
     ids = [s['id'] for s in plan['episodes']]
     if len(set(ids)) != len(ids) or set(ids) & set(REHEARSALS): raise ValueError('episode ids are not unique')
     if any(s['route'] != 'constrained' for s in plan['episodes']): raise ValueError('the plan runs the constrained route only')
-    return {'schema_version': 'r6-015-replay-lock-2',
+    mutations = r6.read_json(R6/MUTATIONS)
+    if mutations['plan_sha256'] != r6.sha(plan_path) or mutations['sources_sha256']['r6-015/mutations.py'] != r6.sha(R6/'r6-015/mutations.py'):
+        raise ValueError('the step-3 record is not bound to this plan and this mutations.py')
+    if set(mutations['episodes']) != set(ids): raise ValueError("the step-3 record's episodes differ from the plan")
+    return {'schema_version': 'r6-015-replay-lock-3',
             'python_sha256': {str(p.relative_to(R6)): r6.sha(p) for p in python_closure()},
             'data_sha256': {p: r6.sha(R6/p) for p in DATA},
             'binaries_sha256': {k: r6.sha(v) for k, v in tools.items()},

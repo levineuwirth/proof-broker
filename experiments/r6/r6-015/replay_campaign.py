@@ -8,6 +8,8 @@
 The lock and admission are `replay_lock`'s. `run` refuses unless the lock verifies, admits each episode again at its boundary,
 and verifies the lock afterwards.
 
+Step 5's order, each under the lock: `run`; `control3.py` (the synthetic probe); `control8`; then `analysis.py`.
+
 `control8` (harness revision 3) binds every run to the locked plan before it evaluates anything, for every planned episode, proof
 or not:
 1. the run's seal: every file present is sealed, retained or ephemeral, every retained file is present with its digest (ephemeral
