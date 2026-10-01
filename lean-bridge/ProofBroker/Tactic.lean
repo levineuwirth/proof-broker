@@ -3218,10 +3218,12 @@ private def buildNonnegProof (c : Int) : MetaM Expr := do
    a numeral, and the numeral must be positive (a closed `decide`).
    ============================================================ -/
 
-/-- Atoms of the sum, identified up to instance-transparency
-    definitional equality, so that terms differing only in how they
-    were elaborated (`Nat.cast` / `NatCast.natCast` / `Int.ofNat`,
-    instance paths) are one atom. -/
+/-- Atoms of the sum, identified up to definitional equality at
+    instance transparency, which unfolds instances and also every
+    `@[reducible]` definition. Terms differing only in how they were
+    elaborated (`Nat.cast` / `NatCast.natCast` / `Int.ofNat`, instance
+    paths) are then one atom. Any identification is rechecked by the
+    kernel. -/
 private abbrev ConstrainedReifyM := StateRefT (Array Expr) MetaM
 
 private def constrainedAtom (e : Expr)
@@ -3359,11 +3361,12 @@ private partial def constrainedReach (es : Array Expr) (types : Bool)
   return out
 
 /-- The constrained final step: a proof of `0 < sum` that refers to no
-    hypothesis, or a named failure. Fails closed twice before
-    returning: the proof must reach no hypothesis (through local
-    definitions too), and the kernel must accept it, closed over the
-    variables it reaches. The returned term's type is literally
-    `0 < sum`. -/
+    hypothesis, or a named failure. The returned term is
+    `@id (0 < sum) proof`, so its type is literally `0 < sum`. Both
+    gates check exactly that term, and it is returned unchanged: it
+    must reach no hypothesis (through local definitions too), and
+    the kernel must accept it, closed over the variables it
+    reaches. -/
 private def constrainedPositivity (sum : Expr) : MetaM Expr := do
   let sum ← instantiateMVars sum
   let (e, atoms) ← (constrainedReifyInt sum).run #[]
@@ -3385,25 +3388,29 @@ private def constrainedPositivity (sum : Expr) : MetaM Expr := do
   let proof := mkApp5 (mkConst ``ProofBroker.TermMode.posOfNormNum) ctx
     (commRingExprToExpr e) (toExpr c) normalized positive
   let ty ← mkAppM ``LT.lt #[toExpr (0 : Int), sum]
-  let hyps ← (← constrainedReach #[proof] (types := false)).filterM fun id => do
+  -- The typed term is built first; both gates check exactly the term
+  -- returned. Its type annotation carries `sum` itself, so a hypothesis
+  -- reached only through the sum (an instance argument, say) is caught.
+  let hpos ← mkExpectedTypeHint proof ty
+  let hyps ← (← constrainedReach #[hpos] (types := false)).filterM fun id => do
     isProp (← id.getType)
   unless hyps.isEmpty do
     throwError "proof_broker_term (constrained): the positivity proof \
       reaches hypotheses {← hyps.mapM (·.getUserName)}"
-  let closure ← constrainedReach #[ty, proof] (types := true)
+  let closure ← constrainedReach #[ty, hpos] (types := true)
   let lctx ← getLCtx
   let fvs := (closure.qsort fun a b =>
     (lctx.get! a).index < (lctx.get! b).index).map mkFVar
   let decl := Declaration.thmDecl {
     name := `_proofBroker_constrained_check, levelParams := [],
-    type := ← mkForallFVars fvs ty, value := ← mkLambdaFVars fvs proof }
+    type := ← mkForallFVars fvs ty, value := ← mkLambdaFVars fvs hpos }
   match Kernel.Environment.addDecl (← getEnv).toKernelEnv (← getOptions) decl with
   | .ok _ => pure ()
   | .error ex =>
     let opts ← getOptions
     throwError m!"proof_broker_term (constrained): the kernel rejected \
       the positivity proof: {ex.toMessageData opts}"
-  mkExpectedTypeHint proof ty
+  return hpos
 
 /-- Discharge `omegaGoal` (a fresh metavariable carrying the
     polynomial-identity-style strict-positivity subgoal) by running
@@ -3484,9 +3491,10 @@ private def closeViaTermModeFalse
           let newProof ← Lean.Meta.mkAppM ``Int.add_nonpos #[accH, h]
           return (newSum, newProof)) (p0, h0)
     if constrained then
+      -- `hpos` is used exactly as `constrainedPositivity` checked it.
       let hpos ← constrainedPositivity sum
-      goal.assign (← Lean.Meta.mkAppM ``ProofBroker.TermMode.farkasContradictN
-        #[sum, sumProof, hpos])
+      goal.assign (mkApp3 (mkConst ``ProofBroker.TermMode.farkasContradictN)
+        sum sumProof hpos)
       return
     -- Build hpos evar (0 < sum), closed by omega.
     let zero := intLitExpr 0

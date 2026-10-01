@@ -199,6 +199,28 @@ example (n m : Nat) (z : Int) (hn : n ≤ m) (hz : z / 3 + ↑m ≤ 5) :
     z / 3 + ↑n ≤ 5 := by
   term_closer_test constrained "hn:1,hz:1,nope:1,neg_goal:1"
 
+/-! ## A hypothesis reached through the sum (build review, finding 1)
+
+A cast instance that takes a hypothesis: the reifier canonicalizes the
+cast, but the positivity proof's type annotation carries the sum, and
+with it `tag`. The gates check the returned term, so the step fails
+closed. -/
+
+@[reducible] def castViaHyp (_h : True) : NatCast Int := instNatCastInt
+
+/--
+error: proof_broker_term (constrained): the positivity proof reaches hypotheses [tag]
+-/
+#guard_msgs in
+example (tag : True) (n m : Nat) (h : n ≤ m) :
+    (@NatCast.natCast Int (castViaHyp tag) n) ≤ @NatCast.natCast Int (castViaHyp tag) m := by
+  term_closer_test constrained "h:1,neg_goal:1"
+
+/-- info: term_closer_test: constrained term_mode_int -/
+#guard_msgs in
+example (n m : Nat) (h : n ≤ m) : (n : Int) ≤ (m : Int) := by
+  term_closer_test constrained "h:1,neg_goal:1"
+
 /-! ## Axioms (acceptance 4)
 
 The constrained route's proofs depend on `propext`, `Classical.choice`
