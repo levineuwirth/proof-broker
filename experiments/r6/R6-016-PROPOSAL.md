@@ -1,6 +1,9 @@
 # R6-016 proposal — an axiom-preserving final step for the refused certificates
 
-Status: research-design proposal, **revision 1**, 2026-10-01, against `main` at `3eb438a5`, for review. It is not implemented, not
+Status: research-design proposal, **revision 2**, 2026-10-02, against `main` at `3eb438a5`, for review. It responds to
+[the review of revision 1](reviews/2026-10-02/R6-016-AND-AUDIT-AMENDMENT-1-REVIEW.md) (`ac5f7fec`), whose P2 for this proposal
+concerned the diagnosis: an unsuccessful equality proof stays unresolved (section 4). The review confirmed the normalizer choice:
+`posOfLinearNum` has exactly `propext` and `Quot.sound`, and the cast/product identity closes by `rfl`. It is not implemented, not
 locked and not run.
 - **It does not amend** [R6-015](R6-015.md), the [qualification audit](R6-QUALIFICATION-1-ADDENDUM-1.md) or R6-014. Their results
   and definitions stay as recorded.
@@ -133,20 +136,33 @@ retained l070 draw 5 export (`cohort-live-v9/l070-draw5/solution.ndjson.gz`, bou
 qualification audit first saw the split.
 
 **It locates every pair of atoms** in the export's `0 < s` that print identically under the default options but are not
-syntactically equal. For each pair it reports, in order:
+syntactically equal. For each pair it records every attempt, in order:
 1. **printed similarity:** equality under the default printer, and under `pp.all`;
 2. **syntactic identity:** `Expr` equality after instantiating metavariables, and equality up to metadata. Where they differ, the
    first differing subterm: its path, and both sides under `pp.all`;
 3. **definitional equality:** at reducible, instance and default transparency (zeta-delta reported), and in the kernel, checked by
    adding `a = b := rfl` closed over its variables;
-4. **arithmetic equality:** whether `a = b` has a hypothesis-free, kernel-checked proof in an empty context, by `omega` or by ring
-   normalization. This is diagnosis, so any normalizer may be used, and none of it enters the route.
+4. **arithmetic equality:** a hypothesis-free proof of `a = b` in an empty context, by `omega` and, separately, by ring
+   normalization, each kernel-checked. This is diagnosis, so any normalizer may be used, and none of it enters the route;
+5. **a counterexample:** the free variables are instantiated at the numerals 0 to 3, and each instance of `a ≠ b` is decided by
+   closed evaluation, kernel-checked.
 
-**The output** is one classification per pair:
-- `identical`;
-- `printed_only` (syntactically different, definitionally equal at the first transparency reported);
-- `arithmetic_only` (not definitionally equal, provably equal);
-- `distinct`.
+**Every attempt in 3 to 5 records one of these outcomes:**
+- `established` (a kernel-accepted proof);
+- `refused` (the tactic or the kernel rejected the statement as outside what it handles, with its message);
+- `resource_exhausted` (heartbeats or time, with the limit);
+- `unsuccessful` (the attempt ran to completion without a proof).
+
+Only `established` counts as evidence. A failed proof is not a proof of the opposite.
+
+**The output** is one classification per pair, from established evidence only:
+- `identical`: syntactically equal;
+- `printed_only`: syntactically different, definitionally equal at the first transparency reported, or in the kernel;
+- `arithmetically_equal`: not established definitionally equal, with an established proof of `a = b`;
+- `distinct`: an established, kernel-checked counterexample;
+- `equality_not_established`: none of the above. This is unresolved, and not a claim that the terms differ.
+
+**"Syntactically distinct" is only an observation** in item 2, never a classification of mathematical distinctness.
 
 The result is recorded with R6-016's. Any route change it suggests is a separate proposal.
 
