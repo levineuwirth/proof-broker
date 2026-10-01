@@ -8,11 +8,15 @@
 The lock and admission are `replay_lock`'s. `run` refuses unless the lock verifies, admits each episode again at its boundary,
 and verifies the lock afterwards.
 
-`control8` (harness revision 2) binds every run to the locked plan before it evaluates anything, for every planned episode, proof
+`control8` (harness revision 3) binds every run to the locked plan before it evaluates anything, for every planned episode, proof
 or not:
 1. the run's seal: every file present is sealed, retained or ephemeral, every retained file is present with its digest (ephemeral
    build products may be absent), and the event chain matches the seal's count and last hash;
-2. the run's spec, its `episode_started` record and its verdict's identity fields equal the locked plan's entry;
+2. the run's spec, its `episode_started` record and its verdict's identity fields equal the locked plan's entry; the start record
+   names the verified lock's digest, its bridge revision and the locked harness digests, and the run's provenance (its harness
+   copies and instrumented `Tactic.lean`) matches the lock;
+2a. exactly one `episode_finished`, the last event, from the supervisor, names the verdict's outcome and digest, and the seal's
+   acceptance agrees with the outcome;
 3. its packet equals the one rebuilt from the locked consumed artifact and the spec's coefficients;
 4. for a proof, the receipt is the one the spec requires (`replay_episode.receipt`).
 
@@ -74,14 +78,32 @@ def sealed(run):
     return seal, rows
 
 
-def bound(run, spec):
-    """The run is the planned episode: seal, spec, start record, verdict identity, packet and, for a proof, the receipt."""
+def bound(run, spec, frozen, lock_sha):
+    """The run is the planned episode, run by the locked programs under the verified lock, and finished; all checked before the
+    outcome is used: seal, spec, start record and provenance, terminal event, seal acceptance, verdict identity, packet and, for a
+    proof, the receipt."""
     seal, rows = sealed(run)
     if r6.read_json(run/'spec.json') != spec: raise ValueError('spec differs from the plan')
-    started = rows[0]['payload']
-    if rows[0]['event'] != 'episode_started' or started.get('spec') != spec or started.get('admission') != 'planned':
+    first, last = rows[0], rows[-1]; started = first['payload']
+    if (first['event'] != 'episode_started' or first['source'] != 'supervisor' or started.get('spec') != spec
+            or started.get('admission') != 'planned' or started.get('excluded_from_results') is not False):
         raise ValueError('the episode did not start as this planned episode')
+    # provenance: the verified lock, its bridge revision, its harness, as recorded at the start and in the run's provenance
+    harness = {str(p.relative_to(R6)): frozen['python_sha256'][str(p.relative_to(R6))] for p in replay_episode.HARNESS}
+    if (started.get('schema_version') != replay_episode.SCHEMA or started.get('lock_sha256') != lock_sha
+            or started.get('bridge_rev') != frozen['bridge_rev'] or started.get('harness_sha256') != harness):
+        raise ValueError('the episode was not run under this lock, bridge and harness')
+    copies = {f'r6-015/{Path(name).name}': r6.sha(run/'provenance/r6-015'/Path(name).name) for name in harness}
+    if copies != harness: raise ValueError("the run's harness copies differ from the lock")
+    sources = r6.read_json(run/'provenance/sources.json')
+    if sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'] != frozen['instrumented_tactic_sha256']:
+        raise ValueError("the run's bridge differs from the lock")
+    # the terminal event: exactly one, last, from the supervisor, naming this verdict
     verdict = r6.read_json(run/'verdict.json')
+    if ([r['event'] for r in rows].count('episode_finished') != 1 or last['event'] != 'episode_finished' or last['source'] != 'supervisor'
+            or last['payload'] != {'outcome': verdict['outcome'], 'verdict_sha256': r6.sha(run/'verdict.json')}):
+        raise ValueError('the terminal event does not name this verdict')
+    if seal['accepted'] is not (verdict['outcome'] == 'proved'): raise ValueError("the seal's acceptance disagrees with the verdict")
     identity = {'id': spec['id'], 'site': spec['site'], 'source': spec['source'], 'route': spec['route'], 'coefficients': spec['coefficients'],
                 'mutated': spec['coefficients'] is not None, 'inject_unverified': spec['inject_unverified'], 'admission': 'planned',
                 'excluded_from_results': False}
@@ -129,10 +151,11 @@ def control8(args):
     out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
     runs = Path(args.runs).resolve(); results = {}; audited = {}
+    lock_sha = r6.sha(replay_lock.LOCK)
     for spec in replay_lock.planned(frozen).values():
         run = runs/spec['id']
         try:
-            seal, verdict = bound(run, spec)  # before branching on the outcome
+            seal, verdict = bound(run, spec, frozen, lock_sha)  # before branching on the outcome
         except (OSError, ValueError, KeyError, replay_episode.Outcome) as unbound:
             results[spec['id']] = {'bound': False, 'reason': f'{type(unbound).__name__}: {unbound}'[:500]}
             print(spec['id'], 'unbound', results[spec['id']]['reason'], flush=True); continue

@@ -1,8 +1,10 @@
 # R6-015 — replay harness, for review
 
-**Harness revision 2**, 2026-10-01. It responds to [the review of revision 1](reviews/2026-10-01/R6-015-HARNESS-REVIEW.md), which
-found three P1 defects and one P2 gap, and approved two pinned-route rehearsals after the repairs, as a limited pre-lock
-exception. Revision 1 is `ef995231`; revision 2's code is `1425f84b`. The harness builds on step 2's bridge,
+**Harness revision 3**, 2026-10-01. It responds to [the review of revision 2](reviews/2026-10-01/R6-015-HARNESS-REVIEW-2.md), which
+found one remaining P2: control 8's binding ignored the run's provenance and its terminal event. Revision 2 (`f26ff76b`, code
+`1425f84b`) responded to [the review of revision 1](reviews/2026-10-01/R6-015-HARNESS-REVIEW.md), which found three P1 defects and
+one P2 gap, and approved two pinned-route rehearsals after the repairs, as a limited pre-lock exception. Revision 1 is
+`ef995231`. The harness builds on step 2's bridge,
 [approved](reviews/2026-10-01/R6-015-BUILD-REVIEW-2.md) at `476fab31`. It implements the replay of
 [the proposal, revision 5](R6-015-PROPOSAL.md) (step 5) and control 8, with the three recorded harness requirements.
 
@@ -16,7 +18,37 @@ exception. Revision 1 is `ef995231`; revision 2's code is `1425f84b`. The harnes
   approved; and, for revision 1, the field names of l069's and l170's deterministic events. No other certificate was read.
 - R6's harness locks still verify. No R6 file was edited.
 
-## What changed
+## What changed in revision 3
+
+**P2: control 8 binds provenance and termination, before the outcome is used** (`replay_campaign.bound`, now given the verified
+lock and its digest). Besides revision 2's checks:
+- **The start record** must name the verified lock's digest, its bridge revision, the replay schema and the locked harness
+  digests.
+- **The run's provenance** must match the lock: its copies of the harness, and its instrumented `Tactic.lean`.
+- **Exactly one `episode_finished`**, the last event and from the supervisor, must name the verdict's outcome and digest.
+- **The seal's acceptance flag** must agree with the outcome (accepted exactly for a proof).
+
+`r6-015/test_binding.py` writes sealed synthetic runs with R6's own event chain and seal, shaped as `execute` writes them. The
+lock, the plan, the packet source and the audit report are stand-ins. Results:
+- **Refused before the outcome is used:** every probe, including the review's three:
+  - a start record naming another lock;
+  - another bridge;
+  - another harness;
+  - another schema;
+  - a rehearsal start;
+  - a verdict resealed to disagree with the terminal event;
+  - a sealed run with no terminal event, as a proof and otherwise;
+  - a disagreeing acceptance flag;
+  - a changed harness copy;
+  - a changed instrumented `Tactic.lean`;
+  - an unsealed file.
+- **Bind:** well-formed runs.
+- **Control 8 itself** now fails on the unfinished proof that passed in the review's probe, and passes the well-formed one.
+
+**Real episode output** was also checked. Both sealed rehearsal runs meet the new terminal, seal and provenance checks. Their start
+records name `admission: rehearsal`, so control 8 would refuse them as planned episodes, as it should.
+
+## What changed in revision 2
 
 1. **P1: admission at the episode boundary** (`replay_lock.admit`). Admission runs before anything else is run or written,
    through `execute` and through the command line, which admits before it creates the run directory.
@@ -38,8 +70,8 @@ exception. Revision 1 is `ef995231`; revision 2's code is `1425f84b`. The harnes
    - **The census and site locks** are also verified directly.
    - **Nothing is loaded lazily outside this closure.** The rehearsal compared the modules it loaded with the closure computed in
      a fresh process, and none was outside it.
-3. **P1: control 8 binds every run to the locked plan before it branches on the outcome.** For every planned episode, proof or
-   not:
+3. **P1: control 8 binds every run to the locked plan before it branches on the outcome** (extended in revision 3, above). For
+   every planned episode, proof or not:
    - **the seal:** every file present is sealed, every retained file matches, and the event chain matches the seal;
    - **the spec, the start record and the verdict's identity fields** (id, site, source, route, coefficients, injection,
      admission) equal the plan's entry;
@@ -102,6 +134,7 @@ not results.
   7. the verdict, terminal event and seal, on every path.
 - **`replay_campaign.py`**: `lock` (once), `run` (the plan, the lock verified before and after) and `control8`.
 - **`rehearse_synthetic.py`** and **`rehearse_pinned.py`**: the two rehearsals.
+- **`test_binding.py`**: control 8's binding, on sealed synthetic runs.
 
 ## Next, in the agreed order
 
