@@ -5,18 +5,21 @@
     replay_campaign.py run --runs DIR               replay every planned episode, each sealed, into DIR/<id>
     replay_campaign.py control8 --runs DIR --output RECORD.json
 
-`run` refuses unless the lock verifies, and verifies it again afterwards. The lock binds:
-- this harness (`replay_bridge.py`, `replay_episode.py`, this file) and R6's harness locks it builds on (`site-harness-v4`,
-  `fixture-harness-v1`, the census lock), by digest;
-- the bridge revision and the instrumented `Tactic.lean` (`replay_bridge.source_record`);
-- the plan, by digest, and, for every planned episode, its source run's `seal.json` and the consumed artifact (`evidence.json` for a
-  learned run, `events.ndjson` for a deterministic one), by digest;
-- the audit program and the exporter, whose digests must also equal `qualification-audit-v1`'s.
+The lock and admission are `replay_lock`'s. `run` refuses unless the lock verifies, admits each episode again at its boundary,
+and verifies the lock afterwards.
 
-`control8` evaluates revision 5's frozen predicate on every episode that produced a proof: the audit program in real mode on the
-run's export, with the run's retained residual (printed from that export). It passes only if the program exits 0 without a
-refusal, `binding` is `matches_residual`, both targets are locatable, and both carry an explicit, empty hypothesis list. An error,
-a refusal or a missing field fails. Kernel validation is the episode's own (acceptance 3 and 4).
+`control8` (harness revision 2) binds every run to the locked plan before it evaluates anything, for every planned episode, proof
+or not:
+1. the run's seal: every file present is sealed, retained or ephemeral, every retained file is present with its digest (ephemeral
+   build products may be absent), and the event chain matches the seal's count and last hash;
+2. the run's spec, its `episode_started` record and its verdict's identity fields equal the locked plan's entry;
+3. its packet equals the one rebuilt from the locked consumed artifact and the spec's coefficients;
+4. for a proof, the receipt is the one the spec requires (`replay_episode.receipt`).
+
+Then, for each proof, the audit program runs in real mode on the run's export with its retained residual, and revision 5's frozen
+predicate is evaluated: the program exits 0 without a refusal, `binding` is `matches_residual`, both targets are locatable, and
+both carry an explicit, empty hypothesis list. An error, a refusal or a missing field fails. Afterwards every audited artifact is
+rechecked against its seal, and the lock is verified again. Kernel validation is the episode's own (acceptance 3 and 4).
 
 Offline: no provider, credential, reservation or spending.
 """
@@ -32,85 +35,78 @@ R6 = HERE.parent
 if str(R6) not in sys.path: sys.path.insert(0, str(R6))
 if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 
-import census  # noqa: E402
+import events  # noqa: E402
 import run as r6  # noqa: E402
 import site_task  # noqa: E402
-import replay_bridge  # noqa: E402
 import replay_episode  # noqa: E402
+import replay_lock  # noqa: E402
 
-LOCK = R6/'policies/r6-015-replay-v1.sha256.json'
-EXPORTER = R6/'.cache/exporter/.lake/build/bin/lean4export'
-SOURCES = (HERE/'replay_bridge.py', HERE/'replay_episode.py', Path(__file__).resolve())
-R6_LOCKS = (site_task.LOCK, R6/'policies/fixture-harness-v1.sha256.json', replay_episode.AUDIT_LOCK)
-
-
-def consumed(spec):
-    run = R6/spec['source']['run']
-    name = 'evidence.json' if spec['source']['arm'] == 'learned' else 'events.ndjson'
-    return {'seal_sha256': r6.sha(run/'seal.json'), 'artifact': name, 'artifact_sha256': r6.sha(run/name)}
-
-
-def lock_record(plan_path):
-    plan = r6.read_json(plan_path)
-    audit = r6.read_json(replay_episode.AUDIT_LOCK)
-    if r6.sha(replay_episode.AUDIT_TOOL) != audit['tool_sha256'] or r6.sha(EXPORTER) != audit['exporter_sha256']:
-        raise ValueError('the audit program or the exporter differs from qualification-audit-v1')
-    sources, patch = replay_bridge.source_record()
-    for spec in plan['episodes']: replay_episode.check_spec(spec)
-    ids = [s['id'] for s in plan['episodes']]
-    if len(set(ids)) != len(ids): raise ValueError('episode ids are not unique')
-    if any(s['route'] != 'constrained' for s in plan['episodes']): raise ValueError('the plan runs the constrained route only')
-    return {'schema_version': 'r6-015-replay-lock-1',
-            'harness_sha256': {str(p.relative_to(R6)): r6.sha(p) for p in SOURCES},
-            'r6_locks_sha256': {str(p.relative_to(R6)): r6.sha(p) for p in R6_LOCKS},
-            'bridge_rev': replay_bridge.BRIDGE_REV,
-            'instrumented_tactic_sha256': sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'],
-            'instrumentation_patch_sha256': r6.hashlib.sha256(patch.encode()).hexdigest(),
-            'plan': str(Path(plan_path).resolve().relative_to(R6)), 'plan_sha256': r6.sha(plan_path),
-            'consumed': {s['id']: consumed(s) for s in plan['episodes']},
-            'audit_tool_sha256': r6.sha(replay_episode.AUDIT_TOOL), 'exporter_sha256': r6.sha(EXPORTER)}
-
-
-def verify_lock():
-    if not LOCK.exists(): raise SystemExit('the R6-015 lock does not exist; nothing is replayed before the lock')
-    frozen = r6.read_json(LOCK)
-    site_task.verify_lock(); census.verify_lock()
-    if lock_record(R6/frozen['plan']) != frozen: raise SystemExit('the R6-015 lock does not verify')
-    return frozen
+AUDITED = ('solution.ndjson.gz', 'residual.txt', 'verdict.json', 'spec.json', 'evidence.json', 'events.ndjson')
 
 
 def lock(args):
-    if LOCK.exists(): raise SystemExit('the R6-015 lock already exists')
-    record = lock_record(args.plan)
-    LOCK.write_text(json.dumps(record, indent=1) + '\n')
-    print(r6.sha(LOCK))
+    print(replay_lock.write_lock(args.plan))
 
 
 def run_all(args):
-    frozen = verify_lock()
+    frozen = replay_lock.verify_lock()
     runs = Path(args.runs).resolve()
-    plan = r6.read_json(R6/frozen['plan'])
     results = {}
-    for spec in plan['episodes']:
+    for spec in replay_lock.planned(frozen).values():
         target = runs/spec['id']
         if target.exists(): raise SystemExit(f'refusing to overwrite {target}')
         target.mkdir(parents=True)
         results[spec['id']] = replay_episode.execute(target, spec)
         print(spec['id'], results[spec['id']]['outcome'], flush=True)
-    verify_lock()
-    r6.write_json(runs/'index.json', {'lock_sha256': r6.sha(LOCK), 'results': results})
+    replay_lock.verify_lock()
+    r6.write_json(runs/'index.json', {'lock_sha256': r6.sha(replay_lock.LOCK), 'results': results})
 
 
-def audit_real(solution, residual, task):
+def sealed(run):
+    """Every file present is sealed; every retained digest matches; the event chain matches the seal."""
+    seal = r6.read_json(run/'seal.json')
+    present = {str(p.relative_to(run)) for p in run.rglob('*') if p.is_file() and p.name != 'seal.json'}
+    if present - set(seal['retained_sha256']) - set(seal['ephemeral_sha256']): raise ValueError('a file present is not sealed')
+    for name, digest in seal['retained_sha256'].items():
+        if r6.sha(run/name) != digest: raise ValueError(f'{name} differs from the seal')
+    rows = events.read(run/'events.ndjson')
+    if len(rows) != seal['event_count'] or rows[-1]['event_hash'] != seal['last_event_hash']: raise ValueError('events differ from the seal')
+    return seal, rows
+
+
+def bound(run, spec):
+    """The run is the planned episode: seal, spec, start record, verdict identity, packet and, for a proof, the receipt."""
+    seal, rows = sealed(run)
+    if r6.read_json(run/'spec.json') != spec: raise ValueError('spec differs from the plan')
+    started = rows[0]['payload']
+    if rows[0]['event'] != 'episode_started' or started.get('spec') != spec or started.get('admission') != 'planned':
+        raise ValueError('the episode did not start as this planned episode')
+    verdict = r6.read_json(run/'verdict.json')
+    identity = {'id': spec['id'], 'site': spec['site'], 'source': spec['source'], 'route': spec['route'], 'coefficients': spec['coefficients'],
+                'mutated': spec['coefficients'] is not None, 'inject_unverified': spec['inject_unverified'], 'admission': 'planned',
+                'excluded_from_results': False}
+    if {k: verdict.get(k) for k in identity} != identity: raise ValueError('verdict identity differs from the plan')
+    packet = replay_episode.mutated(replay_episode.retained_packet(spec), spec['coefficients'])
+    if r6.read_json(run/'evidence.json') != packet: raise ValueError('packet differs from the locked source and the spec')
+    if verdict['outcome'] == 'proved': replay_episode.receipt(run, packet, spec)
+    return seal, verdict
+
+
+def audit_real(run, solution, residual, task):
+    env = {'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(replay_lock.AUDIT_TOOLCHAIN)}
     with tempfile.TemporaryDirectory(prefix='r6-015-control-8-') as tmp:
         tmp = Path(tmp); export = tmp/'export.ndjson'; r6.unpack(solution, export)
         (tmp/'residual.txt').write_text(residual + '\n')
-        proc = subprocess.run([str(replay_episode.AUDIT_TOOL), str(export), task.local, task.whole, str(tmp/'residual.txt'),
-                               str(tmp/'report.json')], capture_output=True, text=True,
-                              env={'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(replay_episode.AUDIT_TOOLCHAIN)})
+        argv = [str(replay_lock.AUDIT_TOOL), str(export), task.local, task.whole, str(tmp/'residual.txt'), str(tmp/'report.json')]
+        proc = subprocess.run(argv, capture_output=True, text=True, env=env)
         report = r6.read_json(tmp/'report.json') if (tmp/'report.json').exists() else {'error': (proc.stdout + proc.stderr)[-2000:]}
+        inputs = {'<tmp>/export.ndjson': {'unpacked_from': f'{run.name}/solution.ndjson.gz', 'sha256': r6.sha(export)},
+                  '<tmp>/residual.txt': {'copied_from': f'{run.name}/residual.txt', 'sha256': r6.sha(tmp/'residual.txt')}}
     report['exit'] = proc.returncode
-    return report
+    command = {'argv': [str(replay_lock.AUDIT_TOOL.relative_to(R6)), '<tmp>/export.ndjson', task.local, task.whole, '<tmp>/residual.txt',
+                        '<tmp>/report.json'], 'env': env, 'exit_code': proc.returncode, 'inputs': inputs,
+               'stdout': proc.stdout[-2000:], 'stderr': proc.stderr[-2000:], 'tool_sha256': r6.sha(replay_lock.AUDIT_TOOL)}
+    return report, command
 
 
 def predicate(r):
@@ -129,22 +125,31 @@ def predicate(r):
 
 
 def control8(args):
-    frozen = verify_lock()
+    frozen = replay_lock.verify_lock()
     out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
-    runs = Path(args.runs).resolve(); results = {}
-    for spec in r6.read_json(R6/frozen['plan'])['episodes']:
-        run = runs/spec['id']; verdict = r6.read_json(run/'verdict.json')
-        if verdict['outcome'] != 'proved': continue
-        seal = r6.read_json(run/'seal.json')
-        for name in ('solution.ndjson.gz', 'residual.txt', 'verdict.json'):
-            if seal['retained_sha256'].get(name) != r6.sha(run/name): raise SystemExit(f'{spec["id"]}/{name} differs from its seal')
-        report = audit_real(run/'solution.ndjson.gz', (run/'residual.txt').read_text().rstrip('\n'), site_task.get(spec['site']))
-        results[spec['id']] = {'unmet': predicate(report), 'report': report}
+    runs = Path(args.runs).resolve(); results = {}; audited = {}
+    for spec in replay_lock.planned(frozen).values():
+        run = runs/spec['id']
+        try:
+            seal, verdict = bound(run, spec)  # before branching on the outcome
+        except (OSError, ValueError, KeyError, replay_episode.Outcome) as unbound:
+            results[spec['id']] = {'bound': False, 'reason': f'{type(unbound).__name__}: {unbound}'[:500]}
+            print(spec['id'], 'unbound', results[spec['id']]['reason'], flush=True); continue
+        if verdict['outcome'] != 'proved':
+            results[spec['id']] = {'bound': True, 'outcome': verdict['outcome'], 'audited': False}; continue
+        report, command = audit_real(run, run/'solution.ndjson.gz', (run/'residual.txt').read_text().rstrip('\n'), site_task.get(spec['site']))
+        results[spec['id']] = {'bound': True, 'outcome': 'proved', 'audited': True, 'unmet': predicate(report), 'command': command,
+                               'report': report}
+        audited[spec['id']] = {name: seal['retained_sha256'][name] for name in AUDITED}
         print(spec['id'], 'pass' if not results[spec['id']]['unmet'] else results[spec['id']]['unmet'], flush=True)
-    verify_lock()
-    out.write_text(json.dumps({'lock_sha256': r6.sha(LOCK), 'audit_tool_sha256': r6.sha(replay_episode.AUDIT_TOOL),
-                               'results': results}, indent=1) + '\n')
+    for run_id, digests in audited.items():  # afterwards: every audited artifact is still the sealed one
+        if any(r6.sha(runs/run_id/name) != digest for name, digest in digests.items()): raise SystemExit(f'{run_id} changed during control 8')
+    replay_lock.verify_lock()
+    passed = all(r['bound'] and not r.get('unmet') for r in results.values())
+    out.write_text(json.dumps({'passed': passed, 'lock_sha256': r6.sha(replay_lock.LOCK),
+                               'audit_tool_sha256': r6.sha(replay_lock.AUDIT_TOOL), 'results': results}, indent=1) + '\n')
+    print(json.dumps({'passed': passed}))
 
 
 def main():
@@ -154,7 +159,10 @@ def main():
     sub.add_parser('run').add_argument('--runs', required=True)
     c = sub.add_parser('control8'); c.add_argument('--runs', required=True); c.add_argument('--output', required=True)
     args = p.parse_args()
-    {'lock': lock, 'run': run_all, 'control8': control8}[args.cmd](args)
+    try:
+        {'lock': lock, 'run': run_all, 'control8': control8}[args.cmd](args)
+    except replay_lock.Refused as refused:
+        raise SystemExit(str(refused))
 
 
 if __name__ == '__main__':

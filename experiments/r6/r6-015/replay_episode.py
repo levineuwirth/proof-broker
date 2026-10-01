@@ -30,8 +30,10 @@ The episode, every stage under R6's site stage and its frozen checks:
 8. **Verdict, terminal event, seal** on every path. Failures are recorded with their stage and the closer's error lines; the
    analysis classifies them.
 
-`route: "pinned"` leaves the option unset (R6's pinned closers) and requires R6's receipt instead. It is a rehearsal mode only,
-never part of the experiment's plan.
+**Admission** (`replay_lock.admit`) comes before anything else is run or written: a planned episode must be exactly its entry in the
+locked plan, under a verifying lock; a pinned episode must be exactly one of the two approved pre-lock rehearsals. `route:
+"pinned"` leaves the option unset (R6's pinned closers) and requires R6's receipt; its records are marked as rehearsals, excluded
+from R6-015's results.
 
 Offline: no provider, credential, reservation or spending.
 """
@@ -55,15 +57,15 @@ import site_network  # noqa: E402
 import site_stage  # noqa: E402
 import site_task  # noqa: E402
 import replay_bridge  # noqa: E402
+import replay_lock  # noqa: E402
 
-SCHEMA = 'r6-015-replay-1'
-AUDIT_TOOL = R6/'.cache/qualification-audit/.lake/build/bin/r6-qualification-audit'
-AUDIT_TOOLCHAIN = Path.home()/'build/elan/toolchains/leanprover--lean4---v4.32.2'
-AUDIT_LOCK = R6/'policies/qualification-audit-v1.sha256.json'
+SCHEMA = 'r6-015-replay-2'
+AUDIT_TOOL, AUDIT_TOOLCHAIN, AUDIT_LOCK = replay_lock.AUDIT_TOOL, replay_lock.AUDIT_TOOLCHAIN, replay_lock.AUDIT_LOCK
+check_spec = replay_lock.check_spec
 PACKAGES = R6.parents[1]/'lean-bridge/.lake/packages'
 PREFIX = ['reification_started', 'reification_finished', 'dispatch_started', 'dispatch_received', 'certificate_verification_started',
           'certificate_verification_finished', 'reconstruction_started']
-HARNESS = (HERE/'replay_bridge.py', Path(__file__).resolve())
+HARNESS = (HERE/'replay_lock.py', HERE/'replay_bridge.py', Path(__file__).resolve())
 
 
 class Outcome(Exception):
@@ -71,15 +73,6 @@ class Outcome(Exception):
     def __init__(self, category, stage, detail):
         super().__init__(f'{category} at {stage}: {detail}')
         self.category, self.stage, self.detail = category, stage, detail
-
-
-def check_spec(spec):
-    if set(spec) != {'id', 'site', 'source', 'coefficients', 'inject_unverified', 'route'}: raise ValueError('spec fields')
-    if spec['route'] not in ('constrained', 'pinned'): raise ValueError('route')
-    if spec['source'].get('arm') not in ('learned', 'deterministic') or set(spec['source']) != {'arm', 'run'}: raise ValueError('source')
-    if spec['coefficients'] is not None and not all(set(c) == {'hypothesis', 'coefficient'} for c in spec['coefficients']):
-        raise ValueError('coefficients')
-    if not isinstance(spec['inject_unverified'], bool): raise ValueError('inject_unverified')
 
 
 def sealed(source_run, name):
@@ -118,14 +111,24 @@ def observed(run):
     return [(r['event'], r['payload']['data']) for r in events.read(run/'events.ndjson') if r['source'] == 'child_report' and r['stage'] == 'reconstruct']
 
 
-def receipt(run, packet, route):
-    """The closer's own receipt, from the reconstruct stage's events only."""
-    rows = observed(run); names = [e for e, _ in rows]; data = [d for _, d in rows]
-    expected = PREFIX + (['certificate_gate_bypassed'] if 'certificate_gate_bypassed' in names else [])
-    expected += ['term_route', 'closer_selected', 'reconstruction_finished']
-    if names != expected: raise Outcome('consumption_unobserved', 'reconstruct', {'events': names})
-    if data[-3] != {'constrained': route == 'constrained'}: raise Outcome('route_mismatch', 'reconstruct', data[-3])
-    selected, finished = data[-2], data[-1]
+def expected_events(spec):
+    """The reconstruct stage's events for a proof, derived from the spec: the bypass only under injection, R6's residual events
+    only on the pinned route (the pinned fold's `omega`)."""
+    return (PREFIX + (['certificate_gate_bypassed'] if spec['inject_unverified'] else []) + ['term_route', 'closer_selected']
+            + (['residual_started', 'residual_finished'] if spec['route'] == 'pinned' else []) + ['reconstruction_finished'])
+
+
+def receipt(run, packet, spec):
+    """The closer's own receipt, from the reconstruct stage's events only, against the events the spec requires."""
+    route = spec['route']
+    rows = observed(run); names = [e for e, _ in rows]; found = dict(rows)
+    if names != expected_events(spec): raise Outcome('consumption_unobserved', 'reconstruct', {'events': names})
+    if spec['inject_unverified']:
+        bypass = found['certificate_gate_bypassed']
+        if bypass.get('certificate') != packet['certificate'] or 'verify_ok' not in bypass:
+            raise Outcome('consumption_unobserved', 'reconstruct', 'the bypass does not name this certificate')
+    if found['term_route'] != {'constrained': route == 'constrained'}: raise Outcome('route_mismatch', 'reconstruct', found['term_route'])
+    selected, finished = found['closer_selected'], found['reconstruction_finished']
     if not (selected['certificate'] == finished['certificate'] == packet['certificate'] and selected['closer'] == finished['closer']
             and finished['certificate_consumed'] is True):
         raise Outcome('consumption_unobserved', 'reconstruct', 'the receipt does not name this certificate and closer')
@@ -133,6 +136,8 @@ def receipt(run, packet, route):
         if not (selected.get('route') == 'constrained' and finished.get('final_step') == 'constrained'
                 and finished.get('residual_closer') == 'constrained_normalization' and finished.get('constrained_option') is True):
             raise Outcome('consumption_unobserved', 'reconstruct', 'the receipt does not name the constrained final step')
+    elif not (finished.get('residual_closer') == 'omega' and found['residual_finished'] == {'closer': 'omega'}):
+        raise Outcome('consumption_unobserved', 'reconstruct', 'the pinned receipt does not name the pinned final step')
     return finished
 
 
@@ -147,13 +152,18 @@ def residual_from_export(run, solution, task):
     lock = r6.read_json(AUDIT_LOCK)
     if r6.sha(AUDIT_TOOL) != lock['tool_sha256']: raise ValueError('the audit program differs from qualification-audit-v1')
     out = run/'residual'; out.mkdir()
+    env = {'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(AUDIT_TOOLCHAIN)}
     with tempfile.TemporaryDirectory(prefix='r6-015-residual-') as tmp:
         export = Path(tmp)/'export.ndjson'; r6.unpack(solution, export)
         argv = [str(AUDIT_TOOL), '--synthetic', str(export), task.local, task.whole, '-', str(out/'report.json')]
-        proc = subprocess.run(argv, capture_output=True, text=True, env={'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(AUDIT_TOOLCHAIN)})
+        proc = subprocess.run(argv, capture_output=True, text=True, env=env)
+        unpacked = r6.sha(export)
     (out/'stdout').write_text(proc.stdout); (out/'stderr').write_text(proc.stderr)
-    r6.write_json(out/'command.json', {'argv': [Path(argv[0]).name, *argv[1:2], 'solution.ndjson', *argv[4:6]], 'exit_code': proc.returncode,
-                                      'tool_sha256': r6.sha(AUDIT_TOOL), 'audit_lock_sha256': r6.sha(AUDIT_LOCK)})
+    normalized = [str(AUDIT_TOOL.relative_to(R6)), '--synthetic', '<tmp>/export.ndjson', task.local, task.whole, '-',
+                  str((out/'report.json').relative_to(run))]
+    r6.write_json(out/'command.json', {'argv': normalized, 'env': env, 'exit_code': proc.returncode,
+        'inputs': {'<tmp>/export.ndjson': {'unpacked_from': 'solution.ndjson.gz', 'sha256': unpacked}},
+        'tool_sha256': r6.sha(AUDIT_TOOL), 'audit_lock_sha256': r6.sha(AUDIT_LOCK)})
     report = r6.read_json(out/'report.json') if (out/'report.json').exists() else {}
     goal = report.get('audit', {}).get('local', {}).get('residual_goal')
     if proc.returncode != 0 or not isinstance(goal, str): raise Outcome('residual_unprinted', 'residual', {'exit': proc.returncode})
@@ -162,13 +172,16 @@ def residual_from_export(run, solution, task):
 
 
 def execute(run, spec):
-    check_spec(spec)
+    admission = replay_lock.admit(spec)
+    if any(run.iterdir()): raise replay_lock.Refused('the run directory is not empty')
     task = site_task.get(spec['site'])
-    events.append(run, 'episode', 'episode_started', {'schema_version': SCHEMA, 'spec': spec,
+    events.append(run, 'episode', 'episode_started', {'schema_version': SCHEMA, 'spec': spec, 'admission': admission,
+        'excluded_from_results': admission == 'rehearsal', 'lock_sha256': r6.sha(replay_lock.LOCK) if admission == 'planned' else None,
         'harness_sha256': {str(p.relative_to(R6)): r6.sha(p) for p in HARNESS}, 'bridge_rev': replay_bridge.BRIDGE_REV}, task_id=task.id)
     r6.write_json(run/'spec.json', spec)
     result = {'schema_version': SCHEMA, 'id': spec['id'], 'site': task.id, 'source': spec['source'], 'route': spec['route'],
-              'mutated': spec['coefficients'] is not None, 'inject_unverified': spec['inject_unverified']}
+              'coefficients': spec['coefficients'], 'mutated': spec['coefficients'] is not None,
+              'inject_unverified': spec['inject_unverified'], 'admission': admission, 'excluded_from_results': admission == 'rehearsal'}
     try:
         tools = replay_bridge.setup(run, site_task, task, PACKAGES)
         for p in HARNESS:
@@ -205,7 +218,7 @@ def execute(run, spec):
         except episode.StageFailure as error:
             if error.category != 'stage_rejected': raise
             raise Outcome('reconstruction_failed', 'reconstruct', {'events': [e for e, _ in observed(run)], 'errors': stage_log(run, 'reconstruct')})
-        found = receipt(run, packet, spec['route'])
+        found = receipt(run, packet, spec)
         result.update(closer=found['closer'], final_step=found.get('final_step'), residual_closer=found['residual_closer'])
         if r6.read_json(reconstructed/'context.json') != r6.read_json(task.path/'context/local-context.json'):
             raise Outcome('context_changed', 'reconstruct', 'reconstruction changed the frozen context')
@@ -245,8 +258,10 @@ def main():
     p.add_argument('--spec', type=Path, required=True)
     p.add_argument('--run-dir', type=Path, required=True)
     args = p.parse_args()
+    spec = json.loads(args.spec.read_text())
+    replay_lock.admit(spec)  # before the run directory exists
     run = args.run_dir.resolve(); run.mkdir(parents=True, exist_ok=False)
-    print(json.dumps(execute(run, json.loads(args.spec.read_text())), indent=1, default=str))
+    print(json.dumps(execute(run, spec), indent=1, default=str))
 
 
 if __name__ == '__main__':
