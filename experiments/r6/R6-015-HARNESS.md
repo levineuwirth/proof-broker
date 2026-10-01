@@ -1,98 +1,107 @@
 # R6-015 — replay harness, for review
 
-**Harness revision 1**, 2026-10-01. It builds on step 2's bridge, [approved](reviews/2026-10-01/R6-015-BUILD-REVIEW-2.md) at
-`476fab31`. It implements the replay of [the proposal, revision 5](R6-015-PROPOSAL.md) (step 5) and control 8, and carries the
-three recorded harness requirements.
+**Harness revision 2**, 2026-10-01. It responds to [the review of revision 1](reviews/2026-10-01/R6-015-HARNESS-REVIEW.md), which
+found three P1 defects and one P2 gap, and approved two pinned-route rehearsals after the repairs, as a limited pre-lock
+exception. Revision 1 is `ef995231`; revision 2's code is `1425f84b`. The harness builds on step 2's bridge,
+[approved](reviews/2026-10-01/R6-015-BUILD-REVIEW-2.md) at `476fab31`. It implements the replay of
+[the proposal, revision 5](R6-015-PROPOSAL.md) (step 5) and control 8, with the three recorded harness requirements.
 
 **Status:**
-- **Nothing is locked, and no retained certificate has been replayed.** `run` and `control8` refuse without the R6-015 lock.
-- **The harness was rehearsed on synthetic goals only**, through R6's own helpers
-  ([record](reviews/2026-10-01/R6-015-HARNESS-REHEARSAL-SYNTHETIC.json)). The site path has not run; see the proposal at the end.
-- **What was read:** the field names of one deterministic run's events (l170, the negative control), to rebuild deterministic
-  packets. No certificate's coefficients were read for this build.
-- R6's harness locks (`site-harness-v4`, `fixture-harness-v1`, the census lock) still verify. No R6 file was edited.
+- **Nothing is locked, and nothing of R6-015's has been replayed.** Without the lock, every planned episode is refused at its
+  boundary.
+- **Both approved pinned rehearsals ran and reproduced R6-014** ([record](reviews/2026-10-01/R6-015-HARNESS-REHEARSAL-PINNED.json)).
+  The runs are sealed under `r6-015-rehearsal-runs/` and excluded from R6-015's results. The synthetic rehearsal of revision 1
+  stands ([record](reviews/2026-10-01/R6-015-HARNESS-REHEARSAL-SYNTHETIC.json)).
+- **What was read:** the two rehearsals' sources (l069 draw 1's `evidence.json`, l069's deterministic events), by the harness, as
+  approved; and, for revision 1, the field names of l069's and l170's deterministic events. No other certificate was read.
+- R6's harness locks still verify. No R6 file was edited.
+
+## What changed
+
+1. **P1: admission at the episode boundary** (`replay_lock.admit`). Admission runs before anything else is run or written,
+   through `execute` and through the command line, which admits before it creates the run directory.
+   - **A planned episode** must be exactly its entry in the locked plan, and the lock must verify.
+   - **A pinned episode** must be exactly one of the two approved rehearsals (`REHEARSALS`: bridge `476fab31`, the option unset,
+     injection disabled). Its records are marked `admission: rehearsal` and `excluded_from_results: true`.
+   - **Nothing else is admitted.** A probe with a constrained spec and no lock was refused, with nothing written.
+   - **The expected events now come from the spec.** `certificate_gate_bypassed` is required under injection and forbidden
+     otherwise, and must name this packet's certificate. The pinned route's own events (`residual_started`, `residual_finished`)
+     are required on that route only.
+2. **P1: the lock binds the complete source closure** (`replay_lock.lock_record`).
+   - **Python:** every module the episode, campaign and supervisor processes import from `experiments/r6`, found by importing
+     them. That is 31 files, `site_network.py` among them.
+   - **Data:** the capture helper, the event and site schemas, the checker and assembler sources, the vendor lock, and R6's
+     harness locks: census, site, fixture and qualification audit.
+   - **Binaries:** the compiler, the exporter, the kernel checker, the glue library and the audit program.
+   - **Bridge and plan:** the bridge revision and the instrumented `Tactic.lean`; the plan; every planned episode's source seal
+     and consumed artifact.
+   - **The census and site locks** are also verified directly.
+   - **Nothing is loaded lazily outside this closure.** The rehearsal compared the modules it loaded with the closure computed in
+     a fresh process, and none was outside it.
+3. **P1: control 8 binds every run to the locked plan before it branches on the outcome.** For every planned episode, proof or
+   not:
+   - **the seal:** every file present is sealed, every retained file matches, and the event chain matches the seal;
+   - **the spec, the start record and the verdict's identity fields** (id, site, source, route, coefficients, injection,
+     admission) equal the plan's entry;
+   - **the packet** equals the one rebuilt from the locked source and the spec's coefficients;
+   - **for a proof, the receipt** is the one the spec requires.
+
+   A run that fails these is recorded as unbound, and control 8 fails. Afterwards every audited artifact is rechecked against its
+   seal, and the lock is verified again.
+4. **P2: complete command records.** The residual's audit command and control 8's audit commands are recorded in full: the
+   argument list with temporary paths normalized, the environment, each input's origin and digest, the exit code and the tool's
+   digest.
+
+## The pinned rehearsals
+
+| rehearsal | outcome | closer, final step | kernel replays, axioms | residual from the export | export |
+|---|---|---|---|---|---|
+| l069 draw 1, learned | proved | `term_mode_nat`, `omega` | local and whole accepted; no axiom delta | binds (`matches_residual`); `certificate_alone` at both targets; control 8's predicate met | **byte-identical** to R6's retained `solution.ndjson.gz` |
+| l069, deterministic | proved | `term_mode_nat`, `omega` | the same | the same | **byte-identical** to R6's |
+
+Each reproduces its R6-014 result. The site path is now exercised end to end on the new revision:
+- setup with the new modules;
+- retained-packet loading, from a learned run's evidence and from a deterministic run's events;
+- the independent check, capture and reconstruction under the site stage;
+- the pinned receipt, export and kernel replays;
+- the residual from the export, and the seal.
+
+The `certificate_alone` classifications agree with the qualification audit's for l069. They test control 8's path only and are
+not results.
 
 ## The three requirements
 
 1. **The option setting is frozen.** The reconstruction helper is R6's, with one call changed: `set_option
-   proofBroker.term.constrained true in proof_broker_term [r6_fixture_witness]` (`replay_bridge.CONSTRAINED_CALL`). The lock
-   binds it by digest. Every run also records the value the closers saw (`term_route`), and the receipt check requires it.
-2. **The receipt names the constrained final step.** After `closeConstrained` returns, the overlay emits `reconstruction_finished`
-   with this certificate, the closer, `final_step: constrained`, `residual_closer: constrained_normalization` and
-   `constrained_option: true`. The episode requires exactly `term_route`, one `closer_selected` and that receipt, in order, after
-   R6's reconstruction prefix, all naming this certificate and the same closer.
-3. **The residual is printed from the exported term.** After the kernel replays, the audit program of `qualification-audit-v1`
-   reads the run's export in `--synthetic` mode, and its printing of `hpos`'s type is retained as the run's `residual.txt`. Control
-   8 then runs the program in real mode with that residual.
-   - The binding therefore checks the printer and the export against each other.
-   - Binding the run to its export rests on the seal, the targets and the certificate, as the review of revision 4 said.
+   proofBroker.term.constrained true in proof_broker_term [r6_fixture_witness]`. The lock binds it by digest. Every run records
+   the value the closers saw (`term_route`), and its receipt check requires that value to match the route.
+2. **The receipt names the constrained final step.** On the constrained route, `reconstruction_finished` carries the
+   certificate, the closer, `final_step: constrained`, `residual_closer: constrained_normalization` and
+   `constrained_option: true`. The episode requires exactly the events the spec implies, in order, all naming this certificate
+   and the same closer.
+3. **The residual is printed from the exported term.** The audit program of `qualification-audit-v1` reads the run's export in
+   `--synthetic` mode, and its printing of `hpos`'s type is retained. Control 8 then runs the program in real mode with it.
+   Binding the run to its export rests on the seal, the targets and the certificate.
 
 ## The modules (`experiments/r6/r6-015/`)
 
-- **`replay_bridge.py`**: the bridge at `476fab31`, from git, with R6's frozen overlays unchanged
-  (`consumption_overlay.lean_edits`: observations, packet delivery, closer observations), then R6-015's:
-  - `term_route`, the option's value when the closers are reached;
-  - `closer_selected` inside `closeConstrained`, before each closer runs;
+- **`replay_lock.py`**: admission, the approved rehearsals, the closure, the lock record and its verification.
+- **`replay_bridge.py`**: the bridge at `476fab31`, from git, with R6's frozen overlays unchanged, then R6-015's:
+  - `term_route`;
+  - `closer_selected` in `closeConstrained`;
   - the constrained receipt;
-  - `R6_015_INJECT_UNVERIFIED=1` bypasses the bridge's own certificate gate, recorded as `certificate_gate_bypassed`, for
-    controls 1(b) and 4 only.
+  - the injection bypass, recorded as an event, for controls 1(b) and 4 only.
 
-  The SDK, the independent checker and the assembler are R6's, from its base. The SDK is byte-identical at both revisions.
-  `setup` is R6's frozen setup with this build: environment and inventory checks, provenance and binaries.
-- **`replay_episode.py`**: one sealed episode per spec. The steps are as follows.
-  1. **Setup.**
-  2. **The packet.** It is the retained one, checked against its run's seal: a learned run's `evidence.json`, or a deterministic
-     run's packet rebuilt from its sealed, hash-chained events (`dispatch_started`, `dispatch_received`). A mutation replaces only
-     the coefficients.
-  3. **The independent check.** A rejection ends the episode, except under deliberate injection.
-  4. **Capture and reconstruction,** under R6's site stage, with the packet delivered as in R6.
-  5. **The receipt.**
-  6. **The frozen context check.**
-  7. **Export, and the local and whole kernel replays** (R6's `final_validation`, with the axiom delta).
-  8. **The residual from the export.**
-  9. **Verdict, terminal event and seal,** on every path. A failure is recorded with its stage, the events observed and the
-     closer's error lines.
-- **`replay_campaign.py`**:
-  - `lock` writes the R6-015 lock once. It binds this harness, R6's harness locks, the bridge revision and the instrumented
-    `Tactic.lean`, the plan, every planned episode's source seal and consumed artifact, the audit program and the exporter.
-  - `run` replays the plan, verifying the lock before and after. The plan may contain only the constrained route.
-  - `control8` evaluates revision 5's frozen predicate on every proof.
-
-## The synthetic rehearsal
-
-`rehearse_synthetic.py` builds the replay bridge and drives R6's preparation and reconstruction helpers directly, on a synthetic
-mixed-carrier goal: `z + ↑n ≤ 5`, from `n ≤ m` and `z + ↑m ≤ 5`. The packets are assembled by R6's driver from witnesses written
-for it.
-
-| case | observed |
-|---|---|
-| valid witness, constrained | closes. Events: R6's prefix, then `term_route` (true), `closer_selected` (`term_mode_int`, constrained), and the receipt with `final_step: constrained`. The residual printed from the export binds (`matches_residual`), and **control 8 passes** (`certificate_alone`) |
-| `neg_goal` doubled, constrained | the bridge's own gate refuses it (`farkasNotContradictory`); no closer runs |
-| the same, injected | `certificate_gate_bypassed` is recorded; the constrained closer is selected and fails, the sum not cancelling |
-| valid witness, pinned route | `term_route` records the option unset; R6's ℕ closer refuses the `Int` goal: **the refusal R6 met at the four sites**, reproduced synthetically |
-
-The rehearsal also showed that R6's SDK refuses to prepare a goal with `Int` division. The goal is therefore division-free, unlike
-the bridge's synthetic tests, which never run the SDK.
-
-## For review
-
-1. **The packets are the retained ones,** and preparation is not re-run. The reconstruct stage's guard requires the packet's input
-   IR to equal the goal freshly reified by the new bridge, whose reifier is unchanged.
-2. **A mutation changes only the multipliers.** The certificate envelope binds the final IR and the trace, not the coefficients;
-   the independent checker then judges the mutated certificate.
-3. **The injection bypass** is a harness overlay, set by an environment variable and recorded as an event. It is used only in
-   controls 1(b) and 4.
-4. **The audit program runs outside the site stage,** as a recorded subprocess with its digests. It reads only the export.
-5. **The site path is unexercised.** The following steps have not run: the setup with the new modules, site-stage capture and
-   reconstruction, retained-packet loading, final validation and the seal.
-
-   **Proposed, not run without approval:** before the lock, two rehearsals **on the pinned route**, which runs no candidate
-   closer:
-   - l069 draw 1 (learned);
-   - l069's deterministic run.
-
-   Each should reproduce its recorded R6-014 result (`term_mode_nat`, proved). l069 draw 1's export was already read in the audit
-   prototype. This is a replay of retained certificates, which is why it needs your decision.
+  The SDK, the checker and the assembler are R6's, from its base. R6's frozen setup is used with this build.
+- **`replay_episode.py`**: one sealed episode per admitted spec:
+  1. the packet, retained and checked against its source's seal; a mutation replaces only the coefficients;
+  2. the independent check;
+  3. capture and reconstruction under R6's site stage;
+  4. the receipt and the frozen context;
+  5. export, and the local and whole kernel replays;
+  6. the residual from the export;
+  7. the verdict, terminal event and seal, on every path.
+- **`replay_campaign.py`**: `lock` (once), `run` (the plan, the lock verified before and after) and `control8`.
+- **`rehearse_synthetic.py`** and **`rehearse_pinned.py`**: the two rehearsals.
 
 ## Next, in the agreed order
 

@@ -1,0 +1,11 @@
+{
+  "id": "rehearsal-l069-deterministic",
+  "site": "bracket-l069",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069"
+  },
+  "coefficients": null,
+  "inject_unverified": false,
+  "route": "pinned"
+}
