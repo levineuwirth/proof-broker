@@ -1,9 +1,13 @@
 # R6 qualification 1 audit — amendment 1, proposal
 
-Status: proposal, **revision 2**, 2026-10-02, against `main` at `3eb438a5`, for review. It responds to
-[the review of revision 1](reviews/2026-10-02/R6-016-AND-AUDIT-AMENDMENT-1-REVIEW.md) (`ac5f7fec`), which found one P1 and one P2 here:
-- Rule B guessed parameter identities from the fold context. It now establishes them;
-- Rule A lacked a global injectivity check. It now has one. It amends the audit program locked as
+Status: proposal, **revision 3**, 2026-10-02, against `main` at `3eb438a5`, for review.
+- **Revision 3** responds to [the review of revision 2](reviews/2026-10-02/R6-016-AND-AUDIT-AMENDMENT-1-REVIEW-2.md) (`4fd9278f`).
+  Its one P2: rule B's walk could not pass a value-side applied lambda, so R7 was unsatisfiable. The walk's permitted forms are now
+  frozen.
+- **Revision 2** responded to [the review of revision 1](reviews/2026-10-02/R6-016-AND-AUDIT-AMENDMENT-1-REVIEW.md) (`ac5f7fec`),
+  which found one P1 and one P2 here:
+  - Rule B guessed parameter identities from the fold context. It now establishes them;
+  - Rule A lacked a global injectivity check. It now has one. It amends the audit program locked as
 `qualification-audit-v1` (`eea12f40…`; [proposal](R6-QUALIFICATION-1-AUDIT-PROPOSAL.md), [build](R6-QUALIFICATION-1-AUDIT-BUILD.md)).
 **`qualification-audit-v1`, its records and [addendum 1](R6-QUALIFICATION-1-ADDENDUM-1.md) are not changed.** The amended program
 is a new revision under a new lock, `qualification-audit-v2`. Each new application is a separately locked record. It is proposed
@@ -68,15 +72,26 @@ Only the first two bind and allow a sufficiency classification. Both prints, and
 
 **B. Declaration parameters established, not guessed, and counted through `let` binders.**
 
-**The local's type and value are walked in lockstep** from the outside in. Each step must match, or the walk fails:
-- a `∀` binder of the type must meet a `λ` binder of the value whose binder type is definitionally equal to it (default
-  transparency, checked in the walk's context). The value binder is introduced as a fresh variable and recorded as **parameter
-  *i***, in order;
-- a `let` of the type must meet a `let` of the value with a definitionally equal type and value. It is introduced as a local
-  definition and not counted. This is the capture helper's convention: let-bound entries stay in the closed telescope and are not
-  applied;
-- the walk ends when the type has no further `∀` or `let`. The value's remaining body is then visited, in the context the walk
-  built, to find the fold.
+**The local's type `T` and value `V` are walked together** from the outside in. Metadata is transparent on both sides, and
+nothing is reduced. At each step the first rule that applies is taken:
+1. **The end** (checked first). `T` has no further `∀` or `let`. The remaining `V` is the body, visited in the context the walk built, to find the
+   fold.
+2. **Applied lambda (the type stays).** `V` is an application whose head is a `λ`: `(λ (q : B) => V') a₁ a₂ …`. The binder `q` is
+   introduced as an **internal local definition** with value `a₁`, retained for dependency traversal exactly as the visitor
+   retains an applied lambda's argument. The walk continues with `V'[q] a₂ …` and the same `T`. Several arguments are peeled one at
+   a time.
+3. **A parameter.** `T` is `∀ (b : A), T'` and `V` is `λ (b' : A'), V'` with `A` and `A'` definitionally equal (default transparency,
+   in the walk's context). A fresh variable `x` is introduced and recorded as **parameter *i***, in order, and the walk continues
+   with `T'[x]` and `V'[x]`.
+4. **A declaration `let`.** `T` is `let b : A := v; T'` and `V` is `let b' : A' := v'; V'` with `A ≡ A'` and `v ≡ v'`. It is
+   introduced as a local definition and not counted, and the walk continues with both bodies. This is the capture helper's
+   convention: let-bound entries stay in the closed telescope and are not applied.
+5. **An internal `let` (the type stays).** `T` is `∀ …` and `V` is `let q : B := a; V'`. `q` is introduced as an internal local
+   definition with value `a`, and the walk continues with `V'[q]` and the same `T`.
+6. **Anything else fails** with `parameters_unverified`. That covers:
+   - `T` still has a `∀` or `let` while `V` is a constant, a variable, an application whose head is not a `λ` (an eta-reduced value,
+     as in R9), a `match`, a projection or any other form;
+   - `T` is a `let` and `V` is a `λ`, or a `let` that does not match.
 
 **The parameters are exactly the recorded variables,** identified by variable identity. A binder that the proof itself introduces
 inside the body (an applied lambda, a `have`, a closer's `intro`) is never a parameter, wherever it falls in the fold context. Such
@@ -114,9 +129,11 @@ The amended program is first run on these synthetic controls. Their expectations
 | R4, capture | the row's search name already names another binder of the fold context: `rename_unverified` |
 | R5, duplicate destinations | two rows, `c'` → `c_` and `h1'` → `c_`: `rename_unverified` |
 | R6, a wrong binder index | the row `c'` → `c_` at the index of a different binder: `rename_unverified` |
-| R7, a `let` and an interleaved internal binder | a synthetic local with parameters `x`, `h`, `hn`, a `have` between them in its closed type, and a proof whose applied lambda puts an internal `_q` between `x` and `h` in the fold context (the review's case). Locatable; `h` maps to argument 1 and `hn` to argument 2, never through `_q`; if `hpos` reaches `_q`, it is reported internal |
+| R7, an interleaved applied lambda, in two variants | a synthetic local with parameters `x`, `h`, `hn`, whose value is `λ x => [let y := v;] (λ (_q : True) => λ h hn => …) True.intro`, with the declaration `let` in the type and value in one variant and absent in the other (the review's case, both ways). Locatable in both; `h` maps to argument 1 and `hn` to argument 2, never through `_q`; if `hpos` reaches `_q`, it is reported internal, through its definition |
+| R7b, an internal `let` | the same, with `let _r := t;` in place of the applied lambda (in the value only): locatable, `_r` internal |
 | R8, still an arity mismatch | the same whole declaration applying the local with one argument more than its parameters: not locatable |
-| R9, an unverified correspondence | a local whose value does not begin with the λ binders its type requires (an eta-reduced value): `parameters_unverified`, not locatable |
+| R9, an unverified correspondence | a local whose value is eta-reduced: its type is `∀ x, P x` and its value is a constant `f` (rule 6). `parameters_unverified`, not locatable |
+| R9b, a mismatched `let` | the type's `let` met by a value `let` with a different value: `parameters_unverified` |
 
 ## Applications, each a separately locked record
 
