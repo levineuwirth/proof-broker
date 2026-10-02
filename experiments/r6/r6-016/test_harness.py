@@ -8,14 +8,20 @@ export is read.
 3. **Control 5's labels** (`labels.py`): the rule over classifications, on synthetic slots; and the record, which changes R6-015's
    labels only at l096's and l099's learned maps.
 4. **The diagnosis's classification** (`diagnose_l070.classify`), on stand-in pairs: every class, including `identical` and
-   `arithmetically_equal`, which the synthetic exports cannot produce; only `established` counts.
+   `arithmetically_equal`, which the synthetic exports cannot produce; only `established` counts; incomplete, inconsistent and
+   contradictory records (harness review, finding 3).
 5. **`AuditCore`** is the locked `Audit.lean` cut before its `main`; an `Audit.lean` the lock does not record is refused.
 6. **Control 9's expectations** (`control9.evaluate`): a passing stand-in record passes, and each deviation is caught.
+7. **The axiom gates** (`analysis.axiom_gates`, the real function; harness review, finding 1): on written kernel reports against
+   stand-in frozen targets, the review's probe first; and on R6-015's 74 sealed proofs against the sites' frozen targets, where it
+   reproduces R6-015's acceptance-4 result.
 
 Run: `python3 r6-016/test_harness.py` (or under pytest).
 """
 import copy
+import gzip
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -26,6 +32,7 @@ if str(R6) not in sys.path: sys.path.insert(0, str(R6))
 if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 
 import run as r6  # noqa: E402
+import analysis  # noqa: E402
 import control9  # noqa: E402
 import diagnose_l070  # noqa: E402
 import labels  # noqa: E402
@@ -103,17 +110,30 @@ def pair(**kw):
 def test_classify():
     c = diagnose_l070.classify
     est = {'outcome': 'established'}
-    assert c(pair(**{'syntactic.equal_after_instantiation': True}))[0] == 'identical'
     assert c(pair(**{'syntactic.equal_up_to_metadata': True})) == ('identical', 'equal up to metadata')
     assert c(pair(**{'definitional.meta.2': {'transparency': 'instances', 'zeta_delta': False, 'outcome': 'established'},
                      'definitional.kernel': est})) == ('printed_only', 'definitionally equal: instances, zeta_delta False')
     assert c(pair(**{'definitional.kernel': est})) == ('printed_only', 'definitionally equal: the kernel')
     assert c(pair(**{'arithmetic.grobner': est})) == ('arithmetically_equal', 'proved by grobner')
     assert c(pair(**{'counterexample': {'outcome': 'established', 'instance': [['x', 1]]}}))[0] == 'distinct'
-    assert c(pair(**{'arithmetic.omega': est, 'counterexample': est}))[0] == 'contradictory_evidence'
     for outcome in ('refused', 'resource_exhausted', 'unsuccessful'):  # only established counts
         assert c(pair(**{'definitional.kernel': {'outcome': outcome}, 'arithmetic.omega': {'outcome': outcome},
                          'counterexample': {'outcome': outcome}}))[0] == 'equality_not_established'
+    # contradictions are checked first, the syntactic ones included (the review's probe)
+    for equal in ({'syntactic.equal_after_instantiation': True}, {'syntactic.equal_up_to_metadata': True},
+                  {'definitional.kernel': est}, {'arithmetic.omega': est}):
+        assert c(pair(**equal, counterexample=est))[0] == 'contradictory_evidence', equal
+    # inconsistent: a meta-level equality the kernel did not confirm (the review's probe); a pair the selection excludes
+    meta = {'transparency': 'default', 'zeta_delta': False, 'outcome': 'established'}
+    assert c(pair(**{'definitional.meta.4': meta})) == ('inconsistent_evidence', 'a meta-level equality the kernel did not confirm')
+    assert c(pair(**{'syntactic.equal_after_instantiation': True}))[0] == 'inconsistent_evidence'
+    # incomplete: a missing attempt, an unknown outcome, the meta-level attempts out of order, a missing flag
+    for change in ({'arithmetic.grobner': None}, {'counterexample': {'outcome': 'maybe'}},
+                   {'definitional.meta.0': {'transparency': 'default', 'zeta_delta': False, 'outcome': 'unsuccessful'}},
+                   {'syntactic.equal_up_to_metadata': None}):
+        assert c(pair(**change)) == ('inconsistent_evidence', 'the record is incomplete'), change
+    p = pair(); p['definitional']['meta'].pop()
+    assert c(p) == ('inconsistent_evidence', 'the record is incomplete')
 
 
 def test_audit_core():
@@ -174,6 +194,76 @@ def test_control9_evaluate():
         assert control9.evaluate(r), f'not caught: {name}'
 
 
+def write_reports(run, local, whole, names=('L', 'W'), accepted=True, extra=()):
+    for kind, name, axioms in (('local', names[0], local), ('whole', names[1], whole)):
+        report = {'accepted': accepted, 'targets': [{'name': name, 'axioms': axioms}, *extra]}
+        (run/f'validation-{kind}.raw.json.gz').write_bytes(gzip.compress(json.dumps(report).encode()))
+
+
+def delta(added=(), removed=()): return {'added': list(added), 'removed': list(removed)}
+
+
+def stops(run, recorded, needle):
+    try:
+        analysis.axiom_gates(run, {'axiom_delta': recorded}, 'synthetic')
+    except SystemExit as stop:
+        assert needle in str(stop), str(stop)
+        return
+    raise AssertionError(f'accepted {recorded}; expected a stop mentioning {needle!r}')
+
+
+def test_axiom_gates():
+    saved = analysis.targets, analysis.original_axioms
+    analysis.targets = lambda site: ('L', 'W')
+    analysis.original_axioms = lambda site: {'L': ('Quot.sound', 'propext'), 'W': ('Classical.choice', 'Quot.sound', 'propext')}
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp)
+            all3 = ['propext', 'Quot.sound', 'Classical.choice']
+            write_reports(run, all3, all3)
+            stops(run, {'L': {}, 'W': {}}, 'disagrees')                 # the review's probe: empty deltas
+            stops(run, {'L': delta(), 'W': delta()}, 'disagrees')       # recorded unchanged, though the local target gained one
+            stops(run, {'L': {'added': ['Classical.choice']}, 'W': delta()}, 'disagrees')
+            stops(run, {'L': {**delta(['Classical.choice']), 'extra': []}, 'W': delta()}, 'disagrees')
+            stops(run, {'L': delta(['Classical.choice'])}, 'exactly the local and whole')
+            stops(run, None, 'exactly the local and whole')
+            stops(run, {'L': delta(['Classical.choice']), 'W': delta(), 'X': delta()}, 'exactly the local and whole')
+            g = analysis.axiom_gates(run, {'axiom_delta': {'L': delta(['Classical.choice']), 'W': delta()}}, 'synthetic')
+            assert [(g[k]['allowlist'], g[k]['unchanged']) for k in ('local', 'whole')] == [(True, False), (True, True)]
+            write_reports(run, ['propext', 'sorryAx'], all3)          # a foreign axiom, its delta recorded correctly
+            g = analysis.axiom_gates(run, {'axiom_delta': {'L': delta(['sorryAx'], ['Quot.sound']), 'W': delta()}}, 'synthetic')
+            assert (g['local']['allowlist'], g['local']['unchanged']) == (False, False)
+            write_reports(run, ['propext'], all3)                     # a removal alone changes nothing
+            g = analysis.axiom_gates(run, {'axiom_delta': {'L': delta((), ['Quot.sound']), 'W': delta()}}, 'synthetic')
+            assert g['local']['allowlist'] and g['local']['unchanged'] and g['local']['delta'] == delta((), ['Quot.sound'])
+            good = {'L': delta((), ['Quot.sound']), 'W': delta()}
+            for kw in ({'accepted': False}, {'names': ('L', 'X')}, {'extra': [{'name': 'L2', 'axioms': []}]}):
+                write_reports(run, ['propext'], all3, **kw); stops(run, good, 'kernel report')
+            write_reports(run, 'propext', all3); stops(run, good, 'kernel report')
+    finally:
+        analysis.targets, analysis.original_axioms = saved
+
+
+def test_axiom_gates_on_r6015_runs():
+    """R6-015's sealed proofs (its records, not certificates), against the sites' frozen targets: none stops the function, and
+    the unchanged gate fails exactly where R6-015 recorded acceptance 4 failing, at the targets whose originals lack
+    `Classical.choice` (R6-016's proposal, section 2): the local target at l166 and l175, both targets at l096 and l099. The
+    allowlist holds everywhere."""
+    runs = R6/'r6-015-runs'
+    proofs = 0
+    for run in sorted(p for p in runs.iterdir() if p.is_dir()):
+        verdict = r6.read_json(run/'verdict.json')
+        if verdict['outcome'] != 'proved': continue
+        proofs += 1
+        g = analysis.axiom_gates(run, verdict, verdict['site'])
+        site = verdict['site'].removeprefix('bracket-')
+        assert all(x['allowlist'] for x in g.values()), run.name
+        assert g['local']['unchanged'] is (site not in ('l096', 'l099', 'l166', 'l175')), (run.name, g['local'])
+        assert g['whole']['unchanged'] is (site not in ('l096', 'l099')), (run.name, g['whole'])
+    assert proofs == 74, proofs
+
+
 if __name__ == '__main__':
-    for test in (test_observations_are_r6015s, test_admission, test_labels, test_classify, test_audit_core, test_control9_evaluate):
+    for test in (test_observations_are_r6015s, test_admission, test_labels, test_classify, test_audit_core, test_control9_evaluate,
+                 test_axiom_gates, test_axiom_gates_on_r6015_runs):
         test(); print(test.__name__, 'passed')

@@ -75,6 +75,7 @@ Axiom deltas, removals included, are retained per episode.
 """
 import argparse
 from collections import Counter
+import functools
 import gzip
 import hashlib
 import json
@@ -184,20 +185,39 @@ def current(run, proved):
     return d
 
 
+@functools.lru_cache(maxsize=None)
+def original_axioms(site):
+    """The site's frozen original targets and their axioms (`expected.json`, verified by `site_task.frozen_site`): the baseline
+    R6's final validation computes each run's delta against."""
+    _, expected = site_task.frozen_site(site_task.get(site))
+    return {t['name']: tuple(sorted(t['axioms'])) for t in expected['targets']}
+
+
 def axiom_gates(run, verdict, site):
-    """The two axiom gates, separately, per target (proposal section 2): every axiom in the allowlist, from the kernel's report;
-    and no axiom added against the site's frozen expected targets, from the run's delta. The deltas are retained either way."""
+    """The two axiom gates, separately, per target (proposal section 2), recomputed: every axiom in the allowlist, from the
+    kernel's report; and no axiom added, the delta recomputed from that report against the site's frozen original targets. The
+    kernel reports must be complete, and the verdict's recorded delta must equal the recomputation; otherwise the analysis
+    stops. The deltas are retained either way."""
     local, whole = targets(site)
-    delta = verdict.get('axiom_delta') or {}
+    original = original_axioms(site)
+    if set(original) != {local, whole}: raise SystemExit(f"{run.name}: the site's frozen targets are not its local and whole targets")
+    recorded = verdict.get('axiom_delta')
+    if not isinstance(recorded, dict) or set(recorded) != {local, whole}:
+        raise SystemExit(f"{run.name}: the verdict's axiom delta does not name exactly the local and whole targets")
     gates = {}
     for kind, name in (('local', local), ('whole', whole)):
         report = json.loads(gzip.decompress((run/f'validation-{kind}.raw.json.gz').read_bytes()))
-        found = {t['name']: t['axioms'] for t in report.get('targets') or []}
-        accepted = report.get('accepted') is True and set(found) == {name}
-        gates[kind] = {'target': name, 'kernel_accepted': accepted, 'axioms': found.get(name),
-                       'allowlist': accepted and set(found[name]) <= ALLOWED_AXIOMS,
-                       'unchanged': set(delta) == {local, whole} and isinstance(delta.get(name), dict) and not delta[name].get('added'),
-                       'delta': delta.get(name)}
+        rows = report.get('targets')
+        if (report.get('accepted') is not True or not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
+                or rows[0].get('name') != name or not isinstance(rows[0].get('axioms'), list)
+                or not all(isinstance(x, str) for x in rows[0]['axioms'])):
+            raise SystemExit(f'{run.name}: the {kind} kernel report is not an accepted report of {name} with its axioms')
+        axioms, before = set(rows[0]['axioms']), set(original[name])
+        delta = {'added': sorted(axioms - before), 'removed': sorted(before - axioms)}
+        if recorded[name] != delta:
+            raise SystemExit(f"{run.name}: the verdict's {kind} axiom delta disagrees with its kernel report and the frozen targets")
+        gates[kind] = {'target': name, 'kernel_accepted': True, 'axioms': sorted(axioms), 'original': sorted(before),
+                       'allowlist': axioms <= ALLOWED_AXIOMS, 'unchanged': not delta['added'], 'delta': delta}
     return gates
 
 
@@ -289,7 +309,9 @@ def check_diagnosis(record, lock_sha, frozen):
     """The diagnosis's identity, provenance and command, bound to the sealed export; its classifications recomputed from its
     attempts (`diagnose_l070.classify`). Reported; it counts toward nothing."""
     d = diagnose_l070
+    selected = r6.read_json(replay_lock.AUDIT_LOCK)['selection']['regression'][d.SLOT]   # the target, from v2's locked selection
     if (record.get('schema_version') != d.SCHEMA or record.get('slot') != d.SLOT or record.get('run') != d.RUN
+            or selected['run'] != f'experiments/r6/{d.RUN}' or record.get('local') != selected['local']
             or record.get('lock_sha256') != lock_sha):
         raise SystemExit('diagnosis: identity')
     sources = record.get('sources_sha256') or {}
@@ -302,7 +324,7 @@ def check_diagnosis(record, lock_sha, frozen):
     command = record.get('command') or {}
     inputs = (command.get('inputs') or {}).get('<tmp>/export.ndjson') or {}
     export = export_digests()
-    if (command.get('argv') != [str(d.TOOL.relative_to(R6)), '<tmp>/export.ndjson', record.get('local'), '<tmp>/report.json']
+    if (command.get('argv') != [str(d.TOOL.relative_to(R6)), '<tmp>/export.ndjson', selected['local'], '<tmp>/report.json']
             or command.get('env') != d.ENV or type(command.get('exit_code')) is not int or command.get('exit_code') != 0
             or command.get('tool_sha256') != record.get('tool_sha256')
             or inputs.get('packed_sha256') != export['packed'] or export['packed'] != export['sealed']
@@ -313,6 +335,8 @@ def check_diagnosis(record, lock_sha, frozen):
         raise SystemExit('diagnosis: no located report')
     pairs = d.classified(report)
     if pairs != record.get('pairs'): raise SystemExit('diagnosis: the record contradicts its attempts')
+    if any(p['classification'] in d.INVALID for p in pairs):
+        raise SystemExit(f"diagnosis: its evidence is inconsistent ({[p['basis'] for p in pairs if p['classification'] in d.INVALID]})")
     return {'pairs': pairs, 'atoms': len((report.get('diagnosis') or {}).get('atoms') or []),
             'positivity': (report.get('diagnosis') or {}).get('positivity')}
 

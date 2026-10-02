@@ -53,7 +53,7 @@ DATA = ('capture/CaptureSite.lean', 'schema/event.schema.json', 'schema/task-sit
         'reviews/2026-10-01/R6-QUALIFICATION-1-AUDIT.json', 'policies/qualification-audit-v2.sha256.json',
         'reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-V2-REGRESSION.json', 'reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-V2-ADDENDUM-2.json',
         'qualification-audit/qualification_audit.py',  # imported by qualification-audit-v2's driver from its path, outside sys.modules
-        'r6-016/diagnosis/Diagnose.lean', 'r6-016/test_binding.py', 'r6-016/test_analysis.py', 'r6-016/test_harness.py')
+        'r6-016/diagnosis/Diagnose.lean', 'r6-016/diagnosis/DiagnoseTest.lean', 'r6-016/test_binding.py', 'r6-016/test_analysis.py', 'r6-016/test_harness.py')
 LABELS = 'reviews/2026-10-02/R6-016-CONTROL-5-LABELS.json'
 MUTATIONS = 'reviews/2026-10-01/R6-015-MUTATIONS-2.json'
 SPEC_FIELDS = {'id', 'site', 'source', 'coefficients', 'inject_unverified', 'route'}

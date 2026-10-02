@@ -25,8 +25,10 @@ order:
 
 **Outcomes** of 3 to 5: `established` (a kernel-accepted proof); `refused` (the tactic or check rejected the statement as outside
 what it handles, with its message); `resource_exhausted` (heartbeats, recursion depth, or the kernel's own limits, with the
-limit); `unsuccessful` (it ran to completion without a proof). A meta-level `isDefEq` is `established` only when the kernel
-accepts the same `rfl` proof. A failed proof is never a proof of the opposite.
+limits); `unsuccessful` (it ran to completion without a proof). Each attempt is one guarded unit (`guarded`, `counterexample`):
+an exception at any step of it, building its statement included, becomes its outcome and never escapes. A meta-level `isDefEq`
+is `established` only when the kernel accepts the same `rfl` proof. A failed proof is never a proof of the opposite.
+`DiagnoseTest.lean`, run by the build, checks this at recursion limits from 1 upward.
 
 **No classification is made here.** The driver computes it from these outcomes (`diagnose_l070.classify`), and the analysis
 recomputes it.
@@ -67,13 +69,27 @@ def kernelCheck (name : Name) (type value : Expr) : MetaM Attempt := do
     | .deterministicTimeout | .excessiveMemory | .deepRecursion => return { outcome := "resource_exhausted", detail := msg }
     | _ => return { outcome := "unsuccessful", detail := s!"kernel rejected: {msg}" }
 
-/-- A meta-level exception as an outcome: runtime limits are `resource_exhausted`, a tactic's own failure `unsuccessful`,
-    anything else `refused`. -/
-def fromException (ex : Exception) (ownFailure : String → Bool) : MetaM Attempt := do
-  let msg := ((← ex.toMessageData.toString).take 300).toString
-  if ex.isRuntime then return { outcome := "resource_exhausted", detail := s!"{msg} (maxHeartbeats {heartbeats})" }
+/-- The limits in force, for a `resource_exhausted` outcome's detail. -/
+def limits : MetaM String :=
+  return s!"maxHeartbeats {heartbeats} per attempt, maxRecDepth {(← readThe Core.Context).maxRecDepth}"
+
+/-- An exception's message; printing it may itself exhaust a limit. -/
+def message (ex : Exception) : MetaM String :=
+  tryCatchRuntimeEx (return ((← ex.toMessageData.toString).take 300).toString) fun _ => return "<message not printable>"
+
+/-- A meta-level exception as an outcome: a runtime limit (heartbeats, recursion depth) is `resource_exhausted`, with the limits;
+    a tactic's own failure `unsuccessful`; anything else `refused`. -/
+def fromException (ex : Exception) (ownFailure : String → Bool := fun _ => false) : MetaM Attempt := do
+  let msg ← message ex
+  if ex.isRuntime then return { outcome := "resource_exhausted", detail := s!"{msg} ({← limits})" }
   if ownFailure msg then return { outcome := "unsuccessful", detail := msg }
   return { outcome := "refused", detail := msg }
+
+/-- One complete attempt, with its own heartbeat budget. Any exception, at any step of it, becomes its outcome. -/
+def guarded (x : MetaM Attempt) (ownFailure : String → Bool := fun _ => false) : MetaM Attempt :=
+  tryCatchRuntimeEx (withLimit x) (fromException · ownFailure)
+
+def attemptJson (r : Attempt) : Json := Json.mkObj [("outcome", toJson r.outcome), ("detail", toJson r.detail)]
 
 partial def stripMData : Expr → Expr
   | .mdata _ e => stripMData e
@@ -108,39 +124,42 @@ def closedEq (a b : Expr) : MetaM (Expr × Array FVarId) := do
   let fvs ← closure eq (values := true)
   return (← mkForallFVars (fvs.map mkFVar) eq, fvs)
 
-def kernelRfl (tag : String) (a b : Expr) : MetaM Attempt := do
+def kernelRfl (tag : String) (a b : Expr) : MetaM Attempt := guarded do
   let (stmt, fvs) ← closedEq a b
   kernelCheck (.mkSimple s!"_r6016_{tag}_rfl") stmt (← mkLambdaFVars (fvs.map mkFVar) (← mkEqRefl a))
 
 def defeqAt (t : TransparencyMode) (zetaDelta : Bool) (a b : Expr) (kernel : Attempt) : MetaM Json := do
-  let attempt ← tryCatchRuntimeEx (withLimit do
-      let ok ← withNewMCtxDepth <| withTransparency t <| withConfig (fun c => { c with zetaDelta }) <| isDefEq a b
-      if !ok then return { outcome := "unsuccessful", detail := "isDefEq false" }
-      if kernel.outcome == "established" then return established "isDefEq true; the kernel accepts rfl"
-      return { outcome := "unsuccessful", detail := s!"isDefEq true; the kernel did not confirm ({kernel.outcome})" })
-    (fun ex => fromException ex fun _ => false)
+  let attempt ← guarded do
+    let ok ← withNewMCtxDepth <| withTransparency t <| withConfig (fun c => { c with zetaDelta }) <| isDefEq a b
+    if !ok then return { outcome := "unsuccessful", detail := "isDefEq false" }
+    if kernel.outcome == "established" then return established "isDefEq true; the kernel accepts rfl"
+    return { outcome := "unsuccessful", detail := s!"isDefEq true; the kernel did not confirm ({kernel.outcome})" }
   return Json.mkObj [("transparency", toJson (transparencyName t)), ("zeta_delta", toJson zetaDelta),
                      ("outcome", toJson attempt.outcome), ("detail", toJson attempt.detail)]
 
-/-- A tactic on the closed statement, in an empty local context; the proof kernel-checked. -/
-def byTactic (tag : String) (stmt : Expr) (tac : TSyntax `tactic) (ownFailure : String → Bool) : MetaM Attempt := withLCtx {} {} do
-  if stmt.hasFVar || stmt.hasMVar then return { outcome := "refused", detail := "statement not closed" }
-  let mv ← mkFreshExprMVar stmt
-  let run : MetaM (Option Attempt) := do
+/-- A tactic on the closed statement, in an empty local context; the proof kernel-checked. One complete attempt. -/
+def byTactic (tag : String) (stmt : Expr) (tac : TSyntax `tactic) (ownFailure : String → Bool) : MetaM Attempt :=
+  guarded (ownFailure := ownFailure) <| withLCtx {} {} do
+    if stmt.hasFVar || stmt.hasMVar then return { outcome := "refused", detail := "statement not closed" }
+    let mv ← mkFreshExprMVar stmt
     let rest ← Term.TermElabM.run' (Tactic.run mv.mvarId! (Tactic.evalTactic tac))
-    return if rest.isEmpty then none else some { outcome := "unsuccessful", detail := "goals remain" }
-  match ← tryCatchRuntimeEx (withLimit run) (fun ex => some <$> fromException ex ownFailure) with
-  | some failed => return failed
-  | none => kernelCheck (.mkSimple s!"_r6016_{tag}") stmt (← instantiateMVars mv)
+    unless rest.isEmpty do return { outcome := "unsuccessful", detail := "goals remain" }
+    kernelCheck (.mkSimple s!"_r6016_{tag}") stmt (← instantiateMVars mv)
 
 def arithmetic (tag : String) (a b : Expr) : MetaM Json := do
-  let (stmt, fvs) ← closedEq a b
-  if ← fvs.anyM (fun id => do isProp (← id.getDecl).type) then
+  -- the statement itself is built inside an attempt too: if that fails, both attempts carry its outcome
+  let setup : MetaM (Except Attempt (Expr × Bool × String)) := withLimit do
+    let (stmt, fvs) ← closedEq a b
+    return .ok (stmt, ← fvs.anyM (fun id => do isProp (← id.getDecl).type), toString (← ppExpr stmt))
+  match ← tryCatchRuntimeEx setup (fun ex => return .error (← fromException ex)) with
+  | .error r => return Json.mkObj [("omega", toJson r), ("grobner", toJson r)]
+  | .ok (_, true, shown) =>
     let r : Attempt := { outcome := "refused", detail := "the statement mentions a proof term; not attempted" }
-    return Json.mkObj [("omega", toJson r), ("grobner", toJson r)]
-  let omega ← byTactic s!"{tag}_omega" stmt (← `(tactic| (intros; omega))) (·.startsWith "omega could not prove the goal")
-  let grobner ← byTactic s!"{tag}_grobner" stmt (← `(tactic| (intros; grobner))) (·.startsWith "`grind` failed")
-  return Json.mkObj [("statement", toJson (toString (← ppExpr stmt))), ("omega", toJson omega), ("grobner", toJson grobner)]
+    return Json.mkObj [("statement", toJson shown), ("omega", toJson r), ("grobner", toJson r)]
+  | .ok (stmt, false, shown) =>
+    let omega ← byTactic s!"{tag}_omega" stmt (← `(tactic| (intros; omega))) (·.startsWith "omega could not prove the goal")
+    let grobner ← byTactic s!"{tag}_grobner" stmt (← `(tactic| (intros; grobner))) (·.startsWith "`grind` failed")
+    return Json.mkObj [("statement", toJson shown), ("omega", toJson omega), ("grobner", toJson grobner)]
 
 /-- Every assignment of 0 to 3 to `n` variables, in lexicographic order. -/
 def assignments : Nat → List (List Nat)
@@ -151,7 +170,7 @@ partial def zetaAll (e : Expr) : MetaM Expr := do
   let e' ← zetaReduce e
   if e' == e then return e else zetaAll e'
 
-def counterexample (tag : String) (a b : Expr) : MetaM Json := do
+def counterexampleCore (tag : String) (a b : Expr) : MetaM Json := do
   let ne := mkNot (← mkEq a b)
   let ne ← zetaAll (← instantiateMVars ne)
   let vars := (collectFVars {} ne).fvarIds
@@ -170,9 +189,7 @@ def counterexample (tag : String) (a b : Expr) : MetaM Json := do
     let inst := (kinds.zip values.toArray).foldl (fun e ((id, isInt), k) =>
       e.replaceFVar (mkFVar id) (if isInt then toExpr (Int.ofNat k) else toExpr k)) ne
     tried := tried + 1
-    let proof? ← tryCatchRuntimeEx (withLimit (some <$> mkDecideProof inst)) (fun _ => pure none)
-    let some proof := proof? | return ← refuse "no decision procedure for an instance"
-    let r ← kernelCheck (.mkSimple s!"_r6016_{tag}_cex") inst proof
+    let r ← kernelCheck (.mkSimple s!"_r6016_{tag}_cex") inst (← mkDecideProof inst)
     if r.outcome == "established" then
       let named ← (kinds.zip values.toArray).mapM fun ((id, _), k) => return (toString (← id.getDecl).userName, k)
       return Json.mkObj [("outcome", toJson "established"), ("instance", toJson named), ("statement", toJson (toString (← ppExpr inst))),
@@ -180,16 +197,22 @@ def counterexample (tag : String) (a b : Expr) : MetaM Json := do
     if r.outcome == "resource_exhausted" then return Json.mkObj [("outcome", toJson r.outcome), ("detail", toJson r.detail)]
   return Json.mkObj [("outcome", toJson "unsuccessful"), ("detail", toJson s!"no instance of {tried} decided a ≠ b")]
 
+/-- The counterexample, one complete attempt: any exception becomes its outcome (no decision procedure is `refused`). -/
+def counterexample (tag : String) (a b : Expr) : MetaM Json :=
+  tryCatchRuntimeEx (withLimit (counterexampleCore tag a b)) fun ex => return attemptJson (← fromException ex)
+
+/-- An observation that may fail (printing): its value, or the outcome of its failure. -/
+def observed (x : MetaM Json) : MetaM Json :=
+  tryCatchRuntimeEx (withLimit x) fun ex => return attemptJson (← fromException ex)
+
 def diagnosePair (i j : Nat) (a b : Expr) : MetaM Json := do
   let tag := s!"{i}_{j}"
   let a ← instantiateMVars a; let b ← instantiateMVars b
-  let printed := Json.mkObj [("default", toJson (toString (← ppExpr a))), ("default_equal", toJson true),
-                             ("pp_all", toJson #[← ppAll a, ← ppAll b]), ("pp_all_equal", toJson ((← ppAll a) == (← ppAll b)))]
-  let diff := match firstDifference a b with
-    | some (path, x, y) => some (path, x, y)
-    | none => none
-  let diffJ ← match diff with
-    | some (path, x, y) => pure (Json.mkObj [("path", toJson path), ("a", toJson (← ppAll x)), ("b", toJson (← ppAll y))])
+  let printed ← observed do
+    return Json.mkObj [("default", toJson (toString (← ppExpr a))), ("default_equal", toJson true),
+                       ("pp_all", toJson #[← ppAll a, ← ppAll b]), ("pp_all_equal", toJson ((← ppAll a) == (← ppAll b)))]
+  let diffJ ← match firstDifference a b with
+    | some (path, x, y) => observed do return Json.mkObj [("path", toJson path), ("a", toJson (← ppAll x)), ("b", toJson (← ppAll y))]
     | none => pure Json.null
   let syntactic := Json.mkObj [("equal_after_instantiation", toJson (a == b)),
                                ("equal_up_to_metadata", toJson (stripMData a == stripMData b)), ("first_difference", diffJ)]
@@ -259,6 +282,7 @@ def main (args : List String) : IO UInt32 := do
     : MetaM Json).run' {} |>.toIO ctx { env := base }
   let env := Json.mkObj [("init_shared_identical", toJson identical), ("init_shared_equal_up_to_annotations", toJson annotated),
                          ("replayed_through_addDecl", toJson added.size), ("lean", toJson Lean.versionString),
-                         ("max_heartbeats", toJson heartbeats), ("max_variables", toJson maxVariables)]
+                         ("max_heartbeats", toJson heartbeats), ("max_rec_depth", toJson ctx.maxRecDepth),
+                         ("max_variables", toJson maxVariables)]
   IO.FS.writeFile reportPath ((Json.mkObj [("environment", env), ("diagnosis", report)]).pretty ++ "\n")
   return 0

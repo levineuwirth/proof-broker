@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """R6-016's bounded diagnosis of l070 draw 5 (`R6-016-PROPOSAL.md`, revision 2, section 4).
 
-    diagnose_l070.py build                    build the diagnosis program (Lean 4.32.2)
+    diagnose_l070.py build                    build the diagnosis program (Lean 4.32.2), and run its test (`DiagnoseTest.lean`)
     diagnose_l070.py run --output RECORD      under the R6-016 lock, after the replay: R6's retained l070 draw 5 export
     diagnose_l070.py rehearse --output RECORD pre-lock: synthetic exports only, each with a frozen expectation
 
@@ -14,16 +14,24 @@ audit's (`atomsOf`).
 `qualification-audit-v2`'s locked selection, with `live-evaluation-v3` verified before and after. It runs under the R6-016 lock,
 verified before and after, so that it cannot inform the atom rules.
 
-**The classification** of each pair, from established evidence only (`classify`), in the proposal's order:
-- `identical`: equal after instantiating metavariables, or equal up to metadata;
-- `printed_only`: otherwise, definitionally equal: the first established meta-level attempt (each confirmed by the kernel), or the
-  kernel's `rfl`;
-- `arithmetically_equal`: otherwise, an established proof of `a = b` (`omega` or `grobner`);
-- `distinct`: otherwise, an established, kernel-checked counterexample;
+**The classification** of each pair, from established evidence only (`classify`). The record is checked first:
+- **complete:** both syntactic flags, the six meta-level attempts (reducible, instances, default; without and with
+  `zetaDelta`, in that order), the kernel, `omega`, `grobner` and the counterexample, each with one of the four outcomes;
+  otherwise `inconsistent_evidence`;
+- **no contradiction:** an established counterexample with any evidence of equality (syntactic, definitional or arithmetic) is
+  `contradictory_evidence`;
+- **consistent:** a meta-level equality the kernel did not confirm, or a pair equal after instantiation (which the selection
+  excludes), is `inconsistent_evidence`.
+
+Then, in the proposal's order:
+- `identical`: equal up to metadata;
+- `printed_only`: definitionally equal, confirmed by the kernel's `rfl`; the first established meta-level attempt is reported;
+- `arithmetically_equal`: an established proof of `a = b` (`omega` or `grobner`);
+- `distinct`: an established, kernel-checked counterexample;
 - `equality_not_established`: none of these. Unresolved, and not a claim that the terms differ.
 
-Evidence of both equality and a counterexample would contradict the kernel; it is reported as `contradictory_evidence`, for
-diagnosis. The analysis recomputes every classification from the record's attempts.
+The analysis recomputes every classification from the record's attempts, and rejects a record with contradictory or
+inconsistent evidence.
 
 Offline: no provider, credential or spending.
 """
@@ -51,13 +59,18 @@ BUILD = replay_lock.DIAGNOSIS_TOOL.parents[3]
 TOOL = replay_lock.DIAGNOSIS_TOOL
 TOOLCHAIN = replay_lock.AUDIT_TOOLCHAIN
 SOURCE = HERE/'diagnosis/Diagnose.lean'
+TEST = HERE/'diagnosis/DiagnoseTest.lean'
 AUDIT_SOURCE = R6/'qualification-audit-v2/Audit.lean'
 CUT = '\ndef main (args : List String)'
 SLOT = 'bracket-l070/5'
 RUN = 'cohort-live-v9/l070-draw5'
 SOURCES = (Path(__file__).resolve(), SOURCE)
 ENV = {'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(TOOLCHAIN)}
-CLASSES = ('identical', 'printed_only', 'arithmetically_equal', 'distinct', 'equality_not_established', 'contradictory_evidence')
+CLASSES = ('identical', 'printed_only', 'arithmetically_equal', 'distinct', 'equality_not_established', 'contradictory_evidence',
+           'inconsistent_evidence')
+INVALID = ('contradictory_evidence', 'inconsistent_evidence')
+OUTCOMES = ('established', 'refused', 'resource_exhausted', 'unsuccessful')
+TRANSPARENCIES = [(t, z) for t in ('reducible', 'instances', 'default') for z in (False, True)]
 
 
 def audit_core():
@@ -83,7 +96,9 @@ def build(_=None):
                                        '[[lean_exe]]\nname = "r6-016-diagnose"\nroot = "Diagnose"\nsupportInterpreter = true\n')
     (BUILD/'lean-toolchain').write_text(f'{audit_v2.TOOL_TOOLCHAIN}\n')
     subprocess.run([str(TOOLCHAIN/'bin/lake'), 'build', 'r6-016-diagnose'], cwd=BUILD, check=True)
-    print(json.dumps({'tool': r6.sha(TOOL), 'audit_core_sha256': r6.sha(BUILD/'AuditCore.lean')}))
+    shutil.copyfile(TEST, BUILD/'DiagnoseTest.lean')   # every attempt returns an outcome at every recursion limit
+    subprocess.run([str(TOOLCHAIN/'bin/lake'), 'env', 'lean', 'DiagnoseTest.lean'], cwd=BUILD, check=True)
+    print(json.dumps({'tool': r6.sha(TOOL), 'audit_core_sha256': r6.sha(BUILD/'AuditCore.lean'), 'test': 'passed'}))
 
 
 def run_tool(export, local):
@@ -100,16 +115,25 @@ def established(a): return isinstance(a, dict) and a.get('outcome') == 'establis
 
 
 def classify(pair):
-    """(classification, basis) from the pair's recorded attempts; established evidence only."""
-    s, d, ar, cx = (pair.get(k) or {} for k in ('syntactic', 'definitional', 'arithmetic', 'counterexample'))
-    if s.get('equal_after_instantiation') is True or s.get('equal_up_to_metadata') is True:
-        return 'identical', 'equal after instantiation' if s.get('equal_after_instantiation') is True else 'equal up to metadata'
-    meta = [m for m in d.get('meta') or [] if established(m)]
-    equal = (f"definitionally equal: {meta[0]['transparency']}, zeta_delta {meta[0]['zeta_delta']}" if meta
-             else 'definitionally equal: the kernel' if established(d.get('kernel')) else None)
-    proved = [k for k in ('omega', 'grobner') if established(ar.get(k))]
-    if established(cx) and (equal or proved): return 'contradictory_evidence', 'equality and a counterexample both established'
-    if equal: return 'printed_only', equal
+    """(classification, basis) from the pair's recorded attempts; established evidence only (see above)."""
+    s, d, ar, cx = (pair.get(k) if isinstance(pair.get(k), dict) else {} for k in ('syntactic', 'definitional', 'arithmetic', 'counterexample'))
+    meta = d.get('meta') if isinstance(d.get('meta'), list) else []
+    attempts = [d.get('kernel'), ar.get('omega'), ar.get('grobner'), cx, *meta]
+    if ([(m.get('transparency'), m.get('zeta_delta')) if isinstance(m, dict) else None for m in meta] != TRANSPARENCIES
+            or any(not isinstance(a, dict) or a.get('outcome') not in OUTCOMES for a in attempts)
+            or not all(isinstance(s.get(k), bool) for k in ('equal_after_instantiation', 'equal_up_to_metadata'))):
+        return 'inconsistent_evidence', 'the record is incomplete'
+    syntactic = s['equal_after_instantiation'] or s['equal_up_to_metadata']
+    kernel, defined = established(d['kernel']), [m for m in meta if established(m)]
+    proved = [k for k in ('omega', 'grobner') if established(ar[k])]
+    if established(cx) and (syntactic or kernel or defined or proved):
+        return 'contradictory_evidence', 'equality and a counterexample both established'
+    if defined and not kernel: return 'inconsistent_evidence', 'a meta-level equality the kernel did not confirm'
+    if s['equal_after_instantiation']: return 'inconsistent_evidence', 'a pair equal after instantiation, which the selection excludes'
+    if s['equal_up_to_metadata']: return 'identical', 'equal up to metadata'
+    if kernel:
+        return 'printed_only', (f"definitionally equal: {defined[0]['transparency']}, zeta_delta {defined[0]['zeta_delta']}" if defined
+                                else 'definitionally equal: the kernel')
     if proved: return 'arithmetically_equal', f'proved by {proved[0]}'
     if established(cx): return 'distinct', f"counterexample at {cx.get('instance')}"
     return 'equality_not_established', 'no attempt established equality or a counterexample'

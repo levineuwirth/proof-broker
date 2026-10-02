@@ -46,7 +46,7 @@ CASES = [  # (error line, expected stage, expected detail)
 def test_classify():
     rehearsal = r6.read_json(R6/'reviews/2026-10-01/R6-015-HARNESS-REHEARSAL-SYNTHETIC.json')['results']
     refusal = r6.read_json(R6/'cohort-live-v9/l166-draw1/reconstruction-refusal.json')['error_line']
-    dry = r6.read_json(R6/'reviews/2026-10-02/R6-016-CONTROL-9-DRY-RUN.json')['results']  # R6-016's bridge's own lines
+    dry = r6.read_json(R6/'reviews/2026-10-02/R6-016-CONTROL-9-DRY-RUN-2.json')['results']  # R6-016's bridge's own lines
     real = [(dry['c9b']['errors'][0], 'constrained_final_step', 'does not cancel'),
             (dry['c9e_without']['errors'][0], 'constrained_final_step', 'does not cancel'),
             (dry['c9f']['errors'][0], 'constrained_final_step', 'reaches hypotheses'),
@@ -384,9 +384,19 @@ def test_outcomes():
 
     # the diagnosis: bound to the sealed export and the locked program; its classifications recomputed
     for p, want in ((pair(defeq=True, kernel=True), 'printed_only'), (pair(kernel=True), 'printed_only'),
-                    (pair(omega=True), 'arithmetically_equal'), (pair(cex=True), 'distinct'), (pair(omega=True, cex=True), 'contradictory_evidence')):
+                    (pair(omega=True), 'arithmetically_equal'), (pair(cex=True), 'distinct')):
         v, o, c8, c3, c9, dg = scenario(); dg = diagnosis_record([p])
         assert run_analysis(v, o, c8, c3, c9, dg)['l070_diagnosis']['pairs'][0]['classification'] == want
+    # the harness review's probes: inconsistent or contradictory evidence is rejected, not classified
+    syntactic = pair(cex=True); syntactic['syntactic']['equal_after_instantiation'] = True
+    for p in (pair(defeq=True, kernel=False), pair(omega=True, cex=True), syntactic):
+        v, o, c8, c3, c9, dg = scenario(); dg = diagnosis_record([p])
+        rejected(v, o, c8, c3, c9, dg, needle='evidence is inconsistent')
+    # ... and the target is the locked selection's, not the record's
+    v, o, c8, c3, c9, dg = scenario(); dg['local'] = 'Wrong.local'; dg['command']['argv'][2] = 'Wrong.local'
+    rejected(v, o, c8, c3, c9, dg, needle='diagnosis: identity')
+    v, o, c8, c3, c9, dg = scenario(); dg['command']['argv'][2] = 'Wrong.local'
+    rejected(v, o, c8, c3, c9, dg, needle='sealed export')
     v, o, c8, c3, c9, dg = scenario(); dg['pairs'][0]['classification'] = 'distinct'
     rejected(v, o, c8, c3, c9, dg, needle='contradicts its attempts')
     v, o, c8, c3, c9, dg = scenario(); dg['command']['inputs']['<tmp>/export.ndjson']['packed_sha256'] = 'other'

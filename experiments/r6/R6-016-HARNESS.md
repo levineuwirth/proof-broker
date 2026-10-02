@@ -1,10 +1,48 @@
 # R6-016 — harness, controls, diagnosis and analysis, for implementation review
 
-**Harness revision 1**, 2026-10-02. It is step 4 of [the proposal, revision 2](R6-016-PROPOSAL.md) (section 7): R6-015's harness,
+**Harness revision 2**, 2026-10-02. It responds to [the implementation review of revision 1](reviews/2026-10-02/R6-016-HARNESS-REVIEW.md)
+(`634d4194`), which found one P1 and three P2 issues and accepted the three implementation choices (12 expected control-5 passes,
+control 9's extra preparation hypotheses, the disclosed limits of reading an export). It is step 4 of [the proposal, revision 2](R6-016-PROPOSAL.md) (section 7): R6-015's harness,
 copied, with R6-016's bridge revision, control 9, the l070 diagnosis program and the analysis changes, rehearsed on synthetic
 goals only. The bridge (`64585867`) was [approved](reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-AMENDMENT-1-BUILD-REVIEW.md) with
 build revision 2. `qualification-audit-v2` is locked (`c42906ed…`), and addendum 2 is recorded, so control 8's program and control
 5's classifications are both fixed before this lock.
+
+## What changed in revision 2
+
+1. **P1, the unchanged gate accepted missing evidence.** `axiom_gates` now recomputes each target's delta from its kernel report
+   against the site's frozen original targets (`original_axioms`: `expected.json`, verified by `site_task.frozen_site`), the
+   baseline R6's final validation uses.
+   - **Complete fields are required:** an accepted report naming exactly its target, with a list of axioms; a verdict delta naming
+     exactly the local and whole targets.
+   - **The verdict's recorded delta must equal the recomputation,** `added` and `removed`; otherwise the analysis stops. The
+     review's probe (Classical.choice in the reports, empty deltas) stops.
+   - **The real function is tested** (`test_harness.py`): on written reports, the review's probe first; and on R6-015's 74
+     sealed proofs, against the sites' frozen targets. There it reproduces R6-015's acceptance-4 result target by target: the
+     local target fails at l166 and l175, both targets at l096 and l099, and nothing else; the allowlist holds everywhere.
+2. **P2, the diagnosis's target was self-asserted.** The analysis now takes the local target, and the run, from
+   `qualification-audit-v2`'s locked selection for `bracket-l070/5`, and requires both the record and its command to name them.
+3. **P2, inconsistent evidence was classified.** `classify` now checks the record first:
+   - **complete:** both syntactic flags, the six meta-level attempts in order, the kernel, `omega`, `grobner` and the
+     counterexample, each with one of the four outcomes;
+   - **no contradiction,** checked before anything is returned: an established counterexample with any evidence of equality,
+     syntactic included, is `contradictory_evidence`;
+   - **consistent:** a meta-level equality the kernel did not confirm, or a pair equal after instantiation (which the selection
+     excludes), is `inconsistent_evidence`.
+
+   The analysis rejects a record with either. `identical` now arises only from equality up to metadata.
+4. **P2, resource exhaustion escaped.** Every attempt in `Diagnose.lean` is one guarded unit (`guarded`, `counterexample`): an
+   exception at any step, building its statement included, becomes its outcome. A runtime limit is `resource_exhausted` with
+   both limits named (`maxHeartbeats 400000 per attempt, maxRecDepth N`); anything else is `refused`. The counterexample no
+   longer turns an exception into "no decision procedure". Printing an exception's message is guarded too, and the printed
+   observations record a failure as their outcome. The report records `max_rec_depth`.
+   - **`DiagnoseTest.lean`, run by the build,** checks it: at recursion limits 1 to 64, every attempt on `↑(2 ^ 16) ≠ 1` returns
+     an outcome and none escapes; an exhausted one names the limit; at the default limit the counterexample is established. The
+     review's own probe gives `resource_exhausted` at depths 1 to 7 and `established` at 8.
+
+**The review's probe script,** with the frozen targets stubbed for its first probe (an unknown site now stops the function
+earlier): the missing deltas stop the analysis; the wrong target is rejected (identity); the unconfirmed meta-level equality is
+rejected as inconsistent; syntactic equality with a counterexample is `contradictory_evidence`.
 
 **Status:**
 - **Nothing is locked, and nothing of R6-016's has been replayed.** Without the lock, every planned episode is refused at its
@@ -12,8 +50,10 @@ build revision 2. `qualification-audit-v2` is locked (`c42906ed…`), and addend
 - **No retained certificate or export was read** for this revision. The dry lock hashed the 108 planned sources' seals and
   consumed artifacts, as R6-015's did. R6's l070 draw 5 export was not touched.
 - **The rehearsals all pass** (below), each recorded and labelled as pre-lock.
-- **Tests:** `test_harness.py` (6), `test_analysis.py` (2, with every R6-015 probe and R6-016's new ones) and `test_binding.py`
-  (14 probes) pass.
+- **Tests:** `test_harness.py` (8), `test_analysis.py` (2, with every R6-015 probe and R6-016's new ones) and `test_binding.py`
+  (14 probes) pass, and the build's `DiagnoseTest.lean`. The diagnosis program's digest is now `5d26d53f…`.
+- **The rehearsals whose sources changed were run again,** to revision-2 records (diagnosis, control 3, control 9); revision 1's
+  are kept and superseded. The synthetic harness rehearsal and the labels record are unchanged.
 
 ## How to read the change
 
@@ -49,7 +89,7 @@ addendum 1, and the amendment's addendum 2 if it exists by then."
   Two entries stay diagnostic only (l070 draw 5, `no_fixed_prediction`; l071's deterministic map, `no_expectation`); two are not
   retained.
 
-## Control 9 (`control9.py`, [dry run](reviews/2026-10-02/R6-016-CONTROL-9-DRY-RUN.json))
+## Control 9 (`control9.py`, [dry run, revision 2](reviews/2026-10-02/R6-016-CONTROL-9-DRY-RUN-2.json))
 
 Synthetic goals, through R6's own preparation and reconstruction helpers on the replay bridge, as control 3 runs: R6's driver
 assembles each packet, R6's checker verifies it, and a case the checker rejects runs injected.
@@ -72,7 +112,7 @@ assembles each packet, R6's checker verifies it, and a case the checker rejects 
 - **The checker verdicts are frozen from the dry runs.** One is worth noting: R6's checker treats `↑(a * b)` and `↑a * ↑b` as
   two atoms and rejects 9c's cast case, which the constrained route closes, injected.
 
-## The l070 diagnosis (`diagnose_l070.py`, `diagnosis/Diagnose.lean`, [rehearsal](reviews/2026-10-02/R6-016-DIAGNOSIS-REHEARSAL.json))
+## The l070 diagnosis (`diagnose_l070.py`, `diagnosis/Diagnose.lean`, [rehearsal, revision 2](reviews/2026-10-02/R6-016-DIAGNOSIS-REHEARSAL-2.json))
 
 **The program reads the export exactly as the locked audit does.** It imports `AuditCore`: v2's `Audit.lean`, byte for byte, cut
 before its `main`. The build checks the file against v2's lock and that the cut is a prefix. The atoms are the audit's
@@ -94,9 +134,9 @@ seal and v2's locked selection, with `live-evaluation-v3` verified before and af
    or more than six variables refuses.
 
 **Outcomes** are `established`, `refused`, `resource_exhausted` (400,000 heartbeats per attempt, counted from its start; the
-kernel's own limits) or `unsuccessful`. **The classification** is computed in Python from established evidence only, in the
-proposal's order, and recomputed by the analysis. Equality and a counterexample both established would contradict the kernel and
-is reported as `contradictory_evidence`.
+recursion limit; the kernel's own limits) or `unsuccessful`, each attempt one guarded unit. **The classification** is computed in
+Python from established evidence only, after the completeness, contradiction and consistency checks (revision 2, finding 3), in
+the proposal's order, and recomputed by the analysis.
 
 **The rehearsal** (synthetic exports, each frozen):
 
@@ -148,26 +188,33 @@ classification, another export, a failed exit, another tool or an unlocated repo
 | rehearsal | result |
 |---|---|
 | [synthetic harness](reviews/2026-10-02/R6-016-HARNESS-REHEARSAL-SYNTHETIC.json) | R6-015's four cases, as frozen: the valid case closes with the constrained receipt, its residual is printed by v2's program and control 8 passes; the bridge gate refuses the invalid certificate; injected, it fails "does not cancel"; the pinned ℕ closer refuses the `Int` goal |
-| [control 3, dry run](reviews/2026-10-02/R6-016-CONTROL-3-DRY-RUN.json) | as frozen: rejected by the checker; the constrained route fails "does not cancel"; the pinned fold closes it through `omega` |
-| [control 9, dry run](reviews/2026-10-02/R6-016-CONTROL-9-DRY-RUN.json) | all ten cases as frozen |
-| [diagnosis](reviews/2026-10-02/R6-016-DIAGNOSIS-REHEARSAL.json) | all five cases as frozen |
+| [control 3, dry run, revision 2](reviews/2026-10-02/R6-016-CONTROL-3-DRY-RUN-2.json) | as frozen: rejected by the checker; the constrained route fails "does not cancel"; the pinned fold closes it through `omega` |
+| [control 9, dry run, revision 2](reviews/2026-10-02/R6-016-CONTROL-9-DRY-RUN-2.json) | all ten cases as frozen |
+| [diagnosis, revision 2](reviews/2026-10-02/R6-016-DIAGNOSIS-REHEARSAL-2.json) | all five cases as frozen |
 
 ## The lock (dry run), `r6-016-replay-v1`
 
-Computed, not written: 38 Python files (the closure), 23 data files, 8 binaries (the compiler, R6's exporter, the checker, the glue,
+Computed, not written: 38 Python files (the closure), 24 data files (revision 2 adds `DiagnoseTest.lean`), 8 binaries (the compiler, R6's exporter, the checker, the glue,
 both audit programs, the diagnosis program), bridge `64585867` with its instrumented `Tactic.lean` and patch, the control-5 labels,
 R6-015's plan, and the seals and consumed artifacts of its 108 sources. Writing it refuses unless the step-3 record names the plan
 and `mutations.py`, the labels verify, and both audit programs match their locks.
 
 ## For the implementation review
 
-1. **Control 5's rule over classifications**, giving 12 expected passes (above).
-2. **Control 9's two extra hypotheses** and its checker verdicts, frozen from the dry runs.
-3. **The diagnosis:** the audit's atoms; kernel confirmation for meta-level defeq; the three limits of an export. If the
-   attribute limit matters for the question, the alternative is a diagnosis run in the site's own environment. That would be a
-   change to the approved section 4, which says the program reads the export; it is not done.
-4. **No pinned rehearsal.** R6-015 had two approved; R6-016 admits none and rehearses on synthetic goals only.
-5. **The residual is printed by v2's program**, as control 8 then audits with it; v1's program is bound and does not run.
+**Accepted in review of revision 1:** 12 expected control-5 passes; control 9's extra preparation hypotheses; the disclosed
+limits of reading an export. Failed diagnosis attempts stay unresolved; a diagnosis in the site's environment stays separate.
+
+**New, for this review:**
+1. **A disagreeing or incomplete axiom record stops the analysis,** rather than counting the episode as not consumed: it is an
+   integrity failure of the evidence, as a changed seal is. A proof that fails a gate on complete, agreeing evidence is not
+   consumed and is listed for diagnosis, as before.
+2. **Inconsistent or contradictory diagnosis evidence stops the analysis too.** So a diagnosis record with either would hold up
+   the analysis, and R6-016's record, until it is diagnosed. The program sets `established` only from the kernel, so neither
+   should arise from it.
+3. **A failure while printing the atoms for the selection** is not an attempt, and still ends the program; the analysis then
+   finds no located report and stops. Each pair's own printing is guarded.
+4. **`test_axiom_gates_on_r6015_runs` reads R6-015's sealed verdicts and kernel reports,** its own published records, not
+   certificates.
 
 ## Next, after approval
 
