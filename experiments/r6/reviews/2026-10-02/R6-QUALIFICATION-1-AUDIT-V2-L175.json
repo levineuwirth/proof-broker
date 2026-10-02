@@ -1,0 +1,756 @@
+{
+ "application": "l175",
+ "results": {
+  "l175-deterministic": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-deterministic-reordered": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (0 - z) + 3 * (z + \u2191Zmax * zhigh - v)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (0 - z) + 3 * (z + \u2191Zmax * zhigh - v)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (0 - z) + 3 * (z + \u2191Zmax * zhigh - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-deterministic-scaled_2": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 6 * (z + \u2191Zmax * zhigh - v) + 6 * (0 - z) + 6 * (v + 1 - \u2191Zmax) + 6 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 6 * (z + \u2191Zmax * zhigh - v) + 6 * (0 - z) + 6 * (v + 1 - \u2191Zmax) + 6 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 6 * (z + \u2191Zmax * zhigh - v) + 6 * (0 - z) + 6 * (v + 1 - \u2191Zmax) + 6 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-deterministic-scaled_3": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 9 * (z + \u2191Zmax * zhigh - v) + 9 * (0 - z) + 9 * (v + 1 - \u2191Zmax) + 9 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 9 * (z + \u2191Zmax * zhigh - v) + 9 * (0 - z) + 9 * (v + 1 - \u2191Zmax) + 9 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 9 * (z + \u2191Zmax * zhigh - v) + 9 * (0 - z) + 9 * (v + 1 - \u2191Zmax) + 9 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-deterministic-zero_entry_added": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw1": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw2": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw3": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw4": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw5": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw6": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw7": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-draw8": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (v + 1 - \u2191Zmax)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (v + 1 - \u2191Zmax)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (v + 1 - \u2191Zmax)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-reordered": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (v + 1 - \u2191Zmax) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (v + 1 - \u2191Zmax) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (v + 1 - \u2191Zmax) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-scaled_2": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 2 * (z + \u2191Zmax * zhigh - v) + 2 * (0 - z) + 2 * (v + 1 - \u2191Zmax) + 2 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 2 * (z + \u2191Zmax * zhigh - v) + 2 * (0 - z) + 2 * (v + 1 - \u2191Zmax) + 2 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 2 * (z + \u2191Zmax * zhigh - v) + 2 * (0 - z) + 2 * (v + 1 - \u2191Zmax) + 2 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-scaled_3": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "l175-learned-zero_entry_added": {
+   "environment": {
+    "replayed_through_addDecl": 1965,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 2421,
+    "init_shared_equal_up_to_annotations": 265
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 14
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat} {v z zhigh : Int},\n  0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  }
+ },
+ "lock_sha256": "c42906edfc8e14605cac9adaf63fba83ffb9dba3de042a76543633147ad20bda",
+ "regression_record_sha256": "5c06fa7a0e6c826d855a27b14784179ec0ce21015d88724a97bb722c59e35ca7",
+ "scope": "R6-015's 17 proofs at l175, informational; R6-015's result and control 8 unchanged"
+}

@@ -1,0 +1,1528 @@
+{
+ "application": "addendum2",
+ "results": {
+  "bracket-l096/1": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/2": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/3": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/4": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/5": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/6": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/7": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l096/8": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l096"
+       ],
+       "name": "hlt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hlt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/1": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/2": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/3": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/4": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/5": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/6": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/7": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  },
+  "bracket-l099/8": {
+   "environment": {
+    "replayed_through_addDecl": 45,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1336,
+    "init_shared_equal_up_to_annotations": 178
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 10 of Bracket.threshold_unique.r6_site_l099"
+       ],
+       "name": "hgt"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hgt"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {c c' : Int}, 0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": {
+     "rows": [
+      {
+       "search_name": "c_",
+       "original_name": "c'",
+       "index": 4,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h1_",
+       "original_name": "h1'",
+       "index": 8,
+       "fvar_in_original": true
+      },
+      {
+       "search_name": "h2_",
+       "original_name": "h2'",
+       "index": 9,
+       "fvar_in_original": true
+      }
+     ],
+     "renamed_print": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)"
+    },
+    "binding": "matches_residual_after_renaming"
+   },
+   "exit": 0
+  }
+ },
+ "lock_sha256": "c42906edfc8e14605cac9adaf63fba83ffb9dba3de042a76543633147ad20bda",
+ "regression_record_sha256": "5c06fa7a0e6c826d855a27b14784179ec0ce21015d88724a97bb722c59e35ca7",
+ "scope": "R6's 16 slots at l096 and l099; addendum 1 unchanged"
+}
