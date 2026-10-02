@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""R6-015 replay campaign: the frozen plan, under the R6-015 lock (`R6-015-PROPOSAL.md`, revision 5, steps 4-5, and control 8).
+"""R6-016 replay campaign: R6-015's (`r6-015/replay_campaign.py`, harness revision 3), under the R6-016 lock
+(`R6-016-PROPOSAL.md`, revision 2, sections 5 to 7). The plan is R6-015's 108 episodes.
 
-    replay_campaign.py lock --plan PLAN.json        write the R6-015 lock, once (step 4; only after review)
+    replay_campaign.py lock --plan r6-015/plan.json  write the R6-016 lock, once (only after review)
     replay_campaign.py run --runs DIR               replay every planned episode, each sealed, into DIR/<id>
     replay_campaign.py control8 --runs DIR --output RECORD.json
 
 The lock and admission are `replay_lock`'s. `run` refuses unless the lock verifies, admits each episode again at its boundary,
 and verifies the lock afterwards.
 
-Step 5's order, each under the lock: `run`; `control3.py` (the synthetic probe); `control8`; then `analysis.py`.
+The order after the lock (proposal section 7), each under the lock: `run`; `control3.py`; `control9.py`; `control8`;
+`diagnose_l070.py`; then `analysis.py`.
+
+**Control 8 uses `qualification-audit-v2`'s program**, as the proposal names it, under the same frozen predicate. Its lock is
+verified in full (`qualification_audit_v2.verify_lock`: the program, its sources, the toolchains' contents and the controls'
+environment) before and after. Everything else here is R6-015's.
 
 `control8` (harness revision 3) binds every run to the locked plan before it evaluates anything, for every planned episode, proof
 or not:
@@ -24,7 +30,8 @@ or not:
 
 Each entry records the run's seal and verdict digests, and for a proof its export and residual digests, so that the analysis can
 bind the entry to the run it audits and recompute the predicate from the retained report. Then, for each proof, the audit program
-runs in real mode on the run's export with its retained residual, and revision 5's frozen predicate is evaluated: the program exits 0 without a refusal, `binding` is `matches_residual`, both targets are locatable, and
+runs in real mode on the run's export with its retained residual, and R6-015's frozen predicate (its proposal's revision 5) is
+evaluated: the program exits 0 without a refusal, `binding` is `matches_residual`, both targets are locatable, and
 both carry an explicit, empty hypothesis list. An error, a refusal or a missing field fails. Afterwards every audited artifact is
 rechecked against its seal, and the lock is verified again. Kernel validation is the episode's own (acceptance 3 and 4).
 
@@ -44,6 +51,8 @@ if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 
 import events  # noqa: E402
 import run as r6  # noqa: E402
+sys.path.insert(0, str(R6/'qualification-audit-v2'))
+import qualification_audit_v2  # noqa: E402
 import site_task  # noqa: E402
 import replay_episode  # noqa: E402
 import replay_lock  # noqa: E402
@@ -96,7 +105,7 @@ def bound(run, spec, frozen, lock_sha):
     if (started.get('schema_version') != replay_episode.SCHEMA or started.get('lock_sha256') != lock_sha
             or started.get('bridge_rev') != frozen['bridge_rev'] or started.get('harness_sha256') != harness):
         raise ValueError('the episode was not run under this lock, bridge and harness')
-    copies = {f'r6-015/{Path(name).name}': r6.sha(run/'provenance/r6-015'/Path(name).name) for name in harness}
+    copies = {f'r6-016/{Path(name).name}': r6.sha(run/'provenance/r6-016'/Path(name).name) for name in harness}
     if copies != harness: raise ValueError("the run's harness copies differ from the lock")
     sources = r6.read_json(run/'provenance/sources.json')
     if sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'] != frozen['instrumented_tactic_sha256']:
@@ -119,7 +128,7 @@ def bound(run, spec, frozen, lock_sha):
 
 def audit_real(run, solution, residual, task):
     env = {'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(replay_lock.AUDIT_TOOLCHAIN)}
-    with tempfile.TemporaryDirectory(prefix='r6-015-control-8-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='r6-016-control-8-') as tmp:
         tmp = Path(tmp); export = tmp/'export.ndjson'; r6.unpack(solution, export)
         (tmp/'residual.txt').write_text(residual + '\n')
         argv = [str(replay_lock.AUDIT_TOOL), str(export), task.local, task.whole, str(tmp/'residual.txt'), str(tmp/'report.json')]
@@ -150,7 +159,7 @@ def predicate(r):
 
 
 def control8(args):
-    frozen = replay_lock.verify_lock()
+    frozen = replay_lock.verify_lock(); qualification_audit_v2.verify_lock()
     out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
     runs = Path(args.runs).resolve(); results = {}; audited = {}
@@ -173,9 +182,9 @@ def control8(args):
         print(spec['id'], 'pass' if not results[spec['id']]['unmet'] else results[spec['id']]['unmet'], flush=True)
     for run_id, digests in audited.items():  # afterwards: every audited artifact is still the sealed one
         if any(r6.sha(runs/run_id/name) != digest for name, digest in digests.items()): raise SystemExit(f'{run_id} changed during control 8')
-    replay_lock.verify_lock()
+    replay_lock.verify_lock(); qualification_audit_v2.verify_lock()
     passed = all(r['bound'] and not r.get('unmet') for r in results.values())
-    out.write_text(json.dumps({'schema_version': 'r6-015-control-8-1', 'passed': passed, 'lock_sha256': r6.sha(replay_lock.LOCK),
+    out.write_text(json.dumps({'schema_version': 'r6-016-control-8-1', 'audit_lock_sha256': r6.sha(replay_lock.AUDIT_LOCK), 'passed': passed, 'lock_sha256': r6.sha(replay_lock.LOCK),
                                'audit_tool_sha256': r6.sha(replay_lock.AUDIT_TOOL), 'results': results}, indent=1) + '\n')
     print(json.dumps({'passed': passed}))
 

@@ -1,6 +1,8 @@
-"""R6-015 replay bridge: the approved bridge revision with R6's overlays and R6-015's observations.
+"""R6-016 replay bridge: R6-015's (`r6-015/replay_bridge.py`), at R6-016's bridge revision. Only the revision, the build
+directory and the package's name change; the overlays and observations are R6-015's, unchanged, and apply to the new
+`Tactic.lean` as they stand (the bridge build record checked this).
 
-The Lean bridge is taken from git at `BRIDGE_REV` (`476fab31`, approved for step 2), never from the working tree; the SDK, the
+The Lean bridge is taken from git at `BRIDGE_REV` (`64585867`, approved in R6-016's bridge review), never from the working tree; the SDK, the
 independent checker and the assembler from R6's pinned base (`instrument.BASE`), exactly as R6 built them (the SDK is identical at
 both revisions). The Tactic text receives, in order and each at exactly one site:
 
@@ -15,8 +17,10 @@ both revisions). The Tactic text receives, in order and each at exactly one site
    - `R6_015_INJECT_UNVERIFIED=1` skips the bridge's own certificate gate, for the deliberate injections of controls 1(b) and 4
      only, and records `certificate_gate_bypassed`. Nothing else changes; the kernel still checks every proof.
 
-Observation and injection only: selection, fact assertion, the fold and the constrained final step are `BRIDGE_REV`'s. Built into
-its own directory; R6's builds and locks are untouched.
+Observation and injection only: selection, fact assertion, the fold and the constrained final step (`posOfLinearNum`) are
+`BRIDGE_REV`'s. The receipt's `residual_closer: constrained_normalization` names the constrained step, as in R6-015. Identifiers
+carried from R6-015 (`R6_015_INJECT_UNVERIFIED`, `r6015CloserSelected`) are kept, so that the observations stay R6-015's to the
+byte. Built into its own directory; R6's and R6-015's builds and locks are untouched.
 """
 import difflib
 import functools
@@ -35,11 +39,11 @@ import instrument  # noqa: E402
 import proposal_instrument as overlay  # noqa: E402
 import run as r6  # noqa: E402
 
-BRIDGE_REV = '476fab317e6633511b2a73b36313457d762e3a9c'
-DEST = r6.ROOT/'.cache/r6-015-replay'
-PACKAGE = 'r6-015-replay'
+BRIDGE_REV = '64585867afa1194be2b0832b77fd62bbefc2462b'
+DEST = r6.ROOT/'.cache/r6-016-replay'
+PACKAGE = 'r6-016-replay'
 MODULES = ('IR', 'Trace', 'Bridge', 'TermMode', 'Alethe', 'Tactic')
-MODULE_PREFIX = 'r6_x2d015_x2dreplay_ProofBroker_'
+MODULE_PREFIX = 'r6_x2d016_x2dreplay_ProofBroker_'
 
 SELECTED = '''/-- R6-015 observation: the closer the constrained route selected, before it runs. -/
 private def r6015ComparisonType (goalType : Expr) : MetaM Json := do

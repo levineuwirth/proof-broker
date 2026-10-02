@@ -1,0 +1,515 @@
+{
+ "schema_version": "r6-016-control-5-labels-1",
+ "control_5": [
+  {
+   "site": "l069",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l069-draw1"
+   },
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l069/1": "certificate_alone",
+    "bracket-l069/2": "certificate_alone",
+    "bracket-l069/3": "certificate_alone",
+    "bracket-l069/4": "certificate_alone",
+    "bracket-l069/5": "certificate_alone",
+    "bracket-l069/6": "certificate_alone",
+    "bracket-l069/7": "certificate_alone",
+    "bracket-l069/8": "certificate_alone"
+   },
+   "classified_by": {
+    "bracket-l069/1": "addendum_1",
+    "bracket-l069/2": "addendum_1",
+    "bracket-l069/3": "addendum_1",
+    "bracket-l069/4": "addendum_1",
+    "bracket-l069/5": "addendum_1",
+    "bracket-l069/6": "addendum_1",
+    "bracket-l069/7": "addendum_1",
+    "bracket-l069/8": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l069",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069"
+   },
+   "map": {
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l069/1": "certificate_alone",
+    "bracket-l069/2": "certificate_alone",
+    "bracket-l069/3": "certificate_alone",
+    "bracket-l069/4": "certificate_alone",
+    "bracket-l069/5": "certificate_alone",
+    "bracket-l069/6": "certificate_alone",
+    "bracket-l069/7": "certificate_alone",
+    "bracket-l069/8": "certificate_alone"
+   },
+   "classified_by": {
+    "bracket-l069/1": "addendum_1",
+    "bracket-l069/2": "addendum_1",
+    "bracket-l069/3": "addendum_1",
+    "bracket-l069/4": "addendum_1",
+    "bracket-l069/5": "addendum_1",
+    "bracket-l069/6": "addendum_1",
+    "bracket-l069/7": "addendum_1",
+    "bracket-l069/8": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw1"
+   },
+   "map": {
+    "hwidth": "1",
+    "neg_goal": "32769"
+   },
+   "draws": [
+    1,
+    4,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l070/1": "sufficient_but_context_referenced",
+    "bracket-l070/4": "sufficient_but_context_referenced",
+    "bracket-l070/8": "sufficient_but_context_referenced"
+   },
+   "classified_by": {
+    "bracket-l070/1": "addendum_1",
+    "bracket-l070/4": "addendum_1",
+    "bracket-l070/8": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw2"
+   },
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "draws": [
+    2,
+    6,
+    7
+   ],
+   "audited_slots": {
+    "bracket-l070/2": "sufficient_but_context_referenced",
+    "bracket-l070/6": "sufficient_but_context_referenced",
+    "bracket-l070/7": "sufficient_but_context_referenced"
+   },
+   "classified_by": {
+    "bracket-l070/2": "addendum_1",
+    "bracket-l070/6": "addendum_1",
+    "bracket-l070/7": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw3"
+   },
+   "map": {
+    "_pb_nonneg_Zmax": "65536",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    3
+   ],
+   "audited_slots": {
+    "bracket-l070/3": "sufficient_but_context_referenced"
+   },
+   "classified_by": {
+    "bracket-l070/3": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw5"
+   },
+   "map": {
+    "_pb_nonneg_atom_4": "1",
+    "hprod_le": "1",
+    "hwidth": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    5
+   ],
+   "audited_slots": {
+    "bracket-l070/5": "sufficiency_not_established"
+   },
+   "classified_by": {
+    "bracket-l070/5": "addendum_1"
+   },
+   "expectation": "no_fixed_prediction: sufficiency not established (draw 5)",
+   "r6_015_expectation": "no_fixed_prediction: sufficiency not established (draw 5)"
+  },
+  {
+   "site": "l070",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l070"
+   },
+   "map": {
+    "hZ": "2",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [
+    2,
+    6,
+    7
+   ],
+   "audited_slots": {
+    "bracket-l070/2": "sufficient_but_context_referenced",
+    "bracket-l070/6": "sufficient_but_context_referenced",
+    "bracket-l070/7": "sufficient_but_context_referenced"
+   },
+   "classified_by": {
+    "bracket-l070/2": "addendum_1",
+    "bracket-l070/6": "addendum_1",
+    "bracket-l070/7": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l071",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l071-draw1"
+   },
+   "map": {
+    "hle": "1",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l071/1": "certificate_alone",
+    "bracket-l071/2": "certificate_alone",
+    "bracket-l071/3": "certificate_alone",
+    "bracket-l071/5": "certificate_alone",
+    "bracket-l071/6": "certificate_alone",
+    "bracket-l071/7": "certificate_alone",
+    "bracket-l071/8": "certificate_alone"
+   },
+   "classified_by": {
+    "bracket-l071/1": "addendum_1",
+    "bracket-l071/2": "addendum_1",
+    "bracket-l071/3": "addendum_1",
+    "bracket-l071/5": "addendum_1",
+    "bracket-l071/6": "addendum_1",
+    "bracket-l071/7": "addendum_1",
+    "bracket-l071/8": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l071",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l071-draw4"
+   },
+   "map": {
+    "hle": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    4
+   ],
+   "audited_slots": {
+    "bracket-l071/4": "certificate_alone"
+   },
+   "classified_by": {
+    "bracket-l071/4": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l071",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l071"
+   },
+   "map": {
+    "hZ": "2",
+    "hzsum": "1",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [],
+   "audited_slots": {},
+   "classified_by": {},
+   "expectation": "no_expectation: not identical to an audited learned map",
+   "r6_015_expectation": "no_expectation: not identical to an audited learned map"
+  },
+  {
+   "site": "l078",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l078-draw1"
+   },
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l078/1": "certificate_alone",
+    "bracket-l078/2": "certificate_alone",
+    "bracket-l078/3": "certificate_alone",
+    "bracket-l078/4": "certificate_alone",
+    "bracket-l078/5": "certificate_alone",
+    "bracket-l078/6": "certificate_alone",
+    "bracket-l078/7": "certificate_alone",
+    "bracket-l078/8": "certificate_alone"
+   },
+   "classified_by": {
+    "bracket-l078/1": "addendum_1",
+    "bracket-l078/2": "addendum_1",
+    "bracket-l078/3": "addendum_1",
+    "bracket-l078/4": "addendum_1",
+    "bracket-l078/5": "addendum_1",
+    "bracket-l078/6": "addendum_1",
+    "bracket-l078/7": "addendum_1",
+    "bracket-l078/8": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l078",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l078"
+   },
+   "map": {
+    "hprod_le": "1",
+    "hx": "1",
+    "hz": "1",
+    "neg_goal": "1"
+   },
+   "identical_to_learned_draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l078/1": "certificate_alone",
+    "bracket-l078/2": "certificate_alone",
+    "bracket-l078/3": "certificate_alone",
+    "bracket-l078/4": "certificate_alone",
+    "bracket-l078/5": "certificate_alone",
+    "bracket-l078/6": "certificate_alone",
+    "bracket-l078/7": "certificate_alone",
+    "bracket-l078/8": "certificate_alone"
+   },
+   "classified_by": {
+    "bracket-l078/1": "addendum_1",
+    "bracket-l078/2": "addendum_1",
+    "bracket-l078/3": "addendum_1",
+    "bracket-l078/4": "addendum_1",
+    "bracket-l078/5": "addendum_1",
+    "bracket-l078/6": "addendum_1",
+    "bracket-l078/7": "addendum_1",
+    "bracket-l078/8": "addendum_1"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "expected_pass"
+  },
+  {
+   "site": "l096",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l096-draw1"
+   },
+   "map": {
+    "hlt": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l096/1": "sufficient_but_context_referenced",
+    "bracket-l096/2": "sufficient_but_context_referenced",
+    "bracket-l096/3": "sufficient_but_context_referenced",
+    "bracket-l096/4": "sufficient_but_context_referenced",
+    "bracket-l096/5": "sufficient_but_context_referenced",
+    "bracket-l096/6": "sufficient_but_context_referenced",
+    "bracket-l096/7": "sufficient_but_context_referenced",
+    "bracket-l096/8": "sufficient_but_context_referenced"
+   },
+   "classified_by": {
+    "bracket-l096/1": "addendum_2",
+    "bracket-l096/2": "addendum_2",
+    "bracket-l096/3": "addendum_2",
+    "bracket-l096/4": "addendum_2",
+    "bracket-l096/5": "addendum_2",
+    "bracket-l096/6": "addendum_2",
+    "bracket-l096/7": "addendum_2",
+    "bracket-l096/8": "addendum_2"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "no_expectation: not classified by the audit"
+  },
+  {
+   "site": "l096",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l096"
+   },
+   "retained": false,
+   "reason": "one dispatch, received with no certificate (sealed, chain-verified events)"
+  },
+  {
+   "site": "l099",
+   "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l099-draw1"
+   },
+   "map": {
+    "hgt": "1",
+    "neg_goal": "1"
+   },
+   "draws": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "audited_slots": {
+    "bracket-l099/1": "sufficient_but_context_referenced",
+    "bracket-l099/2": "sufficient_but_context_referenced",
+    "bracket-l099/3": "sufficient_but_context_referenced",
+    "bracket-l099/4": "sufficient_but_context_referenced",
+    "bracket-l099/5": "sufficient_but_context_referenced",
+    "bracket-l099/6": "sufficient_but_context_referenced",
+    "bracket-l099/7": "sufficient_but_context_referenced",
+    "bracket-l099/8": "sufficient_but_context_referenced"
+   },
+   "classified_by": {
+    "bracket-l099/1": "addendum_2",
+    "bracket-l099/2": "addendum_2",
+    "bracket-l099/3": "addendum_2",
+    "bracket-l099/4": "addendum_2",
+    "bracket-l099/5": "addendum_2",
+    "bracket-l099/6": "addendum_2",
+    "bracket-l099/7": "addendum_2",
+    "bracket-l099/8": "addendum_2"
+   },
+   "expectation": "expected_pass",
+   "r6_015_expectation": "no_expectation: not classified by the audit"
+  },
+  {
+   "site": "l099",
+   "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l099"
+   },
+   "retained": false,
+   "reason": "one dispatch, received with no certificate (sealed, chain-verified events)"
+  }
+ ],
+ "expected_pass": 12,
+ "changed_from_r6_015": [
+  "l096 learned",
+  "l099 learned"
+ ],
+ "inputs_sha256": {
+  "reviews/2026-10-01/R6-015-MUTATIONS-2.json": "f66c34c84b1e3d6fd11a0083c2131c48ba046a6e12f369e3483a94e82a4c9296",
+  "reviews/2026-10-01/R6-QUALIFICATION-1-AUDIT.json": "1d30e30e855ccad27a512eaf39a2cb0e94e100435e883b5eb1646e6115b1006b",
+  "reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-V2-ADDENDUM-2.json": "b4dcd3b20e3dfde31d93a8e1c2d389acee97a4de50e858c33893b709f79cfc6f",
+  "reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-V2-REGRESSION.json": "5c06fa7a0e6c826d855a27b14784179ec0ce21015d88724a97bb722c59e35ca7",
+  "policies/qualification-audit-v2.sha256.json": "c42906edfc8e14605cac9adaf63fba83ffb9dba3de042a76543633147ad20bda"
+ },
+ "sources_sha256": {
+  "r6-016/labels.py": "e53b24c415cb1e3f43cd7dfd9bb2695aa3840de6ce182e47c9185f48672b304d"
+ }
+}

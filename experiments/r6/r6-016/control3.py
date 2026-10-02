@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""R6-015 control 3, under the lock: the review's synthetic probe (`R6-015-PROPOSAL.md`, revision 5).
+"""R6-016 control 3, under the R6-016 lock: R6-015's (`r6-015/control3.py`), on R6-016's bridge revision. The probe, its
+expectations and `evaluate` are R6-015's, unchanged; only the lock, the bridge, the work directory and the schema differ, and
+`--dry-run` (as control 9's) skips the lock and labels the record so, for the pre-lock rehearsal; the analysis rejects it.
 
-    control3.py --output RECORD.json
+    control3.py --output RECORD.json [--dry-run]
 
 `h : x ≤ y ⊢ x ≤ y` with (`h` 1, `neg_goal` 2): the combination does not cancel. It is not a site; it is driven through R6's
 own preparation and reconstruction helpers on the replay bridge, as `rehearse_synthetic.py` does, with the packet assembled by
@@ -13,7 +15,7 @@ Frozen expectations:
 - **pinned** (the option unset): R6's pinned fold closes it through contextual `omega`, with R6's receipt. This is the documented
   difference, recorded, not counted as consumption.
 
-The R6-015 lock must verify before and after.
+The R6-016 lock must verify before and after.
 """
 import argparse
 import json
@@ -34,10 +36,10 @@ import replay_bridge  # noqa: E402
 import replay_lock  # noqa: E402
 from rehearse_synthetic import Stub, child_events, lean  # noqa: E402
 
-WORK = R6/'.cache/r6-015-control3'
+WORK = R6/'.cache/r6-016-control3'
 GOAL = 'theorem probe_whole (x y : Int) (h : x ≤ y) : x ≤ y := by\n  {tactic} "probe_whole.r6_site_probe" "synthetic-probe"\n'
 PROBE = [{'hypothesis': 'h', 'coefficient': '1'}, {'hypothesis': 'neg_goal', 'coefficient': '2'}]
-SCHEMA = 'r6-015-control-3-1'
+SCHEMA = 'r6-016-control-3-1'
 SOURCES = (Path(__file__).resolve(), HERE/'rehearse_synthetic.py', HERE/'replay_bridge.py', HERE/'replay_lock.py')
 
 
@@ -61,13 +63,14 @@ def evaluate(results):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--output', required=True)
-    out = Path(p.parse_args().output)
+    p.add_argument('--output', required=True); p.add_argument('--dry-run', action='store_true')
+    args = p.parse_args(); out = Path(args.output)
     if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
-    try:
-        replay_lock.verify_lock()
-    except replay_lock.Refused as refused:
-        raise SystemExit(str(refused))
+    if not args.dry_run:
+        try:
+            replay_lock.verify_lock()
+        except replay_lock.Refused as refused:
+            raise SystemExit(str(refused))
     compiler, _, _ = r6.build_tools(task=r6.D1)
     dest, sources, _ = replay_bridge.build(compiler)
     driver = dest/'sdk/_build/default/validate/proposal_driver.exe'
@@ -83,7 +86,7 @@ def main():
     r6.write_json(prep/'input-ir.json', r6.read_json(prep/'reification.json')['ir'])
     subprocess.run([str(driver), 'prepare', str(prep/'input-ir.json'), str(prep/'prepared.json')], check=True)
     r6.write_json(prep/'response.json', {'witness': {'coefficients': PROBE}})
-    subprocess.run([str(driver), 'assemble', str(prep/'prepared.json'), str(prep/'response.json'), 'sha256:r6-015-control-3',
+    subprocess.run([str(driver), 'assemble', str(prep/'prepared.json'), str(prep/'response.json'), 'sha256:r6-016-control-3',
                     str(prep/'evidence.json')], check=True)
     subprocess.run([str(verifier), str(prep/'evidence.json'), str(prep/'verdict.json')], capture_output=True)
     checker = r6.read_json(prep/'verdict.json')
@@ -103,15 +106,17 @@ def main():
                           'reconstruction_finished': {k: v for k, v in (data.get('reconstruction_finished') or {}).items() if k != 'certificate'},
                           'errors': errors[:5]}
     unmet = evaluate(results)
-    replay_lock.verify_lock()
+    if not args.dry_run: replay_lock.verify_lock()
     passed = not unmet
-    out.write_text(json.dumps({'schema_version': SCHEMA, 'control': 3, 'passed': passed, 'unmet': unmet, 'results': results,
+    record = {'schema_version': SCHEMA, 'control': 3, 'passed': passed, 'unmet': unmet, 'results': results,
         'evidence': {'evidence_sha256': r6.sha(prep/'evidence.json'), 'certificate_sha256': events.digest(r6.read_json(prep/'evidence.json')['certificate']),
                      'coefficients': PROBE},
         'sources_sha256': {str(f.relative_to(R6)): r6.sha(f) for f in SOURCES},
-        'lock_sha256': r6.sha(replay_lock.LOCK), 'bridge_rev': replay_bridge.BRIDGE_REV,
+        'lock_sha256': None if args.dry_run else r6.sha(replay_lock.LOCK), 'bridge_rev': replay_bridge.BRIDGE_REV,
         'instrumented_tactic_sha256': sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'],
-        'documented_difference': 'the pinned fold closes the probe through contextual omega; not consumption'}, indent=1) + '\n')
+        'documented_difference': 'the pinned fold closes the probe through contextual omega; not consumption'}
+    if args.dry_run: record['dry_run'] = 'pre-lock rehearsal on the synthetic probe; not control 3'
+    out.write_text(json.dumps(record, indent=1) + '\n')
     print(json.dumps({'passed': passed, 'unmet': unmet}))
     return 0 if passed else 1
 

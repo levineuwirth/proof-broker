@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""R6-015 replay episode: one certificate, offline, through the constrained route, sealed (`R6-015-PROPOSAL.md`, revision 5).
+"""R6-016 replay episode: R6-015's (`r6-015/replay_episode.py`), on R6-016's bridge revision, its lock, and the amended audit
+program (`R6-016-PROPOSAL.md`, revision 2). One certificate, offline, through the constrained route, sealed.
+
+What changes from R6-015's: the schema (`r6-016-replay-1`); the residual is printed by `qualification-audit-v2`'s program; the
+run's harness copies go in `provenance/r6-016/`. Admission refuses every pinned episode (`replay_lock.admit`).
 
     replay_episode.py --spec SPEC.json --run-dir DIR
 
@@ -12,7 +16,7 @@ A spec names one site, one retained source and, for a mutation, the coefficient 
      "inject_unverified": false, "route": "constrained"}
 
 The episode, every stage under R6's site stage and its frozen checks:
-1. **Setup** (`replay_bridge.setup`): the approved bridge revision with R6's overlays and R6-015's observations.
+1. **Setup** (`replay_bridge.setup`): R6-016's bridge revision with R6's overlays and R6-015's observations.
 2. **Packet.** The retained one, checked against its run's seal: a learned run's `evidence.json`; for a deterministic run, the
    packet rebuilt from its sealed, hash-chained events (`dispatch_started.ir`; `dispatch_received.final_ir`, `.trace`,
    `.certificate`). A mutation replaces only `certificate.payload.witness_data.coefficients`; the envelope binds the final IR
@@ -25,15 +29,14 @@ The episode, every stage under R6's site stage and its frozen checks:
    and one `reconstruction_finished` naming this certificate, the same closer and the constrained final step, in that order,
    after R6's reconstruction prefix.
 6. **Export, and the local and whole kernel replays** (R6's `final_validation`, with the axiom delta).
-7. **The residual, printed from the exported term**: the audit program of `qualification-audit-v1` reads the export in
+7. **The residual, printed from the exported term**: the audit program of `qualification-audit-v2` reads the export in
    `--synthetic` mode and prints `hpos`'s type; that line is retained as the run's residual, for control 8's binding.
 8. **Verdict, terminal event, seal** on every path. Failures are recorded with their stage and the closer's error lines; the
    analysis classifies them.
 
 **Admission** (`replay_lock.admit`) comes before anything else is run or written: a planned episode must be exactly its entry in the
-locked plan, under a verifying lock; a pinned episode must be exactly one of the two approved pre-lock rehearsals. `route:
-"pinned"` leaves the option unset (R6's pinned closers) and requires R6's receipt; its records are marked as rehearsals, excluded
-from R6-015's results.
+locked plan, under a verifying lock. R6-016 admits no pinned episode; the pinned route's receipt is kept in `receipt` for the
+synthetic controls only.
 
 Offline: no provider, credential, reservation or spending.
 """
@@ -59,7 +62,7 @@ import site_task  # noqa: E402
 import replay_bridge  # noqa: E402
 import replay_lock  # noqa: E402
 
-SCHEMA = 'r6-015-replay-2'
+SCHEMA = 'r6-016-replay-1'
 AUDIT_TOOL, AUDIT_TOOLCHAIN, AUDIT_LOCK = replay_lock.AUDIT_TOOL, replay_lock.AUDIT_TOOLCHAIN, replay_lock.AUDIT_LOCK
 check_spec = replay_lock.check_spec
 PACKAGES = R6.parents[1]/'lean-bridge/.lake/packages'
@@ -150,10 +153,10 @@ def stage_log(run, name):
 def residual_from_export(run, solution, task):
     """`hpos`'s type, printed by the frozen audit program from the exported term (`--synthetic`: no residual is consulted)."""
     lock = r6.read_json(AUDIT_LOCK)
-    if r6.sha(AUDIT_TOOL) != lock['tool_sha256']: raise ValueError('the audit program differs from qualification-audit-v1')
+    if r6.sha(AUDIT_TOOL) != lock['tool_sha256']: raise ValueError('the audit program differs from qualification-audit-v2')
     out = run/'residual'; out.mkdir()
     env = {'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(AUDIT_TOOLCHAIN)}
-    with tempfile.TemporaryDirectory(prefix='r6-015-residual-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='r6-016-residual-') as tmp:
         export = Path(tmp)/'export.ndjson'; r6.unpack(solution, export)
         argv = [str(AUDIT_TOOL), '--synthetic', str(export), task.local, task.whole, '-', str(out/'report.json')]
         proc = subprocess.run(argv, capture_output=True, text=True, env=env)
@@ -185,7 +188,7 @@ def execute(run, spec):
     try:
         tools = replay_bridge.setup(run, site_task, task, PACKAGES)
         for p in HARNESS:
-            target = run/'provenance/r6-015'/p.name; target.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(p, target)
+            target = run/'provenance/r6-016'/p.name; target.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(p, target)
         retained = retained_packet(spec); packet = mutated(retained, spec['coefficients'])
         r6.write_json(run/'evidence.json', packet)
         events.append(run, 'packet', 'packet_loaded', {'source': spec['source'], 'certificate_sha256': events.digest(packet['certificate']),
@@ -226,7 +229,7 @@ def execute(run, spec):
             [*tools['mounts'], (reconstructed, '/objects'), (built, '/capture')], compiler=compiler,
             extra_binaries=tools['extras'], env={'LEAN_PATH': tools['lean_path']+':/capture:/objects'})
         r6.pack(exported.parent/'export.stdout', run/'solution.ndjson.gz')
-        with tempfile.TemporaryDirectory(prefix='r6-015-challenge-') as temp:
+        with tempfile.TemporaryDirectory(prefix='r6-016-challenge-') as temp:
             challenge = Path(temp)/'challenge.ndjson'; r6.unpack(task.path/'challenge.ndjson.gz', challenge)
             if r6.sha(challenge) != tools['expected']['challenge_sha256']: raise ValueError('challenge changed')
             try:

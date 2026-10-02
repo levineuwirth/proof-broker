@@ -1,0 +1,672 @@
+{
+ "schema_version": "r6-016-diagnosis-1-rehearsal",
+ "passed": true,
+ "unmet": [],
+ "results": {
+  "d_instance": {
+   "report": {
+    "environment": {
+     "replayed_through_addDecl": 3,
+     "max_variables": 6,
+     "max_heartbeats": 400000,
+     "lean": "4.32.2",
+     "init_shared_identical": 398,
+     "init_shared_equal_up_to_annotations": 44
+    },
+    "diagnosis": {
+     "positivity": "0 < x * y - x * y + 1",
+     "pairs": [
+      {
+       "syntactic": {
+        "first_difference": {
+         "path": [
+          "fn",
+          "fn",
+          "arg",
+          "arg"
+         ],
+         "b": "R6016DiagnosisSynthetic.mulVia",
+         "a": "Int.instMul"
+        },
+        "equal_up_to_metadata": false,
+        "equal_after_instantiation": false
+       },
+       "printed": {
+        "pp_all_equal": false,
+        "pp_all": [
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) x y",
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int R6016DiagnosisSynthetic.mulVia) x y"
+        ],
+        "default_equal": true,
+        "default": "x * y"
+       },
+       "definitional": {
+        "meta": [
+         {
+          "zeta_delta": false,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "default",
+          "outcome": "established",
+          "detail": "isDefEq true; the kernel accepts rfl"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "default",
+          "outcome": "established",
+          "detail": "isDefEq true; the kernel accepts rfl"
+         }
+        ],
+        "kernel": {
+         "outcome": "established",
+         "detail": "kernel accepted"
+        }
+       },
+       "counterexample": {
+        "outcome": "unsuccessful",
+        "detail": "no instance of 16 decided a \u2260 b"
+       },
+       "atoms": [
+        0,
+        1
+       ],
+       "arithmetic": {
+        "statement": "\u2200 (x y : Int), x * y = x * y",
+        "omega": {
+         "outcome": "unsuccessful",
+         "detail": "omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 1\nwhere\n a := x\u271d * y\u271d\n b := x\u271d * y\u271d"
+        },
+        "grobner": {
+         "outcome": "unsuccessful",
+         "detail": "`grind` failed\ncase grind\nx y : Int\nh : \u00acx * y = x * y\n\u22a2 False\n[grind] Goal diagnostics\n  [facts] Asserted facts\n    [prop] \u00acx * y = x * y\n  [eqc] False propositions\n    [prop] x * y = x * y\n  [limits] Thresholds reached\n    [limit] maximum number of E-matching rounds has been reached, threshold: `("
+        }
+       }
+      }
+     ],
+     "located": true,
+     "atoms": [
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) x y",
+       "index": 0,
+       "default": "x * y"
+      },
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int R6016DiagnosisSynthetic.mulVia) x y",
+       "index": 1,
+       "default": "x * y"
+      }
+     ]
+    }
+   },
+   "exit": 0,
+   "pairs": [
+    {
+     "atoms": [
+      0,
+      1
+     ],
+     "classification": "printed_only",
+     "basis": "definitionally equal: default, zeta_delta False"
+    }
+   ],
+   "expected": "printed_only"
+  },
+  "d_cast": {
+   "report": {
+    "environment": {
+     "replayed_through_addDecl": 3,
+     "max_variables": 6,
+     "max_heartbeats": 400000,
+     "lean": "4.32.2",
+     "init_shared_identical": 398,
+     "init_shared_equal_up_to_annotations": 44
+    },
+    "diagnosis": {
+     "positivity": "0 < \u2191x * y - \u2191x * y + 1",
+     "pairs": [
+      {
+       "syntactic": {
+        "first_difference": {
+         "path": [
+          "fn",
+          "arg",
+          "fn",
+          "arg"
+         ],
+         "b": "instNatCastInt",
+         "a": "R6016DiagnosisSynthetic.castZero"
+        },
+        "equal_up_to_metadata": false,
+        "equal_after_instantiation": false
+       },
+       "printed": {
+        "pp_all_equal": false,
+        "pp_all": [
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) (@Nat.cast.{0} Int R6016DiagnosisSynthetic.castZero x)\n  y",
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) (@Nat.cast.{0} Int instNatCastInt x) y"
+        ],
+        "default_equal": true,
+        "default": "\u2191x * y"
+       },
+       "definitional": {
+        "meta": [
+         {
+          "zeta_delta": false,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         }
+        ],
+        "kernel": {
+         "outcome": "unsuccessful",
+         "detail": "kernel rejected: (kernel) declaration type mismatch, '_r6016_0_1_rfl' has type\n  \u2200 (x : Nat) (y : Int), \u2191x * y = \u2191x * y\nbut it is expected to have type\n  \u2200 (x : Nat) (y : Int), \u2191x * y = \u2191x * y"
+        }
+       },
+       "counterexample": {
+        "outcome": "unsuccessful",
+        "detail": "no instance of 16 decided a \u2260 b"
+       },
+       "atoms": [
+        0,
+        1
+       ],
+       "arithmetic": {
+        "statement": "\u2200 (x : Nat) (y : Int), \u2191x * y = \u2191x * y",
+        "omega": {
+         "outcome": "unsuccessful",
+         "detail": "omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 1\nwhere\n a := \u2191x\u271d * y\u271d\n b := \u2191x\u271d * y\u271d"
+        },
+        "grobner": {
+         "outcome": "unsuccessful",
+         "detail": "`grind` failed\ncase grind\nx : Nat\ny : Int\nh : \u00ac\u2191x * y = \u2191x * y\n\u22a2 False\n[grind] Goal diagnostics\n  [facts] Asserted facts\n    [prop] \u00ac\u2191x * y = \u2191x * y\n  [eqc] False propositions\n    [prop] \u2191x * y = \u2191x * y\n  [ring] Ring `Int`\n    [diseqs] Disequalities\n      [_] \u00ac\u2191x * y + -1 * (y * \u2191x) = 0\n  [limits] T"
+        }
+       }
+      }
+     ],
+     "located": true,
+     "atoms": [
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) (@Nat.cast.{0} Int R6016DiagnosisSynthetic.castZero x)\n  y",
+       "index": 0,
+       "default": "\u2191x * y"
+      },
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) (@Nat.cast.{0} Int instNatCastInt x) y",
+       "index": 1,
+       "default": "\u2191x * y"
+      }
+     ]
+    }
+   },
+   "exit": 0,
+   "pairs": [
+    {
+     "atoms": [
+      0,
+      1
+     ],
+     "classification": "equality_not_established",
+     "basis": "no attempt established equality or a counterexample"
+    }
+   ],
+   "expected": "equality_not_established"
+  },
+  "d_adding": {
+   "report": {
+    "environment": {
+     "replayed_through_addDecl": 3,
+     "max_variables": 6,
+     "max_heartbeats": 400000,
+     "lean": "4.32.2",
+     "init_shared_identical": 398,
+     "init_shared_equal_up_to_annotations": 44
+    },
+    "diagnosis": {
+     "positivity": "0 < x * y - x * y + 1",
+     "pairs": [
+      {
+       "syntactic": {
+        "first_difference": {
+         "path": [
+          "fn",
+          "fn",
+          "arg",
+          "arg"
+         ],
+         "b": "R6016DiagnosisSynthetic.mulAdding",
+         "a": "Int.instMul"
+        },
+        "equal_up_to_metadata": false,
+        "equal_after_instantiation": false
+       },
+       "printed": {
+        "pp_all_equal": false,
+        "pp_all": [
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) x y",
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int R6016DiagnosisSynthetic.mulAdding) x y"
+        ],
+        "default_equal": true,
+        "default": "x * y"
+       },
+       "definitional": {
+        "meta": [
+         {
+          "zeta_delta": false,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         }
+        ],
+        "kernel": {
+         "outcome": "unsuccessful",
+         "detail": "kernel rejected: (kernel) declaration type mismatch, '_r6016_0_1_rfl' has type\n  \u2200 (x y : Int), x * y = x * y\nbut it is expected to have type\n  \u2200 (x y : Int), x * y = x * y"
+        }
+       },
+       "counterexample": {
+        "statement": "\u00ac1 * 0 = 1 * 0",
+        "outcome": "established",
+        "instance": [
+         [
+          "x",
+          1
+         ],
+         [
+          "y",
+          0
+         ]
+        ],
+        "detail": "kernel accepted, at instance 2"
+       },
+       "atoms": [
+        0,
+        1
+       ],
+       "arithmetic": {
+        "statement": "\u2200 (x y : Int), x * y = x * y",
+        "omega": {
+         "outcome": "unsuccessful",
+         "detail": "omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 1\nwhere\n a := x\u271d * y\u271d\n b := x\u271d * y\u271d"
+        },
+        "grobner": {
+         "outcome": "unsuccessful",
+         "detail": "`grind` failed\ncase grind\nx y : Int\nh : \u00acx * y = x * y\n\u22a2 False\n[grind] Goal diagnostics\n  [facts] Asserted facts\n    [prop] \u00acx * y = x * y\n  [eqc] False propositions\n    [prop] x * y = x * y\n  [limits] Thresholds reached\n    [limit] maximum number of E-matching rounds has been reached, threshold: `("
+        }
+       }
+      }
+     ],
+     "located": true,
+     "atoms": [
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) x y",
+       "index": 0,
+       "default": "x * y"
+      },
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int R6016DiagnosisSynthetic.mulAdding) x y",
+       "index": 1,
+       "default": "x * y"
+      }
+     ]
+    }
+   },
+   "exit": 0,
+   "pairs": [
+    {
+     "atoms": [
+      0,
+      1
+     ],
+     "classification": "distinct",
+     "basis": "counterexample at [['x', 1], ['y', 0]]"
+    }
+   ],
+   "expected": "distinct"
+  },
+  "d_swapped": {
+   "report": {
+    "environment": {
+     "replayed_through_addDecl": 3,
+     "max_variables": 6,
+     "max_heartbeats": 400000,
+     "lean": "4.32.2",
+     "init_shared_identical": 398,
+     "init_shared_equal_up_to_annotations": 44
+    },
+    "diagnosis": {
+     "positivity": "0 < x * y - x * y + 1",
+     "pairs": [
+      {
+       "syntactic": {
+        "first_difference": {
+         "path": [
+          "fn",
+          "fn",
+          "arg",
+          "arg"
+         ],
+         "b": "R6016DiagnosisSynthetic.mulSwapped",
+         "a": "Int.instMul"
+        },
+        "equal_up_to_metadata": false,
+        "equal_after_instantiation": false
+       },
+       "printed": {
+        "pp_all_equal": false,
+        "pp_all": [
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) x y",
+         "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int R6016DiagnosisSynthetic.mulSwapped) x y"
+        ],
+        "default_equal": true,
+        "default": "x * y"
+       },
+       "definitional": {
+        "meta": [
+         {
+          "zeta_delta": false,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         }
+        ],
+        "kernel": {
+         "outcome": "unsuccessful",
+         "detail": "kernel rejected: (kernel) declaration type mismatch, '_r6016_0_1_rfl' has type\n  \u2200 (x y : Int), x * y = x * y\nbut it is expected to have type\n  \u2200 (x y : Int), x * y = x * y"
+        }
+       },
+       "counterexample": {
+        "outcome": "unsuccessful",
+        "detail": "no instance of 16 decided a \u2260 b"
+       },
+       "atoms": [
+        0,
+        1
+       ],
+       "arithmetic": {
+        "statement": "\u2200 (x y : Int), x * y = x * y",
+        "omega": {
+         "outcome": "unsuccessful",
+         "detail": "omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 1\nwhere\n a := x\u271d * y\u271d\n b := x\u271d * y\u271d"
+        },
+        "grobner": {
+         "outcome": "unsuccessful",
+         "detail": "`grind` failed\ncase grind\nx y : Int\nh : \u00acx * y = x * y\n\u22a2 False\n[grind] Goal diagnostics\n  [facts] Asserted facts\n    [prop] \u00acx * y = x * y\n  [eqc] False propositions\n    [prop] x * y = x * y\n  [limits] Thresholds reached\n    [limit] maximum number of E-matching rounds has been reached, threshold: `("
+        }
+       }
+      }
+     ],
+     "located": true,
+     "atoms": [
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int Int.instMul) x y",
+       "index": 0,
+       "default": "x * y"
+      },
+      {
+       "pp_all": "@HMul.hMul.{0, 0, 0} Int Int Int (@instHMul.{0} Int R6016DiagnosisSynthetic.mulSwapped) x y",
+       "index": 1,
+       "default": "x * y"
+      }
+     ]
+    }
+   },
+   "exit": 0,
+   "pairs": [
+    {
+     "atoms": [
+      0,
+      1
+     ],
+     "classification": "equality_not_established",
+     "basis": "no attempt established equality or a counterexample"
+    }
+   ],
+   "expected": "equality_not_established"
+  },
+  "d_opaque": {
+   "report": {
+    "environment": {
+     "replayed_through_addDecl": 3,
+     "max_variables": 6,
+     "max_heartbeats": 400000,
+     "lean": "4.32.2",
+     "init_shared_identical": 392,
+     "init_shared_equal_up_to_annotations": 42
+    },
+    "diagnosis": {
+     "positivity": "0 < R6016DiagnosisSynthetic.g 0 - R6016DiagnosisSynthetic.g 0 + 1",
+     "pairs": [
+      {
+       "syntactic": {
+        "first_difference": {
+         "path": [
+          "fn",
+          "arg"
+         ],
+         "b": "Int",
+         "a": "Nat"
+        },
+        "equal_up_to_metadata": false,
+        "equal_after_instantiation": false
+       },
+       "printed": {
+        "pp_all_equal": false,
+        "pp_all": [
+         "@R6016DiagnosisSynthetic.g Nat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))",
+         "@R6016DiagnosisSynthetic.g Int (@OfNat.ofNat.{0} Int (nat_lit 0) (@instOfNat (nat_lit 0)))"
+        ],
+        "default_equal": true,
+        "default": "R6016DiagnosisSynthetic.g 0"
+       },
+       "definitional": {
+        "meta": [
+         {
+          "zeta_delta": false,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "reducible",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "instances",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": false,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         },
+         {
+          "zeta_delta": true,
+          "transparency": "default",
+          "outcome": "unsuccessful",
+          "detail": "isDefEq false"
+         }
+        ],
+        "kernel": {
+         "outcome": "unsuccessful",
+         "detail": "kernel rejected: (kernel) declaration type mismatch, '_r6016_0_1_rfl' has type\n  R6016DiagnosisSynthetic.g Nat 0 = R6016DiagnosisSynthetic.g Nat 0\nbut it is expected to have type\n  R6016DiagnosisSynthetic.g Nat 0 = R6016DiagnosisSynthetic.g Int 0"
+        }
+       },
+       "counterexample": {
+        "outcome": "unsuccessful",
+        "detail": "no instance of 1 decided a \u2260 b"
+       },
+       "atoms": [
+        0,
+        1
+       ],
+       "arithmetic": {
+        "statement": "R6016DiagnosisSynthetic.g 0 = R6016DiagnosisSynthetic.g 0",
+        "omega": {
+         "outcome": "unsuccessful",
+         "detail": "omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  a - b \u2265 1\nwhere\n a := R6016DiagnosisSynthetic.g 0\n b := R6016DiagnosisSynthetic.g 0"
+        },
+        "grobner": {
+         "outcome": "unsuccessful",
+         "detail": "`grind` failed\ncase grind\nh : \u00acR6016DiagnosisSynthetic.g 0 = R6016DiagnosisSynthetic.g 0\n\u22a2 False\n[grind] Goal diagnostics\n  [facts] Asserted facts\n    [prop] \u00acR6016DiagnosisSynthetic.g 0 = R6016DiagnosisSynthetic.g 0\n  [eqc] False propositions\n    [prop] R6016DiagnosisSynthetic.g 0 = R6016DiagnosisS"
+        }
+       }
+      }
+     ],
+     "located": true,
+     "atoms": [
+      {
+       "pp_all": "@R6016DiagnosisSynthetic.g Nat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))",
+       "index": 0,
+       "default": "R6016DiagnosisSynthetic.g 0"
+      },
+      {
+       "pp_all": "@R6016DiagnosisSynthetic.g Int (@OfNat.ofNat.{0} Int (nat_lit 0) (@instOfNat (nat_lit 0)))",
+       "index": 1,
+       "default": "R6016DiagnosisSynthetic.g 0"
+      }
+     ]
+    }
+   },
+   "exit": 0,
+   "pairs": [
+    {
+     "atoms": [
+      0,
+      1
+     ],
+     "classification": "equality_not_established",
+     "basis": "no attempt established equality or a counterexample"
+    }
+   ],
+   "expected": "equality_not_established"
+  }
+ },
+ "tool_sha256": "a06ddf806d500d27e41805c8643d44e345059dd657a60047c93f1910e4a2f6d2",
+ "sources_sha256": {
+  "r6-016/diagnose_l070.py": "0c73ac306b4ee10d6244d9d24f19fc881cb50055fd5af11647959dad1cf7805b",
+  "r6-016/diagnosis/Diagnose.lean": "c364952d3724c86bfaf0011341f88fd92847b59e08758a7340ff4525e0cac166"
+ },
+ "scope": "pre-lock rehearsal: synthetic exports only; no retained export read"
+}

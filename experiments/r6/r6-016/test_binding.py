@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""R6-015 harness revision 3: control 8's binding (`replay_campaign.bound`, `control8`) on synthetic sealed runs.
+"""R6-016: control 8's binding (`replay_campaign.bound`, `control8`) on synthetic sealed runs. R6-015's test
+(`r6-015/test_binding.py`), on R6-016's modules: the provenance directory is `r6-016/`, R6-015's own schema is refused, and
+`qualification-audit-v2`'s lock check is stubbed with the rest of the lock.
 
 No Lean runs and no retained certificate is read: each run is written with R6's own event chain and seal (`events.append`,
 `site_network.seal`), shaped as `replay_episode.execute` writes it; the locked plan, the lock and the packet source are synthetic
 stand-ins (monkeypatched), and so is the audit program's report. Each probe must be refused before the outcome is used, and
-control 8 must then fail. Run: `python3 r6-015/test_binding.py` (or under pytest).
+control 8 must then fail. Run: `python3 r6-016/test_binding.py` (or under pytest).
 """
 import copy
 import json
@@ -47,7 +49,7 @@ def write_run(run, outcome='certificate_rejected', start=None, terminal=True, ac
     events.append(run, 'episode', 'episode_started', payload, task_id=SPEC['site'])
     r6.write_json(run/'spec.json', SPEC)
     for p in replay_episode.HARNESS:
-        target = run/'provenance/r6-015'/p.name; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(p.read_bytes())
+        target = run/'provenance/r6-016'/p.name; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(p.read_bytes())
     r6.write_json(run/'provenance/sources.json', {'lean-bridge/ProofBroker/Tactic.lean': {'instrumented_sha256': 'T' * 64}})
     r6.write_json(run/'evidence.json', PACKET)
     if outcome == 'proved':
@@ -84,7 +86,7 @@ def main():
     site_task.get(SPEC['site'])  # registered, as `execute` registers it
     replay_episode.retained_packet = lambda spec: copy.deepcopy(PACKET)  # the packet provider, synthetic
     probes = {}
-    with tempfile.TemporaryDirectory(prefix='r6-015-binding-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='r6-016-binding-') as tmp:
         tmp = Path(tmp)
         lock = tmp/'lock.json'; lock.write_text('{"stand-in": true}\n'); LOCK_SHA = r6.sha(lock)
         assert refused(write_run(tmp/'good')) is None, 'a well-formed run must bind'
@@ -93,7 +95,7 @@ def main():
             'another lock': write_run(tmp/'lock', start={'lock_sha256': 'M' * 64}),
             'another bridge': write_run(tmp/'bridge', start={'bridge_rev': '0' * 40}),
             'another harness': write_run(tmp/'harness', start={'harness_sha256': {k: '0' * 64 for k in HARNESS}}),
-            'another schema': write_run(tmp/'schema', start={'schema_version': 'r6-015-replay-1'}),
+            'another schema': write_run(tmp/'schema', start={'schema_version': 'r6-015-replay-2'}),
             'a rehearsal start': write_run(tmp/'rehearsal', start={'admission': 'rehearsal', 'excluded_from_results': True}),
             'resealed verdict disagreeing with the terminal event': write_run(tmp/'resealed', verdict_edit={'outcome': 'proved'}),
             'no terminal event': write_run(tmp/'unfinished', terminal=False),
@@ -101,7 +103,7 @@ def main():
             'seal acceptance disagrees': write_run(tmp/'accepted', accepted=True),
         }
         drift = write_run(tmp/'provenance')  # a harness copy changed, then resealed
-        (drift/'provenance/r6-015/replay_lock.py').write_text('# changed\n'); site_network.seal(drift, False)
+        (drift/'provenance/r6-016/replay_lock.py').write_text('# changed\n'); site_network.seal(drift, False)
         cases['harness copy differs'] = drift
         bridge = write_run(tmp/'tactic')
         r6.write_json(bridge/'provenance/sources.json', {'lean-bridge/ProofBroker/Tactic.lean': {'instrumented_sha256': 'U' * 64}})
@@ -113,6 +115,7 @@ def main():
         # control 8 itself, on the reviewer's last case: an unfinished, sealed proof must make it fail
         replay_lock.LOCK = lock
         replay_lock.verify_lock = lambda: FROZEN
+        replay_campaign.qualification_audit_v2.verify_lock = lambda: None
         replay_lock.planned = lambda frozen: {'probe': SPEC}
         replay_campaign.audit_real = lambda *a: ({'exit': 0, 'audit': {'binding': 'matches_residual',
             'local': {'locatable': True, 'hypotheses': []}, 'whole': {'locatable': True, 'hypotheses': []}}}, {})

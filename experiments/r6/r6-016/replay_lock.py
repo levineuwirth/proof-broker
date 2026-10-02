@@ -1,22 +1,27 @@
-"""R6-015 admission and lock (harness revision 2).
+"""R6-016 admission and lock: R6-015's (`r6-015/replay_lock.py`, harness revision 3), with R6-016's lock, programs and data.
 
-Every episode passes `admit` before anything else runs or is written:
-- a **planned** episode must be exactly its entry in the locked plan, and the R6-015 lock must verify;
-- a **pinned** episode must be exactly one of `REHEARSALS`, the two pre-lock rehearsals the review of harness revision 1 approved
-  as a limited exception (bridge `476fab31`, the option unset, injection disabled). They test the harness and are excluded from
-  R6-015's results.
+Every episode passes `admit` before anything else runs or is written: a **planned** episode must be exactly its entry in the
+locked plan, and the R6-016 lock must verify. **Nothing else is admitted.** R6-016 has no pinned rehearsal (`REHEARSALS` is
+empty): its harness is rehearsed on synthetic goals only.
 
-Nothing else is admitted.
+The plan is R6-015's (`r6-015/plan.json`, 108 episodes), unchanged, with its step-3 record and `mutations.py`, which must name
+it and each other. Control 5's labels are R6-016's own record (`labels.py`), computed by R6-015's frozen rule from the
+classifications recorded at this lock: addendum 1 and addendum 2.
 
 The lock binds the complete source closure these paths use:
-- every Python module the episode, campaign, control-3, analysis and supervisor processes import from `experiments/r6`, computed
-  by importing them (`python_closure`), so a module added to the closure changes the record;
+- every Python module the episode, campaign, control-3, control-9, diagnosis, analysis and supervisor processes import from
+  `experiments/r6`, computed by importing them (`python_closure`), so a module added to the closure changes the record;
 - the non-Python inputs (`DATA`): the capture helper, the event and site schemas, the checker and assembler sources, the vendor
-  lock, and R6's harness locks, the census lock among them; step 3's record (revision 2) and `mutations.py`, which must name this
-  plan and each other; the analysis inputs (R6-014's analysis, the qualification audit's record); and the tests;
-- the binaries: the compiler, the exporter, the kernel checker, the glue library and the audit program;
+  lock, and R6's harness locks, the census lock among them; step 3's record (revision 2) and `mutations.py`; the control-5
+  labels; both audit programs' locks, and the records the labels read; the analysis inputs; the diagnosis program's sources; and
+  the tests;
+- the binaries: the compiler, the exporter, the kernel checker, the glue library, both audit programs and the diagnosis program;
 - the bridge revision and the instrumented `Tactic.lean`;
 - the plan, and every planned episode's source seal and consumed artifact.
+
+**The audit program is `qualification-audit-v2`** (`c42906ed…`), for the residual printed from each export and for control 8, as
+R6-016's proposal (section 5) names it. `qualification-audit-v1`'s program and lock are bound too, by digest, as the proposal's
+section 7 says; neither runs.
 """
 import importlib
 import json
@@ -30,32 +35,33 @@ if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
 
 import run as r6  # noqa: E402
 
-LOCK = R6/'policies/r6-015-replay-v1.sha256.json'
-AUDIT_TOOL = R6/'.cache/qualification-audit/.lake/build/bin/r6-qualification-audit'
+LOCK = R6/'policies/r6-016-replay-v1.sha256.json'
+AUDIT_TOOL = R6/'.cache/qualification-audit-v2/.lake/build/bin/r6-qualification-audit'
 AUDIT_TOOLCHAIN = Path.home()/'build/elan/toolchains/leanprover--lean4---v4.32.2'
-AUDIT_LOCK = R6/'policies/qualification-audit-v1.sha256.json'
+AUDIT_LOCK = R6/'policies/qualification-audit-v2.sha256.json'
+AUDIT_V1_TOOL = R6/'.cache/qualification-audit/.lake/build/bin/r6-qualification-audit'
+AUDIT_V1_LOCK = R6/'policies/qualification-audit-v1.sha256.json'
+DIAGNOSIS_TOOL = R6/'.cache/r6-016-diagnosis/.lake/build/bin/r6-016-diagnose'
 EXPORTER = R6/'.cache/exporter/.lake/build/bin/lean4export'
 GLUE = R6.parents[1]/'lean-bridge/.lake/build/lib/libpbglue.so'
-ENTRY_MODULES = ('replay_lock', 'replay_bridge', 'replay_episode', 'replay_campaign', 'control3', 'analysis', 'site_supervise', 'supervise')
+ENTRY_MODULES = ('replay_lock', 'replay_bridge', 'replay_episode', 'replay_campaign', 'control3', 'control9', 'diagnose_l070', 'labels',
+                 'analysis', 'site_supervise', 'supervise')
 DATA = ('capture/CaptureSite.lean', 'schema/event.schema.json', 'schema/task-site.schema.json', 'validate/verify_certificate.ml',
         'validate/proposal_driver.ml', 'validate/Replay.lean', 'vendor/sources.lock.json', 'policies/census-harness-v1.sha256.json',
         'policies/site-harness-v4.sha256.json', 'policies/fixture-harness-v1.sha256.json', 'policies/qualification-audit-v1.sha256.json',
         'reviews/2026-10-01/R6-015-MUTATIONS-2.json', 'r6-015/mutations.py', 'reviews/2026-09-29/R6-014-BLOCK2-ANALYSIS.json',
-        'reviews/2026-10-01/R6-QUALIFICATION-1-AUDIT.json', 'r6-015/test_binding.py', 'r6-015/test_mutations.py', 'r6-015/test_analysis.py')
+        'reviews/2026-10-01/R6-QUALIFICATION-1-AUDIT.json', 'policies/qualification-audit-v2.sha256.json',
+        'reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-V2-REGRESSION.json', 'reviews/2026-10-02/R6-QUALIFICATION-1-AUDIT-V2-ADDENDUM-2.json',
+        'qualification-audit/qualification_audit.py',  # imported by qualification-audit-v2's driver from its path, outside sys.modules
+        'r6-016/diagnosis/Diagnose.lean', 'r6-016/test_binding.py', 'r6-016/test_analysis.py', 'r6-016/test_harness.py')
+LABELS = 'reviews/2026-10-02/R6-016-CONTROL-5-LABELS.json'
 MUTATIONS = 'reviews/2026-10-01/R6-015-MUTATIONS-2.json'
 SPEC_FIELDS = {'id', 'site', 'source', 'coefficients', 'inject_unverified', 'route'}
-REHEARSALS = {
-    'rehearsal-l069-learned-draw1': {'id': 'rehearsal-l069-learned-draw1', 'site': 'bracket-l069',
-        'source': {'arm': 'learned', 'run': 'cohort-live-v9/l069-draw1'},
-        'coefficients': None, 'inject_unverified': False, 'route': 'pinned'},
-    'rehearsal-l069-deterministic': {'id': 'rehearsal-l069-deterministic', 'site': 'bracket-l069',
-        'source': {'arm': 'deterministic', 'run': 'census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069'},
-        'coefficients': None, 'inject_unverified': False, 'route': 'pinned'},
-}
+REHEARSALS = {}   # R6-016 admits no pinned episode: its harness is rehearsed on synthetic goals only
 
 
 class Refused(Exception):
-    """An episode outside the locked plan and the approved rehearsals."""
+    """An episode outside the locked plan."""
 
 
 def check_spec(spec):
@@ -82,7 +88,7 @@ def python_closure():
 def binaries():
     compiler, exporter, checker = r6.build_tools(task=r6.D1)
     return {'compiler': compiler/'bin/lean', 'exporter': EXPORTER, 'checker': checker, 'glue': GLUE, 'audit_tool': AUDIT_TOOL,
-            'r6_exporter': exporter}
+            'audit_tool_v1': AUDIT_V1_TOOL, 'diagnosis_tool': DIAGNOSIS_TOOL, 'r6_exporter': exporter}
 
 
 def consumed(spec):
@@ -94,10 +100,14 @@ def consumed(spec):
 def lock_record(plan_path):
     import replay_bridge
     plan = r6.read_json(plan_path)
-    audit = r6.read_json(AUDIT_LOCK)
+    audit, audit_v1 = r6.read_json(AUDIT_LOCK), r6.read_json(AUDIT_V1_LOCK)
     tools = binaries()
     if r6.sha(AUDIT_TOOL) != audit['tool_sha256'] or r6.sha(EXPORTER) != audit['exporter_sha256'] or tools['r6_exporter'] != EXPORTER:
-        raise ValueError('the audit program or the exporter differs from qualification-audit-v1')
+        raise ValueError('the audit program or the exporter differs from qualification-audit-v2')
+    if r6.sha(AUDIT_V1_TOOL) != audit_v1['tool_sha256'] or audit['qualification_audit_v1_lock_sha256'] != r6.sha(AUDIT_V1_LOCK):
+        raise ValueError("qualification-audit-v1's program or lock differs from what qualification-audit-v2 binds")
+    import labels
+    labels.verify(plan_path)   # control 5's labels: R6-015's frozen rule, over the classifications recorded at this lock
     sources, patch = replay_bridge.source_record()
     if set(plan) != {'schema_version', 'episodes'} or plan['schema_version'] != 'r6-015-plan-1': raise ValueError('plan fields')
     for spec in plan['episodes']: check_spec(spec)
@@ -108,9 +118,9 @@ def lock_record(plan_path):
     if mutations['plan_sha256'] != r6.sha(plan_path) or mutations['sources_sha256']['r6-015/mutations.py'] != r6.sha(R6/'r6-015/mutations.py'):
         raise ValueError('the step-3 record is not bound to this plan and this mutations.py')
     if set(mutations['episodes']) != set(ids): raise ValueError("the step-3 record's episodes differ from the plan")
-    return {'schema_version': 'r6-015-replay-lock-3',
+    return {'schema_version': 'r6-016-replay-lock-1',
             'python_sha256': {str(p.relative_to(R6)): r6.sha(p) for p in python_closure()},
-            'data_sha256': {p: r6.sha(R6/p) for p in DATA},
+            'data_sha256': {p: r6.sha(R6/p) for p in DATA}, 'labels': LABELS, 'labels_sha256': r6.sha(R6/LABELS),
             'binaries_sha256': {k: r6.sha(v) for k, v in tools.items()},
             'bridge_rev': replay_bridge.BRIDGE_REV,
             'instrumented_tactic_sha256': sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'],
@@ -122,10 +132,10 @@ def lock_record(plan_path):
 def verify_lock():
     import census
     import site_task
-    if not LOCK.exists(): raise Refused('the R6-015 lock does not exist; nothing is replayed before the lock')
+    if not LOCK.exists(): raise Refused('the R6-016 lock does not exist; nothing is replayed before the lock')
     frozen = r6.read_json(LOCK)
     site_task.verify_lock(); census.verify_lock()
-    if lock_record(R6/frozen['plan']) != frozen: raise Refused('the R6-015 lock does not verify')
+    if lock_record(R6/frozen['plan']) != frozen: raise Refused('the R6-016 lock does not verify')
     return frozen
 
 
@@ -134,16 +144,14 @@ def planned(frozen):
 
 
 def admit(spec):
-    """'planned' or 'rehearsal', or `Refused`. Runs before anything else in an episode."""
+    """'planned', or `Refused`. Runs before anything else in an episode."""
     check_spec(spec)
-    if spec['route'] == 'pinned':
-        if REHEARSALS.get(spec['id']) != spec: raise Refused('a pinned episode must be one of the approved rehearsals, exactly')
-        return 'rehearsal'
+    if spec['route'] == 'pinned': raise Refused('R6-016 admits no pinned episode')
     if planned(verify_lock()).get(spec['id']) != spec: raise Refused('the episode is not its entry in the locked plan')
     return 'planned'
 
 
 def write_lock(plan_path):
-    if LOCK.exists(): raise Refused('the R6-015 lock already exists')
+    if LOCK.exists(): raise Refused('the R6-016 lock already exists')
     LOCK.write_text(json.dumps(lock_record(plan_path), indent=1) + '\n')
     return r6.sha(LOCK)

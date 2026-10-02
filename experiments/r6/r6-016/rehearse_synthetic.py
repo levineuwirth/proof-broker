@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""R6-015 harness rehearsal on synthetic goals: no site, no retained certificate (pre-lock).
+"""R6-016 harness rehearsal on synthetic goals: R6-015's (`r6-015/rehearse_synthetic.py`), on R6-016's bridge revision, with
+`qualification-audit-v2`'s program. No site, no retained certificate (pre-lock). The cases and expectations are R6-015's.
 
     rehearse_synthetic.py --output RECORD.json
 
@@ -9,7 +10,7 @@ than under the site stage:
   reconstruction will; R6's driver prepares the problem and assembles each packet from a witness written here;
 - reconstruction: R6's reconstruction helper with the frozen option setting (`replay_bridge.capture_source`), the packet
   delivered as in R6 (`R6_PROPOSAL_PACKET`), the events read from the child's `R6_EVENT` lines;
-- for a proof: the export (R6's pinned exporter), the residual printed from it by the audit program of `qualification-audit-v1`
+- for a proof: the export (R6's pinned exporter), the residual printed from it by the audit program of `qualification-audit-v2`
   (`--synthetic`), and that program again in real mode with the residual, evaluated by control 8's frozen predicate.
 
 Cases, each with its frozen expectation:
@@ -43,7 +44,7 @@ import site_task  # noqa: E402
 import replay_bridge  # noqa: E402
 import replay_episode  # noqa: E402
 
-WORK = R6/'.cache/r6-015-rehearsal'
+WORK = R6/'.cache/r6-016-rehearsal'
 EXPORTER = R6/'.cache/exporter/.lake/build/bin/lean4export'
 GOAL = 'theorem c1_whole (n m : Nat) (z : Int) (hn : n ≤ m) (hz : z + ↑m ≤ 5) : z + ↑n ≤ 5 := by\n  {tactic} "c1_whole.r6_site_c1" "synthetic-c1"\n'
 VALID = [{'hypothesis': 'hn', 'coefficient': '1'}, {'hypothesis': 'hz', 'coefficient': '1'}, {'hypothesis': 'neg_goal', 'coefficient': '1'}]
@@ -157,7 +158,7 @@ def main():
 
 
 def audit(export, residual, report):
-    with tempfile.TemporaryDirectory(prefix='r6-015-rehearsal-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='r6-016-rehearsal-') as tmp:
         argv = [str(replay_episode.AUDIT_TOOL)] + (['--synthetic'] if residual is None else [])
         if residual is not None: (Path(tmp)/'residual.txt').write_text(residual + '\n')
         argv += [str(export), 'c1_whole.r6_site_c1', 'c1_whole', '-' if residual is None else str(Path(tmp)/'residual.txt'), str(report)]
