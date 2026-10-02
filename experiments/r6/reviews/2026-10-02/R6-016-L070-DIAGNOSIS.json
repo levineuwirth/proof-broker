@@ -1,0 +1,167 @@
+{
+ "schema_version": "r6-016-diagnosis-1",
+ "slot": "bracket-l070/5",
+ "run": "cohort-live-v9/l070-draw5",
+ "local": "Bracket.lift_cell.r6_site_l070",
+ "lock_sha256": "d16da90762b830ae4eb6fbdfee02d452106aec8199825c71dbe4867aa991a34f",
+ "tool_sha256": "5d26d53f63c0f1ed88500784b68d771b1ff5fbfa3636fa61e344034cde02eff4",
+ "sources_sha256": {
+  "r6-016/diagnose_l070.py": "7a422dfae9a5ebeaed957be3bd4e02ca2fcaa64273fc532853524de80928877b",
+  "r6-016/diagnosis/Diagnose.lean": "aa0f129286f021b736f91d1186beca49ca992a977185e54124017be514c4e775"
+ },
+ "audit_source_sha256": "670014a5474fd9c9e4f581a5a2e7ba453ce579f2f623ddd46d665e636ee8d079",
+ "command": {
+  "argv": [
+   ".cache/r6-016-diagnosis/.lake/build/bin/r6-016-diagnose",
+   "<tmp>/export.ndjson",
+   "Bracket.lift_cell.r6_site_l070",
+   "<tmp>/report.json"
+  ],
+  "env": {
+   "PATH": "/usr/bin:/bin",
+   "LEAN_SYSROOT": "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.2"
+  },
+  "exit_code": 0,
+  "tool_sha256": "5d26d53f63c0f1ed88500784b68d771b1ff5fbfa3636fa61e344034cde02eff4",
+  "stderr": "",
+  "inputs": {
+   "<tmp>/export.ndjson": {
+    "unpacked_from": "cohort-live-v9/l070-draw5/solution.ndjson.gz",
+    "sha256": "cf8ab2e74004f52cbe2843bc402cccc73f517157c893b6d2afd1cdfc6eee34d4",
+    "packed_sha256": "0746c0548cc13271130fed6b47a7e35386b61ed4794edf711ab18b1482b3b37f"
+   }
+  }
+ },
+ "report": {
+  "environment": {
+   "replayed_through_addDecl": 1799,
+   "max_variables": 6,
+   "max_rec_depth": 1000,
+   "max_heartbeats": 400000,
+   "lean": "4.32.2",
+   "init_shared_identical": 1922,
+   "init_shared_equal_up_to_annotations": 218
+  },
+  "diagnosis": {
+   "positivity": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n        1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (0 - \u2191(Zmax * zhigh.val)) +\n    1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+   "pairs": [
+    {
+     "syntactic": {
+      "first_difference": {
+       "path": [
+        "arg",
+        "fn",
+        "arg"
+       ],
+       "b": "Bracket.P",
+       "a": "@OfNat.ofNat.{0} Nat (nat_lit 18446744069414584321) (instOfNatNat (nat_lit 18446744069414584321))"
+      },
+      "equal_up_to_metadata": false,
+      "equal_after_instantiation": false
+     },
+     "printed": {
+      "pp_all_equal": false,
+      "pp_all": [
+       "@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) Zmax\n  (@ZMod.val (@OfNat.ofNat.{0} Nat (nat_lit 18446744069414584321) (instOfNatNat (nat_lit 18446744069414584321))) zhigh)",
+       "@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) Zmax (@ZMod.val Bracket.P zhigh)"
+      ],
+      "default_equal": true,
+      "default": "Zmax * zhigh.val"
+     },
+     "definitional": {
+      "meta": [
+       {
+        "zeta_delta": false,
+        "transparency": "reducible",
+        "outcome": "unsuccessful",
+        "detail": "isDefEq false"
+       },
+       {
+        "zeta_delta": true,
+        "transparency": "reducible",
+        "outcome": "unsuccessful",
+        "detail": "isDefEq false"
+       },
+       {
+        "zeta_delta": false,
+        "transparency": "instances",
+        "outcome": "unsuccessful",
+        "detail": "isDefEq false"
+       },
+       {
+        "zeta_delta": true,
+        "transparency": "instances",
+        "outcome": "unsuccessful",
+        "detail": "isDefEq false"
+       },
+       {
+        "zeta_delta": false,
+        "transparency": "default",
+        "outcome": "established",
+        "detail": "isDefEq true; the kernel accepts rfl"
+       },
+       {
+        "zeta_delta": true,
+        "transparency": "default",
+        "outcome": "established",
+        "detail": "isDefEq true; the kernel accepts rfl"
+       }
+      ],
+      "kernel": {
+       "outcome": "established",
+       "detail": "kernel accepted"
+      }
+     },
+     "counterexample": {
+      "outcome": "refused",
+      "detail": "the free variable zhigh has type ZMod Bracket.P, outside \u2115 and \u2124"
+     },
+     "atoms": [
+      1,
+      2
+     ],
+     "arithmetic": {
+      "statement": "\u2200 {zhigh : ZMod Bracket.P} {Zmax : Nat}, Zmax * zhigh.val = Zmax * zhigh.val",
+      "omega": {
+       "outcome": "unsuccessful",
+       "detail": "omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  b \u2265 0\n  a \u2265 0\n  a - b \u2265 1\nwhere\n a := \u2191Zmax\u271d * \u2191zhigh\u271d.val\n b := \u2191Zmax\u271d * \u2191zhigh\u271d.val"
+      },
+      "grobner": {
+       "outcome": "unsuccessful",
+       "detail": "`grind` failed\ncase grind\nzhigh : ZMod Bracket.P\nZmax : Nat\nh : \u00acZmax * zhigh.val = Zmax * zhigh.val\n\u22a2 False\n[grind] Goal diagnostics\n  [facts] Asserted facts\n    [prop] \u00acZmax * zhigh.val = Zmax * zhigh.val\n  [eqc] False propositions\n    [prop] Zmax * zhigh.val = Zmax * zhigh.val\n  [ring] Ring `Lean"
+      }
+     }
+    }
+   ],
+   "located": true,
+   "atoms": [
+    {
+     "pp_all": "@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) Zmax\n  (@HPow.hPow.{0, 0, 0} Nat Nat Nat\n    (@instHPow.{0, 0} Nat Nat (@NPow.toPow.{0} Nat (@Monoid.toNPow.{0} Nat Nat.instMonoid)))\n    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))\n    (@OfNat.ofNat.{0} Nat (nat_lit 16) (instOfNatNat (nat_lit 16))))",
+     "index": 0,
+     "default": "Zmax * 2 ^ 16"
+    },
+    {
+     "pp_all": "@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) Zmax\n  (@ZMod.val (@OfNat.ofNat.{0} Nat (nat_lit 18446744069414584321) (instOfNatNat (nat_lit 18446744069414584321))) zhigh)",
+     "index": 1,
+     "default": "Zmax * zhigh.val"
+    },
+    {
+     "pp_all": "@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) Zmax (@ZMod.val Bracket.P zhigh)",
+     "index": 2,
+     "default": "Zmax * zhigh.val"
+    }
+   ]
+  }
+ },
+ "pairs": [
+  {
+   "atoms": [
+    1,
+    2
+   ],
+   "classification": "printed_only",
+   "basis": "definitionally equal: default, zeta_delta False"
+  }
+ ],
+ "scope": "R6-016 section 4: diagnosis, after the replay; it changes no route and counts nothing"
+}
