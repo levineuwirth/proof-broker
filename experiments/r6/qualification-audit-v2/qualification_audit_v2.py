@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """Driver for the R6 qualification-1 audit, amended (`R6-QUALIFICATION-1-AUDIT-AMENDMENT-1-PROPOSAL.md`, revision 3), build
-revision 4. `qualification-audit-v1` and its files are only read; this driver imports v1's driver for its control expectations
+revision 5. `qualification-audit-v1` and its files are only read; this driver imports v1's driver for its control expectations
 and its `Nat.rec` mutation, unchanged.
 
     build                  build the amended program (Lean 4.32.2) and the controls (Lean 4.32.0, R6's pinned exporter)
     controls --output      run C1-C9 and R1-R10 and assert their frozen expectations (under the lock, once it exists)
     lock                   write `qualification-audit-v2`, once, after the implementation review
-    regression --output    application 1: R6's 32 classified slots must reproduce addendum 1 (classifications and mappings)
+    regression --output    application 1: R6's 32 classified slots must reproduce addendum 1 (valid reports, classifications, mappings)
     addendum2 --regression RECORD --output     application 2: R6's 16 slots at l096 and l099, with their sealed rename rows
     l175 --regression RECORD --output          application 3: R6-015's 17 proofs at l175, informational only
 
-Applications 2 and 3 refuse unless the regression record passed under the current lock: its identity, its lock digest and its
-coverage are checked, and its verdict is recomputed from its own results against the lock's expectations (`regression_passed`).
+The regression's verdict validates every report before comparing it (`report_invalid`: an integer exit of zero, no error or
+refusal, real mode on Lean 4.32.2, the residual bound, both targets locatable). Applications 2 and 3 refuse unless the
+regression record passed under the current lock: its identity, its lock digest and its coverage are checked, and its verdict is
+recomputed from its own reports by the same validation and comparison (`regression_passed`).
+
 The lock binds the toolchains' contents: every file of both toolchains (compiler, runtime and the imported `Init`/`Lean`
-environment), digested as trees, and each bridge module the controls import, closed under its own imports as read from its
-`.olean` (`controls_bridge_environment`). `test_gates.py` exercises both gates without a lock.
+environment), digested as trees. It binds the environment the controls are compiled and exported in, resolved as Lean resolves
+it (`controls_environment`): `LEAN_PATH` first, by root package, with no fallthrough; no toolchain package shadowed by the
+bridge's or the controls' directory; every other module bound by each part an import may read. `test_gates.py` exercises the
+gates without a lock.
 
 Every application refuses unless the lock verifies, and verifies it again afterwards, with the locks of the evidence it reads
 (`live-evaluation-v3` for R6's runs, `r6-015-replay-v1` for R6-015's). Offline: no provider, credential or spending.
@@ -58,7 +63,23 @@ RENAMES = {'R1': [_row(2, "c'", 'c_')], 'R2': [_row(2, "c'", 'd_')], 'R3': [_row
            'R4': [_row(2, "c'", 'x')], 'R4b': [_row(1, 'x', "c'"), _row(2, "c'", 'x')],
            'R5': [_row(2, "c'", 'c_'), _row(3, 'h', 'c_')], 'R6': [_row(3, "c'", 'c_')]}
 
+TOOL_TOOLCHAIN = 'leanprover/lean4:v4.32.2'
+LEAN_VERSION = TOOL_TOOLCHAIN.split(':v')[1]   # as the tool's reports print it
+BRIDGE_ENVIRONMENT = REPO/'lean-bridge/.lake/build/lib/lean'
+CONTROLS_MODULE = 'R6AuditControlsV2'
+OLEAN_PARTS = ('.olean', '.olean.server', '.olean.private', '.ir')   # every part an import may read, bound present or absent
+
 sha, run = v1.sha, v1.run
+
+
+def controls_search_path():
+    """The controls' search path in Lean's order (`initSearchPath`): `LEAN_PATH`'s entries as given, then the toolchain's library.
+    The build compiles and exports the controls with exactly this path."""
+    return [BRIDGE_ENVIRONMENT, BUILD/'controls', CONTROLS_TOOLCHAIN/'lib/lean']
+
+
+def controls_env():
+    return {'LEAN_PATH': ':'.join(map(str, controls_search_path()[:-1])), 'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(CONTROLS_TOOLCHAIN)}
 
 
 def build(_):
@@ -69,12 +90,12 @@ def build(_):
     shutil.copyfile(HERE/'Audit.lean', BUILD/'Audit.lean')
     (BUILD/'lakefile.toml').write_text('name = "r6qualauditv2"\n[[lean_lib]]\nname = "Export"\n'
                                        '[[lean_exe]]\nname = "r6-qualification-audit"\nroot = "Audit"\nsupportInterpreter = true\n')
-    (BUILD/'lean-toolchain').write_text('leanprover/lean4:v4.32.2\n')
+    (BUILD/'lean-toolchain').write_text(f'{TOOL_TOOLCHAIN}\n')
     run([str(TOOLCHAIN/'bin/lake'), 'build', 'r6-qualification-audit'], cwd=BUILD)
     run([sys.executable, str(HERE/'make_controls.py')])
     ctl = BUILD/'controls'; ctl.mkdir()
     shutil.copyfile(HERE/'R6AuditControlsV2.lean', ctl/'R6AuditControlsV2.lean')
-    env = {'LEAN_PATH': f"{REPO/'lean-bridge/.lake/build/lib/lean'}:{ctl}", 'PATH': '/usr/bin:/bin', 'LEAN_SYSROOT': str(CONTROLS_TOOLCHAIN)}
+    env = controls_env()
     run([str(CONTROLS_TOOLCHAIN/'bin/lean'), 'R6AuditControlsV2.lean', '-o', 'R6AuditControlsV2.olean'], cwd=ctl, env=env,
         stdout=subprocess.DEVNULL)
     for c in EXPORTS:
@@ -233,9 +254,6 @@ def tree_digest(root):
     return {'path': str(root), 'files': len(files), 'sha256': v1.hashlib.sha256(lines.encode()).hexdigest()}
 
 
-BRIDGE_ENVIRONMENT = REPO/'lean-bridge/.lake/build/lib/lean'
-
-
 def module_imports(olean):
     """The modules an `.olean` imports, read from its header by the controls' toolchain."""
     with tempfile.TemporaryDirectory(prefix='r6-qual-audit-v2-imports-') as tmp:
@@ -247,30 +265,56 @@ def module_imports(olean):
     return sorted(set(out.split()))
 
 
-def controls_bridge_environment():
-    """The bridge modules the controls import, closed under their own imports, each bound by content. Modules found in the
-    controls' toolchain are bound by its tree; any other import outside the bridge refuses."""
-    header = [l.split()[1] for l in (HERE/'R6AuditControlsV2.lean').read_text().splitlines() if l.startswith('import ')]
-    bound, todo = {}, list(header)
+def has_root(directory, root): return (directory/root).is_dir() or (directory/f'{root}.olean').exists()
+
+
+def resolve(module, path):
+    """Lean's `SearchPath.findWithExt`: the first directory that holds the module's root package, as a directory or an `.olean`.
+    The module's file is looked for there only, with no fallthrough."""
+    parts = module.split('.')
+    for directory in path:
+        if has_root(directory, parts[0]): return directory, directory.joinpath(*parts[:-1])/f'{parts[-1]}.olean'
+    return None, None
+
+
+def controls_environment():
+    """The environment the controls are compiled and exported in, resolved as Lean resolves it, from the exported module down.
+    No root package of the toolchain may be shadowed by an earlier directory (the bridge's or the controls'), so whatever resolves
+    to the toolchain is bound by its tree. Every other module is bound by each part an import may read, and its imports, read
+    from its `.olean`, are followed. The controls' module must resolve to the controls' directory, importing what its source
+    does."""
+    path = controls_search_path(); library = path[-1]
+    roots = sorted({p.name.split('.')[0] for p in library.iterdir() if p.is_dir() or p.name.endswith('.olean')})
+    shadows = [str(directory/root) for directory in path[:-1] for root in roots if has_root(directory, root)]
+    if shadows: raise SystemExit(f"refused: the toolchain's packages are shadowed earlier in the controls' search path: {shadows}")
+    modules, todo = {}, [CONTROLS_MODULE]
     while todo:
         m = todo.pop()
-        rel = Path(*m.split('.')).with_suffix('.olean')
-        if m in bound or (CONTROLS_TOOLCHAIN/'lib/lean'/rel).exists(): continue
-        if not (BRIDGE_ENVIRONMENT/rel).exists(): raise SystemExit(f'refused: the controls import {m}, found nowhere bound')
-        imports = module_imports(BRIDGE_ENVIRONMENT/rel)
-        bound[m] = {'olean': str(rel), 'sha256': sha(BRIDGE_ENVIRONMENT/rel), 'imports': imports}
+        if m in modules: continue
+        directory, olean = resolve(m, path)
+        if directory is None or not olean.is_file(): raise SystemExit(f"refused: {m} does not resolve on the controls' search path")
+        if directory == library: modules[m] = {'directory': 'toolchain'}; continue
+        stem = olean.name[:-len('.olean')]
+        parts = {ext: sha(olean.with_name(stem + ext)) if olean.with_name(stem + ext).is_file() else None for ext in OLEAN_PARTS}
+        imports = module_imports(olean)
+        modules[m] = {'directory': str(directory.relative_to(REPO)), 'parts_sha256': parts, 'imports': imports}
         todo += imports
-    return {'header': header, 'modules': dict(sorted(bound.items()))}
+    header = [l.split()[1] for l in (HERE/f'{CONTROLS_MODULE}.lean').read_text().splitlines() if l.startswith('import ')]
+    if modules[CONTROLS_MODULE]['directory'] != str((BUILD/'controls').relative_to(REPO)):
+        raise SystemExit(f"refused: {CONTROLS_MODULE} resolves outside the controls' directory")
+    if modules[CONTROLS_MODULE]['imports'] != sorted(set(header) | {'Init'}):
+        raise SystemExit(f"refused: {CONTROLS_MODULE}'s .olean does not import what its source does")
+    return {'search_path': [str(directory) for directory in path], 'toolchain_packages': roots, 'modules': dict(sorted(modules.items()))}
 
 
 def toolchain_contents():
     return {'tool_toolchain': tree_digest(TOOLCHAIN), 'controls_toolchain': tree_digest(CONTROLS_TOOLCHAIN),
-            'controls_bridge_environment': controls_bridge_environment()}
+            'controls_environment': controls_environment()}
 
 
 def lock_record():
     return {'schema_version': 'r6-qualification-audit-lock-2', 'tool_sha256': sha(TOOL),
-            'toolchain': 'leanprover/lean4:v4.32.2', 'controls_toolchain': 'leanprover/lean4:v4.32.0',
+            'toolchain': TOOL_TOOLCHAIN, 'controls_toolchain': 'leanprover/lean4:v4.32.0',
             'toolchain_contents': toolchain_contents(),
             'sources_sha256': {str(p.relative_to(REPO)): sha(p) for p in SOURCES}, 'controls_sha256': controls_digests(),
             'exporter_sha256': sha(EXPORTER), 'qualification_audit_v1_lock_sha256': sha(v1.LOCK),
@@ -296,13 +340,32 @@ def verify_r6015():
          str(R6), str(R6/'r6-015')], stdout=subprocess.DEVNULL)
 
 
-def regression_differences(frozen, results):
-    differences = {}
+def report_invalid(r, s):
+    """Why a stored report is not a valid execution of the audit on its slot, or nothing: an integer exit of zero, no error or
+    refusal, real mode on the frozen Lean version, the residual bound, and both targets locatable."""
+    if not isinstance(r, dict): return ['no report']
+    a, env = r.get('audit') if isinstance(r.get('audit'), dict) else {}, r.get('environment') if isinstance(r.get('environment'), dict) else {}
+    binding = 'matches_residual_after_renaming' if s.get('rename') else 'matches_residual'
+    return check([
+        ('the exit must be the integer 0', type(r.get('exit')) is not int or r['exit'] != 0),
+        ('no error or refusal', 'error' in r or 'refused' in r),
+        (f'real mode on Lean {LEAN_VERSION}', env.get('mode') != 'real' or env.get('lean') != LEAN_VERSION),
+        (f'the binding must be {binding}', a.get('binding') != binding),
+        ('both targets must be locatable', any(not isinstance(a.get(x), dict) or a[x].get('locatable') is not True for x in ('local', 'whole')))])
+
+
+def regression_verdict(frozen, results):
+    """Each slot's report validated, then compared with v1's classifications and whole-target mapping. Both empty: reproduced.
+    The regression writes its verdict with this, and the gate recomputes it from the record."""
+    invalid, differences = {}, {}
     for key, s in frozen['selection']['regression'].items():
-        a = (results.get(key) or {}).get('audit', {})
+        r = results.get(key)
+        why = report_invalid(r, s)
+        if why: invalid[key] = why; continue
+        a = r['audit']
         got = {'local': cls(a, 'local'), 'whole': cls(a, 'whole'), 'whole_hypotheses': (a.get('whole') or {}).get('hypotheses')}
         if got != s['v1']: differences[key] = {'v1': s['v1'], 'v2': got}
-    return differences
+    return invalid, differences
 
 
 def regression_passed(path, frozen):
@@ -310,9 +373,10 @@ def regression_passed(path, frozen):
     record = json.loads(Path(path).read_text())
     if record.get('application') != 'regression' or record.get('lock_sha256') != sha(LOCK):
         raise SystemExit('refused: the regression record is not this lock\'s')
-    if set(record.get('results') or {}) != set(frozen['selection']['regression']):
+    if not isinstance(record.get('results'), dict) or set(record['results']) != set(frozen['selection']['regression']):
         raise SystemExit('refused: the regression record does not cover exactly the 32 slots')
-    if regression_differences(frozen, record['results']) or record.get('reproduced') is not True or record.get('differences') != {}:
+    invalid, differences = regression_verdict(frozen, record['results'])
+    if invalid or differences or record.get('reproduced') is not True or record.get('invalid') != {} or record.get('differences') != {}:
         raise SystemExit('refused: the regression did not pass')
     return sha(path)
 
@@ -338,11 +402,12 @@ def application(name, args, evidence):
 
 def regression(args):
     out, frozen, results, _ = application('regression', args, v1.verify_live_evaluation)
-    differences = regression_differences(frozen, results)
-    out.write_text(json.dumps({'application': 'regression', 'reproduced': not differences, 'differences': differences, 'results': results,
-                               'lock_sha256': sha(LOCK)}, indent=1) + '\n')
-    print(json.dumps({'reproduced': not differences, 'differences': len(differences)}))
-    return 0 if not differences else 1
+    invalid, differences = regression_verdict(frozen, results)
+    reproduced = not invalid and not differences
+    out.write_text(json.dumps({'application': 'regression', 'reproduced': reproduced, 'invalid': invalid, 'differences': differences,
+                               'results': results, 'lock_sha256': sha(LOCK)}, indent=1) + '\n')
+    print(json.dumps({'reproduced': reproduced, 'invalid': len(invalid), 'differences': len(differences)}))
+    return 0 if reproduced else 1
 
 
 def addendum2(args):
