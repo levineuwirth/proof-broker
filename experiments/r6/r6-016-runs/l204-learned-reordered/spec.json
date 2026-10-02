@@ -1,0 +1,20 @@
+{
+  "id": "l204-learned-reordered",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "hab",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

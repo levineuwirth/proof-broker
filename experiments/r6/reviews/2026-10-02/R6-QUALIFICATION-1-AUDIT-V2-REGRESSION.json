@@ -1,0 +1,1784 @@
+{
+ "application": "regression",
+ "reproduced": true,
+ "invalid": {},
+ "differences": {},
+ "results": {
+  "bracket-l069/1": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/2": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/3": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/4": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/5": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/6": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/7": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l069/8": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/1": {
+   "environment": {
+    "replayed_through_addDecl": 1796,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/2": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat}, 0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat}, 0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/3": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax)) +\n    65536 * (0 - \u2191Zmax)",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n        1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax)) +\n      65536 * (0 - \u2191Zmax)",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n        1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax)) +\n      65536 * (0 - \u2191Zmax)",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/4": {
+   "environment": {
+    "replayed_through_addDecl": 1796,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/5": {
+   "environment": {
+    "replayed_through_addDecl": 1799,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n        1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (0 - \u2191(Zmax * zhigh.val)) +\n    1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficiency_not_established"
+    },
+    "check2": {
+     "statement": "\u2200 {zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n          1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n        1 * (0 - \u2191(Zmax * zhigh.val)) +\n      1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": false,
+     "direct": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  c \u2265 0\n  b \u2265 0\n  b - c \u2264 -2\n  a \u2265 0\nwhere\n a := \u2191Zmax\u271d\n b := \u2191Zmax\u271d * \u2191zhigh\u271d.val\n c := \u2191Zmax\u271d * \u2191zhigh\u271d.val"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n          1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n        1 * (0 - \u2191(Zmax * zhigh.val)) +\n      1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [
+      "Zmax * 2 ^ 16",
+      "Zmax * zhigh.val",
+      "Zmax * zhigh.val"
+     ],
+     "abstraction": {
+      "ok": false,
+      "detail": "omega: omega could not prove the goal:\na possible counterexample may satisfy the constraints\n  d \u2265 0\n  c \u2265 0\n  c - d \u2264 -2\n  b \u2265 0\n  a \u2265 0\nwhere\n a := \u2191Zmax\u271d\n b := \u2191_atom0\u271d\n c := \u2191_atom1\u271d\n d := \u2191_atom2\u271d"
+     }
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/6": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat}, 0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat}, 0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/7": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat}, 0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat}, 0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l070/8": {
+   "environment": {
+    "replayed_through_addDecl": 1796,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1922,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      }
+     ],
+     "hypotheses": [
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "hZval"
+      },
+      {
+       "path": [
+        "internal to the local proof"
+       ],
+       "name": "neg_goal"
+      },
+      {
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ],
+       "name": "hZ"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "locatable": true,
+     "hypotheses": [
+      {
+       "path": [],
+       "name": "hZ"
+      },
+      {
+       "path": [],
+       "name": "hZval"
+      },
+      {
+       "path": [],
+       "name": "neg_goal"
+      }
+     ],
+     "classification": "sufficient_but_context_referenced"
+    },
+    "check2": {
+     "statement": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {Zmax : Nat},\n  0 <\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/1": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/2": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/3": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/4": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/5": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/6": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/7": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l071/8": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1923,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/1": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/2": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/3": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/4": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/5": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/6": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/7": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  },
+  "bracket-l078/8": {
+   "environment": {
+    "replayed_through_addDecl": 1798,
+    "mode": "real",
+    "lean": "4.32.2",
+    "init_shared_identical": 1920,
+    "init_shared_equal_up_to_annotations": 218
+   },
+   "audit": {
+    "whole": {
+     "locatable": true,
+     "internal_to_local_proof": [],
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "parameters": {
+     "established": true,
+     "count": 11
+    },
+    "local": {
+     "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "locatable": true,
+     "hypotheses": [],
+     "classification": "certificate_alone"
+    },
+    "check2": {
+     "statement": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "specialization_definitions": null,
+     "specialization_atoms": null,
+     "established": true,
+     "direct": {
+      "ok": true,
+      "detail": "kernel accepted"
+     },
+     "definitions_dropped": [],
+     "attempted": "\u2200 {x z zhigh : ZMod Bracket.P} {Zmax : Nat},\n  0 <\n    1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+     "atoms": [],
+     "abstraction": null
+    },
+    "binding_detail": null,
+    "binding": "matches_residual"
+   },
+   "exit": 0
+  }
+ },
+ "lock_sha256": "c42906edfc8e14605cac9adaf63fba83ffb9dba3de042a76543633147ad20bda"
+}

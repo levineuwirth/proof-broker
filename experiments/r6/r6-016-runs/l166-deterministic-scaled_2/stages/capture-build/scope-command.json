@@ -1,0 +1,18 @@
+[
+  "systemd-run",
+  "--user",
+  "--scope",
+  "--quiet",
+  "--unit=r6-108cc7a3f70842c18b7396139f7a7fae.scope",
+  "-p",
+  "Delegate=yes",
+  "-p",
+  "OOMPolicy=continue",
+  "-p",
+  "TasksMax=128",
+  "-p",
+  "RuntimeMaxSec=165",
+  "/usr/bin/python3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/r6-016-runs/l166-deterministic-scaled_2/stages/capture-build/command.json"
+]

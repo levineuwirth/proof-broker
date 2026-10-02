@@ -1,0 +1,51 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l175-deterministic-reordered",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "coefficient": "3",
+      "hypothesis": "neg_goal"
+    },
+    {
+      "coefficient": "3",
+      "hypothesis": "this"
+    },
+    {
+      "coefficient": "3",
+      "hypothesis": "hz0"
+    },
+    {
+      "coefficient": "-3",
+      "hypothesis": "hrec"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l175": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "dfcfada94455575287252109600e7f983dd889c374dc5eb199e8134d1fce255d",
+  "residual_goal": "0 < 3 * (v + 1 - ↑Zmax) + 3 * (↑Zmax - ↑Zmax * zhigh) + 3 * (0 - z) + 3 * (z + ↑Zmax * zhigh - v)",
+  "outcome": "proved"
+}

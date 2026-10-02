@@ -1,0 +1,18 @@
+[
+  "systemd-run",
+  "--user",
+  "--scope",
+  "--quiet",
+  "--unit=r6-09adc20caef94b898a69d02e41703f7e.scope",
+  "-p",
+  "Delegate=yes",
+  "-p",
+  "OOMPolicy=continue",
+  "-p",
+  "TasksMax=128",
+  "-p",
+  "RuntimeMaxSec=165",
+  "/usr/bin/python3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/r6-016-runs/l178-learned-neg_goal_doubled/stages/reconstruct/command.json"
+]

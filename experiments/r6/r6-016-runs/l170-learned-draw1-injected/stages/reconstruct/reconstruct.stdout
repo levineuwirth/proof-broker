@@ -1,0 +1,1 @@
+/input/Frozen.lean:171:32: error: proof_broker_term (constrained): the weighted sum normalizes to 0, which is not positive

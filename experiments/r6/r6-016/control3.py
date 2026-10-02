@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""R6-016 control 3, under the R6-016 lock: R6-015's (`r6-015/control3.py`), on R6-016's bridge revision. The probe, its
+expectations and `evaluate` are R6-015's, unchanged; only the lock, the bridge, the work directory and the schema differ, and
+`--dry-run` (as control 9's) skips the lock and labels the record so, for the pre-lock rehearsal; the analysis rejects it.
+
+    control3.py --output RECORD.json [--dry-run]
+
+`h : x ≤ y ⊢ x ≤ y` with (`h` 1, `neg_goal` 2): the combination does not cancel. It is not a site; it is driven through R6's
+own preparation and reconstruction helpers on the replay bridge, as `rehearse_synthetic.py` does, with the packet assembled by
+R6's driver and delivered as in R6. The independent checker rejects the certificate, so both runs are injected
+(`R6_015_INJECT_UNVERIFIED=1`), recorded as `certificate_gate_bypassed`.
+
+Frozen expectations:
+- **constrained** (the option set): the constrained closer is selected and fails, the weighted sum not cancelling;
+- **pinned** (the option unset): R6's pinned fold closes it through contextual `omega`, with R6's receipt. This is the documented
+  difference, recorded, not counted as consumption.
+
+The R6-016 lock must verify before and after.
+"""
+import argparse
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+HERE = Path(__file__).resolve().parent
+R6 = HERE.parent
+if str(R6) not in sys.path: sys.path.insert(0, str(R6))
+if str(HERE) not in sys.path: sys.path.insert(0, str(HERE))
+
+import events  # noqa: E402
+import run as r6  # noqa: E402
+import site_task  # noqa: E402
+import replay_bridge  # noqa: E402
+import replay_lock  # noqa: E402
+from rehearse_synthetic import Stub, child_events, lean  # noqa: E402
+
+WORK = R6/'.cache/r6-016-control3'
+GOAL = 'theorem probe_whole (x y : Int) (h : x ≤ y) : x ≤ y := by\n  {tactic} "probe_whole.r6_site_probe" "synthetic-probe"\n'
+PROBE = [{'hypothesis': 'h', 'coefficient': '1'}, {'hypothesis': 'neg_goal', 'coefficient': '2'}]
+SCHEMA = 'r6-016-control-3-1'
+SOURCES = (Path(__file__).resolve(), HERE/'rehearse_synthetic.py', HERE/'replay_bridge.py', HERE/'replay_lock.py')
+
+
+def evaluate(results):
+    """Control 3's frozen expectations, from its results; the analysis recomputes this. Returns the unmet ones."""
+    unmet = []
+    if (results.get('checker') or {}).get('accepted') is not False: unmet.append('the independent checker did not reject the probe')
+    for route in ('constrained', 'pinned'):
+        r = results.get(route)
+        if not isinstance(r, dict): unmet.append(f'{route}: no result'); continue
+        if 'certificate_gate_bypassed' not in (r.get('events') or []): unmet.append(f'{route}: the injection was not recorded')
+        if route == 'constrained':
+            if type(r.get('exit')) is not int or r.get('exit') == 0 or r.get('term_route') != {'constrained': True} or (r.get('closer_selected') or {}).get('route') != 'constrained' \
+                    or not any('the weighted sum does not cancel' in e for e in r.get('errors') or []):
+                unmet.append('constrained: did not fail in the constrained final step')
+        elif type(r.get('exit')) is not int or r.get('exit') != 0 or r.get('term_route') != {'constrained': False} \
+                or (r.get('reconstruction_finished') or {}).get('residual_closer') != 'omega':
+            unmet.append('pinned: the documented difference did not reproduce')
+    return unmet
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--output', required=True); p.add_argument('--dry-run', action='store_true')
+    args = p.parse_args(); out = Path(args.output)
+    if out.exists(): raise SystemExit(f'refusing to overwrite {out}')
+    if not args.dry_run:
+        try:
+            replay_lock.verify_lock()
+        except replay_lock.Refused as refused:
+            raise SystemExit(str(refused))
+    compiler, _, _ = r6.build_tools(task=r6.D1)
+    dest, sources, _ = replay_bridge.build(compiler)
+    driver = dest/'sdk/_build/default/validate/proposal_driver.exe'
+    verifier = dest/'sdk/_build/default/validate/verify_certificate.exe'
+    if WORK.exists(): shutil.rmtree(WORK)
+    prep = WORK/'prepare'; prep.mkdir(parents=True)
+    (prep/'PreparationCapture.lean').write_text(site_task.capture_source(Stub, True))
+    (prep/'Synthetic.lean').write_text('import PreparationCapture\n\n' + GOAL.format(tactic='r6_prepare'))
+    if lean(compiler, dest, prep, ['-o', 'PreparationCapture.olean', 'PreparationCapture.lean'], {}).returncode: raise SystemExit('preparation helper')
+    prepared = lean(compiler, dest, prep, ['Synthetic.lean'], {'R6_PREPARE_OUTPUT': str(prep/'reification.json'),
+                                                              'R6_CAPTURE_OUTPUT': str(prep/'context.json')})
+    if prepared.returncode: raise SystemExit('preparation: ' + (prepared.stdout + prepared.stderr)[-2000:])
+    r6.write_json(prep/'input-ir.json', r6.read_json(prep/'reification.json')['ir'])
+    subprocess.run([str(driver), 'prepare', str(prep/'input-ir.json'), str(prep/'prepared.json')], check=True)
+    r6.write_json(prep/'response.json', {'witness': {'coefficients': PROBE}})
+    subprocess.run([str(driver), 'assemble', str(prep/'prepared.json'), str(prep/'response.json'), 'sha256:r6-016-control-3',
+                    str(prep/'evidence.json')], check=True)
+    subprocess.run([str(verifier), str(prep/'evidence.json'), str(prep/'verdict.json')], capture_output=True)
+    checker = r6.read_json(prep/'verdict.json')
+    results = {'checker': checker}
+    for route in ('constrained', 'pinned'):
+        work = WORK/route; work.mkdir()
+        (work/'ProposalCapture.lean').write_text(replay_bridge.capture_source(site_task, Stub, route))
+        (work/'Synthetic.lean').write_text('import ProposalCapture\n\n' + GOAL.format(tactic='r6_capture_proposal'))
+        if lean(compiler, dest, work, ['-o', 'ProposalCapture.olean', 'ProposalCapture.lean'], {}).returncode: raise SystemExit('helper')
+        proc = lean(compiler, dest, work, ['-o', 'Synthetic.olean', 'Synthetic.lean'],
+                    {'R6_PROPOSAL_PACKET': str(prep/'evidence.json'), 'PROOF_BROKER_EPISODE_TRACE': '1',
+                     'R6_CAPTURE_OUTPUT': str(work/'context.json'), 'R6_015_INJECT_UNVERIFIED': '1'})
+        observed = child_events(proc.stderr); names = [e for e, _ in observed]; data = dict(observed)
+        errors = [line for line in (proc.stdout + proc.stderr).splitlines() if ': error: ' in line]
+        results[route] = {'exit': proc.returncode, 'events': names, 'term_route': data.get('term_route'),
+                          'closer_selected': {k: v for k, v in (data.get('closer_selected') or {}).items() if k != 'certificate'},
+                          'reconstruction_finished': {k: v for k, v in (data.get('reconstruction_finished') or {}).items() if k != 'certificate'},
+                          'errors': errors[:5]}
+    unmet = evaluate(results)
+    if not args.dry_run: replay_lock.verify_lock()
+    passed = not unmet
+    record = {'schema_version': SCHEMA, 'control': 3, 'passed': passed, 'unmet': unmet, 'results': results,
+        'evidence': {'evidence_sha256': r6.sha(prep/'evidence.json'), 'certificate_sha256': events.digest(r6.read_json(prep/'evidence.json')['certificate']),
+                     'coefficients': PROBE},
+        'sources_sha256': {str(f.relative_to(R6)): r6.sha(f) for f in SOURCES},
+        'lock_sha256': None if args.dry_run else r6.sha(replay_lock.LOCK), 'bridge_rev': replay_bridge.BRIDGE_REV,
+        'instrumented_tactic_sha256': sources['lean-bridge/ProofBroker/Tactic.lean']['instrumented_sha256'],
+        'documented_difference': 'the pinned fold closes the probe through contextual omega; not consumption'}
+    if args.dry_run: record['dry_run'] = 'pre-lock rehearsal on the synthetic probe; not control 3'
+    out.write_text(json.dumps(record, indent=1) + '\n')
+    print(json.dumps({'passed': passed, 'unmet': unmet}))
+    return 0 if passed else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

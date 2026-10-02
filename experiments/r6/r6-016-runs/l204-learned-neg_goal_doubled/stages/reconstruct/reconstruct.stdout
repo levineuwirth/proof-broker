@@ -1,0 +1,6 @@
+/input/Frozen.lean:149:19: warning: Variable name `hz` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/input/Frozen.lean:205:52: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (b) + -1 * (a) + 2

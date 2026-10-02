@@ -1,0 +1,18 @@
+[
+  "systemd-run",
+  "--user",
+  "--scope",
+  "--quiet",
+  "--unit=r6-13244e7bc739418587c3528751e5ec7b.scope",
+  "-p",
+  "Delegate=yes",
+  "-p",
+  "OOMPolicy=continue",
+  "-p",
+  "TasksMax=128",
+  "-p",
+  "RuntimeMaxSec=165",
+  "/usr/bin/python3",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/site_supervise.py",
+  "/home/jeans/Repos/research/proof-broker/experiments/r6/r6-016-runs/l166-deterministic-unrelated_inequality_added/stages/capture-build/command.json"
+]

@@ -1,0 +1,51 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l175-learned-scaled_3",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw1"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-3"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "3"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l175": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "0f3184dc0faa466e530b06dea16c382a3fc82032606d00cb3f2cebdc5c911bab",
+  "residual_goal": "0 < 3 * (z + ↑Zmax * zhigh - v) + 3 * (0 - z) + 3 * (v + 1 - ↑Zmax) + 3 * (↑Zmax - ↑Zmax * zhigh)",
+  "outcome": "proved"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "l178-learned-draw6",
+  "site": "bracket-l178",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l178-draw6"
+  },
+  "coefficients": null,
+  "inject_unverified": false,
+  "route": "constrained"
+}

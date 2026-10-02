@@ -1,0 +1,743 @@
+{
+ "schema_version": "r6-016-control-9-1",
+ "control": 9,
+ "passed": true,
+ "unmet": [],
+ "results": {
+  "c9a": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:911f1a0c46c1ba01f0fe25e392c47fb755c5c8371f846d571320c28f6bc669e4"
+   },
+   "injected": false,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "z + \u2191n \u2264 5",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": [],
+   "axioms": {
+    "c9a_whole": [
+     "propext",
+     "Quot.sound"
+    ],
+    "c9a_omega": [
+     "propext",
+     "Quot.sound"
+    ],
+    "ProofBroker.TermMode.posOfLinearNum": [
+     "propext",
+     "Quot.sound"
+    ]
+   }
+  },
+  "c9b": {
+   "prepared": true,
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is -_pb_iatom_0 + _pb_iatom_1 + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:232399d0b28c560fd6ee31681a1402df732285b0b8d24e156235db897d6b6815"
+   },
+   "injected": true,
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "y * x \u2264 5",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {},
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (y * x) + 1 * (x * y) + 1"
+   ]
+  },
+  "c9c_order": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:6f3be3d03d659c10df7fb1b0224916e4aaf3813872381e704c7a6b6a67e657e7"
+   },
+   "injected": false,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "x * y \u2264 5",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": []
+  },
+  "c9c_cast": {
+   "prepared": true,
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is -_pb_atom_0 + _pb_iatom_0 + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:221f47c49fb054ed3630d9e64d24f9e59f10e80b3966925e4c0fabe0bff1151a"
+   },
+   "injected": true,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "\u2191(a * b) \u2264 z",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": []
+  },
+  "c9d_factor": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:380646c41e6c2e9fc6a0726126bd7a03c05870ae8d5986f31235d18b3e48e889"
+   },
+   "injected": false,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "a \u2264 b + 2",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": []
+  },
+  "c9d_zero": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:1b9f84770ed8a2976abe612400a7ffd06db72f6c6a98b330cc786608cbe9c3cd"
+   },
+   "injected": false,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "b \u2264 0",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": []
+  },
+  "c9d_power": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:d52b9cd36b625361212574437ce3667915e9066665d7a583300283f19394de09"
+   },
+   "injected": false,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "65536 * \u2191Zmax \u2264 v",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": []
+  },
+  "c9e_without": {
+   "prepared": true,
+   "checker": {
+    "accepted": false,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "farkas_not_contradictory",
+     "detail": "weighted sum is n + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+    },
+    "certificate_hash": "sha256:05f1fa9c88e7a2b3d8e4b99e0cd1ff4bbe0a7773be68a35b1a24c0cec812dc46"
+   },
+   "injected": true,
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_nat",
+    "comparison_type": "Nat",
+    "goal": "m < m + n + 1",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {},
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (\u2191n) + 1"
+   ]
+  },
+  "c9e_with": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:d49ba86298af55da5e7edd5f54f2d378ab7527ba47fc068f03ce0776df9060d6"
+   },
+   "injected": false,
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_nat",
+    "comparison_type": "Nat",
+    "goal": "m < m + n + 1",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_nat",
+    "constrained_option": true,
+    "derivation_replayed": false,
+    "final_step": "constrained",
+    "residual_closer": "constrained_normalization"
+   },
+   "errors": []
+  },
+  "c9f": {
+   "prepared": true,
+   "checker": {
+    "accepted": true,
+    "stage": "certificate_verification",
+    "reason": {
+     "kind": "verified_farkas"
+    },
+    "certificate_hash": "sha256:b3b7f19b0d6d88d8e425d469ecbca5487bb49842954a36c94c012a546223ed20"
+   },
+   "injected": false,
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "term_route",
+    "closer_selected"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "\u2191n \u2264 \u2191m",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {},
+   "errors": [
+    "Synthetic.lean:6:2: error: proof_broker_term (constrained): the positivity proof reaches hypotheses [tag]"
+   ]
+  }
+ },
+ "evidence": {
+  "c9a": {
+   "evidence_sha256": "c85004afa7e242cc06248de400b7c03257291da1fb703afe4dc3780063b4d7ab",
+   "certificate_sha256": "911f1a0c46c1ba01f0fe25e392c47fb755c5c8371f846d571320c28f6bc669e4",
+   "coefficients": [
+    {
+     "hypothesis": "hn",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "hz",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9b": {
+   "evidence_sha256": "a21e6cfafd1abaf7f015e3af81eecb9dbfdb3fc9ff6808eb41c0565845b622ef",
+   "certificate_sha256": "232399d0b28c560fd6ee31681a1402df732285b0b8d24e156235db897d6b6815",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9c_order": {
+   "evidence_sha256": "b7ea910529ef558c8730ed89aeefd02500dd1596e0bf35222d50784c9d1b3bdf",
+   "certificate_sha256": "6f3be3d03d659c10df7fb1b0224916e4aaf3813872381e704c7a6b6a67e657e7",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9c_cast": {
+   "evidence_sha256": "fe04c91fdb9c8314371d29610479aa9b9e3eba55c8cc40a229e55cf80bddc98b",
+   "certificate_sha256": "221f47c49fb054ed3630d9e64d24f9e59f10e80b3966925e4c0fabe0bff1151a",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9d_factor": {
+   "evidence_sha256": "9c4e83a1c22e4bba82631f6cdc04c230c38207a1474f811da606a4e2a802b7c2",
+   "certificate_sha256": "380646c41e6c2e9fc6a0726126bd7a03c05870ae8d5986f31235d18b3e48e889",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "3"
+    }
+   ]
+  },
+  "c9d_zero": {
+   "evidence_sha256": "5d1261a38381ff907d9b4aa163fdf55f82c1ffa9506546edc83a6d79ff357bf2",
+   "certificate_sha256": "1b9f84770ed8a2976abe612400a7ffd06db72f6c6a98b330cc786608cbe9c3cd",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9d_power": {
+   "evidence_sha256": "e5265d1fb64d6b72eff5574089e73e144db5f43c1aa5a6cf53818cd3a55f810c",
+   "certificate_sha256": "d52b9cd36b625361212574437ce3667915e9066665d7a583300283f19394de09",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9e_without": {
+   "evidence_sha256": "744344d44527e75348f6aded1a4d610170ce037b76e30bb19e850d7df46f006d",
+   "certificate_sha256": "05f1fa9c88e7a2b3d8e4b99e0cd1ff4bbe0a7773be68a35b1a24c0cec812dc46",
+   "coefficients": [
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9e_with": {
+   "evidence_sha256": "72b2ecf38c6beb75a054cea941247ce0ae0d17c217b6c0532c36ced9946261a1",
+   "certificate_sha256": "d49ba86298af55da5e7edd5f54f2d378ab7527ba47fc068f03ce0776df9060d6",
+   "coefficients": [
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "_pb_nonneg_n",
+     "coefficient": "1"
+    }
+   ]
+  },
+  "c9f": {
+   "evidence_sha256": "7ba88b572ef360ef24c2769b3861fb582df1f26ef48f349c47732f83cfdb6ff1",
+   "certificate_sha256": "b3b7f19b0d6d88d8e425d469ecbca5487bb49842954a36c94c012a546223ed20",
+   "coefficients": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ]
+  }
+ },
+ "cases": {
+  "c9a": {
+   "statement": "(n m : Nat) (z : Int) (hn : n \u2264 m) (hz : z + \u2191m \u2264 5) : z + \u2191n \u2264 5",
+   "witness": [
+    {
+     "hypothesis": "hn",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "hz",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": true,
+   "expectation": "closes"
+  },
+  "c9b": {
+   "statement": "(x y : Int) (h : x * y \u2264 5) (hc : y * x \u2264 x * y) : y * x \u2264 5",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": false,
+   "expectation": "the weighted sum does not cancel"
+  },
+  "c9c_order": {
+   "statement": "(x y : Int) (h : x * y \u2264 5) : x * y \u2264 5",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": true,
+   "expectation": "closes"
+  },
+  "c9c_cast": {
+   "statement": "(a b : Nat) (z : Int) (h : (a : Int) * (b : Int) \u2264 z) : ((a * b : Nat) : Int) \u2264 z",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": false,
+   "expectation": "closes"
+  },
+  "c9d_factor": {
+   "statement": "(a b : Int) (h : 3 * (a - b) \u2264 6) : a \u2264 b + 2",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "3"
+    }
+   ],
+   "checker": true,
+   "expectation": "closes"
+  },
+  "c9d_zero": {
+   "statement": "(a b : Int) (h : a * 0 + b \u2264 0) : b \u2264 0",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": true,
+   "expectation": "closes"
+  },
+  "c9d_power": {
+   "statement": "(Zmax : Nat) (v : Int) (h : ((Zmax * 2 ^ 16 : Nat) : Int) \u2264 v) : (65536 : Int) * Zmax \u2264 v",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": true,
+   "expectation": "closes"
+  },
+  "c9e_without": {
+   "statement": "(m n : Nat) : m < m + n + 1",
+   "witness": [
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": false,
+   "expectation": "the weighted sum does not cancel"
+  },
+  "c9e_with": {
+   "statement": "(m n : Nat) : m < m + n + 1",
+   "witness": [
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "_pb_nonneg_n",
+     "coefficient": "1"
+    }
+   ],
+   "checker": true,
+   "expectation": "closes"
+  },
+  "c9f": {
+   "statement": "(tag : True) (n m : Nat) (h : n \u2264 m) (h' : @NatCast.natCast Int (castViaHyp tag) n \u2264 @NatCast.natCast Int (castViaHyp tag) m) : @NatCast.natCast Int (castViaHyp tag) n \u2264 @NatCast.natCast Int (castViaHyp tag) m",
+   "witness": [
+    {
+     "hypothesis": "h",
+     "coefficient": "1"
+    },
+    {
+     "hypothesis": "neg_goal",
+     "coefficient": "1"
+    }
+   ],
+   "checker": true,
+   "expectation": "the positivity proof reaches hypotheses [tag]"
+  }
+ },
+ "sources_sha256": {
+  "r6-016/control9.py": "9db8e0fbe1eb57c6a1d3ac2d8b551f60ed9cc36d747bcb5c1299b5d32b9d7ac3",
+  "r6-016/rehearse_synthetic.py": "f87c255027fe622ce61438a312fe07accff80791c358e3d5e9da888182d98206",
+  "r6-016/replay_bridge.py": "964971f59cc9a772c1b4ff335aae62f295ee5de52d9837f55a8c2e8717416171",
+  "r6-016/replay_lock.py": "f22c79df22e97299fa36a959bcb0f1133dfc988c1ca1837162e4d778c83c4a34"
+ },
+ "lock_sha256": "d16da90762b830ae4eb6fbdfee02d452106aec8199825c71dbe4867aa991a34f",
+ "bridge_rev": "64585867afa1194be2b0832b77fd62bbefc2462b",
+ "instrumented_tactic_sha256": "ebfa82a2ac91dea3d05a3911d620b15002f8c151f90cf79a05b46b022c7a9abc"
+}

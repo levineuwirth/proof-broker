@@ -1,0 +1,44 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l204-learned-neg_goal_doubled",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw1"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hab",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "2"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": true,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": false,
+  "outcome": "reconstruction_failed",
+  "failure_stage": "reconstruct",
+  "detail": {
+    "events": [
+      "reification_started",
+      "reification_finished",
+      "dispatch_started",
+      "dispatch_received",
+      "certificate_verification_started",
+      "certificate_verification_finished",
+      "reconstruction_started",
+      "certificate_gate_bypassed",
+      "term_route",
+      "closer_selected"
+    ],
+    "errors": [
+      "/input/Frozen.lean:205:52: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (b) + -1 * (a) + 2"
+    ]
+  }
+}

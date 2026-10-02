@@ -1,0 +1,20 @@
+{
+  "id": "l204-learned-inequality_doubled",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hab",
+      "coefficient": "2"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": true,
+  "route": "constrained"
+}

@@ -1,0 +1,9 @@
+{
+  "accepted": false,
+  "stage": "certificate_verification",
+  "reason": {
+    "kind": "farkas_not_contradictory",
+    "detail": "weighted sum is -Zmax + 1, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+  },
+  "certificate_hash": "sha256:0d5526698b19191d9265cc80ce50459863e3464729d8c023ce3a5e0d34cfc485"
+}

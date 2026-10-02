@@ -1,0 +1,28 @@
+{
+  "id": "l178-learned-zero_entry_added",
+  "site": "bracket-l178",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l178-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "this_1",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "0"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

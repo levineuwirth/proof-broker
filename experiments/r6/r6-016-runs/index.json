@@ -1,0 +1,4263 @@
+{
+  "lock_sha256": "d16da90762b830ae4eb6fbdfee02d452106aec8199825c71dbe4867aa991a34f",
+  "results": {
+    "l166-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw1",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw2",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw3",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw3"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw4": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw4",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw4"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw5": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw5",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw5"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw6": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw6",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw6"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw7": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw7",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw7"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-draw8": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-draw8",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw8"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "4fd4363e029a32857e47929616ebe3cfdb50c1e57b6272780385eb700b43bbe0",
+      "residual_goal": "0 < 3 * (z + ↑Zmax * 0 - z) + 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw1",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "e31291d2d3e3d30b766dc6b8dfec8e6468d2d0108faeb4903d946d53d5eb4487",
+      "residual_goal": "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax) + 1 * (z + ↑Zmax * zhigh - v)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw2",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ad964e89a4dedb180333a4f3dbb1a270ff846851df7c1ad72e3aa21ab8d8e5fc",
+      "residual_goal": "0 < 1 * (v + 1 - ↑Zmax) + 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw3",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw3"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3b97a5842273a3ed6d34a85ab8c5a35c837a7ccb5e1e4c5fcac89e3c1150b01d",
+      "residual_goal": "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw4": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw4",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw4"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ad964e89a4dedb180333a4f3dbb1a270ff846851df7c1ad72e3aa21ab8d8e5fc",
+      "residual_goal": "0 < 1 * (v + 1 - ↑Zmax) + 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw5": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw5",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw5"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "e31291d2d3e3d30b766dc6b8dfec8e6468d2d0108faeb4903d946d53d5eb4487",
+      "residual_goal": "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax) + 1 * (z + ↑Zmax * zhigh - v)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw6": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw6",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw6"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "e31291d2d3e3d30b766dc6b8dfec8e6468d2d0108faeb4903d946d53d5eb4487",
+      "residual_goal": "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax) + 1 * (z + ↑Zmax * zhigh - v)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw7": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw7",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw7"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "e31291d2d3e3d30b766dc6b8dfec8e6468d2d0108faeb4903d946d53d5eb4487",
+      "residual_goal": "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax) + 1 * (z + ↑Zmax * zhigh - v)",
+      "outcome": "proved"
+    },
+    "l175-learned-draw8": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-draw8",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw8"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "c6ee83734ddf4b71b346996387c542287c80231d40825e6b63ce37e0dd94c4ce",
+      "residual_goal": "0 < 1 * (z + ↑Zmax * zhigh - v) + 1 * (0 - z) + 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (v + 1 - ↑Zmax)",
+      "outcome": "proved"
+    },
+    "l175-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bf657c7c1cbcf9cb9a55c730d6aa9c4ba660067c2a26622cc94676f43f7e1fe1",
+      "residual_goal": "0 < 3 * (z + ↑Zmax * zhigh - v) + 3 * (0 - z) + 3 * (↑Zmax - ↑Zmax * zhigh) + 3 * (v + 1 - ↑Zmax)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw1",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw2",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw3",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw3"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw4": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw4",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw4"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw5": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw5",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw5"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw6": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw6",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw6"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw7": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw7",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw7"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-learned-draw8": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-draw8",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw8"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l178-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-deterministic",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l178"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l204-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw1",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw2",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw3",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw3"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw4": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw4",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw4"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw5": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw5",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw5"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw6": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw6",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw6-attempt2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw7": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw7",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw7"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-draw8": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-draw8",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw8"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-deterministic",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l204"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l166-deterministic-neg_goal_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-neg_goal_doubled",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (z) + -1 * (↑v0) + 2"
+        ]
+      }
+    },
+    "l166-deterministic-inequality_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-inequality_doubled",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (z) + 1 * (↑v0) + 1"
+        ]
+      }
+    },
+    "l166-deterministic-hypothesis_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-hypothesis_dropped",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑v0) + 1 * (z) + 1"
+        ]
+      }
+    },
+    "l166-deterministic-unrelated_inequality_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-unrelated_inequality_added",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1"
+        ]
+      }
+    },
+    "l166-deterministic-scaled_2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-scaled_2",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-6"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "05c93dc5672451585e5612c5660b3d351a2e72c22f397a32f97d5db980ce5822",
+      "residual_goal": "0 < 2 * (↑v0 - z) + 6 * (z + ↑Zmax * 0 - z) + 2 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-deterministic-scaled_3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-scaled_3",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-9"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "2a1107149a0809a5f9dc96f57afe63e2a3c71b0a8d4d70f5268a7cff62f89050",
+      "residual_goal": "0 < 3 * (↑v0 - z) + 9 * (z + ↑Zmax * 0 - z) + 3 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-deterministic-reordered": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-reordered",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "coefficient": "1",
+          "hypothesis": "neg_goal"
+        },
+        {
+          "coefficient": "1",
+          "hypothesis": "hlt"
+        },
+        {
+          "coefficient": "-3",
+          "hypothesis": "hrec"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ee870b48c258fdca3ad4dd617b9a8bb25510f64cfa1406b0df7a2c2989960a0f",
+      "residual_goal": "0 < 1 * (z + 1 - ↑v0) + 1 * (↑v0 - z) + 3 * (z + ↑Zmax * 0 - z)",
+      "outcome": "proved"
+    },
+    "l166-deterministic-zero_entry_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-zero_entry_added",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "coefficient": "-3",
+          "hypothesis": "hrec"
+        },
+        {
+          "coefficient": "1",
+          "hypothesis": "hlt"
+        },
+        {
+          "coefficient": "1",
+          "hypothesis": "neg_goal"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "0"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "4fd4363e029a32857e47929616ebe3cfdb50c1e57b6272780385eb700b43bbe0",
+      "residual_goal": "0 < 3 * (z + ↑Zmax * 0 - z) + 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-neg_goal_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-neg_goal_doubled",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (z) + -1 * (↑v0) + 2"
+        ]
+      }
+    },
+    "l166-learned-inequality_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-inequality_doubled",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (z) + 1 * (↑v0) + 1"
+        ]
+      }
+    },
+    "l166-learned-hypothesis_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-hypothesis_dropped",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑v0) + 1 * (z) + 1"
+        ]
+      }
+    },
+    "l166-learned-unrelated_inequality_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-unrelated_inequality_added",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1"
+        ]
+      }
+    },
+    "l166-learned-scaled_2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-scaled_2",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "83a6bb4f271b46edb3d647a8c270c7dcd0a5d66014a85e33965613f76d9f238c",
+      "residual_goal": "0 < 2 * (↑v0 - z) + 2 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-scaled_3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-scaled_3",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "be9cf4a4c375d555b4a1469749eacf36a4fe7dbac2f20979e441469180bf18fa",
+      "residual_goal": "0 < 3 * (↑v0 - z) + 3 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l166-learned-reordered": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-reordered",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "fc2ac1dc43d07ca08899f2b3447d33d74de906c1e1320f49c29cd85291624199",
+      "residual_goal": "0 < 1 * (z + 1 - ↑v0) + 1 * (↑v0 - z)",
+      "outcome": "proved"
+    },
+    "l166-learned-zero_entry_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-learned-zero_entry_added",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l166-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hlt",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "0"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l175-deterministic-neg_goal_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-neg_goal_doubled",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "6"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -3 * (↑Zmax) + 3 * (v) + 6"
+        ]
+      }
+    },
+    "l175-deterministic-inequality_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-inequality_doubled",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "6"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -3 * (z) + 3"
+        ]
+      }
+    },
+    "l175-deterministic-hypothesis_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-hypothesis_dropped",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hz0",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -3 * (↑Zmax *"
+        ]
+      }
+    },
+    "l175-deterministic-unrelated_inequality_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-unrelated_inequality_added",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 3"
+        ]
+      }
+    },
+    "l175-deterministic-scaled_2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-scaled_2",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-6"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "6"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "6"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "6"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "71a0416ca4dc2006914129848ebb8636368f074e0ca23d1485b7e86653b5775c",
+      "residual_goal": "0 < 6 * (z + ↑Zmax * zhigh - v) + 6 * (0 - z) + 6 * (v + 1 - ↑Zmax) + 6 * (↑Zmax - ↑Zmax * zhigh)",
+      "outcome": "proved"
+    },
+    "l175-deterministic-scaled_3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-scaled_3",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-9"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "9"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "9"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "9"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bf65e7d45526294874d6f095d3d39e9177d6cedf34205be84c7ccbff30b884cc",
+      "residual_goal": "0 < 9 * (z + ↑Zmax * zhigh - v) + 9 * (0 - z) + 9 * (v + 1 - ↑Zmax) + 9 * (↑Zmax - ↑Zmax * zhigh)",
+      "outcome": "proved"
+    },
+    "l175-deterministic-reordered": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-reordered",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "coefficient": "3",
+          "hypothesis": "neg_goal"
+        },
+        {
+          "coefficient": "3",
+          "hypothesis": "this"
+        },
+        {
+          "coefficient": "3",
+          "hypothesis": "hz0"
+        },
+        {
+          "coefficient": "-3",
+          "hypothesis": "hrec"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "dfcfada94455575287252109600e7f983dd889c374dc5eb199e8134d1fce255d",
+      "residual_goal": "0 < 3 * (v + 1 - ↑Zmax) + 3 * (↑Zmax - ↑Zmax * zhigh) + 3 * (0 - z) + 3 * (z + ↑Zmax * zhigh - v)",
+      "outcome": "proved"
+    },
+    "l175-deterministic-zero_entry_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-deterministic-zero_entry_added",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "coefficient": "-3",
+          "hypothesis": "hrec"
+        },
+        {
+          "coefficient": "3",
+          "hypothesis": "hz0"
+        },
+        {
+          "coefficient": "3",
+          "hypothesis": "this"
+        },
+        {
+          "coefficient": "3",
+          "hypothesis": "neg_goal"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "0"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bf657c7c1cbcf9cb9a55c730d6aa9c4ba660067c2a26622cc94676f43f7e1fe1",
+      "residual_goal": "0 < 3 * (z + ↑Zmax * zhigh - v) + 3 * (0 - z) + 3 * (↑Zmax - ↑Zmax * zhigh) + 3 * (v + 1 - ↑Zmax)",
+      "outcome": "proved"
+    },
+    "l175-learned-neg_goal_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-neg_goal_doubled",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1 * (v) + 2"
+        ]
+      }
+    },
+    "l175-learned-inequality_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-inequality_doubled",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (z) + 1"
+        ]
+      }
+    },
+    "l175-learned-hypothesis_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-hypothesis_dropped",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax *"
+        ]
+      }
+    },
+    "l175-learned-unrelated_inequality_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-unrelated_inequality_added",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:176:20: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1"
+        ]
+      }
+    },
+    "l175-learned-scaled_2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-scaled_2",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-2"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "1a224a4282c0f76d6c4ad6ab3c1e39ac3649dffb798743e89307c0daec294f01",
+      "residual_goal": "0 < 2 * (z + ↑Zmax * zhigh - v) + 2 * (0 - z) + 2 * (v + 1 - ↑Zmax) + 2 * (↑Zmax - ↑Zmax * zhigh)",
+      "outcome": "proved"
+    },
+    "l175-learned-scaled_3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-scaled_3",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-3"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "0f3184dc0faa466e530b06dea16c382a3fc82032606d00cb3f2cebdc5c911bab",
+      "residual_goal": "0 < 3 * (z + ↑Zmax * zhigh - v) + 3 * (0 - z) + 3 * (v + 1 - ↑Zmax) + 3 * (↑Zmax - ↑Zmax * zhigh)",
+      "outcome": "proved"
+    },
+    "l175-learned-reordered": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-reordered",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "d7a0aeb3e017a3e3e7d3b37e82f08e424e3073b9aa6240ecbffc5d3813761bae",
+      "residual_goal": "0 < 1 * (z + ↑Zmax * zhigh - v) + 1 * (v + 1 - ↑Zmax) + 1 * (0 - z) + 1 * (↑Zmax - ↑Zmax * zhigh)",
+      "outcome": "proved"
+    },
+    "l175-learned-zero_entry_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l175-learned-zero_entry_added",
+      "site": "bracket-l175",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l175-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hz0",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hrec",
+          "coefficient": "-1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "0"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l175": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "e31291d2d3e3d30b766dc6b8dfec8e6468d2d0108faeb4903d946d53d5eb4487",
+      "residual_goal": "0 < 1 * (↑Zmax - ↑Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - ↑Zmax) + 1 * (z + ↑Zmax * zhigh - v)",
+      "outcome": "proved"
+    },
+    "l178-learned-neg_goal_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-neg_goal_doubled",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:179:6: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑v0) + 1 * (v) + 2"
+        ]
+      }
+    },
+    "l178-learned-inequality_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-inequality_doubled",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:179:6: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1 * (↑v0) + 1"
+        ]
+      }
+    },
+    "l178-learned-hypothesis_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-hypothesis_dropped",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:179:6: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (↑Zmax) + -1 * (↑v0) + 1"
+        ]
+      }
+    },
+    "l178-learned-unrelated_inequality_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-unrelated_inequality_added",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:179:6: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1"
+        ]
+      }
+    },
+    "l178-learned-scaled_2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-scaled_2",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "98fd07eb9e8c73113241df0a32c5ff7aface110c19aeeae715b44f195bd79dce",
+      "residual_goal": "0 < 2 * (v + 1 - ↑v0) + 2 * (↑v0 - ↑Zmax) + 2 * (↑Zmax - v)",
+      "outcome": "proved"
+    },
+    "l178-learned-scaled_3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-scaled_3",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "2ad6198de635fb3637209df14340c916112737008c0e2f35761cbe56b446ba33",
+      "residual_goal": "0 < 3 * (v + 1 - ↑v0) + 3 * (↑v0 - ↑Zmax) + 3 * (↑Zmax - v)",
+      "outcome": "proved"
+    },
+    "l178-learned-reordered": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-reordered",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "d8a2226414b73dc10bf1b67688f83ef26cd6ac29bb718780cbb43ea7d3cdccc5",
+      "residual_goal": "0 < 1 * (v + 1 - ↑v0) + 1 * (↑v0 - ↑Zmax) + 1 * (↑Zmax - v)",
+      "outcome": "proved"
+    },
+    "l178-learned-zero_entry_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l178-learned-zero_entry_added",
+      "site": "bracket-l178",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l178-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "this_1",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "this",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "0"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l178": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ec327cf988f2463ee6915d677cc0c85a30de7cf8ac880639fded1ef1698cf833",
+      "residual_goal": "0 < 1 * (↑Zmax - v) + 1 * (↑v0 - ↑Zmax) + 1 * (v + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l204-learned-neg_goal_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-neg_goal_doubled",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:205:52: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (b) + -1 * (a) + 2"
+        ]
+      }
+    },
+    "l204-learned-inequality_doubled": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-inequality_doubled",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:205:52: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (b) + 1 * (a) + 1"
+        ]
+      }
+    },
+    "l204-learned-hypothesis_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-hypothesis_dropped",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:205:52: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (a) + 1 * (b) + 1"
+        ]
+      }
+    },
+    "l204-learned-unrelated_inequality_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-unrelated_inequality_added",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:205:52: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax) + 1"
+        ]
+      }
+    },
+    "l204-learned-scaled_2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-scaled_2",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "2"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "2"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "9aa84c146b98515e380228f96069f5e5c28f7e4b7f2a8797b2c48116aa533b9d",
+      "residual_goal": "0 < 2 * (a - b) + 2 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-scaled_3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-scaled_3",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "3"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "3"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "1b3b8ce9d11735e28e69432cd24404c191ab011197daecd3d22a4db454e07cca",
+      "residual_goal": "0 < 3 * (a - b) + 3 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l204-learned-reordered": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-reordered",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "500bd54fc1ae157de923f13944d32387b16fc1183a56dd3574ca650bc7ef149f",
+      "residual_goal": "0 < 1 * (b - R.x i + 1 - (a - R.x i)) + 1 * (a - b)",
+      "outcome": "proved"
+    },
+    "l204-learned-zero_entry_added": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l204-learned-zero_entry_added",
+      "site": "bracket-l204",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l204-draw1"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "hypothesis": "hab",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "neg_goal",
+          "coefficient": "1"
+        },
+        {
+          "hypothesis": "_pb_nonneg_Zmax",
+          "coefficient": "0"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.Row.s1_noninc.r6_site_l204": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.Row.s1_noninc": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "bec912673ec6b1a206cd4c4226053aa3c0e7ad300baf140f3a50b4cef89c5d98",
+      "residual_goal": "0 < 1 * (a - b) + 1 * (b - R.x i + 1 - (a - R.x i))",
+      "outcome": "proved"
+    },
+    "l166-deterministic-hrec_dropped": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l166-deterministic-hrec_dropped",
+      "site": "bracket-l166",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+      },
+      "route": "constrained",
+      "coefficients": [
+        {
+          "coefficient": "1",
+          "hypothesis": "hlt"
+        },
+        {
+          "coefficient": "1",
+          "hypothesis": "neg_goal"
+        }
+      ],
+      "mutated": true,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.cell_value_neutral.r6_site_l166": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.cell_value_neutral": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+      "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+      "outcome": "proved"
+    },
+    "l069-control5-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l069-control5-learned-draw1",
+      "site": "bracket-l069",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l069-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l069": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "dafbd4a125867534ed68b111eb05da84a8e8ce8a9a96537c7e40f7e0f0ea86e2",
+      "residual_goal": "0 < 1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(2 ^ 24 + 2 * Zmax) - ↑(x.val + z.val))",
+      "outcome": "proved"
+    },
+    "l069-control5-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l069-control5-deterministic",
+      "site": "bracket-l069",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l069"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l069": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "dafbd4a125867534ed68b111eb05da84a8e8ce8a9a96537c7e40f7e0f0ea86e2",
+      "residual_goal": "0 < 1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(2 ^ 24 + 2 * Zmax) - ↑(x.val + z.val))",
+      "outcome": "proved"
+    },
+    "l070-control5-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l070-control5-learned-draw1",
+      "site": "bracket-l070",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l070-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l070": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "9ebfe2c802c1db5e982bded02280cc3ffdb85ef967a66fe3e3a2d9c3738bb16d",
+      "residual_goal": "0 <\n  1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - ↑18446744069414584321) +\n    32769 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax))",
+      "outcome": "proved"
+    },
+    "l070-control5-learned-draw2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l070-control5-learned-draw2",
+      "site": "bracket-l070",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l070-draw2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l070": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ab92b7e08db77e2a18fc9947488ba14e322e9dfab7a883cc4f78e586568b4206",
+      "residual_goal": "0 < 2 * (↑Zmax - ↑(2 ^ 16)) + 1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax))",
+      "outcome": "proved"
+    },
+    "l070-control5-learned-draw3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l070-control5-learned-draw3",
+      "site": "bracket-l070",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l070-draw3"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l070": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "6273c1a64db615da41b17be0396be80799ab61937afe4c34b6653ee9140a5baf",
+      "residual_goal": "0 <\n  1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - ↑18446744069414584321) +\n      1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax)) +\n    65536 * (0 - ↑Zmax)",
+      "outcome": "proved"
+    },
+    "l070-control5-learned-draw5": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l070-control5-learned-draw5",
+      "site": "bracket-l070",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l070-draw5"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:71:45: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (↑Zmax *"
+        ]
+      }
+    },
+    "l070-control5-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l070-control5-deterministic",
+      "site": "bracket-l070",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l070"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l070": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "ab92b7e08db77e2a18fc9947488ba14e322e9dfab7a883cc4f78e586568b4206",
+      "residual_goal": "0 < 2 * (↑Zmax - ↑(2 ^ 16)) + 1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax))",
+      "outcome": "proved"
+    },
+    "l071-control5-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l071-control5-learned-draw1",
+      "site": "bracket-l071",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l071-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l071": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "768e8c7eb0e35627da934a84515f4de98e6c1163f7c1ba387e3f98e3d5b4d95b",
+      "residual_goal": "0 <\n  1 * (↑(x.val + z.val) + 1 - ↑(2 ^ 24 + 2 * Zmax)) + 1 * (↑(2 ^ 24 + 2 * Zmax) - ↑18446744069414584321) +\n    1 * (↑18446744069414584321 - ↑(x.val + z.val))",
+      "outcome": "proved"
+    },
+    "l071-control5-learned-draw4": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l071-control5-learned-draw4",
+      "site": "bracket-l071",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l071-draw4"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l071": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "9915741217283621ce7dde069e94166bac7729f68a17daf66388bc31b5287cbf",
+      "residual_goal": "0 <\n  1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(2 ^ 24 + 2 * Zmax) - ↑18446744069414584321) +\n    1 * (↑18446744069414584321 - ↑(x.val + z.val))",
+      "outcome": "proved"
+    },
+    "l071-control5-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l071-control5-deterministic",
+      "site": "bracket-l071",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l071"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l071": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "84576259350b4a1781c4cc5cc8df1003e210a070c5008e0e2ed0b5468fe4cd1b",
+      "residual_goal": "0 <\n  2 * (↑Zmax - ↑(2 ^ 16)) + 1 * (↑(x.val + z.val) + 1 - ↑(2 ^ 24 + 2 * Zmax)) +\n    1 * (↑18446744069414584321 - ↑(x.val + z.val))",
+      "outcome": "proved"
+    },
+    "l078-control5-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l078-control5-learned-draw1",
+      "site": "bracket-l078",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l078-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l078": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "4113d86fc00cd4f97902cdf10e0c5f682bda024eee43a3664c8fb06bb6ebcb3d",
+      "residual_goal": "0 <\n  1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(Zmax * zhigh.val) - ↑(Zmax * 2 ^ 16)) +\n    1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - ↑(x.val + z.val + Zmax * zhigh.val))",
+      "outcome": "proved"
+    },
+    "l078-control5-deterministic": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l078-control5-deterministic",
+      "site": "bracket-l078",
+      "source": {
+        "arm": "deterministic",
+        "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l078"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_nat",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.lift_cell.r6_site_l078": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.lift_cell": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "4113d86fc00cd4f97902cdf10e0c5f682bda024eee43a3664c8fb06bb6ebcb3d",
+      "residual_goal": "0 <\n  1 * (↑x.val + 1 - ↑(2 ^ 24)) + 1 * (↑z.val + 1 - ↑(2 * Zmax)) + 1 * (↑(Zmax * zhigh.val) - ↑(Zmax * 2 ^ 16)) +\n    1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - ↑(x.val + z.val + Zmax * zhigh.val))",
+      "outcome": "proved"
+    },
+    "l096-control5-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l096-control5-learned-draw1",
+      "site": "bracket-l096",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l096-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.threshold_unique.r6_site_l096": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.threshold_unique": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "1e568a9bac09d13be922308ee14319e557639d98884ac84bc44d58a32b1d7548",
+      "residual_goal": "0 < 1 * (c + 1 - c') + 1 * (c' - 1 + 1 - c)",
+      "outcome": "proved"
+    },
+    "l099-control5-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l099-control5-learned-draw1",
+      "site": "bracket-l099",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l099-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": true,
+      "closer": "term_mode_int",
+      "final_step": "constrained",
+      "residual_closer": "constrained_normalization",
+      "local_validated": true,
+      "whole_validated": true,
+      "axiom_delta": {
+        "Bracket.threshold_unique.r6_site_l099": {
+          "added": [],
+          "removed": []
+        },
+        "Bracket.threshold_unique": {
+          "added": [],
+          "removed": []
+        }
+      },
+      "solution_sha256": "7f3ecf63d077909f9379edf0ca21203491c5eba5eeb122d10a981a9c7726184f",
+      "residual_goal": "0 < 1 * (c' + 1 - c) + 1 * (c - 1 + 1 - c')",
+      "outcome": "proved"
+    },
+    "l170-learned-draw1": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw1",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw2": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw2",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw2"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw3": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw3",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw3"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw4": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw4",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw4"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw5": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw5",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw5"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw6": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw6",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw6"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw7": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw7",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw7"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw8": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw8",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw8"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": false,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "certificate_rejected",
+      "failure_stage": "certificate-check",
+      "detail": {
+        "kind": "farkas_not_contradictory",
+        "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+      }
+    },
+    "l170-learned-draw1-injected": {
+      "schema_version": "r6-016-replay-1",
+      "id": "l170-learned-draw1-injected",
+      "site": "bracket-l170",
+      "source": {
+        "arm": "learned",
+        "run": "cohort-live-v9/l170-draw1"
+      },
+      "route": "constrained",
+      "coefficients": null,
+      "mutated": false,
+      "inject_unverified": true,
+      "admission": "planned",
+      "excluded_from_results": false,
+      "certificate_accepted": false,
+      "outcome": "reconstruction_failed",
+      "failure_stage": "reconstruct",
+      "detail": {
+        "events": [
+          "reification_started",
+          "reification_finished",
+          "dispatch_started",
+          "dispatch_received",
+          "certificate_verification_started",
+          "certificate_verification_finished",
+          "reconstruction_started",
+          "certificate_gate_bypassed",
+          "term_route",
+          "closer_selected"
+        ],
+        "errors": [
+          "/input/Frozen.lean:171:32: error: proof_broker_term (constrained): the weighted sum normalizes to 0, which is not positive"
+        ]
+      }
+    }
+  }
+}

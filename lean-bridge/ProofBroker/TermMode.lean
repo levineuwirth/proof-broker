@@ -11,7 +11,9 @@ trust footprint is exactly these lemmas plus a single `omega`
 invocation on the strictly-positive linear combination subgoal
 (`0 < c1*a1 + c2*a2` with literal c_i and symbolic a_i differences)
 — a strictly narrower role than the LIA closer's full goal-discharge
-omega call. Both are axiom-free.
+omega call. (R6-015 found that subgoal is posed in the goal's full
+context, so the narrower role is not enforced there; the constrained
+route replaces it with `posOfLinearNum`.)
 
 Mirror of `rocq-bridge/theories/ProofBrokerTermMode.v`'s `farkas_le_2`,
 except Lean has no core `ring` so we fold the residual `K` into a
@@ -20,9 +22,15 @@ subgoal Rocq's term builder discharges via `ring`. The proof term
 still names every coefficient explicitly — the Farkas multipliers
 flow through.
 
-Everything here is axiom-free: only `Init.Data.Int.Order` is touched.
-`#print axioms` of any theorem that funnels through `farkasContradict`
-reports "does not depend on any axioms".
+Axioms, on Lean 4.32.0 (corrected in R6-016; earlier text called all of
+this axiom-free). Nothing here depends on `Classical.choice`:
+- most lemmas depend on `propext`, through core's `Int` order lemmas;
+- `notLeToLe0` and its siblings, proved by `omega`, also depend on
+  `Quot.sound`;
+- `posOfLinearNum` depends on `propext` and `Quot.sound`;
+- `natLeViaLt`, `natLtViaLe`, `natCastEq`, `natCastNotEq` and
+  `natCastNonneg` depend on none.
+The bridge tests pin these.
 
 Arity scope: arity-2 `farkasContradict` anchors the binary fixture;
 arities 3..N are handled by `farkasContradictN` over a left-associative
@@ -78,28 +86,27 @@ theorem farkasContradict
 /-- General-arity contradiction step. The OCaml-side closer builds
     `s = c1*a1 + c2*a2 + ... + cN*aN` (left-associative) and proves
     `s ≤ 0` by folding `Int.mul_nonpos_of_nonneg_of_nonpos` +
-    `Int.add_nonpos` over the witness's entries — both `Int.*`
-    lemmas are axiom-free, and so is this contradiction step.
+    `Int.add_nonpos` over the witness's entries. Both `Int.*` lemmas,
+    and this step, depend on `propext`.
     Generalizes `farkasContradict` to any arity (`farkasContradict`
     is the special case where the fold is one mul + one add). -/
 theorem farkasContradictN
     (s : Int) (hsum : s ≤ 0) (hpos : 0 < s) : False :=
   absurd hpos (Int.not_lt_of_ge hsum)
 
-/-- R6-015: the constrained final step's positivity, by reflection.
-    `e` is the weighted sum reified over its atoms `ctx`; core's
-    commutative-ring normalizer (`Lean.Grind.CommRing.Expr.toPoly`,
-    sound by `Expr.denote_toPoly`) reduces it, in the kernel, to the
-    numeral `c`, whose positivity is a closed `decide`. Nothing here
-    refers to a hypothesis: the sum's variables cancel or the step
-    fails. It depends on `propext`, `Classical.choice` and
-    `Quot.sound`, through the normalizer's soundness proof. -/
-theorem posOfNormNum (ctx : Lean.Grind.CommRing.Context Int)
-    (e : Lean.Grind.CommRing.Expr) (c : Int)
-    (h : e.toPoly_k = .num c) (hc : 0 < c) : 0 < e.denote ctx := by
-  rw [← Lean.Grind.CommRing.Expr.denote_toPoly,
-      ← Lean.Grind.CommRing.Expr.toPoly_k_eq_toPoly, h]
-  simpa [Lean.Grind.CommRing.Poly.denote] using hc
+/-- R6-016: the constrained final step's positivity, by reflection,
+    axiom-preserving. `e` is the weighted sum reified over its atoms
+    `ctx` as a linear `Int.Linear.Expr`; core's linear normalizer
+    (`Int.Linear.Expr.norm`, sound by `Int.Linear.Expr.denote_norm`)
+    reduces it, in the kernel, to the numeral `c`, whose positivity
+    is a closed `decide`. Nothing here refers to a hypothesis: the
+    sum's variables cancel or the step fails. It depends on `propext`
+    and `Quot.sound` only, as `omega`'s proofs do. (R6-015's
+    `posOfNormNum` went through `Lean.Grind.CommRing` and added
+    `Classical.choice`.) -/
+theorem posOfLinearNum (ctx : Int.Linear.Context) (e : Int.Linear.Expr) (c : Int)
+    (h : e.norm = .num c) (hc : 0 < c) : 0 < e.denote ctx := by
+  rw [← Int.Linear.Expr.denote_norm, h]; exact hc
 
 /-- Eq-hypothesis normalization: from `h : a = b`, produce
     `a - b ≤ 0`. The contribution is exactly `0` (since `a - b = 0`
@@ -127,7 +134,8 @@ theorem eqToLe0Flipped {a b : Int} (h : a = b) : b - a ≤ 0 :=
     branch, which compiles `¬(a ≤ b)` to `b < a` (strict, then
     folded via the LIA +1 trick to `(b + 1) - a ≤ 0`). The bridge
     closer applies one of these helpers based on the inner head
-    of the negation. All four are axiom-free via `omega`. -/
+    of the negation. All four are proved by `omega`, and depend on
+    `propext` and `Quot.sound`. -/
 theorem notLeToLe0 {a b : Int} (h : ¬(a ≤ b)) : (b + 1) - a ≤ 0 := by omega
 
 theorem notGeToLe0 {a b : Int} (h : ¬(a ≥ b)) : (a + 1) - b ≤ 0 := by omega
@@ -142,9 +150,9 @@ theorem notGtToLe0 {a b : Int} (h : ¬(a > b)) : a - b ≤ 0 := by omega
     arity-N False-fold; the same fold then consumes `neg_goal`
     alongside the witness's real-hypothesis entries at any arity.
 
-    Both wrappers are axiom-free: `Decidable.byContradiction` resolves
-    via `Int.decLe` / `Int.decLt`, and `Int.lt_of_not_ge` / `Int.not_lt`
-    are themselves axiom-free in `Init.Data.Int.Order`. -/
+    `Decidable.byContradiction` resolves via `Int.decLe` / `Int.decLt`
+    and depends on no axiom; `Int.lt_of_not_ge` / `Int.not_lt`, and so
+    both wrappers, depend on `propext`. -/
 theorem intLeViaLt {b c : Int} (h : c < b → False) : b ≤ c :=
   Decidable.byContradiction fun hng =>
     h (Int.lt_of_not_ge hng)
@@ -177,8 +185,10 @@ theorem natLtViaLe {b c : Nat} (h : c ≤ b → False) : b < c :=
     matching the hypothesis's shape and the kernel's defeq folds the
     cast through `+`/`*`/literals (core's `Int.natCast_add`/`_mul`
     are `rfl`), so no rewriting pass is needed. The `≥`/`>` variants
-    lean on `GE.ge`/`GT.gt` reducing to the swapped `≤`/`<`. All
-    axiom-free. -/
+    lean on `GE.ge`/`GT.gt` reducing to the swapped `≤`/`<`. The
+    order shims depend on `propext` (through `Int.ofNat_le` /
+    `Int.ofNat_lt`); `natCastEq`, `natCastNotEq` and `natCastNonneg`
+    depend on none. -/
 theorem natCastLe {a b : Nat} (h : a ≤ b) :
     (a : Int) ≤ (b : Int) := Int.ofNat_le.mpr h
 

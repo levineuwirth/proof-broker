@@ -1,0 +1,102 @@
+{
+ "schema_version": "r6-016-control-3-1",
+ "control": 3,
+ "passed": true,
+ "unmet": [],
+ "results": {
+  "checker": {
+   "accepted": false,
+   "stage": "certificate_verification",
+   "reason": {
+    "kind": "farkas_not_contradictory",
+    "detail": "weighted sum is -x + y + 2, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+   },
+   "certificate_hash": "sha256:292b49798089390d9bd625d7a8f6465c26f4001007dcd23e0d7cf4ce2c078519"
+  },
+  "constrained": {
+   "exit": 1,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected"
+   ],
+   "term_route": {
+    "constrained": true
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "x \u2264 y",
+    "route": "constrained"
+   },
+   "reconstruction_finished": {},
+   "errors": [
+    "Synthetic.lean:4:2: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is 1 * (y) + -1 * (x) + 2"
+   ]
+  },
+  "pinned": {
+   "exit": 0,
+   "events": [
+    "reification_started",
+    "reification_finished",
+    "dispatch_started",
+    "dispatch_received",
+    "certificate_verification_started",
+    "certificate_verification_finished",
+    "reconstruction_started",
+    "certificate_gate_bypassed",
+    "term_route",
+    "closer_selected",
+    "residual_started",
+    "residual_finished",
+    "reconstruction_finished"
+   ],
+   "term_route": {
+    "constrained": false
+   },
+   "closer_selected": {
+    "closer": "term_mode_int",
+    "comparison_type": "Int",
+    "goal": "x \u2264 y"
+   },
+   "reconstruction_finished": {
+    "certificate_consumed": true,
+    "closer": "term_mode_int",
+    "derivation_replayed": false,
+    "residual_closer": "omega"
+   },
+   "errors": []
+  }
+ },
+ "evidence": {
+  "evidence_sha256": "b9979aa2e303f64c9d8d6df59acca183fd7f5179feac50f59c0b2092727a53df",
+  "certificate_sha256": "292b49798089390d9bd625d7a8f6465c26f4001007dcd23e0d7cf4ce2c078519",
+  "coefficients": [
+   {
+    "hypothesis": "h",
+    "coefficient": "1"
+   },
+   {
+    "hypothesis": "neg_goal",
+    "coefficient": "2"
+   }
+  ]
+ },
+ "sources_sha256": {
+  "r6-016/control3.py": "c8eda25ee0f65bf25675a58dafdc0a1f07bac0a8538d837f44ea5d180ec39638",
+  "r6-016/rehearse_synthetic.py": "f87c255027fe622ce61438a312fe07accff80791c358e3d5e9da888182d98206",
+  "r6-016/replay_bridge.py": "964971f59cc9a772c1b4ff335aae62f295ee5de52d9837f55a8c2e8717416171",
+  "r6-016/replay_lock.py": "f22c79df22e97299fa36a959bcb0f1133dfc988c1ca1837162e4d778c83c4a34"
+ },
+ "lock_sha256": "d16da90762b830ae4eb6fbdfee02d452106aec8199825c71dbe4867aa991a34f",
+ "bridge_rev": "64585867afa1194be2b0832b77fd62bbefc2462b",
+ "instrumented_tactic_sha256": "ebfa82a2ac91dea3d05a3911d620b15002f8c151f90cf79a05b46b022c7a9abc",
+ "documented_difference": "the pinned fold closes the probe through contextual omega; not consumption"
+}

@@ -1,0 +1,1 @@
+0 < 6 * (z + ↑Zmax * zhigh - v) + 6 * (0 - z) + 6 * (v + 1 - ↑Zmax) + 6 * (↑Zmax - ↑Zmax * zhigh)

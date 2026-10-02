@@ -1,0 +1,2374 @@
+{
+ "controls_sha256": {
+  "c1.ndjson": "3149ce312bfefb9cd2c4a1f5581486a4547ba4788b72aabbe844273fbc7b106a",
+  "c2.ndjson": "c0a990270a205ad726acc6d23c4c369437f113c71631533482cd2241d42e1041",
+  "c3.ndjson": "9a16f5ba8f9a4d307dce7c3ff1cb362f8e62e66a3762b3ee5c283a0830fe71bd",
+  "c4.ndjson": "df2b12ea7e1eaf444258f77acbf3cb8b4359894d7c738e2e14b99d950bb8c00d",
+  "c5.ndjson": "7454d1f5da85d6b8044a156adb0e7423d0fdc0492d128b05cd5630d348a66a6f",
+  "c6.ndjson": "87823283b58b88bf13067101823a151a66a9be28f7e6cac4f07849cc18469f43",
+  "c7.ndjson": "ac7c91eaec102744c6c8f84e31081941a2ff5bbac4b8c29b27ad92c775727d79",
+  "r1.ndjson": "a8c2b195472ac62bbfb03760f9a95daeafbb14cc4a476ff8e4fb81912656a198",
+  "r10.ndjson": "255a734ba452b85b2169381b3032a788e04fcc2362ddae480774cc15e07756ca",
+  "r7b.ndjson": "47f6b1d3917b109a8d588ba03fdf80ce9535dbe9b3c2c4d6d74d942ad3fc9362",
+  "r7d.ndjson": "622f97875afa285d931f5ecd359f0ed2780423086d3cfe79e8bafd8e87039e01",
+  "r7l.ndjson": "a62540a373e2323c8979265ada46d01b06b336918b1b9ff5426befc32b0a45bb",
+  "r7n.ndjson": "b1f7f297c0a48fe3fef600b85cb39880fec778b2ee9efc6a195efc05483f5bb0",
+  "r8.ndjson": "a47c3ef237b0e7d8bf4b292ad21a712f45607be4ab4f9610c3ce2767ffb112cc",
+  "r9.ndjson": "e219cecb205ba6df1c34c369b37c0559022281127082a395b58b241c1819f94f",
+  "r9b.ndjson": "ab60af3601212ca40bd7ec741c53faf2eec8f6cd45e6a83b19a9daa12276146f",
+  "rename-R1.json": "d4e629627e70dc67dd24e3fec9b5e05f8fe8ce18ec2479c59ee30fa3ecaa7431",
+  "rename-R2.json": "f5a7e98be18ccce9a8a4cfbd514631c269856c3ea739445658ed6e76aa7aca5f",
+  "rename-R3.json": "d71a48b55072ad52339b9675f1edd9248a6de99b09f308ca922faab227d86b91",
+  "rename-R4.json": "16ff178c07525c55cb1134a0cbbe018bff519c3658e54a691fe9626bf8ab5504",
+  "rename-R4b.json": "666b252480e61f7e6ca1a975bc769d72adefee88d2df3d32210015753647ac06",
+  "rename-R5.json": "8a108d68748def680c1cace6aa305b5b975e103d044e0f7cb14236540901e250",
+  "rename-R6.json": "42b5a2db04b3aadc3fe6f42d83f05bd2c91ae285149714aff8bc2f68440e0fbc"
+ },
+ "controls_toolchain": "leanprover/lean4:v4.32.0",
+ "exporter_sha256": "8a7c4298f4f57389aaf0ca95dc08fac3eb3fb97c7ef24405d60b105608fff76f",
+ "qualification_audit_v1_lock_sha256": "eea12f405ff52595c71c77f2e7a91e648a1c276185af3aa75fedc57009df9dfb",
+ "qualification_audit_v1_record_sha256": "1d30e30e855ccad27a512eaf39a2cb0e94e100435e883b5eb1646e6115b1006b",
+ "r6_015_lock_sha256": "95f82cb0fcc43f444d3d782c0ce1df8587440684efafe121f32aa14d32d3e020",
+ "schema_version": "r6-qualification-audit-lock-2",
+ "selection": {
+  "addendum2": {
+   "bracket-l096/1": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "74e38891fcda40a277984f24d7cada3daf221b8e25c698b4dfb4800384b0dbb7",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw1",
+    "seal_sha256": "9127b10a45642cf8de9458e7265f7c0a4451ec26c35e304616ca4fded4825465",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/2": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "c79c2d0c74b2f93e002921bc8f52210dba27ee7f931c6e8c9b02c43ea4bb333d",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw2",
+    "seal_sha256": "92c3a153d75affc082e557654f6a1bdcd3d4597449078f4fc13dcb0da417df94",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/3": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "668e286e226b03cb359b0cc0995dd40e5327a47d94ca4cdcbdf5e8025fc5ed5f",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw3",
+    "seal_sha256": "9987c5a4072a86777f815123eb603cfb0ce6d1272662dc33316ae284eb4e760d",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/4": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "6d5f7eeba4e697444142abe6a09627211e7088f8ac405073dcf2253ff47e9910",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw4",
+    "seal_sha256": "fb5cdfc7f5b69f3ad4b84b47e05636f9c82122dd37739b8c96e7cc9e83dd949f",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/5": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "833c30e6b7c82e413db02fcc529a34b7e7524e4cee94647f7179c386949aab93",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw5",
+    "seal_sha256": "7f0d7e012fc68c60a6a2d94b58360e254c4a230defd028d85a406958515861ed",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/6": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "dac5a2dc51740dec95198a88a57660b717548e1967085e0ff812120ac52b9590",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw6",
+    "seal_sha256": "b593c076e348f084c286d4218d2491acd1fb23ca5362c9a90e1ad8587bf4f20d",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/7": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "944469711717801c3a67fc426b8f8e0becd615fa6116b6f4c1d444fa0dde72ac",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw7",
+    "seal_sha256": "c14fe83d7d322aef91920c76fa36faffc999d5d903d81877405d86c742a96dc0",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l096/8": {
+    "context_sha256": "f36dce4c699fbb71d1b3cf99b06d4ceed01c8d105f255a42e686aa1a8868c8f1",
+    "events.ndjson_sha256": "19f2f1c036f179dd121a9f9287351075e4652921a18b87944e5acb8ce0937d80",
+    "local": "Bracket.threshold_unique.r6_site_l096",
+    "reification_sha256": "1d889887e52412e83296df5fc50b9d4a36b97eb40383c8c518789147f4b8c0d1",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hlt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c + 1 - c_) + 1 * (c_ - 1 + 1 - c)",
+    "run": "experiments/r6/cohort-live-v9/l096-draw8",
+    "seal_sha256": "16d7df93f125c076e2936d605cb341740d3fa6218d822774b098970b6e7b10d6",
+    "solution.ndjson.gz_sha256": "5f900c8e3f8355484e4b37014d3a83337088bd18fea4545d93e8d89c6df05914",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/1": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "87c2a91f94f7d97fd4477d67df4073befab2e158f770aa6c128b61bd02d6fcb3",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw1",
+    "seal_sha256": "ab7f50d1e712caec6a699115672051388b1ee48d229d87bb56cbbea223f31eb9",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/2": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "1e054c484eada68f4f70f0e08eeaaf61e29183a85aaa7728604e7652c69396aa",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw2",
+    "seal_sha256": "6ec79441050bd81a7a774f0cc4aa2a047adba9b0ff05428b83f80a0b92aa6410",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/3": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "1cdd92f5d325d9c4511abb3427e85e1f285511e75e484650a753704cb51a584e",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw3",
+    "seal_sha256": "8365b5b79da8babf435b963370774b464c5b3bb0eb1b3798abcf8e8bf1d943f4",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/4": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "1dff5fb316fbb353e2c876a0e70907a01c5016081f15837569e3cc9b0943edf4",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw4",
+    "seal_sha256": "091cfbd4c3a3ff631ec30b003dc306652c06e029c4c8d621b3a5d0411b682c24",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/5": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "6e483b928c50b4407cc201d8688bb8ca7607a94c0a808a925d189d34e9c5c691",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw5",
+    "seal_sha256": "5eb7cbf7660bcc503c8be141e1bec9a41c4e211535e66ddde0ef8d1fa97f5d86",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/6": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "8c849a31db2165b1ab7538d6a6014efee89198998a9b49486375511e14f19537",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw6",
+    "seal_sha256": "95babe1eec5ab6970d0c79ccd4a4c7564d65b0f457d38bf33831b278753080cc",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/7": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "0f74555880f89c8cc25c3c0bf2b0f80d859fdff175442474f47d685cc1c3c8ff",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw7",
+    "seal_sha256": "2c033114eb85ac9415c0bf61ee852386830540ea0cdce5640d5171bf3bdecc80",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   },
+   "bracket-l099/8": {
+    "context_sha256": "0681cc99bff7a64e19529036d203745cf4de3903f548a77eb95a4fc57db1799b",
+    "events.ndjson_sha256": "818e4bead02f6942c138baad98019b6bf872e602f7f5332316b2afbebb595cc3",
+    "local": "Bracket.threshold_unique.r6_site_l099",
+    "reification_sha256": "bb71b4a8775e7ee8adff9f7469aad38a8353bf6bd5532548b9106fb2dc8d2248",
+    "rename": {
+     "context": [
+      {
+       "included_in_telescope": false,
+       "index": 0,
+       "name": "threshold_unique"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 1,
+       "name": "f"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 2,
+       "name": "hf"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 3,
+       "name": "c"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 4,
+       "name": "c'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 5,
+       "name": "T"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 6,
+       "name": "h1"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 7,
+       "name": "h2"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 8,
+       "name": "h1'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 9,
+       "name": "h2'"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 10,
+       "name": "hne"
+      },
+      {
+       "included_in_telescope": true,
+       "index": 11,
+       "name": "hgt"
+      }
+     ],
+     "rows": [
+      {
+       "fvar_in_original": true,
+       "index": 4,
+       "original_name": "c'",
+       "search_name": "c_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 8,
+       "original_name": "h1'",
+       "search_name": "h1_"
+      },
+      {
+       "fvar_in_original": true,
+       "index": 9,
+       "original_name": "h2'",
+       "search_name": "h2_"
+      }
+     ]
+    },
+    "residual_goal": "0 < 1 * (c_ + 1 - c) + 1 * (c - 1 + 1 - c_)",
+    "run": "experiments/r6/cohort-live-v9/l099-draw8",
+    "seal_sha256": "af9606d940316ad7e2ed3a4358f077e5e60fb01dab799426017854aafe727e34",
+    "solution.ndjson.gz_sha256": "3276ab0e9fa8f229f06a8e72fa14efef91ad47fae72cf12355e10d4f3c45afaa",
+    "whole": "Bracket.threshold_unique"
+   }
+  },
+  "l175": {
+   "l175-deterministic": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+    "run": "experiments/r6/r6-015-runs/l175-deterministic",
+    "seal_sha256": "729cd761faa82ba51ac6e9e422b4aff8c102adf7bc1f152de20498457ed407ba",
+    "solution.ndjson.gz_sha256": "b8bb1ea09a767ad5ef92927f0b6a74b2e03da461278b43e93dd49a49fc91155b",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-deterministic-reordered": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (0 - z) + 3 * (z + \u2191Zmax * zhigh - v)",
+    "run": "experiments/r6/r6-015-runs/l175-deterministic-reordered",
+    "seal_sha256": "4aad1e2431faa352b29106a36b3f523c7278a0fec992a9a0b5216758a3846633",
+    "solution.ndjson.gz_sha256": "60173a20daf0e594b0eecf13666325a7b937e9b20b1b94494ca6d1c2b8c7f324",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-deterministic-scaled_2": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 6 * (z + \u2191Zmax * zhigh - v) + 6 * (0 - z) + 6 * (v + 1 - \u2191Zmax) + 6 * (\u2191Zmax - \u2191Zmax * zhigh)",
+    "run": "experiments/r6/r6-015-runs/l175-deterministic-scaled_2",
+    "seal_sha256": "296c9a2e42b719aa2cd61359884768f497df50e5e9eb2362d8c7f35b9b3c6b96",
+    "solution.ndjson.gz_sha256": "4cab97b8115d9becb1e3932b339c10e698a7c26bed8f954df541083411598ed0",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-deterministic-scaled_3": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 9 * (z + \u2191Zmax * zhigh - v) + 9 * (0 - z) + 9 * (v + 1 - \u2191Zmax) + 9 * (\u2191Zmax - \u2191Zmax * zhigh)",
+    "run": "experiments/r6/r6-015-runs/l175-deterministic-scaled_3",
+    "seal_sha256": "3359a4638dd3be3d6d8c78e0a14529a8ca7273f144ea8f7c432fb0ab716c466c",
+    "solution.ndjson.gz_sha256": "af0767c6d9bec8d58cee2df8ad5e430ef68a4400efa1e9d87153b99f04f325c1",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-deterministic-zero_entry_added": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (\u2191Zmax - \u2191Zmax * zhigh) + 3 * (v + 1 - \u2191Zmax)",
+    "run": "experiments/r6/r6-015-runs/l175-deterministic-zero_entry_added",
+    "seal_sha256": "d58ee4b2d0fb3db879e64d218bf5a9f7a3fb39460ea68242b8c3c270f1cc5319",
+    "solution.ndjson.gz_sha256": "b8bb1ea09a767ad5ef92927f0b6a74b2e03da461278b43e93dd49a49fc91155b",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw1": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw1",
+    "seal_sha256": "5a974a404e498939c8ecb543e74619efeff515f36bce7b013cd54707a2ce9a1b",
+    "solution.ndjson.gz_sha256": "e9878a3843f65480254cd2c07f25b4f49ef50cc084e9a5664b3aea5a0c9eb424",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw2": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw2",
+    "seal_sha256": "630994356cdd5b2423d6aa5fe271ddb433b94b013267f66388ce1763c2c82c6b",
+    "solution.ndjson.gz_sha256": "1886f07e17f79da1b5026fde4549696910ccec718672ce6eed06713f3ae3e5ea",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw3": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw3",
+    "seal_sha256": "38f3c761dc13e595c9d330b1e8c45cf71315bcec7ec7e44e985b426f247248a3",
+    "solution.ndjson.gz_sha256": "1c5db83f8368cb7d3d640d4c1a38893412080aca077ab786d797d3b2d6e1ff09",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw4": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (v + 1 - \u2191Zmax) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw4",
+    "seal_sha256": "170cc9f261bba77791d0637e0398f4ed1535ab90651aa7c25403d0e9a6b75660",
+    "solution.ndjson.gz_sha256": "1886f07e17f79da1b5026fde4549696910ccec718672ce6eed06713f3ae3e5ea",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw5": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw5",
+    "seal_sha256": "16f8700486e54ea581fa1a3a9ed3f3dd8278b76eaee1d43092b94a4bf75fd25c",
+    "solution.ndjson.gz_sha256": "e9878a3843f65480254cd2c07f25b4f49ef50cc084e9a5664b3aea5a0c9eb424",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw6": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw6",
+    "seal_sha256": "f97f7eb9503e448f6d8248364759836217548174e2da2beea3cb32f49a8649b0",
+    "solution.ndjson.gz_sha256": "e9878a3843f65480254cd2c07f25b4f49ef50cc084e9a5664b3aea5a0c9eb424",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw7": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw7",
+    "seal_sha256": "d565843891661f71c6e10577f2ded86480aba59a36d37dd4da81905712b6a44f",
+    "solution.ndjson.gz_sha256": "e9878a3843f65480254cd2c07f25b4f49ef50cc084e9a5664b3aea5a0c9eb424",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-draw8": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (v + 1 - \u2191Zmax)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-draw8",
+    "seal_sha256": "74ff38c6755319672fc031c6404b6deb5c2816b34914b49c7d8742b545e02999",
+    "solution.ndjson.gz_sha256": "1e87aba2563a809b5cb4131b5fb955ee805e79262611f24541501457faef3608",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-reordered": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (z + \u2191Zmax * zhigh - v) + 1 * (v + 1 - \u2191Zmax) + 1 * (0 - z) + 1 * (\u2191Zmax - \u2191Zmax * zhigh)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-reordered",
+    "seal_sha256": "3972d59fe5ba124d0f93ef79e27c36ef08782c64ed6ef56d81fd4aafb53ab660",
+    "solution.ndjson.gz_sha256": "d482f4bca27a8a43823c0332fa7fd49e31c99f20723c6070a301cf058be77ec8",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-scaled_2": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 2 * (z + \u2191Zmax * zhigh - v) + 2 * (0 - z) + 2 * (v + 1 - \u2191Zmax) + 2 * (\u2191Zmax - \u2191Zmax * zhigh)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-scaled_2",
+    "seal_sha256": "e7f4842ab3c5a3154fd2611bafe651427ea3b859416eab2686d090aaeea06599",
+    "solution.ndjson.gz_sha256": "5b9e95496c4f0b065604af3f644e3b921aca95cfddecd3b6107f1b20cbf46c2e",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-scaled_3": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 3 * (z + \u2191Zmax * zhigh - v) + 3 * (0 - z) + 3 * (v + 1 - \u2191Zmax) + 3 * (\u2191Zmax - \u2191Zmax * zhigh)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-scaled_3",
+    "seal_sha256": "3056c646a9e3fcd198ef7f07d83bb6dede3927c175303a53839cc119a123e624",
+    "solution.ndjson.gz_sha256": "f64f690e9c5e960f3b8184d9eb92beaabcdb6564ee4fcc8dda9c0d381ff8e5d5",
+    "whole": "Bracket.cell_value_neutral"
+   },
+   "l175-learned-zero_entry_added": {
+    "local": "Bracket.cell_value_neutral.r6_site_l175",
+    "residual_goal": "0 < 1 * (\u2191Zmax - \u2191Zmax * zhigh) + 1 * (0 - z) + 1 * (v + 1 - \u2191Zmax) + 1 * (z + \u2191Zmax * zhigh - v)",
+    "run": "experiments/r6/r6-015-runs/l175-learned-zero_entry_added",
+    "seal_sha256": "581ec88b9bef156b10b64f8abd540b8691adbb720940abbf835d6aaed0eacab6",
+    "solution.ndjson.gz_sha256": "e9878a3843f65480254cd2c07f25b4f49ef50cc084e9a5664b3aea5a0c9eb424",
+    "whole": "Bracket.cell_value_neutral"
+   }
+  },
+  "regression": {
+   "bracket-l069/1": {
+    "events.ndjson_sha256": "19fd08d98722127cfe27982227789b064c485fd1edd7b9ca7a105b8532b39d0c",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw1",
+    "seal_sha256": "e6de9e39e1efbc62aa0ba5cb623fb39343a7aed9e9183541ea2f05f71c9a98f5",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/2": {
+    "events.ndjson_sha256": "1cccc2b22fe830bf77783d6df50500404e83e73a24e503d50dd6fdfc8e2f5ead",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw2",
+    "seal_sha256": "32a323766d93cf71010e32d78ea9805e08cc6b7e740e732ad5e11d0ad65e3f12",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/3": {
+    "events.ndjson_sha256": "cc15cefc497945cb768fa4cc6f0eef4f1bc4fa7303bf140df8c138a51eeb550b",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw3",
+    "seal_sha256": "51e8cc958bb93be2fc06255d15cd6513373b19f2865aa790ccb732c035a6ce9b",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/4": {
+    "events.ndjson_sha256": "acf6ef3aff4bdcb0173632f4b600d03458cc9c6fcb0dd4e246178fae87e92594",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw4",
+    "seal_sha256": "0e334d6affdb671ff0739659905b649e6164ddb777b22909a04a3b32338f40b8",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/5": {
+    "events.ndjson_sha256": "728959fb333238ac908f11d836f653f4b4ec9ef33d013d1ee9784db043063960",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw5",
+    "seal_sha256": "82fc4a6008be3d2663d2e7f8e42326cad069c4c47e5a8ad2e13db1181d87559e",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/6": {
+    "events.ndjson_sha256": "e78cff8a9a411e07d1ee3efa8f8090419d2afa9846d21d8175a0bd873ab0ba7c",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw6",
+    "seal_sha256": "2d597de849e70403cce25080275e45fd2a0a1d541785036effd034952830773e",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/7": {
+    "events.ndjson_sha256": "97e930da92e7cc2cbd69933b8aef45c031481ca15222a24a8d523203cb9765a9",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw7",
+    "seal_sha256": "3bea78cc9a0422e8455a0eb39f047d1b6bed74108ba7e464bc81cf5b26201490",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l069/8": {
+    "events.ndjson_sha256": "c6390c4abac19418003ac1e8a9d033ed2c064b2b4751c3212a048327ed047bdf",
+    "local": "Bracket.lift_cell.r6_site_l069",
+    "residual_goal": "0 < 1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l069-draw8",
+    "seal_sha256": "b42f130f593804956249263745c646ecf924933ee495e0d3aa0a5e1762333473",
+    "solution.ndjson.gz_sha256": "942b53fcc79518b6963fda06fc28cb6d12d8f6dd4d56edf0d5075bd9302d35e6",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/1": {
+    "events.ndjson_sha256": "6b73b6fa784af6e7bbff6c63974306596c0f0d536c9b00db6a2810853e746eba",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw1",
+    "seal_sha256": "8d88bcccd899262d1b6cd2709bb655723949f3b23899a25ea367a7035af24afd",
+    "solution.ndjson.gz_sha256": "386eadbdfd3f06d23e9d908acb3b067fd5cfe458ab1429d9e0588bed7c6b95da",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/2": {
+    "events.ndjson_sha256": "643b5e91d03693d2cc532d8cba8b33ee6cc8a7e236cd7ccf86d73e8f61859952",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw2",
+    "seal_sha256": "b6a83b69a6472b93fb3a97c8effd17665a706e7a0650fe9b4eb2738f178ecd09",
+    "solution.ndjson.gz_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/3": {
+    "events.ndjson_sha256": "f467ad9865f1f604186bf1b5022c360e3960d135b30d40b9824e76450e4f6438",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n      1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax)) +\n    65536 * (0 - \u2191Zmax)",
+    "run": "experiments/r6/cohort-live-v9/l070-draw3",
+    "seal_sha256": "15b72f1bd85464376f42eb8ca5e76ee436bbc7a102bca1120c0d0bcb0215a850",
+    "solution.ndjson.gz_sha256": "ab9f0d5869e3e8455dd09f5a0049958e053fe7b68d5a4a004a1a0b7ad682bc95",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/4": {
+    "events.ndjson_sha256": "578edf3500305cf53392facb8097eecd2c03bb397ae5131da1b0394b8ea5d03e",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw4",
+    "seal_sha256": "0700d65099190bbc33afbb85917f0c2a7626e6995d5a3398bee7c1cbfa61b668",
+    "solution.ndjson.gz_sha256": "386eadbdfd3f06d23e9d908acb3b067fd5cfe458ab1429d9e0588bed7c6b95da",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/5": {
+    "events.ndjson_sha256": "338e23f3552cd15bbced23c64fcf904190953adff7c6ad1706ea6b7a0ee52849",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n        1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n      1 * (0 - \u2191(Zmax * zhigh.val)) +\n    1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw5",
+    "seal_sha256": "2791ec81f1ede55000b5c5f491fb4af03e93e6071cc974135aabd8036ca42879",
+    "solution.ndjson.gz_sha256": "0746c0548cc13271130fed6b47a7e35386b61ed4794edf711ab18b1482b3b37f",
+    "v1": {
+     "local": "sufficiency_not_established",
+     "whole": "sufficiency_not_established",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/6": {
+    "events.ndjson_sha256": "6622b93ceca28d0223d84c5b7a7d7d1a8e34335ec93c8812f159ef5879163d8a",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw6",
+    "seal_sha256": "b7c5c9c829e8402c47676626314945db2efe827ad655be094203b55ea18b9e19",
+    "solution.ndjson.gz_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/7": {
+    "events.ndjson_sha256": "0785e04d1d5cf0ebea48c803730b2bee57d805c79c341960c551c0b7a5e30b13",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 < 2 * (\u2191Zmax - \u2191(2 ^ 16)) + 1 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw7",
+    "seal_sha256": "a2fd070954660c1707fbbb69f747b8ef087c8e8b3efe14fdc875da6e30e326a4",
+    "solution.ndjson.gz_sha256": "3150f811f5468362be20fa4a85729bf8d8aebc36e1432f63ba8ff6183c3fae46",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l070/8": {
+    "events.ndjson_sha256": "a5fdec419cc87354421a83124442da1a0178ec1fbc236b5b7ca4e48c2d56cb3e",
+    "local": "Bracket.lift_cell.r6_site_l070",
+    "residual_goal": "0 <\n  1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - \u219118446744069414584321) +\n    32769 * (\u219118446744069414584321 + 1 - \u2191(2 ^ 24 + 2 * Zmax))",
+    "run": "experiments/r6/cohort-live-v9/l070-draw8",
+    "seal_sha256": "d598905d1866c12eade4600dce43aaa002aa8bad7a90d5a446fe20dc73d3f343",
+    "solution.ndjson.gz_sha256": "386eadbdfd3f06d23e9d908acb3b067fd5cfe458ab1429d9e0588bed7c6b95da",
+    "v1": {
+     "local": "sufficient_but_context_referenced",
+     "whole": "sufficient_but_context_referenced",
+     "whole_hypotheses": [
+      {
+       "name": "hZval",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "neg_goal",
+       "path": [
+        "internal to the local proof"
+       ]
+      },
+      {
+       "name": "hZ",
+       "path": [
+        "parameter 9 of Bracket.lift_cell.r6_site_l070"
+       ]
+      }
+     ]
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/1": {
+    "events.ndjson_sha256": "696c8290c47db9f576d656db14506cd672b65d284cffa85db3852ebcaa2f680f",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw1",
+    "seal_sha256": "1b23ddde7dc141f864661f8a06f097c2d0e91859983eebcaab5300694a49c6dd",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/2": {
+    "events.ndjson_sha256": "1ac9e53348e156cdb2024da7bee3eb794852dcbb615c687ed6f96c46643e6b83",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw2",
+    "seal_sha256": "d392b5132ff240d044a59db4241aa5ac89fab4c4fba6762ce5addafa0e6e0fdb",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/3": {
+    "events.ndjson_sha256": "7533bce3ed8de14eb07d910f3ccd3299d15d60fe0071fd0938ae5567e0009502",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw3",
+    "seal_sha256": "197df1cebe7e5bb42c3c44a8a6e09db2ed1fff98a4f3e8bf0e345f87bd6d3042",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/4": {
+    "events.ndjson_sha256": "0c88be16ec6faacc4bdfcbb6c9abd7947c8916d7fa23e4a69bb298d869b0bee2",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw4",
+    "seal_sha256": "d4207119f294d84479725c417bf6463dcc5e8ced4925180195a9f9ec9253e207",
+    "solution.ndjson.gz_sha256": "63e85827b6a52a99dcbeab9fe773dd8773e60128de28588372cf8daf0abde988",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/5": {
+    "events.ndjson_sha256": "b471d431e0760ed04a5969a3dae07ad487eed4c4d1b7a4509044ac6af08086eb",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw5",
+    "seal_sha256": "9f868939e08152434d8a0d3288dc0fea7ffdf42156678f478aec06082d79ac16",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/6": {
+    "events.ndjson_sha256": "c1554e3ebef315776dab6d9ff5d54a94e6ade06d4ba06c77ba20a9a2c6fefb49",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw6",
+    "seal_sha256": "a47189a0d9b4137206e210ec14d6eb551e4d172c9ff353911e3ab751e14a54fc",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/7": {
+    "events.ndjson_sha256": "838a7a981c78fa9b2ffbe07b4dd99986e403e560d49a494175077c24548155ec",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw7",
+    "seal_sha256": "58eb23a8a3dec4a6c385fe5d2ecf974852d72ecf593ab87667f77cf07d0a2ac7",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l071/8": {
+    "events.ndjson_sha256": "162089762a317d2f34540c03cb4ebc1983527c74ce4984fb1fb4294f108a5ae4",
+    "local": "Bracket.lift_cell.r6_site_l071",
+    "residual_goal": "0 <\n  1 * (\u2191(x.val + z.val) + 1 - \u2191(2 ^ 24 + 2 * Zmax)) + 1 * (\u2191(2 ^ 24 + 2 * Zmax) - \u219118446744069414584321) +\n    1 * (\u219118446744069414584321 - \u2191(x.val + z.val))",
+    "run": "experiments/r6/cohort-live-v9/l071-draw8",
+    "seal_sha256": "992c60b282ab6b7ca090f82d49a3fec50effb6fb5a05627eea48891bec86e8e5",
+    "solution.ndjson.gz_sha256": "e71c8861731f77c4a3b7635be790871ecf05edd35a66fac0c7a72523d8819386",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/1": {
+    "events.ndjson_sha256": "dc4129adf29998a1e3c1ed588261ebf0cb1b38018d05bd6db0a235ec9c7fe582",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw1",
+    "seal_sha256": "4aaffe491d86599cc62062c04867a14dec4e93e8465d4b3cd03b583463afa18d",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/2": {
+    "events.ndjson_sha256": "c4d058b756181ac1140aa77e1cddb76e41a7db3bc23d16a905762137ce3b1265",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw2",
+    "seal_sha256": "c6af768f545450ed4643643821898d7998d783dbb309d81c78d464a7787b0e97",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/3": {
+    "events.ndjson_sha256": "ae8f3d33ef4e5464a1589483b9d603e67711ce2aa32c1e597574664551279208",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw3",
+    "seal_sha256": "3010682cc7085a10859ab9db095ae7c11fae72353d47ecdb5c81dc931343ffc8",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/4": {
+    "events.ndjson_sha256": "7510a43889e2b5594ffdfa93cfa8d73c9ccc035bbb627ccfa5a43450bc93e833",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw4",
+    "seal_sha256": "b26c278d49ef137f1b0e664785dc4dd1500a7da5b2b9d6a0e41da9d7054e1f5a",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/5": {
+    "events.ndjson_sha256": "cc7864a94f9228be5382dffb8cab2766395509cb7801c91329b5f02510b0668a",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw5",
+    "seal_sha256": "f0335f09ab931738d59f41f7e4902009bc49eebd677cf1c02701d006d5cc8a66",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/6": {
+    "events.ndjson_sha256": "dfbe8df9826e1863dd778605aacdf5d5d492554545ec308858986b18791d9c31",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw6",
+    "seal_sha256": "6a11dfaecb42525f97c65ae4e32b9c08f344eb92dfe53cf0c83930730f45d70b",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/7": {
+    "events.ndjson_sha256": "dc002fbd45435bb80063b7d4df214e245161df35503691c10bc8c510f8fda4e0",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw7",
+    "seal_sha256": "9194c10dae72743709e5699b9776a6127c09015a7bb2a735ef029b59f6c779ef",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   },
+   "bracket-l078/8": {
+    "events.ndjson_sha256": "0d695e83609eebf99a1744a8d53e58d1e3d6a2c416486cdedbfa755cee1f94eb",
+    "local": "Bracket.lift_cell.r6_site_l078",
+    "residual_goal": "0 <\n  1 * (\u2191x.val + 1 - \u2191(2 ^ 24)) + 1 * (\u2191z.val + 1 - \u2191(2 * Zmax)) + 1 * (\u2191(Zmax * zhigh.val) - \u2191(Zmax * 2 ^ 16)) +\n    1 * (\u2191(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) - \u2191(x.val + z.val + Zmax * zhigh.val))",
+    "run": "experiments/r6/cohort-live-v9/l078-draw8",
+    "seal_sha256": "70e39fb2613d6b030648548aabbb895ff3377f40737d90c8e835ea5b9efd8cb6",
+    "solution.ndjson.gz_sha256": "c9c713acb6d3c707cc107045b5ebfd27823c5a5b98e9726824b1f2fee2e60b63",
+    "v1": {
+     "local": "certificate_alone",
+     "whole": "certificate_alone",
+     "whole_hypotheses": []
+    },
+    "whole": "Bracket.lift_cell"
+   }
+  }
+ },
+ "sources_sha256": {
+  "experiments/r6/qualification-audit-v2/Audit.lean": "670014a5474fd9c9e4f581a5a2e7ba453ce579f2f623ddd46d665e636ee8d079",
+  "experiments/r6/qualification-audit-v2/R6AuditControlsV2.lean": "792e1b9fede6bdef408c62edc67100dfe02382483d6b2977e8691f0581c6055f",
+  "experiments/r6/qualification-audit-v2/R6AuditControlsV2.provenance.json": "10d169b8220921d0ae0bc821e36a180bf94786bdbca7906220e7051ca69d40e2",
+  "experiments/r6/qualification-audit-v2/make_controls.py": "6fcd5bb13cc9469b005bbe6c83a4b157af608dad1407630795e7552f15a8bb38",
+  "experiments/r6/qualification-audit-v2/qualification_audit_v2.py": "d42bfb5849918942824dc9909a764e54c06d8267949c9a2dce38b7b818b0132a",
+  "experiments/r6/qualification-audit-v2/test_gates.py": "f24cc919684af781f91760ecb1747a2dd7ffe9ab1683d6c0bc1c8ce6d4b3395e",
+  "experiments/r6/qualification-audit/make_controls.py": "7780cd5ad80b993aaab93ade4f7aa14224d78f3a3031ac5622e642c09cfe18ab",
+  "experiments/r6/qualification-audit/qualification_audit.py": "c7ae522d6f765c24da217d35cfc4222bd297704ea630c2e54ce61a7b7215ad56",
+  "experiments/r6/vendor/lean4export/Export.lean": "1c60d571dc24bfb99e7cbb218d8d489919bbc871238f6db9c76248521fbea998",
+  "experiments/r6/vendor/lean4export/Export/Parse.lean": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286"
+ },
+ "tool_sha256": "444f7ac04640d53c4d53707aebc4a9583f52d91f5442334707984d5efde427b0",
+ "toolchain": "leanprover/lean4:v4.32.2",
+ "toolchain_contents": {
+  "controls_environment": {
+   "modules": {
+    "Init": {
+     "directory": "toolchain"
+    },
+    "Lean": {
+     "directory": "toolchain"
+    },
+    "ProofBroker.TermMode": {
+     "directory": "lean-bridge/.lake/build/lib/lean",
+     "imports": [
+      "Init"
+     ],
+     "parts_sha256": {
+      ".ir": null,
+      ".olean": "886c358eb51b0e261540377daf4636d776d36cc0ef69be7c55e47c9d2af6f29c",
+      ".olean.private": null,
+      ".olean.server": null
+     }
+    },
+    "R6AuditControlsV2": {
+     "directory": "experiments/r6/.cache/qualification-audit-v2/controls",
+     "imports": [
+      "Init",
+      "Lean",
+      "ProofBroker.TermMode"
+     ],
+     "parts_sha256": {
+      ".ir": null,
+      ".olean": "08ce3b37ba38a91daf43dc6c6ed906260fbfb05a588f34e32ca24d19eac33ab0",
+      ".olean.private": null,
+      ".olean.server": null
+     }
+    }
+   },
+   "search_path": [
+    "/home/jeans/Repos/research/proof-broker/lean-bridge/.lake/build/lib/lean",
+    "/home/jeans/Repos/research/proof-broker/experiments/r6/.cache/qualification-audit-v2/controls",
+    "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.0/lib/lean"
+   ],
+   "toolchain_packages": [
+    "Init",
+    "Lake",
+    "LakeMain",
+    "Lean",
+    "LeanChecker",
+    "LeanIR",
+    "Leanc",
+    "Std"
+   ]
+  },
+  "controls_toolchain": {
+   "files": 14710,
+   "path": "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.0",
+   "sha256": "13546ca6aa77f2087cb8825f27bd9e32951974c1ca453e79829bae1923f6747a"
+  },
+  "tool_toolchain": {
+   "files": 14710,
+   "path": "/home/jeans/build/elan/toolchains/leanprover--lean4---v4.32.2",
+   "sha256": "ea776d547761620d067fc59e25b26e3cd18f1a97f4eb5687d24d4c5a0cec65ae"
+  }
+ }
+}
