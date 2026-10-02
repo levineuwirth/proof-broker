@@ -1,0 +1,20 @@
+{
+  "id": "l204-learned-scaled_3",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hab",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

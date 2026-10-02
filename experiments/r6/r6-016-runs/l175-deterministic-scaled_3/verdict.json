@@ -1,0 +1,51 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l175-deterministic-scaled_3",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-9"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "9"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "9"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "9"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l175": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "bf65e7d45526294874d6f095d3d39e9177d6cedf34205be84c7ccbff30b884cc",
+  "residual_goal": "0 < 9 * (z + ↑Zmax * zhigh - v) + 9 * (0 - z) + 9 * (v + 1 - ↑Zmax) + 9 * (↑Zmax - ↑Zmax * zhigh)",
+  "outcome": "proved"
+}

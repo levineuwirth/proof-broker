@@ -1,0 +1,30 @@
+{
+  "schema_version": "r6-credential-seal-1",
+  "accepted": false,
+  "event_count": 7,
+  "last_event_hash": "3383d4587d2093c5c414fe8be2a37e0e7aa421b434bd1d7c8b72dd97ba99517d",
+  "retained_sha256": {
+    "certificate-verdict.json": "6ce4a7f8704a75413f4105c241bf410b86f37d20469bb422beb0421b9b0cdbf3",
+    "events.ndjson": "05f0551c86b20a6e8408b1f9fd54a8c35fb2951c0e3088def37a37fbe066da09",
+    "evidence.json": "e6166d60a8aedcaf08946e8e31318f27952a5bd571566d05baf10d90aecced97",
+    "provenance/binaries.json": "0d148e42df47c08fa5deec8886b11db9da8438ab28f09f813f2b57bb3b6f2b5e",
+    "provenance/instrumentation.patch": "f439934fcf4efa4ee1adf957db3fe8920ca1b739f5e2f8bbd89351d3e066a3b3",
+    "provenance/r6-016/replay_bridge.py": "964971f59cc9a772c1b4ff335aae62f295ee5de52d9837f55a8c2e8717416171",
+    "provenance/r6-016/replay_episode.py": "f57d9e9fb611da71bae1a25043880b3c504d9ac5060d3f570f88da45647991af",
+    "provenance/r6-016/replay_lock.py": "f22c79df22e97299fa36a959bcb0f1133dfc988c1ca1837162e4d778c83c4a34",
+    "provenance/sources.json": "438802672ae4c7712f3d7fcc77abff56fa9acf7603b69487fc5f989a2e33ba46",
+    "runtime.json": "c7c6fe20c964e6ee5cbee284f7db9c8f040d344dba64fc0366fed93acbee8796",
+    "spec.json": "20786618fcf68dd8cb5874ec5070bc700e135323e7f0091c0d160f251ddcb20d",
+    "stages/certificate-check/certificate-check.process.json": "7666df4e798d5fc30a70ea5f44a53d00ae1ded002618f0e84f0dadd84af5cff3",
+    "stages/certificate-check/certificate-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stages/certificate-check/certificate-check.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stages/certificate-check/command.json": "b208067b3c87617c1caa9dde0d7547ee2c1633c33235f624ecb688b922dac76a",
+    "stages/certificate-check/scope-command.json": "11a6ffa6b15287e63a4163c2d6b5bf2da8a583b80298b47f37dd1557bd1f417d",
+    "stages/certificate-check/supervisor.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stages/certificate-check/supervisor.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "verdict.json": "32608c72da7cdc1d66c7b9fdb34cb7323932ca5fd5fc74ad4256c9422599b9ad"
+  },
+  "ephemeral_sha256": {
+    "stages/certificate-check/output/verdict.json": "a559910302e13b0fa1200d44a2f636f35bce2912661c11dd9147d9c1537f9f5d"
+  }
+}

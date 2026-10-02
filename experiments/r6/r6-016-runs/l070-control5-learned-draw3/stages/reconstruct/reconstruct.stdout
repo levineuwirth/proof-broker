@@ -1,0 +1,5 @@
+/input/Frozen.lean:149:19: warning: Variable name `hz` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`

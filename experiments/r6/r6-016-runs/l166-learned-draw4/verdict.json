@@ -1,0 +1,34 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l166-learned-draw4",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l166-draw4"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l166": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "3f2635a4b69b98b0437674e0e8c772831cbe201fd111716ca3ac316b64e44eb5",
+  "residual_goal": "0 < 1 * (↑v0 - z) + 1 * (z + 1 - ↑v0)",
+  "outcome": "proved"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "l170-learned-draw7",
+  "site": "bracket-l170",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw7"
+  },
+  "coefficients": null,
+  "inject_unverified": false,
+  "route": "constrained"
+}

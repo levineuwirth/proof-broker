@@ -1,0 +1,28 @@
+{
+  "id": "l175-learned-scaled_3",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-3"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "3"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

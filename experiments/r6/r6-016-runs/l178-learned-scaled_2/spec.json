@@ -1,0 +1,24 @@
+{
+  "id": "l178-learned-scaled_2",
+  "site": "bracket-l178",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l178-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "2"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "2"
+    },
+    {
+      "hypothesis": "this_1",
+      "coefficient": "2"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

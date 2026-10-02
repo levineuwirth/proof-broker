@@ -1,0 +1,47 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l166-deterministic-reordered",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "coefficient": "1",
+      "hypothesis": "neg_goal"
+    },
+    {
+      "coefficient": "1",
+      "hypothesis": "hlt"
+    },
+    {
+      "coefficient": "-3",
+      "hypothesis": "hrec"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l166": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "ee870b48c258fdca3ad4dd617b9a8bb25510f64cfa1406b0df7a2c2989960a0f",
+  "residual_goal": "0 < 1 * (z + 1 - ↑v0) + 1 * (↑v0 - z) + 3 * (z + ↑Zmax * 0 - z)",
+  "outcome": "proved"
+}

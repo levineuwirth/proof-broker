@@ -1,0 +1,55 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l175-deterministic-zero_entry_added",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l175"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "coefficient": "-3",
+      "hypothesis": "hrec"
+    },
+    {
+      "coefficient": "3",
+      "hypothesis": "hz0"
+    },
+    {
+      "coefficient": "3",
+      "hypothesis": "this"
+    },
+    {
+      "coefficient": "3",
+      "hypothesis": "neg_goal"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "0"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l175": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "bf657c7c1cbcf9cb9a55c730d6aa9c4ba660067c2a26622cc94676f43f7e1fe1",
+  "residual_goal": "0 < 3 * (z + ↑Zmax * zhigh - v) + 3 * (0 - z) + 3 * (↑Zmax - ↑Zmax * zhigh) + 3 * (v + 1 - ↑Zmax)",
+  "outcome": "proved"
+}

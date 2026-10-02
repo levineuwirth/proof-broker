@@ -1,0 +1,24 @@
+{
+  "id": "l166-deterministic-reordered",
+  "site": "bracket-l166",
+  "source": {
+    "arm": "deterministic",
+    "run": "census-runs/deterministic-v1/site_cvc4_term_mode_v1/bracket-l166"
+  },
+  "coefficients": [
+    {
+      "coefficient": "1",
+      "hypothesis": "neg_goal"
+    },
+    {
+      "coefficient": "1",
+      "hypothesis": "hlt"
+    },
+    {
+      "coefficient": "-3",
+      "hypothesis": "hrec"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

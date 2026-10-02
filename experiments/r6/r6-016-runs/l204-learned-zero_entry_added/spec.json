@@ -1,0 +1,24 @@
+{
+  "id": "l204-learned-zero_entry_added",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hab",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "0"
+    }
+  ],
+  "inject_unverified": false,
+  "route": "constrained"
+}

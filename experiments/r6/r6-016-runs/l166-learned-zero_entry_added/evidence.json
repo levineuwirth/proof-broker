@@ -1,0 +1,831 @@
+{
+  "input_ir": {
+    "ir_version": "1.0",
+    "source_system": {
+      "name": "lean",
+      "version": "0.0"
+    },
+    "tier": "structural",
+    "logic_classification": {
+      "order": "first_order",
+      "features_used": [
+        "equality_at_first_order_type"
+      ],
+      "first_order_fragment": "LIA",
+      "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App",
+        "symbol": "LE.le",
+        "type_args": [],
+        "args": [
+          {
+            "node": "App",
+            "symbol": "Int.ofNat",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "v0"
+              }
+            ]
+          },
+          {
+            "node": "Var",
+            "name": "z"
+          }
+        ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        {
+          "name": "Zmax",
+          "type": "Nat"
+        },
+        {
+          "name": "v0",
+          "type": "Nat"
+        },
+        {
+          "name": "z",
+          "type": "Int"
+        }
+      ],
+      "hypotheses": [
+        {
+          "name": "hz0",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "Var",
+                "name": "z"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hz",
+          "shell": {
+            "node": "App",
+            "symbol": "LT.lt",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "z"
+              },
+              {
+                "node": "App",
+                "symbol": "HMul.hMul",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "NumLit",
+                    "value": "2",
+                    "type": "Int"
+                  },
+                  {
+                    "node": "App",
+                    "symbol": "Int.ofNat",
+                    "type_args": [],
+                    "args": [
+                      {
+                        "node": "Var",
+                        "name": "Zmax"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "hZpos",
+          "shell": {
+            "node": "App",
+            "symbol": "LT.lt",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "Var",
+                    "name": "Zmax"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "hzh0",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hv",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "Var",
+                "name": "z"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hrec",
+          "shell": {
+            "node": "Eq",
+            "type": "Int",
+            "left": {
+              "node": "Var",
+              "name": "z"
+            },
+            "right": {
+              "node": "App",
+              "symbol": "HAdd.hAdd",
+              "type_args": [],
+              "args": [
+                {
+                  "node": "Var",
+                  "name": "z"
+                },
+                {
+                  "node": "App",
+                  "symbol": "HMul.hMul",
+                  "type_args": [],
+                  "args": [
+                    {
+                      "node": "App",
+                      "symbol": "Int.ofNat",
+                      "type_args": [],
+                      "args": [
+                        {
+                          "node": "Var",
+                          "name": "Zmax"
+                        }
+                      ]
+                    },
+                    {
+                      "node": "NumLit",
+                      "value": "0",
+                      "type": "Int"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "hlt",
+          "shell": {
+            "node": "Not",
+            "operand": {
+              "node": "App",
+              "symbol": "LT.lt",
+              "type_args": [],
+              "args": [
+                {
+                  "node": "Var",
+                  "name": "z"
+                },
+                {
+                  "node": "App",
+                  "symbol": "Int.ofNat",
+                  "type_args": [],
+                  "args": [
+                    {
+                      "node": "Var",
+                      "name": "v0"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "_pb_nonneg_Zmax",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "Var",
+                    "name": "Zmax"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "_pb_nonneg_v0",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "Var",
+                    "name": "v0"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "type_metadata": {
+      "Nat": {
+        "kind": "primitive",
+        "name": "Nat",
+        "theory_tags": [
+          "embeds_into:Int_for_universal_LIA",
+          "embedding_witness:Int.ofNat_le",
+          "embedding_witness:Int.ofNat_lt",
+          "embedding_witness:Int.ofNat_inj",
+          "embedding_witness:Int.natCast_nonneg"
+        ]
+      }
+    },
+    "definitional_metadata": {},
+    "library_provenance": {
+      "Int.natCast_nonneg": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Order",
+        "content_hash": "sha256:74e3e6efa91cd98b13e1a0e560694a16aebf20c9b692b3e372b4a8bb9fe4edbd"
+      },
+      "Int.ofNat_inj": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Lemmas",
+        "content_hash": "sha256:f7480039da059eed1b3a2f89105fc91d0b0b9ab9c3ae4b0775e56337426865e5"
+      },
+      "Int.ofNat_le": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Order",
+        "content_hash": "sha256:95d406cb64c71fd2f63e26173b1e8605f2e84a7c9085d0b4545e46156f84cbd2"
+      },
+      "Int.ofNat_lt": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Order",
+        "content_hash": "sha256:0afe9efc53c5f88048e0589b01439319ec80236b3a35e6f7718bb15707117155"
+      }
+    },
+    "user_directives": {
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    }
+  },
+  "final_ir": {
+    "ir_version": "1.0",
+    "source_system": {
+      "name": "lean",
+      "version": "0.0"
+    },
+    "tier": "structural",
+    "logic_classification": {
+      "order": "first_order",
+      "features_used": [
+        "equality_at_first_order_type"
+      ],
+      "first_order_fragment": "LIA",
+      "decidable_theory": null
+    },
+    "goal": {
+      "shell": {
+        "node": "App",
+        "symbol": "LE.le",
+        "type_args": [],
+        "args": [
+          {
+            "node": "App",
+            "symbol": "Int.ofNat",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "v0"
+              }
+            ]
+          },
+          {
+            "node": "Var",
+            "name": "z"
+          }
+        ]
+      }
+    },
+    "context": {
+      "type_vars": [],
+      "free_vars": [
+        {
+          "name": "Zmax",
+          "type": "Nat"
+        },
+        {
+          "name": "v0",
+          "type": "Nat"
+        },
+        {
+          "name": "z",
+          "type": "Int"
+        }
+      ],
+      "hypotheses": [
+        {
+          "name": "hz0",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "Var",
+                "name": "z"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hz",
+          "shell": {
+            "node": "App",
+            "symbol": "LT.lt",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "z"
+              },
+              {
+                "node": "App",
+                "symbol": "HMul.hMul",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "NumLit",
+                    "value": "2",
+                    "type": "Int"
+                  },
+                  {
+                    "node": "App",
+                    "symbol": "Int.ofNat",
+                    "type_args": [],
+                    "args": [
+                      {
+                        "node": "Var",
+                        "name": "Zmax"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "hZpos",
+          "shell": {
+            "node": "App",
+            "symbol": "LT.lt",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "Var",
+                    "name": "Zmax"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "hzh0",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hv",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "Var",
+                "name": "z"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hrec",
+          "shell": {
+            "node": "Eq",
+            "type": "Int",
+            "left": {
+              "node": "Var",
+              "name": "z"
+            },
+            "right": {
+              "node": "App",
+              "symbol": "HAdd.hAdd",
+              "type_args": [],
+              "args": [
+                {
+                  "node": "Var",
+                  "name": "z"
+                },
+                {
+                  "node": "App",
+                  "symbol": "HMul.hMul",
+                  "type_args": [],
+                  "args": [
+                    {
+                      "node": "App",
+                      "symbol": "Int.ofNat",
+                      "type_args": [],
+                      "args": [
+                        {
+                          "node": "Var",
+                          "name": "Zmax"
+                        }
+                      ]
+                    },
+                    {
+                      "node": "NumLit",
+                      "value": "0",
+                      "type": "Int"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "hlt",
+          "shell": {
+            "node": "Not",
+            "operand": {
+              "node": "App",
+              "symbol": "LT.lt",
+              "type_args": [],
+              "args": [
+                {
+                  "node": "Var",
+                  "name": "z"
+                },
+                {
+                  "node": "App",
+                  "symbol": "Int.ofNat",
+                  "type_args": [],
+                  "args": [
+                    {
+                      "node": "Var",
+                      "name": "v0"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "_pb_nonneg_Zmax",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "Var",
+                    "name": "Zmax"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "_pb_nonneg_v0",
+          "shell": {
+            "node": "App",
+            "symbol": "LE.le",
+            "type_args": [],
+            "args": [
+              {
+                "node": "NumLit",
+                "value": "0",
+                "type": "Int"
+              },
+              {
+                "node": "App",
+                "symbol": "Int.ofNat",
+                "type_args": [],
+                "args": [
+                  {
+                    "node": "Var",
+                    "name": "v0"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "type_metadata": {
+      "Nat": {
+        "kind": "primitive",
+        "name": "Nat",
+        "theory_tags": [
+          "embeds_into:Int_for_universal_LIA",
+          "embedding_witness:Int.ofNat_le",
+          "embedding_witness:Int.ofNat_lt",
+          "embedding_witness:Int.ofNat_inj",
+          "embedding_witness:Int.natCast_nonneg"
+        ]
+      }
+    },
+    "definitional_metadata": {},
+    "library_provenance": {
+      "Int.natCast_nonneg": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Order",
+        "content_hash": "sha256:74e3e6efa91cd98b13e1a0e560694a16aebf20c9b692b3e372b4a8bb9fe4edbd"
+      },
+      "Int.ofNat_inj": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Lemmas",
+        "content_hash": "sha256:f7480039da059eed1b3a2f89105fc91d0b0b9ab9c3ae4b0775e56337426865e5"
+      },
+      "Int.ofNat_le": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Order",
+        "content_hash": "sha256:95d406cb64c71fd2f63e26173b1e8605f2e84a7c9085d0b4545e46156f84cbd2"
+      },
+      "Int.ofNat_lt": {
+        "library": "lean-core",
+        "version": "4.32.0",
+        "module_path": "Init.Data.Int.Order",
+        "content_hash": "sha256:0afe9efc53c5f88048e0589b01439319ec80236b3a35e6f7718bb15707117155"
+      }
+    },
+    "user_directives": {
+      "tier_preference": [
+        "1",
+        "2"
+      ]
+    }
+  },
+  "trace": {
+    "trace_version": "1.0",
+    "initial_ir_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+    "final_ir_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+    "entries": [
+      {
+        "pass": "propositional_simplification",
+        "version": "1.0",
+        "before_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+        "after_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+        "outcome": "no_op",
+        "inversion_data": {
+          "simplifications": []
+        }
+      },
+      {
+        "pass": "definition_unfolding",
+        "version": "1.0",
+        "before_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+        "after_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+        "configuration": {
+          "concepts": [
+            "function_application",
+            "function_composition",
+            "function_identity",
+            "numeral_definition"
+          ]
+        },
+        "outcome": "no_op",
+        "inversion_data": {
+          "unfolded_symbols": []
+        }
+      }
+    ],
+    "configuration": {
+      "pipeline": [
+        {
+          "pass": "propositional_simplification"
+        },
+        {
+          "pass": "definition_unfolding",
+          "config": {
+            "concepts": [
+              "function_composition",
+              "function_identity",
+              "function_application",
+              "numeral_definition"
+            ]
+          }
+        }
+      ],
+      "stop_on_failure": false
+    }
+  },
+  "certificate": {
+    "cert_version": "1.0",
+    "tier": 1,
+    "format": "farkas",
+    "goal": {
+      "shell": {
+        "node": "App",
+        "symbol": "LE.le",
+        "type_args": [],
+        "args": [
+          {
+            "node": "App",
+            "symbol": "Int.ofNat",
+            "type_args": [],
+            "args": [
+              {
+                "node": "Var",
+                "name": "v0"
+              }
+            ]
+          },
+          {
+            "node": "Var",
+            "name": "z"
+          }
+        ]
+      }
+    },
+    "dispatch_context_hash": "sha256:81a12f04db7f347287290f649bd41b69315d4b6945d71d5dc578afab0fb7118d",
+    "rewrite_trace_hash": "sha256:60b40f513bb103ca15d6a6bf92089b3bf6464295cdae7c398ef2387e79e9a078",
+    "backend": {
+      "name": "r6_fixture_witness",
+      "version": "1",
+      "config_hash": "sha256:eefae339cb7067f88802d768e2acb3444651da3037b90e3e74441567672c4487"
+    },
+    "resources": {
+      "wall_time_ms": 0
+    },
+    "refinement_record": {
+      "adapter": "r6_fixture_witness",
+      "adapter_version": "1",
+      "specializations": [
+        {
+          "kind": "type_specialization",
+          "source": "Nat",
+          "target": "Int",
+          "justification": "embeds_into:Int_for_universal_LIA",
+          "soundness_witness": "Int.ofNat_le,Int.ofNat_lt,Int.ofNat_inj,Int.natCast_nonneg"
+        }
+      ],
+      "fragment": "LIA"
+    },
+    "payload": {
+      "witness_kind": "farkas",
+      "witness_data": {
+        "coefficients": [
+          {
+            "hypothesis": "hlt",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "neg_goal",
+            "coefficient": "1"
+          },
+          {
+            "hypothesis": "_pb_nonneg_Zmax",
+            "coefficient": "0"
+          }
+        ]
+      },
+      "checking_recipe": "lean.farkas_check"
+    }
+  }
+}

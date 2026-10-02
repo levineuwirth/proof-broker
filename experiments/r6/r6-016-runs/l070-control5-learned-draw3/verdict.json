@@ -1,0 +1,34 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l070-control5-learned-draw3",
+  "site": "bracket-l070",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l070-draw3"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_nat",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.lift_cell.r6_site_l070": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.lift_cell": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "6273c1a64db615da41b17be0396be80799ab61937afe4c34b6653ee9140a5baf",
+  "residual_goal": "0 <\n  1 * (↑(2 ^ 24 + 2 * Zmax + Zmax * 2 ^ 16) + 1 - ↑18446744069414584321) +\n      1 * (↑18446744069414584321 + 1 - ↑(2 ^ 24 + 2 * Zmax)) +\n    65536 * (0 - ↑Zmax)",
+  "outcome": "proved"
+}

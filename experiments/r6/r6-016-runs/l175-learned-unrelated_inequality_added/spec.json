@@ -1,0 +1,32 @@
+{
+  "id": "l175-learned-unrelated_inequality_added",
+  "site": "bracket-l175",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l175-draw1"
+  },
+  "coefficients": [
+    {
+      "hypothesis": "hrec",
+      "coefficient": "-1"
+    },
+    {
+      "hypothesis": "hz0",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "1"
+    },
+    {
+      "hypothesis": "_pb_nonneg_Zmax",
+      "coefficient": "1"
+    }
+  ],
+  "inject_unverified": true,
+  "route": "constrained"
+}

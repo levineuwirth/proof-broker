@@ -1,0 +1,8 @@
+{
+  "accepted": true,
+  "stage": "certificate_verification",
+  "reason": {
+    "kind": "verified_farkas"
+  },
+  "certificate_hash": "sha256:16008f59fa1914dec257d4e8a8e5eeba09f944ec66ea5542b1cd1b8c565d82cd"
+}

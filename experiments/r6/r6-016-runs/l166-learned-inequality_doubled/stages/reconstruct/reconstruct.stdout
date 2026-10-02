@@ -1,0 +1,1 @@
+/input/Frozen.lean:167:31: error: proof_broker_term (constrained): the weighted sum does not cancel; its normal form is -1 * (z) + 1 * (↑v0) + 1

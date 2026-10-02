@@ -1,0 +1,47 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l178-learned-scaled_2",
+  "site": "bracket-l178",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l178-draw1"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "2"
+    },
+    {
+      "hypothesis": "this",
+      "coefficient": "2"
+    },
+    {
+      "hypothesis": "this_1",
+      "coefficient": "2"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.cell_value_neutral.r6_site_l178": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.cell_value_neutral": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "98fd07eb9e8c73113241df0a32c5ff7aface110c19aeeae715b44f195bd79dce",
+  "residual_goal": "0 < 2 * (v + 1 - ↑v0) + 2 * (↑v0 - ↑Zmax) + 2 * (↑Zmax - v)",
+  "outcome": "proved"
+}

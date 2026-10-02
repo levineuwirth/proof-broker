@@ -1,0 +1,43 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l204-learned-scaled_3",
+  "site": "bracket-l204",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l204-draw1"
+  },
+  "route": "constrained",
+  "coefficients": [
+    {
+      "hypothesis": "hab",
+      "coefficient": "3"
+    },
+    {
+      "hypothesis": "neg_goal",
+      "coefficient": "3"
+    }
+  ],
+  "mutated": true,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": true,
+  "closer": "term_mode_int",
+  "final_step": "constrained",
+  "residual_closer": "constrained_normalization",
+  "local_validated": true,
+  "whole_validated": true,
+  "axiom_delta": {
+    "Bracket.Row.s1_noninc.r6_site_l204": {
+      "added": [],
+      "removed": []
+    },
+    "Bracket.Row.s1_noninc": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "solution_sha256": "1b3b8ce9d11735e28e69432cd24404c191ab011197daecd3d22a4db454e07cca",
+  "residual_goal": "0 < 3 * (a - b) + 3 * (b - R.x i + 1 - (a - R.x i))",
+  "outcome": "proved"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "r6-016-replay-1",
+  "id": "l170-learned-draw1",
+  "site": "bracket-l170",
+  "source": {
+    "arm": "learned",
+    "run": "cohort-live-v9/l170-draw1"
+  },
+  "route": "constrained",
+  "coefficients": null,
+  "mutated": false,
+  "inject_unverified": false,
+  "admission": "planned",
+  "excluded_from_results": false,
+  "certificate_accepted": false,
+  "outcome": "certificate_rejected",
+  "failure_stage": "certificate-check",
+  "detail": {
+    "kind": "farkas_not_contradictory",
+    "detail": "weighted sum is 0, not a contradictory constant (need >0 for loose, >=0 with a positively-weighted strict witness)"
+  }
+}
