@@ -37,20 +37,18 @@ from check import (  # noqa: E402
     check_certificate,
     check_manifest,
     check_trace,
-    # Cross-fixture hash linkage (#18d / #24-M1): see check.py for
-    # the pairing convention and the docs on the unpaired sentinels.
-    check_cert_hashes,
-    # R3-M1: specialization witnesses resolve in the paired IR's
-    # library_provenance.
-    check_cert_witness_provenance,
-    # Pairing completeness (C2 round 1): the hash-linkage step below is
+    # Cross-fixture checks on a paired cert (#18d / #24-M1 hash
+    # linkage, R2.4 manifest consistency, R3-M1 witness provenance):
+    # check.py owns the pairing maps, the loader and the bundle, so
+    # this driver runs exactly what check.py runs.
+    load_cert_pairing,
+    check_paired_cert,
+    # Pairing completeness (C2 round 1): the paired-cert step below is
     # pairing-map-opt-in, so an unpaired cert-*.json would silently
     # skip it; check.py owns the maps and the completeness check.
     check_fixture_pairing_completeness,
     check_unknown_fixture_names,
     emit_warnings,
-    CERT_MANIFEST_PAIRS,
-    CERT_IR_PAIRS,
 )
 
 
@@ -176,39 +174,22 @@ def main() -> int:
             reg_errors, _reg_warnings = reg_fn(doc, patterns)
             errors = errors + [f"registry: {e}" for e in reg_errors]
 
-        # Cross-fixture hash linkage (#18d / #24-M1): cert.backend.config_hash
-        # must equal canonical_sha256(paired_manifest), and
-        # cert.dispatch_context_hash must equal canonical_sha256(paired_ir)
-        # when one is shipped. The pairing maps live in check.py;
-        # tools/regen_cert_hashes.py uses the same maps to (re-)pin
-        # fixture hashes.
-        if example.name in CERT_MANIFEST_PAIRS:
+        # Cross-fixture checks on a paired cert: hash linkage to its
+        # manifest, IR and rewrite trace (#18d / #24-M1), producibility
+        # by the manifest (R2.4) and witness provenance (R3-M1). The
+        # pairing maps, the loader and the check bundle live in
+        # check.py and are shared with check.py's own driver and
+        # tools/regen_cert_hashes.py, so this run is exactly check.py's.
+        pairing = load_cert_pairing(example.name)
+        if pairing is not None:
             with example.open() as f:
                 cert = json.load(f)
-            with (EXAMPLES / CERT_MANIFEST_PAIRS[example.name]).open() as f:
-                paired_manifest = json.load(f)
-            paired_ir = None
-            if example.name in CERT_IR_PAIRS:
-                with (EXAMPLES / CERT_IR_PAIRS[example.name]).open() as f:
-                    paired_ir = json.load(f)
-            hash_errors, hash_warnings = check_cert_hashes(
-                cert,
-                paired_ir=paired_ir,
-                paired_manifest=paired_manifest,
-                cert_name=str(rel),
-                manifest_name=str((EXAMPLES / CERT_MANIFEST_PAIRS[example.name])
-                                  .relative_to(ROOT)),
-            )
-            errors = errors + [f"hash: {e}" for e in hash_errors]
-            # R3-M1: specialization soundness_witness tokens must
-            # resolve in the paired IR's library_provenance (same
-            # gate as check.py's, so both drivers fail closed).
-            if paired_ir is not None:
-                errors = errors + [
-                    f"witness: {e}"
-                    for e in check_cert_witness_provenance(
-                        cert, paired_ir, cert_name=str(rel))
-                ]
+            found = check_paired_cert(cert, str(rel), pairing)
+            errors = (errors
+                      + [f"hash: {e}" for e in found.hash_errors]
+                      + [f"manifest: {e}" for e in found.manifest_errors]
+                      + [f"witness: {e}" for e in found.witness_errors])
+            hash_warnings = found.warnings
         else:
             hash_warnings = []
 
