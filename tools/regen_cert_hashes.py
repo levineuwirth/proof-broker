@@ -40,9 +40,8 @@ from canonical_hash import canonical_sha256  # noqa: E402
 # convention. Drift between regen and check is structurally impossible.
 from check import (  # noqa: E402
     CERT_MANIFEST_PAIRS,
-    CERT_IR_PAIRS,
-    CERT_TRACE_PAIRS,
     TRACE_IR_PAIRS,
+    load_cert_pairing,
 )
 
 
@@ -100,24 +99,23 @@ def main() -> int:
         original = cert_path.read_text()
         text = original
 
+        # The same loader check.py and validate.py verify through.
+        # Loaded inside the loop so the trace is read AFTER pass 1
+        # re-pinned it.
+        pairing = load_cert_pairing(cert_name)
+
         # config_hash: always paired with a manifest.
-        manifest = json.loads(
-            (EXAMPLES / CERT_MANIFEST_PAIRS[cert_name]).read_text()
-        )
         text, did_cfg = _replace_hash(
-            text, "config_hash", canonical_sha256(manifest))
+            text, "config_hash", canonical_sha256(pairing.manifest))
 
         # dispatch_context_hash: canonical hash of the paired IR.
-        ir = json.loads((EXAMPLES / CERT_IR_PAIRS[cert_name]).read_text())
         text, did_dch = _replace_hash(
-            text, "dispatch_context_hash", canonical_sha256(ir))
+            text, "dispatch_context_hash", canonical_sha256(pairing.ir))
 
         # rewrite_trace_hash: canonical hash of the paired trace
         # fixture (re-pinned in pass 1 above).
-        trace = json.loads(
-            (EXAMPLES / CERT_TRACE_PAIRS[cert_name]).read_text())
         text, did_rth = _replace_hash(
-            text, "rewrite_trace_hash", canonical_sha256(trace))
+            text, "rewrite_trace_hash", canonical_sha256(pairing.trace))
 
         if not (did_cfg and did_dch and did_rth):
             print(f"WARN     {cert_name}: missing one of the three hash fields "

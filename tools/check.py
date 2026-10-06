@@ -88,6 +88,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES = ROOT / "examples"
@@ -795,6 +796,92 @@ TRACE_IR_PAIRS = {
 _ZERO_SENTINEL_HASH = "sha256:" + "0" * 64
 
 
+class CertPairing(NamedTuple):
+    """The fixtures a shipped `cert-*.json` is pinned against, loaded.
+    The `*_name` fields are repo-relative paths for diagnostics."""
+    manifest: dict
+    manifest_name: str
+    ir: dict | None
+    ir_name: str | None
+    trace: dict | None
+    trace_name: str | None
+
+
+def load_cert_pairing(cert_name, examples=None):
+    """Resolve and load the manifest, IR and rewrite-trace fixtures
+    paired with `cert_name` (a bare `examples/` filename) through
+    CERT_MANIFEST_PAIRS / CERT_IR_PAIRS / CERT_TRACE_PAIRS. Returns None
+    for a cert with no manifest pairing (completeness of the maps is
+    enforced separately by check_fixture_pairing_completeness).
+
+    The one loader every driver goes through — `main()` below,
+    validate.py and regen_cert_hashes.py — so none of them can fall
+    behind the pairing convention. (validate.py had: it loaded manifest
+    and IR by hand and never saw the trace pairing.)"""
+    examples = EXAMPLES if examples is None else examples
+    manifest_name = CERT_MANIFEST_PAIRS.get(cert_name)
+    if manifest_name is None:
+        return None
+
+    def load(name):
+        with (examples / name).open() as f:
+            return json.load(f)
+
+    def rel(name):
+        path = examples / name
+        try:
+            return str(path.relative_to(ROOT))
+        except ValueError:
+            return str(path)
+
+    ir_name = CERT_IR_PAIRS.get(cert_name)
+    trace_name = CERT_TRACE_PAIRS.get(cert_name)
+    return CertPairing(
+        manifest=load(manifest_name),
+        manifest_name=rel(manifest_name),
+        ir=load(ir_name) if ir_name is not None else None,
+        ir_name=rel(ir_name) if ir_name is not None else None,
+        trace=load(trace_name) if trace_name is not None else None,
+        trace_name=rel(trace_name) if trace_name is not None else None,
+    )
+
+
+class PairedCertFindings(NamedTuple):
+    """What `check_paired_cert` found, kept apart by check so a driver
+    can label them (validate.py prefixes `hash:` / `manifest:` /
+    `witness:`); `errors` is the flat union."""
+    hash_errors: list
+    manifest_errors: list
+    witness_errors: list
+    warnings: list
+
+    @property
+    def errors(self):
+        return self.hash_errors + self.manifest_errors + self.witness_errors
+
+
+def check_paired_cert(cert, cert_name, pairing):
+    """Every cross-fixture check a paired cert gets, in one place:
+    strict-identity hash linkage to manifest, IR and trace
+    (check_cert_hashes), producibility by the paired manifest
+    (check_cert_manifest_consistency, R2.4) and, when an IR is paired,
+    specialization-witness provenance (check_cert_witness_provenance,
+    R3-M1). `main()` below and validate.py both run exactly this, so
+    the two drivers cannot drift."""
+    hash_errors, warnings = check_cert_hashes(
+        cert, paired_ir=pairing.ir, paired_manifest=pairing.manifest,
+        cert_name=cert_name, manifest_name=pairing.manifest_name,
+        paired_trace=pairing.trace,
+    )
+    manifest_errors = check_cert_manifest_consistency(
+        cert, pairing.manifest, cert_name=cert_name)
+    witness_errors = ([] if pairing.ir is None else
+                      check_cert_witness_provenance(
+                          cert, pairing.ir, cert_name=cert_name))
+    return PairedCertFindings(
+        hash_errors, manifest_errors, witness_errors, warnings)
+
+
 def check_fixture_pairing_completeness(fixture_names=None):
     """C2 round 1, finding 1: the R2 hash/sentinel gates are keyed by
     the pairing maps above, so a cert-*.json dropped into examples/
@@ -1157,35 +1244,12 @@ def main() -> int:
             e, w = check_certificate(doc, registry)
             errors += e
             warnings += w
-            manifest_name = CERT_MANIFEST_PAIRS.get(fixture.name)
-            if manifest_name is not None:
-                with (EXAMPLES / manifest_name).open() as f:
-                    paired_manifest = json.load(f)
-                paired_ir = None
-                ir_name = CERT_IR_PAIRS.get(fixture.name)
-                if ir_name is not None:
-                    with (EXAMPLES / ir_name).open() as f:
-                        paired_ir = json.load(f)
-                paired_trace = None
-                trace_name = CERT_TRACE_PAIRS.get(fixture.name)
-                if trace_name is not None:
-                    with (EXAMPLES / trace_name).open() as f:
-                        paired_trace = json.load(f)
-                e, w = check_cert_hashes(
-                    doc, paired_ir=paired_ir, paired_manifest=paired_manifest,
-                    cert_name=str(fixture.relative_to(ROOT)),
-                    manifest_name=str((EXAMPLES / manifest_name).relative_to(ROOT)),
-                    paired_trace=paired_trace,
-                )
-                errors += e
-                hash_warnings += w
-                errors += check_cert_manifest_consistency(
-                    doc, paired_manifest,
-                    cert_name=str(fixture.relative_to(ROOT)))
-                if paired_ir is not None:
-                    errors += check_cert_witness_provenance(
-                        doc, paired_ir,
-                        cert_name=str(fixture.relative_to(ROOT)))
+            pairing = load_cert_pairing(fixture.name)
+            if pairing is not None:
+                found = check_paired_cert(
+                    doc, str(fixture.relative_to(ROOT)), pairing)
+                errors += found.errors
+                hash_warnings += found.warnings
         elif kind == "manifest":
             e, w = check_manifest(doc, registry)
             errors += e

@@ -30,6 +30,8 @@ from check import (  # noqa: E402
     check_cert_witness_provenance,
     check_certificate,
     check_fixture_pairing_completeness,
+    check_paired_cert,
+    load_cert_pairing,
     check_unknown_fixture_names,
     check_identity_trace_hashes,
     check_ir,
@@ -694,6 +696,53 @@ def _shipped_fixture_names_recognized():
 def _shipped_examples_fully_paired():
     e = check_fixture_pairing_completeness()
     assert not e, e
+
+
+# --- the shared pairing loader and paired-cert bundle -------------------------
+#
+# check.py's main(), validate.py and regen_cert_hashes.py all go through
+# load_cert_pairing / check_paired_cert; these pin the loader's contract
+# and that the bundle keeps findings apart by the check that produced
+# them (validate.py labels them).
+
+@register("pairing loader: every shipped cert resolves to manifest + IR + trace")
+def _loader_resolves_every_shipped_cert():
+    from check import CERT_MANIFEST_PAIRS
+    for cert_name in sorted(CERT_MANIFEST_PAIRS):
+        p = load_cert_pairing(cert_name)
+        assert p is not None, cert_name
+        assert p.manifest and p.ir is not None and p.trace is not None, cert_name
+        for name in (p.manifest_name, p.ir_name, p.trace_name):
+            assert name.startswith("examples/"), (cert_name, name)
+
+
+@register("pairing loader: an unpaired cert name yields None, not a partial pairing")
+def _loader_unpaired_is_none():
+    assert load_cert_pairing("cert-zz-unpaired.json") is None
+
+
+@register("paired-cert bundle: every shipped cert is clean under the shared bundle")
+def _bundle_shipped_certs_clean():
+    from check import CERT_MANIFEST_PAIRS
+    for cert_name in sorted(CERT_MANIFEST_PAIRS):
+        cert = load(ROOT / "examples" / cert_name)
+        found = check_paired_cert(cert, cert_name, load_cert_pairing(cert_name))
+        assert not found.errors, (cert_name, found.errors)
+
+
+@register("paired-cert bundle: findings land under the check that produced them")
+def _bundle_categorizes_findings():
+    cert_name = "cert-example1-tier1-farkas.json"
+    pairing = load_cert_pairing(cert_name)
+    cert = copy.deepcopy(load(ROOT / "examples" / cert_name))
+    cert["backend"]["config_hash"] = "sha256:" + "1" * 64
+    cert["tier"] = 4  # outside every manifest's tiers_produced
+    found = check_paired_cert(cert, cert_name, pairing)
+    assert_contains(found.hash_errors, "backend.config_hash", "hash error")
+    assert_contains(found.manifest_errors, "tiers_produced", "manifest error")
+    assert_absent(found.manifest_errors, "backend.config_hash", "manifest error")
+    assert found.errors == (found.hash_errors + found.manifest_errors
+                            + found.witness_errors)
 
 
 # --- Tier 2 schema checks ----------------------------------------------------
