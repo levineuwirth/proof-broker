@@ -2339,12 +2339,17 @@ private def walkProofIntoGoal (goal : MVarId) (proof : Alethe.Proof)
 
     Returns `true` iff the walker fully closed the goal; `false`
     on any failure (no trace data, parse failure, unsupported
-    rule, walked-term type mismatch). A `false` return leaves
-    the goal untouched so the caller falls through to `omega` —
-    audit H1 preserved: walker failure is a tactic failure, not
-    an admitted theorem. The walker builds the proof term purely
-    (`mkAppM`, no mvar assignment) until the final assignment,
-    so a mid-walk failure can't leave a partial assignment. -/
+    rule, walked-term type mismatch) — audit H1 preserved: walker
+    failure is a tactic failure, not an admitted theorem.
+
+    A `false` return does NOT by itself leave the goal untouched:
+    for refutation traces `walkProofIntoGoal` runs
+    `falseOrByContra`, which ASSIGNS the main goal before the walk
+    can fail (the walk itself is pure — `mkAppM`, no mvar
+    assignment — until its final `assign`). The fallback contract
+    the arms of `closeOrFailPrimary` rest on is restored by the
+    tactic-state checkpoint in `tryWalkerFor`, the only production
+    caller; call this directly only where no fallback follows. -/
 private def tryAletheWalker (cert : Json) : TacticM Bool := do
   match certTraceData? cert with
   | none => return false
@@ -2424,9 +2429,10 @@ private def walkNatProofIntoGoal (goal : MVarId) (proof : Alethe.Proof)
       let proofTerm ← Alethe.walkProof { vars } proof
       walkGoal.assign proofTerm
 
-/-- ℕ variant of `tryAletheWalker`: same gate/fallback contract
-    (`false` leaves the goal untouched), cast layer + atom override
-    per `walkNatProofIntoGoal`. -/
+/-- ℕ variant of `tryAletheWalker`: same gate and the same caveat
+    (`false` does not restore the goal `falseOrByContra` assigned;
+    `tryWalkerFor` checkpoints around it), cast layer + atom
+    override per `walkNatProofIntoGoal`. -/
 private def tryAletheWalkerNat (cert : Json) (ir : IR)
     (tableAtoms : Array (String × Expr)) : TacticM Bool := do
   match certTraceData? cert with
@@ -2441,6 +2447,51 @@ private def tryAletheWalkerNat (cert : Json) (ir : IR)
         (do walkNatProofIntoGoal (← getMainGoal) proof ir tableAtoms
             return true)
         (fun _ => return false)
+
+/-- The walker-first attempt shared by every fragment arm of
+    `closeOrFailPrimary` ("cert IS the proof" before the arm's own
+    re-proving closer). Returns the closer label when the walker
+    closed the goal, `none` when it was skipped or failed — and in
+    the latter case the goal is exactly as the caller left it.
+
+    Gates, plain-path semantics (the strict entry points fail closed
+    with a named error where this skips):
+    * Identity-trace guard (R2): the walker elaborates the cert's
+      trace against the ORIGINAL goal, so it runs only when the
+      dispatch pipeline provably didn't rewrite it.
+    * Specialization gate (R3-M1): a non-invertible record SKIPS the
+      attempt; the fallback re-proves the original goal itself. A ℕ
+      extraction routes through the cast-layer variant — the trace
+      addresses the reified ℤ image and the lift rebuilds the ℕ
+      proof from it. (ℕ never reaches UF/UFLIA — carrier mixing is a
+      reifier error — so that branch is LIA-only by construction.)
+
+    Checkpoint (R4.2): both walkers reach `falseOrByContra`, which
+    ASSIGNS the main goal, before they can know whether the walk
+    will succeed; a failure returned `false` with the goal already
+    assigned, and the arm's fallback then died with "No goals to be
+    solved" instead of closing the goal. The `false` contract
+    ("leaves the goal untouched") is what every fallback rests on,
+    so the TACTIC state is saved and restored here, once, rather
+    than trusted to each walker — or to each arm: the UF and UFLIA
+    arms once repeated these gates without the checkpoint and lost
+    their fallback on any failed walk. -/
+private def tryWalkerFor (path : ExtractionPath) (cert : Json)
+    : TacticM (Option String) := do
+  if certTraceFormat cert == "alethe-2024" && identityTraceOk path
+      && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
+    let natMode := natModeOf path.ir
+    let st ← saveState
+    let ok ←
+      if natMode then tryAletheWalkerNat cert path.ir path.natAtoms
+      else tryAletheWalker cert
+    if ok then
+      pure (some (if natMode then "alethe_walker_nat" else "alethe_walker"))
+    else
+      st.restore
+      pure none
+  else
+    pure none
 
 /-- Axioms the home kernel already tolerates everywhere else a
     `proof_broker` closer runs (the classical footprint `omega` /
@@ -2680,40 +2731,10 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- Rocq walker by `tools/check_walker_parity.py`; rule counts:
       -- the generated status table in README.md,
       -- `python3 tools/status_table.py`); omega catches anything
-      -- outside that scope.
-      let walkerHandled ← do
-        -- Identity-trace guard (R2): the walker elaborates the
-        -- cert's trace against the ORIGINAL goal, so it only runs
-        -- when the dispatch pipeline provably didn't rewrite it.
-        -- R3-M1: a ℕ extraction routes through the cast-layer
-        -- variant — the trace addresses the reified ℤ image, and
-        -- the lift rebuilds the ℕ proof from it. The specialization
-        -- gate applies with the guard's plain-path semantics: a
-        -- non-invertible record SKIPS the walker attempt (the
-        -- fallback re-proves the original goal itself), where the
-        -- strict entry points fail closed with the named error.
-        if certTraceFormat cert == "alethe-2024" && identityTraceOk path
-            && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
-          -- R4.2: checkpoint the TACTIC state around the attempt.
-          -- Both walkers reach `falseOrByContra`, which ASSIGNS the
-          -- main goal, before they can know whether the walk will
-          -- succeed; a later failure returned `false` with the goal
-          -- already assigned, and the omega fallback below then died
-          -- with "No goals to be solved" instead of closing the
-          -- goal. The `false` contract ("leaves the goal untouched")
-          -- is what the fallback rests on, so restore it here rather
-          -- than trust each walker to unwind itself.
-          let st ← saveState
-          let ok ←
-            if natModeOf path.ir then
-              tryAletheWalkerNat cert path.ir path.natAtoms
-            else tryAletheWalker cert
-          unless ok do st.restore
-          pure ok
-        else
-          pure false
-      if walkerHandled then
-        pure (if natModeOf path.ir then "alethe_walker_nat" else "alethe_walker")
+      -- outside that scope. Gates (R2, R3-M1) and the R4.2 state
+      -- checkpoint: `tryWalkerFor`.
+      if let some label := (← tryWalkerFor path cert) then
+        pure label
       else
         -- R3-M2: an α extraction has no decision-procedure closer
         -- (omega is Int/ℕ-only). If the cert is a Tier-1 Farkas
@@ -2806,20 +2827,9 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- Walker-first (R1.3): a UF cert carrying an alethe-2024
       -- trace goes through the Alethe walker ("cert IS the
       -- proof") before the re-proving chain; any walker failure
-      -- falls through to it — audit H1 preserved.
-      let walkerHandled ← do
-        -- Identity-trace guard (R2): the walker elaborates the
-        -- cert's trace against the ORIGINAL goal, so it only runs
-        -- when the dispatch pipeline provably didn't rewrite it.
-        -- R3-M1: same plain-path specialization-gate skip as the
-        -- LIA arm (ℕ never reaches UF/UFLIA — carrier mixing is a
-        -- reifier error — so natMode is false here by construction).
-        if certTraceFormat cert == "alethe-2024" && identityTraceOk path
-            && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
-          tryAletheWalker cert
-        else
-          pure false
-      if walkerHandled then pure "alethe_walker" else
+      -- falls through to it — audit H1 preserved. Gates and the
+      -- R4.2 state checkpoint: `tryWalkerFor`.
+      if let some label := (← tryWalkerFor path cert) then pure label else
         try evalTactic (← `(tactic| subst_eqs; rfl)); pure "gated_subst_eqs_rfl"
         catch _ =>
           try evalTactic (← `(tactic| simp_all)); pure "gated_simp_all"
@@ -2837,20 +2847,9 @@ private def closeOrFailPrimary (_goal : MVarId) (path : ExtractionPath)
       -- previously did not exist, so such goals had no closer at
       -- all. Walker-first like LIA/UF, then a `simp_all` /
       -- `omega` fallback chain (both axiom-free), then an honest
-      -- tactic failure.
-      let walkerHandled ← do
-        -- Identity-trace guard (R2): the walker elaborates the
-        -- cert's trace against the ORIGINAL goal, so it only runs
-        -- when the dispatch pipeline provably didn't rewrite it.
-        -- R3-M1: same plain-path specialization-gate skip as the
-        -- LIA arm (ℕ never reaches UF/UFLIA — carrier mixing is a
-        -- reifier error — so natMode is false here by construction).
-        if certTraceFormat cert == "alethe-2024" && identityTraceOk path
-            && (certSpecializationsError? cert (walkerSpecMode path.ir)).isNone then
-          tryAletheWalker cert
-        else
-          pure false
-      if walkerHandled then pure "alethe_walker" else
+      -- tactic failure. Gates and the R4.2 state checkpoint:
+      -- `tryWalkerFor`.
+      if let some label := (← tryWalkerFor path cert) then pure label else
         try evalTactic (← `(tactic| simp_all)); pure "gated_simp_all"
         catch _ =>
           try evalTactic (← `(tactic| omega)); pure "gated_omega"
@@ -4720,6 +4719,23 @@ def evalReifyStressTest : Tactic := fun stx => do
     * `no_trace` — no trace on the path → named error. -/
 syntax (name := traceGuardTest) "trace_guard_test" ident : tactic
 
+/-- TEST-ONLY. A structurally valid, empty IR declaring `fragment`,
+    for test tactics that drive a closer path from a synthetic
+    `ExtractionPath` (no reification, no dispatch). No free vars and
+    no type vars, so `natModeOf` and `polyModeOf` are both false. -/
+private def syntheticIrForTests (fragment : String) : IR := {
+  irVersion := "1.0",
+  sourceSystem := { name := "lean", version := "0.0" },
+  tier := "structural",
+  logicClassification := {
+    order := "first_order", featuresUsed := [],
+    firstOrderFragment := fragment, decidableTheory := none },
+  goal := { shell := .const "False", payloads := none },
+  context := { typeVars := [], freeVars := [],
+               hypotheses := [], librarySlice := none },
+  typeMetadata := [], definitionalMetadata := [],
+  libraryProvenance := [], userDirectives := none }
+
 @[tactic traceGuardTest]
 def evalTraceGuardTest : Tactic := fun stx => do
   match stx with
@@ -4773,20 +4789,9 @@ def evalTraceGuardTest : Tactic := fun stx => do
       | "endpoints_all_noop" => pure (some endpointsAllNoopDoc)
       | "no_trace" => pure none
       | k => throwError "trace_guard_test: unknown kind '{k}'"
-    let dummyIr : IR := {
-      irVersion := "1.0",
-      sourceSystem := { name := "lean", version := "0.0" },
-      tier := "structural",
-      logicClassification := {
-        order := "first_order", featuresUsed := [],
-        firstOrderFragment := "LIA", decidableTheory := none },
-      goal := { shell := .const "False", payloads := none },
-      context := { typeVars := [], freeVars := [],
-                   hypotheses := [], librarySlice := none },
-      typeMetadata := [], definitionalMetadata := [],
-      libraryProvenance := [], userDirectives := none }
     let path : ExtractionPath := {
-      ir := dummyIr, attempts := [], cert := none, trace := trace?,
+      ir := syntheticIrForTests "LIA", attempts := [], cert := none,
+      trace := trace?,
       finalIr := none,
       natDefs := #[(ourDef, mkConst `x, 42)],
       verifyOk := none, verifyEnvelopeOk := none, verifyReason := none,
@@ -4919,5 +4924,57 @@ def evalTermCloserTest : Tactic := fun stx => do
     replaceMainGoal []
     logInfo m!"term_closer_test: {mode.getId} {closer}"
   | _ => throwError "term_closer_test: malformed invocation"
+
+/-- TEST-ONLY tactic. Drives `closeOrFailPrimary`'s arm for the given
+    fragment with a synthetic, already-verified cert whose
+    alethe-2024 trace PARSES as a refutation but cannot be walked.
+    Because it is a refutation, the walk fails only after
+    `walkProofIntoGoal` has run `falseOrByContra`, which assigns the
+    main goal — the shape R4.2 checkpointed. The second argument
+    picks how the walk fails: `clean` (an ordinary elaboration
+    error, unsupported rule) or `runtime` (recursion budget
+    exhausted, the path `tryCatchRuntimeEx` guards). Either way the
+    contract under test is the one every arm's fallback rests on —
+    a failed walk leaves the goal exactly as it was — so the arm's
+    own closer must still see the goal and close it. No live solver
+    runs; build success is the test. -/
+syntax (name := walkerFallbackTest) "walker_fallback_test" ident ident : tactic
+
+@[tactic walkerFallbackTest]
+def evalWalkerFallbackTest : Tactic := fun stx => do
+  match stx with
+  | `(tactic| walker_fallback_test $frag:ident $kind:ident) =>
+    let fragment := frag.getId.toString
+    let unwalkable ← match kind.getId.toString with
+      | "clean" =>
+        -- Fails inside the walk with an ordinary `throwError`
+        -- (unsupported rule).
+        pure "( (step t0 (cl) :rule pb_test_no_such_rule) )"
+      | "runtime" =>
+        -- Fails by exhausting the recursion budget (the atoms resolve
+        -- to nothing) — the runtime-exception path `tryCatchRuntimeEx`
+        -- exists for.
+        pure "( (assume a0 (not (= pb_test_missing_x pb_test_missing_y))) \
+                (step t0 (cl) :rule resolution :premises (a0)) )"
+      | k => throwError "walker_fallback_test: unknown failure kind '{k}'"
+    let cert : Json := Json.mkObj [
+      ("refinement_record", Json.mkObj [("fragment", Json.str fragment)]),
+      ("payload", Json.mkObj [
+        ("trace_format", Json.str "alethe-2024"),
+        ("trace_data", Json.str unwalkable)])]
+    let identityDoc : Trace.Document := {
+      traceVersion := "1.0", initialIrHash := "sha256:aa",
+      finalIrHash := "sha256:aa", entries := [], configuration := none }
+    let path : ExtractionPath := {
+      ir := syntheticIrForTests fragment, attempts := [],
+      cert := some cert, trace := some identityDoc, finalIr := none,
+      verifyOk := some true, verifyEnvelopeOk := some true,
+      verifyReason := none, dispatchMs := 0, verifyMs := 0 }
+    let closer ← closeOrFailPrimary (← getMainGoal) path
+    if closer == "alethe_walker" || closer == "alethe_walker_nat" then
+      throwError "walker_fallback_test: the walker reported success on \
+        an unwalkable trace"
+    logInfo m!"walker_fallback_test: {fragment} closed by {closer}"
+  | _ => throwError "walker_fallback_test: malformed invocation"
 
 end ProofBroker.Tactic

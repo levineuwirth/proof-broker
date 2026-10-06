@@ -2468,6 +2468,46 @@ example : True := by
   fail_if_success trace_guard_test no_trace
   trivial
 
+/- The walker-first arms' fallback contract, pinned on synthetic
+   certs (`walker_fallback_test` drives the real `closeOrFailPrimary`
+   with a verified cert whose alethe-2024 refutation trace cannot be
+   walked; no live solver). For a refutation trace the walker runs
+   `falseOrByContra` — which ASSIGNS the main goal — before the walk
+   can fail, so a failed walk must restore the tactic state or the
+   arm's own closer finds no goal (R4.2 fixed this for the LIA arm;
+   the UF and UFLIA arms repeated the walker call without the
+   checkpoint and lost their fallback on every failed walk until the
+   shared `tryWalkerFor` landed). Both failure shapes are pinned per
+   arm: an ordinary elaboration error (`clean`) and an exhausted
+   recursion budget (`runtime`), which is a runtime exception the
+   plain `try`/`catch` does not see. -/
+
+/-- LIA arm: the `omega` fallback closes the goal after a cleanly
+    failed walk. -/
+example (n : Int) (h : n ≤ 5) : n ≤ 10 := by
+  walker_fallback_test LIA clean
+
+/-- LIA arm, runtime-exception walk failure. -/
+example (n : Int) (h : n ≤ 5) : n ≤ 10 := by
+  walker_fallback_test LIA runtime
+
+/-- UF arm: the `subst_eqs; rfl` fallback closes the goal after a
+    cleanly failed walk. -/
+example (f : Int → Int) (a b : Int) (h : a = b) : f a = f b := by
+  walker_fallback_test UF clean
+
+/-- UF arm, runtime-exception walk failure. -/
+example (f : Int → Int) (a b : Int) (h : a = b) : f a = f b := by
+  walker_fallback_test UF runtime
+
+/-- UFLIA arm: the `simp_all` fallback closes the goal after a
+    cleanly failed walk. -/
+example (f : Int → Int) (a b : Int) (h : a = b) : f a = f b := by
+  walker_fallback_test UFLIA clean
+
+/-- UFLIA arm, runtime-exception walk failure. -/
+example (f : Int → Int) (a b : Int) (h : a = b) : f a = f b := by
+  walker_fallback_test UFLIA runtime
 
 /- ============================================================
    R4.2 — the verinf bracket-spike obligation shapes
