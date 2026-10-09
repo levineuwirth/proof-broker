@@ -1,0 +1,2 @@
+# Captured web pages from the R6 live runs: third-party content, excluded from language statistics.
+experiments/**/*.html linguist-vendored
